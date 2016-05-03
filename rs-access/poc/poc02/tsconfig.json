@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "amd",
+        "target": "es5",
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "outDir": "dist",
+        "rootDir": "app"
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}
