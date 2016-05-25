@@ -47,7 +47,7 @@ class UserApp extends React.Component {
             <h1> Test Application {this.state.project} </h1>
           </div>
           <div className="navigation">
-            Plugins : <PluginLinks plugins={this.state.plugins}/>
+            Plugins : <PluginLinks project={this.state.project} plugins={this.state.plugins}/>
           </div>
           <div className="content full-div">
             {this.props.content}

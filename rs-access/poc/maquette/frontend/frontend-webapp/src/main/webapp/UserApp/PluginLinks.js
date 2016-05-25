@@ -13,7 +13,7 @@ class PluginLinks extends React.Component {
             if (plugin.name && plugin.plugin){
               return (
                 <Link key="{plugin.name}"
-                  to={"/user/"+project+"/plugins/" + plugin.name}
+                  to={project + "/plugins/" + plugin.name}
                   activeStyle={activeStyle}
                   style={style}
                   plugin={plugin.app}>
