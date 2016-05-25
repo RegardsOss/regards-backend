@@ -1,0 +1,6 @@
+{
+  "plugins" : [{
+    "name" : "HelloWorldPlugin",
+    "paths": ["HelloWorld/hw.js"]
+    }]
+}
