@@ -2,7 +2,7 @@
 import { Rest } from 'grommet';
 import scriptjs from 'scriptjs';
 
-import store from '../../Store/Store';
+import store from 'AppStore';
 import { addPlugin, pluginsLoaded, togglePluginsLoaded } from './PluginsStoreActionCreators';
 
 const loadPlugins = (callback) => {

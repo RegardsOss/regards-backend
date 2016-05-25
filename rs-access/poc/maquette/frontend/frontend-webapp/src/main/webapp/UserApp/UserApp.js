@@ -2,6 +2,8 @@ import React from 'react';
 import scriptjs from 'scriptjs';
 import { loadPlugins } from 'Common/PluginsManager/PluginsControler';
 
+import PluginLinks from './PluginLinks';
+
 class UserApp extends React.Component {
 
   constructor(){
@@ -19,17 +21,14 @@ class UserApp extends React.Component {
   componentDidMount(){
     this.unsubscribe = this.context.store.subscribe(()=> {
       this.setState({
-        pluginsLoaded : this.context.store.getState().pluginsLoaded
+        pluginsLoaded : this.context.store.getState().pluginsLoaded,
+        plugins: this.context.store.getState().plugins
       });
     });
 
     if (!this.context.store.getState().pluginsLoaded){
       loadPlugins( (plugin) => {
-        this.setState({
-          plugins : [...this.state.plugins,{
-            name: plugin.name,
-            plugin: plugin.app}]
-        });
+        console.log("Plugin loaded");
       });
     }
   }
@@ -48,10 +47,10 @@ class UserApp extends React.Component {
             <h1> Test Application {this.state.project} </h1>
           </div>
           <div className="navigation">
-            Menu
+            Plugins : <PluginLinks plugins={this.state.plugins}/>
           </div>
           <div className="content full-div">
-            Content
+            {this.props.content}
           </div>
         </div>
       )

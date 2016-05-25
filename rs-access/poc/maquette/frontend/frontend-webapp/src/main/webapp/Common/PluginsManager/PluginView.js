@@ -3,15 +3,17 @@ import React from 'react';
 /**
  Display the content of a plugin.
 */
-class PluginApp extends React.Component {
+class PluginView extends React.Component {
   render(){
     const plugins = this.context.store.getState().plugins;
-    const pluginToDisplay = this.props.params.name;
+    const pluginToDisplay = this.props.name;
     const plugin = this.context.store.getState().plugins.find((curent) => {
       if (pluginToDisplay === curent.name){
         return curent;
       }
     });
+
+    console.log("SEB",plugin);
 
     if (plugin && plugin.plugin){
       return React.createElement(plugin.plugin,null);
@@ -21,8 +23,8 @@ class PluginApp extends React.Component {
   }
 }
 
-PluginApp.contextTypes = {
+PluginView.contextTypes = {
   store: React.PropTypes.object
 }
 
-export default PluginApp
+export default PluginView
