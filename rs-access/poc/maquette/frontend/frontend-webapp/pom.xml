@@ -2,17 +2,19 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
+
+  <name>frontend-webapp</name>
+  <groupId>fr.cs.regards</groupId>
+  <artifactId>frontend-webapp</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>war</packaging>
+
   <parent>
     <groupId>fr.cs.regards</groupId>
     <artifactId>frontend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>fr.cs.regards</groupId>
-  <artifactId>frontend-webapp</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>war</packaging>
-  <name>frontend Maven Webapp</name>
-  <url>http://maven.apache.org</url>
+
   <build>
    <plugins>
      <plugin>
@@ -38,6 +40,7 @@
 						</goals>
 						<configuration>
 							<finalName>frontend-${project.version}</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
 							<descriptors>
 								<descriptor>src/main/assembly/frontend-compiled-war.xml</descriptor>
 							</descriptors>

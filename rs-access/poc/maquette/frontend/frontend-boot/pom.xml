@@ -2,14 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
+	<name>frontend-boot</name>
+	<packaging>war</packaging>
+	<artifactId>frontend-boot</artifactId>
+	<description>Starter module</description>
+	<version>0.0.1-SNAPSHOT</version>
+
 	<parent>
 		<groupId>fr.cs.regards</groupId>
 		<artifactId>frontend</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<packaging>war</packaging>
-	<artifactId>frontend-boot</artifactId>
-	<description>Starter module</description>
 
 	<dependencies>
 		<dependency>
@@ -20,6 +24,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jetty</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cs.regards</groupId>
+			<artifactId>frontend-webapp</artifactId>
+			<type>war</type>
+		</dependency>
   </dependencies>
 
 	<build>
@@ -27,6 +36,13 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
