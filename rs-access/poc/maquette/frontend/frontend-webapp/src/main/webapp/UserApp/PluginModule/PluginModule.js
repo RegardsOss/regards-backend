@@ -1,16 +1,22 @@
 import React from 'react';
+import RegardsModule from 'RegardsModule';
 import PluginView from 'Common/PluginsManager/PluginView'
 
-class PluginModule extends React.Component {
+class PluginModule extends RegardsModule {
 
   constructor(){
     super();
   }
 
   render(){
-    console.log("Rendering plugin",this.props.params.plugin);
-    return <PluginView name={this.props.params.plugin}/>
+    const { plugin } = this.props.params;
+    console.log("Rendering plugin",plugin);
+    return <PluginView name={plugin}/>
   }
+}
+
+PluginModule.propTypes = {
+  params: React.PropTypes.object.isRequired
 }
 
 PluginModule.contextTypes = {

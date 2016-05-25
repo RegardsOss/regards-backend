@@ -15,8 +15,9 @@ const loadPlugins = (callback) => {
         // Add event listenner for plugin to load
         document.addEventListener('plugin', function (plugin) {
           // When plugin loaded event is received, add plugin to the store
-          console.log("Plugin loaded : ", plugin.detail.name);
-          callback(plugin.detail);
+          if (callback){
+            callback(plugin.detail);
+          }
           store.dispatch(addPlugin(plugin.detail.name,plugin.detail.app));
         },false);
 

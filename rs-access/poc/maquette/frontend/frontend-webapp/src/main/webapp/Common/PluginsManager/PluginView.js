@@ -13,8 +13,6 @@ class PluginView extends React.Component {
       }
     });
 
-    console.log("SEB",plugin);
-
     if (plugin && plugin.plugin){
       return React.createElement(plugin.plugin,null);
     } else {

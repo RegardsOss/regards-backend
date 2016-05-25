@@ -13,7 +13,7 @@ class PluginLinks extends React.Component {
             if (plugin.name && plugin.plugin){
               return (
                 <Link key="{plugin.name}"
-                  to={project + "/plugins/" + plugin.name}
+                  to={"/user/" + project + "/plugins/" + plugin.name}
                   activeStyle={activeStyle}
                   style={style}
                   plugin={plugin.app}>
@@ -27,8 +27,13 @@ class PluginLinks extends React.Component {
   }
 }
 
+PluginLinks.propTypes = {
+  plugins: React.PropTypes.array.isRequired,
+  project: React.PropTypes.string.isRequired
+}
+
 PluginLinks.contextTypes = {
-  store: React.PropTypes.object
+  store: React.PropTypes.object.isRequired
 }
 
 export default PluginLinks

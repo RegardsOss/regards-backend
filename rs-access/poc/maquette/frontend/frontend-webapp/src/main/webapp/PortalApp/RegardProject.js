@@ -14,4 +14,8 @@ class RegardProject extends React.Component {
   }
 }
 
+RegardProject.propTypes = {
+  project: React.PropTypes.object.isRequired
+}
+
 export default RegardProject

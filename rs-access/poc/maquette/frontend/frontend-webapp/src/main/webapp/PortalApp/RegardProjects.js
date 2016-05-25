@@ -12,10 +12,14 @@ class RegardProjects extends React.Component {
   }
 
   componentDidMount(){
+    this.loadProjects();
+  }
+
+  loadProjects() {
     const location = window.location.origin + '/json/projects.json';
     Rest.get(location)
       .end((error, response) => {
-        console.log("Adding project : ",response.body.projects);
+        console.log("Available projects : ",response.body.projects);
         if (response.status === 200){
           this.setState({
             projects : response.body.projects

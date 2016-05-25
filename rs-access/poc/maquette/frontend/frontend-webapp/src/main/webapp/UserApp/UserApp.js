@@ -27,9 +27,7 @@ class UserApp extends React.Component {
     });
 
     if (!this.context.store.getState().pluginsLoaded){
-      loadPlugins( (plugin) => {
-        console.log("Plugin loaded");
-      });
+      loadPlugins();
     }
   }
 
@@ -56,6 +54,10 @@ class UserApp extends React.Component {
       )
     }
   }
+}
+
+UserApp.propTypes = {
+  params: React.PropTypes.object.isRequired
 }
 
 UserApp.contextTypes = {
