@@ -4,9 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <name>frontend-webapp</name>
-  <groupId>fr.cs.regards</groupId>
   <artifactId>frontend-webapp</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
 
   <parent>
@@ -19,7 +17,6 @@
    <plugins>
      <plugin>
 				<artifactId>maven-war-plugin</artifactId>
-        <version>2.2</version>
         <executions>
           <execution>
             <id>default-war</id>
@@ -30,7 +27,6 @@
       <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2-beta-5</version>
 				<executions>
 					<execution>
 						<id>make-assembly</id>
@@ -52,7 +48,6 @@
          <!-- Build the front end -->
          <groupId>org.codehaus.mojo</groupId>
          <artifactId>exec-maven-plugin</artifactId>
-         <version>1.4.0</version>
          <executions>
             <execution>
                <phase>generate-resources</phase>
