@@ -15,11 +15,11 @@
 		</fileSet>
     <fileSet>
 			<directory>src/main/webapp</directory>
-			<outputDirectory>public</outputDirectory>
+			<outputDirectory></outputDirectory>
 		</fileSet>
 		<fileSet>
 			<directory>target/build</directory>
-			<outputDirectory>public</outputDirectory>
+			<outputDirectory></outputDirectory>
 		</fileSet>
 	</fileSets>
 </assembly>
