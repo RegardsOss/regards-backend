@@ -25,26 +25,36 @@ const loadPlugins = (callback) => {
           if (response.body.plugins && response.body.plugins.length > 0){
             console.log(response.body.plugins.length + " plugins to load ...");
 
-            // Listen to the store to check the moment each plugins are loaded
-            store.subscribe(() => {
-              if (store.getState().pluginsLoaded === false && store.getState().plugins.length === response.body.plugins.length){
-                // Every plugins is loaded add the state to the store
-                console.log("Plugins fully loaded ! ");
-                store.dispatch(pluginsLoaded());
-              }
-            });
-
             // Load each plugin
+            let index=0;
+            let error=0;
             response.body.plugins.map( plugin => {
               console.log("loading ", plugin.name);
               if (plugin.paths) {
                 const paths = plugin.paths.map( path => {
                     return window.location.origin + "/Plugins/" + path;
                 });
-                scriptjs(paths, plugin.name);
+                scriptjs(paths, plugin.name, ()=> {
+                  // Check if plugin is successfully loaded in store
+                  index++;
+                  if (store.getState().plugins.length !== (index - error) ){
+                    console.log("Error loading plugin "+ plugin.name);
+                    error++;
+                  }
+
+                  // After last plugin loaded, set pluginsLoaded to true in store
+                  if (index === response.body.plugins.length){
+                    // Every plugins is loaded add the state to the store
+                    console.log("All Plugins loaded");
+                    store.dispatch(pluginsLoaded());
+                  }
+                });
               }
             });
           }
+      } else {
+        console.log("Error while loading plugins");
+        store.dispatch(pluginsLoaded());
       }
     });
   }
