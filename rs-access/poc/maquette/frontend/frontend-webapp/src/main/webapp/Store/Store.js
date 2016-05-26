@@ -1,9 +1,10 @@
 
 import { createStore, combineReducers } from 'redux';
 import commonReducers from './commonReducers';
-import pluginReducers from '../Common/PluginsManager/PluginReducers';
+import pluginReducers from 'Common/PluginsManager/PluginReducers';
+import moduleReducers from 'Common/ModulesManager/RegardsModulesReducers';
 
-const allReducers = Object.assign({},commonReducers,pluginReducers);
+const allReducers = Object.assign({},commonReducers,pluginReducers,moduleReducers);
 const reducers = combineReducers(allReducers);
 
 

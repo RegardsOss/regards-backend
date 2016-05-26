@@ -2,7 +2,7 @@ import React from 'react';
 import scriptjs from 'scriptjs';
 import { loadPlugins } from 'Common/PluginsManager/PluginsControler';
 
-import PluginLinks from './PluginLinks';
+import PluginLinksView from './PluginModule/PluginLinksView';
 
 class UserApp extends React.Component {
 
@@ -19,14 +19,15 @@ class UserApp extends React.Component {
   }
 
   componentDidMount(){
-    this.unsubscribe = this.context.store.subscribe(()=> {
+    const { store } = this.context;
+    this.unsubscribe = store.subscribe(()=> {
       this.setState({
-        pluginsLoaded : this.context.store.getState().pluginsLoaded,
-        plugins: this.context.store.getState().plugins
+        pluginsLoaded : store.getState().pluginsLoaded,
+        plugins: store.getState().plugins
       });
     });
 
-    if (!this.context.store.getState().pluginsLoaded){
+    if (!store.getState().pluginsLoaded){
       loadPlugins();
     }
   }
@@ -45,7 +46,7 @@ class UserApp extends React.Component {
             <h1> Test Application {this.state.project} </h1>
           </div>
           <div className="navigation">
-            Plugins : <PluginLinks project={this.state.project} plugins={this.state.plugins}/>
+            <PluginLinksView project={this.state.project} plugins={this.state.plugins}/>
           </div>
           <div className="content full-div">
             {this.props.content}

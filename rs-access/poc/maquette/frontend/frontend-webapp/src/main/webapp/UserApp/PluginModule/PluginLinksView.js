@@ -1,9 +1,10 @@
 import React from 'react';
 import { IndexLink, Link } from 'react-router';
+import RegardsView from 'RegardsView';
 
-class PluginLinks extends React.Component {
+class PluginLinksView extends RegardsView {
 
-  render(){
+  renderView(){
     const { plugins, project } = this.props;
     const style={"fontSize": "20px", margin: "0px 10px"};
     const activeStyle = { 'borderBottom':'2px solid Red' };
@@ -27,13 +28,9 @@ class PluginLinks extends React.Component {
   }
 }
 
-PluginLinks.propTypes = {
+PluginLinksView.propTypes = {
   plugins: React.PropTypes.array.isRequired,
   project: React.PropTypes.string.isRequired
 }
 
-PluginLinks.contextTypes = {
-  store: React.PropTypes.object.isRequired
-}
-
-export default PluginLinks
+export default PluginLinksView

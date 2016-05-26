@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
 import store from 'AppStore';
+import { loadViewsAccessRights } from 'Common/ModulesManager/RegardsModulesControler';
 
 const rootRoute = {
   component: 'div',
@@ -15,6 +16,11 @@ const rootRoute = {
       require('./AdminApp')
     ]
   } ]
+}
+
+// Load views access rights
+if (store.getState().viewsLoaded === false){
+  loadViewsAccessRights();
 }
 
 ReactDOM.render(

@@ -27,7 +27,7 @@ module.exports = {
   },
   resolve: {
     alias: {
-      RegardsModule: path.join(__dirname,"src/main/webapp/Common/ModulesManager/RegardsModule.js"),
+      RegardsView: path.join(__dirname,"src/main/webapp/Common/ModulesManager/RegardsView.js"),
       AppStore: path.join(__dirname,"src/main/webapp/Store/Store.js")
     },
     root: [
