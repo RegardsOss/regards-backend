@@ -16,6 +16,9 @@
     <fileSet>
 			<directory>src/main/webapp</directory>
 			<outputDirectory></outputDirectory>
+			<excludes>
+        <exclude>**/*.js</exclude>
+      </excludes>
 		</fileSet>
 		<fileSet>
 			<directory>target/build</directory>
