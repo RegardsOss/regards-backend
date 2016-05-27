@@ -12,6 +12,10 @@ const loadPlugins = (callback) => {
     .end((error, response) => {
       if (response.status === 200){
 
+        // TODO : C'est le plugin qui donne son nom au store.
+        // Le nom renvoyé par le serveur ne sert a rien
+        // Gestion de plusieurs instances du plugin ?
+        
         // Add event listenner for plugin to load
         document.addEventListener('plugin', function (plugin) {
           // When plugin loaded event is received, add plugin to the store
