@@ -13,12 +13,18 @@ public class PluginsResourceConfiguration extends WebMvcConfigurerAdapter {
  private String pluginsResource_;
  @Value("${plugins.path}")
  private String pluginsPath_;
+ @Value("${plugins.external.path}")
+ private String pluginsExternalPath_;
 
  @Override
  public void addResourceHandlers(ResourceHandlerRegistry registry) {
-	 if (pluginsPath_ != null){
-        registry.addResourceHandler("/"+pluginsResource_+"/**")
-        .addResourceLocations("/"+pluginsResource_+"/", "file:"+pluginsPath_);
-	 }
+   if (pluginsExternalPath_ != null && !pluginsExternalPath_.isEmpty()){
+     System.out.println("SEB OK" +pluginsExternalPath_ );
+   registry.addResourceHandler("/Plugins/**")
+   .addResourceLocations("/static/Plugins/","file:"+pluginsExternalPath_);
+   } else {
+   registry.addResourceHandler("/Plugins/**")
+   .addResourceLocations("/static/Plugins/");
+   }
  }
 }

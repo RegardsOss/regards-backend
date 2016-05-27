@@ -1,6 +1,13 @@
 {
   "plugins" : [{
-    "name" : "HelloWorldPlugin",
+    "name" : "HelloWorld",
     "paths": ["HelloWorld/hw.js"]
-    }]
+    },{
+      "name" : "HelloWorldPlugin",
+      "paths": ["HelloWorldPlugin/hw.js"]
+      },
+      {
+        "name" : "external plugin",
+        "paths": ["newPlugin/hw.js"]
+        }]
 }

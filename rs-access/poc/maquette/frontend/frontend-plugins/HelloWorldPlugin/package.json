@@ -1,16 +1,19 @@
 {
   "name": "plugins",
   "version": "1.0.0",
-  "description": "",
+  "description": "Hellow world plugin for Regards frontend",
   "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prebuild": "npm install",
+    "build": "webpack -d"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "react": "^15.0.2",
     "react-dom": "^15.0.2",
+    "redux": "^3.5.2",
     "react-redux": "^4.4.5"
   },
   "devDependencies": {
@@ -20,6 +23,7 @@
     "babel-preset-es2015": "^6.9.0",
     "babel-preset-react": "^6.5.0",
     "css-loader": "^0.23.1",
-    "style-loader": "^0.13.1"
+    "style-loader": "^0.13.1",
+    "webpack": "^1.13.1"
   }
 }

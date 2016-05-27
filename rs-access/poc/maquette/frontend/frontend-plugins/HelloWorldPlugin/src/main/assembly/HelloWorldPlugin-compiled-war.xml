@@ -10,29 +10,15 @@
 	<includeBaseDirectory>false</includeBaseDirectory>
 	<fileSets>
     <fileSet>
-			<directory>src/main/webapp/WEB-INF</directory>
-			<outputDirectory>WEB-INF</outputDirectory>
-		</fileSet>
-    <fileSet>
 			<directory>src/main/webapp</directory>
-			<outputDirectory></outputDirectory>
+			<outputDirectory>HelloWorldPlugin</outputDirectory>
 			<excludes>
         <exclude>**/*.js</exclude>
       </excludes>
 		</fileSet>
 		<fileSet>
 			<directory>target/build</directory>
-			<outputDirectory></outputDirectory>
+			<outputDirectory>HelloWorldPlugin</outputDirectory>
 		</fileSet>
 	</fileSets>
-	<dependencySets>
-		<dependencySet>
-			<useProjectArtifact>false</useProjectArtifact>
-			<includes>
-				<include>fr.cs.regards:HelloWorldPlugin:war</include>
-			</includes>
-      <outputDirectory>Plugins/</outputDirectory>
-			<unpack>true</unpack>
-		</dependencySet>
-  </dependencySets>
 </assembly>

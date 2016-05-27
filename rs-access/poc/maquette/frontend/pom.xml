@@ -17,8 +17,9 @@
   </parent>
 
   <modules>
-    <module>frontend-webapp</module>
     <module>frontend-boot</module>
+    <module>frontend-plugins</module>
+    <module>frontend-webapp</module>
   </modules>
 
 </project>

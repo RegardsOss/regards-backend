@@ -6,16 +6,16 @@
 
 <urlrewrite>
 
-	<rule>
-		<from>^/[^\.]*$</from>
-        <to type="passthrough">/index.html</to>
+	 <rule>
+		  <from>^/((?!rest)[^\.])+$</from>
+      <to type="passthrough" last="true">/index.html</to>
     </rule>
 
     <rule>
        <from>^/.+/(bundle\.js(\.map)?)$</from>
        <to type="redirect">/$1</to>
     </rule>
-    
+
     <rule>
        <from>^/.+/(.*\.chunck\.js(\.map)?)$</from>
        <to type="redirect">/$1</to>

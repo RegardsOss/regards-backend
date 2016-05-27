@@ -14,9 +14,10 @@ class PluginLinksView extends RegardsView {
     return (
         <nav>
           {plugins.map( plugin => {
+            console.log("link for plugin ", plugin);
             if (plugin.name && plugin.plugin){
               return (
-                <PluginLinkView key="{plugin.name}"
+                <PluginLinkView key={plugin.name}
                   project={project}
                   plugin={plugin}/>
               )

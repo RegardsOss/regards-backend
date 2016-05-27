@@ -3,23 +3,15 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
 
-  <name>frontend-webapp</name>
-  <artifactId>frontend-webapp</artifactId>
+  <name>HelloWorldPlugin</name>
+  <artifactId>HelloWorldPlugin</artifactId>
   <packaging>war</packaging>
 
   <parent>
     <groupId>fr.cs.regards</groupId>
-    <artifactId>frontend</artifactId>
+    <artifactId>frontend-plugins</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-
-  <dependencies>
-		<dependency>
-			<groupId>fr.cs.regards</groupId>
-			<artifactId>HelloWorldPlugin</artifactId>
-			<type>war</type>
-		</dependency>
-  </dependencies>
 
   <build>
    <plugins>
@@ -43,10 +35,10 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
-							<finalName>frontend-${project.version}</finalName>
+							<finalName>HelloWorldPlugin-${project.version}</finalName>
               <appendAssemblyId>false</appendAssemblyId>
 							<descriptors>
-								<descriptor>src/main/assembly/frontend-compiled-war.xml</descriptor>
+								<descriptor>src/main/assembly/HelloWorldPlugin-compiled-war.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>

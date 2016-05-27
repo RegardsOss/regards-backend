@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 
 // Init the regards plugin in the application.
 // The plugin is added to the application store to be used by the application.
-const initRegardsPlugin = ( pluginName, pluginClass ) => {
+const initPlugin = ( pluginName, pluginClass ) => {
   const mapDispatchToProps = ( dispatch ) => {return { dispatch: dispatch }};
   const mapStateToProps = ( state ) => {return { store: state } };
   const Plugin = connect(mapStateToProps)(pluginClass)
@@ -10,4 +10,4 @@ const initRegardsPlugin = ( pluginName, pluginClass ) => {
   document.dispatchEvent(event);
 }
 
-export { initRegardsPlugin }
+export { initPlugin }

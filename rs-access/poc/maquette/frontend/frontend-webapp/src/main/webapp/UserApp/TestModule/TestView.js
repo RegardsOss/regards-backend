@@ -1,4 +1,6 @@
+import React from 'react';
 import RegardsView from 'RegardsView';
+
 class TestView extends RegardsView {
 
   getDependencies(){
