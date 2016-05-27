@@ -1,25 +1,24 @@
 import React from 'react';
-import { IndexLink, Link } from 'react-router';
 import RegardsView from 'RegardsView';
+
+import PluginLinkView from './PluginLinkView';
 
 class PluginLinksView extends RegardsView {
 
+  getDependencies(){
+    return null;
+  }
+
   renderView(){
     const { plugins, project } = this.props;
-    const style={"fontSize": "20px", margin: "0px 10px"};
-    const activeStyle = { 'borderBottom':'2px solid Red' };
     return (
         <nav>
           {plugins.map( plugin => {
             if (plugin.name && plugin.plugin){
               return (
-                <Link key="{plugin.name}"
-                  to={"/user/" + project + "/plugins/" + plugin.name}
-                  activeStyle={activeStyle}
-                  style={style}
-                  plugin={plugin.app}>
-                  {plugin.name}
-                </Link>
+                <PluginLinkView key="{plugin.name}"
+                  project={project}
+                  plugin={plugin}/>
               )
             }
           })}

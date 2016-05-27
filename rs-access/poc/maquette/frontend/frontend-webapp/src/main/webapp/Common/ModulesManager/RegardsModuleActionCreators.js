@@ -1,14 +1,9 @@
-const addViewAccess = (name) => {
+const addViewAccess = (name,access) => {
   return {
     type : 'ADD_VIEW_ACCESS',
-    name : name
+    name : name,
+    access: access
   }
 }
 
-const viewsLoaded = () => {
-  return {
-    type : 'VIEWS_LOADED'
-  }
-}
-
-export { addViewAccess, viewsLoaded  }
+export { addViewAccess  }

@@ -1,6 +1,0 @@
-{
-  "views" : [
-    {"name": "PluginLinksView", "access": true},
-    {"name": "PluginModule", "access": true}
-  ]
-}

@@ -3,6 +3,7 @@ import scriptjs from 'scriptjs';
 import { loadPlugins } from 'Common/PluginsManager/PluginsControler';
 
 import PluginLinksView from './PluginModule/PluginLinksView';
+import TestView from './TestModule/TestView';
 
 class UserApp extends React.Component {
 
@@ -50,6 +51,9 @@ class UserApp extends React.Component {
           </div>
           <div className="content full-div">
             {this.props.content}
+          </div>
+          <div>
+            <TestView />
           </div>
         </div>
       )

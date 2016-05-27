@@ -4,7 +4,18 @@ import PluginView from 'Common/PluginsManager/PluginView'
 
 class PluginModule extends RegardsView {
 
+  getDependencies(){
+    const { project, plugin } = this.props;
+    if (plugin && plugin.getDependencies){
+      return plugin.getDependencies();
+    } else {
+      return null;
+    }
+  }
+
   renderView(){
+    // this.props : parameters passed by react component
+    // this.props.params : parameters passed by react router
     const { plugin } = this.props.params;
     return <PluginView name={plugin}/>
   }
