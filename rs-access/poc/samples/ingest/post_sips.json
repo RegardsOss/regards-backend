@@ -1,0 +1,39 @@
+{
+    "type": "FeatureCollection",
+    "features": [{
+        "type": "Feature",
+        "id": "{SIP_ID?}", // L'identifiant fournisseur
+        "geometry": "{SIP geometry?}", // L'information géométrique
+        "properties": {
+            "dataObjects": [{
+                "uri": "file:///tmp/example.zip",
+                "mimeType": "application/zip",
+                "fileSize": 1024, //KB
+                "md5": "d6aa97d33d459ea3670056e737c99a3d"
+            }, {
+                "uri": "{uri?}",
+                "mimeType": "{mimeType?}",
+                "fileSize": "{size ?}", //KB
+                "md5": "{checksum?}"
+            }],
+            "accessRights": {
+                "licensing": "CNES"
+            }
+        }
+    }, {
+        "type": "Feature",
+        "id": "{SIP_ID?}",
+        "geometry": "{SIP geometry?}",
+        "properties": {
+            "dataObjects": [{
+              "uri": "{uri?}",
+              "mimeType": "{mimeType?}",
+              "fileSize": "{size ?}", //KB
+              "md5": "{checksum?}"
+            }],
+            "accessRights": {
+                "licensing": "CNES"
+            }
+        }
+    }]
+}
