@@ -17,11 +17,12 @@
   </parent>
 
   <modules>
+    <module>backend</module>
     <module>frontend</module>
   </modules>
 
   <properties>
-    <maquette.version>0.0.1-SNAPSHOT</maquette.version>
+    <regards.version>0.0.1-SNAPSHOT</regards.version>
   </properties>
 
   <dependencyManagement>
@@ -29,19 +30,19 @@
       <dependency>
         <groupId>fr.cs.regards</groupId>
         <artifactId>frontend-boot</artifactId>
-        <version>${maquette.version}</version>
+        <version>${regards.version}</version>
         <type>war</type>
       </dependency>
       <dependency>
         <groupId>fr.cs.regards</groupId>
         <artifactId>HelloWorldPlugin</artifactId>
-        <version>${maquette.version}</version>
+        <version>${regards.version}</version>
         <type>war</type>
       </dependency>
       <dependency>
         <groupId>fr.cs.regards</groupId>
         <artifactId>frontend-webapp</artifactId>
-        <version>${maquette.version}</version>
+        <version>${regards.version}</version>
         <type>war</type>
       </dependency>
     </dependencies>

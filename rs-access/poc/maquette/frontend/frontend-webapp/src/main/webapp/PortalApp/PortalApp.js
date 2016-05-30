@@ -3,6 +3,8 @@ import { Link } from 'react-router'
 import ReactDOM from 'react-dom';
 import RegardProjects from './RegardProjects';
 
+import './stylesheets/base';
+
 class PortalApp extends React.Component {
   render(){
     if (this.props.children){
@@ -13,7 +15,6 @@ class PortalApp extends React.Component {
         Available projects on REGARDS instance :
         <RegardProjects />
       </div>
-
     )
   }
   }
