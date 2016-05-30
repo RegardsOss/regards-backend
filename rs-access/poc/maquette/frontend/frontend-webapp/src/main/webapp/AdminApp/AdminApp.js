@@ -9,10 +9,18 @@ import './stylesheets/base';
 class AdminApp extends React.Component {
   constructor(){
     super();
+
     this.state = {
-      authenticated: false
+      authenticated: false,
+      instance: false
     }
     this.onAuthenticate = this.onAuthenticate.bind(this);
+  }
+
+  componentWillMount(){
+    if (this.props.project === "instance"){
+      this.setState({instance: true});
+    }
   }
 
   onAuthenticate(token){
@@ -40,9 +48,15 @@ class AdminApp extends React.Component {
             onAuthenticate={this.onAuthenticate}/>
       );
     } else {
-        return (
-          <div>Welcome to project : {this.props.params.project}</div>
-        );
+        if (this.state.instance){
+          return (
+            <div>Welcome to project : {this.props.params.project}</div>
+          );
+        } else {
+          return (
+            <div>Welcome to instance admin</div>
+          );
+        }
     }
   }
 }

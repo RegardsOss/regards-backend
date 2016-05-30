@@ -12,6 +12,7 @@ class PortalApp extends React.Component {
     } else {
     return (
       <div>
+        <Link to={"/admin/instance"}>ihm admin instance</Link><br/>
         Available projects on REGARDS instance :
         <RegardProjects />
       </div>
