@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router'
 import ReactDOM from 'react-dom';
-import RegardProjects from './RegardProjects';
+import RegardProjects from './Projects/RegardProjects';
 
 import './stylesheets/base';
 

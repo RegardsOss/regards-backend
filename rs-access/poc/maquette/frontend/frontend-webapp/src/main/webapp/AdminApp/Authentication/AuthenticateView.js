@@ -36,6 +36,8 @@ class AuthenticateView extends React.Component {
     console.log(err);
     if (err && err.timeout > 1000) {
      this.setState({error: 'Timeout'});
+   } else if (err) {
+     this.setState({error:  "Service unavailable"});
    } else if (response.status === 400) {
      this.setState({error: "Authentication error : " + response.body.error_description});
    } else if (response.status != 200){
