@@ -17,16 +17,11 @@ class AuthenticateView extends React.Component {
   }
 
   onLogin(){
-    console.log(this.state);
-    const params = {
-      grant_type: "password",
-      username: this.state.username,
-      password: this.state.password
-    }
     Rest.setHeaders({
       'Accept': 'application/json',
       'Authorization': "Basic " + btoa("acme:acmesecret")
     });
+    
     const location = "http://localhost:8080/oauth/token?grant_type=password&username="
     + this.state.username + "&password=" + this.state.password;
     Rest.post(location).end(this.onResponse);
