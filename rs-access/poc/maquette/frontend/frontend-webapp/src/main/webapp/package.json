@@ -1,16 +1,16 @@
 {
   "name": "frontend-webapp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "REGARDS frontend webapp",
+  "main": "scripts/index.js",
   "private": true,
   "scripts": {
-    "prestart": "cp -rp src/main/webapp/* target/build",
+    "prestart": "cp index.html build/",
     "start": "webpack-dev-server",
     "prebuild": "npm install",
     "build": "webpack -d"
   },
-  "author": "",
+  "author": "CS-SI",
   "license": "ISC",
   "dependencies": {
     "deep-freeze": "0.0.1",

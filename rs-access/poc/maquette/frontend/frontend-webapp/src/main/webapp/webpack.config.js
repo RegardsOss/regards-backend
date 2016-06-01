@@ -8,19 +8,19 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const sassLoaders = [
   'css-loader',
   'postcss-loader',
-  'sass-loader?indentedSyntax=sass&includePaths[]=' + path.resolve(__dirname, './src/main/webapp')
+  'sass-loader?indentedSyntax=sass&includePaths[]=' + path.resolve(__dirname, 'steelsheets')
 ]
 
 module.exports = {
-  context: __dirname + '/src/main/webapp',
-  entry: './main.js',
+  context: __dirname,
+  entry: './scripts/main.js',
   output: {
-    path: __dirname + '/target/build',
+    path: __dirname + '/build',
     filename: "bundle.js",
     chunkFilename: "[id].chunck.js"
   },
   devServer: {
-    contentBase: __dirname + '/target/build',
+    contentBase: __dirname,
     inline: true,
     port: 3333,
     headers: { 'Access-Control-Allow-Origin': '*' },
@@ -37,11 +37,12 @@ module.exports = {
   resolve: {
     extensions: ['', '.js', '.sass'],
     alias: {
-      RegardsView: path.join(__dirname,"src/main/webapp/Common/ModulesManager/RegardsView.js"),
-      AppStore: path.join(__dirname,"src/main/webapp/Common/Store/Store.js")
+      RegardsView: path.join(__dirname,"scripts/Common/ModulesManager/RegardsView.js"),
+      AppStore: path.join(__dirname,"scripts/Common/Store/Store.js")
     },
     root: [
-      path.join(__dirname,"src/main/webapp"),
+      path.join(__dirname,"scripts"),
+      path.join(__dirname,"steelsheets"),
     ]
   },
   module: {

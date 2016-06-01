@@ -70,7 +70,7 @@
                <argument>run</argument>
                <argument>build</argument>
             </arguments>
-            <workingDirectory>.</workingDirectory>
+            <workingDirectory>./src/main/webapp</workingDirectory>
          </configuration>
       </plugin>
    </plugins>

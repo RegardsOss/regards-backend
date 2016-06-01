@@ -2,7 +2,10 @@
 # Source codes
 ##################
 
-webapp/
+build/ : Webpack compilation directory
+json/ : Backend mocks
+node_modules/ : vendors
+scripts/
   adminApp/ : Contains the admin web application
   common/ : Contains the common modules.
       moduleManager/ :
@@ -24,7 +27,7 @@ webapp/
           shall not be display.
   userApp/ : Contains the user web application
   json/ : mocks for not emplemented backend
-
+steelsheets/ : application styles (sass)
 
 ################
 #  RegardsView :
@@ -58,3 +61,4 @@ webapp/
 ################
 
    All plugins in plugins/ directory have to be React components.
+   See the maven project frontend-plugins to see plugin exemple HelloWorldPlugin

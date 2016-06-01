@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import ReactDOM from 'react-dom';
 import RegardProjects from './Projects/RegardProjects';
 
-import './stylesheets/base';
+import 'PortalApp/base';
 
 class PortalApp extends React.Component {
   render(){
@@ -11,7 +11,7 @@ class PortalApp extends React.Component {
       return <div>{this.props.children}</div>
     } else {
     return (
-      <div>
+      <div className="portalApp">
         <Link to={"/admin/instance"}>ihm admin instance</Link><br/>
         Available projects on REGARDS instance :
         <RegardProjects />

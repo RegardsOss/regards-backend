@@ -1,10 +1,11 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import AuthenticateView from './Authentication/AuthenticateView';
 
 import { Rest } from 'grommet';
 
-import './stylesheets/base';
+import 'AdminApp/base';
 
 class AdminApp extends React.Component {
   constructor(){
@@ -42,10 +43,12 @@ class AdminApp extends React.Component {
   render(){
     if (!this.state.authenticated){
       return (
+        <div className="adminApp">
           <AuthenticateView
             className="login-modal"
             project={this.props.params.project}
             onAuthenticate={this.onAuthenticate}/>
+        </div>
       );
     } else {
         if (this.state.instance){

@@ -3,6 +3,7 @@ import { Router, browserHistory } from 'react-router';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
+import "common/common"
 import store from 'AppStore';
 
 const rootRoute = {
