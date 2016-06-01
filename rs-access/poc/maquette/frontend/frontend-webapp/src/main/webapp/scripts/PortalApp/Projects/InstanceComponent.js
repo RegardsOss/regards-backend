@@ -1,12 +1,12 @@
 import React from 'react';
 import CSSModules from 'react-css-modules';
 
-import Project from './RegardProject'
+import Project from './ProjectComponent'
 import { Link } from 'react-router';
 
 import styles from 'PortalApp/instance';
 
-class RegardInstance extends React.Component {
+class InstanceComponent extends React.Component {
   render(){
     return (
       <div styleName="link">
@@ -17,4 +17,4 @@ class RegardInstance extends React.Component {
   }
 }
 
-export default CSSModules(RegardInstance, styles);
+export default CSSModules(InstanceComponent, styles);

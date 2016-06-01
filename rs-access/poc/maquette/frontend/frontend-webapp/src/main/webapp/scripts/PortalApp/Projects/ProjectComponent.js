@@ -1,12 +1,11 @@
 import React from 'react';
 import CSSModules from 'react-css-modules';
 
-import Project from './RegardProject'
 import { Link } from 'react-router';
 
 import styles from 'PortalApp/project';
 
-class RegardProject extends React.Component {
+class ProjectComponent extends React.Component {
   render(){
     return (
       <li styleName="link">
@@ -18,8 +17,8 @@ class RegardProject extends React.Component {
   }
 }
 
-RegardProject.propTypes = {
+ProjectComponent.propTypes = {
   project: React.PropTypes.object.isRequired
 }
 
-export default CSSModules(RegardProject, styles);
+export default CSSModules(ProjectComponent, styles);
