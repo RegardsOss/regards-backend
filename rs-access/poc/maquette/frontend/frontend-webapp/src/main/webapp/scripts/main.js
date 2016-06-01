@@ -1,10 +1,12 @@
 import React from 'react'
-import { Router, browserHistory } from 'react-router';
 import ReactDOM from 'react-dom';
+import { Router, browserHistory } from 'react-router';
 import { Provider } from 'react-redux';
 
-import "common/common"
 import store from 'AppStore';
+
+// Import default styles
+import "common/common";
 
 const rootRoute = {
   component: 'div',

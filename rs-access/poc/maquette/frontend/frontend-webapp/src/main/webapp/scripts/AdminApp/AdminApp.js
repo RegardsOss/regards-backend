@@ -2,10 +2,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import AuthenticateView from './Authentication/AuthenticateView';
-
+import CSSModules from 'react-css-modules';
 import { Rest } from 'grommet';
 
-import 'AdminApp/base';
+import styles from 'AdminApp/base';
 
 class AdminApp extends React.Component {
   constructor(){
@@ -43,9 +43,8 @@ class AdminApp extends React.Component {
   render(){
     if (!this.state.authenticated){
       return (
-        <div className="adminApp">
+        <div styleName="main">
           <AuthenticateView
-            className="login-modal"
             project={this.props.params.project}
             onAuthenticate={this.onAuthenticate}/>
         </div>
@@ -64,4 +63,4 @@ class AdminApp extends React.Component {
   }
 }
 
-module.exports = AdminApp;
+module.exports = CSSModules(AdminApp,styles);

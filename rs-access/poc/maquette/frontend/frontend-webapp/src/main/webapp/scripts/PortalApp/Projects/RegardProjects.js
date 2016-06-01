@@ -1,6 +1,7 @@
 import React from 'react';
-import Project from './RegardProject'
 import { Rest } from 'grommet';
+
+import Project from './RegardProject';
 
 class RegardProjects extends React.Component {
 

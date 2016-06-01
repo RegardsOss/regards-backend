@@ -1,5 +1,12 @@
 import React from 'react';
 import { Rest } from 'grommet';
+import CSSModules from 'react-css-modules';
+
+import LoginComponent from './LoginComponent';
+
+import styles from 'AdminApp/base';
+
+
 
 class AuthenticateView extends React.Component {
 
@@ -7,23 +14,21 @@ class AuthenticateView extends React.Component {
     super();
 
     this.state = {
-      username: "",
-      password: "",
-      error :""
+      error : ""
     }
 
     this.onLogin = this.onLogin.bind(this);
     this.onResponse = this.onResponse.bind(this);
   }
 
-  onLogin(){
+  onLogin(userName, password){
     Rest.setHeaders({
       'Accept': 'application/json',
       'Authorization': "Basic " + btoa("acme:acmesecret")
     });
-    
+
     const location = "http://localhost:8080/oauth/token?grant_type=password&username="
-    + this.state.username + "&password=" + this.state.password;
+    + userName + "&password=" +password;
     Rest.post(location).end(this.onResponse);
   }
 
@@ -45,23 +50,11 @@ class AuthenticateView extends React.Component {
 
   render(){
     return (
-      <div className={this.props.className}>
-        <p className="login-error">{this.state.error}</p>
-        <label for="username" >Username</label>
-        <input id="username" onChange={(event) => {
-             this.setState({username:event.target.value});
-          }}/>
-        <br/>
-        <label for="password" >Password</label>
-        <input type="password" id="password"
-          onChange={(event) => {
-               this.setState({password:event.target.value});
-            }}/>
-        <br/>
-        <button onClick={this.onLogin}>Log in</button>
-      </div>
+      <LoginComponent
+        onLogin={this.onLogin}
+        errorMessage={this.state.error}/>
     );
   }
 }
 
-export default AuthenticateView;
+export default CSSModules(AuthenticateView,styles);

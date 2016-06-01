@@ -6,8 +6,7 @@ const autoprefixer = require('autoprefixer')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
 const sassLoaders = [
-  'css-loader',
-  'postcss-loader',
+  'css?modules&importLoaders=1&localIdentName=[path]___[name]__[local]___[hash:base64:5]',
   'sass-loader?indentedSyntax=sass&includePaths[]=' + path.resolve(__dirname, 'steelsheets')
 ]
 
@@ -48,11 +47,11 @@ module.exports = {
   module: {
     loaders: [
       {test: /\.js$/, exclude: [/node_modules/,/json/],
-        loader: 'babel', query: { presets: ['es2015', 'react']}
+        loader: 'babel',
+        query: { presets: ['es2015', 'react']}
       },
       {test: /\.css$/, loader: "style-loader!css-loader" },
-      {
-        test: /\.sass$/,
+      {test: /\.sass$/, exclude: [/node_modules/],
         loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
       },
       {test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/, loader: 'url-loader?limit=10000&mimetype=application/font-woff'},

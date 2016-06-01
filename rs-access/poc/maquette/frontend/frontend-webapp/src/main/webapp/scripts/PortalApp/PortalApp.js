@@ -1,9 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router'
 import ReactDOM from 'react-dom';
+import CSSModules from 'react-css-modules';
+
+import RegardInstance from './Projects/RegardInstance';
 import RegardProjects from './Projects/RegardProjects';
 
-import 'PortalApp/base';
+import styles from 'PortalApp/base';
+
 
 class PortalApp extends React.Component {
   render(){
@@ -11,8 +15,8 @@ class PortalApp extends React.Component {
       return <div>{this.props.children}</div>
     } else {
     return (
-      <div className="portalApp">
-        <Link to={"/admin/instance"}>ihm admin instance</Link><br/>
+      <div styleName="main">
+        <RegardInstance />
         Available projects on REGARDS instance :
         <RegardProjects />
       </div>
@@ -21,4 +25,4 @@ class PortalApp extends React.Component {
   }
 }
 
-module.exports = PortalApp
+module.exports = CSSModules(PortalApp, styles);
