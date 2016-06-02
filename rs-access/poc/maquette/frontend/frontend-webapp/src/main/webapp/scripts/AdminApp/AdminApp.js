@@ -1,11 +1,10 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import AuthenticateView from './Authentication/AuthenticateView';
-import CSSModules from 'react-css-modules';
 import { Rest } from 'grommet';
 
-import styles from 'AdminApp/base';
+import { getThemeStyles } from 'Common/ThemeUtils';
+import AuthenticateView from './Authentication/AuthenticateView';
 
 class AdminApp extends React.Component {
   constructor(){
@@ -19,7 +18,7 @@ class AdminApp extends React.Component {
   }
 
   componentWillMount(){
-    if (this.props.project === "instance"){
+    if (this.props.params.project === "instance"){
       this.setState({instance: true});
     }
   }
@@ -41,10 +40,19 @@ class AdminApp extends React.Component {
   }
 
   render(){
+    let styles;
+    let theme=this.props.params.project;
+    if (this.state.instance === true){
+      theme="";
+      styles = getThemeStyles("", 'AdminApp/base');
+    } else {
+      styles = getThemeStyles(this.props.params.project, 'AdminApp/base');
+    }
     if (!this.state.authenticated){
       return (
-        <div styleName="main">
+        <div className={styles.main}>
           <AuthenticateView
+            theme={theme}
             project={this.props.params.project}
             onAuthenticate={this.onAuthenticate}/>
         </div>
@@ -63,4 +71,4 @@ class AdminApp extends React.Component {
   }
 }
 
-module.exports = CSSModules(AdminApp,styles);
+module.exports = AdminApp;

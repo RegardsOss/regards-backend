@@ -1,15 +1,15 @@
 import React from 'react';
-import CSSModules from 'react-css-modules';
-
-import Project from './ProjectComponent'
 import { Link } from 'react-router';
 
-import styles from 'PortalApp/instance';
+import Project from './ProjectComponent'
+import { getThemeStyles } from 'Common/ThemeUtils';
 
 class InstanceComponent extends React.Component {
+
   render(){
+    const styles = getThemeStyles(this.props.theme, 'PortalApp/project');
     return (
-      <div styleName="link">
+      <div className={styles.link}>
         Accès direct à l'ihm d'administration de l'instance :
         <Link to={"/admin/instance"}>ihm admin instance</Link><br/>
       </div>
@@ -17,4 +17,8 @@ class InstanceComponent extends React.Component {
   }
 }
 
-export default CSSModules(InstanceComponent, styles);
+InstanceComponent.propTypes = {
+  theme: React.PropTypes.string.isRequired
+}
+
+export default InstanceComponent;

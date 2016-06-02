@@ -1,10 +1,11 @@
 import React from 'react';
 
-import styles from 'common/common';
+import { getThemeStyles } from 'Common/ThemeUtils';
 
 class ApplicationErrorComponent extends React.Component {
 
   render(){
+    const styles = getThemeStyles(this.props.theme, 'common/common');
     return (
       <div className={styles.errorApp}>
         Application unavailable

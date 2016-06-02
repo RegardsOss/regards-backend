@@ -8,7 +8,7 @@ class ProjectsComponent extends React.Component {
       return (
         <ul>
           {this.props.projects.map(project =>
-            <Project key={project.name} project={project} />
+            <Project key={project.name} project={project} theme={this.props.theme}/>
           )}
         </ul>
       )
@@ -21,6 +21,7 @@ class ProjectsComponent extends React.Component {
 }
 
 ProjectsComponent.propTypes = {
+  theme: React.PropTypes.string.isRequired,
   projects: React.PropTypes.array.isRequired
 }
 

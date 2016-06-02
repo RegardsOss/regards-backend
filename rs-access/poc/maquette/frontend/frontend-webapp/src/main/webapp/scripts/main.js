@@ -9,9 +9,6 @@ import ApplicationError from 'Common/Components/ApplicationErrorComponent';
 // Import application common store
 import store from 'AppStore';
 
-// Import default styles
-import "common/common";
-
 /** Main routes.
  * / -> PortalApp
  * /user -> UserApp
@@ -58,6 +55,6 @@ Rest.post(location).end((err, response) => {
   }
   else {
     console.error("Authentication error");
-    ReactDOM.render(<ApplicationError />, document.getElementById('app'));
+    ReactDOM.render(<ApplicationError theme=""/>, document.getElementById('app'));
   }
 });

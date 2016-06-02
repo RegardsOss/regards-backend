@@ -1,12 +1,7 @@
 import React from 'react';
 import { Rest } from 'grommet';
-import CSSModules from 'react-css-modules';
 
 import LoginComponent from './LoginComponent';
-
-import styles from 'AdminApp/base';
-
-
 
 class AuthenticateView extends React.Component {
 
@@ -51,10 +46,15 @@ class AuthenticateView extends React.Component {
   render(){
     return (
       <LoginComponent
+        theme={this.props.theme}
         onLogin={this.onLogin}
         errorMessage={this.state.error}/>
     );
   }
 }
 
-export default CSSModules(AuthenticateView,styles);
+AuthenticateView.propTypes = {
+  theme: React.PropTypes.string.isRequired,
+}
+
+export default AuthenticateView;

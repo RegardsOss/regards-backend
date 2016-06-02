@@ -29,6 +29,9 @@ module.exports = {
       },{
         from: /\/(\d\.)?chunck\.js(\.map)?/,
         to: context => context.match[0]
+      },{
+        from: /\/(\d\.)?styles\.css(\.map)?/,
+        to: context => context.match[0]
       }]
     }
   },
@@ -40,7 +43,7 @@ module.exports = {
     },
     root: [
       path.join(__dirname,"scripts"),
-      path.join(__dirname,"steelsheets"),
+      path.join(__dirname),
     ]
   },
   module: {
@@ -50,7 +53,7 @@ module.exports = {
         query: { presets: ['es2015', 'react']}
       },
       {test: /\.css$/, loader: "style-loader!css-loader" },
-      {test: /\.sass$/, exclude: [/node_modules/],
+      {test: /\.sass$/, exclude: [/node_modules/,'/stylesheets\/default/'],
         loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
       },
       {test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/, loader: 'url-loader?limit=10000&mimetype=application/font-woff'},

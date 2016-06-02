@@ -1,9 +1,7 @@
 import React from 'react';
 import { Rest } from 'grommet';
-import CSSModules from 'react-css-modules';
 
-const template = "cdpp";
-const styles = require('AdminApp/login');
+import { getThemeStyles } from 'Common/ThemeUtils';
 
 class LoginComponent extends React.Component {
 
@@ -17,9 +15,10 @@ class LoginComponent extends React.Component {
   }
 
   render(){
+    const styles = getThemeStyles(this.props.theme, 'AdminApp/login');
     return (
-      <div styleName="login-modal">
-        <p styleName="login-error">{this.props.errorMessage}</p>
+      <div className={styles["login-modal"]}>
+        <p className={styles["login-error"]}>{this.props.errorMessage}</p>
         <label for="username" >Username</label>
         <input id="username" onChange={(event) => {
              this.setState({username:event.target.value});
@@ -40,8 +39,9 @@ class LoginComponent extends React.Component {
 }
 
 LoginComponent.propTypes = {
+  theme: React.PropTypes.string.isRequired,
   onLogin: React.PropTypes.func.isRequired,
   errorMessage: React.PropTypes.string
 }
 
-export default CSSModules(LoginComponent,styles);
+export default LoginComponent;

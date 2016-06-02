@@ -1,14 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router'
 import ReactDOM from 'react-dom';
-import CSSModules from 'react-css-modules';
 import { Rest } from 'grommet';
 
 import InstanceComponent from './Projects/InstanceComponent';
 import ProjectsComponent from './Projects/ProjectsComponent';
-
-import styles from 'PortalApp/base';
-
+import { getThemeStyles } from 'Common/ThemeUtils';
 
 class PortalApp extends React.Component {
 
@@ -41,18 +38,19 @@ class PortalApp extends React.Component {
   }
 
   render(){
+    const styles = getThemeStyles('','PortalApp/base');
     if (this.props.children){
       return <div>{this.props.children}</div>
     } else {
     return (
-      <div styleName="main">
-        <InstanceComponent />
+      <div className={styles.main}>
+        <InstanceComponent theme=""/>
         Available projects on REGARDS instance :
-        <ProjectsComponent projects={this.state.projects}/>
+        <ProjectsComponent theme="" projects={this.state.projects}/>
       </div>
     )
   }
   }
 }
 
-module.exports = CSSModules(PortalApp, styles);
+module.exports = PortalApp;
