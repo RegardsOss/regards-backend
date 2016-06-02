@@ -69,7 +69,12 @@
   stylesheets/default/ : Contient les fichiers de styles des 3 applications
   stylesheets/themes/ : Contient les themes de configuration des fichiers sass présent dans le répertoire default.
 
-  Pour appliquer un theme sur un composant element du dom JSX :
+  Pour appliquer un theme sur un element du dom JSX dans un composant REACT :
   import { getThemeStyles } from 'Common/ThemeUtils';
   const styles = getThemeStyles(themename, sassFileContainingTheme);
   <div className={styles.classname}/>
+
+  Le theme est inséré dans le store lors de l'accès à une des applications.
+  portalApp : theme = ""
+  userApp : theme = project
+  adminApp : theme = project

@@ -16,7 +16,7 @@ class RegardsView extends React.Component{
   constructor(){
     super();
     this.state= {
-      access: false
+      access: null
     }
   }
 
@@ -39,38 +39,40 @@ class RegardsView extends React.Component{
   * Method to check if the view is displayable
   */
   checkViewAccessRights(){
-    const { store } = this.context;
-    let found = false;
-    let access = false;
-    // Check if view access is already in store
-    for (var i=0; i < store.getState().views.length;i++) {
-        if (store.getState().views[i].name === this.constructor.name){
-          access = store.getState().views[i].access;
-          found=true;
-        }
-    }
-
-    // If not, check access from server
-    if (!found){
-      const location = 'http://localhost:8080/rest/access/rights';
-      if (this.getDependencies() !== null){
-        Rest.get(location,this.getDependencies()).end((error, response) => {
-          if (response.status === 200){
-            console.log("Access granted to view " + this.constructor.name);
-            store.dispatch(addViewAccess(this.constructor.name,true));
-          } else {
-            store.dispatch(addViewAccess(this.constructor.name,false));
-            console.log("Access denied to view : "+ this.constructor.name);
+    if (this.state.access === null){
+      const { store } = this.context;
+      let found = false;
+      let access = false;
+      // Check if view access is already in store
+      for (var i=0; i < store.getState().views.length;i++) {
+          if (store.getState().views[i].name === this.constructor.name){
+            access = store.getState().views[i].access;
+            found=true;
           }
-        });
-      } else {
-        console.log("Access granted to view " + this.constructor.name);
-        store.dispatch(addViewAccess(this.constructor.name,true));
       }
-    } else{
-      this.setState({
-        access: access
-      });
+
+      // If not, check access from server
+      if (!found){
+        const location = 'http://localhost:8080/rest/access/rights';
+        if (this.getDependencies() !== null){
+          Rest.get(location,this.getDependencies()).end((error, response) => {
+            if (response.status === 200){
+              console.log("Access granted to view " + this.constructor.name);
+              store.dispatch(addViewAccess(this.constructor.name,true));
+            } else {
+              store.dispatch(addViewAccess(this.constructor.name,false));
+              console.log("Access denied to view : "+ this.constructor.name);
+            }
+          });
+        } else {
+          console.log("Access granted to view " + this.constructor.name);
+          store.dispatch(addViewAccess(this.constructor.name,true));
+        }
+      } else{
+        this.setState({
+          access: access
+        });
+      }
     }
   }
 
