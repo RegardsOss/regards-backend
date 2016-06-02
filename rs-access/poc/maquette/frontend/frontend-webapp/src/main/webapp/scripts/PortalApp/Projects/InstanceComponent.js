@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router';
 
 import Project from './ProjectComponent'
@@ -17,8 +18,9 @@ class InstanceComponent extends React.Component {
   }
 }
 
-InstanceComponent.propTypes = {
-  theme: React.PropTypes.string.isRequired
+const mapStateToProps = (state) => {
+  return {
+    theme: state.theme
+  }
 }
-
-export default InstanceComponent;
+export default connect(mapStateToProps)(InstanceComponent);

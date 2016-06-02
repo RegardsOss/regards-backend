@@ -1,7 +1,10 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import scriptjs from 'scriptjs';
 import { loadPlugins } from 'Common/PluginsManager/PluginsControler';
 
+import { setTheme } from 'Common/Store/CommonActionCreators';
+import { getThemeStyles } from 'Common/ThemeUtils';
 import PluginLinksView from './PluginModule/PluginLinksView';
 import TestView from './TestModule/TestView';
 
@@ -17,6 +20,9 @@ class UserApp extends React.Component {
       plugins : this.context.store.getState().plugins,
       pluginsLoaded : this.context.store.getState().pluginsLoaded
     }
+    const themeToSet = this.props.params.project;
+    const { dispatch } = this.props;
+    dispatch(setTheme(themeToSet));
   }
 
   componentDidMount(){
@@ -38,6 +44,7 @@ class UserApp extends React.Component {
   }
 
   render(){
+    const styles = getThemeStyles(this.props.theme, 'UserApp/base');
     if (!this.state.pluginsLoaded ){
       return <div>Loading ... </div>
     } else {
@@ -49,7 +56,7 @@ class UserApp extends React.Component {
           <div className="navigation">
             <PluginLinksView project={this.state.project} plugins={this.state.plugins}/>
           </div>
-          <div className="content full-div">
+          <div className={"content full-div " + styles.main}>
             {this.props.content}
           </div>
           <div>
@@ -71,4 +78,10 @@ UserApp.contextTypes = {
   route : React.PropTypes.object
 }
 
-module.exports = UserApp
+// Add theme from store to the component props
+const mapStateToProps = (state) => {
+  return {
+    theme: state.theme
+  }
+}
+module.exports = connect(mapStateToProps)(UserApp);

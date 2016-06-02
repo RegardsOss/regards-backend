@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router'
 import ReactDOM from 'react-dom';
 import { Rest } from 'grommet';
@@ -6,6 +7,7 @@ import { Rest } from 'grommet';
 import InstanceComponent from './Projects/InstanceComponent';
 import ProjectsComponent from './Projects/ProjectsComponent';
 import { getThemeStyles } from 'Common/ThemeUtils';
+import { setTheme } from 'Common/Store/CommonActionCreators';
 
 class PortalApp extends React.Component {
 
@@ -20,6 +22,12 @@ class PortalApp extends React.Component {
 
   componentDidMount(){
     this.loadProjects();
+  }
+
+  componentWillMount(){
+    const themeToSet = "";
+    const { dispatch } = this.props;
+    dispatch(setTheme(themeToSet));
   }
 
   loadProjects() {
@@ -38,19 +46,25 @@ class PortalApp extends React.Component {
   }
 
   render(){
-    const styles = getThemeStyles('','PortalApp/base');
+    const styles = getThemeStyles(this.props.theme,'PortalApp/base');
     if (this.props.children){
       return <div>{this.props.children}</div>
     } else {
     return (
       <div className={styles.main}>
-        <InstanceComponent theme=""/>
+        <InstanceComponent />
         Available projects on REGARDS instance :
-        <ProjectsComponent theme="" projects={this.state.projects}/>
+        <ProjectsComponent projects={this.state.projects}/>
       </div>
     )
   }
   }
 }
 
-module.exports = PortalApp;
+// Add theme from store to the component props
+const mapStateToProps = (state) => {
+  return {
+    theme: state.theme
+  }
+}
+module.exports = connect(mapStateToProps)(PortalApp);

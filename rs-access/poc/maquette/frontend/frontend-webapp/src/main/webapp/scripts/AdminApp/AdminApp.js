@@ -1,8 +1,10 @@
 
 import React from 'react';
+import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
 import { Rest } from 'grommet';
 
+import { setTheme } from 'Common/Store/CommonActionCreators';
 import { getThemeStyles } from 'Common/ThemeUtils';
 import AuthenticateView from './Authentication/AuthenticateView';
 
@@ -21,6 +23,9 @@ class AdminApp extends React.Component {
     if (this.props.params.project === "instance"){
       this.setState({instance: true});
     }
+    const themeToSet = this.props.params.project;
+    const { dispatch } = this.props;
+    dispatch(setTheme(themeToSet));
   }
 
   onAuthenticate(token){
@@ -40,19 +45,11 @@ class AdminApp extends React.Component {
   }
 
   render(){
-    let styles;
-    let theme=this.props.params.project;
-    if (this.state.instance === true){
-      theme="";
-      styles = getThemeStyles("", 'AdminApp/base');
-    } else {
-      styles = getThemeStyles(this.props.params.project, 'AdminApp/base');
-    }
+    const styles = getThemeStyles(this.props.theme, 'AdminApp/base');
     if (!this.state.authenticated){
       return (
         <div className={styles.main}>
           <AuthenticateView
-            theme={theme}
             project={this.props.params.project}
             onAuthenticate={this.onAuthenticate}/>
         </div>
@@ -71,4 +68,10 @@ class AdminApp extends React.Component {
   }
 }
 
-module.exports = AdminApp;
+// Add theme from store to the component props
+const mapStateToProps = (state) => {
+  return {
+    theme: state.theme
+  }
+}
+module.exports = connect(mapStateToProps)(AdminApp);

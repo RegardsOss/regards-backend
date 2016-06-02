@@ -1,5 +1,6 @@
 import React from 'react';
 import { Rest } from 'grommet';
+import { connect } from 'react-redux';
 
 import { getThemeStyles } from 'Common/ThemeUtils';
 
@@ -39,9 +40,13 @@ class LoginComponent extends React.Component {
 }
 
 LoginComponent.propTypes = {
-  theme: React.PropTypes.string.isRequired,
   onLogin: React.PropTypes.func.isRequired,
   errorMessage: React.PropTypes.string
 }
 
-export default LoginComponent;
+const mapStateToProps = (state) => {
+  return {
+    theme: state.theme
+  }
+}
+export default connect(mapStateToProps)(LoginComponent);

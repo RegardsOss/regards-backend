@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
 import { getThemeStyles } from 'Common/ThemeUtils';
 
@@ -14,4 +15,10 @@ class ApplicationErrorComponent extends React.Component {
   }
 }
 
-export default ApplicationErrorComponent;
+// Add theme from store to the component props
+const mapStateToProps = (state) => {
+  return {
+    theme: state.theme
+  }
+}
+export default connect(mapStateToProps)(ApplicationErrorComponent);

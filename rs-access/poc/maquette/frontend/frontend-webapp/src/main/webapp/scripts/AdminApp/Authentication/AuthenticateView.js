@@ -46,15 +46,10 @@ class AuthenticateView extends React.Component {
   render(){
     return (
       <LoginComponent
-        theme={this.props.theme}
         onLogin={this.onLogin}
         errorMessage={this.state.error}/>
     );
   }
-}
-
-AuthenticateView.propTypes = {
-  theme: React.PropTypes.string.isRequired,
 }
 
 export default AuthenticateView;

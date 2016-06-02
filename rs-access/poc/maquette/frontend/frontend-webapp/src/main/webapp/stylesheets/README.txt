@@ -64,4 +64,12 @@
   ]
 
 
-4. templates
+4. Themes
+
+  stylesheets/default/ : Contient les fichiers de styles des 3 applications
+  stylesheets/themes/ : Contient les themes de configuration des fichiers sass présent dans le répertoire default.
+
+  Pour appliquer un theme sur un composant element du dom JSX :
+  import { getThemeStyles } from 'Common/ThemeUtils';
+  const styles = getThemeStyles(themename, sassFileContainingTheme);
+  <div className={styles.classname}/>

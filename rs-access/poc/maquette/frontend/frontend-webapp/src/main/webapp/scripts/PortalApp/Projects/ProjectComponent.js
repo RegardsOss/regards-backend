@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router';
 
 import { getThemeStyles } from 'Common/ThemeUtils';
@@ -17,8 +18,12 @@ class ProjectComponent extends React.Component {
 }
 
 ProjectComponent.propTypes = {
-  theme: React.PropTypes.string.isRequired,
   project: React.PropTypes.object.isRequired
 }
 
-export default ProjectComponent;
+const mapStateToProps = (state) => {
+  return {
+    theme: state.theme
+  }
+}
+export default connect(mapStateToProps)(ProjectComponent);
