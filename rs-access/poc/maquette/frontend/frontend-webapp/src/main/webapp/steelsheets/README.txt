@@ -62,3 +62,6 @@
   plugins: [
     new ExtractTextPlugin('styles.css')
   ]
+
+
+4. templates
