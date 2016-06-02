@@ -4,11 +4,19 @@ import { Router, browserHistory } from 'react-router';
 import { Provider } from 'react-redux';
 import { Rest } from 'grommet';
 
+import ApplicationError from 'Common/Components/ApplicationErrorComponent';
+
+// Import application common store
 import store from 'AppStore';
 
 // Import default styles
 import "common/common";
 
+/** Main routes.
+ * / -> PortalApp
+ * /user -> UserApp
+ * /admin -> AdminApp
+*/
 const rootRoute = {
   component: 'div',
   childRoutes: [ {
@@ -21,20 +29,6 @@ const rootRoute = {
   } ]
 }
 
-const init = (err, response) => {
-  // Add token to rest requests
-  Rest.setHeaders({
-    'Authorization': "Bearer " + response.body.access_token
-  });
-
-  // Render application
-  ReactDOM.render(
-    <Provider store={store}>
-      <Router history={browserHistory} routes={rootRoute}/>
-    </Provider>,
-    document.getElementById('app')
-  );
-}
 
 // First login as public user
 Rest.setHeaders({
@@ -45,4 +39,25 @@ const userName = "public";
 const password = "public";
 const location = "http://localhost:8080/oauth/token?grant_type=password&username="
 + userName + "&password=" +password;
-Rest.post(location).end(init);
+
+// Send rest request for authentication. After response, render the application
+Rest.post(location).end((err, response) => {
+  if (response && response.status === 200){
+    // Add token to rest requests
+    Rest.setHeaders({
+      'Authorization': "Bearer " + response.body.access_token
+    });
+
+    // Render application
+    ReactDOM.render(
+      <Provider store={store}>
+        <Router history={browserHistory} routes={rootRoute}/>
+      </Provider>,
+      document.getElementById('app')
+    );
+  }
+  else {
+    console.error("Authentication error");
+    ReactDOM.render(<ApplicationError />, document.getElementById('app'));
+  }
+});
