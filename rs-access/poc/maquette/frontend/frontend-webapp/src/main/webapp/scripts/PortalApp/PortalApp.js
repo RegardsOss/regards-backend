@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom';
 import CSSModules from 'react-css-modules';
 import { Rest } from 'grommet';
 
-import RegardInstance from './Projects/InstanceComponent';
-import RegardProjects from './Projects/ProjectsComponent';
+import InstanceComponent from './Projects/InstanceComponent';
+import ProjectsComponent from './Projects/ProjectsComponent';
 
 import styles from 'PortalApp/base';
 
@@ -26,13 +26,13 @@ class PortalApp extends React.Component {
   }
 
   loadProjects() {
-    const location = window.location.origin + '/json/projects.json';
+    const location = 'http://localhost:8080/api/projects';
     Rest.get(location)
       .end((error, response) => {
-        console.log("Available projects : ",response.body.projects);
+        console.log("Available projects : ",response.body);
         if (response.status === 200){
           this.setState({
-            projects : response.body.projects
+            projects : response.body
           });
         } else {
           console.log(response);
@@ -46,9 +46,9 @@ class PortalApp extends React.Component {
     } else {
     return (
       <div styleName="main">
-        <RegardInstance />
+        <InstanceComponent />
         Available projects on REGARDS instance :
-        <RegardProjects projects={this.state.projects}/>
+        <ProjectsComponent projects={this.state.projects}/>
       </div>
     )
   }

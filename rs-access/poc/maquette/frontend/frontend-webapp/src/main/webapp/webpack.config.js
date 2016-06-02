@@ -22,7 +22,6 @@ module.exports = {
     contentBase: __dirname,
     inline: true,
     port: 3333,
-    headers: { 'Access-Control-Allow-Origin': '*' },
     historyApiFallback: {
       rewrites: [{
         from: /\/(\d\.)?bundle\.js(\.map)?/,

@@ -1,5 +1,7 @@
 # ignore node_modules directory
 **/node_modules
 **/target
+**/scripts/Plugins/**
+!**/scripts/Plugins/README.txt
 **/build/*
 !**/build/README.txt

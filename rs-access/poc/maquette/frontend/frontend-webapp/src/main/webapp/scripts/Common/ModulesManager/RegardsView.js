@@ -52,7 +52,7 @@ class RegardsView extends React.Component{
 
     // If not, check access from server
     if (!found){
-      const location = window.location.origin + "/rest/access/rights";
+      const location = 'http://localhost:8080/rest/access/rights';
       if (this.getDependencies() !== null){
         Rest.get(location,this.getDependencies()).end((error, response) => {
           if (response.status === 200){

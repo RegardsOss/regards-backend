@@ -7,7 +7,7 @@ import { addPlugin, pluginsLoaded, togglePluginsLoaded } from './PluginsStoreAct
 
 const loadPlugins = (callback) => {
   // Get plugins from server
-  const location = window.location.origin + '/json/plugins.json';
+  const location = 'http://localhost:8080/api/plugins';
   return Rest.get(location)
     .end((error, response) => {
       if (response.status === 200){
@@ -15,7 +15,7 @@ const loadPlugins = (callback) => {
         // TODO : C'est le plugin qui donne son nom au store.
         // Le nom renvoyé par le serveur ne sert a rien
         // Gestion de plusieurs instances du plugin ?
-        
+
         // Add event listenner for plugin to load
         document.addEventListener('plugin', function (plugin) {
           // When plugin loaded event is received, add plugin to the store
@@ -26,13 +26,13 @@ const loadPlugins = (callback) => {
         },false);
 
           // Check if there is plugins to load
-          if (response.body.plugins && response.body.plugins.length > 0){
-            console.log(response.body.plugins.length + " plugins to load ...");
+          if (response.body && response.body.length > 0){
+            console.log(response.body.length + " plugins to load ...");
 
             // Load each plugin
             let index=0;
             let error=0;
-            response.body.plugins.map( plugin => {
+            response.body.map( plugin => {
               console.log("loading ", plugin.name);
               if (plugin.paths) {
                 const paths = plugin.paths.map( path => {
@@ -47,7 +47,7 @@ const loadPlugins = (callback) => {
                   }
 
                   // After last plugin loaded, set pluginsLoaded to true in store
-                  if (index === response.body.plugins.length){
+                  if (index === response.body.length){
                     // Every plugins is loaded add the state to the store
                     console.log("All Plugins loaded");
                     store.dispatch(pluginsLoaded());

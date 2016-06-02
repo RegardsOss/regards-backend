@@ -29,7 +29,7 @@ public class Bootstrap {
 	
 	@Autowired
 	public void registerGlobal(AuthenticationManagerBuilder auth) throws Exception {
-		auth.inMemoryAuthentication().withUser("user").password("user").roles("USER").and().withUser("admin")
+		auth.inMemoryAuthentication().withUser("public").password("public").roles("PUBLIC").and().withUser("admin")
 				.password("admin").roles("ADMIN");
 	}
 

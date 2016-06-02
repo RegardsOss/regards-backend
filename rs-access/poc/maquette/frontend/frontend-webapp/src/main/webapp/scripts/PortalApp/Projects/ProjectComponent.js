@@ -9,9 +9,9 @@ class ProjectComponent extends React.Component {
   render(){
     return (
       <li styleName="link">
-        {this.props.project.label}&nbsp;-&nbsp;
-        <Link to={"/user/" +this.props.project.label}>ihm user</Link>&nbsp;/&nbsp;
-        <Link to={"/admin/" +this.props.project.label}>ihm admin</Link>
+        {this.props.project.name}&nbsp;-&nbsp;
+        <Link to={"/user/" +this.props.project.name}>ihm user</Link>&nbsp;/&nbsp;
+        <Link to={"/admin/" +this.props.project.name}>ihm admin</Link>
       </li>
     )
   }

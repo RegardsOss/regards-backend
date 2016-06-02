@@ -8,7 +8,7 @@ class ProjectsComponent extends React.Component {
       return (
         <ul>
           {this.props.projects.map(project =>
-            <Project key={project.label} project={project} />
+            <Project key={project.name} project={project} />
           )}
         </ul>
       )
