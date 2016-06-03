@@ -25,6 +25,7 @@ class PortalApp extends React.Component {
   }
 
   componentWillMount(){
+    // Init application theme
     const themeToSet = "";
     const { dispatch } = this.props;
     dispatch(setTheme(themeToSet));
