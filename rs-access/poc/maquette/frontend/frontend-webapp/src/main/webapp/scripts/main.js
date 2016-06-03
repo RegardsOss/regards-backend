@@ -55,6 +55,9 @@ Rest.post(location).end((err, response) => {
   }
   else {
     console.error("Authentication error");
-    ReactDOM.render(<ApplicationError theme=""/>, document.getElementById('app'));
+    ReactDOM.render(
+      <Provider store={store}>
+        <ApplicationError theme=""/>
+      </Provider>, document.getElementById('app'));
   }
 });

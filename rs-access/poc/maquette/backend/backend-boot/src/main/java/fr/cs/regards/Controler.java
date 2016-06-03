@@ -3,7 +3,6 @@ package fr.cs.regards;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,12 +14,12 @@ import fr.cs.regards.pojo.Project;
 @RestController
 @RequestMapping("/api")
 public class Controler {
-	//@CrossOrigin(origins = "*")
+	
 	@RequestMapping(value="projects", method = RequestMethod.GET)
     public @ResponseBody List<Project> getProjects() {
 		List<Project> projects = new ArrayList<>();
-		projects.add(new Project("CDPP"));
-		projects.add(new Project("SSALTO"));
+		projects.add(new Project("cdpp"));
+		projects.add(new Project("ssalto"));
         return projects;
     }
 	

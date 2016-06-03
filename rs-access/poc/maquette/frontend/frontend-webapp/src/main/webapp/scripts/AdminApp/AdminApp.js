@@ -20,10 +20,14 @@ class AdminApp extends React.Component {
   }
 
   componentWillMount(){
+
+    let themeToSet = this.props.params.project;
+
     if (this.props.params.project === "instance"){
       this.setState({instance: true});
+      themeToSet = "default";
     }
-    const themeToSet = this.props.params.project;
+
     const { dispatch } = this.props;
     dispatch(setTheme(themeToSet));
   }
