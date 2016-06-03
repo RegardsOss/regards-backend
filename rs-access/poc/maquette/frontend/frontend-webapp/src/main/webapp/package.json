@@ -17,14 +17,11 @@
     "deep-freeze": "0.0.1",
     "expect": "^1.20.1",
     "grommet": "^0.6.6",
-    "node-sass": "^3.7.0",
-    "postcss-loader": "^0.9.1",
     "react": "^15.0.2",
     "react-dom": "^15.0.2",
     "react-redux": "^4.4.5",
     "react-router": "^2.4.0",
     "redux": "^3.5.2",
-    "sass-loader": "^3.2.0",
     "scriptjs": "^2.5.8"
   },
   "devDependencies": {
@@ -37,9 +34,12 @@
     "css-loader": "^0.23.1",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
+    "node-sass": "^3.7.0",
+    "postcss-loader": "^0.9.1",
+    "sass-loader": "^3.2.0",
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.14.1"
+    "webpack-dev-server": "^1.14.1",
   }
 }
