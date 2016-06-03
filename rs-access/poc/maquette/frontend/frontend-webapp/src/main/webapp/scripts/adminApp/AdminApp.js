@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 import { Rest } from 'grommet';
 
 import { setTheme, authenticated } from 'common/store/CommonActionCreators';
-import { getThemeStyles } from 'common/ThemeUtils';
+import { getThemeStyles } from 'common/utils/ThemeUtils';
 import AuthenticateView from './containers/AuthenticateContainer';
 import LayoutContainer from './containers/LayoutContainer';
 

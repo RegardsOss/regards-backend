@@ -4,7 +4,7 @@ import scriptjs from 'scriptjs';
 import { loadPlugins } from 'common/pluginsManager/PluginsControler';
 
 import { setTheme } from 'common/store/CommonActionCreators';
-import { getThemeStyles } from 'common/ThemeUtils';
+import { getThemeStyles } from 'common/utils/ThemeUtils';
 import PluginLinksView from './modules/plugin/PluginLinksView';
 import TestView from './modules/test/TestView';
 

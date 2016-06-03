@@ -6,7 +6,7 @@ import { Rest } from 'grommet';
 
 import InstanceComponent from './projects/InstanceComponent';
 import ProjectsComponent from './projects/ProjectsComponent';
-import { getThemeStyles } from 'common/ThemeUtils';
+import { getThemeStyles } from 'common/utils/ThemeUtils';
 import { setTheme } from 'common/store/CommonActionCreators';
 
 class PortalApp extends React.Component {

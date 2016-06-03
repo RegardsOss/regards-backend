@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router';
 
-import { getThemeStyles } from 'common/ThemeUtils';
+import { getThemeStyles } from 'common/utils/ThemeUtils';
 
 class ProjectComponent extends React.Component {
   render(){

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { getThemeStyles } from 'common/ThemeUtils';
+import { getThemeStyles } from 'common/utils/ThemeUtils';
 
 class ApplicationErrorComponent extends React.Component {
 

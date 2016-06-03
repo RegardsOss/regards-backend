@@ -2,7 +2,7 @@ import React from 'react';
 import { Rest } from 'grommet';
 import { connect } from 'react-redux';
 
-import { getThemeStyles } from 'common/ThemeUtils';
+import { getThemeStyles } from 'common/utils/ThemeUtils';
 
 class LoginComponent extends React.Component {
 
