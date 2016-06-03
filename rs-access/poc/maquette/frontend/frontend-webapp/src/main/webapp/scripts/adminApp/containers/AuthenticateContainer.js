@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Rest } from 'grommet';
+import Rest from 'grommet/utils/Rest';
 
 import { authenticated } from 'common/store/CommonActionCreators';
 import LoginComponent from 'adminApp/components/LoginComponent';

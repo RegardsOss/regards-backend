@@ -1,5 +1,5 @@
 
-import { Rest } from 'grommet';
+import Rest from 'grommet/utils/Rest';
 import scriptjs from 'scriptjs';
 
 import store from 'AppStore';

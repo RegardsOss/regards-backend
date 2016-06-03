@@ -68,7 +68,7 @@
             <executable>npm</executable>
             <arguments>
                <argument>run</argument>
-               <argument>build</argument>
+               <argument>buildp</argument>
             </arguments>
             <workingDirectory>./src/main/webapp</workingDirectory>
          </configuration>

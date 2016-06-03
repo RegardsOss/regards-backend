@@ -1,5 +1,5 @@
 import React from "react"
-import { Rest } from "grommet";
+import Rest from 'grommet/utils/Rest';
 import { addViewAccess } from "./RegardsModuleActionCreators";
 
 /**

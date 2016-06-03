@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom';
 import { Router, browserHistory } from 'react-router';
 import { Provider } from 'react-redux';
-import { Rest } from 'grommet';
+import Rest from 'grommet/utils/Rest';
 
 import ApplicationError from 'common/components/ApplicationErrorComponent';
 

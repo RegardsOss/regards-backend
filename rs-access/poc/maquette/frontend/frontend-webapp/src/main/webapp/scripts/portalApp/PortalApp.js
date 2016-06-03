@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router'
 import ReactDOM from 'react-dom';
-import { Rest } from 'grommet';
+import Rest from 'grommet/utils/Rest';
 
 import InstanceComponent from './projects/InstanceComponent';
 import ProjectsComponent from './projects/ProjectsComponent';
