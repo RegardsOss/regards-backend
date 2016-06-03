@@ -1,6 +1,8 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { Rest } from 'grommet';
 
+import { authenticated } from 'Common/Store/CommonActionCreators';
 import LoginComponent from './LoginComponent';
 
 class AuthenticateView extends React.Component {
@@ -9,7 +11,7 @@ class AuthenticateView extends React.Component {
     super();
 
     this.state = {
-      error : ""
+      error : "",
     }
 
     this.onLogin = this.onLogin.bind(this);
@@ -31,15 +33,18 @@ class AuthenticateView extends React.Component {
     console.log(err);
     if (err && err.timeout > 1000) {
      this.setState({error: 'Timeout'});
-   } else if (err) {
+   } else if (!response) {
      this.setState({error:  "Service unavailable"});
-   } else if (response.status === 400) {
-     this.setState({error: "Authentication error : " + response.body.error_description});
    } else if (response.status != 200){
      this.setState({error: "Authentication error"});
-   } else {
-     console.log("OK");
-     this.props.onAuthenticate(response.body.access_token);
+   } else if (response.status === 200){
+     // Add token to rest requests
+     Rest.setHeaders({
+       'Authorization': "Bearer " + response.body.access_token
+     });
+
+     const { dispatch } = this.props;
+     dispatch(authenticated(true));
    }
   }
 
@@ -52,4 +57,10 @@ class AuthenticateView extends React.Component {
   }
 }
 
-export default AuthenticateView;
+// Add theme from store to the component props
+const mapStateToProps = (state) => {
+  return {
+    authenticated: state.authenticated
+  }
+}
+export default connect(mapStateToProps)(AuthenticateView);

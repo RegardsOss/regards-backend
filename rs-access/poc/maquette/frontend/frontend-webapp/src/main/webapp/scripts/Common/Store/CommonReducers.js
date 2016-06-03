@@ -8,9 +8,21 @@ const theme = (state = '', action) => {
   }
 }
 
+const authenticated = (state = false, action) => {
+  switch (action.type){
+    case "AUTHENTICATED" :
+      return true;
+    case "LOGGED_OUT" :
+      return false;
+    default :
+      return state;
+  }
+}
+
 
 const commonReducers = {
-  theme
+  theme,
+  authenticated
 }
 
 export default commonReducers

@@ -4,53 +4,33 @@ import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
 import { Rest } from 'grommet';
 
-import { setTheme } from 'Common/Store/CommonActionCreators';
+import { setTheme, logout } from 'Common/Store/CommonActionCreators';
 import { getThemeStyles } from 'Common/ThemeUtils';
 import AuthenticateView from './Authentication/AuthenticateView';
 
 class AdminApp extends React.Component {
   constructor(){
     super();
-
     this.state = {
-      authenticated: false,
       instance: false
     }
-    this.onAuthenticate = this.onAuthenticate.bind(this);
   }
 
   componentWillMount(){
-
+    // Init admin theme
     let themeToSet = this.props.params.project;
-
     if (this.props.params.project === "instance"){
       this.setState({instance: true});
       themeToSet = "default";
     }
-
     const { dispatch } = this.props;
     dispatch(setTheme(themeToSet));
   }
 
-  onAuthenticate(token){
-
-    // Add token to rest requests
-    Rest.setHeaders({
-      'Authorization': "Bearer " + token
-    });
-
-    this.setState({
-      authenticated: true
-    });
-
-    Rest.get("http://localhost:8080/controler").end((err,response) => {
-      console.log(response);
-    });
-  }
-
   render(){
+    const { dispatch } = this.props;
     const styles = getThemeStyles(this.props.theme, 'AdminApp/base');
-    if (!this.state.authenticated){
+    if (!this.props.authenticated){
       return (
         <div className={styles.main}>
           <AuthenticateView
@@ -59,15 +39,23 @@ class AdminApp extends React.Component {
         </div>
       );
     } else {
-        if (this.state.instance){
-          return (
-            <div>Welcome to project : {this.props.params.project}</div>
-          );
-        } else {
-          return (
-            <div>Welcome to instance admin</div>
-          );
-        }
+      let message = "Welcome to project : " + this.props.params.project;
+      if (this.state.instance){
+        message = "Welcome to instance admin";
+      }
+
+      return (
+        <div className={styles.main}>
+          {message}
+          <button onClick={() => {
+              Rest.setHeaders({
+                'Accept': 'application/json',
+                'Authorization': "Basic " + btoa("acme:acmesecret")
+              });
+              dispatch(logout());
+          }}>Log out</button>
+        </div>
+      );
     }
   }
 }
@@ -75,7 +63,8 @@ class AdminApp extends React.Component {
 // Add theme from store to the component props
 const mapStateToProps = (state) => {
   return {
-    theme: state.theme
+    theme: state.theme,
+    authenticated: state.authenticated
   }
 }
 module.exports = connect(mapStateToProps)(AdminApp);

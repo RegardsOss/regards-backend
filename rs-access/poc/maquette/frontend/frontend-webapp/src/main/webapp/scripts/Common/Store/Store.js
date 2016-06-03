@@ -12,7 +12,8 @@ const defaultStore = {
   theme: '',
   plugins : [],
   pluginsLoaded: false,
-  views : []
+  views : [],
+  authenticated: false
 }
 
 // Create the application store

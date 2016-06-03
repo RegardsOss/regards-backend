@@ -32,7 +32,7 @@ class LoginComponent extends React.Component {
             }}/>
         <br/>
         <button onClick={() => {
-            this.props.onLogin(this.state.userName,this.state.password);
+            this.props.onLogin(this.state.username,this.state.password);
           }}>Log in</button>
       </div>
     );
