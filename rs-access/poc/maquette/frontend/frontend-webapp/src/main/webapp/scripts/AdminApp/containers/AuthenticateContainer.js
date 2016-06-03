@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Rest } from 'grommet';
 
 import { authenticated } from 'Common/Store/CommonActionCreators';
-import LoginComponent from './LoginComponent';
+import LoginComponent from '../components/LoginComponent';
 
 class AuthenticateView extends React.Component {
 

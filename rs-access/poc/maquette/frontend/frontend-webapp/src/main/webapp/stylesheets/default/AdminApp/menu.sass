@@ -1,0 +1,20 @@
+
+%menuelement
+  color: black
+  font-size: 1.2em
+  margin: 2px 20px
+  text-decoration: none
+  cursor: pointer
+
+.selected
+  @extend %menuelement
+
+  text-decoration: underline
+  color: Red
+
+.unselected
+  @extend %menuelement
+
+.unselected:hover
+  color: blue
+  text-decoration: underline

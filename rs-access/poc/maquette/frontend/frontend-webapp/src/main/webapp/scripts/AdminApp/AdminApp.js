@@ -4,9 +4,10 @@ import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
 import { Rest } from 'grommet';
 
-import { setTheme, logout } from 'Common/Store/CommonActionCreators';
+import { setTheme, authenticated } from 'Common/Store/CommonActionCreators';
 import { getThemeStyles } from 'Common/ThemeUtils';
-import AuthenticateView from './Authentication/AuthenticateView';
+import AuthenticateView from './containers/AuthenticateContainer';
+import LayoutContainer from './containers/LayoutContainer';
 
 class AdminApp extends React.Component {
   constructor(){
@@ -28,7 +29,6 @@ class AdminApp extends React.Component {
   }
 
   render(){
-    const { dispatch } = this.props;
     const styles = getThemeStyles(this.props.theme, 'AdminApp/base');
     if (!this.props.authenticated){
       return (
@@ -39,25 +39,19 @@ class AdminApp extends React.Component {
         </div>
       );
     } else {
-      let message = "Welcome to project : " + this.props.params.project;
-      if (this.state.instance){
-        message = "Welcome to instance admin";
-      }
-
-      return (
-        <div className={styles.main}>
-          {message}
-          <button onClick={() => {
-              Rest.setHeaders({
-                'Accept': 'application/json',
-                'Authorization': "Basic " + btoa("acme:acmesecret")
-              });
-              dispatch(logout());
-          }}>Log out</button>
-        </div>
-      );
+        return (
+          <LayoutContainer
+            content={this.props.content}
+            project={this.props.params.project}
+            instance={this.state.instance}/>
+        );
     }
   }
+}
+
+AdminApp.contextTypes = {
+  router: React.PropTypes.object,
+  route : React.PropTypes.object
 }
 
 // Add theme from store to the component props
