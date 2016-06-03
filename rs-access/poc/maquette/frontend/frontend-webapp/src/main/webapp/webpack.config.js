@@ -38,8 +38,8 @@ module.exports = {
   resolve: {
     extensions: ['', '.js', '.sass'],
     alias: {
-      RegardsView: path.join(__dirname,"scripts/Common/ModulesManager/RegardsView.js"),
-      AppStore: path.join(__dirname,"scripts/Common/Store/Store.js")
+      RegardsView: path.join(__dirname,"scripts/common/modulesManager/RegardsView.js"),
+      AppStore: path.join(__dirname,"scripts/common/store/Store.js")
     },
     root: [
       path.join(__dirname,"scripts"),

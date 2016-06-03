@@ -4,7 +4,7 @@ import { Router, browserHistory } from 'react-router';
 import { Provider } from 'react-redux';
 import { Rest } from 'grommet';
 
-import ApplicationError from 'Common/Components/ApplicationErrorComponent';
+import ApplicationError from 'common/components/ApplicationErrorComponent';
 
 // Import application common store
 import store from 'AppStore';
@@ -18,10 +18,10 @@ const rootRoute = {
   component: 'div',
   childRoutes: [ {
     path: '/',
-    component: require('./PortalApp/PortalApp'),
+    component: require('./portalApp/PortalApp'),
     childRoutes: [
-      require('./UserApp'),
-      require('./AdminApp')
+      require('./userApp'),
+      require('./adminApp')
     ]
   } ]
 }
