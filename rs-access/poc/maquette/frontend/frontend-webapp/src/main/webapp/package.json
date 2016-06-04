@@ -7,9 +7,8 @@
   "scripts": {
     "prestart": "cp index.html build/",
     "start": "webpack-dev-server",
-    "build": "webpack -d",
-    "prebuildp": "npm install",
-    "buildp": "webpack -p"
+    "prebuild": "npm install",
+    "build": "webpack --progress"
   },
   "author": "CS-SI",
   "license": "ISC",
