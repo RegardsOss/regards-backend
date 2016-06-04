@@ -5,10 +5,11 @@ import Home from 'adminApp/modules/home/HomeModule'
 
 class LayoutContainer extends React.Component {
   render(){
+    const { project } = this.props;
     return (
       <div>
         <div className="navigation">
-          <Menu project={this.props.project}/>
+          <Menu project={project}/>
         </div>
         <div className="content">
           {this.props.content || <Home />}
@@ -16,11 +17,6 @@ class LayoutContainer extends React.Component {
       </div>
     );
   }
-}
-
-LayoutContainer.contextTypes = {
-  router: React.PropTypes.object,
-  route : React.PropTypes.object
 }
 
 export default LayoutContainer;

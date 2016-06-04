@@ -11,7 +11,7 @@ class Menu extends React.Component {
     const { dispatch, theme, project } = this.props;
     const styles = getThemeStyles(theme, 'adminApp/menu');
     return (
-        <nav>
+        <div>
           <IndexLink to={"/admin/" + project}
              className={styles.unselected}
              activeClassName={styles.selected}>
@@ -26,14 +26,11 @@ class Menu extends React.Component {
             onClick={() => {
               dispatch(logout());
             }}>Log out</span>
-        </nav>
+        </div>
       )
   }
 }
-Menu.contextTypes = {
-  router: React.PropTypes.object,
-  route : React.PropTypes.object
-}
+
 const mapStateToProps = (state) => {
   return {
     theme: state.theme

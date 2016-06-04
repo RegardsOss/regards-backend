@@ -29,20 +29,21 @@ class AdminApp extends React.Component {
   }
 
   render(){
-    const styles = getThemeStyles(this.props.theme, 'adminApp/base');
-    if (!this.props.authenticated){
+    const { theme, authenticated, content, params } = this.props;
+    const styles = getThemeStyles(theme, 'adminApp/base');
+    if (!authenticated){
       return (
         <div className={styles.main}>
           <AuthenticateView
-            project={this.props.params.project}
+            project={params.project}
             onAuthenticate={this.onAuthenticate}/>
         </div>
       );
     } else {
         return (
           <LayoutContainer
-            content={this.props.content}
-            project={this.props.params.project}
+            content={content}
+            project={params.project}
             instance={this.state.instance}/>
         );
     }
