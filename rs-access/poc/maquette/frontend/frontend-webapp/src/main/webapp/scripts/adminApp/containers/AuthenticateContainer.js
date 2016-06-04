@@ -11,7 +11,7 @@ class AuthenticateView extends React.Component {
     super();
 
     this.state = {
-      error : "",
+      error : ""
     }
 
     this.onLogin = this.onLogin.bind(this);

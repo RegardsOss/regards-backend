@@ -6,7 +6,7 @@ import Rest from 'grommet/utils/Rest';
 
 import { setTheme, authenticated } from 'common/store/CommonActionCreators';
 import { getThemeStyles } from 'common/utils/ThemeUtils';
-import AuthenticateView from './containers/AuthenticateContainer';
+import AuthenticateContainer from './containers/AuthenticateContainer';
 import LayoutContainer from './containers/LayoutContainer';
 
 class AdminApp extends React.Component {
@@ -29,12 +29,12 @@ class AdminApp extends React.Component {
   }
 
   render(){
-    const { theme, authenticated, content, params } = this.props;
+    const { theme, authenticated, content, location, params } = this.props;
     const styles = getThemeStyles(theme, 'adminApp/base');
     if (!authenticated){
       return (
         <div className={styles.main}>
-          <AuthenticateView
+          <AuthenticateContainer
             project={params.project}
             onAuthenticate={this.onAuthenticate}/>
         </div>
@@ -42,6 +42,7 @@ class AdminApp extends React.Component {
     } else {
         return (
           <LayoutContainer
+            location={location}
             content={content}
             project={params.project}
             instance={this.state.instance}/>

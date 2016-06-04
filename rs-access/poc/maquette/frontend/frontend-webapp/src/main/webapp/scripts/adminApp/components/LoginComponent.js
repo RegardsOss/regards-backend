@@ -13,12 +13,19 @@ class LoginComponent extends React.Component {
       password: "",
       error :""
     }
+    this.handleKeyPress = this.handleKeyPress.bind(this);
+  }
+
+  handleKeyPress(e) {
+    if (e.key === 'Enter') {
+      this.props.onLogin(this.state.username,this.state.password);
+    }
   }
 
   render(){
     const styles = getThemeStyles(this.props.theme, 'adminApp/login');
     return (
-      <div className={styles["login-modal"]}>
+      <div className={styles["login-modal"]} onKeyDown={this.handleKeyPress}>
         <p className={styles["login-error"]}>{this.props.errorMessage}</p>
         <label for="username" >Username</label>
         <input id="username" onChange={(event) => {
