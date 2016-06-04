@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "prestart": "cp index.html build/",
-    "start": "webpack-dev-server",
+    "start": "webpack-dev-server --progress",
     "prebuild": "npm install",
     "build": "webpack --progress"
   },
@@ -32,12 +32,10 @@
     "babel-preset-react": "^6.5.0",
     "css-loader": "^0.23.1",
     "extract-text-webpack-plugin": "^1.0.1",
-    "file-loader": "^0.8.5",
     "node-sass": "^3.7.0",
     "postcss-loader": "^0.9.1",
     "sass-loader": "^3.2.0",
     "style-loader": "^0.13.1",
-    "url-loader": "^0.5.7",
     "webpack": "^1.13.1",
     "webpack-dev-server": "^1.14.1"
   }

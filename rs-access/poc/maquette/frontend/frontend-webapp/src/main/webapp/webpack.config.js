@@ -1,10 +1,10 @@
-var fs = require('fs')
-var path = require('path')
-var webpack = require('webpack')
-var path = require('path')
+
+// Webpack configuration file
+
+const path = require('path')
+const webpack = require('webpack')
 const autoprefixer = require('autoprefixer')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
-
 const sassLoaders = [
   // Loader to generate react modules css classes
   'css?modules&importLoaders=1&localIdentName=[path]___[name]__[local]___[hash:base64:5]',
@@ -28,6 +28,7 @@ module.exports = {
     chunkFilename: "[id].chunck.js"
   },
   devServer: {
+    stats: { children: false, colors: true },
     // Web directory serve by the webpack dev server
     contentBase: __dirname,
     //inline: true,
@@ -74,18 +75,10 @@ module.exports = {
         loader: 'babel',
         query: { presets: ['es2015', 'react']}
       },
-      // Css files loader
-      {test: /\.css$/, loader: "style-loader!css-loader" },
       // Sass files compilation to css
       {test: /\.sass$/, exclude: [/node_modules/,'/stylesheets\/default/'],
         loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
       },
-      // Loaders needed for dependencies (vendors)
-      {test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/, loader: 'url-loader?limit=10000&mimetype=application/font-woff'},
-      {test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: 'url-loader?limit=10000&mimetype=application/octet-stream'},
-      {test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: 'file-loader'},
-      {test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: 'url-loader?limit=10000&mimetype=image/svg+xml'},
-      {test: /\.json(\?v=\d+\.\d+\.\d+)?$/, loader: 'file-loader'}
     ]
   },
   plugins: [
