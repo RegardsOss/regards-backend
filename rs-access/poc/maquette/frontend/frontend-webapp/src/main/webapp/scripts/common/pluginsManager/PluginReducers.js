@@ -23,11 +23,12 @@ const plugins = (state = {
         isFetching: false
       });
     case PLUGIN_INITIALIZED:
-      const result =  Object.assign({}, state);
-      const plugin = result.items.find( plugin => {
-        return plugin.name === action.name
-      })
-      plugin.plugin = action.plugin;
+      let result = Object.assign({}, state)
+      result.items = result.items.map( plugin => {
+        return Object.assign({}, plugin, {
+          plugin: action.plugin
+        });
+      });
       return result;
     default:
       return state;

@@ -15,6 +15,7 @@ class PluginModule extends AccessRightsComponent {
   }
 
   renderView(){
+    console.log("Rendering module");
     // this.props : parameters passed by react component
     // this.props.params : parameters passed by react router
     const { params, plugins } = this.props;

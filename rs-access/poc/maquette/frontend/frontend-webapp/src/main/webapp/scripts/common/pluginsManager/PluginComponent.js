@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 */
 class PluginComponent extends React.Component {
   render(){
+    console.log("Rendering plugin");
     const { plugin } = this.props;
     if (plugin && plugin.plugin){
       return React.createElement(plugin.plugin,null);

@@ -74,6 +74,7 @@ export function fetchPlugins() {
             const paths = plugin.paths.map( path => {
                 return window.location.origin + "/scripts/plugins/" + path;
             });
+            console.log("loading plugin");
             scriptjs(paths, plugin.name);
           });
         } else {
