@@ -20,9 +20,15 @@ class AuthenticateContainer extends React.Component {
   render(){
     return (
       <LoginComponent
-        onLogin={this.onLogin} />
+        onLogin={this.onLogin}
+        errorMessage={this.props.errorMessage}/>
     );
   }
 }
 
-export default connect()(AuthenticateContainer);
+const mapStateToProps = (state)=> {
+  return {
+    errorMessage: state.authentication.error
+  }
+}
+export default connect(mapStateToProps)(AuthenticateContainer);
