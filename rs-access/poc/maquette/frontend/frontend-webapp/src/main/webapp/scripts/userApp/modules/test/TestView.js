@@ -1,8 +1,12 @@
 import React from 'react';
-import RegardsView from 'RegardsView';
+import { connect } from 'react-redux';
+import AccessRightsComponent from 'common/modulesManager/AccessRightsComponent';
 
-class TestView extends RegardsView {
+class TestView extends AccessRightsComponent {
 
+  constructor(){
+    super();
+  }
   getDependencies(){
     return {
       "GET" : ["dependence"]
@@ -14,4 +18,4 @@ class TestView extends RegardsView {
   }
 }
 
-export default TestView
+module.exports = TestView;

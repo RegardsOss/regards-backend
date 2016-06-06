@@ -1,9 +1,10 @@
 import React from 'react';
-import RegardsView from 'RegardsView';
+import { connect } from 'react-redux';
 
+import AccessRightsComponent from 'common/modulesManager/AccessRightsComponent';
 import PluginLinkView from './PluginLinkView';
 
-class PluginLinksView extends RegardsView {
+class PluginLinksView extends AccessRightsComponent {
 
   getDependencies(){
     return null;
@@ -11,11 +12,11 @@ class PluginLinksView extends RegardsView {
 
   renderView(){
     const { plugins, project } = this.props;
-    return (
+    if (plugins.items){
+      return (
         <nav>
-          {plugins.map( plugin => {
-            console.log("link for plugin ", plugin);
-            if (plugin.name && plugin.plugin){
+          {plugins.items.map( plugin => {
+            if (plugin && plugin.plugin){
               return (
                 <PluginLinkView key={plugin.name}
                   project={project}
@@ -25,12 +26,19 @@ class PluginLinksView extends RegardsView {
           })}
         </nav>
       )
+    } else {
+      return null;
+    }
   }
 }
 
 PluginLinksView.propTypes = {
-  plugins: React.PropTypes.array.isRequired,
   project: React.PropTypes.string.isRequired
 }
 
-export default PluginLinksView
+const mapStateToProps = (state) => {
+  return {
+    plugins: state.plugins
+  }
+}
+module.exports = connect(mapStateToProps)(PluginLinksView);

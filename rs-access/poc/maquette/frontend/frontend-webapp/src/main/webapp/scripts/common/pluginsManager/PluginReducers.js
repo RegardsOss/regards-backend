@@ -1,29 +1,41 @@
+import {
+  REQUEST_PLUGINS,  RECEIVE_PLUGINS,
+  FAILED_PLUGINS, PLUGIN_INITIALIZED } from './PluginsActions';
 
-const plugins = (state = [], action) => {
-  switch (action.type){
-    case "ADD_PLUGIN" :
-      return [...state,{
-          name : action.name,
-          plugin : action.plugin
-        }];
-    default :
-      return state;
-  }
-}
-
-const pluginsLoaded = (state = false, action) => {
-  switch (action.type){
-    case "PLUGINS_LOADED" :
-      return !state;
+const plugins = (state = {
+  isFetching : false,
+  items: [],
+  lastUpdate: ''
+}, action) => {
+  switch(action.type){
+    case REQUEST_PLUGINS:
+      return Object.assign({}, state, {
+        isFetching: true
+      });
+    case RECEIVE_PLUGINS:
+      return Object.assign({}, state, {
+        isFetching: false,
+        items: action.plugins,
+        lastUpdate: action.receivedAt
+      });
+    case FAILED_PLUGINS:
+      return Object.assign({}, state, {
+        isFetching: false
+      });
+    case PLUGIN_INITIALIZED:
+      const result =  Object.assign({}, state);
+      const plugin = result.items.find( plugin => {
+        return plugin.name === action.name
+      })
+      plugin.plugin = action.plugin;
+      return result;
     default:
       return state;
   }
 }
 
-
-const pluginReducers = {
-  plugins,
-  pluginsLoaded
+const pluginsReducers = {
+  plugins
 }
 
-export default pluginReducers
+export default pluginsReducers;

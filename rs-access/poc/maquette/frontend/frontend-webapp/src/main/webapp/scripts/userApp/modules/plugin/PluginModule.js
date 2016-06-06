@@ -1,8 +1,9 @@
 import React from 'react';
-import RegardsView from 'RegardsView';
-import PluginView from 'common/pluginsManager/PluginView'
+import { connect } from 'react-redux';
+import AccessRightsComponent from 'common/modulesManager/AccessRightsComponent';
+import PluginComponent from 'common/pluginsManager/PluginComponent'
 
-class PluginModule extends RegardsView {
+class PluginModule extends AccessRightsComponent {
 
   getDependencies(){
     const { project, plugin } = this.props;
@@ -16,8 +17,18 @@ class PluginModule extends RegardsView {
   renderView(){
     // this.props : parameters passed by react component
     // this.props.params : parameters passed by react router
-    const { plugin } = this.props.params;
-    return <PluginView name={plugin}/>
+    const { params, plugins } = this.props;
+
+    if (plugins){
+      const plugin = plugins.find( plugin => {
+        return plugin.name === params.plugin;
+      });
+
+      // Get plugin from store
+      return <PluginComponent plugin={plugin}/>
+    } else {
+      return null;
+    }
   }
 }
 
@@ -25,4 +36,9 @@ PluginModule.propTypes = {
   params: React.PropTypes.object.isRequired
 }
 
-module.exports = PluginModule
+const mapStateToProps = ( state ) => {
+  return {
+    plugins: state.plugins.items
+  }
+}
+module.exports = connect(mapStateToProps)(PluginModule);

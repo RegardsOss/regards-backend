@@ -1,8 +1,12 @@
 import React from 'react';
 import { IndexLink, Link } from 'react-router';
-import RegardsView from 'RegardsView';
+import AccessRightsComponent from 'common/modulesManager/AccessRightsComponent';
 
-class PluginLinkView extends RegardsView {
+class PluginLinkView extends AccessRightsComponent {
+
+  constructor(){
+    super();
+  }
 
   getDependencies(){
     const { project, plugin } = this.props;
