@@ -4,10 +4,13 @@ import { Link } from 'react-router'
 import ReactDOM from 'react-dom';
 import Rest from 'grommet/utils/Rest';
 
+import ApplicationErrorComponent from 'common/components/ApplicationErrorComponent';
 import InstanceComponent from './projects/InstanceComponent';
 import ProjectsComponent from './projects/ProjectsComponent';
 import { getThemeStyles } from 'common/utils/ThemeUtils';
-import { setTheme } from 'common/store/CommonActionCreators';
+import { setTheme } from 'common/theme/ThemeActions';
+
+import { fetchAuthenticate } from 'common/authentication/AuthenticateActions';
 
 class PortalApp extends React.Component {
 
@@ -16,11 +19,18 @@ class PortalApp extends React.Component {
     const themeToSet = "";
     const { dispatch } = this.props;
     dispatch(setTheme(themeToSet));
+
+    // Connect as public in the first time
+    dispatch(fetchAuthenticate("public","public"));
   }
 
   render(){
-    const styles = getThemeStyles(this.props.theme,'portalApp/base');
-    if (this.props.children){
+    const { authentication, theme } = this.props;
+    const styles = getThemeStyles(theme,'portalApp/base');
+
+    if (!authentication.user){
+      return <ApplicationErrorComponent />
+    } else if (this.props.children){
       return <div>{this.props.children}</div>
     } else {
     return (
@@ -36,7 +46,8 @@ class PortalApp extends React.Component {
 // Add theme from store to the component props
 const mapStateToProps = (state) => {
   return {
-    theme: state.theme
+    theme: state.theme,
+    authentication: state.authentication
   }
 }
 module.exports = connect(mapStateToProps)(PortalApp);

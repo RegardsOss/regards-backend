@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
 import Rest from 'grommet/utils/Rest';
 
-import { setTheme, authenticated } from 'common/store/CommonActionCreators';
+import { setTheme } from 'common/theme/ThemeActions';
 import { getThemeStyles } from 'common/utils/ThemeUtils';
 import AuthenticateContainer from './containers/AuthenticateContainer';
 import LayoutContainer from './containers/LayoutContainer';
@@ -29,9 +29,11 @@ class AdminApp extends React.Component {
   }
 
   render(){
-    const { theme, authenticated, content, location, params } = this.props;
+    const { theme, authentication, content, location, params } = this.props;
     const styles = getThemeStyles(theme, 'adminApp/base');
-    if (!authenticated){
+
+    const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now();
+    if (!authenticated || authentication.user.name === 'public'){
       return (
         <div className={styles.main}>
           <AuthenticateContainer
@@ -60,7 +62,7 @@ AdminApp.contextTypes = {
 const mapStateToProps = (state) => {
   return {
     theme: state.theme,
-    authenticated: state.authenticated
+    authentication: state.authentication
   }
 }
 module.exports = connect(mapStateToProps)(AdminApp);

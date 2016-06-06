@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import scriptjs from 'scriptjs';
 import { loadPlugins } from 'common/pluginsManager/PluginsControler';
 
-import { setTheme } from 'common/store/CommonActionCreators';
+import { setTheme } from 'common/theme/ThemeActions';
 import { getThemeStyles } from 'common/utils/ThemeUtils';
 import PluginLinksView from './modules/plugin/PluginLinksView';
 import TestView from './modules/test/TestView';

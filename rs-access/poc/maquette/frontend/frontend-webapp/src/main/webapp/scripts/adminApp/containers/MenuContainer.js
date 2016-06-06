@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { IndexLink, Link } from 'react-router';
 
-import { logout } from 'common/store/CommonActionCreators';
+import { logout } from 'common/authentication/AuthenticateActions';
 import { getThemeStyles } from 'common/utils/ThemeUtils';
 
 class Menu extends React.Component {
