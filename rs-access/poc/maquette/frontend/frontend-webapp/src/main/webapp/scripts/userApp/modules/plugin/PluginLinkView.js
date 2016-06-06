@@ -1,6 +1,6 @@
 import React from 'react';
 import { IndexLink, Link } from 'react-router';
-import AccessRightsComponent from 'common/modulesManager/AccessRightsComponent';
+import AccessRightsComponent from 'common/access-rights/AccessRightsComponent';
 
 class PluginLinkView extends AccessRightsComponent {
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import scriptjs from 'scriptjs';
-import { fetchPlugins } from 'common/pluginsManager/PluginsActions';
+import { fetchPlugins } from 'common/plugins/PluginsActions';
 
 import { setTheme } from 'common/theme/ThemeActions';
 import { getThemeStyles } from 'common/utils/ThemeUtils';
@@ -16,10 +16,12 @@ class UserApp extends React.Component {
 
   componentWillMount(){
     const themeToSet = this.props.params.project;
-    const { dispatch } = this.props;
+    const { dispatch, plugins } = this.props;
     dispatch(setTheme(themeToSet));
 
-    dispatch(fetchPlugins());
+    if (!plugins || !plugins.items || plugins.items.length === 0){
+      dispatch(fetchPlugins());
+    }
   }
 
   render(){
@@ -46,7 +48,8 @@ class UserApp extends React.Component {
 // Add theme from store to the component props
 const mapStateToProps = (state) => {
   return {
-    theme: state.theme
+    theme: state.theme,
+    plugins: state.plugins
   }
 }
 module.exports = connect(mapStateToProps)(UserApp);

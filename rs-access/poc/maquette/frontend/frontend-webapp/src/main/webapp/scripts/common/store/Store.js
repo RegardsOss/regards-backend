@@ -1,8 +1,11 @@
 import thunkMiddleware from 'redux-thunk'
 import { createStore, combineReducers, applyMiddleware } from 'redux';
+
+import loggerMiddleware from 'common/logger/ActionLoggerMiddleware';
+
 import themeReducers from 'common/theme/ThemeReducers';
-import pluginReducers from 'common/pluginsManager/PluginReducers';
-import accessRightsReducers from 'common/modulesManager/AccessRightsReducers';
+import pluginReducers from 'common/plugins/PluginReducers';
+import accessRightsReducers from 'common/access-rights/AccessRightsReducers';
 import authenticateReducers from 'common/authentication/AuthenticateReducers';
 import projectsReducers from 'portalApp/projects/ProjectsReducers';
 
@@ -26,12 +29,14 @@ const store = createStore(
   reducers,
   defaultStore,
   applyMiddleware(
-    thunkMiddleware
+    thunkMiddleware, // lets us dispatch() functions
+    loggerMiddleware // logs any dispatched action
   )
 );
 
+// Log any change in the store
 const render = () => {
-  //console.log("Store updated : ",store.getState());
+  console.log("STORE UPDATED : ",store.getState());
 }
 store.subscribe(render);
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import AccessRightsComponent from 'common/modulesManager/AccessRightsComponent';
-import PluginComponent from 'common/pluginsManager/PluginComponent'
+import AccessRightsComponent from 'common/access-rights/AccessRightsComponent';
+import PluginComponent from 'common/plugins/PluginComponent'
 
 class PluginModule extends AccessRightsComponent {
 

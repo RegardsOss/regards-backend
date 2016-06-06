@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import AccessRightsComponent from 'common/modulesManager/AccessRightsComponent';
+import AccessRightsComponent from 'common/access-rights/AccessRightsComponent';
 
 class TestView extends AccessRightsComponent {
 
