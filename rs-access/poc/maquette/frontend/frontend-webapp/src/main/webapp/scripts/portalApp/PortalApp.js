@@ -11,39 +11,11 @@ import { setTheme } from 'common/store/CommonActionCreators';
 
 class PortalApp extends React.Component {
 
-  constructor(){
-    super();
-      this.state = {
-        projects : []
-      };
-
-      this.loadProjects = this.loadProjects.bind(this);
-  }
-
-  componentDidMount(){
-    this.loadProjects();
-  }
-
   componentWillMount(){
     // Init application theme
     const themeToSet = "";
     const { dispatch } = this.props;
     dispatch(setTheme(themeToSet));
-  }
-
-  loadProjects() {
-    const location = 'http://localhost:8080/api/projects';
-    Rest.get(location)
-      .end((error, response) => {
-        console.log("Available projects : ",response.body);
-        if (response.status === 200){
-          this.setState({
-            projects : response.body
-          });
-        } else {
-          console.log(response);
-        }
-      });
   }
 
   render(){
@@ -54,8 +26,7 @@ class PortalApp extends React.Component {
     return (
       <div className={styles.main}>
         <InstanceComponent />
-        Available projects on REGARDS instance :
-        <ProjectsComponent projects={this.state.projects}/>
+        <ProjectsComponent />
       </div>
     )
   }

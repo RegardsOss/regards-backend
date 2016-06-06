@@ -1,25 +1,37 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import Project from './ProjectComponent';
+import { fetchProjects } from './ProjectsActions';
 
 class ProjectsComponent extends React.Component {
+
+  componentWillMount(){
+    const { dispatch } = this.props;
+    dispatch(fetchProjects());
+  }
+
   render(){
-    if (this.props.projects && this.props.projects.length > 0){
-      return (
-        <ul>
-          {this.props.projects.map(project =>
-            <Project key={project.name} project={project} />
-          )}
-        </ul>
-      )
+    if (this.props.projects.isFetching === true || !this.props.projects.items){
+      return (<div>Loading projects ... </div>);
     } else {
       return (
-        <div>Loading projects ... </div>
-      );
+        <div>
+          <p>Available projects on REGARDS instance :</p>
+          <ul>
+            {this.props.projects.items.map(project =>
+              <Project key={project.name} project={project} />
+            )}
+          </ul>
+        </div>
+      )
     }
   }
 }
 
-ProjectsComponent.propTypes = {
-  projects: React.PropTypes.array.isRequired
+// Add projects from store to the component props
+const mapStateToProps = (state) => {
+  return {
+    projects: state.projects
+  }
 }
-export default ProjectsComponent;
+export default connect(mapStateToProps)(ProjectsComponent);
