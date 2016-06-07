@@ -1,7 +1,4 @@
 import React from 'react';
-import { connect } from 'react-redux';
-
-import { getThemeStyles } from 'common/utils/ThemeUtils';
 
 class LoginComponent extends React.Component {
 
@@ -22,7 +19,7 @@ class LoginComponent extends React.Component {
   }
 
   render(){
-    const styles = getThemeStyles(this.props.theme, 'adminApp/login');
+    const { styles } = this.props;
     return (
       <div className={styles["login-modal"]} onKeyDown={this.handleKeyPress}>
         <p className={styles["login-error"]}>{this.props.errorMessage}</p>
@@ -46,13 +43,9 @@ class LoginComponent extends React.Component {
 }
 
 LoginComponent.propTypes = {
+  styles: React.PropTypes.object.isRequired,
   onLogin: React.PropTypes.func.isRequired,
   errorMessage: React.PropTypes.string
 }
 
-const mapStateToProps = (state) => {
-  return {
-    theme: state.theme
-  }
-}
-export default connect(mapStateToProps)(LoginComponent);
+export default LoginComponent;

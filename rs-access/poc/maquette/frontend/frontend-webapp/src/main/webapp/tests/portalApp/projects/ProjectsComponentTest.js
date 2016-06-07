@@ -13,7 +13,8 @@ describe('Testing projects components', () => {
   it('Should render correctly the loading projects message', () => {
     const dispatch = () => { };
     const projectsStyles = {
-      link: 'link'
+      link: 'link',
+      projectlink: 'projectlink'
     };
     let props = {
       projects: {
@@ -29,7 +30,8 @@ describe('Testing projects components', () => {
   it('Should render correctly the projects list', () => {
     const dispatch = () => { };
     const projectsStyles = {
-      link: 'link'
+      link: 'link',
+      projectlink: 'projectlink'
     };
     let props = {
       projects: {
@@ -50,13 +52,13 @@ describe('Testing projects components', () => {
       </div>
     );
     const wrapper = shallow(<ProjectsComponent {...props}/>);
-    console.log(wrapper.debug());
     expect(wrapper.contains(result)).toEqual(true);
   });
 
   it('Should render correctly a project link', () => {
     const projectsStyles = {
-      link: 'link'
+      link: 'link',
+      projectlink: 'projectlink'
     };
     let props = {
       styles: projectsStyles,
@@ -65,15 +67,12 @@ describe('Testing projects components', () => {
 
     const result = (
       <li className="link">
-        cdpp
-        &nbsp;-&nbsp;
-        <Link to="/user/cdpp" onlyActiveOnIndex={false} style={{}}>ihm user</Link>
-        &nbsp;/&nbsp;
-        <Link to="/admin/cdpp" onlyActiveOnIndex={false} style={{}}>ihm admin</Link>
+        <p>cdpp</p>
+          <Link to="/user/cdpp" className="projectlink">ihm user</Link>
+          <Link to="/admin/cdpp" className="projectlink">ihm admin</Link>
       </li>
-    );
+    )
     const wrapper = shallow(<ProjectComponent {...props}/>);
-    console.log(wrapper.debug());
     expect(wrapper.contains(result)).toEqual(true);
   });
 

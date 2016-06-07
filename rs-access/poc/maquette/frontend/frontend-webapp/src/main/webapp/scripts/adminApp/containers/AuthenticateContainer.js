@@ -1,6 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { getThemeStyles } from 'common/utils/ThemeUtils';
+
 import LoginComponent from 'adminApp/components/LoginComponent';
 import { fetchAuthenticate } from 'common/authentication/AuthenticateActions';
 
@@ -17,8 +19,10 @@ class AuthenticateContainer extends React.Component {
   }
 
   render(){
+    const styles = getThemeStyles(this.props.theme, 'adminApp/login');
     return (
       <LoginComponent
+        styles={styles}
         onLogin={this.onLogin}
         errorMessage={this.props.errorMessage}/>
     );
@@ -27,7 +31,8 @@ class AuthenticateContainer extends React.Component {
 
 const mapStateToProps = (state)=> {
   return {
-    errorMessage: state.authentication.error
+    errorMessage: state.authentication.error,
+    theme: state.theme
   }
 }
 export default connect(mapStateToProps)(AuthenticateContainer);
