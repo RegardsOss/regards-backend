@@ -27,15 +27,15 @@ scripts/
           shall not be display.
 steelsheets/ : application styles (sass)
 
-################
-#  RegardsView :
-################
+############################
+#  AccessRightsComponent :
+############################
 
     All views in the regards application should extends RegardsView.
 
     Example :
 
-    class ExempleView extends RegardsView {
+    class ExempleComponent extends AccessRightsComponent {
 
       // Define all REST dependencies of the view
       getDependencies(){
