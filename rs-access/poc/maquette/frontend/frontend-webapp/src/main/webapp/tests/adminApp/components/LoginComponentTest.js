@@ -22,11 +22,7 @@ describe('Testing login component', () => {
     expect(wrapper.find("div .login-modal")).to.have.length(1);
     expect(wrapper.find("div .login-error")).to.have.length(1);
     expect(wrapper.find("input #username")).to.have.length(1);
-    const username = wrapper.find("input #username");
-    username.simulate('change', { target: { value: 'test' } });
     expect(wrapper.find("input #password")).to.have.length(1);
-    const password = wrapper.find("input #password");
-    password.simulate('change', { target: { value: 'test_password' } });
     expect(wrapper.find("button")).to.have.length(1);
 
     // Test onLogin action
