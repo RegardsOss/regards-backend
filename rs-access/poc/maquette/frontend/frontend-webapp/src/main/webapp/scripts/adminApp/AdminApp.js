@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
 
 import { setTheme } from 'common/theme/ThemeActions';
-import { getThemeStyles } from 'common/utils/ThemeUtils';
+import { getThemeStyles } from 'common/theme/ThemeUtils';
 import AuthenticateContainer from './containers/AuthenticateContainer';
 import LayoutContainer from './containers/LayoutContainer';
 

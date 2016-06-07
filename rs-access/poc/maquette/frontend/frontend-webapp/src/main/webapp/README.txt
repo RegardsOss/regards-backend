@@ -3,30 +3,28 @@
 ##################
 
 build/ : Webpack compilation directory
-json/ : Backend mocks
 node_modules/ : vendors
 scripts/
   adminApp/ : Contains the admin web application
   common/ : Contains the common modules.
-      moduleManager/ :
-          Contains the root RegardsView which allow to manage views
+      access-rights/ :
+          Contains the root AccessRightsComponent which allow to manage component
           access rights from REST dependencies.
-      pluginManager/ :
-          Contains the PluginController which allow to load plugins if any.
-          Contains the PluginView which allow to display a given loaded
+      plugins/ :
+          Contains the PluginActions and PluginReducers which allow to load plugins if any.
+          Contains the PluginComponent which allow to display a given loaded
           plugins.
       store/ :
           Contains the Redux Store. Each module must register his reducers
           to the store.
   plugins/ : Contains all embeded plugins.
-  portalApp/ : Contains the portal web applicaion
+  portalApp/ : Contains the user web application
+  userApp/ : Contains the user web applicaion
       pluginModule/ :
           Contains the views to display plugins in the user app.
       testModule/ :
           Contains a view example for access denied to REST resource. This view
           shall not be display.
-  userApp/ : Contains the user web application
-  json/ : mocks for not emplemented backend
 steelsheets/ : application styles (sass)
 
 ################

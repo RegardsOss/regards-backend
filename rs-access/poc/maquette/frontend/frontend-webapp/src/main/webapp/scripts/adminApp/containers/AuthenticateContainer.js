@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { getThemeStyles } from 'common/utils/ThemeUtils';
+import { getThemeStyles } from 'common/theme/ThemeUtils';
 
 import LoginComponent from 'adminApp/components/LoginComponent';
 import { fetchAuthenticate } from 'common/authentication/AuthenticateActions';

@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom';
 import ApplicationErrorComponent from 'common/components/ApplicationErrorComponent';
 import InstanceComponent from './projects/InstanceComponent';
 import ProjectsComponent from './projects/ProjectsComponent';
-import { getThemeStyles } from 'common/utils/ThemeUtils';
+import { getThemeStyles } from 'common/theme/ThemeUtils';
 import { setTheme } from 'common/theme/ThemeActions';
 
 import { fetchAuthenticate } from 'common/authentication/AuthenticateActions';

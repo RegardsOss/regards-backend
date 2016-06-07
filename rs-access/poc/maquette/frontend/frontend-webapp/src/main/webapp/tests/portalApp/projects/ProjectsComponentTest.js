@@ -1,7 +1,7 @@
-import expect from 'expect'
 import React from 'react'
 import { Link } from 'react-router';
 import { mount, shallow } from 'enzyme';
+import { expect } from 'chai'
 // Import unconnected version of ProjectsComponent. by using bracets {} around component.
 // To get the react-redux connect component use "import ProjectsComponent" instead of "import { ProjectsComponent }"
 import { ProjectsComponent } from '../../../scripts/portalApp/projects/ProjectsComponent';
@@ -24,7 +24,7 @@ describe('Testing projects components', () => {
       dispatch :dispatch
     };
     const wrapper = shallow(<ProjectsComponent {...props}/>);
-    expect(wrapper.equals(<div>Loading projects ... </div>)).toEqual(true);
+    expect(wrapper.equals(<div>Loading projects ... </div>)).to.equal(true);
   });
 
   it('Should render correctly the projects list', () => {
@@ -52,7 +52,7 @@ describe('Testing projects components', () => {
       </div>
     );
     const wrapper = shallow(<ProjectsComponent {...props}/>);
-    expect(wrapper.contains(result)).toEqual(true);
+    expect(wrapper.contains(result)).to.equal(true);
   });
 
   it('Should render correctly a project link', () => {
@@ -73,7 +73,7 @@ describe('Testing projects components', () => {
       </li>
     )
     const wrapper = shallow(<ProjectComponent {...props}/>);
-    expect(wrapper.contains(result)).toEqual(true);
+    expect(wrapper.contains(result)).to.equal(true);
   });
 
 });

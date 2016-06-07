@@ -1,7 +1,7 @@
 import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
 import nock from 'nock'
-import expect from 'expect' // You can use any testing library
+import { expect } from 'chai' // You can use any testing library
 import reducers from '../../../scripts/portalApp/projects/ProjectsReducers';
 import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
@@ -14,9 +14,7 @@ const mockStore = configureMockStore(middlewares)
 
 describe('Testing Projects reducers', () => {
   it('Should return the initial state', () => {
-    expect(
-      reducers.projects(undefined, {})
-    ).toEqual({
+    expect(reducers.projects(undefined, {})).to.eql({
         isFetching : false,
         items: [],
         lastUpdate: ''
@@ -39,7 +37,7 @@ describe('Testing Projects reducers', () => {
     };
 
     const result = reducers.projects(initstate, action);
-    expect(result).toEqual(expectedResult);
+    expect(result).to.eql(expectedResult);
   });
 
   it('Should add projects to state', () => {
@@ -59,7 +57,7 @@ describe('Testing Projects reducers', () => {
 
     const result = reducers.projects(initstate, action);
     expectedResult.lastUpdate = result.lastUpdate;
-    expect(result).toEqual(expectedResult);
+    expect(result).to.eql(expectedResult);
   });
 });
 
@@ -84,9 +82,9 @@ describe('Testing projects async actions. (Retreive projects from backend)', () 
     return store.dispatch(fetchProjects())
       .then(() => { // return of async actions
         // There must be two dispatched actions from fetchProjects.
-        expect(store.getActions().length).toEqual(2);
+        expect(store.getActions().length).to.equal(2);
         // Check each dispatch action
-        expect(store.getActions()).toEqual(expectedActions)
+        expect(store.getActions()).to.eql(expectedActions)
       })
   })
 
@@ -105,13 +103,13 @@ describe('Testing projects async actions. (Retreive projects from backend)', () 
     return store.dispatch(fetchProjects())
       .then(() => { // return of async actions
         // There must be two dispatched actions from fetchProjects.
-        expect(store.getActions().length).toEqual(2);
+        expect(store.getActions().length).to.equal(2);
         // Check receivedAt time
-        expect(store.getActions()[1].receivedAt).toBeLessThanOrEqualTo(Date.now());
+        expect(store.getActions()[1].receivedAt).to.be.at.most(Date.now());
         // Add receivedAt time in expected action
         expectedActions[1].receivedAt = store.getActions()[1].receivedAt;
         // Check each dispatch action
-        expect(store.getActions()).toEqual(expectedActions);
+        expect(store.getActions()).to.eql(expectedActions);
       })
   })
 })

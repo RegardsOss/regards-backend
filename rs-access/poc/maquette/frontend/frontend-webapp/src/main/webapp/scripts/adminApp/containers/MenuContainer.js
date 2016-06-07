@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { IndexLink, Link } from 'react-router';
 
 import { logout } from 'common/authentication/AuthenticateActions';
-import { getThemeStyles } from 'common/utils/ThemeUtils';
+import { getThemeStyles } from 'common/theme/ThemeUtils';
 
 class Menu extends React.Component {
 
