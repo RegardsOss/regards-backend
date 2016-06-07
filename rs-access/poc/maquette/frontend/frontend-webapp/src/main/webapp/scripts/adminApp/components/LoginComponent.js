@@ -1,5 +1,4 @@
 import React from 'react';
-import Rest from 'grommet/utils/Rest';
 import { connect } from 'react-redux';
 
 import { getThemeStyles } from 'common/utils/ThemeUtils';

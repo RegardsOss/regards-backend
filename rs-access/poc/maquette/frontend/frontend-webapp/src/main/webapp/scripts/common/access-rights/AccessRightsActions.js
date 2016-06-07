@@ -1,4 +1,4 @@
-import Rest from 'grommet/utils/Rest';
+import fetch from 'isomorphic-fetch'
 import scriptjs from 'scriptjs';
 
 const ACCESS_RIGHTS_API='http://localhost:8080/api/access/rights';
@@ -28,6 +28,14 @@ function failedAccessRights(view) {
   }
 }
 
+function checkResponseStatus(response){
+  if (response.status === 200){
+    return response;
+  } else {
+    throw new Error("Access denied to view : "+ view);
+  }
+}
+
 // Meet our first thunk action creator!
 // Though its insides are different, you would use it just like any other action creator:
 // store.dispatch(fetchProjects())
@@ -37,7 +45,7 @@ export function fetchAccessRights(view, dependencies) {
   // It passes the dispatch method as an argument to the function,
   // thus making it able to dispatch actions itself.
 
-  return function (dispatch) {
+  return function (dispatch, getState) {
 
     // First dispatch: the app state is updated to inform
     // that the API call is starting.
@@ -50,15 +58,25 @@ export function fetchAccessRights(view, dependencies) {
     // In this case, we return a promise to wait for.
     // This is not required by thunk middleware, but it is convenient for us.
 
-    return Rest.get(ACCESS_RIGHTS_API,dependencies)
-      .end((error, response) => {
-        if (response.status === 200){
-          console.log("Access granted to view : "+ view);
-          dispatch(receiveAccessRights(view, true));
-        } else {
-          console.log("Access denied to view : "+ view);
-          dispatch(failedAccessRights(view));
-        }
+    let authorization = "Basic";
+    if ( getState().authentication && getState().authentication.user && getState().authentication.user.access_token){
+      authorization = "Bearer " + getState().authentication.user.access_token;
+    }
+
+    return fetch(ACCESS_RIGHTS_API, {
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': authorization
+      },
+      body: dependencies
+    })
+    .then(checkResponseStatus)
+    .then(function(response) {
+      return response.json()
+    }).then(function(body) {
+      dispatch(receiveAccessRights(view, true));
+    }).catch(function(error) {
+      dispatch(failedAccessRights(view));
     });
   }
 }

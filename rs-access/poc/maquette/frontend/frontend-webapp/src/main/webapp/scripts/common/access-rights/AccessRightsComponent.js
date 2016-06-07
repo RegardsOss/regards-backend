@@ -1,5 +1,4 @@
 import React from "react"
-import Rest from 'grommet/utils/Rest';
 import { fetchAccessRights } from "./AccessRightsActions";
 
 /**

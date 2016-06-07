@@ -1,4 +1,4 @@
-import Rest from 'grommet/utils/Rest';
+import fetch from 'isomorphic-fetch'
 import scriptjs from 'scriptjs';
 
 const PLUGINS_API='http://localhost:8080/api/plugins';
@@ -37,6 +37,15 @@ function pluginInitialized(name, plugin){
   }
 }
 
+function checkResponseStatus(response){
+  console.log("SEB",response);
+  if (response.status === 200){
+    return response;
+  } else {
+    throw new Error(response.statusText);
+  }
+}
+
 // Meet our first thunk action creator!
 // Though its insides are different, you would use it just like any other action creator:
 // store.dispatch(fetchProjects())
@@ -46,7 +55,7 @@ export function fetchPlugins() {
   // It passes the dispatch method as an argument to the function,
   // thus making it able to dispatch actions itself.
 
-  return function (dispatch) {
+  return function (dispatch, getState) {
 
     document.addEventListener('plugin', function (plugin) {
       // When plugin loaded event is received, add plugin to the store
@@ -64,22 +73,32 @@ export function fetchPlugins() {
     // In this case, we return a promise to wait for.
     // This is not required by thunk middleware, but it is convenient for us.
 
-    return Rest.get(PLUGINS_API)
-      .end((error, response) => {
+    let authorization = "Basic";
+    if ( getState().authentication && getState().authentication.user && getState().authentication.user.access_token){
+      authorization = "Bearer " + getState().authentication.user.access_token;
+    }
 
-        if (response.status === 200){
-          dispatch(receivePlugins(response.body));
-          // Load ech plugins
-          response.body.map( plugin => {
-            const paths = plugin.paths.map( path => {
-                return window.location.origin + "/scripts/plugins/" + path;
-            });
-            console.log("loading plugin");
-            scriptjs(paths, plugin.name);
-          });
-        } else {
-          dispatch(failedPlugins(error));
-        }
+    return fetch(PLUGINS_API, {
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': authorization
+      }
+    })
+    .then(checkResponseStatus)
+    .then(function(response) {
+      return response.json()
+    }).then(function(body) {
+      dispatch(receivePlugins(body));
+      // Load ech plugins
+      body.map( plugin => {
+        const paths = plugin.paths.map( path => {
+            return window.location.origin + "/scripts/plugins/" + path;
+        });
+        console.log("loading plugin");
+        scriptjs(paths, plugin.name);
+      });
+    }).catch(function(error) {
+      dispatch(failedPlugins(error));
     });
   }
 }

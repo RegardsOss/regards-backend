@@ -1,4 +1,4 @@
-import Rest from 'grommet/utils/Rest';
+import fetch from 'isomorphic-fetch'
 
 const AUTHENTICATE_API='http://localhost:8080/oauth/token';
 
@@ -33,6 +33,16 @@ export function logout() {
   }
 }
 
+function checkResponseStatus (response) {
+  if (!response){
+    throw new Error("Service unavailable");
+  } else if (response.status === 200) {
+   return response;
+  } else {
+     throw new Error("Authentication error");
+  }
+}
+
 // Meet our first thunk action creator!
 // Though its insides are different, you would use it just like any other action creator:
 // store.dispatch(fetchProjects())
@@ -57,30 +67,23 @@ export function fetchAuthenticate(username, password) {
     const request = AUTHENTICATE_API + "?grant_type=password&username="
     + username + "&password=" +password;
 
-    // Init rest requests with client authentication
-    Rest.setHeaders({
-      'Accept': 'application/json',
-      'Authorization': "Basic " + btoa("acme:acmesecret")
-    });
-
-    return Rest.post(request)
-      .end((error, response) => {
-        if (error && error.timeout > 1000) {
-         dispatch(failedAuthenticate("Timeout"));
-        } else if (!response) {
-         dispatch(failedAuthenticate("Service unavailable"));
-        } else if (response.status != 200){
-         dispatch(failedAuthenticate("Authentication error"));
-        } else if (response.status === 200){
-         // Add token to rest requests
-         Rest.setHeaders({
-           'Authorization': "Bearer " + response.body.access_token
-         });
-         const user = Object.assign({}, response.body, {
-           name: username
-         });
-         dispatch(receiveAuthenticate(user));
-        }
+    return fetch(request, {
+      method: 'post',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': "Basic " + btoa("acme:acmesecret")
+      }
+    })
+    .then(checkResponseStatus)
+    .then(function(response) {
+      return response.json()
+    }).then(function(body) {
+      const user = Object.assign({}, body, {
+        name: username
+      });
+      dispatch(receiveAuthenticate(user));
+    }).catch(function(error) {
+      dispatch(failedAuthenticate(error.message));
     });
   }
 }

@@ -2,7 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router'
 import ReactDOM from 'react-dom';
-import Rest from 'grommet/utils/Rest';
 
 import ApplicationErrorComponent from 'common/components/ApplicationErrorComponent';
 import InstanceComponent from './projects/InstanceComponent';

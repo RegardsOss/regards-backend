@@ -77,15 +77,5 @@ export function fetchProjects() {
     }).catch(function(error) {
       dispatch(failedProjects(error));
     });
-
-    /*return Rest.get(PROJECTS_API)
-      .end((error, response) => {
-        if (response.status === 200){
-        dispatch(receiveProjects(response.body));
-          dispatch(receiveProjects(response.body));
-        } else {
-          dispatch(failedProjects(response));
-        }
-    });*/
   }
 }

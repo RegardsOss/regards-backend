@@ -22,7 +22,6 @@
   "dependencies": {
     "deep-freeze": "0.0.1",
     "expect": "^1.20.1",
-    "grommet": "^0.6.6",
     "isomorphic-fetch": "^2.2.1",
     "react": "^15.0.2",
     "react-dom": "^15.0.2",

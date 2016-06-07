@@ -2,7 +2,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
-import Rest from 'grommet/utils/Rest';
 
 import { setTheme } from 'common/theme/ThemeActions';
 import { getThemeStyles } from 'common/utils/ThemeUtils';
