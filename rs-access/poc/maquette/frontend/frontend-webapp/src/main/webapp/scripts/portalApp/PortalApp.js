@@ -26,6 +26,7 @@ class PortalApp extends React.Component {
   render(){
     const { authentication, theme } = this.props;
     const styles = getThemeStyles(theme,'portalApp/base');
+    const projectsStyles = getThemeStyles(theme, 'portalApp/project')
 
     if (!authentication.user){
       return <ApplicationErrorComponent />
@@ -35,7 +36,7 @@ class PortalApp extends React.Component {
     return (
       <div className={styles.main}>
         <InstanceComponent />
-        <ProjectsComponent />
+        <ProjectsComponent styles={projectsStyles}/>
       </div>
     )
   }

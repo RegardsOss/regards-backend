@@ -3,7 +3,8 @@ import { connect } from 'react-redux';
 import Project from './ProjectComponent';
 import { fetchProjects } from './ProjectsActions';
 
-class ProjectsComponent extends React.Component {
+// Export class itself without connect to be able to use it in test without store connection.
+export class ProjectsComponent extends React.Component {
 
   componentWillMount(){
     const { dispatch } = this.props;
@@ -11,6 +12,7 @@ class ProjectsComponent extends React.Component {
   }
 
   render(){
+    const { styles } = this.props;
     if (this.props.projects.isFetching === true || !this.props.projects.items){
       return (<div>Loading projects ... </div>);
     } else {
@@ -19,13 +21,17 @@ class ProjectsComponent extends React.Component {
           <p>Available projects on REGARDS instance :</p>
           <ul>
             {this.props.projects.items.map(project =>
-              <Project key={project.name} project={project} />
+              <Project key={project.name} project={project} styles={styles}/>
             )}
           </ul>
         </div>
       )
     }
   }
+}
+
+ProjectsComponent.propTypes = {
+  styles: React.PropTypes.object.isRequired
 }
 
 // Add projects from store to the component props

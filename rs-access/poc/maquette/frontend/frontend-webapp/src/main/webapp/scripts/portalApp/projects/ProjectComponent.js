@@ -2,11 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router';
 
-import { getThemeStyles } from 'common/utils/ThemeUtils';
-
 class ProjectComponent extends React.Component {
   render(){
-    const styles = getThemeStyles(this.props.theme, 'portalApp/project');
+    const { styles } = this.props;
     return (
       <li className={styles.link}>
         {this.props.project.name}&nbsp;-&nbsp;
@@ -18,12 +16,8 @@ class ProjectComponent extends React.Component {
 }
 
 ProjectComponent.propTypes = {
-  project: React.PropTypes.object.isRequired
+  project: React.PropTypes.object.isRequired,
+  styles: React.PropTypes.object.isRequired
 }
 
-const mapStateToProps = (state) => {
-  return {
-    theme: state.theme
-  }
-}
-export default connect(mapStateToProps)(ProjectComponent);
+export default ProjectComponent;

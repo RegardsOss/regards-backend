@@ -3,14 +3,14 @@ import fetch from 'isomorphic-fetch'
 export const PROJECTS_API='http://localhost:8080/api/projects';
 
 export const REQUEST_PROJECTS = 'REQUEST_PROJECTS'
-function requestProjects() {
+export function requestProjects() {
   return {
     type: REQUEST_PROJECTS,
   }
 }
 
 export const RECEIVE_PROJECTS = 'RECEIVE_PROJECTS'
-function receiveProjects(projects) {
+export function receiveProjects(projects) {
   return {
     type: RECEIVE_PROJECTS,
     projects: projects,
@@ -28,11 +28,10 @@ function failedProjects(error) {
 
 function checkStatus(response) {
   if (response.status === 200 ) {
-    return response
+    return response;
   } else {
-    var error = new Error(response.statusText)
-    error.response = response
-    throw error
+    var error = new Error(response.statusText);
+    throw error;
   }
 }
 
@@ -75,7 +74,7 @@ export function fetchProjects() {
     }).then(function(body) {
       dispatch(receiveProjects(body));
     }).catch(function(error) {
-      dispatch(failedProjects(error));
+      dispatch(failedProjects(error.message));
     });
   }
 }
