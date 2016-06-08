@@ -10,10 +10,6 @@ class NavigationComponent extends AccessRightsComponent {
     return null;
   }
 
-  componentDidUpdate(){
-    console.log("Navigation updated");
-  }
-
   render(){
     const { location, plugins, project } = this.props;
     if (this.state.access === true && plugins.items){

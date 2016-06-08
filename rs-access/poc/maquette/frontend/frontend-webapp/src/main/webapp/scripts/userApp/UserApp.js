@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { fetchPlugins } from 'common/plugins/PluginsActions';
 import { setTheme } from 'common/theme/ThemeActions';
 import Layout from './modules/layout/Layout';
+import Test from './modules/test/Test';
 
 class UserApp extends React.Component {
 
@@ -18,8 +19,12 @@ class UserApp extends React.Component {
   }
 
   render(){
-    const { location, content, params } = this.props;
+    const { location, params } = this.props;
+    let { content } = this.props;
     const { project } = params;
+    if (!content){
+      content = (<Test />)
+    }
     return (<Layout location={location} content={content} project={project}/>);
   }
 }

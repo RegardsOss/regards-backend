@@ -17,6 +17,7 @@ class AccessRightsComponent extends React.Component{
     this.state= {
       access: false
     }
+    this.checkViewAccessRights = this.checkViewAccessRights.bind(this);
   }
 
   /**
@@ -38,28 +39,39 @@ class AccessRightsComponent extends React.Component{
   * Method to check if the view is displayable
   */
   componentWillMount(){
-    this.checkViewAccessRights();
-  }
-
-  checkViewAccessRights(){
+    const { store } = this.context;
     if (this.getDependencies() === null){
-      console.log("Access granted to view : "+ this.constructor.name);
       this.setState({
         access: true
       });
     } else {
-      const { store } = this.context;
-      const view = store.getState().views.find( curent => {
-        return curent.name === this.constructor.name;
-      });
-      // If not, check access from server
-      if (!view){
-        store.dispatch(fetchAccessRights(this.constructor.name, this.getDependencies()));
+      this.unsubscribe = store.subscribe(this.checkViewAccessRights);
+      store.dispatch(fetchAccessRights(this.constructor.name, this.getDependencies()));
+    }
+  }
+
+  componentWillUnmount(){
+    if (this.unsubscribe){
+      this.unsubscribe();
+    }
+  }
+
+  checkViewAccessRights(){
+    const { store } = this.context;
+    const view = store.getState().views.find( curent => {
+      return curent.name === this.constructor.name;
+    });
+    // If not, check access from server
+    if (view){
+      if (view.access === true){
+        console.log("Access granted to view : " + this.constructor.name);
       } else {
-        this.setState({
-          access: view.access
-        });
+        console.log("Access denied to view : " + this.constructor.name);
       }
+      this.unsubscribe();
+      this.setState({
+        access: view.access
+      });
     }
   }
 }
