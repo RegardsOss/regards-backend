@@ -81,6 +81,7 @@ module.exports = {
       {test: /\.sass$/, exclude: [/node_modules/,'/stylesheets\/default/'],
         loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
       },
+      {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"}
     ]
   },
   plugins: [

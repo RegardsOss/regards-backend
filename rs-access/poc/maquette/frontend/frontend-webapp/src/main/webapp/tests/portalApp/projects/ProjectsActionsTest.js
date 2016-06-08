@@ -2,7 +2,6 @@ import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
 import nock from 'nock'
 import { expect } from 'chai' // You can use any testing library
-import reducers from '../../../scripts/portalApp/projects/ProjectsReducers';
 import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
     FAILED_PROJECTS, fetchProjects, requestProjects, receiveProjects } from '../../../scripts/portalApp/projects/ProjectsActions';
@@ -10,7 +9,7 @@ import {
 const middlewares = [ thunk ]
 const mockStore = configureMockStore(middlewares)
 
-// Ce fichier permet de tester les actions et reducers liés aux projets
+// Ce fichier permet de tester les actions liés aux projets
 describe('Testing projects actions.', () => {
 
   afterEach(() => {

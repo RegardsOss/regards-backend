@@ -1,6 +1,8 @@
 package fr.cs.regards.pojo;
 
-public class Project {
+import org.springframework.hateoas.ResourceSupport;
+
+public class Project extends ResourceSupport{
 	
 	private String name;
 

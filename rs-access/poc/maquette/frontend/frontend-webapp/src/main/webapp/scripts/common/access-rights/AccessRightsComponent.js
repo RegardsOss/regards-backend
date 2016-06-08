@@ -15,7 +15,7 @@ class AccessRightsComponent extends React.Component{
   constructor(){
     super();
     this.state= {
-      access: null
+      access: false
     }
   }
 
@@ -42,42 +42,26 @@ class AccessRightsComponent extends React.Component{
   }
 
   checkViewAccessRights(){
-    if (this.state.access === null){
-
-      if (this.getDependencies() === null){
-        console.log("Access granted to view : "+ this.constructor.name);
-        this.setState({
-          access: true
-        });
+    if (this.getDependencies() === null){
+      console.log("Access granted to view : "+ this.constructor.name);
+      this.setState({
+        access: true
+      });
+    } else {
+      const { store } = this.context;
+      const view = store.getState().views.find( curent => {
+        return curent.name === this.constructor.name;
+      });
+      // If not, check access from server
+      if (!view){
+        store.dispatch(fetchAccessRights(this.constructor.name, this.getDependencies()));
       } else {
-        const { store } = this.context;
-        const view = store.getState().views.find( curent => {
-          return curent.name === this.constructor.name;
+        this.setState({
+          access: view.access
         });
-        // If not, check access from server
-        if (!view){
-          store.dispatch(fetchAccessRights(this.constructor.name, this.getDependencies()));
-        } else {
-          this.setState({
-            access: view.access
-          });
-        }
       }
     }
   }
-
-  renderView(){
-    throw "renderView method is not implemented for the given view : " + this.constructor.name;
-  }
-
-  render(){
-    if (this.state.access === true){
-      return this.renderView();
-    } else {
-      return null;
-    }
-  }
-
 }
 
 AccessRightsComponent.contextTypes = {

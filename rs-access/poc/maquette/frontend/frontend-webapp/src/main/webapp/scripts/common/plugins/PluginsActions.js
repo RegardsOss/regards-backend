@@ -38,7 +38,6 @@ function pluginInitialized(name, plugin){
 }
 
 function checkResponseStatus(response){
-  console.log("SEB",response);
   if (response.status === 200){
     return response;
   } else {

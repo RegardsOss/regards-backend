@@ -4,17 +4,18 @@ import AccessRightsComponent from 'common/access-rights/AccessRightsComponent';
 
 class TestView extends AccessRightsComponent {
 
-  constructor(){
-    super();
-  }
   getDependencies(){
     return {
-      "GET" : ["dependence"]
+      'GET' : ["dependencies"]
     }
   }
 
-  renderView(){
-    return (<div>This view shall not be displayed ! </div>);
+  render(){
+    if (this.state.access == true){
+      return (<div>This view shall not be displayed ! </div>);
+    } else {
+      return null;
+    }
   }
 }
 
