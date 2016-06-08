@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { setTheme } from 'common/theme/ThemeActions';
 import { getThemeStyles } from 'common/theme/ThemeUtils';
 import NavigationContainer from './containers/NavigationContainer';
-import TestView from '../test/TestView';
+import TestView from '../test/Test';
 
 class Layout extends React.Component {
 

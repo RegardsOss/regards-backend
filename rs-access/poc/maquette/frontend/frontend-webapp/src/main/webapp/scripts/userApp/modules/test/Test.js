@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import AccessRightsComponent from 'common/access-rights/AccessRightsComponent';
 
-class TestView extends AccessRightsComponent {
+class Test extends AccessRightsComponent {
 
   getDependencies(){
     return {
@@ -19,4 +19,4 @@ class TestView extends AccessRightsComponent {
   }
 }
 
-module.exports = TestView;
+module.exports = Test;

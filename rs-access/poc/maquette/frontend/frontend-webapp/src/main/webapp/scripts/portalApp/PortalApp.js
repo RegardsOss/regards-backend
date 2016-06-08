@@ -4,8 +4,8 @@ import { Link } from 'react-router'
 import ReactDOM from 'react-dom';
 
 import ApplicationErrorComponent from 'common/components/ApplicationErrorComponent';
-import InstanceComponent from './projects/InstanceComponent';
-import ProjectsComponent from './projects/ProjectsComponent';
+import InstanceComponent from './modules/projects/components/InstanceComponent';
+import ProjectsComponent from './modules/projects/components/ProjectsComponent';
 import { getThemeStyles } from 'common/theme/ThemeUtils';
 import { setTheme } from 'common/theme/ThemeActions';
 

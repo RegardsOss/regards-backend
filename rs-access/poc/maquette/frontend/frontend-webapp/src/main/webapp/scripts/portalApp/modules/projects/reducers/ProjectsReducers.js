@@ -1,6 +1,6 @@
 import {
   REQUEST_PROJECTS,  RECEIVE_PROJECTS,
-  FAILED_PROJECTS } from './ProjectsActions';
+  FAILED_PROJECTS } from '../actions/ProjectsActions';
 
 const projects = (state = {
   isFetching : false,

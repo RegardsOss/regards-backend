@@ -1,18 +1,18 @@
 module.exports = {
-  path:"user/:project",
+  path:"/admin/:project",
 
   getChildRoutes(location, cb) {
     require.ensure([], (require) => {
       cb(null, [
-        require('./modules/plugin'),
-        require('./modules/test'),
+        require('./modules/home/routes'),
+        require('./modules/test/routes')
       ])
     })
   },
 
   getComponent(nextState, cb) {
     require.ensure([], (require) => {
-      cb(null, require('./UserApp'))
+      cb(null, require('./AdminApp'))
     })
   }
 }

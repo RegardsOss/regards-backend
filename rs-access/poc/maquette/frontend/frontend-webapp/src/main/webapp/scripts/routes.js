@@ -9,8 +9,8 @@ module.exports = {
     path: '/',
     component: require('./portalApp/PortalApp'),
     childRoutes: [
-      require('./userApp'),
-      require('./adminApp')
+      require('./userApp/routes'),
+      require('./adminApp/routes')
     ]
   } ]
 }

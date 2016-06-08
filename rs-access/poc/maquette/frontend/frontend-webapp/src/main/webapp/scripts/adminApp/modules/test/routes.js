@@ -1,10 +1,10 @@
 module.exports = {
-  path:"test",
+  path: 'test',
 
-  getComponent(nextState, cb) {
+  getComponents(nextState, cb) {
     require.ensure([], (require) => {
       cb(null, {
-        content: require('./TestView')
+        content: require('./Test')
       })
     })
   }

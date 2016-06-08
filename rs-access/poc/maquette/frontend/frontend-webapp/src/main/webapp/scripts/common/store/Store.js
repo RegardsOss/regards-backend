@@ -7,7 +7,7 @@ import themeReducers from 'common/theme/ThemeReducers';
 import pluginReducers from 'common/plugins/PluginReducers';
 import accessRightsReducers from 'common/access-rights/AccessRightsReducers';
 import authenticateReducers from 'common/authentication/AuthenticateReducers';
-import projectsReducers from 'portalApp/projects/ProjectsReducers';
+import projectsReducers from 'portalApp/modules/projects/reducers/ProjectsReducers';
 
 // Create the compined reducers by adding all modules reducers
 const allReducers = Object.assign({}, themeReducers,

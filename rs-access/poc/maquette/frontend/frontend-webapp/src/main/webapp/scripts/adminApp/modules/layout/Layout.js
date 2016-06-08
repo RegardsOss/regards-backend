@@ -1,9 +1,9 @@
 import React from 'react';
 
-import Menu from './MenuContainer';
-import Home from 'adminApp/modules/home/HomeModule'
+import Menu from './containers/MenuContainer';
+import Home from '../home/Home'
 
-class LayoutContainer extends React.Component {
+class Layout extends React.Component {
   render(){
     // Add location to menu props in order to update view if location
     // change. This enable the activeClassName to update in the react
@@ -22,11 +22,11 @@ class LayoutContainer extends React.Component {
   }
 }
 
-LayoutContainer.propsTypes = {
+Layout.propsTypes = {
   location: React.PropTypes.object.isRequired,
   content: React.PropTypes.object.isRequired,
   project: React.PropTypes.string.isRequired,
   instance: React.PropTypes.bool.isRequired,
 }
 
-export default LayoutContainer;
+export default Layout;

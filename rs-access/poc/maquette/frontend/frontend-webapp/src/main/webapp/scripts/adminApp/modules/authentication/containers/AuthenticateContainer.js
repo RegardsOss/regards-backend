@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { getThemeStyles } from 'common/theme/ThemeUtils';
 
-import LoginComponent from 'adminApp/components/LoginComponent';
+import LoginComponent from '../components/LoginComponent';
 import { fetchAuthenticate } from 'common/authentication/AuthenticateActions';
 
 class AuthenticateContainer extends React.Component {

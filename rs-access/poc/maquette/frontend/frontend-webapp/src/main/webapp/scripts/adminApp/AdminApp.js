@@ -5,8 +5,8 @@ import ReactDOM from 'react-dom';
 
 import { setTheme } from 'common/theme/ThemeActions';
 import { getThemeStyles } from 'common/theme/ThemeUtils';
-import AuthenticateContainer from './containers/AuthenticateContainer';
-import LayoutContainer from './containers/LayoutContainer';
+import AuthenticateContainer from './modules/authentication/containers/AuthenticateContainer';
+import Layout from './modules/layout/Layout';
 
 class AdminApp extends React.Component {
   constructor(){
@@ -42,7 +42,7 @@ class AdminApp extends React.Component {
       );
     } else {
         return (
-          <LayoutContainer
+          <Layout
             location={location}
             content={content}
             project={params.project}

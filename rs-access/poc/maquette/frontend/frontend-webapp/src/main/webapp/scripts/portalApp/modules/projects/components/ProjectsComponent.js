@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import Project from './ProjectComponent';
-import { fetchProjects } from './ProjectsActions';
+import { fetchProjects } from '../actions/ProjectsActions';
 
 // Export class itself without connect to be able to use it in test without store connection.
 export class ProjectsComponent extends React.Component {
