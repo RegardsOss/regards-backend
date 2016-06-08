@@ -1,8 +1,9 @@
 import { expect } from 'chai' // You can use any testing library
-import reducers from '../../../scripts/portalApp/projects/ProjectsReducers';
+import reducers from '../../../scripts/portalApp/modules/projects/reducers/ProjectsReducers';
 import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
-    FAILED_PROJECTS, fetchProjects, requestProjects, receiveProjects } from '../../../scripts/portalApp/projects/ProjectsActions';
+    FAILED_PROJECTS, fetchProjects,
+    requestProjects, receiveProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions';
 
 // Ce fichier permet de tester les reducers liés aux projets
 describe('Testing Projects reducers', () => {
@@ -14,7 +15,7 @@ describe('Testing Projects reducers', () => {
         lastUpdate: ''
       });
   });
-  
+
   it('Should set projects fetching true in state', () => {
     const initstate = {
         isFetching : false,

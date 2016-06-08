@@ -4,7 +4,8 @@ import nock from 'nock'
 import { expect } from 'chai' // You can use any testing library
 import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
-    FAILED_PROJECTS, fetchProjects, requestProjects, receiveProjects } from '../../../scripts/portalApp/projects/ProjectsActions';
+    FAILED_PROJECTS, fetchProjects,
+    requestProjects, receiveProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions';
 
 const middlewares = [ thunk ]
 const mockStore = configureMockStore(middlewares)

@@ -1,7 +1,7 @@
 import React from 'react'
 import { shallow } from 'enzyme';
 import { expect } from 'chai';
-import LoginComponent from '../../../scripts/adminApp/components/LoginComponent';
+import LoginComponent from '../../../scripts/adminApp/modules/authentication/components/LoginComponent';
 
 // Test a component rendering
 

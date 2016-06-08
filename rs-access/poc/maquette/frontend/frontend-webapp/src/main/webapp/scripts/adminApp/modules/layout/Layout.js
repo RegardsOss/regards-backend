@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Menu from './containers/MenuContainer';
+import Menu from './components/MenuComponent';
 import Home from '../home/Home'
 
 class Layout extends React.Component {

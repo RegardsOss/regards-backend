@@ -4,8 +4,8 @@ import { mount, shallow } from 'enzyme';
 import { expect } from 'chai'
 // Import unconnected version of ProjectsComponent. by using bracets {} around component.
 // To get the react-redux connect component use "import ProjectsComponent" instead of "import { ProjectsComponent }"
-import { ProjectsComponent } from '../../../scripts/portalApp/projects/ProjectsComponent';
-import ProjectComponent from '../../../scripts/portalApp/projects/ProjectComponent';
+import { ProjectsComponent } from '../../../scripts/portalApp/modules/projects/components/ProjectsComponent';
+import ProjectComponent from '../../../scripts/portalApp/modules/projects/components/ProjectComponent';
 
 // Test a component rendering
 
