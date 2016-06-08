@@ -3,10 +3,10 @@ import { connect } from 'react-redux';
 
 import { getThemeStyles } from 'common/theme/ThemeUtils';
 
-import LoginComponent from '../components/LoginComponent';
+import LoginComponent from './components/LoginComponent';
 import { fetchAuthenticate } from 'common/authentication/AuthenticateActions';
 
-class AuthenticateContainer extends React.Component {
+class Authentication extends React.Component {
 
   constructor(){
     super();
@@ -35,4 +35,4 @@ const mapStateToProps = (state)=> {
     theme: state.theme
   }
 }
-export default connect(mapStateToProps)(AuthenticateContainer);
+export default connect(mapStateToProps)(Authentication);

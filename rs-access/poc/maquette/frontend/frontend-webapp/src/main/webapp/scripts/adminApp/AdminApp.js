@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 
 import { setTheme } from 'common/theme/ThemeActions';
 import { getThemeStyles } from 'common/theme/ThemeUtils';
-import AuthenticateContainer from './modules/authentication/containers/AuthenticateContainer';
+import Authentication from './modules/authentication/Authentication';
 import Layout from './modules/layout/Layout';
 
 class AdminApp extends React.Component {
@@ -35,7 +35,7 @@ class AdminApp extends React.Component {
     if (!authenticated || authentication.user.name === 'public'){
       return (
         <div className={styles.main}>
-          <AuthenticateContainer
+          <Authentication
             project={params.project}
             onAuthenticate={this.onAuthenticate}/>
         </div>
