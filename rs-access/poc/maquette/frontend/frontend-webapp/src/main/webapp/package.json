@@ -10,7 +10,9 @@
     "prebuild": "npm install",
     "build": "webpack --progress",
     "test": "mocha --compilers js:babel-register tests --recursive",
-    "test:watch": "npm test -- --watch"
+    "test:watch": "npm test -- --watch",
+    "presitemap": "webpack --config webpack.sitemap.config.js --progress",
+    "sitemap": "node build/sitemap.js"
   },
   "author": "CS-SI",
   "license": "ISC",

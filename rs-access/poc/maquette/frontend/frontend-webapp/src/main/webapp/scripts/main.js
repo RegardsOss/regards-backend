@@ -5,27 +5,11 @@ import { Provider } from 'react-redux';
 
 // Import application common store
 import store from 'AppStore';
-
-/** Main routes.
- * / -> PortalApp
- * /user -> UserApp
- * /admin -> AdminApp
-*/
-const rootRoute = {
-  component: 'div',
-  childRoutes: [ {
-    path: '/',
-    component: require('./portalApp/PortalApp'),
-    childRoutes: [
-      require('./userApp'),
-      require('./adminApp')
-    ]
-  } ]
-}
+import routes from './routes.js';
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={browserHistory} routes={rootRoute}/>
+    <Router history={browserHistory} routes={routes}/>
   </Provider>,
   document.getElementById('app')
 );
