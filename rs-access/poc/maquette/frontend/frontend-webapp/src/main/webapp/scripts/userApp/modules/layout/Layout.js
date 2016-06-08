@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { setTheme } from 'common/theme/ThemeActions';
 import { getThemeStyles } from 'common/theme/ThemeUtils';
-import NavigationContainer from './containers/NavigationContainer';
+import NavigationComponent from './components/NavigationComponent';
 import TestView from '../test/Test';
 
 class Layout extends React.Component {
@@ -15,7 +15,7 @@ class Layout extends React.Component {
         <div className="header">
           <h1> Test Application {this.props.project} </h1>
         </div>
-        <NavigationContainer project={this.props.project} location={this.props.location}/>
+        <NavigationComponent project={this.props.project} location={this.props.location}/>
         <div className={styles.main}>
           {this.props.content}
         </div>

@@ -5,7 +5,7 @@ class Linkcomponent extends React.Component {
 
   render(){
     const { to, children } = this.props;
-    const style={"fontSize": "20px", "line-height": "50px",margin: "0px 20px", "text-decoration": "none"};
+    const style={"fontSize": "20px", "lineHeight": "50px",margin: "0px 20px", "textDecoration": "none"};
     const activeStyle = { 'borderBottom':'2px solid Red' };
     return (
       <Link
