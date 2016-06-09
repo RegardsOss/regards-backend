@@ -8,8 +8,8 @@ class ProjectComponent extends React.Component {
     return (
       <li className={styles.link}>
         <p>{this.props.project.name}</p>
-        <Link to={"/user/" +this.props.project.name} className={styles.projectlink}>ihm user</Link>
-        <Link to={"/admin/" +this.props.project.name} className={styles.projectlink}>ihm admin</Link>
+        <Link to={"/user/" +this.props.project.name} className={styles["project-link"]}>ihm user</Link>
+        <Link to={"/admin/" +this.props.project.name} className={styles["project-link"]}>ihm admin</Link>
       </li>
     )
   }
