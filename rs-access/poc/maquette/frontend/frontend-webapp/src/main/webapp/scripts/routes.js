@@ -7,10 +7,15 @@ module.exports = {
   component: 'div',
   childRoutes: [ {
     path: '/',
-    component: require('./portalApp/PortalApp'),
     childRoutes: [
       require('./userApp/routes'),
-      require('./adminApp/routes')
-    ]
+      require('./adminApp/routes'),
+      require('./portalApp/routes')
+    ],
+    getComponent(nextState, cb) {
+      require.ensure([], (require) => {
+        cb(null, require('./portalApp/PortalApp'))
+      })
+    }
   } ]
 }

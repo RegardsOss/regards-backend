@@ -35,7 +35,6 @@ class UserApp extends React.Component {
     } else {
       return (<Layout location={location} project={project}>{this.props.content}</Layout>);
     }
-
   }
 }
 

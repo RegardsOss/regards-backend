@@ -1,5 +1,4 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import AccessRightsComponent from 'common/access-rights/AccessRightsComponent';
 
 class Test extends AccessRightsComponent {

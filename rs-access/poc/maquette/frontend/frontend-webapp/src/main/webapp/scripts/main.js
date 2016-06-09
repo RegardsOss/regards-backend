@@ -13,3 +13,21 @@ ReactDOM.render(
   </Provider>,
   document.getElementById('app')
 );
+
+// Log sitemap
+function getSiteMap(parentRoute, routes){
+  routes.map( route => {
+    let path = ''
+    if (parentRoute.slice(-1) === '/' || route.path[0] === '/'){
+      path = parentRoute + route.path;
+    } else {
+      path = parentRoute + '/' + route.path;
+    }
+    console.log(path);
+    if (route.childRoutes){
+      getSiteMap(path, route.childRoutes);
+    }
+  });
+}
+// Log sitemap
+getSiteMap("",routes.childRoutes);
