@@ -19,4 +19,4 @@ class Test extends AccessRightsComponent {
   }
 }
 
-module.exports = connect()(Test);
+module.exports = Test;
