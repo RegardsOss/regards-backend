@@ -67,6 +67,8 @@ class AccessRightsComponent extends React.Component{
         console.log("Access granted to view : " + this.constructor.name);
       } else {
         console.log("Access denied to view : " + this.constructor.name);
+        // Cancel render method
+        this.render = () => {return null}
       }
       this.unsubscribe();
       this.setState({

@@ -11,11 +11,7 @@ class Test extends AccessRightsComponent {
   }
 
   render(){
-    if (this.state.access == true){
-      return (<div>This view shall not be displayed ! </div>);
-    } else {
-      return null;
-    }
+    return (<div>This view shall not be displayed ! </div>);
   }
 }
 
