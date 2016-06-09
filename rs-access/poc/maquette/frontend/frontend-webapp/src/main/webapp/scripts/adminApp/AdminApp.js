@@ -29,7 +29,7 @@ class AdminApp extends React.Component {
 
   render(){
     const { theme, authentication, content, location, params } = this.props;
-    const styles = getThemeStyles(theme, 'adminApp/base');
+    const styles = getThemeStyles(theme, 'adminApp/styles');
 
     const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now();
     if (!authenticated || authentication.user.name === 'public'){

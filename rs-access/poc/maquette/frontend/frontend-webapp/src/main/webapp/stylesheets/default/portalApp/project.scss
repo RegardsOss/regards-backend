@@ -1,0 +1,19 @@
+// CSS Styles for React component PortalApp/Projects/ProjectComponent
+.link a {
+  color: Red;
+}
+
+.link p {
+  display: inline;
+  margin-right: 10px;
+}
+
+.link a:hover {
+  color: blue;
+  text-decoration: underline;
+}
+
+.project-link {
+  display: inline;
+  margin: 2px 5px;
+}

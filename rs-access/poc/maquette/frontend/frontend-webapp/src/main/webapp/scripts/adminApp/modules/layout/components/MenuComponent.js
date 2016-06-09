@@ -9,7 +9,7 @@ class Menu extends React.Component {
 
   render(){
     const { dispatch, theme, project } = this.props;
-    const styles = getThemeStyles(theme, 'adminApp/menu');
+    const styles = getThemeStyles(theme, 'adminApp/styles');
     return (
         <div>
           <IndexLink to={"/admin/" + project}

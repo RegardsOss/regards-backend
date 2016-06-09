@@ -34,7 +34,7 @@ class LoginComponent extends React.Component {
                this.setState({password:event.target.value});
             }}/>
         <br/>
-        <button onClick={() => {
+        <button className={styles.button} onClick={() => {
             this.props.onLogin(this.state.username,this.state.password);
           }}>Log in</button>
       </div>

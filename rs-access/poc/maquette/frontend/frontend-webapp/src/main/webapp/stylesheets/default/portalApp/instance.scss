@@ -1,0 +1,13 @@
+// CSS Styles for React component PortalApp/Projects/InstanceComponent
+.instance-link {
+  padding : 50px 10px 10px 0px;
+}
+
+.instance-link a {
+  color: blue;
+}
+
+.instance-link a:hover {
+  color: red;
+  text-decoration: underline;
+}

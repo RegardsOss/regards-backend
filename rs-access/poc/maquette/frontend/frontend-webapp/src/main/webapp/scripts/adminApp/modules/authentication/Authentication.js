@@ -10,20 +10,14 @@ class Authentication extends React.Component {
 
   constructor(){
     super();
-    this.onLogin = this.onLogin.bind(this);
-  }
-
-  onLogin(userName, password){
-    const { dispatch } = this.props;
-    dispatch(fetchAuthenticate(userName, password));
   }
 
   render(){
-    const styles = getThemeStyles(this.props.theme, 'adminApp/login');
+    const styles = getThemeStyles(this.props.theme, 'adminApp/styles');
     return (
       <LoginComponent
         styles={styles}
-        onLogin={this.onLogin}
+        onLogin={this.props.onLogin}
         errorMessage={this.props.errorMessage}/>
     );
   }
@@ -35,4 +29,10 @@ const mapStateToProps = (state)=> {
     theme: state.theme
   }
 }
-export default connect(mapStateToProps)(Authentication);
+
+const mapDispatchToProps = ( dispatch )=> {
+  return {
+    onLogin: (userName,password) => dispatch(fetchAuthenticate(userName, password))
+  }
+}
+export default connect(mapStateToProps,mapDispatchToProps)(Authentication);

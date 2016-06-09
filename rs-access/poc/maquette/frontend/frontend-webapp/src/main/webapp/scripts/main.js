@@ -7,6 +7,9 @@ import { Provider } from 'react-redux';
 import store from 'AppStore';
 import routes from './routes.js';
 
+// Import fundation classes
+//import 'stylesheets/vendors/vendors.scss';
+
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory} routes={routes}/>

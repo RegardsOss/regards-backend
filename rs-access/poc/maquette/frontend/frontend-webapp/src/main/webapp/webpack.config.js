@@ -9,7 +9,8 @@ const sassLoaders = [
   // Loader to generate react modules css classes
   'css?modules&importLoaders=1&localIdentName=[path]___[name]__[local]___[hash:base64:5]',
   // Loader to compile sasss files to css files
-  'sass-loader?indentedSyntax=sass&includePaths[]=' + path.resolve(__dirname, 'steelsheets')
+  //'sass-loader?indentedSyntax=sass&includePaths[]=' + path.resolve(__dirname, 'steelsheets')
+  'sass?sourceMap'
 ]
 
 module.exports = {
@@ -57,7 +58,7 @@ module.exports = {
   resolve: {
     // Automaticly get extensions files from javascript code with import or require.
     // exemple require('main') look for main, main.js or main.sass with our configuration
-    extensions: ['', '.js', '.sass'],
+    extensions: ['', '.js', '.scss'],
     // Alias that can be used in javascript code for require or import
     // Exemple : require ('AppStore') is equal to require ('scripts/common/store/Store.js');
     alias: {
@@ -77,8 +78,12 @@ module.exports = {
         loader: 'babel',
         query: { presets: ['es2015', 'react']}
       },
-      // Sass files compilation to css
-      {test: /\.sass$/, exclude: [/node_modules/,'/stylesheets\/default/'],
+      // Sass compilation files for vendors
+      //{test: /\.scss$/, exclude: [/node_modules/,/scripts/,/stylesheets\/default/,/stylesheets\/themes/],
+      //  loader: 'style!css!sass?sourceMap'
+      //},
+      // Sass files compilation to css with css modules enable
+      {test: /\.scss$/, exclude: [/node_modules/,/scripts/,/stylesheets\/default/,/stylesheets\/vendors/],
         loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
       },
       {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"}
