@@ -7,19 +7,27 @@ import { fetchProjects } from '../actions/ProjectsActions';
 export class ProjectsContainer extends React.Component {
 
   componentWillMount(){
+    // onLoad method is set to the container props by react-redux connect.
+    // See method mapDispatchToProps of this container
     this.props.onLoad();
   }
 
   render(){
-    const { styles } = this.props;
-    if (this.props.projects.isFetching === true || !this.props.projects.items){
+    // styles props is passed throught the react component creation
+    // porjects props is set to the container by tge react-redux connect.
+    // See method mapStateToProps
+    const { styles, projects } = this.props;
+
+    // If projects are loading display a loading information message
+    if (projects.isFetching === true || !projects.items){
       return (<div>Loading projects ... </div>);
     } else {
+      // Else display projects links
       return (
         <div>
           <p>Available projects on REGARDS instance :</p>
           <ul>
-            {this.props.projects.items.map(project =>
+            {projects.items.map(project =>
               <Project key={project.name} project={project} styles={styles}/>
             )}
           </ul>
@@ -29,6 +37,7 @@ export class ProjectsContainer extends React.Component {
   }
 }
 
+// Container props
 ProjectsContainer.propTypes = {
   styles: React.PropTypes.object.isRequired
 }

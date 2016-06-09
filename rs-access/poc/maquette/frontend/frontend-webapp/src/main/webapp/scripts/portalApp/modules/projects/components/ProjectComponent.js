@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 
 class ProjectComponent extends React.Component {
   render(){
+    // styles props is passed throught the react component creation
     const { styles } = this.props;
     return (
       <li className={styles.link}>

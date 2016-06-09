@@ -2,13 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router';
 
-import Project from './ProjectComponent'
-import { getThemeStyles } from 'common/theme/ThemeUtils';
-
 class InstanceComponent extends React.Component {
 
   render(){
-    const styles = getThemeStyles(this.props.theme, 'portalApp/styles');
+    // styles props is passed throught the react component creation
+    const { styles } = this.props;
     return (
       <div className={styles["instance-link"]}>
         Accès direct à l'ihm d'administration de l'instance :
@@ -18,9 +16,8 @@ class InstanceComponent extends React.Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  return {
-    theme: state.theme
-  }
+InstanceComponent.propTypes = {
+  styles: React.PropTypes.object.isRequired
 }
-export default connect(mapStateToProps)(InstanceComponent);
+
+export default InstanceComponent;
