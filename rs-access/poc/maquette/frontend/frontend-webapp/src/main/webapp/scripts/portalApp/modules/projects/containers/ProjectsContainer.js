@@ -1,14 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import Project from './ProjectComponent';
+import Project from '../components/ProjectComponent';
 import { fetchProjects } from '../actions/ProjectsActions';
 
 // Export class itself without connect to be able to use it in test without store connection.
-export class ProjectsComponent extends React.Component {
+export class ProjectsContainer extends React.Component {
 
   componentWillMount(){
-    const { dispatch } = this.props;
-    dispatch(fetchProjects());
+    this.props.onLoad();
   }
 
   render(){
@@ -30,14 +29,21 @@ export class ProjectsComponent extends React.Component {
   }
 }
 
-ProjectsComponent.propTypes = {
+ProjectsContainer.propTypes = {
   styles: React.PropTypes.object.isRequired
 }
 
-// Add projects from store to the component props
+// Add projects from store to the container props
 const mapStateToProps = (state) => {
   return {
     projects: state.projects
   }
 }
-export default connect(mapStateToProps)(ProjectsComponent);
+
+// Add functions dependending on store dispatch to container props.
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onLoad: () => dispatch(fetchProjects())
+  }
+}
+export default connect(mapStateToProps,mapDispatchToProps)(ProjectsContainer);

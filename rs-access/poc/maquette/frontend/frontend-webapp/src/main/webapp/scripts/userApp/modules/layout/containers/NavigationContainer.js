@@ -2,9 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import AccessRightsComponent from 'common/access-rights/AccessRightsComponent';
-import LinkComponent from './LinkComponent';
+import LinkComponent from '../components/LinkComponent';
 
-class NavigationComponent extends AccessRightsComponent {
+class NavigationContainer extends AccessRightsComponent {
 
   getDependencies(){
     return null;
@@ -35,14 +35,15 @@ class NavigationComponent extends AccessRightsComponent {
   }
 }
 
-NavigationComponent.propTypes = {
+NavigationContainer.propTypes = {
   project: React.PropTypes.string.isRequired,
   location: React.PropTypes.object.isRequired,
 }
 
+// Add projects from store to the container props
 const mapStateToProps = (state) => {
   return {
     plugins: state.plugins
   }
 }
-module.exports = connect(mapStateToProps)(NavigationComponent);
+module.exports = connect(mapStateToProps)(NavigationContainer);

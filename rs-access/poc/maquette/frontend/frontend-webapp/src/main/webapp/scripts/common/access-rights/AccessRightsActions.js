@@ -4,9 +4,10 @@ import scriptjs from 'scriptjs';
 const ACCESS_RIGHTS_API='http://localhost:8080/api/access/rights';
 
 export const REQUEST_ACCESSRIGHTS = 'REQUEST_ACCESSRIGHTS'
-function requestAccessRights() {
+function requestAccessRights(view) {
   return {
     type: REQUEST_ACCESSRIGHTS,
+    view: view
   }
 }
 
@@ -49,8 +50,7 @@ export function fetchAccessRights(view, dependencies) {
 
     // First dispatch: the app state is updated to inform
     // that the API call is starting.
-
-    dispatch(requestAccessRights())
+    dispatch(requestAccessRights(view))
 
     // The function called by the thunk middleware can return a value,
     // that is passed on as the return value of the dispatch method.

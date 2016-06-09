@@ -9,24 +9,46 @@ import Test from './modules/test/Test';
 class UserApp extends React.Component {
 
   componentWillMount(){
+    // Get project from params from react router. project param is the ":project" in userApp route
+    // See routes.js
     const themeToSet = this.props.params.project;
-    const { dispatch, plugins } = this.props;
-    dispatch(setTheme(themeToSet));
+    // Plugins are set to the container props by react-redux connect.
+    // See method mapStateToProps of this container
+    const { plugins } = this.props;
+    // initTheme method is set to the container props by react-redux connect.
+    // See method mapDispatchToProps of this container
+    this.props.initTheme(themeToSet);
 
     if (!plugins || !plugins.items || plugins.items.length === 0){
-      dispatch(fetchPlugins());
+      // fetchPlugins method is set to the container props by react-redux connect.
+      // See method mapDispatchToProps of this container
+      this.props.fetchPlugins();
     }
   }
 
   render(){
-    const { location, params } = this.props;
-    let { content } = this.props;
+    // Location ,params and content are set in this container props by react-router
+    const { location, params, content } = this.props;
     const { project } = params;
     if (!content){
-      content = (<Test />)
+      return (<Layout location={location} project={project}><Test /></Layout>);
+    } else {
+      return (<Layout location={location} project={project}>{this.props.content}</Layout>);
     }
-    return (<Layout location={location} content={content} project={project}/>);
+
   }
 }
 
-module.exports = connect()(UserApp);
+// Add functions dependending on store dispatch to container props.
+const mapDispatchToProps = (dispatch) => {
+  return {
+    fetchPlugins : () => dispatch(fetchPlugins()),
+    initTheme : (theme) => dispatch(setTheme(theme))
+  }
+}
+const mapStateToProps = (state) => {
+  return {
+    plugins: state.plugins
+  }
+}
+module.exports = connect(mapStateToProps,mapDispatchToProps)(UserApp);

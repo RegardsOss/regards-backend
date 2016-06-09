@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { setTheme } from 'common/theme/ThemeActions';
 import { getThemeStyles } from 'common/theme/ThemeUtils';
-import NavigationComponent from './components/NavigationComponent';
+import NavigationContainer from './containers/NavigationContainer';
 
 class Layout extends React.Component {
 
@@ -14,9 +14,9 @@ class Layout extends React.Component {
         <div className="header">
           <h1> Test Application {this.props.project} </h1>
         </div>
-        <NavigationComponent project={this.props.project} location={this.props.location}/>
+        <NavigationContainer project={this.props.project} location={this.props.location}/>
         <div className={styles.main}>
-          {this.props.content}
+          {this.props.children}
         </div>
       </div>
     )
@@ -24,8 +24,7 @@ class Layout extends React.Component {
 }
 
 Layout.propTypes = {
-  project: React.PropTypes.string.isRequired,
-  content: React.PropTypes.object.isRequired
+  project: React.PropTypes.string.isRequired
 }
 
 // Add theme from store to the component props

@@ -3,9 +3,10 @@ import fetch from 'isomorphic-fetch'
 const AUTHENTICATE_API='http://localhost:8080/oauth/token';
 
 export const REQUEST_AUTHENTICATE = 'REQUEST_AUTHENTICATE'
-function requestAuthenticate() {
+function requestAuthenticate(user) {
   return {
     type: REQUEST_AUTHENTICATE,
+    user: user
   }
 }
 
@@ -57,7 +58,7 @@ export function fetchAuthenticate(username, password) {
     // First dispatch: the app state is updated to inform
     // that the API call is starting.
 
-    dispatch(requestAuthenticate())
+    dispatch(requestAuthenticate(username))
 
     // The function called by the thunk middleware can return a value,
     // that is passed on as the return value of the dispatch method.
