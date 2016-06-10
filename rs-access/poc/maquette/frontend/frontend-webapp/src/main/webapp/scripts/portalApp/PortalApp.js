@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import ReactDOM from 'react-dom';
 
 import ApplicationErrorComponent from 'common/components/ApplicationErrorComponent';
+import SelectThemeComponent from 'common/theme/components/SelectThemeComponent';
 import InstanceComponent from './modules/projects/components/InstanceComponent';
 import ProjectsContainer from './modules/projects/containers/ProjectsContainer';
 import { getThemeStyles } from 'common/theme/ThemeUtils';
@@ -27,6 +28,7 @@ class PortalApp extends React.Component {
     const { authentication, theme } = this.props;
     // Get theme styles
     const styles = getThemeStyles(theme,'portalApp/styles');
+    const commonStyles = getThemeStyles(theme,'common/common.scss');
 
     if (authentication && !authentication.user){
       // If no user connected, display the error component
@@ -42,6 +44,11 @@ class PortalApp extends React.Component {
       <div className={styles.main}>
         <InstanceComponent styles={styles}/>
         <ProjectsContainer styles={styles}/>
+        <SelectThemeComponent
+          styles={commonStyles}
+          themes={["cdpp","ssalto","default"]}
+          curentTheme={theme}
+          onThemeChange={this.props.initTheme} />
       </div>
     )
   }

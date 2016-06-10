@@ -39,6 +39,7 @@ class AdminApp extends React.Component {
   render(){
     const { theme, authentication, content, location, params, onLogout } = this.props;
     const styles = getThemeStyles(theme, 'adminApp/styles');
+    const commonStyles = getThemeStyles(theme,'common/common.scss');
 
     const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now();
     if (!authenticated || authentication.user.name === 'public'){
@@ -48,7 +49,7 @@ class AdminApp extends React.Component {
             project={params.project}
             onAuthenticate={this.onAuthenticate}/>
           <SelectThemeComponent
-            styles={styles}
+            styles={commonStyles}
             themes={["cdpp","ssalto","default"]}
             curentTheme={theme}
             onThemeChange={this.changeTheme} />

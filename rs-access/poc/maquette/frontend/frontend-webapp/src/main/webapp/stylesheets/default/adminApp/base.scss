@@ -9,19 +9,6 @@ button {
   width: 100%;
 }
 
-.select-theme {
-  border: 1px solid black;
-  border-radius: 5px;
-  background-color: $secondcolor;
-  color: White;
-  margin: 15px;
-  padding: 5px;
-  top: 0px;
-  right: 0px;
-  position: absolute;
-  display: inline-block;
-}
-
 .layout {
   background-image: $background-image;
   // Take full screen size for layout
