@@ -7,7 +7,7 @@ import ApplicationErrorComponent from 'common/components/ApplicationErrorCompone
 import InstanceComponent from './modules/projects/components/InstanceComponent';
 import ProjectsContainer from './modules/projects/containers/ProjectsContainer';
 import { getThemeStyles } from 'common/theme/ThemeUtils';
-import { setTheme } from 'common/theme/ThemeActions';
+import { setTheme } from 'common/theme/actions/ThemeActions';
 
 import { fetchAuthenticate } from 'common/authentication/AuthenticateActions';
 

@@ -3,9 +3,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
 
-import { setTheme } from 'common/theme/ThemeActions';
+import { setTheme } from 'common/theme/actions/ThemeActions';
 import { getThemeStyles } from 'common/theme/ThemeUtils';
 import Authentication from './modules/authentication/Authentication';
+import SelectThemeComponent from 'common/theme/components/SelectThemeComponent';
 import Layout from './modules/layout/Layout';
 
 class AdminApp extends React.Component {
@@ -23,8 +24,15 @@ class AdminApp extends React.Component {
       this.setState({instance: true});
       themeToSet = "default";
     }
-    const { dispatch } = this.props;
-    dispatch(setTheme(themeToSet));
+    this.props.setTheme(themeToSet);
+  }
+
+
+  changeTheme(themeToSet){
+    if (this.props.theme !== themeToSet){
+      console.log("changing theme to : " + themeToSet );
+      this.props.setTheme(themeToSet);
+    }
   }
 
   render(){
@@ -38,6 +46,7 @@ class AdminApp extends React.Component {
           <Authentication
             project={params.project}
             onAuthenticate={this.onAuthenticate}/>
+          <SelectThemeComponent styles={styles} themes={["cdpp","ssalto","default"]} curentTheme={theme} onThemeChange={(theme) => this.changeTheme(theme)} />
         </div>
       );
     } else {
@@ -64,4 +73,9 @@ const mapStateToProps = (state) => {
     authentication: state.authentication
   }
 }
-module.exports = connect(mapStateToProps)(AdminApp);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    setTheme: (theme) => {dispatch(setTheme(theme))}
+  }
+}
+module.exports = connect(mapStateToProps,mapDispatchToProps)(AdminApp);

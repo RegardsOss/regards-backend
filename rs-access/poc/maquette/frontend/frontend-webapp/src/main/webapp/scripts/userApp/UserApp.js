@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { fetchPlugins } from 'common/plugins/PluginsActions';
-import { setTheme } from 'common/theme/ThemeActions';
+import { setTheme } from 'common/theme/actions/ThemeActions';
 import Layout from './modules/layout/Layout';
 import Test from './modules/test/Test';
 

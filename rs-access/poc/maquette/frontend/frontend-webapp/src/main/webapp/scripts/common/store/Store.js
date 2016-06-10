@@ -3,7 +3,7 @@ import { createStore, combineReducers, applyMiddleware } from 'redux';
 
 import loggerMiddleware from 'common/logger/ActionLoggerMiddleware';
 
-import themeReducers from 'common/theme/ThemeReducers';
+import themeReducers from 'common/theme/reducers/ThemeReducers';
 import pluginReducers from 'common/plugins/PluginReducers';
 import accessRightsReducers from 'common/access-rights/AccessRightsReducers';
 import authenticateReducers from 'common/authentication/AuthenticateReducers';
