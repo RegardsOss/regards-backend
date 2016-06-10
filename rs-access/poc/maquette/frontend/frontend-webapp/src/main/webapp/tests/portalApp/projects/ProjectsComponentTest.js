@@ -4,7 +4,7 @@ import { mount, shallow } from 'enzyme';
 import { expect } from 'chai'
 // Import unconnected version of ProjectsComponent. by using bracets {} around component.
 // To get the react-redux connect component use "import ProjectsComponent" instead of "import { ProjectsComponent }"
-import { ProjectsComponent } from '../../../scripts/portalApp/modules/projects/components/ProjectsComponent';
+import { ProjectsContainer } from '../../../scripts/portalApp/modules/projects/containers/ProjectsContainer';
 import ProjectComponent from '../../../scripts/portalApp/modules/projects/components/ProjectComponent';
 
 // Test a component rendering
@@ -12,6 +12,7 @@ import ProjectComponent from '../../../scripts/portalApp/modules/projects/compon
 describe('Testing projects components', () => {
   it('Should render correctly the loading projects message', () => {
     const dispatch = () => { };
+    const onLoad = () => { };
     const projectsStyles = {
       link: 'link',
       projectlink: 'projectlink'
@@ -21,14 +22,16 @@ describe('Testing projects components', () => {
         isFetching: true
       },
       styles: projectsStyles,
-      dispatch :dispatch
+      dispatch :dispatch,
+      onLoad: onLoad
     };
-    const wrapper = shallow(<ProjectsComponent {...props}/>);
+    const wrapper = shallow(<ProjectsContainer {...props}/>);
     expect(wrapper.equals(<div>Loading projects ... </div>)).to.equal(true);
   });
 
   it('Should render correctly the projects list', () => {
     const dispatch = () => { };
+    const onLoad = () => { };
     const projectsStyles = {
       link: 'link',
       projectlink: 'projectlink'
@@ -39,7 +42,8 @@ describe('Testing projects components', () => {
         items: [{name: 'cdpp'},{name: 'ssalto'}]
       },
       styles: projectsStyles,
-      dispatch :dispatch
+      dispatch :dispatch,
+      onLoad : onLoad
     };
 
     const result = (
@@ -51,14 +55,14 @@ describe('Testing projects components', () => {
         </ul>
       </div>
     );
-    const wrapper = shallow(<ProjectsComponent {...props}/>);
+    const wrapper = shallow(<ProjectsContainer {...props}/>);
     expect(wrapper.contains(result)).to.equal(true);
   });
 
   it('Should render correctly a project link', () => {
     const projectsStyles = {
       link: 'link',
-      projectlink: 'projectlink'
+      "project-link": 'project-link'
     };
     let props = {
       styles: projectsStyles,
@@ -68,11 +72,13 @@ describe('Testing projects components', () => {
     const result = (
       <li className="link">
         <p>cdpp</p>
-          <Link to="/user/cdpp" className="projectlink">ihm user</Link>
-          <Link to="/admin/cdpp" className="projectlink">ihm admin</Link>
+          <Link to="/user/cdpp" className="project-link">ihm user</Link>
+          <Link to="/admin/cdpp" className="project-link">ihm admin</Link>
       </li>
     )
     const wrapper = shallow(<ProjectComponent {...props}/>);
+    // To log result
+    //console.log(wrapper.debug());
     expect(wrapper.contains(result)).to.equal(true);
   });
 
