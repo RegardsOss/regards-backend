@@ -91,7 +91,7 @@ export function fetchPlugins() {
       // Load ech plugins
       body.map( plugin => {
         const paths = plugin.paths.map( path => {
-            return window.location.origin + "/scripts/plugins/" + path;
+            return window.location.origin + "/plugins/" + path;
         });
         scriptjs(paths, plugin.name);
       });

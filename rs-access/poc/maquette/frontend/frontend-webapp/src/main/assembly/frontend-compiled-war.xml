@@ -31,7 +31,7 @@
 			<includes>
 				<include>fr.cs.regards:HelloWorldPlugin:war</include>
 			</includes>
-      <outputDirectory>Plugins/</outputDirectory>
+      <outputDirectory>plugins/</outputDirectory>
 			<unpack>true</unpack>
 		</dependencySet>
   </dependencySets>
