@@ -21,3 +21,15 @@ button {
   position: absolute;
   display: inline-block;
 }
+
+.layout {
+  background-image: $background-image;
+  // Take full screen size for layout
+  min-height: 100vh;
+  min-width: 100vw;
+}
+
+.content {
+  background-color: $secondcolor;
+  color: $text-color;
+}

@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
 
 import { setTheme } from 'common/theme/actions/ThemeActions';
+import { logout } from 'common/authentication/AuthenticateActions';
 import { getThemeStyles } from 'common/theme/ThemeUtils';
 import Authentication from './modules/authentication/Authentication';
 import SelectThemeComponent from 'common/theme/components/SelectThemeComponent';
@@ -15,6 +16,7 @@ class AdminApp extends React.Component {
     this.state = {
       instance: false
     }
+    this.changeTheme = this.changeTheme.bind(this);
   }
 
   componentWillMount(){
@@ -30,13 +32,12 @@ class AdminApp extends React.Component {
 
   changeTheme(themeToSet){
     if (this.props.theme !== themeToSet){
-      console.log("changing theme to : " + themeToSet );
       this.props.setTheme(themeToSet);
     }
   }
 
   render(){
-    const { theme, authentication, content, location, params } = this.props;
+    const { theme, authentication, content, location, params, onLogout } = this.props;
     const styles = getThemeStyles(theme, 'adminApp/styles');
 
     const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now();
@@ -46,16 +47,29 @@ class AdminApp extends React.Component {
           <Authentication
             project={params.project}
             onAuthenticate={this.onAuthenticate}/>
-          <SelectThemeComponent styles={styles} themes={["cdpp","ssalto","default"]} curentTheme={theme} onThemeChange={(theme) => this.changeTheme(theme)} />
+          <SelectThemeComponent
+            styles={styles}
+            themes={["cdpp","ssalto","default"]}
+            curentTheme={theme}
+            onThemeChange={this.changeTheme} />
         </div>
       );
     } else {
         return (
-          <Layout
-            location={location}
-            content={content}
-            project={params.project}
-            instance={this.state.instance}/>
+          <div>
+            <Layout
+              styles={styles}
+              location={location}
+              content={content}
+              project={params.project}
+              instance={this.state.instance}
+              onLogout={onLogout}/>
+            <SelectThemeComponent
+              styles={styles}
+              themes={["cdpp","ssalto","default"]}
+              curentTheme={theme}
+              onThemeChange={this.changeTheme} />
+        </div>
         );
     }
   }
@@ -75,7 +89,8 @@ const mapStateToProps = (state) => {
 }
 const mapDispatchToProps = (dispatch) => {
   return {
-    setTheme: (theme) => {dispatch(setTheme(theme))}
+    setTheme: (theme) => {dispatch(setTheme(theme))},
+    onLogout: () => {dispatch(logout())}
   }
 }
 module.exports = connect(mapStateToProps,mapDispatchToProps)(AdminApp);

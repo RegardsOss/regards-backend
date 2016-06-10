@@ -27,7 +27,7 @@ class SelectThemeComponent extends React.Component {
           value={this.props.curentTheme}
           onChange={this.onChange}>
             {themes.map( (theme) => {
-                return <option value={theme}>{theme}</option>;
+                return <option key={theme} value={theme}>{theme}</option>;
             })}
         </select>
       </div>

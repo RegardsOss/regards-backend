@@ -53,7 +53,11 @@ module.exports = {
       // Rewrite to get styles.css
       { from: /\/(\d\.)?styles\.css(\.map)?/,
         to: context => context.match[0]
-      }]
+      },
+      { from: /(\*.jpg)$/,
+        to: context => "/img/"+context.match[0]
+      },
+    ]
     }
   },
   resolve: {
@@ -83,7 +87,8 @@ module.exports = {
       {test: /\.scss$/, exclude: [/node_modules/,/scripts/,/stylesheets\/default/,/stylesheets\/vendors/],
         loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
       },
-      {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"}
+      {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"},
+      {test: /\.jpg$/, exclude: [/node_modules/], loader: "file-loader?name=/img/[name].[ext]"}
     ]
   },
   plugins: [

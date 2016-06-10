@@ -56,7 +56,8 @@ module.exports = {
       {test: /\.scss$/, exclude: [/node_modules/,/scripts/,/stylesheets\/default/,/stylesheets\/vendors/],
         loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
       },
-      {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"}
+      {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"},
+      {test: /\.jpg$/, exclude: [/node_modules/], loader: "file-loader"}
     ]
   },
   plugins: [

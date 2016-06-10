@@ -1,6 +1,6 @@
 
 .menuelement {
-  color: black;
+  color: $text-color;
   font-size: 1.2em;
   margin: 2px 20px;
   text-decoration: none;
@@ -10,7 +10,7 @@
 .selected {
   @extend .menuelement;
   text-decoration: underline;
-  color: Red;
+  color: $secondtext-color;
 }
 
 .unselected {
@@ -20,4 +20,11 @@
 .unselected:hover {
   color: blue;
   text-decoration: underline;
+}
+
+.navigation {
+  background-color: $secondcolor;
+  color: $text-color;
+  margin-bottom: 20px;
+  line-height: 50px;
 }

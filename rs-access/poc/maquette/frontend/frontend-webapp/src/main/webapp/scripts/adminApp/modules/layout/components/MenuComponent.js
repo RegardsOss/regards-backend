@@ -2,14 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { IndexLink, Link } from 'react-router';
 
-import { logout } from 'common/authentication/AuthenticateActions';
-import { getThemeStyles } from 'common/theme/ThemeUtils';
-
 class Menu extends React.Component {
 
   render(){
-    const { dispatch, theme, project } = this.props;
-    const styles = getThemeStyles(theme, 'adminApp/styles');
+    const { onLogout, project, styles } = this.props;
     return (
         <div>
           <IndexLink to={"/admin/" + project}
@@ -22,18 +18,20 @@ class Menu extends React.Component {
             activeClassName={styles.selected}>
             TestModule
           </Link>
-          <span className={styles.unselected}
-            onClick={() => {
-              dispatch(logout());
-            }}>Log out</span>
+          <span
+            className={styles.unselected}
+            onClick={onLogout}>
+            Log out
+          </span>
         </div>
       )
   }
 }
 
-const mapStateToProps = (state) => {
-  return {
-    theme: state.theme
-  }
+Menu.propTypes = {
+  styles: React.PropTypes.object.isRequired,
+  project: React.PropTypes.string.isRequired,
+  onLogout: React.PropTypes.func.isRequired,
 }
-export default connect(mapStateToProps)(Menu);
+
+export default Menu;
