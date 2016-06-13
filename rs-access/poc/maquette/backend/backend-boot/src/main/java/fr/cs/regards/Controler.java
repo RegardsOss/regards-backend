@@ -1,11 +1,16 @@
 package fr.cs.regards;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -19,6 +24,11 @@ import fr.cs.regards.pojo.Project;
 @RestController
 @RequestMapping("/api")
 public class Controler {
+	
+	private static SendTime timeThread_ = null;
+	
+	@Autowired
+    private SimpMessagingTemplate template;
 	
 	@RequestMapping(value="project", method = RequestMethod.GET)
 	public @ResponseBody HttpEntity<Project> getProject(
@@ -46,5 +56,30 @@ public class Controler {
 		plugins.add(new Plugin("HelloWorldPlugin","HelloWorldPlugin/hw.js"));
         return plugins;
     }
+	
+	/**
+	 * Method to start the web socket server timer.
+	 * The timer send current date every 2 seconds to the web sockets servers
+	 * @return
+	 */
+	@RequestMapping(value="time/start", method = RequestMethod.GET)
+    public @ResponseBody String startTime() {
+		if (timeThread_ == null){
+			System.out.println("starting time thread !!!!");
+			timeThread_ = new SendTime(this);
+			timeThread_.run();
+		}
+		return "OK";
+    }
+	
+	/**
+	 * Method to send curent date to web socket clients
+	 */
+	public void sendTime(){
+		Date now = new Date();
+		System.out.println("Sending time to websocket");
+		// Send time to each client connected
+        this.template.convertAndSend("/topic/time",now.toString());
+	}
 
 }

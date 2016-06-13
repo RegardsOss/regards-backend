@@ -8,11 +8,12 @@ import pluginReducers from 'common/plugins/PluginReducers';
 import accessRightsReducers from 'common/access-rights/AccessRightsReducers';
 import authenticateReducers from 'common/authentication/AuthenticateReducers';
 import projectsReducers from 'portalApp/modules/projects/reducers/ProjectsReducers';
+import timeReducers from 'userApp/modules/websockets/reducers/TimeReducers';
 
 // Create the compined reducers by adding all modules reducers
 const allReducers = Object.assign({}, themeReducers,
   pluginReducers, accessRightsReducers, projectsReducers,
-  authenticateReducers);
+  authenticateReducers,timeReducers);
 const reducers = combineReducers(allReducers);
 
 // Default store values
@@ -21,7 +22,8 @@ const defaultStore = {
   plugins : {},
   views : [],
   authentication : {},
-  projects : {}
+  projects : {},
+  ws: {}
 }
 
 // Create the application store

@@ -16,6 +16,7 @@ class NavigationContainer extends AccessRightsComponent {
       return (
         <nav>
           <LinkComponent location={location} key="plop" to={"/user/"+project+"/test"}>Test de lien</LinkComponent>
+          <LinkComponent location={location} key="time" to={"/user/"+project+"/time"}>Temps</LinkComponent>
           {plugins.items.map( plugin => {
             if (plugin && plugin.plugin){
               return (
