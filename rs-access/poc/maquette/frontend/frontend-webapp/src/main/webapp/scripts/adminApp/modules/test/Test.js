@@ -1,6 +1,6 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { getThemeStyles } from 'common/theme/ThemeUtils';
+import React from 'react'
+import { connect } from 'react-redux'
+import { getThemeStyles } from 'common/theme/ThemeUtils'
 import { browserHistory } from 'react-router'
 
 class Test extends React.Component {
@@ -10,21 +10,21 @@ class Test extends React.Component {
     this.state = {
       inputValue:''
     }
-    this.onChange = this.onChange.bind(this);
-    this.onClick = this.onClick.bind(this);
+    this.onChange = this.onChange.bind(this)
+    this.onClick = this.onClick.bind(this)
   }
 
   componentWillMount(){
     // Read query parameters
-    const { value } = this.props.location.query;
+    const { value } = this.props.location.query
     this.setState({
       inputValue: value
     })
   }
 
   onChange(e){
-    let { value } = this.props.location.query;
-    value = e.target.value;
+    let { value } = this.props.location.query
+    value = e.target.value
     this.setState({
       inputValue: e.target.value
     })
@@ -32,8 +32,8 @@ class Test extends React.Component {
 
   onClick(){
     // Update query parameters of the current url
-    const { location } = this.props;
-    const route = location.pathname + "?value=" + this.state.inputValue;
+    const { location } = this.props
+    const route = location.pathname + "?value=" + this.state.inputValue
     browserHistory.push(route)
   }
   render(){
@@ -72,4 +72,4 @@ const mapStateToProps = (state) => {
     theme: state.theme
   }
 }
-module.exports = connect(mapStateToProps)(Test);
+module.exports = connect(mapStateToProps)(Test)

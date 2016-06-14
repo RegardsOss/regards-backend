@@ -1,7 +1,7 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import Project from '../components/ProjectComponent';
-import { fetchProjects } from '../actions/ProjectsActions';
+import React from 'react'
+import { connect } from 'react-redux'
+import Project from '../components/ProjectComponent'
+import { fetchProjects } from '../actions/ProjectsActions'
 
 // Export class itself without connect to be able to use it in test without store connection.
 export class ProjectsContainer extends React.Component {
@@ -9,18 +9,18 @@ export class ProjectsContainer extends React.Component {
   componentWillMount(){
     // onLoad method is set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
-    this.props.onLoad();
+    this.props.onLoad()
   }
 
   render(){
     // styles props is passed throught the react component creation
     // porjects props is set to the container by tge react-redux connect.
     // See method mapStateToProps
-    const { styles, projects } = this.props;
+    const { styles, projects } = this.props
 
     // If projects are loading display a loading information message
     if (projects.isFetching === true || !projects.items){
-      return (<div>Loading projects ... </div>);
+      return (<div>Loading projects ... </div>)
     } else {
       // Else display projects links
       return (
@@ -55,4 +55,4 @@ const mapDispatchToProps = (dispatch) => {
     onLoad: () => dispatch(fetchProjects())
   }
 }
-export default connect(mapStateToProps,mapDispatchToProps)(ProjectsContainer);
+export default connect(mapStateToProps,mapDispatchToProps)(ProjectsContainer)

@@ -1,5 +1,5 @@
 import React from 'react'
-import TimeContainer from './containers/TimeContainer';
+import TimeContainer from './containers/TimeContainer'
 
 class WebSockets extends React.Component {
 
@@ -7,7 +7,7 @@ class WebSockets extends React.Component {
     // Render time
     return (
       <TimeContainer />
-    );
+    )
   }
 }
 

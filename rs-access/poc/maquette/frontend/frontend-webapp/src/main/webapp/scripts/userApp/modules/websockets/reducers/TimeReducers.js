@@ -10,13 +10,13 @@ const ws = (state = {
     case RECEIVE_START_TIME:
       return Object.assign({}, state, {
         started: true
-      });
+      })
     case SET_TIME:
       return Object.assign({}, state, {
         time: action.time
-      });
+      })
     default:
-      return state;
+      return state
   }
 }
 
@@ -24,4 +24,4 @@ const timeReducers = {
   ws
 }
 
-export default timeReducers;
+export default timeReducers

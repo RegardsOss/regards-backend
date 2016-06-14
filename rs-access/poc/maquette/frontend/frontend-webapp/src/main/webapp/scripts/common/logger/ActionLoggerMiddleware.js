@@ -4,10 +4,10 @@
 // This exemple log an action before it reached the reducers
 function createLoggerMiddleware() {
   return ({ dispatch, getState }) => next => action => {
-    console.log("ACTION : ",action);
+    console.log("ACTION : ",action)
     return next(action);
   };
 }
 
-const logger = createLoggerMiddleware();
-export default logger;
+const logger = createLoggerMiddleware()
+export default logger

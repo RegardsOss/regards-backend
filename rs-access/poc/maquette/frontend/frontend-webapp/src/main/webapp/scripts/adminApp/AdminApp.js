@@ -1,14 +1,14 @@
 
-import React from 'react';
-import { connect } from 'react-redux';
-import ReactDOM from 'react-dom';
+import React from 'react'
+import { connect } from 'react-redux'
+import ReactDOM from 'react-dom'
 
-import { setTheme } from 'common/theme/actions/ThemeActions';
-import { logout } from 'common/authentication/AuthenticateActions';
-import { getThemeStyles } from 'common/theme/ThemeUtils';
-import Authentication from './modules/authentication/Authentication';
-import SelectThemeComponent from 'common/theme/components/SelectThemeComponent';
-import Layout from './modules/layout/Layout';
+import { setTheme } from 'common/theme/actions/ThemeActions'
+import { logout } from 'common/authentication/AuthenticateActions'
+import { getThemeStyles } from 'common/theme/ThemeUtils'
+import Authentication from './modules/authentication/Authentication'
+import SelectThemeComponent from 'common/theme/components/SelectThemeComponent'
+import Layout from './modules/layout/Layout'
 
 class AdminApp extends React.Component {
   constructor(){
@@ -16,7 +16,7 @@ class AdminApp extends React.Component {
     this.state = {
       instance: false
     }
-    this.changeTheme = this.changeTheme.bind(this);
+    this.changeTheme = this.changeTheme.bind(this)
   }
 
   componentWillMount(){
@@ -26,22 +26,22 @@ class AdminApp extends React.Component {
       this.setState({instance: true});
       themeToSet = "default";
     }
-    this.props.setTheme(themeToSet);
+    this.props.setTheme(themeToSet)
   }
 
 
   changeTheme(themeToSet){
     if (this.props.theme !== themeToSet){
-      this.props.setTheme(themeToSet);
+      this.props.setTheme(themeToSet)
     }
   }
 
   render(){
-    const { theme, authentication, content, location, params, onLogout } = this.props;
-    const styles = getThemeStyles(theme, 'adminApp/styles');
-    const commonStyles = getThemeStyles(theme,'common/common.scss');
+    const { theme, authentication, content, location, params, onLogout } = this.props
+    const styles = getThemeStyles(theme, 'adminApp/styles')
+    const commonStyles = getThemeStyles(theme,'common/common.scss')
 
-    const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now();
+    const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
     if (!authenticated || authentication.user.name === 'public'){
       return (
         <div className={styles.main}>
@@ -94,4 +94,4 @@ const mapDispatchToProps = (dispatch) => {
     onLogout: () => {dispatch(logout())}
   }
 }
-module.exports = connect(mapStateToProps,mapDispatchToProps)(AdminApp);
+module.exports = connect(mapStateToProps,mapDispatchToProps)(AdminApp)

@@ -9,23 +9,23 @@ class LoginComponent extends React.Component {
       password: "",
       error :""
     }
-    this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.handleKeyPress = this.handleKeyPress.bind(this)
   }
 
   handleKeyPress(e) {
     if (e.key === 'Enter') {
-      this.props.onLogin(this.state.username,this.state.password);
+      this.props.onLogin(this.state.username,this.state.password)
     }
   }
 
   render(){
-    const { styles } = this.props;
+    const { styles } = this.props
     return (
       <div className={styles["login-modal"]} onKeyDown={this.handleKeyPress}>
         <p className={styles["login-error"]}>{this.props.errorMessage}</p>
         <label for="username" >Username</label>
         <input id="username" onChange={(event) => {
-             this.setState({username:event.target.value});
+             this.setState({username:event.target.value})
           }}/>
         <br/>
         <label for="password" >Password</label>
@@ -48,4 +48,4 @@ LoginComponent.propTypes = {
   errorMessage: React.PropTypes.string
 }
 
-export default LoginComponent;
+export default LoginComponent

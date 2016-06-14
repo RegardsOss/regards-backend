@@ -1,5 +1,5 @@
-import React from 'react';
-import AccessRightsComponent from 'common/access-rights/AccessRightsComponent';
+import React from 'react'
+import AccessRightsComponent from 'common/access-rights/AccessRightsComponent'
 
 class Test extends AccessRightsComponent {
 
@@ -10,8 +10,8 @@ class Test extends AccessRightsComponent {
   }
 
   render(){
-    return (<div>This view shall not be displayed ! </div>);
+    return (<div>This view shall not be displayed ! </div>)
   }
 }
 
-module.exports = Test;
+module.exports = Test

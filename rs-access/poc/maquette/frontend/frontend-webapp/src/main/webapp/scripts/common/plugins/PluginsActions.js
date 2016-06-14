@@ -1,7 +1,7 @@
 import fetch from 'isomorphic-fetch'
-import scriptjs from 'scriptjs';
+import scriptjs from 'scriptjs'
 
-const PLUGINS_API='http://localhost:8080/api/plugins';
+const PLUGINS_API='http://localhost:8080/api/plugins'
 
 export const REQUEST_PLUGINS = 'REQUEST_PLUGINS'
 function requestPlugins() {
@@ -19,7 +19,7 @@ function receivePlugins(plugins) {
   }
 }
 
-export const FAILED_PLUGINS = 'FAILED_PLUGINS';
+export const FAILED_PLUGINS = 'FAILED_PLUGINS'
 function failedPlugins(error) {
   return {
     type : FAILED_PLUGINS,
@@ -39,9 +39,9 @@ function pluginInitialized(name, plugin){
 
 function checkResponseStatus(response){
   if (response.status === 200){
-    return response;
+    return response
   } else {
-    throw new Error(response.statusText);
+    throw new Error(response.statusText)
   }
 }
 
@@ -58,8 +58,8 @@ export function fetchPlugins() {
 
     document.addEventListener('plugin', function (plugin) {
       // When plugin loaded event is received, add plugin to the store
-      dispatch(pluginInitialized(plugin.detail.name,plugin.detail.app));
-    },false);
+      dispatch(pluginInitialized(plugin.detail.name,plugin.detail.app))
+    },false)
 
     // First dispatch: the app state is updated to inform
     // that the API call is starting.
@@ -72,9 +72,9 @@ export function fetchPlugins() {
     // In this case, we return a promise to wait for.
     // This is not required by thunk middleware, but it is convenient for us.
 
-    let authorization = "Basic";
+    let authorization = "Basic"
     if ( getState().authentication && getState().authentication.user && getState().authentication.user.access_token){
-      authorization = "Bearer " + getState().authentication.user.access_token;
+      authorization = "Bearer " + getState().authentication.user.access_token
     }
 
     return fetch(PLUGINS_API, {
@@ -87,16 +87,16 @@ export function fetchPlugins() {
     .then(function(response) {
       return response.json()
     }).then(function(body) {
-      dispatch(receivePlugins(body));
+      dispatch(receivePlugins(body))
       // Load ech plugins
       body.map( plugin => {
         const paths = plugin.paths.map( path => {
-            return window.location.origin + "/plugins/" + path;
-        });
-        scriptjs(paths, plugin.name);
-      });
+            return window.location.origin + "/plugins/" + path
+        })
+        scriptjs(paths, plugin.name)
+      })
     }).catch(function(error) {
-      dispatch(failedPlugins(error));
-    });
+      dispatch(failedPlugins(error))
+    })
   }
 }

@@ -1,6 +1,6 @@
-import React from 'react';
+import React from 'react'
 
-import Menu from './components/MenuComponent';
+import Menu from './components/MenuComponent'
 import Home from '../home/Home'
 
 class Layout extends React.Component {
@@ -36,4 +36,4 @@ Layout.propsTypes = {
 }
 
 
-export default Layout;
+export default Layout

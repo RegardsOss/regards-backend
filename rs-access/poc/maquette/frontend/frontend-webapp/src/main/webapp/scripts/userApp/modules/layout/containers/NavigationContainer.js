@@ -1,17 +1,17 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React from 'react'
+import { connect } from 'react-redux'
 
-import AccessRightsComponent from 'common/access-rights/AccessRightsComponent';
-import LinkComponent from '../components/LinkComponent';
+import AccessRightsComponent from 'common/access-rights/AccessRightsComponent'
+import LinkComponent from '../components/LinkComponent'
 
 class NavigationContainer extends AccessRightsComponent {
 
   getDependencies(){
-    return null;
+    return null
   }
 
   render(){
-    const { location, plugins, project } = this.props;
+    const { location, plugins, project } = this.props
     if (this.state.access === true && plugins.items){
       return (
         <nav>
@@ -32,7 +32,7 @@ class NavigationContainer extends AccessRightsComponent {
         </nav>
       )
     }
-    return null;
+    return null
   }
 }
 
@@ -47,4 +47,4 @@ const mapStateToProps = (state) => {
     plugins: state.plugins
   }
 }
-module.exports = connect(mapStateToProps)(NavigationContainer);
+module.exports = connect(mapStateToProps)(NavigationContainer)

@@ -1,7 +1,7 @@
 import fetch from 'isomorphic-fetch'
-import scriptjs from 'scriptjs';
+import scriptjs from 'scriptjs'
 
-const ACCESS_RIGHTS_API='http://localhost:8080/api/access/rights';
+const ACCESS_RIGHTS_API='http://localhost:8080/api/access/rights'
 
 export const REQUEST_ACCESSRIGHTS = 'REQUEST_ACCESSRIGHTS'
 function requestAccessRights(view) {
@@ -60,7 +60,7 @@ export function fetchAccessRights(view, dependencies) {
 
     let authorization = "Basic";
     if ( getState().authentication && getState().authentication.user && getState().authentication.user.access_token){
-      authorization = "Bearer " + getState().authentication.user.access_token;
+      authorization = "Bearer " + getState().authentication.user.access_token
     }
 
     return fetch(ACCESS_RIGHTS_API, {
@@ -74,9 +74,9 @@ export function fetchAccessRights(view, dependencies) {
     .then(function(response) {
       return response.json()
     }).then(function(body) {
-      dispatch(receiveAccessRights(view, true));
+      dispatch(receiveAccessRights(view, true))
     }).catch(function(error) {
-      dispatch(failedAccessRights(view));
+      dispatch(failedAccessRights(view))
     });
   }
 }

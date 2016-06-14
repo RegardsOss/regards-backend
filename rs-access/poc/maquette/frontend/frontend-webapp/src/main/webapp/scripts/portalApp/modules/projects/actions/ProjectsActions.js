@@ -1,7 +1,7 @@
 import fetch from 'isomorphic-fetch'
 
 // Backend api adress
-export const PROJECTS_API='http://localhost:8080/api/projects';
+export const PROJECTS_API='http://localhost:8080/api/projects'
 
 // Action to inform store that te projects request is running
 export const REQUEST_PROJECTS = 'REQUEST_PROJECTS'
@@ -22,7 +22,7 @@ export function receiveProjects(projects) {
 }
 
 // Action to inform store that the running projects request failed
-export const FAILED_PROJECTS = 'FAILED_PROJECTS';
+export const FAILED_PROJECTS = 'FAILED_PROJECTS'
 function failedProjects(error) {
   return {
     type : FAILED_PROJECTS,
@@ -33,10 +33,10 @@ function failedProjects(error) {
 // Function to check the projects request response status
 function checkStatus(response) {
   if (response.status === 200 ) {
-    return response;
+    return response
   } else {
-    var error = new Error(response.statusText);
-    throw error;
+    var error = new Error(response.statusText)
+    throw error
   }
 }
 
@@ -59,9 +59,9 @@ export function fetchProjects() {
     // This is not required by thunk middleware, but it is convenient for us.
 
     // Init the authorization bearer of the fetch request
-    let authorization = "Basic";
+    let authorization = "Basic"
     if ( getState().authentication && getState().authentication.user && getState().authentication.user.access_token){
-      authorization = "Bearer " + getState().authentication.user.access_token;
+      authorization = "Bearer " + getState().authentication.user.access_token
     }
 
     return fetch(PROJECTS_API, {
@@ -74,9 +74,9 @@ export function fetchProjects() {
     .then(function(response) {
       return response.json()
     }).then(function(body) {
-      dispatch(receiveProjects(body));
+      dispatch(receiveProjects(body))
     }).catch(function(error) {
-      dispatch(failedProjects(error.message));
-    });
+      dispatch(failedProjects(error.message))
+    })
   }
 }

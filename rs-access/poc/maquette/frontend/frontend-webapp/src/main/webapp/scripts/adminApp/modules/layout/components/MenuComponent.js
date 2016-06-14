@@ -1,13 +1,13 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { IndexLink, Link } from 'react-router';
+import React from 'react'
+import { connect } from 'react-redux'
+import { IndexLink, Link } from 'react-router'
 
-import icons from 'stylesheets/foundation-icons/foundation-icons.scss';
+import icons from 'stylesheets/foundation-icons/foundation-icons.scss'
 
 class Menu extends React.Component {
 
   render(){
-    const { onLogout, project, styles } = this.props;
+    const { onLogout, project, styles } = this.props
 
     return (
         <div>
@@ -37,4 +37,4 @@ Menu.propTypes = {
   onLogout: React.PropTypes.func.isRequired,
 }
 
-export default Menu;
+export default Menu

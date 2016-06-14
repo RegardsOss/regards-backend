@@ -1,39 +1,39 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React from 'react'
+import { connect } from 'react-redux'
 
-import { fetchPlugins } from 'common/plugins/PluginsActions';
-import { setTheme } from 'common/theme/actions/ThemeActions';
-import Layout from './modules/layout/Layout';
-import Test from './modules/test/Test';
+import { fetchPlugins } from 'common/plugins/PluginsActions'
+import { setTheme } from 'common/theme/actions/ThemeActions'
+import Layout from './modules/layout/Layout'
+import Test from './modules/test/Test'
 
 class UserApp extends React.Component {
 
   componentWillMount(){
     // Get project from params from react router. project param is the ":project" in userApp route
     // See routes.js
-    const themeToSet = this.props.params.project;
+    const themeToSet = this.props.params.project
     // Plugins are set to the container props by react-redux connect.
     // See method mapStateToProps of this container
-    const { plugins } = this.props;
+    const { plugins } = this.props
     // initTheme method is set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
-    this.props.initTheme(themeToSet);
+    this.props.initTheme(themeToSet)
 
     if (!plugins || !plugins.items || plugins.items.length === 0){
       // fetchPlugins method is set to the container props by react-redux connect.
       // See method mapDispatchToProps of this container
-      this.props.fetchPlugins();
+      this.props.fetchPlugins()
     }
   }
 
   render(){
     // Location ,params and content are set in this container props by react-router
-    const { location, params, content } = this.props;
-    const { project } = params;
+    const { location, params, content } = this.props
+    const { project } = params
     if (!content){
-      return (<Layout location={location} project={project}><Test /></Layout>);
+      return (<Layout location={location} project={project}><Test /></Layout>)
     } else {
-      return (<Layout location={location} project={project}>{this.props.content}</Layout>);
+      return (<Layout location={location} project={project}>{this.props.content}</Layout>)
     }
   }
 }
@@ -50,4 +50,4 @@ const mapStateToProps = (state) => {
     plugins: state.plugins
   }
 }
-module.exports = connect(mapStateToProps,mapDispatchToProps)(UserApp);
+module.exports = connect(mapStateToProps,mapDispatchToProps)(UserApp)

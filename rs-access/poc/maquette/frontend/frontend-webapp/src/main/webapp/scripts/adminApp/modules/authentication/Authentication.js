@@ -1,10 +1,10 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React from 'react'
+import { connect } from 'react-redux'
 
-import { getThemeStyles } from 'common/theme/ThemeUtils';
+import { getThemeStyles } from 'common/theme/ThemeUtils'
 
-import LoginComponent from './components/LoginComponent';
-import { fetchAuthenticate } from 'common/authentication/AuthenticateActions';
+import LoginComponent from './components/LoginComponent'
+import { fetchAuthenticate } from 'common/authentication/AuthenticateActions'
 
 class Authentication extends React.Component {
 
@@ -13,7 +13,7 @@ class Authentication extends React.Component {
   }
 
   render(){
-    const styles = getThemeStyles(this.props.theme, 'adminApp/styles');
+    const styles = getThemeStyles(this.props.theme, 'adminApp/styles')
     return (
       <LoginComponent
         styles={styles}
@@ -35,4 +35,4 @@ const mapDispatchToProps = ( dispatch )=> {
     onLogin: (userName,password) => dispatch(fetchAuthenticate(userName, password))
   }
 }
-export default connect(mapStateToProps,mapDispatchToProps)(Authentication);
+export default connect(mapStateToProps,mapDispatchToProps)(Authentication)

@@ -1,18 +1,18 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React from 'react'
+import { connect } from 'react-redux'
 
-import { getThemeStyles } from 'common/theme/ThemeUtils';
-import { setTheme } from 'common/theme/actions/ThemeActions';
-import SelectThemeComponent from 'common/theme/components/SelectThemeComponent';
+import { getThemeStyles } from 'common/theme/ThemeUtils'
+import { setTheme } from 'common/theme/actions/ThemeActions'
+import SelectThemeComponent from 'common/theme/components/SelectThemeComponent'
 
-import NavigationContainer from './containers/NavigationContainer';
+import NavigationContainer from './containers/NavigationContainer'
 
 class Layout extends React.Component {
 
   render(){
-    const { theme } = this.props;
-    const styles = getThemeStyles(this.props.theme, 'userApp/base');
-    const commonStyles = getThemeStyles(theme,'common/common.scss');
+    const { theme } = this.props
+    const styles = getThemeStyles(this.props.theme, 'userApp/base')
+    const commonStyles = getThemeStyles(theme,'common/common.scss')
     return (
       <div className="full-div">
         <div className="header">
@@ -48,4 +48,4 @@ const mapDispatchToProps = (dispatch) => {
     setTheme: (theme) =>  dispatch(setTheme(theme))
   }
 }
-export default connect(mapStateToProps,mapDispatchToProps)(Layout);
+export default connect(mapStateToProps,mapDispatchToProps)(Layout)

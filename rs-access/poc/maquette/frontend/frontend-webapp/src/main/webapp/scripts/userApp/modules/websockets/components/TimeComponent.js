@@ -1,15 +1,15 @@
-import React from 'react';
+import React from 'react'
 
 class Time extends React.Component {
   constructor(){
-    super();
+    super()
   }
   render(){
     return (
       <div class={this.props.styles.timer}>
         {this.props.time}
       </div>
-    );
+    )
   }
 }
 

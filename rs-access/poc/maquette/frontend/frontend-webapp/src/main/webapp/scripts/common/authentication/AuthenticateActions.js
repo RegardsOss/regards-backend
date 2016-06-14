@@ -1,6 +1,6 @@
 import fetch from 'isomorphic-fetch'
 
-const AUTHENTICATE_API='http://localhost:8080/oauth/token';
+const AUTHENTICATE_API='http://localhost:8080/oauth/token'
 
 export const REQUEST_AUTHENTICATE = 'REQUEST_AUTHENTICATE'
 function requestAuthenticate(user) {
@@ -19,7 +19,7 @@ function receiveAuthenticate(user) {
   }
 }
 
-export const FAILED_AUTHENTICATE = 'FAILED_AUTHENTICATE';
+export const FAILED_AUTHENTICATE = 'FAILED_AUTHENTICATE'
 function failedAuthenticate(error) {
   return {
     type : FAILED_AUTHENTICATE,
@@ -27,7 +27,7 @@ function failedAuthenticate(error) {
   }
 }
 
-export const LOGOUT = 'LOGOUT';
+export const LOGOUT = 'LOGOUT'
 export function logout() {
   return {
     type : LOGOUT
@@ -36,11 +36,11 @@ export function logout() {
 
 function checkResponseStatus (response) {
   if (!response){
-    throw new Error("Service unavailable");
+    throw new Error("Service unavailable")
   } else if (response.status === 200) {
    return response;
   } else {
-     throw new Error("Authentication error");
+     throw new Error("Authentication error")
   }
 }
 
@@ -66,7 +66,7 @@ export function fetchAuthenticate(username, password) {
     // In this case, we return a promise to wait for.
     // This is not required by thunk middleware, but it is convenient for us.
     const request = AUTHENTICATE_API + "?grant_type=password&username="
-    + username + "&password=" +password;
+    + username + "&password=" +password
 
     return fetch(request, {
       method: 'post',
@@ -82,9 +82,9 @@ export function fetchAuthenticate(username, password) {
       const user = Object.assign({}, body, {
         name: username
       });
-      dispatch(receiveAuthenticate(user));
+      dispatch(receiveAuthenticate(user))
     }).catch(function(error) {
-      dispatch(failedAuthenticate(error.message));
+      dispatch(failedAuthenticate(error.message))
     });
   }
 }

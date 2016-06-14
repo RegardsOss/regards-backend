@@ -1,24 +1,24 @@
-import React from 'react';
+import React from 'react'
 
 class SelectThemeComponent extends React.Component {
   constructor(){
-    super();
-    this.onChange = this.onChange.bind(this);
+    super()
+    this.onChange = this.onChange.bind(this)
   }
 
   onChange(e){
-    console.log("SEB",e.target.value);
-    this.props.onThemeChange(e.target.value);
+    console.log("SEB",e.target.value)
+    this.props.onThemeChange(e.target.value)
   }
 
   componentWillMount(){
     this.setState({
       selectedValue: this.props.curentTheme
-    });
+    })
   }
 
   render(){
-    const { styles, themes, onThemeChange } = this.props;
+    const { styles, themes, onThemeChange } = this.props
 
     return (
       <div className={styles["select-theme"]}>
@@ -27,11 +27,11 @@ class SelectThemeComponent extends React.Component {
           value={this.props.curentTheme}
           onChange={this.onChange}>
             {themes.map( (theme) => {
-                return <option key={theme} value={theme}>{theme}</option>;
+                return <option key={theme} value={theme}>{theme}</option>
             })}
         </select>
       </div>
-    );
+    )
   }
 
 }
@@ -43,4 +43,4 @@ SelectThemeComponent.propTypes = {
   onThemeChange: React.PropTypes.func.isRequired
 }
 
-export default SelectThemeComponent;
+export default SelectThemeComponent

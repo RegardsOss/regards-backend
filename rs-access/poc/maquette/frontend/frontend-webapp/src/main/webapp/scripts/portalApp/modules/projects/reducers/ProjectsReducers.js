@@ -1,6 +1,6 @@
 import {
   REQUEST_PROJECTS,  RECEIVE_PROJECTS,
-  FAILED_PROJECTS } from '../actions/ProjectsActions';
+  FAILED_PROJECTS } from '../actions/ProjectsActions'
 
 const projects = (state = {
   isFetching : false,
@@ -11,19 +11,19 @@ const projects = (state = {
     case REQUEST_PROJECTS:
       return Object.assign({}, state, {
         isFetching: true
-      });
+      })
     case RECEIVE_PROJECTS:
       return Object.assign({}, state, {
         isFetching: false,
         items: action.projects,
         lastUpdate: action.receivedAt
-      });
+      })
     case FAILED_PROJECTS:
       return Object.assign({}, state, {
         isFetching: false
-      });
+      })
     default:
-      return state;
+      return state
   }
 }
 
@@ -31,4 +31,4 @@ const projectsReducers = {
   projects
 }
 
-export default projectsReducers;
+export default projectsReducers

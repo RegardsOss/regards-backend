@@ -1,12 +1,12 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React from 'react'
+import { connect } from 'react-redux'
 
-import { getThemeStyles } from 'common/theme/ThemeUtils';
+import { getThemeStyles } from 'common/theme/ThemeUtils'
 
 class ApplicationErrorComponent extends React.Component {
 
   render(){
-    const styles = getThemeStyles(this.props.theme, 'common/common');
+    const styles = getThemeStyles(this.props.theme, 'common/common')
     return (
       <div className={styles.errorApp}>
         Application unavailable
@@ -21,4 +21,4 @@ const mapStateToProps = (state) => {
     theme: state.theme
   }
 }
-export default connect(mapStateToProps)(ApplicationErrorComponent);
+export default connect(mapStateToProps)(ApplicationErrorComponent)

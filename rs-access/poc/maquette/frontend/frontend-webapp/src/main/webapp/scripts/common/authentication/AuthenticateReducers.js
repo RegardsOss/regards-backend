@@ -1,6 +1,6 @@
 import {
   REQUEST_AUTHENTICATE,  RECEIVE_AUTHENTICATE,
-  FAILED_AUTHENTICATE, LOGOUT } from './AuthenticateActions';
+  FAILED_AUTHENTICATE, LOGOUT } from './AuthenticateActions'
 
 const authentication = (state = {
   isFetching : false,
@@ -40,4 +40,4 @@ const authenticateReducers = {
   authentication
 }
 
-export default authenticateReducers;
+export default authenticateReducers

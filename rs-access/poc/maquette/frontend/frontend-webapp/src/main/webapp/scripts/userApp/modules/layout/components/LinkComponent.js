@@ -1,5 +1,5 @@
-import React from 'react';
-import { IndexLink, Link } from 'react-router';
+import React from 'react'
+import { IndexLink, Link } from 'react-router'
 
 class Linkcomponent extends React.Component {
 
@@ -7,9 +7,9 @@ class Linkcomponent extends React.Component {
     // to props is passed throught the react component creation
     // children props is the children of te curent component. This props is autmatically set
     // by react when creatin the component.
-    const { to, children } = this.props;
-    const style={"fontSize": "20px", "lineHeight": "50px",margin: "0px 20px", "textDecoration": "none"};
-    const activeStyle = { 'borderBottom':'2px solid Red' };
+    const { to, children } = this.props
+    const style={"fontSize": "20px", "lineHeight": "50px",margin: "0px 20px", "textDecoration": "none"}
+    const activeStyle = { 'borderBottom':'2px solid Red' }
     return (
       <Link
         to={to}
@@ -17,7 +17,7 @@ class Linkcomponent extends React.Component {
         style={style}>
         {children}
       </Link>
-    );
+    )
   }
 }
 

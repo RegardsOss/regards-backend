@@ -1,5 +1,5 @@
 import React from "react"
-import { fetchAccessRights } from "./AccessRightsActions";
+import { fetchAccessRights } from "./AccessRightsActions"
 
 /**
 * Root class for all RegardsView in each modules.
@@ -17,7 +17,7 @@ class AccessRightsComponent extends React.Component{
     this.state= {
       access: false
     }
-    this.checkViewAccessRights = this.checkViewAccessRights.bind(this);
+    this.checkViewAccessRights = this.checkViewAccessRights.bind(this)
   }
 
   /**
@@ -39,38 +39,38 @@ class AccessRightsComponent extends React.Component{
   * Method to check if the view is displayable
   */
   componentWillMount(){
-    const { store } = this.context;
+    const { store } = this.context
     if (this.getDependencies() === null){
       this.setState({
         access: true
       });
     } else {
-      this.unsubscribe = store.subscribe(this.checkViewAccessRights);
-      store.dispatch(fetchAccessRights(this.constructor.name, this.getDependencies()));
+      this.unsubscribe = store.subscribe(this.checkViewAccessRights)
+      store.dispatch(fetchAccessRights(this.constructor.name, this.getDependencies()))
     }
   }
 
   componentWillUnmount(){
     if (this.unsubscribe){
-      this.unsubscribe();
+      this.unsubscribe()
     }
   }
 
   checkViewAccessRights(){
-    const { store } = this.context;
+    const { store } = this.context
     const view = store.getState().views.find( curent => {
-      return curent.name === this.constructor.name;
+      return curent.name === this.constructor.name
     });
     // If not, check access from server
     if (view){
       if (view.access === true){
-        console.log("Access granted to view : " + this.constructor.name);
+        console.log("Access granted to view : " + this.constructor.name)
       } else {
-        console.log("Access denied to view : " + this.constructor.name);
+        console.log("Access denied to view : " + this.constructor.name)
         // Cancel render method
         this.render = () => {return null}
       }
-      this.unsubscribe();
+      this.unsubscribe()
       this.setState({
         access: view.access
       });
@@ -84,4 +84,4 @@ AccessRightsComponent.contextTypes = {
   route : React.PropTypes.object
 }
 
-export default AccessRightsComponent;
+export default AccessRightsComponent
