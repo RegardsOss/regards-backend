@@ -5,6 +5,7 @@ const path = require('path')
 const webpack = require('webpack')
 const autoprefixer = require('autoprefixer')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 const sassLoaders = [
   // Loader to generate react modules css classes
   //'css?modules&importLoaders=1&localIdentName=[path]___[name]__[local]___[hash:base64:5]',
@@ -52,7 +53,7 @@ module.exports = {
       },
       // Rewrite to get styles.css
       { from: /\/(\d\.)?styles\.css(\.map)?/,
-        to: context => context.match[0]
+        to: context => "/css/"+context.match[0]
       },
       { from: /(\*.jpg)$/,
         to: context => "/img/"+context.match[0]
@@ -97,7 +98,12 @@ module.exports = {
   },
   plugins: [
     // Create a single css file for the whole application
-    new ExtractTextPlugin('styles.css',{allChunks: true}),
+    new ExtractTextPlugin('/css/styles.css',{allChunks: true}),
+    new CleanWebpackPlugin(['build'], {
+      root: __dirname,
+      verbose: false,
+      dry: false
+    })
   ],
   postcss: [
     // Plugin to Automaticly add vendors prefix to css classes
@@ -106,8 +112,8 @@ module.exports = {
     })
   ],
   node: {
-      net: 'empty',
-      tls: 'empty',
-      dns: 'empty'
-    }
+    net: 'empty',
+    tls: 'empty',
+    dns: 'empty'
+  }
 };

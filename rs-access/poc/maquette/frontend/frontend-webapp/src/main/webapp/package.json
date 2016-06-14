@@ -48,6 +48,7 @@
     "babel-preset-react": "^6.5.0",
     "babel-register": "^6.9.0",
     "chai": "^3.5.0",
+    "clean-webpack-plugin": "^0.1.9",
     "css-loader": "^0.23.1",
     "enzyme": "^2.3.0",
     "extract-text-webpack-plugin": "^1.0.1",

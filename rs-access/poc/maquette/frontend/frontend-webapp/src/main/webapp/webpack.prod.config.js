@@ -6,6 +6,7 @@ const path = require('path')
 const webpack = require('webpack')
 const autoprefixer = require('autoprefixer')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 const sassLoaders = [
   // Loader to generate react modules css classes
   //'css?modules&importLoaders=1&localIdentName=[path]___[name]__[local]___[hash:base64:5]',
@@ -58,14 +59,14 @@ module.exports = {
       },
       {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"},
       {test: /\.jpg$/, exclude: [/node_modules/], loader: "file-loader"},
-      { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?name=/img/[name].[ext]&limit=10000&minetype=application/font-woff" },
-      { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader?name=/img/[name].[ext]" },
+      {test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?name=/img/[name].[ext]&limit=10000&minetype=application/font-woff" },
+      {test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader?name=/img/[name].[ext]" },
       {test: /\.json$/, loader: "file-loader?name=/json/[name].[ext]"}
     ]
   },
   plugins: [
     // Create a single css file for the whole application
-    new ExtractTextPlugin('styles.css',{allChunks: true}),
+    new ExtractTextPlugin('/css/styles.css',{allChunks: true}),
     new webpack.optimize.UglifyJsPlugin({
       // Do not generate source map files (this are usefull during developpment)
       sourceMap: false,
@@ -78,6 +79,11 @@ module.exports = {
       'process.env': {
         'NODE_ENV': JSON.stringify('production')
       }
+    }),
+    new CleanWebpackPlugin(['build'], {
+      root: __dirname,
+      verbose: false,
+      dry: false
     })
   ],
   postcss: [
@@ -85,5 +91,10 @@ module.exports = {
     autoprefixer({
       browsers: ['last 2 versions']
     })
-  ]
+  ],
+  node: {
+    net: 'empty',
+    tls: 'empty',
+    dns: 'empty'
+  }
 };
