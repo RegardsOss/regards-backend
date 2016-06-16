@@ -1,0 +1,1 @@
+{"mappings":{"feature":{"_all":{"enabled":false},"properties":{"geometry":{"type":"geo_shape"}}}}}
