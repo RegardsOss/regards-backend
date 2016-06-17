@@ -1,4 +1,4 @@
-package fr.cs.regards;
+package fr.cs.regards.controlers;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -8,9 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,6 +21,8 @@ import fr.cs.regards.pojo.Plugin;
 import fr.cs.regards.pojo.Project;
 
 @RestController
+// Indicates that those resources are securised. Only the /oauth endpoint do not need the authentication token
+@EnableResourceServer
 @RequestMapping("/api")
 public class Controler {
 	

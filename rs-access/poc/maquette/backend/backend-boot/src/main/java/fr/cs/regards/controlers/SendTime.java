@@ -1,4 +1,5 @@
-package fr.cs.regards;
+package fr.cs.regards.controlers;
+
 
 public class SendTime implements Runnable {
 

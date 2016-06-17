@@ -1,4 +1,4 @@
-package fr.cs.regards;
+package fr.cs.regards.configuration;
 
 import java.util.List;
 
@@ -19,6 +19,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 import org.springframework.web.socket.server.jetty.JettyRequestUpgradeStrategy;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
+
+import fr.cs.regards.controlers.TimeHandler;
 
 @Configuration
 @EnableWebSocketMessageBroker

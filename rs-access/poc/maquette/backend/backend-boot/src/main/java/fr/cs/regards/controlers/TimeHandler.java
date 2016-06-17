@@ -1,4 +1,4 @@
-package fr.cs.regards;
+package fr.cs.regards.controlers;
 
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.TextMessage;
