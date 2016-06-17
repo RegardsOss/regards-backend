@@ -1,0 +1,1 @@
+{ \"filtered\" : {\"query\" : {\"field\" : { \"type\" : \"Feature\" }},\"filter\" : { %s}}}
