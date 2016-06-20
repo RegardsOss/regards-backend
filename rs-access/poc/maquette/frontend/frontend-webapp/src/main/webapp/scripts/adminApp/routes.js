@@ -3,7 +3,8 @@ module.exports = {
 
   childRoutes: [
     require('./modules/home/routes'),
-    require('./modules/test/routes')
+    require('./modules/test/routes'),
+    require('./modules/projects/routes')
   ],
 
   getComponent(nextState, cb) {

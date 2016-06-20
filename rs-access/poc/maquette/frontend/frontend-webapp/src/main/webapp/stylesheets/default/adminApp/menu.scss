@@ -5,21 +5,23 @@
   margin: 2px 20px;
   text-decoration: none;
   cursor: pointer;
+  padding: 1.25rem;
 }
 
 .selected {
   @extend .menuelement;
-  text-decoration: underline;
-  color: $secondtext-color;
+  //text-decoration: underline;
+  background-color: $danger-color;
+  //color: $secondtext-color;
 }
 
 .unselected {
   @extend .menuelement;
 }
 
-.unselected:hover {
-  color: blue;
-  text-decoration: underline;
+.menuelement:hover {
+  background-color: $info-color;
+  //text-decoration: underline;
 }
 
 .navigation {

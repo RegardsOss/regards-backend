@@ -69,7 +69,8 @@ module.exports = {
     // Exemple : require ('AppStore') is equal to require ('scripts/common/store/Store.js');
     alias: {
       RegardsView: path.join(__dirname,"scripts/common/modulesManager/RegardsView.js"),
-      AppStore: path.join(__dirname,"scripts/common/store/Store.js")
+      AppStore: path.join(__dirname,"scripts/common/store/Store.js"),
+      common: path.join(__dirname,"scripts/common")
     },
     // Root directories from wich requires are made
     root: [
