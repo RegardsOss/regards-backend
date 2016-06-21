@@ -1,5 +1,9 @@
 import fetch from 'isomorphic-fetch'
 
+/*********************************************************
+***************** Fetch related actions ********************
+*********************************************************/
+
 // Backend api adress
 export const PROJECTS_API='http://localhost:8080/api/projects'
 
@@ -27,24 +31,6 @@ function failedProjects(error) {
   return {
     type : FAILED_PROJECTS,
     error : error
-  }
-}
-
-// Select a project in the IHM
-export const SELECT_PROJECT = 'SELECT_PROJECT'
-export function selectProject(id) {
-  return {
-    type: SELECT_PROJECT,
-    id
-  }
-}
-// Add a project to the list
-export const ADD_PROJECT = 'ADD_PROJECT'
-export function addProject({ id, name }) {
-  return {
-    type: ADD_PROJECT,
-    id,
-    name
   }
 }
 
@@ -96,5 +82,69 @@ export function fetchProjects() {
     }).catch(function(error) {
       dispatch(failedProjects(error.message))
     })
+  }
+}
+
+/*********************************************************
+***************** IHM related actions ********************
+*********************************************************/
+
+// Select a project in the IHM
+export const SELECT_PROJECT = 'SELECT_PROJECT'
+export function selectProject(id) {
+  return {
+    type: SELECT_PROJECT,
+    id
+  }
+}
+
+// Add a project to the list
+export const ADD_PROJECT = 'ADD_PROJECT'
+export function addProject({ id, name }) {
+  return {
+    type: ADD_PROJECT,
+    id,
+    name
+  }
+}
+
+// Delete a project from the list
+export const DELETE_PROJECT = 'DELETE_PROJECT'
+export function deleteProject(id) {
+  return {
+    type: DELETE_PROJECT,
+    id
+  }
+}
+
+// Show the project configuration view
+export const SHOW_PROJECT_CONFIGURATION = 'SHOW_PROJECT_CONFIGURATION'
+export function showProjectConfiguration() {
+  return {
+    type: SHOW_PROJECT_CONFIGURATION
+  }
+}
+
+// Hide the project configuration view
+export const HIDE_PROJECT_CONFIGURATION = 'HIDE_PROJECT_CONFIGURATION'
+export function hideProjectConfiguration() {
+  return {
+    type: HIDE_PROJECT_CONFIGURATION
+  }
+}
+
+// Show the admin configuration view
+export const SHOW_ADMIN_CONFIGURATION = 'SHOW_ADMIN_CONFIGURATION'
+export function showAdminConfiguration() {
+  return {
+    type: SHOW_ADMIN_CONFIGURATION
+  }
+}
+
+// Hide the admin configuration view
+export const HIDE_ADMIN_CONFIGURATION = 'HIDE_ADMIN_CONFIGURATION'
+export function hideAdminConfiguration() {
+  return {
+    type: HIDE_ADMIN_CONFIGURATION
   }
 }

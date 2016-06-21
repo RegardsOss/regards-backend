@@ -6,7 +6,7 @@ import adminApp from 'adminApp/reducers'
 import userApp from 'userApp/reducers'
 import portalApp from 'portalApp/reducers'
 import common from 'common/reducers'
-import { formReducer } from 'redux-form';
+import {reducer as formReducer} from 'redux-form';
 
 const reducers = combineReducers({
   userApp,

@@ -4,30 +4,57 @@ import icons from 'stylesheets/foundation-icons/foundation-icons.scss'
 
 class ProjectConfigurationComponent extends Component {
   render() {
-    const {fields: {firstName, lastName, email}, handleSubmit} = this.props;
-    return (
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>First Name</label>
-          <input type="text" placeholder="First Name" {...firstName}/>
-        </div>
-        <div>
-          <label>Last Name</label>
-          <input type="text" placeholder="Last Name" {...lastName}/>
-        </div>
-        <div>
-          <label>Email</label>
-          <input type="email" placeholder="Email" {...email}/>
-        </div>
-        <button type="submit">Submit</button>
-      </form>
-    );
+    const {
+      show,
+      onSaveClick,
+      onCancelClick,
+      onSubmit,
+      fields: {projectName},
+      resetForm,
+      handleSubmit,
+      submitting
+    } = this.props;
+
+    if(show)
+      return (
+        <form onSubmit={handleSubmit}>
+          <div>
+            <input type="text" placeholder="Project Name" {...projectName}/>
+          </div>
+          <div>
+            <button disabled={submitting}>
+              {submitting ? <i/> : <i/>} Save
+            </button>
+            <button type="button" disabled={submitting} onClick={onCancelClick}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      );
+    else
+      return null
   }
 }
 
-ProjectConfigurationComponent = reduxForm({ // <----- THIS IS THE IMPORTANT PART!
-  form: 'ProjectConfigurationForm',                           // a unique name for this form
-  fields: ['firstName', 'lastName', 'email'] // all the fields in your form
-})(ProjectConfigurationComponent);
+ProjectConfigurationComponent.propTypes = {
+  fields: PropTypes.object.isRequired,
+  handleSubmit: PropTypes.func.isRequired,
+  resetForm: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired
+}
 
-export default ProjectConfigurationComponent
+// const validate = values => {
+//   const errors = {}
+//   if (!values.username) {
+//     errors.username = 'Required'
+//   } else if (values.username.length > 15) {
+//     errors.username = 'Must be 15 characters or less'
+//   }
+//   return errors
+// }
+
+export default reduxForm({ // <----- THIS IS THE IMPORTANT PART!
+  form: 'ProjectConfigurationForm',                           // a unique name for this form
+  fields: ['projectName'] // all the fields in your form
+  // validate
+})(ProjectConfigurationComponent);
