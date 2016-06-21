@@ -1,7 +1,7 @@
 import { REQUEST_PROJECTS,RECEIVE_PROJECTS, FAILED_PROJECTS } from '../actions/ProjectsActions'
 import { SELECT_PROJECT } from '../actions/ProjectsActions'
 
-const projects = (state = {
+export default (state = {
   isFetching : false,
   items: [],
   lastUpdate: ''
@@ -59,9 +59,3 @@ const callIhmReducers = (state, action) => {
       return state
   }
 }
-
-const projectsReducers = {
-  projects
-}
-
-export default projectsReducers

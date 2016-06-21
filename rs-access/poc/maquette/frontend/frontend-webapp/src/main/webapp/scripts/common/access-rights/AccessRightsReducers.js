@@ -2,7 +2,7 @@ import {
   REQUEST_ACCESSRIGHTS,  RECEIVE_ACCESSRIGHTS,
   FAILED_ACCESSRIGHTS } from './AccessRightsActions'
 
-const views = (state = [], action) => {
+export default (state = [], action) => {
   switch(action.type){
     case REQUEST_ACCESSRIGHTS:
       return state;
@@ -16,9 +16,9 @@ const views = (state = [], action) => {
       return state;
   }
 }
-
-const AccessRightsReducers = {
-  views
-}
-
-export default AccessRightsReducers
+// 
+// const AccessRightsReducers = {
+//   views
+// }
+//
+// export default AccessRightsReducers

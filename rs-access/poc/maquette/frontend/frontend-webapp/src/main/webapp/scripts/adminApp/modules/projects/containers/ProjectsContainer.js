@@ -26,7 +26,7 @@ ProjectsContainer.propTypes = {
   projects: PropTypes.object
 };
 const mapStateToProps = (state) => ({
-  projects: state.projects
+  projects: state.adminApp.projects
 })
 const mapDispatchToProps = (dispatch) => ({
   onSelect: (e) => dispatch(selectProject(e.target.value))

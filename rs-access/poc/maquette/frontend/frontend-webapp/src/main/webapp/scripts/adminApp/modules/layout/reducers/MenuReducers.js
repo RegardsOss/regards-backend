@@ -1,7 +1,7 @@
 import { showProjects, SHOW_PROJECTS } from '../actions/MenuActions'
 import { logout, LOGOUT} from 'common/authentication/AuthenticateActions'
 
-const buttonReducers = (sate, action) => {
+export default (sate, action) => {
   switch (action.type) {
     case LOGOUT:
       console.console.log("Logging out");
@@ -15,9 +15,9 @@ const buttonReducers = (sate, action) => {
       return state;
   }
 }
-
-const MenuReducers = {
-  buttonReducers
-}
-
-export default MenuReducers
+//
+// const MenuReducers = {
+//   buttonReducers
+// }
+//
+// export default MenuReducers

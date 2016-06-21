@@ -70,7 +70,10 @@ module.exports = {
     alias: {
       RegardsView: path.join(__dirname,"scripts/common/modulesManager/RegardsView.js"),
       AppStore: path.join(__dirname,"scripts/common/store/Store.js"),
-      common: path.join(__dirname,"scripts/common")
+      common: path.join(__dirname,"scripts/common"),
+      adminApp: path.join(__dirname,"scripts/adminApp"),
+      userApp: path.join(__dirname,"scripts/userApp"),
+      portalApp: path.join(__dirname,"scripts/portalApp"),
     },
     // Root directories from wich requires are made
     root: [

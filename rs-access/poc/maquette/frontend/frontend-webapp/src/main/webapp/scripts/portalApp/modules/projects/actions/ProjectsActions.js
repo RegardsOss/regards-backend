@@ -59,9 +59,11 @@ export function fetchProjects() {
     // This is not required by thunk middleware, but it is convenient for us.
 
     // Init the authorization bearer of the fetch request
+    let authentication = getState().common.authentication
     let authorization = "Basic"
-    if ( getState().authentication && getState().authentication.user && getState().authentication.user.access_token){
-      authorization = "Bearer " + getState().authentication.user.access_token
+    
+    if ( authentication && authentication.user && authentication.user.access_token){
+      authorization = "Bearer " + authentication.user.access_token
     }
 
     return fetch(PROJECTS_API, {

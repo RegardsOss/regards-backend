@@ -45,7 +45,7 @@ ProjectsContainer.propTypes = {
 // Add projects from store to the container props
 const mapStateToProps = (state) => {
   return {
-    projects: state.projects
+    projects: state.portalApp.projects
   }
 }
 

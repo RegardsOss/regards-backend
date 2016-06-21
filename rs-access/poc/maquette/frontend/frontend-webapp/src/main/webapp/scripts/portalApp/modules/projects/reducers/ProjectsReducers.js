@@ -2,13 +2,14 @@ import {
   REQUEST_PROJECTS,  RECEIVE_PROJECTS,
   FAILED_PROJECTS } from '../actions/ProjectsActions'
 
-const projects = (state = {
+export default (state = {
   isFetching : false,
   items: [],
   lastUpdate: ''
 }, action) => {
   switch(action.type){
     case REQUEST_PROJECTS:
+      console.log('Plop',state);
       return Object.assign({}, state, {
         isFetching: true
       })
@@ -27,8 +28,9 @@ const projects = (state = {
   }
 }
 
-const projectsReducers = {
-  projects
-}
-
-export default projectsReducers
+//
+// const projectsReducers = {
+//   projects
+// }
+//
+// export default projectsReducers
