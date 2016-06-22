@@ -4,8 +4,11 @@ import { Router, browserHistory } from 'react-router'
 import { Provider } from 'react-redux'
 
 // Import application common store
-import store from 'AppStore'
+import configureStore from 'common/store/configureStore'
+import preloadedState from 'common/store/preloadedState'
 import routes from './routes.js'
+
+const store = configureStore(preloadedState)
 
 ReactDOM.render(
   <Provider store={store}>
