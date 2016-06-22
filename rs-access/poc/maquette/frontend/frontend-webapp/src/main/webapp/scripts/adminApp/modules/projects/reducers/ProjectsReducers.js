@@ -1,6 +1,7 @@
 import { REQUEST_PROJECTS,RECEIVE_PROJECTS, FAILED_PROJECTS } from '../actions/ProjectsActions'
 import {
   SELECT_PROJECT, DELETE_PROJECT,
+  DELETE_PROJECT_ADMIN,
   SHOW_PROJECT_CONFIGURATION, HIDE_PROJECT_CONFIGURATION,
   SHOW_ADMIN_CONFIGURATION, HIDE_ADMIN_CONFIGURATION } from '../actions/ProjectsActions'
 
@@ -56,10 +57,12 @@ const callIhmReducers = (state, action) => {
       if(newSelected) newSelected.selected = true
       return nextState
     case DELETE_PROJECT:
-      console.log('coucou');
       return Object.assign({}, state, {
         items: state.items.filter(project => project.id !== action.id)
       })
+    case DELETE_PROJECT_ADMIN:
+      throw new Error('Not implemented yet!!')
+      return nextState
     case SHOW_PROJECT_CONFIGURATION:
       nextState.projectConfigurationIsShown = true;
       nextState.adminConfigurationIsShown = false;

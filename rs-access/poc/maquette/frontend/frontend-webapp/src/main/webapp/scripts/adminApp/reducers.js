@@ -1,5 +1,5 @@
 /**
- * Combine all reducers for this aa to a single root reducer.
+ * Combine all reducers for this app to a single root reducer.
  */
 import { combineReducers } from 'redux';
 // import authentication from '../modules/authentication/reducers/TODO'

@@ -5,7 +5,8 @@ const ProjectAdministratorsComponent = React.createClass({
   render () {
     const {
       project,
-      onAddClick
+      onAddClick,
+      onDeleteClick
     } = this.props
 
     if(project) {
@@ -20,7 +21,7 @@ const ProjectAdministratorsComponent = React.createClass({
               <li key={admin.id}>
                 {admin.name}
                 <i className={icons['fi-wrench']} title='Configure admin user' onClick={() => onAddClick(project.id)}></i>
-                <i className={icons['fi-trash']} title='Delete admin user'></i>
+                <i className={icons['fi-trash']} title='Delete admin user'  onClick={() => onDeleteClick(admin.id)}></i>
               </li>
             ))}
           </ul>
@@ -33,7 +34,9 @@ const ProjectAdministratorsComponent = React.createClass({
 })
 
 ProjectAdministratorsComponent.propTypes = {
-  project: PropTypes.object
+  project: PropTypes.object,
+  onAddClick: PropTypes.func,
+  onDeleteClick: PropTypes.func
 };
 
 export default ProjectAdministratorsComponent

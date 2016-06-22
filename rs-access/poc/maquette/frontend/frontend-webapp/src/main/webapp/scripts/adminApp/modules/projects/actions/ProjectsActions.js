@@ -116,6 +116,14 @@ export function deleteProject(id) {
     id
   }
 }
+// Delete a project from the list
+export const DELETE_PROJECT_ADMIN = 'DELETE_PROJECT_ADMIN'
+export function deleteProjectAdmin(id) {
+  return {
+    type: DELETE_PROJECT_ADMIN,
+    id
+  }
+}
 
 // Show the project configuration view
 export const SHOW_PROJECT_CONFIGURATION = 'SHOW_PROJECT_CONFIGURATION'

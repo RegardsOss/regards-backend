@@ -10,6 +10,7 @@ import UserFormComponent from '../components/UserFormComponent'
 import {
   selectProject,
   deleteProject,
+  deleteProjectAdmin,
   showProjectConfiguration,
   hideProjectConfiguration,
   showAdminConfiguration,
@@ -19,12 +20,13 @@ class ProjectsContainer extends React.Component {
   render () {
     const {
       projects,
+      projectConfigurationIsShown,
+      adminConfigurationIsShown,
       onSelect,
       deleteProject,
-      projectConfigurationIsShown,
+      deleteProjectAdmin,
       showProjectConfiguration,
       hideProjectConfiguration,
-      adminConfigurationIsShown,
       showAdminConfiguration,
       hideAdminConfiguration
     } = this.props
@@ -50,7 +52,8 @@ class ProjectsContainer extends React.Component {
         <ProjectAdministratorsComponent
           asyncValidating={true}
           project={selectedProject}
-          onAddClick={showAdminConfiguration} />
+          onAddClick={showAdminConfiguration}
+          onDeleteClick={deleteProjectAdmin} />
       </div>
     )
   }
@@ -67,6 +70,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   onSelect:                 (e) => dispatch(selectProject(e.target.value)),
   deleteProject:            (projectId) => dispatch(deleteProject(projectId)),
+  deleteProjectAdmin:       (id) => dispatch(deleteProjectAdmin(id)),
   showProjectConfiguration: () => dispatch(showProjectConfiguration()),
   hideProjectConfiguration: () => dispatch(hideProjectConfiguration()),
   showAdminConfiguration:   () => dispatch(showAdminConfiguration()),
