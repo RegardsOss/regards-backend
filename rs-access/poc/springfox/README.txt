@@ -13,5 +13,5 @@ mvn spring-boot:run
 ##############
 From web browser 
 Get api list ===>             http://localhost:8080/swagger-resources
-Get api swagger json file =>  http://localhost:8080/v2/api-docs
+Get api swagger json file =>  http://localhost:8080/v2/api-docs?group=poc-api
 Access Swagger UI ==>         http://localhost:8080/swagger-ui.html
