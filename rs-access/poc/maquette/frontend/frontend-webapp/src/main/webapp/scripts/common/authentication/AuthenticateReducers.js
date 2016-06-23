@@ -2,7 +2,7 @@ import {
   REQUEST_AUTHENTICATE,  RECEIVE_AUTHENTICATE,
   FAILED_AUTHENTICATE, LOGOUT } from './AuthenticateActions'
 
-const authentication = (state = {
+export default (state = {
   isFetching : false,
   user: {},
   authenticateDate: '',
@@ -36,8 +36,8 @@ const authentication = (state = {
   }
 }
 
-const authenticateReducers = {
-  authentication
-}
-
-export default authenticateReducers
+// const authenticateReducers = {
+//   authentication
+// }
+//
+// export default authenticateReducers

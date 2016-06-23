@@ -2,7 +2,7 @@ import { REQUEST_START_TIME,  RECEIVE_START_TIME }
   from '../actions/TimeActions'
 import { SET_TIME } from '../actions/WSTimeActions'
 
-const ws = (state = {
+export default (state = {
   started: false,
   time: ''
 }, action) => {
@@ -20,8 +20,8 @@ const ws = (state = {
   }
 }
 
-const timeReducers = {
-  ws
-}
-
-export default timeReducers
+// const timeReducers = {
+//   ws
+// }
+//
+// export default timeReducers

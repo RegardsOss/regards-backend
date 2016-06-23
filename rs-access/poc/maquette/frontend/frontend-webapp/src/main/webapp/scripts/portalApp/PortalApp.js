@@ -30,7 +30,7 @@ class PortalApp extends React.Component {
     const styles = getThemeStyles(theme,'portalApp/styles')
     const commonStyles = getThemeStyles(theme,'common/common.scss')
 
-    if (authentication && !authentication.user){
+    if (!authentication || authentication.isFetching === true || !authentication.user || !authentication.user.access_token){
       // If no user connected, display the error component
       return <ApplicationErrorComponent />
     } else if (this.props.children){
@@ -58,8 +58,8 @@ class PortalApp extends React.Component {
 // Add props from store to the container props
 const mapStateToProps = (state) => {
   return {
-    theme: state.theme,
-    authentication: state.authentication
+    theme: state.common.theme,
+    authentication: state.common.authentication
   }
 }
 // Add functions dependending on store dispatch to container props.

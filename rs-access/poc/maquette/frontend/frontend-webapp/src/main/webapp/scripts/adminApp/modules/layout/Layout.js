@@ -1,6 +1,6 @@
 import React from 'react'
 
-import Menu from './components/MenuComponent'
+import MenuComponent from './components/MenuComponent'
 import Home from '../home/Home'
 
 class Layout extends React.Component {
@@ -12,7 +12,7 @@ class Layout extends React.Component {
     return (
       <div className={styles.layout}>
         <div className={styles.navigation}>
-          <Menu
+          <MenuComponent
             styles={styles}
             onLogout={onLogout}
             project={project}

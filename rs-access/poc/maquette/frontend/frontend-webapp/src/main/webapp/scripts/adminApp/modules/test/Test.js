@@ -43,9 +43,9 @@ class Test extends React.Component {
         <input type='text' value={this.state.inputValue} onChange={this.onChange}/>
         <input type="button" onClick={this.onClick} value="update"/>
         <div className={styles.row + " " + styles.display}>
-          <div className={styles.columns + " " + styles["small-2"] + " " + styles["large-4"]}>4 columns</div>
-          <div className={styles.columns + " " + styles["small-4"] + " " + styles["large-4"]}>4 columns</div>
-          <div className={styles.columns + " " + styles["small-6"] + " " + styles["large-4"]}>4 columns</div>
+          <div className={styles["small-2"] + " " + styles["large-4"]}>4 columns</div>
+          <div className={styles["small-4"] + " " + styles["large-4"]}>4 columns</div>
+          <div className={styles["small-6"] + " " + styles["large-4"]}>4 columns</div>
         </div>
         <div className={styles.row + " " + styles.display}>
           <div className={styles["large-3"]}>3 columns</div>

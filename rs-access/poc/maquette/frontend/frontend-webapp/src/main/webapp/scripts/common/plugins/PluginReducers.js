@@ -2,7 +2,7 @@ import {
   REQUEST_PLUGINS,  RECEIVE_PLUGINS,
   FAILED_PLUGINS, PLUGIN_INITIALIZED } from './PluginsActions'
 
-const plugins = (state = {
+export default (state = {
   isFetching : false,
   items: [],
   lastUpdate: ''
@@ -35,8 +35,8 @@ const plugins = (state = {
   }
 }
 
-const pluginsReducers = {
-  plugins
-}
-
-export default pluginsReducers
+// const pluginsReducers = {
+//   plugins
+// }
+//
+// export default pluginsReducers

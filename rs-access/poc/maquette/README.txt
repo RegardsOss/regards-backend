@@ -4,7 +4,7 @@ mvn clean package
 
 # Start backend
 
-java -jar backend/backend-boot/target/backend-boot.war
+java -jar backend/backend-boot/target/backend-boot-0.0.1-SNAPSHOT.war
 
 # Start frontend
 
