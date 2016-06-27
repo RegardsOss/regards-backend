@@ -69,4 +69,4 @@ const mapDispatchToProps = (dispatch) => {
     initTheme: (theme) =>  dispatch(setTheme(theme))
   }
 }
-module.exports = connect(mapStateToProps,mapDispatchToProps)(PortalApp)
+export default connect(mapStateToProps,mapDispatchToProps)(PortalApp)

@@ -1,14 +1,19 @@
-module.exports = {
+import pluginRoutes from './modules/plugin/routes'
+import testRoutes from './modules/test/routes'
+import websocketsRoutes from './modules/websockets/routes'
+import UserApp from './UserApp'
+
+export default {
   path:"user/:project",
   childRoutes: [
-    require('./modules/plugin/routes'),
-    require('./modules/test/routes'),
-    require('./modules/websockets/routes'),
+    pluginRoutes, 
+    testRoutes,
+    websocketsRoutes
   ],
 
   getComponent(nextState, cb) {
     require.ensure([], (require) => {
-      cb(null, require('./UserApp'))
+      cb(null, UserApp)
     })
   }
 }

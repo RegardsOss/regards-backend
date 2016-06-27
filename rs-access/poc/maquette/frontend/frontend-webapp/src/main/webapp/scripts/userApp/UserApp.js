@@ -50,4 +50,4 @@ const mapStateToProps = (state) => {
     plugins: state.plugins
   }
 }
-module.exports = connect(mapStateToProps,mapDispatchToProps)(UserApp)
+export default connect(mapStateToProps,mapDispatchToProps)(UserApp)

@@ -1,10 +1,11 @@
-module.exports = {
-  path: 'projects',
+import ProjectsContainer from './containers/ProjectsContainer'
 
+export default {
+  path: 'projects',
   getComponents(nextState, cb) {
     require.ensure([], (require) => {
       cb(null, {
-        content: require('./containers/ProjectsContainer')
+        content: ProjectsContainer
       })
     })
   }

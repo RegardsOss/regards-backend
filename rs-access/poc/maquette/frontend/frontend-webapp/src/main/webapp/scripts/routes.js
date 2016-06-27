@@ -3,18 +3,23 @@
  * /user  -> UserApp
  * /admin -> AdminApp
 */
-module.exports = {
+import userAppRoutes from './userApp/routes'
+import adminAppRoutes from './adminApp/routes'
+import portalAppRoutes from './portalApp/routes'
+import PortalApp from './portalApp/PortalApp'
+
+export default {
   component: 'div',
   childRoutes: [ {
     path: '/',
     childRoutes: [
-      require('./userApp/routes'),
-      require('./adminApp/routes'),
-      require('./portalApp/routes')
+      userAppRoutes,
+      adminAppRoutes,
+      portalAppRoutes
     ],
     getComponent(nextState, cb) {
       require.ensure([], (require) => {
-        cb(null, require('./portalApp/PortalApp'))
+        cb(null, PortalApp)
       })
     }
   } ]
