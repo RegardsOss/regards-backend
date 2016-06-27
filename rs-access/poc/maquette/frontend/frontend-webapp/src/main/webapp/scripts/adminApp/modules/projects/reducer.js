@@ -1,9 +1,12 @@
-import { REQUEST_PROJECTS,RECEIVE_PROJECTS, FAILED_PROJECTS } from '../actions/ProjectsActions'
 import {
-  SELECT_PROJECT, DELETE_PROJECT,
+  REQUEST_PROJECTS,
+  RECEIVE_PROJECTS,
+  FAILED_PROJECTS,
+  SELECT_PROJECT,
+  DELETE_PROJECT,
   DELETE_PROJECT_ADMIN,
   SHOW_PROJECT_CONFIGURATION, HIDE_PROJECT_CONFIGURATION,
-  SHOW_ADMIN_CONFIGURATION, HIDE_ADMIN_CONFIGURATION } from '../actions/ProjectsActions'
+  SHOW_ADMIN_CONFIGURATION, HIDE_ADMIN_CONFIGURATION } from './actions'
 
 export default (state = {
   isFetching : false,
@@ -61,7 +64,7 @@ const callIhmReducers = (state, action) => {
         items: state.items.filter(project => project.id !== action.id)
       })
     case DELETE_PROJECT_ADMIN:
-      throw new Error('Not implemented yet!!')
+      // throw new Error('Not implemented yet!!')
       return nextState
     case SHOW_PROJECT_CONFIGURATION:
       nextState.projectConfigurationIsShown = true;

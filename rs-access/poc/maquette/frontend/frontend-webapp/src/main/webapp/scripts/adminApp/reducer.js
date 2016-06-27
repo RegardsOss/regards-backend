@@ -5,9 +5,11 @@ import { combineReducers } from 'redux';
 // import authentication from '../modules/authentication/reducers/TODO'
 // import home from '../modules/home/reducers/TODO'
 // import layout from './modules/layout/reducers/MenuReducers'
-import projects from './modules/projects/reducers/ProjectsReducers'
+import projects from './modules/projects/reducer'
+import projectAdmins from './modules/projectAdmins/reducer'
 
 export default combineReducers({
   // layout,
-  projects
+  projects,
+  projectAdmins
 });

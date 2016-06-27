@@ -2,7 +2,7 @@
  * /      -> PortalApp
  * /user  -> UserApp
  * /admin -> AdminApp
-*/
+ */
 import userAppRoutes from './userApp/routes'
 import adminAppRoutes from './adminApp/routes'
 import portalAppRoutes from './portalApp/routes'
