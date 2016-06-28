@@ -8,7 +8,7 @@
  */
 import React, { Component, PropTypes } from 'react'
 import { reduxForm } from 'redux-form'
-export const fields = [ 'id', 'username', 'password', 'passwordConfirm']
+export const fields = [ 'id', 'projectId', 'username', 'password', 'passwordConfirm']
 
 const validate = values => {
   const errors = {}
@@ -43,7 +43,7 @@ class AsynchronousBlurValidationForm extends Component {
   render() {
     const {
       asyncValidating,
-      fields: { id, username, password, passwordConfirm },
+      fields: { id, projectId, username, password, passwordConfirm },
       resetForm,
       handleSubmit,
       submitting,
@@ -54,7 +54,12 @@ class AsynchronousBlurValidationForm extends Component {
     if(show)
       return (<form onSubmit={handleSubmit}>
           <div>
-            <input type="text" placeholder="Id" {...id}/>
+            <div>
+              <input type="text" placeholder="Id" {...id}/>
+            </div>
+            <div>
+              <input type="text" placeholder="Project Id" {...projectId}/>
+            </div>
             <label>Username</label>
             <div>
               <input type="text" placeholder="Username" {...username} />

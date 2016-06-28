@@ -3,6 +3,7 @@ import {
   RECEIVE_PROJECTS,
   FAILED_PROJECTS,
   SELECT_PROJECT,
+  ADD_PROJECT,
   DELETE_PROJECT,
   DELETE_PROJECT_ADMIN } from './actions'
 
@@ -57,6 +58,14 @@ const callProjectsReducers = (state, action) => {
       let newSelected = nextState.items.find(project => project.id === action.id)
       if(newSelected) newSelected.selected = true
       return nextState
+    case ADD_PROJECT:
+      nextState.items = nextState.items.concat({
+        id: action.id,
+        name: action.name,
+        selected: false,
+        admins: []
+      })
+      return nextState
     case DELETE_PROJECT:
       return Object.assign({}, state, {
         items: state.items.filter(project => project.id !== action.id)
@@ -68,3 +77,9 @@ const callProjectsReducers = (state, action) => {
       return state
   }
 }
+
+// Selectors
+export const getProjects = (state) => state.items
+
+export const getProjectById = (state, id) =>
+  state.items.find(p => p.id === id)

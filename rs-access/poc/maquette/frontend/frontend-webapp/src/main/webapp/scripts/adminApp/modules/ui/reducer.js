@@ -11,11 +11,11 @@ export default (state = [], action) => {
   switch (action.type) {
     case SELECT_PROJECT:
       return Object.assign({}, state, {
-        selectedProject: action.id
+        selectedProjectId: action.id
       })
     case SELECT_PROJECT_ADMIN:
       return Object.assign({}, state, {
-        selectedProjectAdmin: action.id
+        selectedProjectAdminId: action.id
       })
     case SHOW_PROJECT_CONFIGURATION:
       return Object.assign({}, state, {
@@ -39,3 +39,7 @@ export default (state = [], action) => {
       return state
   }
 }
+
+// Selectors
+export const getSelectedProjectId = (state) => state.selectedProjectId
+export const getSelectedProjectAdminId = (state) => state.selectedProjectAdminId

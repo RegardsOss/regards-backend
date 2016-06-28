@@ -39,3 +39,9 @@ const arrayUnique = (array) => {
 }
 
 export default projectAdmins
+
+// Selectors
+export const getProjectAdminById = (state = [], id) => state.find(pa => pa.id === id)
+
+export const getProjectAdminsByProject = (state = [], project) =>
+  (!project) ? [] : state.filter(pa => pa.projects.includes(project.id))

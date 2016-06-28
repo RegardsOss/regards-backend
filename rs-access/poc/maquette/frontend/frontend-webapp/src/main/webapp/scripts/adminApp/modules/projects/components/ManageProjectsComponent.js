@@ -15,13 +15,13 @@ let ManageProjectsComponent = ({
         <i className={icons['fi-plus']} title='Add new project' onClick={onAddClick} ></i>
         <i className={icons['fi-trash']} title='Delete selected project' onClick={onDeleteClick}></i>
         <br />
-        <RegardsSelect list={projects.items} label={'Select a project'} onSelect={onSelect}/>
+        <RegardsSelect list={projects} label={'Select a project'} onSelect={onSelect}/>
       </div>
     )
 }
 
 ManageProjectsComponent.propTypes = {
-  projects: PropTypes.object,
+  projects: PropTypes.array,
   onSelect: PropTypes.func
 }
 

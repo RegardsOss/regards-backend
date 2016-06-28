@@ -87,7 +87,7 @@ export function fetchProjects() {
 
 // Add a project to the list
 export const ADD_PROJECT = 'ADD_PROJECT'
-export function addProject({ id, name }) {
+export function addProject(id, name) {
   return {
     type: ADD_PROJECT,
     id,

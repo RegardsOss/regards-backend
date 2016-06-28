@@ -10,31 +10,39 @@ import ProjectConfigurationComponent from '../components/ProjectConfigurationCom
 import { UserFormComponent } from 'adminApp/modules/projectAdmins'
 // Actions
 import {
+  addProject,
   deleteProject } from '../actions'
 import {
   selectProject,
   showProjectConfiguration,
   hideProjectConfiguration,
   showProjectAdminConfiguration } from 'adminApp/modules/ui/actions'
+// Selectors
+import {
+  getProjects,
+  getSelectedProjectId,
+  getProjectById } from 'adminApp/reducer'
+
 
 class ProjectsContainer extends React.Component {
   render () {
     const {
       onSelect,
       projects,
+      selectedProject,
       projectConfigurationIsShown,
       deleteProject,
       deleteProjectAdmin,
       showProjectConfiguration,
-      hideProjectConfiguration
+      hideProjectConfiguration,
+      handleSubmit
     } = this.props
-    const selectedProject = projects.items.find(project => project.selected)
 
     return (
       <div>
         <ProjectConfigurationComponent
           show={projectConfigurationIsShown}
-          onSubmit={hideProjectConfiguration}
+          onSubmit={handleSubmit}
           onCancelClick={hideProjectConfiguration} />
         <ManageProjectsComponent
           projects={projects}
@@ -48,10 +56,13 @@ class ProjectsContainer extends React.Component {
 }
 
 ProjectsContainer.propTypes = {
-  projects: PropTypes.object
+  projects: PropTypes.array,
+  selectedProject: PropTypes.object,
+  projectConfigurationIsShown: PropTypes.bool
 };
 const mapStateToProps = (state) => ({
-  projects: state.adminApp.projects,
+  projects: getProjects(state),
+  selectedProject: getProjectById(state, getSelectedProjectId(state)),
   projectConfigurationIsShown: state.adminApp.ui.projectConfigurationIsShown,
 })
 const mapDispatchToProps = (dispatch) => ({
@@ -60,5 +71,11 @@ const mapDispatchToProps = (dispatch) => ({
   deleteProjectAdmin:       (id) => dispatch(deleteProjectAdmin(id)),
   showProjectConfiguration: () => dispatch(showProjectConfiguration()),
   hideProjectConfiguration: () => dispatch(hideProjectConfiguration()),
+  handleSubmit:             (e) => {
+    let idProject = "9999" // TODO
+    dispatch(addProject(idProject, e.projectName))
+    dispatch(hideProjectConfiguration())
+    dispatch(selectProject(idProject))
+  }
 })
 export default connect(mapStateToProps, mapDispatchToProps)(ProjectsContainer);
