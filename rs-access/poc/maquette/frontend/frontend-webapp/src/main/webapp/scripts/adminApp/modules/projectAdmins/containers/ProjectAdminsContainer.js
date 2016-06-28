@@ -28,7 +28,7 @@ class ProjectAdminsContainer extends React.Component {
           projectAdmins={this.props.projectAdmins}
           onAddClick={this.props.showProjectAdminConfiguration}
           onConfigureClick={this.props.showProjectAdminConfiguration}
-          onDeleteClick={this.props.hideProjectAdminConfiguration} />
+          onDeleteClick={this.props.handleDelete} />
         <UserFormComponent
           projectAdmin={this.props.activeProjectAdmin}
           show={this.props.projectAdminConfigurationIsShown}
@@ -61,9 +61,12 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(showProjectAdminConfiguration())
   },
   hideProjectAdminConfiguration: () => dispatch(hideProjectAdminConfiguration()),
-  deleteProjectAdmin: (id) => dispatch(deleteProjectAdmin(id)),
   onUserFormSubmit: (e) => {
     dispatch(updateOrCreateProjectAdmin(e.id, e.username, e.projectId))
+    dispatch(hideProjectAdminConfiguration())
+  },
+  handleDelete: (id) => {
+    dispatch(deleteProjectAdmin(id))
     dispatch(hideProjectAdminConfiguration())
   }
 })
