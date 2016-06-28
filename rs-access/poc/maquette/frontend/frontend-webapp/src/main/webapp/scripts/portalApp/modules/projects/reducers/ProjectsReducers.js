@@ -27,10 +27,3 @@ export default (state = {
       return state
   }
 }
-
-//
-// const projectsReducers = {
-//   projects
-// }
-//
-// export default projectsReducers

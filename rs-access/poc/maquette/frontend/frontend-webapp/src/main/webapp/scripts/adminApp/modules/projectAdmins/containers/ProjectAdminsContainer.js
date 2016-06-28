@@ -1,10 +1,12 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux';
+import { getThemeStyles } from 'common/theme/ThemeUtils'
 // Components
 import ProjectAdminsComponent from '../components/ProjectAdminsComponent'
 import UserFormComponent from '../components/UserFormComponent'
 // Actions
 import {
+  fetchProjectAdmins,
   updateOrCreateProjectAdmin,
   deleteProjectAdmin } from '../actions'
 import {
@@ -20,6 +22,12 @@ import {
   getProjectAdminById } from 'adminApp/reducer'
 
 class ProjectAdminsContainer extends React.Component {
+  componentWillMount(){
+    // onLoad method is set to the container props by react-redux connect.
+    // See method mapDispatchToProps of this container
+    this.props.onLoad()
+  }
+
   render () {
     return (
       <div>
@@ -28,12 +36,14 @@ class ProjectAdminsContainer extends React.Component {
           projectAdmins={this.props.projectAdmins}
           onAddClick={this.props.showProjectAdminConfiguration}
           onConfigureClick={this.props.showProjectAdminConfiguration}
-          onDeleteClick={this.props.handleDelete} />
+          onDeleteClick={this.props.handleDelete}
+          styles={this.props.styles} />
         <UserFormComponent
           projectAdmin={this.props.activeProjectAdmin}
           show={this.props.projectAdminConfigurationIsShown}
           onSubmit={this.props.onUserFormSubmit}
-          onCancelClick={this.props.hideProjectAdminConfiguration} />
+          onCancelClick={this.props.hideProjectAdminConfiguration}
+          styles={this.props.styles} />
     </div>
     )
   }
@@ -52,10 +62,12 @@ const mapStateToProps = (state, ownProps) => {
     project: selectedProject,
     projectAdmins: projectAdmins,
     projectAdminConfigurationIsShown: state.adminApp.ui.projectAdminConfigurationIsShown,
-    selectedProjectAdmin: selectedProjectAdmin
+    selectedProjectAdmin: selectedProjectAdmin,
+    styles: getThemeStyles(state.common.theme, 'adminApp/styles')
   }
 }
 const mapDispatchToProps = (dispatch) => ({
+  onLoad: () => dispatch(fetchProjectAdmins()),
   showProjectAdminConfiguration: (id) => {
     dispatch(selectProjectAdmin(id))
     dispatch(showProjectAdminConfiguration())

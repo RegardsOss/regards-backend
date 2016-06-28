@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 import fr.cs.regards.pojo.Plugin;
 import fr.cs.regards.pojo.Project;
+import fr.cs.regards.pojo.ProjectAdmin;
 
 @RestController
 // Indicates that those resources are securised. Only the /oauth endpoint do not need the authentication token
@@ -71,6 +72,29 @@ public class Controler {
 			timeThread_.run();
 		}
 		return "OK";
+    }
+	
+	@RequestMapping(value="project-admin", method = RequestMethod.GET)
+	public @ResponseBody HttpEntity<ProjectAdmin> getProjectAdmin(
+			@RequestParam(value = "name", required = true) String name) {
+		ProjectAdmin projectAdmin = new ProjectAdmin("John");
+		projectAdmin.add(linkTo(methodOn(Controler.class).getProjectAdmin("John")).withSelfRel());
+		return new ResponseEntity<ProjectAdmin>(projectAdmin, HttpStatus.OK);
+	}
+	
+	@RequestMapping(value="project-admins", method = RequestMethod.GET)
+    public @ResponseBody HttpEntity<List<ProjectAdmin>> getProjectAdmins() {
+		List<ProjectAdmin> projectAdmins = new ArrayList<>();
+		
+		ProjectAdmin projectAdmin = new ProjectAdmin("John");
+		projectAdmin.add(linkTo(methodOn(Controler.class).getProjectAdmin("John")).withSelfRel());
+		projectAdmins.add(projectAdmin);
+		
+		projectAdmin = new ProjectAdmin("Mary");
+		projectAdmin.add(linkTo(methodOn(Controler.class).getProjectAdmin("Mary")).withSelfRel());
+		projectAdmins.add(projectAdmin);
+		
+		return new ResponseEntity<List<ProjectAdmin>>(projectAdmins, HttpStatus.OK);
     }
 	
 	/**

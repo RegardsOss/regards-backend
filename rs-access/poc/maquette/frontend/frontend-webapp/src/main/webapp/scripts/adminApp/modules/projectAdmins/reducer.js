@@ -1,9 +1,12 @@
 import {
+  REQUEST_PROJECTS_ADMINS,
+  RECEIVE_PROJECT_ADMINS,
+  FAILED_PROJECT_ADMINS,
   UPDATE_PROJECT_ADMIN,
   UPDATE_OR_CREATE_PROJECT_ADMIN,
   DELETE_PROJECT_ADMIN } from './actions'
 
-const projectAdmins = (state = [], action) => {
+export default (state = [], action) => {
   switch (action.type) {
     case UPDATE_OR_CREATE_PROJECT_ADMIN:
       let newState = state.concat() // Make a shallow copy
@@ -34,11 +37,8 @@ const arrayUnique = (array) => {
                 a.splice(j--, 1);
         }
     }
-
     return a;
 }
-
-export default projectAdmins
 
 // Selectors
 export const getProjectAdminById = (state = [], id) => state.find(pa => pa.id === id)

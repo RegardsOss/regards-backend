@@ -1,7 +1,8 @@
 import React, { Component, PropTypes } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-// Cross-modules
+import { getThemeStyles } from 'common/theme/ThemeUtils'
+import classnames from 'classnames'
 // Containers
 import { ProjectAdminsContainer } from 'adminApp/modules/projectAdmins'
 // Components
@@ -11,7 +12,8 @@ import { UserFormComponent } from 'adminApp/modules/projectAdmins'
 // Actions
 import {
   addProject,
-  deleteProject } from '../actions'
+  deleteProject,
+  fetchProjects } from '../actions'
 import {
   selectProject,
   showProjectConfiguration,
@@ -23,32 +25,35 @@ import {
   getSelectedProjectId,
   getProjectById } from 'adminApp/reducer'
 
-
 class ProjectsContainer extends React.Component {
-  render () {
-    const {
-      onSelect,
-      projects,
-      selectedProject,
-      projectConfigurationIsShown,
-      deleteProject,
-      deleteProjectAdmin,
-      showProjectConfiguration,
-      hideProjectConfiguration,
-      handleSubmit
-    } = this.props
+  componentWillMount(){
+    // onLoad method is set to the container props by react-redux connect.
+    // See method mapDispatchToProps of this container
+    this.props.onLoad()
+  }
 
+  render () {
+    const className = classnames(
+      this.props.styles.box,
+      this.props.styles.columns,
+      this.props.styles['small-4']
+    )
     return (
-      <div>
+      <div className={className}>
         <ProjectConfigurationComponent
-          show={projectConfigurationIsShown}
-          onSubmit={handleSubmit}
-          onCancelClick={hideProjectConfiguration} />
+          styles={this.props.styles}
+          show={this.props.projectConfigurationIsShown}
+          onSubmit={this.props.handleSubmit}
+          onCancelClick={this.props.hideProjectConfiguration}
+          styles={this.props.styles} />
         <ManageProjectsComponent
-          projects={projects}
-          onSelect={onSelect}
-          onAddClick={showProjectConfiguration}
-          onDeleteClick={() => deleteProject(selectedProject.id)} />
+          styles={this.props.styles}
+          projects={this.props.projects}
+          selectedProject={this.props.selectedProject}
+          onSelect={this.props.onSelect}
+          onAddClick={this.props.showProjectConfiguration}
+          onDeleteClick={this.props.deleteProject}
+          styles={this.props.styles} />
         <ProjectAdminsContainer />
       </div>
     )
@@ -64,10 +69,12 @@ const mapStateToProps = (state) => ({
   projects: getProjects(state),
   selectedProject: getProjectById(state, getSelectedProjectId(state)),
   projectConfigurationIsShown: state.adminApp.ui.projectConfigurationIsShown,
+  styles: getThemeStyles(state.common.theme, 'adminApp/styles')
 })
 const mapDispatchToProps = (dispatch) => ({
+  onLoad:                   () => dispatch(fetchProjects()),
   onSelect:                 (e) => dispatch(selectProject(e.target.value)),
-  deleteProject:            (projectId) => dispatch(deleteProject(projectId)),
+  deleteProject:            (id) => dispatch(deleteProject(id)),
   deleteProjectAdmin:       (id) => dispatch(deleteProjectAdmin(id)),
   showProjectConfiguration: () => dispatch(showProjectConfiguration()),
   hideProjectConfiguration: () => dispatch(hideProjectConfiguration()),
