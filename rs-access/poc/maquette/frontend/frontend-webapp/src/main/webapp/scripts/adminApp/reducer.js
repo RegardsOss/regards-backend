@@ -7,9 +7,11 @@ import { combineReducers } from 'redux';
 // import layout from './modules/layout/reducers/MenuReducers'
 import projects from './modules/projects/reducer'
 import projectAdmins from './modules/projectAdmins/reducer'
+import ui from './modules/ui/reducer'
 
 export default combineReducers({
   // layout,
   projects,
-  projectAdmins
+  projectAdmins,
+  ui
 });

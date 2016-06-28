@@ -2,7 +2,7 @@ import thunkMiddleware from 'redux-thunk'
 import { createStore, combineReducers, applyMiddleware, compose } from 'redux'
 import loggerMiddleware from 'common/logger/ActionLoggerMiddleware'
 // Root reducers
-import adminApp from 'adminApp/reducers'
+import adminApp from 'adminApp/reducer'
 import userApp from 'userApp/reducers'
 import portalApp from 'portalApp/reducers'
 import common from 'common/reducers'
@@ -36,6 +36,14 @@ export default function configureStore(preloadedState) {
     console.log("STORE UPDATED : ",store.getState())
   }
   store.subscribe(render)
+
+  // Enable Webpack hot module replacement for reducers
+  if (module.hot) {
+    module.hot.accept('../reducers', () => {
+      const nextRootReducer = require('../reducers').default
+      store.replaceReducer(nextRootReducer)
+    })
+  }
 
   return store
 }

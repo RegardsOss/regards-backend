@@ -1,45 +1,37 @@
 import React, { Component, PropTypes } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+// Cross-modules
+// Containers
+import { ProjectAdminsContainer } from 'adminApp/modules/projectAdmins'
 // Components
 import ManageProjectsComponent from '../components/ManageProjectsComponent'
-import ProjectAdministratorsComponent from '../components/ProjectAdministratorsComponent'
 import ProjectConfigurationComponent from '../components/ProjectConfigurationComponent'
-import UserFormComponent from '../components/UserFormComponent'
+import { UserFormComponent } from 'adminApp/modules/projectAdmins'
 // Actions
 import {
+  deleteProject } from '../actions'
+import {
   selectProject,
-  deleteProject,
-  deleteProjectAdmin,
   showProjectConfiguration,
   hideProjectConfiguration,
-  showAdminConfiguration,
-  hideAdminConfiguration } from '../actions/ProjectsActions'
+  showProjectAdminConfiguration } from 'adminApp/modules/ui/actions'
 
 class ProjectsContainer extends React.Component {
   render () {
     const {
+      onSelect,
       projects,
       projectConfigurationIsShown,
-      adminConfigurationIsShown,
-      onSelect,
       deleteProject,
       deleteProjectAdmin,
       showProjectConfiguration,
-      hideProjectConfiguration,
-      showAdminConfiguration,
-      hideAdminConfiguration
+      hideProjectConfiguration
     } = this.props
     const selectedProject = projects.items.find(project => project.selected)
 
     return (
       <div>
-        <UserFormComponent
-          asyncValidating={true}
-          show={adminConfigurationIsShown}
-          user={"toto"}
-          onSubmit={hideAdminConfiguration}
-          onCancelClick={hideAdminConfiguration} />
         <ProjectConfigurationComponent
           show={projectConfigurationIsShown}
           onSubmit={hideProjectConfiguration}
@@ -49,11 +41,7 @@ class ProjectsContainer extends React.Component {
           onSelect={onSelect}
           onAddClick={showProjectConfiguration}
           onDeleteClick={() => deleteProject(selectedProject.id)} />
-        <ProjectAdministratorsComponent
-          asyncValidating={true}
-          project={selectedProject}
-          onAddClick={showAdminConfiguration}
-          onDeleteClick={deleteProjectAdmin} />
+        <ProjectAdminsContainer />
       </div>
     )
   }
@@ -64,8 +52,7 @@ ProjectsContainer.propTypes = {
 };
 const mapStateToProps = (state) => ({
   projects: state.adminApp.projects,
-  projectConfigurationIsShown: state.adminApp.projects.projectConfigurationIsShown,
-  adminConfigurationIsShown: state.adminApp.projects.adminConfigurationIsShown
+  projectConfigurationIsShown: state.adminApp.ui.projectConfigurationIsShown,
 })
 const mapDispatchToProps = (dispatch) => ({
   onSelect:                 (e) => dispatch(selectProject(e.target.value)),
@@ -73,7 +60,5 @@ const mapDispatchToProps = (dispatch) => ({
   deleteProjectAdmin:       (id) => dispatch(deleteProjectAdmin(id)),
   showProjectConfiguration: () => dispatch(showProjectConfiguration()),
   hideProjectConfiguration: () => dispatch(hideProjectConfiguration()),
-  showAdminConfiguration:   () => dispatch(showAdminConfiguration()),
-  hideAdminConfiguration:   () => dispatch(hideAdminConfiguration())
 })
-module.exports = connect(mapStateToProps, mapDispatchToProps)(ProjectsContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(ProjectsContainer);

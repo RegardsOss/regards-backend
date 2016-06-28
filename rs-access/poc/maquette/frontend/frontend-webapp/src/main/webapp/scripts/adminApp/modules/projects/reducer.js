@@ -4,9 +4,7 @@ import {
   FAILED_PROJECTS,
   SELECT_PROJECT,
   DELETE_PROJECT,
-  DELETE_PROJECT_ADMIN,
-  SHOW_PROJECT_CONFIGURATION, HIDE_PROJECT_CONFIGURATION,
-  SHOW_ADMIN_CONFIGURATION, HIDE_ADMIN_CONFIGURATION } from './actions'
+  DELETE_PROJECT_ADMIN } from './actions'
 
 export default (state = {
   isFetching : false,
@@ -19,7 +17,7 @@ export default (state = {
     case FAILED_PROJECTS:
       return callFetchReducers(state, action)
     default:
-      return callIhmReducers(state, action)
+      return callProjectsReducers(state, action)
     }
 };
 
@@ -48,7 +46,7 @@ const callFetchReducers = (state = {
   }
 }
 
-const callIhmReducers = (state, action) => {
+const callProjectsReducers = (state, action) => {
   let nextState = Object.assign({}, state)
   switch (action.type) {
     case SELECT_PROJECT:
@@ -65,20 +63,6 @@ const callIhmReducers = (state, action) => {
       })
     case DELETE_PROJECT_ADMIN:
       // throw new Error('Not implemented yet!!')
-      return nextState
-    case SHOW_PROJECT_CONFIGURATION:
-      nextState.projectConfigurationIsShown = true;
-      nextState.adminConfigurationIsShown = false;
-      return nextState
-    case HIDE_PROJECT_CONFIGURATION:
-      nextState.projectConfigurationIsShown = false;
-      return nextState
-    case SHOW_ADMIN_CONFIGURATION:
-      nextState.adminConfigurationIsShown = true;
-      nextState.projectConfigurationIsShown = false;
-      return nextState
-    case HIDE_ADMIN_CONFIGURATION:
-      nextState.adminConfigurationIsShown = false;
       return nextState
     default:
       return state
