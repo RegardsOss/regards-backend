@@ -4,16 +4,27 @@ import icons from 'stylesheets/foundation-icons/foundation-icons.scss'
 import RegardsSelect from 'common/components/RegardsSelect'
 
 let ManageProjectsComponent = ({
-  projects,
   onSelect,
+  projects,
+  selectedProject,
   onAddClick,
   onDeleteClick,
+  styles
 }) => {
+    const selectedProjectId = selectedProject ? selectedProject.id : null
     return (
-      <div>
+      <div className={styles.row}>
         <span>Manage projects</span>
-        <i className={icons['fi-plus']} title='Add new project' onClick={onAddClick} ></i>
-        <i className={icons['fi-trash']} title='Delete selected project' onClick={onDeleteClick}></i>
+        <button
+          className={styles.button + " " + styles.success}
+          onClick={onAddClick} >
+          <i className={icons['fi-plus']} title='Add new project'></i>
+        </button>
+        <button
+          className={styles.button + " " + styles.alert}
+          onClick={() => onDeleteClick(selectedProjectId)} >
+          <i className={icons['fi-trash']} title='Delete selected project' ></i>
+        </button>
         <br />
         <RegardsSelect list={projects} label={'Select a project'} onSelect={onSelect}/>
       </div>

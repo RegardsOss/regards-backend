@@ -6,7 +6,7 @@
 }
 
 button {
-  width: 100%;
+  //width: 100%;
 }
 
 .layout {
@@ -17,6 +17,11 @@ button {
 }
 
 .content {
-  background-color: $secondcolor;
+  //background-color: $secondcolor;
+  color: $text-color;
+}
+
+.box {
+  background-color: $maincolor;
   color: $text-color;
 }

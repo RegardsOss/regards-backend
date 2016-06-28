@@ -12,24 +12,27 @@ class ProjectConfigurationComponent extends Component {
       fields: {projectName},
       resetForm,
       handleSubmit,
-      submitting
+      submitting,
+      styles
     } = this.props;
 
     if(show)
       return (
-        <form onSubmit={handleSubmit}>
-          <div>
-            <input type="text" placeholder="Project Name" {...projectName}/>
-          </div>
-          <div>
-            <button disabled={submitting}>
-              {submitting ? <i/> : <i/>} Save
-            </button>
-            <button type="button" disabled={submitting} onClick={onCancelClick}>
-              Cancel
-            </button>
-          </div>
-        </form>
+        <div className={styles.row} >
+          <form onSubmit={handleSubmit}>
+            <div>
+              <input type="text" placeholder="Project Name" {...projectName}/>
+            </div>
+            <div>
+              <button disabled={submitting}>
+                {submitting ? <i/> : <i/>} Save
+              </button>
+              <button type="button" disabled={submitting} onClick={onCancelClick}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       );
     else
       return null
