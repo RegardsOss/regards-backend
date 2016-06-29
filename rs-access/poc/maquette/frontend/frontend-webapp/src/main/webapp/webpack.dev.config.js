@@ -86,7 +86,10 @@ module.exports = {
       // Transpile ES6 Javascript into ES5 with babel loader and react
       {test: /\.js$/, exclude: [/node_modules/,/json/],
         loader: 'babel',
-        query: { presets: ['es2015', 'react']}
+        query: {
+          presets: ['es2015', 'react'],
+          plugins: ["transform-object-rest-spread"]
+        }
       },
       // Sass files compilation to css with css modules enable
       {test: /\.scss$/, exclude: [/node_modules/,/scripts/,/stylesheets\/default/,/stylesheets\/vendors/],
