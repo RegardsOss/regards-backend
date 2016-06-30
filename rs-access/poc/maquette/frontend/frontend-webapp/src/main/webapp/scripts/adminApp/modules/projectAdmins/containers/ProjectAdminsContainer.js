@@ -7,6 +7,7 @@ import UserFormComponent from '../components/UserFormComponent'
 // Actions
 import {
   fetchProjectAdmins,
+  fetchProjectAdminsBy,
   updateOrCreateProjectAdmin,
   deleteProjectAdmin } from '../actions'
 import {
@@ -23,10 +24,14 @@ import {
   getProjectAdminById } from 'adminApp/reducer'
 
 class ProjectAdminsContainer extends React.Component {
-  componentWillMount(){
-    // onLoad method is set to the container props by react-redux connect.
-    // See method mapDispatchToProps of this container
-    this.props.onLoad()
+
+  componentWillReceiveProps(nextProps) {
+    const oldProject = this.props.project
+    const nextProject = nextProps.project
+    if(nextProject && nextProject != oldProject) {
+      const href = nextProject.links.find(l => l.rel === "users").href;
+      this.props.fetchProjectAdminsBy(href)
+    }
   }
 
   render () {
@@ -68,7 +73,7 @@ const mapStateToProps = (state, ownProps) => {
   }
 }
 const mapDispatchToProps = (dispatch) => ({
-  onLoad: () => dispatch(fetchProjectAdmins()),
+  fetchProjectAdminsBy: (href) => dispatch(fetchProjectAdminsBy(href)),
   showProjectAdminConfiguration: (id) => {
     dispatch(selectProjectAdmin(id))
     dispatch(showProjectAdminConfiguration())

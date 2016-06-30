@@ -19,7 +19,6 @@ export default combineReducers({
 export const deleteEntityReducer = (state, action) =>
 ({ ... state,
   items: pickBy(state.items, (value, key) => key !== action.id),
-  items: omitBy(state.items, (value, key) => key !== action.id),
   ids: state.ids.filter(id => id !== action.id)
 })
 

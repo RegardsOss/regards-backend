@@ -11,7 +11,6 @@ export const PROJECT_ADMIN_FAILURE = 'PROJECT_ADMIN_FAILURE'
 // Relies on the custom API middleware defined in redux-api-middleware
 // Normalize the json response
 export const fetchProjectAdmins = () => ({
-// export const fetchProjectAdmins = (key, dataObject) => ({
   [CALL_API]: {
     // endpointKey : key,
     // links: dataObject.links,
@@ -24,6 +23,26 @@ export const fetchProjectAdmins = () => ({
       PROJECT_ADMIN_FAILURE
     ],
     endpoint: PROJECT_ADMINS_API,
+    method: 'GET'
+  }
+})
+
+// Fetches all project admins
+// Relies on the custom API middleware defined in redux-api-middleware
+// Normalize the json response
+export const fetchProjectAdminsBy = (endpoint) => ({
+  [CALL_API]: {
+    // endpointKey : key,
+    // links: dataObject.links,
+    types: [
+      PROJECT_ADMIN_REQUEST,
+      {
+        type: PROJECT_ADMIN_SUCESS,
+        payload: (action, state, res) => getJSON(res).then((json) => normalize(json, Schemas.PROJECT_ADMIN_ARRAY))
+      },
+      PROJECT_ADMIN_FAILURE
+    ],
+    endpoint: endpoint,
     method: 'GET'
   }
 })

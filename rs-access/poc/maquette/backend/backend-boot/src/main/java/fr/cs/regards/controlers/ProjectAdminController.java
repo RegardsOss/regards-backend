@@ -26,11 +26,12 @@ public class ProjectAdminController {
 	@RequestMapping(value = "/project-admin", method = RequestMethod.GET)
 	public @ResponseBody HttpEntity<ProjectAdmin> getProjectAdmin(
 			@RequestParam(value = "name", required = true) String name) {
-		ProjectAdmin projectAdmin = new ProjectAdmin("John");
-		projectAdmin.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin("John")).withSelfRel());
+		ProjectAdmin projectAdmin = new ProjectAdmin(name);
+		projectAdmin.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin(name)).withSelfRel());
 		return new ResponseEntity<ProjectAdmin>(projectAdmin, HttpStatus.OK);
 	}
 
+	/*
 	@RequestMapping(value = "/project-admins", method = RequestMethod.GET)
 	public @ResponseBody HttpEntity<List<ProjectAdmin>> getProjectAdmins() {
 		List<ProjectAdmin> projectAdmins = new ArrayList<>();
@@ -45,4 +46,20 @@ public class ProjectAdminController {
 
 		return new ResponseEntity<List<ProjectAdmin>>(projectAdmins, HttpStatus.OK);
 	}
+	*/
+	
+	@RequestMapping(value = "/project-admins", method = RequestMethod.GET)
+	public @ResponseBody HttpEntity<List<ProjectAdmin>> getProjectAdminsByNames(
+			@RequestParam(value = "names", required = true) String[] names) {
+		List<ProjectAdmin> projectAdmins = new ArrayList<>(names.length);
+
+		for (String name : names) {
+			ProjectAdmin projectAdmin = new ProjectAdmin(name);
+			projectAdmin.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin(name)).withSelfRel());
+			projectAdmins.add(projectAdmin);
+		}
+		
+		return new ResponseEntity<List<ProjectAdmin>>(projectAdmins, HttpStatus.OK);
+	}
+	
 }
