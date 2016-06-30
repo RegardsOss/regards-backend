@@ -1,5 +1,6 @@
 import React, { PropTypes } from 'react'
 import icons from 'stylesheets/foundation-icons/foundation-icons.scss'
+import { map } from 'lodash'
 
 const ProjectAdminsComponent = ({
   project,
@@ -16,11 +17,11 @@ const ProjectAdminsComponent = ({
         <br />
         List of administrators for {project.name}:
         <ul>
-          {projectAdmins.map((admin) => (
-            <li key={admin.id}>
-              {admin.name}
-              <i className={icons['fi-wrench']} title='Configure admin user' onClick={() => onConfigureClick(admin.id)}></i>
-              <i className={icons['fi-trash']} title='Delete admin user'  onClick={() => onDeleteClick(admin.id)}></i>
+          {map(projectAdmins.items, (projectAdmin, id) => (
+            <li key={id}>
+              {projectAdmin.name}
+              <i className={icons['fi-wrench']} title='Configure admin user' onClick={() => onConfigureClick(id)}></i>
+              <i className={icons['fi-trash']} title='Delete admin user' onClick={() => onDeleteClick(id)}></i>
             </li>
           ))}
         </ul>
@@ -32,7 +33,7 @@ const ProjectAdminsComponent = ({
 }
 
 ProjectAdminsComponent.propTypes = {
-  projectAdmins: PropTypes.array,
+  projectAdmins: PropTypes.object,
   onAddClick: PropTypes.func,
   onConfigureClick: PropTypes.func,
   onDeleteClick: PropTypes.func

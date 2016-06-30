@@ -74,7 +74,7 @@ public class Controler {
 		return "OK";
     }
 	
-	@RequestMapping(value="project-admin", method = RequestMethod.GET)
+	@RequestMapping(value="/project-admin", method = RequestMethod.GET)
 	public @ResponseBody HttpEntity<ProjectAdmin> getProjectAdmin(
 			@RequestParam(value = "name", required = true) String name) {
 		ProjectAdmin projectAdmin = new ProjectAdmin("John");
@@ -82,7 +82,7 @@ public class Controler {
 		return new ResponseEntity<ProjectAdmin>(projectAdmin, HttpStatus.OK);
 	}
 	
-	@RequestMapping(value="project-admins", method = RequestMethod.GET)
+	@RequestMapping(value="/project-admins", method = RequestMethod.GET)
     public @ResponseBody HttpEntity<List<ProjectAdmin>> getProjectAdmins() {
 		List<ProjectAdmin> projectAdmins = new ArrayList<>();
 		

@@ -5,7 +5,7 @@ import { combineReducers } from 'redux';
 import themeReducers from 'common/theme/reducers/ThemeReducers'
 import pluginReducers from 'common/plugins/PluginReducers'
 import accessRightsReducers from 'common/access-rights/AccessRightsReducers'
-import authentication from 'common/authentication/AuthenticateReducers'
+import authentication, * as fromAuthentication from 'common/authentication/AuthenticateReducers'
 
 // Keeping both notations as an example
 export default combineReducers({
@@ -14,3 +14,7 @@ export default combineReducers({
   views: accessRightsReducers,
   authentication
 });
+
+// Selectors
+export const getAuthorization = (state) =>
+  fromAuthentication.getAuthorization(state.common)

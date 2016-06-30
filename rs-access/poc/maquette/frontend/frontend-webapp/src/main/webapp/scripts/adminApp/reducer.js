@@ -8,6 +8,7 @@ import { combineReducers } from 'redux';
 import projects, * as fromProjects from './modules/projects/reducer'
 import projectAdmins, * as fromProjectAdmins from './modules/projectAdmins/reducer'
 import ui, * as fromUi from './modules/ui/reducer'
+import { values } from 'lodash'
 
 export default combineReducers({
   // layout,

@@ -28,27 +28,29 @@ export default {
         }
       ]
     },
-    projectAdmins : [
-      {
-        id: '0',
-        name: 'Toto',
-        projects: ['0']
-      },
-      {
-        id: '1',
-        name: 'Titi',
-        projects: ['1','0']
-      },
-      {
-        id: '2',
-        name: 'Momo',
-        projects: ['1']
-      },
-      {
-        id: '3',
-        name: 'Mimi',
-        projects: []
-      }
-    ]
+    // projectAdmins : {
+    //   items: [
+    //     {
+    //       id: '0',
+    //       name: 'Toto',
+    //       projects: ['0']
+    //     },
+    //     {
+    //       id: '1',
+    //       name: 'Titi',
+    //       projects: ['1','0']
+    //     },
+    //     {
+    //       id: '2',
+    //       name: 'Momo',
+    //       projects: ['1']
+    //     },
+    //     {
+    //       id: '3',
+    //       name: 'Mimi',
+    //       projects: []
+    //     }
+    //   ]
+    // }
   }
 }

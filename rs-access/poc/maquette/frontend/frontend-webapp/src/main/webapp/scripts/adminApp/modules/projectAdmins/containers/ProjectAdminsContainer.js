@@ -17,6 +17,7 @@ import {
 import {
   getSelectedProjectId,
   getProjectById,
+  getProjectAdmins,
   getProjectAdminsByProject,
   getSelectedProjectAdminId,
   getProjectAdminById } from 'adminApp/reducer'
@@ -50,14 +51,14 @@ class ProjectAdminsContainer extends React.Component {
 }
 
 ProjectAdminsContainer.propTypes = {
-  projectAdmins: PropTypes.array
+  projectAdmins: PropTypes.object
 };
 const mapStateToProps = (state, ownProps) => {
-  let selectedProjectId = getSelectedProjectId(state)
-  let selectedProject = getProjectById(state, selectedProjectId)
-  let projectAdmins = getProjectAdminsByProject(state, selectedProject)
-  let selectedProjectAdminId = getSelectedProjectAdminId(state)
-  let selectedProjectAdmin = getProjectAdminById(state, selectedProjectAdminId)
+  const selectedProjectId = getSelectedProjectId(state)
+  const selectedProject = getProjectById(state, selectedProjectId)
+  const projectAdmins = getProjectAdmins(state) // TODO: By project: getProjectAdminsByProject(state, selectedProject)
+  const selectedProjectAdminId = getSelectedProjectAdminId(state)
+  const selectedProjectAdmin = getProjectAdminById(state, selectedProjectAdminId)
   return {
     project: selectedProject,
     projectAdmins: projectAdmins,

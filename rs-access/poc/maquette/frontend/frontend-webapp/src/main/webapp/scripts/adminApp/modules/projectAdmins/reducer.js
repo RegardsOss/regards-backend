@@ -1,13 +1,29 @@
+import { union, values, merge, omitBy } from 'lodash'
 import {
-  REQUEST_PROJECTS_ADMINS,
-  RECEIVE_PROJECT_ADMINS,
-  FAILED_PROJECT_ADMINS,
+  PROJECT_ADMIN_REQUEST,
+  PROJECT_ADMIN_SUCESS,
+  PROJECT_ADMIN_FAILURE,
   UPDATE_PROJECT_ADMIN,
   UPDATE_OR_CREATE_PROJECT_ADMIN,
   DELETE_PROJECT_ADMIN } from './actions'
 
-export default (state = [], action) => {
+export default (state = {
+  isFetching : false,
+  items: {},
+  ids: [],
+  lastUpdate: ''
+}, action) => {
   switch (action.type) {
+    case PROJECT_ADMIN_REQUEST:
+      return { ...state, isFetching: true }
+    case PROJECT_ADMIN_SUCESS:
+      return { ...state,
+        isFetching: false,
+        items: action.payload.entities.projectAdmins, // TODO: merge with previous items ?
+        ids: union(state.ids, action.payload.result)
+    }
+    case PROJECT_ADMIN_FAILURE:
+      return { ...state, isFetching: false }
     case UPDATE_OR_CREATE_PROJECT_ADMIN:
       let newState = state.concat() // Make a shallow copy
       let selectedProjectAdmin = newState.find(pa => pa.id === action.id)
@@ -17,13 +33,16 @@ export default (state = [], action) => {
         projectList = selectedProjectAdmin.projects
       }
       newState = newState.concat({
-        id:action.id,
+        id: action.id,
         name: action.name,
         projects: arrayUnique(projectList.concat(action.projects))
       })
       return newState
     case DELETE_PROJECT_ADMIN:
-      return state.filter(pa => pa.id !== action.id)
+      return { ... state,
+        items: omitBy(state.items, (value, key) => key !== action.id),
+        ids: state.ids.filter(id => id !== action.id)
+      }
     default:
       return state
   }
@@ -41,7 +60,7 @@ const arrayUnique = (array) => {
 }
 
 // Selectors
-export const getProjectAdminById = (state = [], id) => state.find(pa => pa.id === id)
+export const getProjectAdminById = (state, id) => state.items.id
 
-export const getProjectAdminsByProject = (state = [], project) =>
-  (!project) ? [] : state.filter(pa => pa.projects.includes(project.id))
+export const getProjectAdminsByProject = (state, project) => values(state.items) // TODO
+  // (!project) ? [] : state.items.filter(pa => pa.projects.includes(project.id))

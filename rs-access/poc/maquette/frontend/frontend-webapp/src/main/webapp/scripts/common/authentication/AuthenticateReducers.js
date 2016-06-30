@@ -35,9 +35,3 @@ export default (state = {
       return state;
   }
 }
-
-// const authenticateReducers = {
-//   authentication
-// }
-//
-// export default authenticateReducers

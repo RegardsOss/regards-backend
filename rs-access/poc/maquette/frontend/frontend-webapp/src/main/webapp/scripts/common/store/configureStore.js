@@ -1,6 +1,8 @@
 import thunkMiddleware from 'redux-thunk'
 import { createStore, combineReducers, applyMiddleware, compose } from 'redux'
 import loggerMiddleware from 'common/logger/ActionLoggerMiddleware'
+import authorizationMiddleware from 'common/authentication/AuthorizationMiddleware'
+import { apiMiddleware } from 'redux-api-middleware';
 // Root reducers
 import adminApp from 'adminApp/reducer'
 import userApp from 'userApp/reducers'
@@ -25,7 +27,9 @@ export default function configureStore(preloadedState) {
     compose(
       applyMiddleware(
         thunkMiddleware, // lets us dispatch() functions
-        loggerMiddleware // logs any dispatched action
+        loggerMiddleware, // logs any dispatched action
+        authorizationMiddleware, // inject authorization headers in all request actions
+        apiMiddleware // middleware for calling an REST API
       ),
       window.devToolsExtension ? window.devToolsExtension() : f => f // Enable redux dev tools
     )
