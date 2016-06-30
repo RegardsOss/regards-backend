@@ -6,6 +6,7 @@ import themeReducers from 'common/theme/reducers/ThemeReducers'
 import pluginReducers from 'common/plugins/PluginReducers'
 import accessRightsReducers from 'common/access-rights/AccessRightsReducers'
 import authentication, * as fromAuthentication from 'common/authentication/AuthenticateReducers'
+import { omitBy } from 'lodash'
 
 // Keeping both notations as an example
 export default combineReducers({
@@ -14,6 +15,12 @@ export default combineReducers({
   views: accessRightsReducers,
   authentication
 });
+
+export const deleteEntityReducer = (state, action) =>
+({ ... state,
+  items: omitBy(state.items, (value, key) => key !== action.id),
+  ids: state.ids.filter(id => id !== action.id)
+})
 
 // Selectors
 export const getAuthorization = (state) =>

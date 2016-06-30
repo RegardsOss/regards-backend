@@ -3,6 +3,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { getThemeStyles } from 'common/theme/ThemeUtils'
 import classnames from 'classnames'
+import { map } from 'lodash'
 // Containers
 import { ProjectAdminsContainer } from 'adminApp/modules/projectAdmins'
 // Components
@@ -66,7 +67,7 @@ ProjectsContainer.propTypes = {
   projectConfigurationIsShown: PropTypes.bool
 };
 const mapStateToProps = (state) => ({
-  projects: getProjects(state),
+  projects: map(getProjects(state).items, (value, key) => ({id:key, name:value.name}) ),
   selectedProject: getProjectById(state, getSelectedProjectId(state)),
   projectConfigurationIsShown: state.adminApp.ui.projectConfigurationIsShown,
   styles: getThemeStyles(state.common.theme, 'adminApp/styles')

@@ -1,7 +1,9 @@
+import { union, values, merge, omitBy, uniqWith, isEqual } from 'lodash'
+import { deleteEntityReducer } from 'common/reducers'
 import {
-  REQUEST_PROJECTS,
-  RECEIVE_PROJECTS,
-  FAILED_PROJECTS,
+  PROJECTS_REQUEST,
+  PROJECTS_SUCESS,
+  PROJECTS_FAILURE,
   SELECT_PROJECT,
   ADD_PROJECT,
   DELETE_PROJECT,
@@ -10,76 +12,37 @@ import {
 export default (state = {
   isFetching : false,
   items: [],
+  ids: [],
   lastUpdate: ''
 }, action) => {
   switch(action.type){
-    case REQUEST_PROJECTS:
-    case RECEIVE_PROJECTS:
-    case FAILED_PROJECTS:
-      return callFetchReducers(state, action)
-    default:
-      return callProjectsReducers(state, action)
-    }
-};
-
-const callFetchReducers = (state = {
-  isFetching : false,
-  items: [],
-  lastUpdate: ''
-}, action) => {
-  switch(action.type){
-    case REQUEST_PROJECTS:
-      return Object.assign({}, state, {
-        isFetching: true
-      })
-    case RECEIVE_PROJECTS:
-      return Object.assign({}, state, {
+    case PROJECTS_REQUEST:
+      return { ...state, isFetching: true }
+    case PROJECTS_SUCESS:
+      return { ...state,
         isFetching: false,
-        items: action.projects,
-        lastUpdate: action.receivedAt
-      })
-    case FAILED_PROJECTS:
-      return Object.assign({}, state, {
-        isFetching: false
-      })
-    default:
-      return state
-  }
-}
-
-const callProjectsReducers = (state, action) => {
-  let nextState = Object.assign({}, state)
-  switch (action.type) {
-    case SELECT_PROJECT:
-      // Deselect previously selected project
-      let oldSelected = nextState.items.find(project => project.selected)
-      if(oldSelected) oldSelected.selected = false
-      // Selected right one
-      let newSelected = nextState.items.find(project => project.id === action.id)
-      if(newSelected) newSelected.selected = true
-      return nextState
+        items: action.payload.entities.projects, // TODO: merge with previous items ?
+        ids: union(state.ids, action.payload.result)
+    }
+    case PROJECTS_FAILURE:
+      return { ...state, isFetching: false }
     case ADD_PROJECT:
-      nextState.items = nextState.items.concat({
-        id: action.id,
-        name: action.name,
-        selected: false,
-        admins: []
-      })
-      return nextState
+      return { ...state,
+        items: state.items.concat({
+          id: action.id,
+          name: action.name,
+          selected: false,
+          admins: []
+        })
+      }
     case DELETE_PROJECT:
-      return Object.assign({}, state, {
-        items: state.items.filter(project => project.id !== action.id)
-      })
-    case DELETE_PROJECT_ADMIN:
-      // throw new Error('Not implemented yet!!')
-      return nextState
+      return deleteEntityReducer(state, action)
     default:
       return state
   }
 }
 
 // Selectors
-export const getProjects = (state) => state.items
+export const getProjects = (state) => state
 
-export const getProjectById = (state, id) =>
-  state.items.find(p => p.id === id)
+export const getProjectById = (state, id) => state.items[id]
