@@ -1,6 +1,5 @@
 import { union, values, merge, omitBy, uniqWith, isEqual } from 'lodash'
 import { deleteEntityReducer } from 'common/reducers'
-import { getSelectedProjectId } from 'adminApp/modules/ui/reducer'
 import {
   PROJECTS_REQUEST,
   PROJECTS_SUCESS,
