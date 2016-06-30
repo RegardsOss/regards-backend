@@ -1,4 +1,5 @@
-import { union, values, merge, omitBy } from 'lodash'
+import { union, values, merge, omitBy, uniqWith, isEqual } from 'lodash'
+import { deleteEntityReducer } from 'common/reducers'
 import {
   PROJECT_ADMIN_REQUEST,
   PROJECT_ADMIN_SUCESS,
@@ -35,28 +36,15 @@ export default (state = {
       newState = newState.concat({
         id: action.id,
         name: action.name,
-        projects: arrayUnique(projectList.concat(action.projects))
+        projects: uniqWith(projectList.concat(action.projects), isEqual)
+        // projects: arrayUnique(projectList.concat(action.projects))
       })
       return newState
     case DELETE_PROJECT_ADMIN:
-      return { ... state,
-        items: omitBy(state.items, (value, key) => key !== action.id),
-        ids: state.ids.filter(id => id !== action.id)
-      }
+      return deleteEntityReducer(state, action)
     default:
       return state
   }
-}
-
-const arrayUnique = (array) => {
-    var a = array.concat();
-    for(var i=0; i<a.length; ++i) {
-        for(var j=i+1; j<a.length; ++j) {
-            if(a[i] === a[j])
-                a.splice(j--, 1);
-        }
-    }
-    return a;
 }
 
 // Selectors

@@ -3,6 +3,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { getThemeStyles } from 'common/theme/ThemeUtils'
 import classnames from 'classnames'
+import { map } from 'lodash'
 // Containers
 import { ProjectAdminsContainer } from 'adminApp/modules/projectAdmins'
 // Components
@@ -13,7 +14,8 @@ import { UserFormComponent } from 'adminApp/modules/projectAdmins'
 import {
   addProject,
   deleteProject,
-  fetchProjects } from '../actions'
+  fetchProjects,
+  deleteSelectedProject } from '../actions'
 import {
   selectProject,
   showProjectConfiguration,
@@ -49,7 +51,7 @@ class ProjectsContainer extends React.Component {
         <ManageProjectsComponent
           styles={this.props.styles}
           projects={this.props.projects}
-          selectedProject={this.props.selectedProject}
+          selectedProjectId={this.props.selectedProjectId}
           onSelect={this.props.onSelect}
           onAddClick={this.props.showProjectConfiguration}
           onDeleteClick={this.props.deleteProject}
@@ -66,18 +68,18 @@ ProjectsContainer.propTypes = {
   projectConfigurationIsShown: PropTypes.bool
 };
 const mapStateToProps = (state) => ({
-  projects: getProjects(state),
-  selectedProject: getProjectById(state, getSelectedProjectId(state)),
+  projects: map(getProjects(state).items, (value, key) => ({id:key, name:value.name})),
+  selectedProjectId: getSelectedProjectId(state),
   projectConfigurationIsShown: state.adminApp.ui.projectConfigurationIsShown,
   styles: getThemeStyles(state.common.theme, 'adminApp/styles')
 })
 const mapDispatchToProps = (dispatch) => ({
-  onLoad:                   () => dispatch(fetchProjects()),
+  onLoad:                   ()  => dispatch(fetchProjects()),
   onSelect:                 (e) => dispatch(selectProject(e.target.value)),
-  deleteProject:            (id) => dispatch(deleteProject(id)),
-  deleteProjectAdmin:       (id) => dispatch(deleteProjectAdmin(id)),
-  showProjectConfiguration: () => dispatch(showProjectConfiguration()),
-  hideProjectConfiguration: () => dispatch(hideProjectConfiguration()),
+  deleteProject:            (id)=> dispatch(deleteProject(id)),
+  deleteProjectAdmin:       (id)=> dispatch(deleteProjectAdmin(id)),
+  showProjectConfiguration: ()  => dispatch(showProjectConfiguration()),
+  hideProjectConfiguration: ()  => dispatch(hideProjectConfiguration()),
   handleSubmit:             (e) => {
     let idProject = "9999" // TODO
     dispatch(addProject(idProject, e.projectName))

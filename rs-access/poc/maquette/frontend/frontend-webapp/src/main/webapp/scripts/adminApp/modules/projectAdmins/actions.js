@@ -1,6 +1,5 @@
 import { CALL_API, getJSON } from 'redux-api-middleware'
 import Schemas from 'common/api/schemas'
-import { getAuthorization } from 'common/reducers'
 import { normalize } from 'normalizr'
 
 const PROJECT_ADMINS_API='http://localhost:8080/api/project-admins'

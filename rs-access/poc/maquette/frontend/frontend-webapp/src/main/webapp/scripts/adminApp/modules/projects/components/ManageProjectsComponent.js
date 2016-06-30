@@ -6,12 +6,11 @@ import RegardsSelect from 'common/components/RegardsSelect'
 let ManageProjectsComponent = ({
   onSelect,
   projects,
-  selectedProject,
+  selectedProjectId,
   onAddClick,
   onDeleteClick,
   styles
 }) => {
-    const selectedProjectId = selectedProject ? selectedProject.id : null
     return (
       <div className={styles.row}>
         <span>Manage projects</span>
@@ -33,7 +32,8 @@ let ManageProjectsComponent = ({
 
 ManageProjectsComponent.propTypes = {
   projects: PropTypes.array,
-  onSelect: PropTypes.func
+  onSelect: PropTypes.func,
+  selectedProjectId: PropTypes.string
 }
 
 export default ManageProjectsComponent

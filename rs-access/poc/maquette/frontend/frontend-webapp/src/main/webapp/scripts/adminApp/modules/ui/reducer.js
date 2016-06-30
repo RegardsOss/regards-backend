@@ -10,31 +10,23 @@ import {
 export default (state = [], action) => {
   switch (action.type) {
     case SELECT_PROJECT:
-      return Object.assign({}, state, {
-        selectedProjectId: action.id
-      })
+      return { ...state, selectedProjectId: action.id }
     case SELECT_PROJECT_ADMIN:
-      return Object.assign({}, state, {
-        selectedProjectAdminId: action.id
-      })
+      return { ...state, selectedProjectAdminId: action.id }
     case SHOW_PROJECT_CONFIGURATION:
-      return Object.assign({}, state, {
+      return { ...state,
         projectConfigurationIsShown: true,
         projectAdminConfigurationIsShown: false
-      })
+      }
     case HIDE_PROJECT_CONFIGURATION:
-      return Object.assign({}, state, {
-        projectConfigurationIsShown: false
-      })
+      return { ...state, projectConfigurationIsShown: false }
     case SHOW_PROJECT_ADMIN_CONFIGURATION:
-      return Object.assign({}, state, {
+      return { ...state,
         projectConfigurationIsShown: false,
         projectAdminConfigurationIsShown: true
-      })
+      }
     case HIDE_PROJECT_ADMIN_CONFIGURATION:
-      return Object.assign({}, state, {
-        projectAdminConfigurationIsShown: false
-      })
+      return { ...state, projectAdminConfigurationIsShown: false }
     default:
       return state
   }
