@@ -30,6 +30,8 @@ module.exports = {
     // Webpack chunks files names
     chunkFilename: "[id].chunck.js"
   },
+  // Enable sourcemaps for debugging webpack's output.
+  devtool: "source-map",
   devServer: {
     stats: { children: false, colors: true },
     // Web directory serve by the webpack dev server
@@ -64,7 +66,8 @@ module.exports = {
   resolve: {
     // Automaticly get extensions files from javascript code with import or require.
     // exemple require('main') look for main, main.js or main.sass with our configuration
-    extensions: ['', '.js', '.scss'],
+    // extensions: ['', '.js', '.scss'],
+    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js", '.scss'],
     // Alias that can be used in javascript code for require or import
     // Exemple : require ('AppStore') is equal to require ('scripts/common/store/Store.js');
     alias: {
@@ -83,6 +86,12 @@ module.exports = {
   },
   module: {
     loaders: [
+      // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
+      {
+        test: /\.tsx{0,1}?$/,
+        exclude: [/node_modules/,/json/],
+        loader: "babel-loader?presets=['es2015', 'react']!ts-loader"
+      },
       // Transpile ES6 Javascript into ES5 with babel loader and react
       {test: /\.js$/, exclude: [/node_modules/,/json/],
         loader: 'babel',
@@ -101,6 +110,10 @@ module.exports = {
       {test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader?name=/img/[name].[ext]" },
       {test: /\.json$/, loader: "file-loader?name=/json/[name].[ext]"}
 
+    ],
+    preLoaders: [
+        // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+        { test: /\.js$/, loader: "source-map-loader" }
     ]
   },
   plugins: [
@@ -122,5 +135,13 @@ module.exports = {
     net: 'empty',
     tls: 'empty',
     dns: 'empty'
-  }
+  },
+  // When importing a module whose path matches one of the following, just
+  // assume a corresponding global variable exists and use that instead.
+  // This is important because it allows us to avoid bundling all of our
+  // dependencies, which allows browsers to cache those libraries between builds.
+  // externals: {
+  //     "react": "React",
+  //     "react-dom": "ReactDOM"
+  // },
 };

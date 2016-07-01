@@ -1,6 +1,38 @@
-import React, { PropTypes } from 'react'
-import icons from 'stylesheets/foundation-icons/foundation-icons.scss'
+//import { React, PropTypes } from 'react'
+//import * as React from 'react'
+import * as React from 'react'
+// import icons from 'stylesheets/foundation-icons/foundation-icons.scss'
 import { map } from 'lodash'
+
+// interface User {
+//   name: String
+// }
+//
+// interface UserCollection {
+//   items: Array<User>
+// }
+//
+// interface Project {
+//   name: String,
+//   users: UserCollection
+// }
+//
+// interface ProjectAdminsComponentProps {
+//   project: Project,
+//   projectAdmins: UserCollection,
+//   onAddClick: Function,
+//   onConfigureClick: Function,
+//   onDeleteClick: Function
+// }
+//
+// interface ProjectAdminsComponentState {
+//
+// }
+//
+// class ProjectAdminsComponent extends React.Component<ProjectAdminsComponentProps, ProjectAdminsComponentState> {
+//
+// }
+
 
 const ProjectAdminsComponent = ({
   project,
@@ -13,15 +45,15 @@ const ProjectAdminsComponent = ({
     return (
       <div>
         Project Administrators
-        <i className={icons['fi-plus']} title='Add new administrator' onClick={() => onAddClick(project.id)}></i>
+        <i  title='Add new administrator' onClick={() => onAddClick(project.id)}></i>
         <br />
         List of administrators for {project.name}:
         <ul>
           {map(projectAdmins.items, (projectAdmin, id) => (
             <li key={id}>
               {projectAdmin.name}
-              <i className={icons['fi-wrench']} title='Configure admin user' onClick={() => onConfigureClick(id)}></i>
-              <i className={icons['fi-trash']} title='Delete admin user' onClick={() => onDeleteClick(id)}></i>
+              <i  title='Configure admin user' onClick={() => onConfigureClick(id)}></i>
+              <i  title='Delete admin user' onClick={() => onDeleteClick(id)}></i>
             </li>
           ))}
         </ul>
@@ -33,10 +65,10 @@ const ProjectAdminsComponent = ({
 }
 
 ProjectAdminsComponent.propTypes = {
-  projectAdmins: PropTypes.object,
-  onAddClick: PropTypes.func,
-  onConfigureClick: PropTypes.func,
-  onDeleteClick: PropTypes.func
+  projectAdmins: React.PropTypes.object,
+  onAddClick: React.PropTypes.func,
+  onConfigureClick: React.PropTypes.func,
+  onDeleteClick: React.PropTypes.func
 };
 
 export default ProjectAdminsComponent
