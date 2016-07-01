@@ -5,15 +5,16 @@ import static springfox.documentation.builders.PathSelectors.regex;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
 
 import com.google.common.base.Predicate;
+import com.netflix.discovery.EurekaClient;
 
-import ch.qos.logback.core.joran.action.NewRuleAction;
 import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.AuthorizationScopeBuilder;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.AuthorizationScope;
 import springfox.documentation.service.GrantType;
@@ -27,6 +28,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
+@EnableEurekaClient
 @EnableSwagger2 //Enable swagger 2.0 spec
 public class Application {
 	
