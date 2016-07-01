@@ -6,3 +6,4 @@
 **/build/*
 !**/build/README.txt
 **.log
+**/typings

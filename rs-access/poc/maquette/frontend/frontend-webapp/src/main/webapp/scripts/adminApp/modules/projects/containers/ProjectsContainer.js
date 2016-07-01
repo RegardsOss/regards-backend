@@ -1,6 +1,6 @@
-import React, { Component, PropTypes } from 'react';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
+import React, { Component, PropTypes } from 'react'
+import { bindActionCreators } from 'redux'
+import { connect } from 'react-redux'
 import { getThemeStyles } from 'common/theme/ThemeUtils'
 import classnames from 'classnames'
 import { map } from 'lodash'
@@ -77,7 +77,6 @@ const mapDispatchToProps = (dispatch) => ({
   onLoad:                   ()  => dispatch(fetchProjects()),
   onSelect:                 (e) => dispatch(selectProject(e.target.value)),
   deleteProject:            (id)=> dispatch(deleteProject(id)),
-  deleteProjectAdmin:       (id)=> dispatch(deleteProjectAdmin(id)),
   showProjectConfiguration: ()  => dispatch(showProjectConfiguration()),
   hideProjectConfiguration: ()  => dispatch(hideProjectConfiguration()),
   handleSubmit:             (e) => {

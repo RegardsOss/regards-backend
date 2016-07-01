@@ -36,13 +36,15 @@ public class ProjectController {
 		List<Project> projects = new ArrayList<>();
 		
 		Project project = new Project("cdpp");
+		String[] cdppAdmins = { "Alice", "David", "Bob" };
 		project.add(linkTo(methodOn(ProjectController.class).getProject("cdpp")).withSelfRel());
-		project.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmins()).withRel("users"));
+		project.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdminsByNames(cdppAdmins)).withRel("users"));
 		projects.add(project);
 		
 		project = new Project("ssalto");
+		String[] ssaltoAdmins = { "Carl", "David" };
 		project.add(linkTo(methodOn(ProjectController.class).getProject("ssalto")).withSelfRel());
-		project.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmins()).withRel("users"));
+		project.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdminsByNames(ssaltoAdmins)).withRel("users"));
 		projects.add(project);		
 		return new ResponseEntity<List<Project>>(projects, HttpStatus.OK);
     }
