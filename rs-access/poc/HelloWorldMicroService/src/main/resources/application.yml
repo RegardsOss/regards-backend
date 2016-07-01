@@ -1,0 +1,31 @@
+server:
+  port: 7777
+
+
+endpoints:
+  restart:
+    enabled: true
+  shutdown:
+    enabled: true
+  health:
+    sensitive: false
+
+spring:
+  application:
+    name : HelloWorld
+  rabbitmq:
+    addresses: ${vcap.services.${PREFIX:}rabbitmq.credentials.uri:amqp://${RABBITMQ_HOST:localhost}:${RABBITMQ_PORT:5672}}
+
+eureka:
+  instance:
+    instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  client:
+    registryFetchIntervalSeconds: 5
+#    healthcheck:
+#      enabled: true
+    serviceUrl:
+      defaultZone: http://localhost:8888/eureka/
+
+logging:
+  level:
+    com.netflix.discovery: 'OFF'

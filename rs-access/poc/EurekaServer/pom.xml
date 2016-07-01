@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<name>helloword-ms</name>
-	<artifactId>helloword-ms</artifactId>
-	<description>Microservice HellowWorld Starter</description>
+	<name>EurekaServer</name>
+	<artifactId>EurekaServer</artifactId>
+	<description>EurekaServer Starter</description>
 	
 	<parent>
     	<groupId>org.springframework.boot</groupId>
@@ -28,15 +28,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-		<!-- for OAuth 2.0 -->
-		<dependency>
-			<groupId>org.springframework.security.oauth</groupId>
-			<artifactId>spring-security-oauth2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 			<exclusions>
 				<exclusion>
@@ -49,35 +40,9 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jetty</artifactId>
 		</dependency>
-    	<dependency>
-        	<groupId>org.springframework.hateoas</groupId>
-        	<artifactId>spring-hateoas</artifactId>
-    	</dependency>
-		<dependency>
-    		<groupId>org.springframework</groupId>
-    		<artifactId>spring-websocket</artifactId>
-		</dependency>
-		<dependency>
-    		<groupId>org.springframework</groupId>
-    		<artifactId>spring-messaging</artifactId>
-		</dependency>
-		<dependency>
-  			<groupId>org.springframework.security.oauth</groupId>
-  			<artifactId>spring-security-oauth2</artifactId>
-		</dependency>
-		<dependency>
-    		<groupId>io.springfox</groupId>
-    		<artifactId>springfox-swagger2</artifactId>
-    		<version>2.5.0</version>
-		</dependency>
-		<dependency>
-   			<groupId>io.springfox</groupId>
-   			<artifactId>springfox-swagger-ui</artifactId>
-   			<version>2.5.0</version>
-		</dependency>
 		<dependency>
         	<groupId>org.springframework.cloud</groupId>
-        	<artifactId>spring-cloud-starter-eureka</artifactId>
+        	<artifactId>spring-cloud-starter-eureka-server</artifactId>
     	</dependency>
   	</dependencies>
 
