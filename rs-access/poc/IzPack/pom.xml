@@ -35,9 +35,9 @@
 				</executions>
 				<dependencies>
 					<dependency>
-						<groupId>org.codehaus.izpack</groupId>
-						<artifactId>izpack-standalone-compiler</artifactId>
-						<version>${izpack.standalone.compiler.version}</version>
+						 <groupId>org.codehaus.izpack</groupId>
+    					<artifactId>izpack-maven-plugin</artifactId>
+    					<version>5.0.9</version>
 					</dependency>
 				</dependencies>
 			</plugin>

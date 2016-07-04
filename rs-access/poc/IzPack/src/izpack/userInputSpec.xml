@@ -1,10 +1,50 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <userInput>
-        <panel order="0">
-        	<field size="2" txt="REGARDS installation" type="title"/>
-        	<field type="text" variable="host_port">
-        		<description align="left" txt="Web serveur host port"/>
-        		<spec size="20" txt="Host port" set="8182"/>
+        <panel id="SelectComponentsPanel">
+        	<field size="2" txt="Select REGARDS components to install" type="title"/>
+        	<field type="check" variable="frontend.selected">
+        		<spec txt="Frontend" true="true" false="false" set="false"/>
+        	</field>
+        	<field type="check" variable="gateway.selected">
+        		<spec txt="Gateway" true="true" false="false" set="false"/>
+        	</field>
+        	<field type="check" variable="microservices.selected">
+        		<spec txt="Microservice(s)" true="true" false="false" set="false" />
+        	</field>
+        	<field type="check" variable="eureka.selected">
+        		<spec txt="Eureka Server" true="true" false="false" set="false"/>
+        	</field>
+        	<field type="check" variable="config.selected">
+        		<spec txt="Cloud Config Server" true="true" false="false" set="false"/>
         	</field>
         </panel>
+        
+        <panel id="EurekaPanel">
+        	<field size="2" txt="REGARDS Eureka Server configuration" type="title"/>
+        	<field type="text" variable="eureka.port">
+  				<spec txt="Eureka Web serveur port:" size="15" set="6666"/>
+			</field>
+        </panel>
+        <panel id="CloudConfigPanel">
+        	<field size="2" txt="REGARDS Cloud Config configuration" type="title"/>
+        	<field type="text" variable="cloud.config.port">
+  				<spec txt="Cloud config Web serveur port:" size="15" set="7777"/>
+			</field>
+        </panel>
+        <panel id="FrontendPanel">
+        	<field size="2" txt="REGARDS Frontend configuration" type="title"/>
+        	<field type="text" variable="frontend.port">
+  				<spec txt="Frontend Web serveur port:" size="15" set="8888"/>
+			</field>
+        </panel>
+        <panel id="GatewayPanel">
+        	<field size="2" txt="REGARDS Gateway configuration" type="title"/>
+        	<field type="text" variable="gateway.port">
+  				<spec txt="Gateway Web serveur port:" size="15" set="9999"/>
+			</field>
+        </panel>
+        <panel id="MicroservicesPanel">
+        	<field size="2" txt="REGARDS Microservice(s) configuration" type="title"/>
+        </panel>
+        
 </userInput>
