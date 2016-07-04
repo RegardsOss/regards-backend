@@ -1,1 +1,4 @@
-HOST_PORT=$host_port
+EUREKA_PORT=$eureka.port
+CONFIG_PORT=$cloud.config.port
+FRONT_PORT=$frontend.port
+GATEWAY_PORT=$gateway.port
