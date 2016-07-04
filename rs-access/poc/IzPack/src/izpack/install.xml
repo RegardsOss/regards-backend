@@ -11,6 +11,10 @@
     </authors>
     <url>https://github.com/regards</url>
 	<guiprefs resizable="no" width="600" height="450">
+		<laf name="looks">
+			<param name="variant" value="windows" />
+			<os family="windows" />
+		</laf>
 		<modifier key="useHeadingPanel" value="yes"/>
 		<modifier key="useButtonIcons" value="no"/>
   		<modifier key="useLabelIcons" value="no"/>
@@ -70,11 +74,6 @@
 	<resources>
 	   <res id="userInputSpec.xml" src="userInputSpec.xml" />
 	</resources>
-	
-	<condition id="eurekaselected" type="variable">
-        <name>eureka</name>
-        <value>true</value>
-    </condition>
 	
 	<panels>
 		<panel classname="HelloPanel" />
