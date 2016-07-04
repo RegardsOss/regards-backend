@@ -5,7 +5,9 @@
 
 	<name>helloword-ms</name>
 	<artifactId>helloword-ms</artifactId>
+	<groupId>fr.cs.regards</groupId>
 	<description>Microservice HellowWorld Starter</description>
+	<version>0.0.1</version>
 	
 	<parent>
     	<groupId>org.springframework.boot</groupId>
