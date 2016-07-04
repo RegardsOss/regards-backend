@@ -11,10 +11,18 @@
     </authors>
     <url>https://github.com/regards</url>
 	<guiprefs resizable="no" width="600" height="450">
-		<laf name="looks">
-			<param name="variant" value="windows" />
-			<os family="windows" />
-		</laf>
+		<modifier key="useHeadingPanel" value="yes"/>
+		<modifier key="useButtonIcons" value="no"/>
+  		<modifier key="useLabelIcons" value="no"/>
+  		<modifier key="labelGap" value="2"/>
+  		<modifier key="layoutAnchor" value="NORTHWEST"/>
+  		<modifier key="useHeadingPanel" value="yes"/>
+  		<modifier key="headingImageOnLeft" value="yes"/>
+  		<modifier key="headingLineCount" value="1"/>
+  		<modifier key="headingFontSize" value="1.5"/>
+  		<modifier key="headingBackgroundColor" value="0x00ffffff"/>
+  		<modifier key="headingPanelCounter" value="progressbar"/>
+  		<modifier key="headingPanelCounterPos" value="inNavigationPanel"/>
 	</guiprefs>
 	<locale>
 		<langpack iso3="eng" />
