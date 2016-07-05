@@ -79,11 +79,13 @@
 		<panel classname="HelloPanel" />
 		<panel classname="TargetPanel" />
 		<panel classname="UserInputPanel" id="SelectComponentsPanel" />
+		<panel classname="UserInputPanel" id="DataBasePanel"/>
 		<panel classname="UserInputPanel" id="EurekaPanel" condition="isEurekaSelected"/>
 		<panel classname="UserInputPanel" id="CloudConfigPanel" condition="isConfigSelected"/>
 		<panel classname="UserInputPanel" id="FrontendPanel" condition="isFrontendSelected"/>
 		<panel classname="UserInputPanel" id="GatewayPanel" condition="isGatewaySelected"/>
 		<panel classname="UserInputPanel" id="MicroservicesPanel" condition="isMicroservicesSelected"/>
+		<panel classname="UserInputPanel" id="ArchivalStoragePanel"/>
 		<panel classname="SummaryPanel" />
 	    <panel classname="InstallPanel" />
 		<panel classname="SimpleFinishPanel" />
@@ -96,6 +98,7 @@
 	      	<fileset dir="config/" targetdir="$INSTALL_PATH/REGARDS">
 	        	<include name="**" />
 	      	</fileset>
+	      	
 	      	<fileset dir="dependencies/" targetdir="$INSTALL_PATH/REGARDS/services">
 	        	<include name="**" />
 	      	</fileset>
