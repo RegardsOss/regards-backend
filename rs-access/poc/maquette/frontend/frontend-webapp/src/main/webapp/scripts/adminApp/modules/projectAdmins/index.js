@@ -12,6 +12,6 @@
  */
 
 import ProjectAdminsContainer from './containers/ProjectAdminsContainer'
-import UserFormComponent from './components/UserFormComponent'
+import UserFormContainer from './containers/UserFormContainer'
 
-export { ProjectAdminsContainer, UserFormComponent }
+export { ProjectAdminsContainer, UserFormContainer }

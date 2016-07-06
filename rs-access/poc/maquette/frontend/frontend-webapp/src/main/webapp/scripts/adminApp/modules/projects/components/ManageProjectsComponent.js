@@ -12,19 +12,15 @@ let ManageProjectsComponent = ({
   styles
 }) => {
     return (
-      <div className={styles.row}>
+      <div>
         <span>Manage projects</span>
-        <button
-          className={styles.button + " " + styles.success}
-          onClick={onAddClick} >
-          <i className={icons['fi-plus']} title='Add new project'></i>
+        <button title='Add new project' onClick={onAddClick}>
+          <i className={icons['fi-plus']} ></i>
         </button>
-        <button
-          className={styles.button + " " + styles.alert}
-          onClick={() => onDeleteClick(selectedProjectId)} >
-          <i className={icons['fi-trash']} title='Delete selected project' ></i>
+        <button  title='Delete selected project' onClick={() => onDeleteClick(selectedProjectId)}>
+          <i className={icons['fi-trash']}></i>
         </button>
-        <br />
+        <br/>
         <RegardsSelect list={projects} label={'Select a project'} onSelect={onSelect}/>
       </div>
     )

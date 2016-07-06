@@ -5,11 +5,10 @@ import { getThemeStyles } from 'common/theme/ThemeUtils'
 import classnames from 'classnames'
 import { map } from 'lodash'
 // Containers
-import { ProjectAdminsContainer } from 'adminApp/modules/projectAdmins'
+import { ProjectAdminsContainer, UserFormContainer } from 'adminApp/modules/projectAdmins'
 // Components
 import ManageProjectsComponent from '../components/ManageProjectsComponent'
 import ProjectConfigurationComponent from '../components/ProjectConfigurationComponent'
-import { UserFormComponent } from 'adminApp/modules/projectAdmins'
 // Actions
 import {
   addProject,
@@ -36,12 +35,14 @@ class ProjectsContainer extends React.Component {
 
   render () {
     const className = classnames(
-      this.props.styles.box,
-      this.props.styles.columns,
-      this.props.styles['small-4']
+      this.props.styles['columns'],
+      this.props.styles['small-4'],
+      this.props.styles['callout'],
+      this.props.styles['custom-callout']
     )
     return (
-      <div className={className}>
+      <fieldset className={className}>
+        <legend>Projects</legend>
         <ProjectConfigurationComponent
           styles={this.props.styles}
           show={this.props.projectConfigurationIsShown}
@@ -57,7 +58,7 @@ class ProjectsContainer extends React.Component {
           onDeleteClick={this.props.deleteProject}
           styles={this.props.styles} />
         <ProjectAdminsContainer />
-      </div>
+      </fieldset>
     )
   }
 }

@@ -1,24 +1,29 @@
 import React from 'react'
-
+import { connect } from 'react-redux'
 import MenuComponent from './components/MenuComponent'
 import Home from '../home/Home'
+// Styles
+import { getThemeStyles } from 'common/theme/ThemeUtils'
+import classnames from 'classnames'
 
 class Layout extends React.Component {
   render(){
     // Add location to menu props in order to update view if location
     // change. This enable the activeClassName to update in the react
     // router links.
-    const { styles, project, location, onLogout } = this.props;
+    const { theme, project, location, onLogout } = this.props;
+    const styles = getThemeStyles(theme, 'adminApp/styles')
+    const layoutClassName = classnames(styles['layout'], styles['row'])
+    const contentClassName = classnames(styles['content'], styles['small-12'], styles['large-11'], styles['columns'])
+
     return (
-      <div className={styles.layout}>
-        <div className={styles.navigation}>
-          <MenuComponent
-            styles={styles}
-            onLogout={onLogout}
-            project={project}
-            location={location}/>
-        </div>
-        <div className={styles.content}>
+      <div className={layoutClassName}>
+        <MenuComponent
+          theme={theme}
+          onLogout={onLogout}
+          project={project}
+          location={location}/>
+        <div className={contentClassName}>
           {this.props.content || <Home />}
         </div>
       </div>
@@ -27,7 +32,7 @@ class Layout extends React.Component {
 }
 
 Layout.propsTypes = {
-  styles: React.PropTypes.object.isRequired,
+  theme: React.PropTypes.object.isRequired,
   location: React.PropTypes.object.isRequired,
   content: React.PropTypes.object.isRequired,
   project: React.PropTypes.string.isRequired,
@@ -35,5 +40,8 @@ Layout.propsTypes = {
   onLogout: React.PropTypes.func.isRequired
 }
 
-
-export default Layout
+// Add theme from store to the component props
+const mapStateToProps = (state) => ({
+  theme: state.common.theme
+})
+export default connect(mapStateToProps)(Layout)

@@ -101,7 +101,9 @@ module.exports = {
         }
       },
       // Sass files compilation to css with css modules enable
-      {test: /\.scss$/, exclude: [/node_modules/,/scripts/,/stylesheets\/default/,/stylesheets\/vendors/],
+      {
+        test: /\.scss$/,
+        exclude: [/node_modules/,/scripts/,/stylesheets\/default/,/stylesheets\/vendors/],
         loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
       },
       {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"},

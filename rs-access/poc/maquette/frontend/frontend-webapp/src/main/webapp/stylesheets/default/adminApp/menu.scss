@@ -1,11 +1,26 @@
+.menuContainer {
+  background-color: $secondcolor;
+}
+
+.menu {
+  padding: 0
+}
+
+.menu  i {
+  font-size: 1.879rem;
+}
 
 .menuelement {
   color: $text-color;
   font-size: 1.2em;
-  margin: 2px 20px;
+  margin: 0;
   text-decoration: none;
   cursor: pointer;
   padding: 1.25rem;
+}
+
+.menuelement span {
+  font-size: initial;
 }
 
 .selected {
@@ -21,12 +36,21 @@
 
 .menuelement:hover {
   background-color: $info-color;
+  color: white;
   //text-decoration: underline;
 }
 
-.navigation {
-  background-color: $secondcolor;
-  color: $text-color;
-  margin-bottom: 20px;
-  line-height: 50px;
+.menuelement:focus {
+  color: white;
+}
+
+fieldset legend {
+  font-weight: bold;
+  font-size: medium;
+  width: 250px;
+  background-color: #5F80CA;
+  color: White;
+  border-radius: 20px;
+  border: 1px solid white;
+  text-align: center;
 }

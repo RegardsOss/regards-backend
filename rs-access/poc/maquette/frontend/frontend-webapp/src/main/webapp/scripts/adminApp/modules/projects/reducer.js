@@ -27,14 +27,21 @@ export default (state = {
     case PROJECTS_FAILURE:
       return { ...state, isFetching: false }
     case ADD_PROJECT:
-      return { ...state,
-        items: state.items.concat({
-          id: action.id,
-          name: action.name,
-          selected: false,
-          admins: []
-        })
+      let newState = Object.assign({}, state)
+      newState.items[action.id] = {
+        name: action.name,
+        links: []
       }
+      newState.ids.push(action.id)
+      return newState
+      // return { ...state,
+      //   items: state.items.concat({
+      //     id: action.id,
+      //     name: action.name,
+      //     selected: false,
+      //     admins: []
+      //   })
+      // }
     case DELETE_PROJECT:
       return deleteEntityReducer(state, action)
     default:

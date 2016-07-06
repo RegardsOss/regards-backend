@@ -14,7 +14,7 @@ class MenuButtonComponent extends React.Component {
           className={styles.menuelement +" "+ styles.unselected}
           activeClassName={styles.selected}>
           <i className={icon} title={label}></i>
-          {label}
+          <span>{label}</span>
         </Link>
       )
     else
@@ -23,7 +23,7 @@ class MenuButtonComponent extends React.Component {
           to={to}
           className={styles.menuelement +" "+ styles.unselected}>
           <i className={icon} title={label}></i>
-          {label}
+          <span>{label}</span>
         </span>
       )
   }

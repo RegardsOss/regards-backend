@@ -18,21 +18,19 @@ class ProjectConfigurationComponent extends Component {
 
     if(show)
       return (
-        <div className={styles.row} >
-          <form onSubmit={handleSubmit}>
-            <div>
-              <input type="text" placeholder="Project Name" {...projectName}/>
-            </div>
-            <div>
-              <button disabled={submitting}>
-                {submitting ? <i/> : <i/>} Save
-              </button>
-              <button type="button" disabled={submitting} onClick={onCancelClick}>
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <input type="text" placeholder="Project Name" {...projectName}/>
+          </div>
+          <div>
+            <button className={styles['button'] + ' ' + styles['success']} disabled={submitting}>
+              {submitting ? 'Submitting...' : ''} Save
+            </button>
+            <button type="button" className={styles['button'] + ' ' + styles['alert']} disabled={submitting} onClick={onCancelClick}>
+              Cancel
+            </button>
+          </div>
+        </form>
       );
     else
       return null

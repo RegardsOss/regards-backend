@@ -1,9 +1,9 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux';
-import { getThemeStyles } from 'common/theme/ThemeUtils'
+// Containers
+import UserFormContainer from './UserFormContainer'
 // Components
 import ProjectAdminsComponent from '../components/ProjectAdminsComponent'
-import UserFormComponent from '../components/UserFormComponent'
 // Actions
 import {
   fetchProjectAdmins,
@@ -22,6 +22,10 @@ import {
   getProjectAdminsByProject,
   getSelectedProjectAdminId,
   getProjectAdminById } from 'adminApp/reducer'
+// Styles
+import classnames from 'classnames'
+import icons from 'stylesheets/foundation-icons/foundation-icons.scss'
+import { getThemeStyles } from 'common/theme/ThemeUtils'
 
 class ProjectAdminsContainer extends React.Component {
 
@@ -29,8 +33,11 @@ class ProjectAdminsContainer extends React.Component {
     const oldProject = this.props.project
     const nextProject = nextProps.project
     if(nextProject && nextProject != oldProject) {
-      const href = nextProject.links.find(l => l.rel === "users").href;
-      this.props.fetchProjectAdminsBy(href)
+      const link = nextProject.links.find(l => l.rel === "users")
+      if(link) {
+        const href = link.href;
+        this.props.fetchProjectAdminsBy(href)
+      }
     }
   }
 
@@ -44,7 +51,7 @@ class ProjectAdminsContainer extends React.Component {
           onConfigureClick={this.props.showProjectAdminConfiguration}
           onDeleteClick={this.props.handleDelete}
           styles={this.props.styles} />
-        <UserFormComponent
+        <UserFormContainer
           projectAdmin={this.props.activeProjectAdmin}
           show={this.props.projectAdminConfigurationIsShown}
           onSubmit={this.props.onUserFormSubmit}

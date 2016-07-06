@@ -9,6 +9,12 @@
 import React, { Component, PropTypes } from 'react'
 import { reduxForm } from 'redux-form'
 export const fields = [ 'id', 'projectId', 'username', 'password', 'passwordConfirm']
+import icons from 'stylesheets/foundation-icons/foundation-icons.scss'
+// Selectors
+import {
+  getSelectedProjectAdminId,
+  getProjectAdminById,
+  getSelectedProjectId } from 'adminApp/reducer'
 
 const validate = values => {
   const errors = {}
@@ -48,17 +54,18 @@ class AsynchronousBlurValidationForm extends Component {
       handleSubmit,
       submitting,
       show,
-      onCancelClick
+      onCancelClick,
+      styles
      } = this.props
 
     if(show)
       return (<form onSubmit={handleSubmit}>
           <div>
             <div>
-              <input type="text" placeholder="Id" {...id}/>
+              <input type="hidden" placeholder="Id" {...id}/>
             </div>
             <div>
-              <input type="text" placeholder="Project Id" {...projectId}/>
+              <input type="hidden" placeholder="Project Id" {...projectId}/>
             </div>
             <label>Username</label>
             <div>
@@ -82,10 +89,18 @@ class AsynchronousBlurValidationForm extends Component {
             {passwordConfirm.touched && passwordConfirm.error && <div>{passwordConfirm.error}</div>}
           </div>
           <div>
-            <button type="submit" disabled={submitting}>
-              {submitting ? <i/> : <i/>} Sign Up
+            <button
+              type="submit"
+              className={styles['button'] + ' ' + styles['success']}
+              disabled={submitting}>
+              <i className={icons['fi-save']}></i>
+              {submitting ? 'Submitting...' : ''} Save
             </button>
-            <button type="button" disabled={submitting} onClick={onCancelClick}>
+            <button
+              type="button"
+              className={styles['button'] + ' ' + styles['alert']}
+              disabled={submitting} onClick={onCancelClick}>
+              <i className={icons['fi-prohibited']}></i>
               Cancel
             </button>
           </div>
@@ -103,6 +118,19 @@ AsynchronousBlurValidationForm.propTypes = {
   submitting: PropTypes.bool.isRequired
 }
 
+const mapStateToProps = (state) => {
+  const selectedProjectAdminId = getSelectedProjectAdminId(state)
+  const selectedProjectAdmin = getProjectAdminById(state, selectedProjectAdminId)
+  const selectedProjectId = getSelectedProjectId(state)
+  return {
+    initialValues: {
+      id: selectedProjectAdminId,
+      username: selectedProjectAdmin ? selectedProjectAdmin.name : '',
+      projectId: selectedProjectId
+    }
+  }
+  // initialValues: getProjectAdminById(state, getSelectedProjectAdminId(state))
+}
 
 export default reduxForm({
   form: 'asynchronousBlurValidation',
@@ -110,8 +138,4 @@ export default reduxForm({
   asyncValidate,
   asyncBlurFields: [ 'username' ],
   validate
-},
-state => ({
-  username: 'titi',
-  password: 'salut'
-}))(AsynchronousBlurValidationForm)
+}, mapStateToProps)(AsynchronousBlurValidationForm)

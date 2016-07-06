@@ -26,19 +26,27 @@ export default (state = {
     case PROJECT_ADMIN_FAILURE:
       return { ...state, isFetching: false }
     case UPDATE_OR_CREATE_PROJECT_ADMIN:
-      let newState = state.concat() // Make a shallow copy
-      let selectedProjectAdmin = newState.find(pa => pa.id === action.id)
-      let projectList = []
-      if(selectedProjectAdmin) {
-        newState = newState.filter(pa => pa.id !== action.id)
-        projectList = selectedProjectAdmin.projects
-      }
-      newState = newState.concat({
+      let newState = Object.assign({}, state)
+
+      newState.items[action.id] = {
         id: action.id,
         name: action.name,
-        projects: uniqWith(projectList.concat(action.projects), isEqual)
+        projects: action.projects
         // projects: arrayUnique(projectList.concat(action.projects))
-      })
+      }
+      // let selectedProjectAdmin = newState.find(pa => pa.id === action.id)
+      // let projectList = []
+      // if(selectedProjectAdmin) {
+      //   newState = newState.filter(pa => pa.id !== action.id)
+      //   projectList = selectedProjectAdmin.projects
+      // }
+      //
+      // newState = newState.concat({
+      //   id: action.id,
+      //   name: action.name,
+      //   projects: uniqWith(projectList.concat(action.projects), isEqual)
+      //   // projects: arrayUnique(projectList.concat(action.projects))
+      // })
       return newState
     case DELETE_PROJECT_ADMIN:
       return deleteEntityReducer(state, action)
@@ -48,7 +56,7 @@ export default (state = {
 }
 
 // Selectors
-export const getProjectAdminById = (state, id) => state.items.id
+export const getProjectAdminById = (state, id) => state.items[id]
 
 export const getProjectAdminsByProject = (state, project) => values(state.items) // TODO
   // (!project) ? [] : state.items.filter(pa => pa.projects.includes(project.id))
