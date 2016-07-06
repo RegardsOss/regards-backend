@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<installation version="1.0">
+	<info>
+		<appname>REGARDS</appname>
+		<appversion>0.0.1</appversion>
+		<uninstaller write="no" />
+		<authors>
+        	<author name="CS Systèmes d'information" email="regards@c-s.fr"/>
+    	</authors>
+    	<url>https://github.com/regards</url>
+		<javaversion>1.8</javaversion>
+	</info>
+	<guiprefs resizable="no" width="600" height="450">
+		<laf name="looks">
+			<param name="variant" value="windows" />
+			<os family="windows" />
+		</laf>
+		<modifier key="useHeadingPanel" value="yes"/>
+		<modifier key="useButtonIcons" value="no"/>
+  		<modifier key="useLabelIcons" value="no"/>
+  		<modifier key="labelGap" value="2"/>
+  		<modifier key="layoutAnchor" value="NORTHWEST"/>
+  		<modifier key="useHeadingPanel" value="yes"/>
+  		<modifier key="headingImageOnLeft" value="yes"/>
+  		<modifier key="headingLineCount" value="1"/>
+  		<modifier key="headingFontSize" value="1.5"/>
+  		<modifier key="headingBackgroundColor" value="0x00ffffff"/>
+  		<modifier key="headingPanelCounter" value="progressbar"/>
+  		<modifier key="headingPanelCounterPos" value="inNavigationPanel"/>
+	</guiprefs>
+	<locale>
+		<langpack iso3="eng" />
+	</locale>
+	
+	<dynamicVariables>
+    	<variable name="eureka.selected" value="false"/>
+    	<varaible name="eureka.port" value="6666" />
+    	<variable name="config.selected" value="false"/>
+    	<variable name="cloud.config.port" value="7777"/>
+    	<variable name="frontend.selected" value="false"/>
+    	<variable name="frontend.port" value="8888"/>
+    	<variable name="gateway.selected" value="false"/>
+    	<variable name="gateway.port" value="9999"/>
+    	<variable name="microservices.selected" value="false"/>
+	</dynamicVariables>
+	
+	<conditions>
+  		<condition type="variable" id="isEurekaSelected">
+    		<name>eureka.selected</name>
+    		<value>true</value>
+  		</condition>
+  		<condition type="variable" id="isRemoteEureka">
+    		<name>eureka.host</name>
+    		<value>remote</value>
+  		</condition>
+  		<condition type="variable" id="isConfigSelected">
+    		<name>config.selected</name>
+    		<value>true</value>
+  		</condition>
+  		<condition type="variable" id="isFrontendSelected">
+    		<name>frontend.selected</name>
+    		<value>true</value>
+  		</condition>
+  		<condition type="variable" id="isGatewaySelected">
+    		<name>gateway.selected</name>
+    		<value>true</value>
+  		</condition>
+  		<condition type="variable" id="isMicroservicesSelected">
+    		<name>microservices.selected</name>
+    		<value>true</value>
+  		</condition>
+	</conditions>
+
+	<resources>
+	   <res id="userInputSpec.xml" src="userInputSpec.xml" />
+	</resources>
+	
+	<panels>
+		<panel classname="HelloPanel" />
+		<panel classname="TargetPanel" />
+		<panel classname="UserInputPanel" id="SelectComponentsPanel" />
+		<panel classname="UserInputPanel" id="DataBasePanel"/>
+		<panel classname="UserInputPanel" id="EurekaPanel" condition="isEurekaSelected"/>
+		<panel classname="UserInputPanel" id="CloudConfigPanel" condition="isConfigSelected"/>
+		<panel classname="UserInputPanel" id="FrontendPanel" condition="isFrontendSelected"/>
+		<panel classname="UserInputPanel" id="GatewayPanel" condition="isGatewaySelected"/>
+		<panel classname="UserInputPanel" id="MicroservicesPanel" condition="isMicroservicesSelected"/>
+		<panel classname="UserInputPanel" id="ArchivalStoragePanel"/>
+		<panel classname="SummaryPanel" />
+	    <panel classname="InstallPanel" />
+		<panel classname="SimpleFinishPanel" />
+	</panels>
+	<packs>
+		<pack name="main" required="yes">
+			<description>Test Installation</description>
+			
+			<!-- The runnable application should be in this directory -->
+	      	<fileset dir="config/" targetdir="$INSTALL_PATH/REGARDS">
+	        	<include name="**" />
+	      	</fileset>
+	      	
+	      	<fileset dir="dependencies/" targetdir="$INSTALL_PATH/REGARDS/services">
+	        	<include name="**" />
+	      	</fileset>
+	
+	      <!--
+	       This file contains placeholder variables starting with $ that Izpack substitutes
+	       with values that the user enters during installation in the UserInputPanel
+	        -->
+	      <parsable targetfile="$INSTALL_PATH/REGARDS/config.xml" />
+		</pack>
+	</packs>
+</installation>

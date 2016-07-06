@@ -1,0 +1,112 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>fr.cs.regards</groupId>
+	<artifactId>izpack-test</artifactId>
+	<name>Test IzPack and maven</name>
+	<version>0.0.1</version>
+	<packaging>pom</packaging>
+	
+	<properties>
+		<staging.dir>${project.build.directory}/staging</staging.dir>
+		<izpack.standalone.compiler.version>4.3.5</izpack.standalone.compiler.version>
+	</properties>
+	
+	<build>
+		<plugins>
+		<!-- Used to configure IzPack installer -->
+			<plugin>
+				<groupId>org.codehaus.izpack</groupId>
+				<artifactId>izpack-maven-plugin</artifactId>
+				<version>1.0-alpha-5</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>izpack</goal>
+						</goals>
+						<configuration>
+							<izpackBasedir>${staging.dir}</izpackBasedir>
+							<installerFile>${project.build.directory}/regards-install.jar</installerFile>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						 <groupId>org.codehaus.izpack</groupId>
+    					<artifactId>izpack-maven-plugin</artifactId>
+    					<version>5.0.9</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.4.2</version>
+				<executions>
+					<execution>
+						<id>copy-izpack-resources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<encoding>UTF-8</encoding>
+							<outputDirectory>${staging.dir}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/izpack</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-config</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<encoding>UTF-8</encoding>
+							<outputDirectory>${staging.dir}/config</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+        		<artifactId>maven-dependency-plugin</artifactId>
+        		<version>2.10</version>
+				<executions>
+					<execution>
+            		<!-- copy *application* jars to izpack staging lib -->
+            			<id>copy-product-dependencies</id>
+            			<phase>prepare-package</phase>
+            			<goals>
+              				<goal>copy-dependencies</goal>
+            			</goals>
+            			<configuration>
+            				<includeGroupIds>fr.cs.regards</includeGroupIds>
+              				<outputDirectory>${staging.dir}/dependencies</outputDirectory>
+            			</configuration>
+          			</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	
+	<dependencies>
+		<dependency>
+			<artifactId>helloword-ms</artifactId>
+			<groupId>fr.cs.regards</groupId>
+			<version>0.0.1</version>
+		</dependency>
+	</dependencies>
+	
+</project>
