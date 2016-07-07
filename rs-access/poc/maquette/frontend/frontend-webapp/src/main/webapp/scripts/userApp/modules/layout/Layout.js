@@ -39,8 +39,8 @@ Layout.propTypes = {
 // Add theme from store to the component props
 const mapStateToProps = (state) => {
   return {
-    theme: state.theme,
-    plugins: state.plugins
+    theme: state.common.theme,
+    plugins: state.common.plugins
   }
 }
 const mapDispatchToProps = (dispatch) => {

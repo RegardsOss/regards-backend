@@ -24,9 +24,11 @@ class ProjectConfigurationComponent extends Component {
           </div>
           <div>
             <button className={styles['button'] + ' ' + styles['success']} disabled={submitting}>
+              <i className={icons['fi-save']}></i>
               {submitting ? 'Submitting...' : ''} Save
             </button>
             <button type="button" className={styles['button'] + ' ' + styles['alert']} disabled={submitting} onClick={onCancelClick}>
+              <i className={icons['fi-prohibited']}></i>
               Cancel
             </button>
           </div>
