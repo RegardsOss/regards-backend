@@ -2,14 +2,13 @@ import { expect } from 'chai' // You can use any testing library
 import reducers from '../../../scripts/portalApp/modules/projects/reducers/ProjectsReducers';
 import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
-    FAILED_PROJECTS, fetchProjects,
-    requestProjects, receiveProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions';
+    FAILED_PROJECTS, fetchProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions';
 
 // Ce fichier permet de tester les reducers liés aux projets
 describe('Testing Projects reducers', () => {
 
   it('Should return the initial state', () => {
-    expect(reducers.projects(undefined, {})).to.eql({
+    expect(reducers(undefined, {})).to.eql({
         isFetching : false,
         items: [],
         lastUpdate: ''
@@ -23,7 +22,9 @@ describe('Testing Projects reducers', () => {
         lastUpdate: ''
     };
 
-    const action = requestProjects();
+    const action = {
+      type: REQUEST_PROJECTS
+    }
 
     const expectedResult = {
         isFetching : true,
@@ -31,7 +32,7 @@ describe('Testing Projects reducers', () => {
         lastUpdate: ''
     };
 
-    const result = reducers.projects(initstate, action);
+    const result = reducers(initstate, action);
     expect(result).to.eql(expectedResult);
   });
 
@@ -42,15 +43,27 @@ describe('Testing Projects reducers', () => {
         lastUpdate: ''
     };
 
-    const action = receiveProjects([{"name":"cdpp"},{"name":"ssalto"}]);
+    const action = {
+      type: RECEIVE_PROJECTS,
+      payload: [
+        {"name":"cdpp"},
+        {"name":"ssalto"}
+      ],
+      meta: {
+        receivedAt: Date.now()
+      }
+    }
 
     const expectedResult = {
-        isFetching : false,
-        items: [{"name":"cdpp"},{"name":"ssalto"}],
-        lastUpdate: ''
+      isFetching : false,
+      items: [
+        {"name":"cdpp"},
+        {"name":"ssalto"}
+      ],
+      lastUpdate: ''
     };
 
-    const result = reducers.projects(initstate, action);
+    const result = reducers(initstate, action);
     expectedResult.lastUpdate = result.lastUpdate;
     expect(result).to.eql(expectedResult);
   });
