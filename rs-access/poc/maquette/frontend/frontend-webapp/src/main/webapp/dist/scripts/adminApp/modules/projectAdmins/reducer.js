@@ -27,6 +27,19 @@ exports.default = (state = {
                 name: action.name,
                 projects: action.projects
             };
+            // let selectedProjectAdmin = newState.find(pa => pa.id === action.id)
+            // let projectList = []
+            // if(selectedProjectAdmin) {
+            //   newState = newState.filter(pa => pa.id !== action.id)
+            //   projectList = selectedProjectAdmin.projects
+            // }
+            //
+            // newState = newState.concat({
+            //   id: action.id,
+            //   name: action.name,
+            //   projects: uniqWith(projectList.concat(action.projects), isEqual)
+            //   // projects: arrayUnique(projectList.concat(action.projects))
+            // })
             return newState;
         case actions_1.DELETE_PROJECT_ADMIN:
             return reducers_1.deleteEntityReducer(state, action);
@@ -34,6 +47,8 @@ exports.default = (state = {
             return state;
     }
 };
+// Selectors
 exports.getProjectAdminById = (state, id) => state.items[id];
-exports.getProjectAdminsByProject = (state, project) => lodash_1.values(state.items);
+exports.getProjectAdminsByProject = (state, project) => lodash_1.values(state.items); // TODO
+// (!project) ? [] : state.items.filter(pa => pa.projects.includes(project.id))
 //# sourceMappingURL=reducer.js.map

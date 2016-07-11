@@ -1,4 +1,7 @@
 "use strict";
+/**
+ * Combine all reducers module to a single root reducer.
+ */
 const redux_1 = require('redux');
 const ThemeReducers_1 = require('./theme/reducers/ThemeReducers');
 const PluginReducers_1 = require('./plugins/PluginReducers');

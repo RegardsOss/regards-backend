@@ -1,18 +1,21 @@
 "use strict";
-const redux_api_middleware_1 = require('redux-api-middleware');
+var { CALL_API, getJSON } = require('redux-api-middleware');
 const schemas_1 = require('../../../common/api/schemas');
 const normalizr_1 = require('normalizr');
 const PROJECTS_API = 'http://localhost:8080/api/projects';
 exports.PROJECTS_REQUEST = 'PROJECTS_REQUEST';
 exports.PROJECTS_SUCESS = 'PROJECTS_SUCESS';
 exports.PROJECTS_FAILURE = 'PROJECTS_FAILURE';
+// Fetches all projects
+// Relies on the custom API middleware defined in redux-api-middleware
+// Normalize the json response
 exports.fetchProjects = () => ({
-    [redux_api_middleware_1.CALL_API]: {
+    [CALL_API]: {
         types: [
             exports.PROJECTS_REQUEST,
             {
                 type: exports.PROJECTS_SUCESS,
-                payload: (action, state, res) => redux_api_middleware_1.getJSON(res).then((json) => normalizr_1.normalize(json, schemas_1.default.PROJECT_ARRAY))
+                payload: (action, state, res) => getJSON(res).then((json) => normalizr_1.normalize(json, schemas_1.default.PROJECT_ARRAY))
             },
             exports.PROJECTS_FAILURE
         ],
@@ -20,12 +23,13 @@ exports.fetchProjects = () => ({
         method: 'GET'
     }
 });
+// Add a project to the list
 exports.ADD_PROJECT = 'ADD_PROJECT';
 function addProject(id, name) {
     return {
         type: exports.ADD_PROJECT,
-        id,
-        name
+        id: id,
+        name: name
     };
 }
 exports.addProject = addProject;
@@ -33,7 +37,7 @@ exports.DELETE_PROJECT = 'DELETE_PROJECT';
 function deleteProject(id) {
     return {
         type: exports.DELETE_PROJECT,
-        id
+        id: id
     };
 }
 exports.deleteProject = deleteProject;

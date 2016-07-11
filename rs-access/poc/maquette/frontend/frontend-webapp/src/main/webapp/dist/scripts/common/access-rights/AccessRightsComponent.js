@@ -1,7 +1,16 @@
 "use strict";
 const React = require("react");
 const AccessRightsActions_1 = require("./AccessRightsActions");
+/**
+* Root class for all RegardsView in each modules.
+* This class handle the accessRights to the view modules.
+*/
 class AccessRightsComponent extends React.Component {
+    /**
+    * Constructor.
+    * By default the access rights to the view is false.
+    * Define dependencies for access rights management.
+    */
     constructor() {
         super();
         this.unsubscribeViewAccessRights = null;
@@ -10,9 +19,23 @@ class AccessRightsComponent extends React.Component {
         };
         this.checkViewAccessRights = this.checkViewAccessRights.bind(this);
     }
+    /**
+    * Method to get the REST dependencies of the view.
+    * If all the dependencies are authorized, then the view can be displayed.
+    * return null for no dependencies or an object :
+    * {
+    *  GET : ["dependence"],
+    *  POST : ["dependence"],
+    *  PUT : ["dependence"],
+    *  DELETE : ["dependence"],
+    * }
+    */
     getDependencies() {
         return null;
     }
+    /**
+    * Method to check if the view is displayable
+    */
     componentWillMount() {
         const { store } = this.context;
         if (this.getDependencies() === null) {
@@ -35,12 +58,14 @@ class AccessRightsComponent extends React.Component {
         const view = store.getState().views.find((curent) => {
             return curent.name === this.constructor.name;
         });
+        // If not, check access from server
         if (view) {
             if (view.access === true) {
                 console.log("Access granted to view : " + this.constructor.name);
             }
             else {
                 console.log("Access denied to view : " + this.constructor.name);
+                // Cancel render method
                 this.render = () => { return null; };
             }
             this.unsubscribeViewAccessRights();

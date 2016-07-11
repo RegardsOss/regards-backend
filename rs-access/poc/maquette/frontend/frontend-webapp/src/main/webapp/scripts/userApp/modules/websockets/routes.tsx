@@ -1,10 +1,12 @@
 import WebSockets from './WebSockets'
 
+declare var require: any;
+
 export default {
   path:"time",
 
-  getComponent(nextState, cb) {
-    require.ensure([], (require) => {
+  getComponent(nextState:any, cb:any) {
+    require.ensure([], (require:any) => {
       cb(null, {
         content: WebSockets
       })

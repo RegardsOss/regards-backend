@@ -10,7 +10,7 @@ import portalApp from '../../portalApp/reducers'
 import common from '../reducers'
 import {reducer as formReducer} from 'redux-form';
 
-export default function configureStore(preloadedState:any) {
+export default function configureStore(preloadedState:any):any {
   // Root reducer
   const rootReducer = combineReducers({
     userApp,

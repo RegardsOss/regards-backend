@@ -1,6 +1,6 @@
-import React from 'react'
+import * as React from 'react'
 
-class Time extends React.Component {
+class Time extends React.Component<any, any> {
   constructor(){
     super()
   }

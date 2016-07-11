@@ -8,6 +8,7 @@ exports.default = (store) => (next) => (action) => {
     return next(action);
 };
 const getAuthorization = (state) => {
+    // Init the authorization bearer of the fetch request
     let authentication = state.common.authentication;
     let authorization = "Basic";
     if (authentication && authentication.user && authentication.user.access_token) {

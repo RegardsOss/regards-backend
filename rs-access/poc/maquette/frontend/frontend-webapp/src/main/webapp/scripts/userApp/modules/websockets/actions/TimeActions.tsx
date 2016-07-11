@@ -1,4 +1,4 @@
-import fetch from 'isomorphic-fetch'
+import * as fetch from 'isomorphic-fetch'
 
 // Backend api adress
 export const START_TIME_API='http://localhost:8080/api/time/start'
@@ -12,7 +12,7 @@ export function receiveStartTime() {
 }
 
 // Check start timer response status
-function checkStatus(response) {
+function checkStatus(response:any) {
   if (response.status === 200 ) {
     return response
   } else {
@@ -24,7 +24,7 @@ function checkStatus(response) {
 // Rest request to start timer on server.
 // The timer send time evey seconds by websocket
 export function startTime() {
-  return function (dispatch, getState) {
+  return function (dispatch:any, getState:any) {
 
     // Init the authorization bearer of the fetch request
     let authorization = "Basic"

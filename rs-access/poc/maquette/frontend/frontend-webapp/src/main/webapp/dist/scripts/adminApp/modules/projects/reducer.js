@@ -28,12 +28,21 @@ exports.default = (state = {
             };
             newState.ids.push(action.id);
             return newState;
+        // return { ...state,
+        //   items: state.items.concat({
+        //     id: action.id,
+        //     name: action.name,
+        //     selected: false,
+        //     admins: []
+        //   })
+        // }
         case actions_1.DELETE_PROJECT:
             return reducers_1.deleteEntityReducer(state, action);
         default:
             return state;
     }
 };
+// Selectors
 exports.getProjects = (state) => state;
 exports.getProjectById = (state, id) => state.items[id];
 //# sourceMappingURL=reducer.js.map

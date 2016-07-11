@@ -1,9 +1,11 @@
-import React from 'react'
-import AccessRightsComponent from 'common/access-rights/AccessRightsComponent'
+import * as React from 'react'
+import AccessRightsComponent from '../../../common/access-rights/AccessRightsComponent'
 
-class Test extends AccessRightsComponent {
+import { Dependencies } from '../../../common/access-rights/AccessRightsViewType'
 
-  getDependencies(){
+class Test extends AccessRightsComponent<any, any> {
+
+  getDependencies():Dependencies{
     return {
       'GET' : ["dependencies"]
     }
@@ -14,4 +16,5 @@ class Test extends AccessRightsComponent {
   }
 }
 
+export default Test
 module.exports = Test

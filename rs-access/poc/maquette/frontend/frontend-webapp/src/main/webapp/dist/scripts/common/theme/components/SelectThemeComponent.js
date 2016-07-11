@@ -15,11 +15,9 @@ class SelectThemeComponent extends React.Component {
     }
     render() {
         const { styles, themes, onThemeChange } = this.props;
-        return (React.createElement("div", {className: styles["select-theme"]}, 
-            React.createElement("span", null, " Select your theme : "), 
-            React.createElement("select", {value: this.props.curentTheme, onChange: this.onChange}, themes.map((theme) => {
-                return React.createElement("option", {key: theme, value: theme}, theme);
-            }))));
+        return (React.createElement("div", {className: styles["select-theme"]}, React.createElement("span", null, " Select your theme : "), React.createElement("select", {value: this.props.curentTheme, onChange: this.onChange}, themes.map((theme) => {
+            return React.createElement("option", {key: theme, value: theme}, theme);
+        }))));
     }
 }
 Object.defineProperty(exports, "__esModule", { value: true });

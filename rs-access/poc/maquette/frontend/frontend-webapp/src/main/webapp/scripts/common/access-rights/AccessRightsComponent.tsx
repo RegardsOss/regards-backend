@@ -1,6 +1,8 @@
 import * as React from "react"
 import { fetchAccessRights } from "./AccessRightsActions"
 
+import { AccessRightsView, Dependencies } from "./AccessRightsViewType"
+
 
 interface AccessRightsTypes {
   store: any,
@@ -12,7 +14,7 @@ interface AccessRightsTypes {
 * Root class for all RegardsView in each modules.
 * This class handle the accessRights to the view modules.
 */
-class AccessRightsComponent extends React.Component<AccessRightsTypes, any>{
+class AccessRightsComponent<P, S> extends React.Component<P, any>{
 
   unsubscribeViewAccessRights:any = null
 

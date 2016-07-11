@@ -8,6 +8,7 @@ class ApplicationErrorComponent extends React.Component {
         return (React.createElement("div", {className: styles.errorApp}, "Application unavailable"));
     }
 }
+// Add theme from store to the component props
 const mapStateToProps = (state) => {
     return {
         theme: state.theme

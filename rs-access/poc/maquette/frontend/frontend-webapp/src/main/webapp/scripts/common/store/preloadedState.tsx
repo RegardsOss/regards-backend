@@ -1,4 +1,4 @@
-export default {
+const preloadedState:any = {
   common: {
     theme: '',
     plugins : {},
@@ -54,3 +54,5 @@ export default {
     // }
   }
 }
+
+export default preloadedState

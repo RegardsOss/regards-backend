@@ -1,13 +1,22 @@
-import React from 'react'
+import * as React from 'react'
 import { connect } from 'react-redux'
 
-import { getThemeStyles } from 'common/theme/ThemeUtils'
-import { setTheme } from 'common/theme/actions/ThemeActions'
-import SelectThemeComponent from 'common/theme/components/SelectThemeComponent'
+import { getThemeStyles } from '../../../common/theme/ThemeUtils'
+import { setTheme } from '../../../common/theme/actions/ThemeActions'
+import SelectThemeComponent from '../../../common/theme/components/SelectThemeComponent'
 
 import NavigationContainer from './containers/NavigationContainer'
 
-class Layout extends React.Component {
+
+interface LayoutProps {
+  project: string,
+  location: any,
+  // Properties set by react redux connection
+  theme?: string,
+  setTheme?: (theme:string) => void
+}
+
+class Layout extends React.Component<LayoutProps, any> {
 
   render(){
     const { theme } = this.props
@@ -32,20 +41,15 @@ class Layout extends React.Component {
   }
 }
 
-Layout.propTypes = {
-  project: React.PropTypes.string.isRequired
-}
-
 // Add theme from store to the component props
-const mapStateToProps = (state) => {
+const mapStateToProps = (state:any) => {
   return {
-    theme: state.common.theme,
-    plugins: state.common.plugins
+    theme: state.common.theme
   }
 }
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToProps = (dispatch:any) => {
   return {
-    setTheme: (theme) =>  dispatch(setTheme(theme))
+    setTheme: (theme:string) =>  dispatch(setTheme(theme))
   }
 }
-export default connect(mapStateToProps,mapDispatchToProps)(Layout)
+export default connect<{}, {}, LayoutProps>(mapStateToProps,mapDispatchToProps)(Layout)

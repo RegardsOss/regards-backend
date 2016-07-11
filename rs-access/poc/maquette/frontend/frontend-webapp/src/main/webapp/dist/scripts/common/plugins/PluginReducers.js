@@ -33,4 +33,9 @@ exports.default = (state = {
             return state;
     }
 };
+// const pluginsReducers = {
+//   plugins
+// }
+//
+// export default pluginsReducers
 //# sourceMappingURL=PluginReducers.js.map

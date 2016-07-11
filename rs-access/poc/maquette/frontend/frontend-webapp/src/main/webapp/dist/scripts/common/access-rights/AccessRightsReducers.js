@@ -15,4 +15,10 @@ exports.default = (state = [], action) => {
             return state;
     }
 };
+//
+// const AccessRightsReducers = {
+//   views
+// }
+//
+// export default AccessRightsReducers
 //# sourceMappingURL=AccessRightsReducers.js.map

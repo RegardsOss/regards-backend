@@ -1,4 +1,9 @@
 "use strict";
+/** Main routes.
+ * /      -> PortalApp
+ * /user  -> UserApp
+ * /admin -> AdminApp
+ */
 const routes_1 = require('./userApp/routes');
 const routes_2 = require('./adminApp/routes');
 const routes_3 = require('./portalApp/routes');

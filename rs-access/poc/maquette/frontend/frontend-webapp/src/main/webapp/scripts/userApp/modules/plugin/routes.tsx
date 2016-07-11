@@ -1,10 +1,11 @@
 import Plugin from './Plugin'
+declare var require: any;
 
 export default {
   path:"plugins/:plugin",
 
-  getComponent(nextState, cb) {
-    require.ensure([], (require) => {
+  getComponent(nextState:any, cb:any) {
+    require.ensure([], (require:any) => {
       cb(null, {
         content: Plugin
       })

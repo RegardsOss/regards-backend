@@ -1,11 +1,16 @@
 "use strict";
 const React = require('react');
 const react_redux_1 = require('react-redux');
+// Containers
 const UserFormContainer_1 = require('./UserFormContainer');
+// Components
 const ProjectAdminsComponent_1 = require('../components/ProjectAdminsComponent');
+// Actions
 const actions_1 = require('../actions');
 const actions_2 = require('../../ui/actions');
+// Selectors
 const reducer_1 = require('../../../reducer');
+// Styles
 var classnames = require('classnames');
 require('../../../../../stylesheets/foundation-icons/foundation-icons.scss');
 const ThemeUtils_1 = require('../../../../common/theme/ThemeUtils');
@@ -22,15 +27,13 @@ class ProjectAdminsContainer extends React.Component {
         }
     }
     render() {
-        return (React.createElement("div", null, 
-            React.createElement(ProjectAdminsComponent_1.default, {project: this.props.project, projectAdmins: this.props.projectAdmins, onAddClick: this.props.showProjectAdminConfiguration, onConfigureClick: this.props.showProjectAdminConfiguration, onDeleteClick: this.props.handleDelete, styles: this.props.styles}), 
-            React.createElement(UserFormContainer_1.default, {show: this.props.projectAdminConfigurationIsShown, handleSubmit: this.props.onUserFormSubmit, onCancelClick: this.props.hideProjectAdminConfiguration, styles: this.props.styles})));
+        return (React.createElement("div", null, React.createElement(ProjectAdminsComponent_1.default, {project: this.props.project, projectAdmins: this.props.projectAdmins, onAddClick: this.props.showProjectAdminConfiguration, onConfigureClick: this.props.showProjectAdminConfiguration, onDeleteClick: this.props.handleDelete, styles: this.props.styles}), React.createElement(UserFormContainer_1.default, {show: this.props.projectAdminConfigurationIsShown, handleSubmit: this.props.onUserFormSubmit, onCancelClick: this.props.hideProjectAdminConfiguration, styles: this.props.styles})));
     }
 }
 const mapStateToProps = (state, ownProps) => {
     const selectedProjectId = reducer_1.getSelectedProjectId(state);
     const selectedProject = reducer_1.getProjectById(state, selectedProjectId);
-    const projectAdmins = reducer_1.getProjectAdmins(state);
+    const projectAdmins = reducer_1.getProjectAdmins(state); // TODO: By project: getProjectAdminsByProject(state, selectedProject)
     const selectedProjectAdminId = reducer_1.getSelectedProjectAdminId(state);
     const selectedProjectAdmin = reducer_1.getProjectAdminById(state, selectedProjectAdminId);
     return {

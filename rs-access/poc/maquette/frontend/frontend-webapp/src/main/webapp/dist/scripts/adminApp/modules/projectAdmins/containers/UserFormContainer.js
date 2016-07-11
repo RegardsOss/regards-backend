@@ -43,7 +43,7 @@ const asyncValidate = (values) => {
 };
 class AsynchronousBlurValidationForm extends react_1.Component {
     render() {
-        const { asyncValidating, fields: { id, projectId, username, password, passwordConfirm }, resetForm, handleSubmit, submitting, show, onCancelClick, styles } = this.props;
+        const { asyncValidating, fields: { id, projectId, username, password, passwordConfirm }, handleSubmit, submitting, show, onCancelClick, styles } = this.props;
         if (show)
             return (React.createElement("form", {onSubmit: handleSubmit}, 
                 React.createElement("div", null, 

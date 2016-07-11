@@ -3,16 +3,18 @@ import testRoutes from './modules/test/routes'
 import websocketsRoutes from './modules/websockets/routes'
 import UserApp from './UserApp'
 
+declare var require: any;
+
 export default {
   path:"user/:project",
   childRoutes: [
-    pluginRoutes, 
+    pluginRoutes,
     testRoutes,
     websocketsRoutes
   ],
 
-  getComponent(nextState, cb) {
-    require.ensure([], (require) => {
+  getComponent(nextState:any, cb:any) {
+    require.ensure([], (require:any) => {
       cb(null, UserApp)
     })
   }

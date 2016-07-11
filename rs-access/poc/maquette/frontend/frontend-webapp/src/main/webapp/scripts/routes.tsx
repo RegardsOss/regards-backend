@@ -19,8 +19,8 @@ export default {
       adminAppRoutes,
       portalAppRoutes
     ],
-    getComponent(nextState, cb) {
-      require.ensure([], (require) => {
+    getComponent(nextState:any, cb:any) {
+      require.ensure([], (require:any) => {
         cb(null, PortalApp)
       })
     }

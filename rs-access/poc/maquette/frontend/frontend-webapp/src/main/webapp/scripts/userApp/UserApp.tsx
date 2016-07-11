@@ -1,12 +1,23 @@
-import React from 'react'
+import * as React from 'react'
 import { connect } from 'react-redux'
 
-import { fetchPlugins } from 'common/plugins/PluginsActions'
-import { setTheme } from 'common/theme/actions/ThemeActions'
+import { fetchPlugins } from '../common/plugins/PluginsActions'
+import { setTheme } from '../common/theme/actions/ThemeActions'
 import Layout from './modules/layout/Layout'
 import Test from './modules/test/Test'
 
-class UserApp extends React.Component {
+import { PluginsStore } from '../common/plugins/PluginTypes'
+
+interface UserAppProps {
+  plugins: PluginsStore,
+  params:any,
+  initTheme: (theme:string) => void,
+  fetchPlugins: () => void,
+  location: any,
+  content:any
+}
+
+class UserApp extends React.Component<UserAppProps, any> {
 
   componentWillMount(){
     // Get project from params from react router. project param is the ":project" in userApp route
@@ -39,15 +50,16 @@ class UserApp extends React.Component {
 }
 
 // Add functions dependending on store dispatch to container props.
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToProps = (dispatch: any) => {
   return {
     fetchPlugins : () => dispatch(fetchPlugins()),
-    initTheme : (theme) => dispatch(setTheme(theme))
+    initTheme : (theme:string) => dispatch(setTheme(theme))
   }
 }
-const mapStateToProps = (state) => {
+const mapStateToProps = (state:any) => {
   return {
     plugins: state.plugins
   }
 }
-export default connect(mapStateToProps,mapDispatchToProps)(UserApp)
+const userAppConnected = connect<{}, {}, UserAppProps>(mapStateToProps,mapDispatchToProps)(UserApp)
+export default userAppConnected

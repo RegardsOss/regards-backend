@@ -4,9 +4,9 @@ import { Router, browserHistory } from 'react-router'
 import { Provider } from 'react-redux'
 
 // Import application common store
-import { configureStore } from './common/store/configureStore'
-import preloadedState from 'common/store/preloadedState'
-import routes from './routes.js'
+import configureStore from './common/store/configureStore'
+import preloadedState from './common/store/preloadedState'
+import * as routes from './routes'
 
 const store = configureStore(preloadedState)
 
@@ -18,8 +18,8 @@ ReactDOM.render(
 )
 
 // Log sitemap
-function getSiteMap(parentRoute, routes){
-  routes.map( route => {
+function getSiteMap(parentRoute:any, routes:any){
+  routes.map( (route:any) => {
     let path = ''
     if (parentRoute.slice(-1) === '/' || route.path[0] === '/'){
       path = parentRoute + route.path
@@ -33,4 +33,4 @@ function getSiteMap(parentRoute, routes){
   })
 }
 // Log sitemap
-getSiteMap("",routes.childRoutes)
+getSiteMap("",routes["childRoutes"])

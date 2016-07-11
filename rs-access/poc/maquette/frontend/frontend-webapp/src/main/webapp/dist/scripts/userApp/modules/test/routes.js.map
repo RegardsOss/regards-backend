@@ -1,0 +1,1 @@
+{"version":3,"file":"routes.js","sourceRoot":"","sources":["../../../../../scripts/userApp/modules/test/routes.tsx"],"names":[],"mappings":";AAAA,uBAAiB,QAEjB,CAAC,CAFwB;AAIzB;kBAAe;IACb,IAAI,EAAC,MAAM;IAEX,YAAY,CAAC,SAAa,EAAE,EAAM;QAChC,OAAO,CAAC,MAAM,CAAC,EAAE,EAAE,CAAC,OAAW;YAC7B,EAAE,CAAC,IAAI,EAAE;gBACP,OAAO,EAAE,cAAI;aACd,CAAC,CAAA;QACJ,CAAC,CAAC,CAAA;IACJ,CAAC;CACF,CAAA"}

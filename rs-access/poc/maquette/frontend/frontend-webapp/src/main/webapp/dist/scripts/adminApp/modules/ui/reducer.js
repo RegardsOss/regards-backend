@@ -25,6 +25,7 @@ exports.default = (state = [], action) => {
             return state;
     }
 };
+// Selectors
 exports.getSelectedProjectId = (state) => state.selectedProjectId;
 exports.getSelectedProjectAdminId = (state) => state.selectedProjectAdminId;
 //# sourceMappingURL=reducer.js.map

@@ -8,4 +8,9 @@ exports.default = (state = '', action) => {
             return state;
     }
 };
+// const themeReducers = {
+//   theme
+// }
+//
+// export default themeReducers
 //# sourceMappingURL=ThemeReducers.js.map

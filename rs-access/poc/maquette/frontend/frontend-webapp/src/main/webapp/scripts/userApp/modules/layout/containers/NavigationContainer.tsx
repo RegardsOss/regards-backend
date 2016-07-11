@@ -1,12 +1,21 @@
-import React from 'react'
+import * as React from 'react'
 import { connect } from 'react-redux'
 
-import AccessRightsComponent from 'common/access-rights/AccessRightsComponent'
+import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
+import { Dependencies } from '../../../../common/access-rights/AccessRightsViewType'
+import { PluginsStore } from '../../../../common/plugins/PluginTypes'
 import LinkComponent from '../components/LinkComponent'
 
-class NavigationContainer extends AccessRightsComponent {
+interface NavigationProps {
+  project: string,
+  location: any,
+  // Properties set by react redux connection
+  plugins?: PluginsStore
+}
 
-  getDependencies(){
+class NavigationContainer extends AccessRightsComponent<NavigationProps, any> {
+
+  getDependencies():Dependencies{
     return null
   }
 
@@ -36,15 +45,12 @@ class NavigationContainer extends AccessRightsComponent {
   }
 }
 
-NavigationContainer.propTypes = {
-  project: React.PropTypes.string.isRequired,
-  location: React.PropTypes.object.isRequired,
-}
-
 // Add projects from store to the container props
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: any) => {
   return {
     plugins: state.plugins
   }
 }
-module.exports = connect(mapStateToProps)(NavigationContainer)
+const navigation = connect<{}, {}, NavigationProps>(mapStateToProps)(NavigationContainer);
+export default navigation
+module.exports = navigation

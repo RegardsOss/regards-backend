@@ -1,4 +1,7 @@
 "use strict";
+/**
+ * Combine all reducers for this aa to a single root reducer.
+ */
 const redux_1 = require('redux');
 const ProjectsReducers_1 = require('./modules/projects/reducers/ProjectsReducers');
 Object.defineProperty(exports, "__esModule", { value: true });

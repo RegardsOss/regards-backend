@@ -48,10 +48,9 @@ const asyncValidate = (values: any/*, dispatch */) => {
 
 interface FormPropTypes {
   fields?: any,
-  resetForm: any,
   handleSubmit: ()=> void,
   onCancelClick? :()=> void,
-  submitting: boolean,
+  submitting?: boolean,
   show?: boolean,
   styles: any
 }
@@ -61,7 +60,6 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
     const {
       asyncValidating,
       fields: { id, projectId, username, password, passwordConfirm },
-      resetForm,
       handleSubmit,
       submitting,
       show,

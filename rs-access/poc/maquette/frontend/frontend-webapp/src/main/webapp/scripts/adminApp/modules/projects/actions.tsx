@@ -1,4 +1,4 @@
-import { CALL_API, getJSON } from 'redux-api-middleware')
+var { CALL_API, getJSON } = require('redux-api-middleware')
 import Schemas from '../../../common/api/schemas'
 import { normalize } from 'normalizr'
 

@@ -13,6 +13,7 @@ class Test extends React.Component {
         this.onClick = this.onClick.bind(this);
     }
     componentWillMount() {
+        // Read query parameters
         const { value } = this.props.location.query;
         this.setState({
             inputValue: value
@@ -26,27 +27,14 @@ class Test extends React.Component {
         });
     }
     onClick() {
+        // Update query parameters of the current url
         const { location } = this.props;
         const route = location.pathname + "?value=" + this.state.inputValue;
         react_router_1.browserHistory.push(route);
     }
     render() {
         const styles = ThemeUtils_1.getThemeStyles(this.props.theme, 'adminApp/styles');
-        return (React.createElement("div", {className: styles["grid-basics-example"]}, 
-            React.createElement("input", {type: 'text', value: this.state.inputValue, onChange: this.onChange}), 
-            React.createElement("input", {type: "button", onClick: this.onClick, value: "update"}), 
-            React.createElement("div", {className: styles.row + " " + styles.display}, 
-                React.createElement("div", {className: styles["small-2"] + " " + styles["large-4"]}, "4 columns"), 
-                React.createElement("div", {className: styles["small-4"] + " " + styles["large-4"]}, "4 columns"), 
-                React.createElement("div", {className: styles["small-6"] + " " + styles["large-4"]}, "4 columns")), 
-            React.createElement("div", {className: styles.row + " " + styles.display}, 
-                React.createElement("div", {className: styles["large-3"]}, "3 columns"), 
-                React.createElement("div", {className: styles["large-6"]}, "6 columns"), 
-                React.createElement("div", {className: styles["large-3"]}, "3 columns")), 
-            React.createElement("div", {className: styles.row + " " + styles.display}, 
-                React.createElement("div", {className: styles["small-6"] + " " + styles["large-2"]}, "2 columns"), 
-                React.createElement("div", {className: styles["small-6"] + " " + styles["large-8"]}, "8 columns"), 
-                React.createElement("div", {className: styles["small-12"] + " " + styles["large-2"]}, "2 columns"))));
+        return (React.createElement("div", {className: styles["grid-basics-example"]}, React.createElement("input", {type: 'text', value: this.state.inputValue, onChange: this.onChange}), React.createElement("input", {type: "button", onClick: this.onClick, value: "update"}), React.createElement("div", {className: styles.row + " " + styles.display}, React.createElement("div", {className: styles["small-2"] + " " + styles["large-4"]}, "4 columns"), React.createElement("div", {className: styles["small-4"] + " " + styles["large-4"]}, "4 columns"), React.createElement("div", {className: styles["small-6"] + " " + styles["large-4"]}, "4 columns")), React.createElement("div", {className: styles.row + " " + styles.display}, React.createElement("div", {className: styles["large-3"]}, "3 columns"), React.createElement("div", {className: styles["large-6"]}, "6 columns"), React.createElement("div", {className: styles["large-3"]}, "3 columns")), React.createElement("div", {className: styles.row + " " + styles.display}, React.createElement("div", {className: styles["small-6"] + " " + styles["large-2"]}, "2 columns"), React.createElement("div", {className: styles["small-6"] + " " + styles["large-8"]}, "8 columns"), React.createElement("div", {className: styles["small-12"] + " " + styles["large-2"]}, "2 columns"))));
     }
 }
 const mapStateToProps = (state) => {

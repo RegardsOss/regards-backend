@@ -1,12 +1,19 @@
-import React from 'react'
+import * as React from 'react'
 import { connect } from 'react-redux'
-import AccessRightsComponent from 'common/access-rights/AccessRightsComponent'
+import AccessRightsComponent from '../../../common/access-rights/AccessRightsComponent'
 import PluginComponent from 'common/plugins/PluginComponent'
 
-class PluginContainer extends AccessRightsComponent {
+
+interface PluginProps {
+  params: any,
+  plugin: any,
+  plugins: Array<any>
+}
+
+class PluginContainer extends AccessRightsComponent<PluginProps, any> {
 
   getDependencies(){
-    const { project, plugin } = this.props
+    const { plugin } = this.props
     if (plugin && plugin.getDependencies){
       return plugin.getDependencies()
     } else {
@@ -34,13 +41,12 @@ class PluginContainer extends AccessRightsComponent {
   }
 }
 
-PluginContainer.propTypes = {
-  params: React.PropTypes.object.isRequired
-}
-
-const mapStateToProps = ( state ) => {
+const mapStateToProps = ( state:any ) => {
   return {
     plugins: state.plugins.items
   }
 }
-module.exports = connect(mapStateToProps)(PluginContainer)
+
+const pluginConnected = connect<{}, {}, PluginContainer>(mapStateToProps)(PluginContainer)
+export default pluginConnected
+module.exports = pluginConnected

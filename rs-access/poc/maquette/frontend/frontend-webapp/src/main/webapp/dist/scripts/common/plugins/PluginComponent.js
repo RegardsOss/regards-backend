@@ -1,6 +1,9 @@
 "use strict";
 const React = require('react');
 const react_redux_1 = require('react-redux');
+/**
+ Display the content of a plugin.
+*/
 class PluginComponent extends React.Component {
     render() {
         const { plugin } = this.props;
@@ -8,10 +11,7 @@ class PluginComponent extends React.Component {
             return React.createElement(plugin.plugin, null);
         }
         else {
-            return React.createElement("div", {className: "error"}, 
-                " Undefined plugin ", 
-                plugin.name, 
-                " ");
+            return React.createElement("div", {className: "error"}, " Undefined plugin ", plugin.name, " ");
         }
     }
 }

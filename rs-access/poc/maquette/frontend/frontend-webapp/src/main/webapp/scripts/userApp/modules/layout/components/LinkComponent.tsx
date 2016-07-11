@@ -1,7 +1,12 @@
-import React from 'react'
+import * as React from 'react'
 import { IndexLink, Link } from 'react-router'
 
-class Linkcomponent extends React.Component {
+interface LinkProps {
+  to: string
+  location: any
+}
+
+class Linkcomponent extends React.Component<LinkProps, any> {
 
   render(){
     // to props is passed throught the react component creation
@@ -19,11 +24,6 @@ class Linkcomponent extends React.Component {
       </Link>
     )
   }
-}
-
-Linkcomponent.propTypes = {
-  to: React.PropTypes.string.isRequired,
-  location: React.PropTypes.object.isRequired,
 }
 
 export default Linkcomponent
