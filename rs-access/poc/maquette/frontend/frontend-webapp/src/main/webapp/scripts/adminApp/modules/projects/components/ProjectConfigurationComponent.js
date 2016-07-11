@@ -8,7 +8,6 @@ class ProjectConfigurationComponent extends Component {
       show,
       onSaveClick,
       onCancelClick,
-      onSubmit,
       fields: {projectName},
       resetForm,
       handleSubmit,

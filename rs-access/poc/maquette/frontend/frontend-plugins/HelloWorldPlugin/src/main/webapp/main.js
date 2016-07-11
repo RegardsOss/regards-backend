@@ -1,5 +1,5 @@
 import React from 'react';
-import { initPlugin } from './RegardsPlugin';
+import { initPlugin } from './common/RegardsPlugin';
 
 // Ajout des styles spécifiques au plugin
 require('./css/plugin.css');
