@@ -10,5 +10,5 @@ class WebSockets extends React.Component<any, any> {
     )
   }
 }
-
+export default WebSockets
 module.exports = WebSockets

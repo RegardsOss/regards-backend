@@ -7,5 +7,7 @@ class WebSockets extends React.Component {
         return (React.createElement(TimeContainer_1.default, null));
     }
 }
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = WebSockets;
 module.exports = WebSockets;
 //# sourceMappingURL=WebSockets.js.map

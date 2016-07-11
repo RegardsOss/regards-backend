@@ -25,7 +25,12 @@ class ManageProjectsComponent extends React.Component<ManageProjectsType, any> {
           <i className='fi-trash'></i>
         </button>
         <br/>
-        <RegardsSelect list={this.props.projects} label={'Select a project'} onSelect={this.props.onSelect}/>
+        <RegardsSelect
+        list={this.props.projects}
+        label={'Select a project'}
+        onSelect={this.props.onSelect}
+        displayAttribute="name"
+        identityAttribute="id"/>
       </div>
     )
   }

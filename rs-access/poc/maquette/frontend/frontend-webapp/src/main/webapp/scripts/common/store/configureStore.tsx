@@ -31,7 +31,7 @@ export default function configureStore(preloadedState:any):any {
         authorizationMiddleware, // inject authorization headers in all request actions
         apiMiddleware // middleware for calling an REST API
       ),
-      window["devToolsExtension"] ? window["devToolsExtension"]() : f => f // Enable redux dev tools
+      window["devToolsExtension"] ? window["devToolsExtension"]() : (f:any) => f // Enable redux dev tools
     )
   )
 

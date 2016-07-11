@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import AccessRightsComponent from '../../../common/access-rights/AccessRightsComponent'
-import PluginComponent from 'common/plugins/PluginComponent'
+import PluginComponent from '../../../common/plugins/PluginComponent'
 
 
 interface PluginProps {

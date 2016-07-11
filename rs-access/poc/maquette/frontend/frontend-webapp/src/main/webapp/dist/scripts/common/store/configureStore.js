@@ -24,7 +24,7 @@ function configureStore(preloadedState) {
     ActionLoggerMiddleware_1.default, // logs any dispatched action
     AuthorizationMiddleware_1.default, // inject authorization headers in all request actions
     apiMiddleware // middleware for calling an REST API
-    ), window["devToolsExtension"] ? window["devToolsExtension"]() : f => f // Enable redux dev tools
+    ), window["devToolsExtension"] ? window["devToolsExtension"]() : (f) => f // Enable redux dev tools
     ));
     // Log any change in the store
     const render = () => {

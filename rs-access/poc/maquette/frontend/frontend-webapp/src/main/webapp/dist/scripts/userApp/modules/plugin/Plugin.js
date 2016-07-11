@@ -2,7 +2,7 @@
 const React = require('react');
 const react_redux_1 = require('react-redux');
 const AccessRightsComponent_1 = require('../../../common/access-rights/AccessRightsComponent');
-const PluginComponent_1 = require('common/plugins/PluginComponent');
+const PluginComponent_1 = require('../../../common/plugins/PluginComponent');
 class PluginContainer extends AccessRightsComponent_1.default {
     getDependencies() {
         const { plugin } = this.props;

@@ -3,7 +3,7 @@ const React = require('react');
 const react_redux_1 = require('react-redux');
 const WSTimeActions_1 = require('../actions/WSTimeActions');
 const TimeActions_1 = require('../actions/TimeActions');
-const ThemeUtils_1 = require('../../../common/theme/ThemeUtils');
+const ThemeUtils_1 = require('../../../../common/theme/ThemeUtils');
 const TimeComponent_1 = require('../components/TimeComponent');
 class TimeContainer extends React.Component {
     componentWillMount() {

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 import { connectTime, disconnectTime } from '../actions/WSTimeActions'
 import { startTime } from '../actions/TimeActions'
-import { getThemeStyles } from '../../../common/theme/ThemeUtils'
+import { getThemeStyles } from '../../../../common/theme/ThemeUtils'
 import Time from '../components/TimeComponent'
 
 interface TimeProps {
