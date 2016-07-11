@@ -45,6 +45,8 @@ class AccessRightsComponent extends React.Component{
         access: true
       });
     } else {
+      this.oldRender = Object.assign({}, this.render)
+      this.render = () => {return null}
       this.unsubscribe = store.subscribe(this.checkViewAccessRights)
       store.dispatch(fetchAccessRights(this.constructor.name, this.getDependencies()))
     }
@@ -58,17 +60,17 @@ class AccessRightsComponent extends React.Component{
 
   checkViewAccessRights(){
     const { store } = this.context
-    const view = store.getState().views.find( curent => {
+    const view = store.getState().common.views.find( curent => {
       return curent.name === this.constructor.name
     });
     // If not, check access from server
     if (view){
       if (view.access === true){
         console.log("Access granted to view : " + this.constructor.name)
+        // Activate component render
+        this.render = this.oldRender;
       } else {
         console.log("Access denied to view : " + this.constructor.name)
-        // Cancel render method
-        this.render = () => {return null}
       }
       this.unsubscribe()
       this.setState({
