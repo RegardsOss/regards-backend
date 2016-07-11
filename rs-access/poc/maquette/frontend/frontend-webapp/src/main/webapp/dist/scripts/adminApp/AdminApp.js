@@ -35,12 +35,12 @@ class AdminApp extends React.Component {
         const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now();
         if (!authenticated || authentication.user.name === 'public') {
             return (React.createElement("div", {className: styles.main}, 
-                React.createElement(Authentication_1.default, {project: params.project, onAuthenticate: this.onAuthenticate}), 
+                React.createElement(Authentication_1.default, null), 
                 React.createElement(SelectThemeComponent_1.default, {styles: commonStyles, themes: ["cdpp", "ssalto", "default"], curentTheme: theme, onThemeChange: this.changeTheme})));
         }
         else {
             return (React.createElement("div", null, 
-                React.createElement(Layout_1.default, {styles: styles, location: location, content: content, project: params.project, instance: this.state.instance, onLogout: onLogout}), 
+                React.createElement(Layout_1.default, {location: location, content: content, project: params.project, instance: this.state.instance, onLogout: onLogout}), 
                 React.createElement(SelectThemeComponent_1.default, {styles: styles, themes: ["cdpp", "ssalto", "default"], curentTheme: theme, onThemeChange: this.changeTheme})));
         }
     }

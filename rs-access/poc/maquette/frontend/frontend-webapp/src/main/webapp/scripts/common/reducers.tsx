@@ -2,11 +2,11 @@
  * Combine all reducers module to a single root reducer.
  */
 import { combineReducers } from 'redux';
-import themeReducers from 'common/theme/reducers/ThemeReducers'
-import pluginReducers from 'common/plugins/PluginReducers'
-import accessRightsReducers from 'common/access-rights/AccessRightsReducers'
-import authentication, * as fromAuthentication from 'common/authentication/AuthenticateReducers'
-import { pickBy } from 'lodash'
+import themeReducers from './theme/reducers/ThemeReducers'
+import pluginReducers from './plugins/PluginReducers'
+import accessRightsReducers from './access-rights/AccessRightsReducers'
+import authentication, * as fromAuthentication from './authentication/AuthenticateReducers'
+import { pick } from 'lodash'
 
 // Keeping both notations as an example
 export default combineReducers({
@@ -16,12 +16,8 @@ export default combineReducers({
   authentication
 });
 
-export const deleteEntityReducer = (state, action) =>
+export const deleteEntityReducer = (state: any, action:any) =>
 (Object.assign({}, state,{
-  items: pickBy(state.items, (value, key) => key !== action.id),
-  ids: state.ids.filter(id => id !== action.id)
+  items: pick(state.items, (value:string, key:string) => key !== action.id),
+  ids: state.ids.filter( (id:string) => id !== action.id)
 }))
-
-// Selectors
-export const getAuthorization = (state) =>
-  fromAuthentication.getAuthorization(state.common)

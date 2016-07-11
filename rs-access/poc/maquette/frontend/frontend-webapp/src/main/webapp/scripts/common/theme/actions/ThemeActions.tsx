@@ -1,4 +1,4 @@
-function setTheme (theme){
+function setTheme (theme: string){
   return {
     type : 'SET_THEME',
     theme : theme,

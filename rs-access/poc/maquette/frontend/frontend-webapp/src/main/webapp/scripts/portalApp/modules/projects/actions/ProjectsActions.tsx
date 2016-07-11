@@ -1,4 +1,4 @@
-import fetch from 'isomorphic-fetch'
+import * as fetch from 'isomorphic-fetch'
 
 // Backend api adress
 export const PROJECTS_API='http://localhost:8080/api/projects'
@@ -13,7 +13,7 @@ export function requestProjects() {
 
 // Action to inform store that te projects are availables
 export const RECEIVE_PROJECTS = 'RECEIVE_PROJECTS'
-export function receiveProjects(projects) {
+export function receiveProjects(projects: Array<any>) {
   return {
     type: RECEIVE_PROJECTS,
     projects: projects,
@@ -23,7 +23,7 @@ export function receiveProjects(projects) {
 
 // Action to inform store that the running projects request failed
 export const FAILED_PROJECTS = 'FAILED_PROJECTS'
-function failedProjects(error) {
+function failedProjects(error:string) {
   return {
     type : FAILED_PROJECTS,
     error : error
@@ -31,7 +31,7 @@ function failedProjects(error) {
 }
 
 // Function to check the projects request response status
-function checkStatus(response) {
+function checkStatus(response:any) {
   if (response.status === 200 ) {
     return response
   } else {
@@ -46,7 +46,7 @@ export function fetchProjects() {
   // Thunk middleware knows how to handle functions.
   // It passes the dispatch method as an argument to the function,
   // thus making it able to dispatch actions itself.
-  return function (dispatch, getState) {
+  return function (dispatch:any, getState:any) {
 
     // First dispatch: the app state is updated to inform
     // that the API call is starting.
@@ -61,7 +61,7 @@ export function fetchProjects() {
     // Init the authorization bearer of the fetch request
     let authentication = getState().common.authentication
     let authorization = "Basic"
-    
+
     if ( authentication && authentication.user && authentication.user.access_token){
       authorization = "Bearer " + authentication.user.access_token
     }

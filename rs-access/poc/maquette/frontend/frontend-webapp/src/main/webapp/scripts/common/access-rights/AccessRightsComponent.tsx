@@ -1,11 +1,20 @@
-import React from "react"
+import * as React from "react"
 import { fetchAccessRights } from "./AccessRightsActions"
+
+
+interface AccessRightsTypes {
+  store: any,
+  router: any,
+  route : any
+}
 
 /**
 * Root class for all RegardsView in each modules.
 * This class handle the accessRights to the view modules.
 */
-class AccessRightsComponent extends React.Component{
+class AccessRightsComponent extends React.Component<AccessRightsTypes, any>{
+
+  unsubscribeViewAccessRights:any = null
 
   /**
   * Constructor.
@@ -31,7 +40,7 @@ class AccessRightsComponent extends React.Component{
   *  DELETE : ["dependence"],
   * }
   */
-  getDependencies(){
+  getDependencies():Dependencies{
     return null;
   }
 
@@ -39,26 +48,26 @@ class AccessRightsComponent extends React.Component{
   * Method to check if the view is displayable
   */
   componentWillMount(){
-    const { store } = this.context
+    const { store }:any = this.context
     if (this.getDependencies() === null){
       this.setState({
         access: true
       });
     } else {
-      this.unsubscribe = store.subscribe(this.checkViewAccessRights)
+      this.unsubscribeViewAccessRights = store.subscribe(this.checkViewAccessRights)
       store.dispatch(fetchAccessRights(this.constructor.name, this.getDependencies()))
     }
   }
 
   componentWillUnmount(){
-    if (this.unsubscribe){
-      this.unsubscribe()
+    if (this.unsubscribeViewAccessRights){
+      this.unsubscribeViewAccessRights()
     }
   }
 
   checkViewAccessRights(){
-    const { store } = this.context
-    const view = store.getState().views.find( curent => {
+    const { store }:any = this.context
+    const view = store.getState().views.find( (curent:AccessRightsView) => {
       return curent.name === this.constructor.name
     });
     // If not, check access from server
@@ -70,18 +79,12 @@ class AccessRightsComponent extends React.Component{
         // Cancel render method
         this.render = () => {return null}
       }
-      this.unsubscribe()
+      this.unsubscribeViewAccessRights()
       this.setState({
         access: view.access
       });
     }
   }
-}
-
-AccessRightsComponent.contextTypes = {
-  store: React.PropTypes.object,
-  router: React.PropTypes.object,
-  route : React.PropTypes.object
 }
 
 export default AccessRightsComponent

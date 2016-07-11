@@ -8,6 +8,8 @@ import adminAppRoutes from './adminApp/routes'
 import portalAppRoutes from './portalApp/routes'
 import PortalApp from './portalApp/PortalApp'
 
+declare var require: any;
+
 export default {
   component: 'div',
   childRoutes: [ {

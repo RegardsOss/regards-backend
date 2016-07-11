@@ -2,12 +2,14 @@
   "globalDependencies": {
     "isomorphic-fetch": "registry:dt/isomorphic-fetch#0.0.0+20160524142046",
     "lodash": "registry:dt/lodash#3.10.0+20160619033623",
+    "node": "registry:dt/node#6.0.0+20160709114037",
     "normalizr": "registry:dt/normalizr#2.0.1+20160501130729",
     "react": "registry:dt/react#0.14.0+20160630100702",
     "react-dom": "registry:dt/react-dom#0.14.0+20160412154040",
     "react-redux": "registry:dt/react-redux#4.4.0+20160703120921",
     "react-router": "registry:dt/react-router#2.0.0+20160621215300",
     "redux-form": "registry:dt/redux-form#4.0.3+20160703120921",
+    "redux-thunk": "registry:dt/redux-thunk#2.1.0+20160703120921",
     "require": "registry:dt/require#2.1.20+20160316155526"
   }
 }

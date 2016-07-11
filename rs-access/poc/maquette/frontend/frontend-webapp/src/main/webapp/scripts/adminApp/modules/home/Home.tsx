@@ -1,7 +1,5 @@
 import * as React from 'react'
 
-declare var module: any;
-
 class Home extends React.Component<any, any> {
   render(){
     return (<span>Welcome</span>)
@@ -9,5 +7,4 @@ class Home extends React.Component<any, any> {
 }
 
 export default Home
-
 module.exports = Home

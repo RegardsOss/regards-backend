@@ -6,7 +6,7 @@ const initPlugin = ( pluginName, pluginClass ) => {
   const mapDispatchToProps = ( dispatch ) => {return { dispatch: dispatch }};
   const mapStateToProps = ( state ) => {return { store: state } };
   const Plugin = connect(mapStateToProps)(pluginClass)
-  let event = new CustomEvent('plugin', {detail:{ name: pluginName, app: Plugin }});
+  let event = new CustomEvent('plugin', { name: pluginName, plugin: Plugin }});
   document.dispatchEvent(event);
 }
 

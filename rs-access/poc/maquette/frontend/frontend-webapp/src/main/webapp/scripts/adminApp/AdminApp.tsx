@@ -57,9 +57,8 @@ class AdminApp extends React.Component<AminAppProps, any> {
     if (!authenticated || authentication.user.name === 'public'){
       return (
         <div className={styles.main}>
-          <Authentication
-            project={params.project}
-            onAuthenticate={this.onAuthenticate}/>
+          <Authentication />
+
           <SelectThemeComponent
             styles={commonStyles}
             themes={["cdpp","ssalto","default"]}
@@ -71,12 +70,12 @@ class AdminApp extends React.Component<AminAppProps, any> {
         return (
           <div>
             <Layout
-              styles={styles}
               location={location}
               content={content}
               project={params.project}
               instance={this.state.instance}
               onLogout={onLogout}/>
+
             <SelectThemeComponent
               styles={styles}
               themes={["cdpp","ssalto","default"]}
@@ -102,6 +101,5 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 }
 const connectedAdminApp = connect<{}, {}, AminAppProps>(mapStateToProps,mapDispatchToProps)(AdminApp)
-declare var module: any;
 export default connectedAdminApp
 module.exports = connectedAdminApp

@@ -5,7 +5,7 @@
 * Exemple : getThemeStyles( 'myFirstTheme' , 'userApp/login')
 *   This exemple supplies the css classes from the userApp/login.css file for the theme 'myFirstTheme'
 */
-const getThemeStyles = (theme, style) => {
+const getThemeStyles = (theme:string, style:any) => {
   if (theme && theme !== "" && style && style !== ""){
     return require('stylesheets/themes/'+theme+'/'+style)
   } else if (style && style !== ""){

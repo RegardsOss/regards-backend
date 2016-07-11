@@ -1,10 +1,10 @@
-import fetch from 'isomorphic-fetch'
-import scriptjs from 'scriptjs'
+import * as fetch from 'isomorphic-fetch'
+var scriptjs = require('scriptjs')
 
 const ACCESS_RIGHTS_API='http://localhost:8080/api/access/rights'
 
 export const REQUEST_ACCESSRIGHTS = 'REQUEST_ACCESSRIGHTS'
-function requestAccessRights(view) {
+function requestAccessRights(view: string) {
   return {
     type: REQUEST_ACCESSRIGHTS,
     view: view
@@ -12,7 +12,7 @@ function requestAccessRights(view) {
 }
 
 export const RECEIVE_ACCESSRIGHTS = 'RECEIVE_ACCESSRIGHTS'
-function receiveAccessRights(view, access) {
+function receiveAccessRights(view: string, access: boolean) {
   return {
     type: RECEIVE_ACCESSRIGHTS,
     view: view,
@@ -21,7 +21,7 @@ function receiveAccessRights(view, access) {
 }
 
 export const FAILED_ACCESSRIGHTS = 'FAILED_ACCESSRIGHTS';
-function failedAccessRights(view) {
+function failedAccessRights(view: string) {
   return {
     type : FAILED_ACCESSRIGHTS,
     view: view,
@@ -29,24 +29,24 @@ function failedAccessRights(view) {
   }
 }
 
-function checkResponseStatus(response){
+function checkResponseStatus(response: any){
   if (response.status === 200){
     return response;
   } else {
-    throw new Error("Access denied to view : "+ view);
+    throw new Error("Access denied");
   }
 }
 
 // Meet our first thunk action creator!
 // Though its insides are different, you would use it just like any other action creator:
 // store.dispatch(fetchProjects())
-export function fetchAccessRights(view, dependencies) {
+export function fetchAccessRights(view: string, dependencies: any) {
 
   // Thunk middleware knows how to handle functions.
   // It passes the dispatch method as an argument to the function,
   // thus making it able to dispatch actions itself.
 
-  return function (dispatch, getState) {
+  return function (dispatch: any, getState: any) {
 
     // First dispatch: the app state is updated to inform
     // that the API call is starting.

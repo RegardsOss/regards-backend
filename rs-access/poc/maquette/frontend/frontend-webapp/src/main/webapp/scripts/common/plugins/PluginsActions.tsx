@@ -1,5 +1,7 @@
-import fetch from 'isomorphic-fetch'
-import scriptjs from 'scriptjs'
+import * as fetch from 'isomorphic-fetch'
+import * as React from 'react'
+import PluginType from './PluginTypes'
+var scriptjs = require('scriptjs')
 
 const PLUGINS_API='http://localhost:8080/api/plugins'
 
@@ -11,7 +13,7 @@ function requestPlugins() {
 }
 
 export const RECEIVE_PLUGINS = 'RECEIVE_PLUGINS'
-function receivePlugins(plugins) {
+function receivePlugins(plugins: Array<string>) {
   return {
     type: RECEIVE_PLUGINS,
     plugins: plugins,
@@ -20,7 +22,7 @@ function receivePlugins(plugins) {
 }
 
 export const FAILED_PLUGINS = 'FAILED_PLUGINS'
-function failedPlugins(error) {
+function failedPlugins(error:string) {
   return {
     type : FAILED_PLUGINS,
     error : error
@@ -28,7 +30,7 @@ function failedPlugins(error) {
 }
 
 export const PLUGIN_INITIALIZED = 'PLUGIN_INITIALIZED'
-function pluginInitialized(name, plugin){
+function pluginInitialized(name:string, plugin:React.ComponentClass<any>){
   return {
     type: PLUGIN_INITIALIZED,
     name: name,
@@ -37,7 +39,7 @@ function pluginInitialized(name, plugin){
   }
 }
 
-function checkResponseStatus(response){
+function checkResponseStatus(response: any){
   if (response.status === 200){
     return response
   } else {
@@ -54,11 +56,11 @@ export function fetchPlugins() {
   // It passes the dispatch method as an argument to the function,
   // thus making it able to dispatch actions itself.
 
-  return function (dispatch, getState) {
+  return function (dispatch:any, getState:any) {
 
-    document.addEventListener('plugin', function (plugin) {
+    document.addEventListener('plugin', function (plugin:any) {
       // When plugin loaded event is received, add plugin to the store
-      dispatch(pluginInitialized(plugin.detail.name,plugin.detail.app))
+      dispatch(pluginInitialized(plugin.name,plugin.plugin))
     },false)
 
     // First dispatch: the app state is updated to inform
@@ -89,7 +91,7 @@ export function fetchPlugins() {
     }).then(function(body) {
       dispatch(receivePlugins(body))
       // Load ech plugins
-      body.map( plugin => {
+      body.map( (plugin:PluginType) => {
         const paths = plugin.paths.map( path => {
             return window.location.origin + "/plugins/" + path
         })

@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 
-import { getThemeStyles } from 'common/theme/ThemeUtils'
+import { getThemeStyles } from '../theme/ThemeUtils'
 
-class ApplicationErrorComponent extends React.Component {
+class ApplicationErrorComponent extends React.Component<any, any> {
 
   render(){
     const styles = getThemeStyles(this.props.theme, 'common/common')
@@ -16,7 +16,7 @@ class ApplicationErrorComponent extends React.Component {
 }
 
 // Add theme from store to the component props
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: any) => {
   return {
     theme: state.theme
   }

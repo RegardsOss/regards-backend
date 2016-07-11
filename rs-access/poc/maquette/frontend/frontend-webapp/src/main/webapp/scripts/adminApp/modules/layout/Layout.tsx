@@ -7,12 +7,13 @@ import { getThemeStyles } from '../../../common/theme/ThemeUtils'
 var classnames = require('classnames')
 
 interface LayoutProps {
-  theme: string,
   location: any,
   content: any,
   project: string,
   instance: boolean,
   onLogout: () => void
+  // Properties set by react-redux connection
+  theme?: string,
 }
 
 class Layout extends React.Component<LayoutProps, any> {
@@ -44,4 +45,4 @@ class Layout extends React.Component<LayoutProps, any> {
 const mapStateToProps = (state: any) => ({
   theme: state.common.theme
 })
-export default connect(mapStateToProps)(Layout)
+export default connect<{}, {}, LayoutProps>(mapStateToProps)(Layout)

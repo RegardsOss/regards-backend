@@ -2,14 +2,15 @@ import {
   REQUEST_PROJECTS,  RECEIVE_PROJECTS,
   FAILED_PROJECTS } from '../actions/ProjectsActions'
 
-export default (state = {
+import { ProjectsStore } from '../components/ProjectTypes'
+
+export default (state:ProjectsStore = {
   isFetching : false,
   items: [],
   lastUpdate: ''
-}, action) => {
+}, action:any) => {
   switch(action.type){
     case REQUEST_PROJECTS:
-      console.log('Plop',state);
       return Object.assign({}, state, {
         isFetching: true
       })

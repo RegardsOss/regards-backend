@@ -1,4 +1,13 @@
-import React, { PropTypes } from 'react'
+import * as React from 'react'
+import { PropTypes } from 'react'
+
+interface RegardsSelectProps {
+  list: Array<any>,
+  onSelect: ()=> void,
+  identityAttribute: string,
+  displayAttribute: string,
+  label: string
+}
 
 const RegardsSelect = ({
   list = [],
@@ -6,7 +15,7 @@ const RegardsSelect = ({
   identityAttribute = 'id',
   displayAttribute = 'name',
   label
-}) => {
+}: RegardsSelectProps) => {
   return (
     <select onChange={onSelect}>
       <option defaultValue>{label}</option>
@@ -15,14 +24,6 @@ const RegardsSelect = ({
       )}
     </select>
   )
-}
-
-RegardsSelect.propTypes = {
-  list: PropTypes.arrayOf(PropTypes.object),
-  onSelect: PropTypes.func,
-  identityAttribute: PropTypes.string,
-  displayAttribute: PropTypes.string,
-  label: PropTypes.string
 }
 
 export default RegardsSelect

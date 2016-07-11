@@ -1,18 +1,27 @@
-import React from 'react'
+import * as React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import ReactDOM from 'react-dom'
+import * as ReactDOM from 'react-dom'
 
-import ApplicationErrorComponent from 'common/components/ApplicationErrorComponent'
-import SelectThemeComponent from 'common/theme/components/SelectThemeComponent'
+import ApplicationErrorComponent from '../common/components/ApplicationErrorComponent'
+import SelectThemeComponent from '../common/theme/components/SelectThemeComponent'
 import InstanceComponent from './modules/projects/components/InstanceComponent'
 import ProjectsContainer from './modules/projects/containers/ProjectsContainer'
-import { getThemeStyles } from 'common/theme/ThemeUtils'
-import { setTheme } from 'common/theme/actions/ThemeActions'
+import { getThemeStyles } from '../common/theme/ThemeUtils'
+import { setTheme } from '../common/theme/actions/ThemeActions'
 
-import { fetchAuthenticate } from 'common/authentication/AuthenticateActions'
+import { fetchAuthenticate } from '../common/authentication/AuthenticateActions'
 
-class PortalApp extends React.Component {
+interface PortalAppProps {
+  // Properties set by react-redux connectiona
+  authentication?: any,
+  theme?: string,
+  initTheme?: (theme:string) => void,
+  publicAuthenticate?: ()=> void
+
+}
+
+class PortalApp extends React.Component<PortalAppProps, any> {
 
   componentWillMount(){
     // Init application theme
@@ -56,17 +65,17 @@ class PortalApp extends React.Component {
 }
 
 // Add props from store to the container props
-const mapStateToProps = (state) => {
+const mapStateToProps = (state:any) => {
   return {
     theme: state.common.theme,
     authentication: state.common.authentication
   }
 }
 // Add functions dependending on store dispatch to container props.
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToProps = (dispatch:any) => {
   return {
     publicAuthenticate: () => dispatch(fetchAuthenticate("public","public")),
-    initTheme: (theme) =>  dispatch(setTheme(theme))
+    initTheme: (theme:string) =>  dispatch(setTheme(theme))
   }
 }
-export default connect(mapStateToProps,mapDispatchToProps)(PortalApp)
+export default connect<{}, {}, PortalAppProps>(mapStateToProps,mapDispatchToProps)(PortalApp)

@@ -1,4 +1,4 @@
-export default (state = '', action) => {
+export default (state:string = '', action:any) => {
   switch (action.type){
     case "SET_THEME" :
       return action.theme

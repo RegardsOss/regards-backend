@@ -1,13 +1,19 @@
-import React from 'react'
+import * as React from 'react'
 
-class SelectThemeComponent extends React.Component {
+interface SelectThemeTypes {
+  styles: any,
+  themes: Array<any>,
+  curentTheme: string,
+  onThemeChange: (theme:string) => void
+}
+
+class SelectThemeComponent extends React.Component<SelectThemeTypes, any> {
   constructor(){
     super()
     this.onChange = this.onChange.bind(this)
   }
 
-  onChange(e){
-    console.log("SEB",e.target.value)
+  onChange(e: any){
     this.props.onThemeChange(e.target.value)
   }
 
@@ -34,13 +40,6 @@ class SelectThemeComponent extends React.Component {
     )
   }
 
-}
-
-SelectThemeComponent.propTypes = {
-  styles: React.PropTypes.object.isRequired,
-  themes: React.PropTypes.array.isRequired,
-  curentTheme: React.PropTypes.string.isRequired,
-  onThemeChange: React.PropTypes.func.isRequired
 }
 
 export default SelectThemeComponent

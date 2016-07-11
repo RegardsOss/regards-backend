@@ -1,8 +1,12 @@
-import React from 'react'
+import * as React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 
-class InstanceComponent extends React.Component {
+interface InstacenProps {
+  styles: any
+}
+
+class InstanceComponent extends React.Component<InstacenProps, any> {
 
   render(){
     // styles props is passed throught the react component creation
@@ -14,10 +18,6 @@ class InstanceComponent extends React.Component {
       </div>
     )
   }
-}
-
-InstanceComponent.propTypes = {
-  styles: React.PropTypes.object.isRequired
 }
 
 export default InstanceComponent

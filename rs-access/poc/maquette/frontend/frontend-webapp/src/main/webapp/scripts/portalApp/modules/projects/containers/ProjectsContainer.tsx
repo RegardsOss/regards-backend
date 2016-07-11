@@ -1,10 +1,20 @@
-import React from 'react'
+import * as React from 'react'
 import { connect } from 'react-redux'
-import Project from '../components/ProjectComponent'
+import ProjectComponent from '../components/ProjectComponent'
 import { fetchProjects } from '../actions/ProjectsActions'
 
+import { Project, ProjectsStore } from '../components/ProjectTypes'
+
+// Container props
+interface ProjectsProps{
+  styles: any,
+  // Properties set by react redux connection
+  onLoad?: ()=> void,
+  projects?: ProjectsStore
+}
+
 // Export class itself without connect to be able to use it in test without store connection.
-export class ProjectsContainer extends React.Component {
+export class ProjectsContainer extends React.Component<ProjectsProps, any> {
 
   componentWillMount(){
     // onLoad method is set to the container props by react-redux connect.
@@ -28,7 +38,7 @@ export class ProjectsContainer extends React.Component {
           <p>Available projects on REGARDS instance :</p>
           <ul>
             {projects.items.map(project =>
-              <Project key={project.name} project={project} styles={styles}/>
+              <ProjectComponent key={project.name} project={project} styles={styles}/>
             )}
           </ul>
         </div>
@@ -37,22 +47,17 @@ export class ProjectsContainer extends React.Component {
   }
 }
 
-// Container props
-ProjectsContainer.propTypes = {
-  styles: React.PropTypes.object.isRequired
-}
-
 // Add projects from store to the container props
-const mapStateToProps = (state) => {
+const mapStateToProps = (state:any) => {
   return {
     projects: state.portalApp.projects
   }
 }
 
 // Add functions dependending on store dispatch to container props.
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToProps = (dispatch:any) => {
   return {
     onLoad: () => dispatch(fetchProjects())
   }
 }
-export default connect(mapStateToProps,mapDispatchToProps)(ProjectsContainer)
+export default connect<{},{},ProjectsProps>(mapStateToProps,mapDispatchToProps)(ProjectsContainer)

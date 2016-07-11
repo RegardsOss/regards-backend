@@ -1,7 +1,7 @@
 "use strict";
 const React = require('react');
 const react_redux_1 = require('react-redux');
-const ThemeUtils_1 = require('common/theme/ThemeUtils');
+const ThemeUtils_1 = require('../theme/ThemeUtils');
 class ApplicationErrorComponent extends React.Component {
     render() {
         const styles = ThemeUtils_1.getThemeStyles(this.props.theme, 'common/common');

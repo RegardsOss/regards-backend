@@ -1,12 +1,13 @@
 import {
   REQUEST_PLUGINS,  RECEIVE_PLUGINS,
   FAILED_PLUGINS, PLUGIN_INITIALIZED } from './PluginsActions'
+import { PluginsStore } from './PluginTypes'
 
-export default (state = {
+export default (state:PluginsStore = {
   isFetching : false,
   items: [],
   lastUpdate: ''
-}, action) => {
+}, action: any) => {
   switch(action.type){
     case REQUEST_PLUGINS:
       return Object.assign({}, state, {

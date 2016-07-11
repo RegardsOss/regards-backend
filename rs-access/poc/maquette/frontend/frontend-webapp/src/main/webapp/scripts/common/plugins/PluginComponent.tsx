@@ -1,10 +1,14 @@
-import React from 'react'
+import * as React from 'react'
 import { connect } from 'react-redux'
+import PluginType from './PluginTypes'
 
+interface PluginProps {
+  plugin: PluginType
+}
 /**
  Display the content of a plugin.
 */
-class PluginComponent extends React.Component {
+class PluginComponent extends React.Component<PluginProps, any> {
   render(){
     const { plugin } = this.props
     if (plugin && plugin.plugin){

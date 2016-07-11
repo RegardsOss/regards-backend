@@ -1,8 +1,15 @@
-import React from 'react'
+import * as React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 
-class ProjectComponent extends React.Component {
+import { Project } from './ProjectTypes'
+
+interface ProjectTypes {
+  project: Project,
+  styles: any
+}
+
+class ProjectComponent extends React.Component<ProjectTypes, any> {
   render(){
     // styles props is passed throught the react component creation
     const { styles } = this.props
@@ -14,11 +21,6 @@ class ProjectComponent extends React.Component {
       </li>
     )
   }
-}
-
-ProjectComponent.propTypes = {
-  project: React.PropTypes.object.isRequired,
-  styles: React.PropTypes.object.isRequired
 }
 
 export default ProjectComponent
