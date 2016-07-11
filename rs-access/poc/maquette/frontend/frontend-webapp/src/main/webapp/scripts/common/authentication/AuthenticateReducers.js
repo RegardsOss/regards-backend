@@ -16,8 +16,8 @@ export default (state = {
     case RECEIVE_AUTHENTICATE:
       return Object.assign({}, state, {
         isFetching: false,
-        user: action.user,
-        authenticateDate: action.authenticateDate
+        user: action.payload,
+        authenticateDate: action.meta.authenticateDate
       });
     case FAILED_AUTHENTICATE:
       return Object.assign({}, state, {

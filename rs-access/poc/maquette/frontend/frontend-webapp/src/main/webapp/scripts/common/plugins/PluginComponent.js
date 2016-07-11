@@ -1,5 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import { pluginInitialized } from './PluginsActions'
 
 /**
  Display the content of a plugin.
@@ -14,5 +15,10 @@ class PluginComponent extends React.Component {
     }
   }
 }
+
+const mapStateToProps = (state) => ({})
+const mapDispatchToProps = (dispatch) => ({
+  pluginInitialized: (name, plugin) => dispatch(pluginInitialized(name, plugin))
+})
 
 export default connect()(PluginComponent)

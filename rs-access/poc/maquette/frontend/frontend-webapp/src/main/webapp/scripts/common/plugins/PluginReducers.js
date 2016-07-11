@@ -1,6 +1,7 @@
 import {
   REQUEST_PLUGINS,  RECEIVE_PLUGINS,
   FAILED_PLUGINS, PLUGIN_INITIALIZED } from './PluginsActions'
+import scriptjs from 'scriptjs'
 
 export default (state = {
   isFetching : false,
@@ -13,10 +14,14 @@ export default (state = {
         isFetching: true
       })
     case RECEIVE_PLUGINS:
+      action.payload.map( plugin => {
+        const paths = plugin.paths.map(path => window.location.origin + "/plugins/" + path)
+        scriptjs(paths, plugin.name)
+      })
       return Object.assign({}, state, {
         isFetching: false,
-        items: action.plugins,
-        lastUpdate: action.receivedAt
+        items: action.payload,
+        lastUpdate: action.meta.receivedAt
       })
     case FAILED_PLUGINS:
       return Object.assign({}, state, {
@@ -34,9 +39,3 @@ export default (state = {
       return state
   }
 }
-
-// const pluginsReducers = {
-//   plugins
-// }
-//
-// export default pluginsReducers

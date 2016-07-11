@@ -9,15 +9,14 @@ export default (state = {
 }, action) => {
   switch(action.type){
     case REQUEST_PROJECTS:
-      console.log('Plop',state);
       return Object.assign({}, state, {
         isFetching: true
       })
     case RECEIVE_PROJECTS:
       return Object.assign({}, state, {
         isFetching: false,
-        items: action.projects,
-        lastUpdate: action.receivedAt
+        items: action.payload,
+        lastUpdate: action.meta.receivedAt
       })
     case FAILED_PROJECTS:
       return Object.assign({}, state, {

@@ -44,7 +44,7 @@ NavigationContainer.propTypes = {
 // Add projects from store to the container props
 const mapStateToProps = (state) => {
   return {
-    plugins: state.plugins
+    plugins: state.common.plugins
   }
 }
 module.exports = connect(mapStateToProps)(NavigationContainer)

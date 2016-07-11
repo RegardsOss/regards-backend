@@ -15,9 +15,9 @@ export default store => next => action => {
 
 const getAuthorization = (state) => {
   // Init the authorization bearer of the fetch request
-  let authentication = state.common.authentication
-  let authorization = "Basic"
-
+  const authentication = state.common.authentication
+  // let authorization = "Basic "
+  let authorization = "Basic " + btoa("acme:acmesecret")
   if ( authentication && authentication.user && authentication.user.access_token){
     authorization = "Bearer " + authentication.user.access_token
   }
