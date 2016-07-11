@@ -33,12 +33,16 @@ module.exports = {
   resolve: {
     // Automaticly get extensions files from javascript code with import or require.
     // exemple require('main') look for main, main.js or main.sass with our configuration
-    extensions: ['', '.js', '.scss'],
+    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js", '.scss'],
     // Alias that can be used in javascript code for require or import
     // Exemple : require ('AppStore') is equal to require ('scripts/common/store/Store.js');
     alias: {
       RegardsView: path.join(__dirname,"scripts/common/modulesManager/RegardsView.js"),
       AppStore: path.join(__dirname,"scripts/common/store/Store.js")
+      common: path.join(__dirname,"scripts/common"),
+      adminApp: path.join(__dirname,"scripts/adminApp"),
+      userApp: path.join(__dirname,"scripts/userApp"),
+      portalApp: path.join(__dirname,"scripts/portalApp")
     },
     // Root directories from wich requires are made
     root: [
@@ -48,10 +52,22 @@ module.exports = {
   },
   module: {
     loaders: [
+      // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
+      {
+        test: /\.tsx{0,1}?$/,
+        exclude: [/node_modules/,/json/],
+        loader: "babel-loader?presets=['es2015', 'react']!ts-loader"
+      },
       // Transpile ES6 Javascript into ES5 with babel loader and react
       {test: /\.js$/, exclude: [/node_modules/,/json/],
         loader: 'babel',
-        query: { presets: ['es2015', 'react']}
+        query: {
+          presets: ['es2015', 'react'],
+          // This plugin allows Babel to transform rest properties for object
+          // destructuring assignment and spread properties for object literals.
+          // Allow use of syntax {...object} from ES7
+          plugins: ["transform-object-rest-spread"]
+        }
       },
       // Sass files compilation to css with css modules enable
       {test: /\.scss$/, exclude: [/node_modules/,/scripts/,/stylesheets\/default/,/stylesheets\/vendors/],
