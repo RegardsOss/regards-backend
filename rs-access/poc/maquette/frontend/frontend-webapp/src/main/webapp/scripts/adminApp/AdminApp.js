@@ -40,9 +40,8 @@ class AdminApp extends React.Component {
     const { theme, authentication, content, location, params, onLogout } = this.props
     const styles = getThemeStyles(theme, 'adminApp/styles')
     const commonStyles = getThemeStyles(theme,'common/common.scss')
-
     const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
-    if (!authenticated || authentication.user.name === 'public'){
+    if (!authentication || !authentication.user){
       return (
         <div className={styles.main}>
           <Authentication
@@ -84,8 +83,8 @@ AdminApp.contextTypes = {
 // Add theme from store to the component props
 const mapStateToProps = (state) => {
   return {
-    theme: state.theme,
-    authentication: state.authentication
+    theme: state.common.theme,
+    authentication: state.common.authentication
   }
 }
 const mapDispatchToProps = (dispatch) => {
@@ -94,4 +93,4 @@ const mapDispatchToProps = (dispatch) => {
     onLogout: () => {dispatch(logout())}
   }
 }
-module.exports = connect(mapStateToProps,mapDispatchToProps)(AdminApp)
+export default connect(mapStateToProps,mapDispatchToProps)(AdminApp)
