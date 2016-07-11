@@ -1,13 +1,14 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-        "outDir": "./build/",
-        "sourceMap": true,
-        "noImplicitAny": false,
-        "target": "es6",
-        "jsx": "react"
+      "outDir": "./dist/",
+      "sourceMap": true,
+      "noImplicitAny": true,
+      "module": "commonjs",
+      "target": "es6",
+      "jsx": "react"
     },
-    "exclude": [
-        "node_modules"
+    "exclude" : [
+      "node_modules"
     ]
 }
