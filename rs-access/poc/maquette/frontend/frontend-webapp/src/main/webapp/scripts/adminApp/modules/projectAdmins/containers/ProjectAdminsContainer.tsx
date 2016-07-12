@@ -25,7 +25,6 @@ import {
   getProjectAdminById } from '../../../reducer'
 // Styles
 var classnames = require('classnames')
-//import '../../../../../stylesheets/foundation-icons/foundation-icons.scss'
 import { getThemeStyles } from '../../../../common/theme/ThemeUtils'
 
 interface ProjectAdminsProps {

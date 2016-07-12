@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { PropTypes } from 'react'
 import { connect } from 'react-redux'
-//import icons from 'stylesheets/foundation-icons/foundation-icons.scss'
+var icons = require('stylesheets/foundation-icons/foundation-icons.scss')
 import RegardsSelect from '../../../../common/components/RegardsSelect'
 
 interface ManageProjectsType {
@@ -19,10 +19,10 @@ class ManageProjectsComponent extends React.Component<ManageProjectsType, any> {
       <div>
         <span>Manage projects</span>
         <button title='Add new project' onClick={this.props.onAddClick}>
-          <i className='fi-plus'></i>
+          <i className={icons['fi-plus']}></i>
         </button>
         <button  title='Delete selected project' onClick={() => this.props.onDeleteClick(this.props.selectedProjectId)}>
-          <i className='fi-trash'></i>
+          <i className={icons['fi-trash']}></i>
         </button>
         <br/>
         <RegardsSelect

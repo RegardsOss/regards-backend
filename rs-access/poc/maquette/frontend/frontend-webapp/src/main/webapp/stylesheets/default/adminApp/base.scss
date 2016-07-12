@@ -9,11 +9,12 @@ button {
   //width: 100%;
 }
 
-.layout {
+.layout, .main {
   background-image: $background-image;
   // Take full screen size for layout
   min-height: 100vh;
   min-width: 100vw;
+  position: absolute;
 }
 
 .content {

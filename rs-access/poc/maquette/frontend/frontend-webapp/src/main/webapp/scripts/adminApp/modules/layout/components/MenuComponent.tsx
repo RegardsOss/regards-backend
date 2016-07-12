@@ -5,7 +5,7 @@ import MenuButtonComponent from './MenuButtonComponent'
 
 // Styles
 var classnames = require("classnames")
-//import '../../../../stylesheets/foundation-icons/foundation-icons.scss'
+var icons = require('../../../../../stylesheets/foundation-icons/foundation-icons.scss')
 import { getThemeStyles } from '../../../../common/theme/ThemeUtils'
 
 interface MenuProps {
@@ -36,7 +36,7 @@ class Menu extends React.Component<MenuProps, any> {
               to={"/admin/"+project+"/test"}
               styles={styles}
               label="Logout"
-              icon="fi-power">
+              icon={icons["fi-power"]}>
             </MenuButtonComponent>
           </li>
           <li>
@@ -44,7 +44,7 @@ class Menu extends React.Component<MenuProps, any> {
               to={"/admin/"+project+"/projects"}
               styles={styles}
               label="Projects"
-              icon="fi-widget">
+              icon={icons["fi-widget"]}>
             </MenuButtonComponent>
           </li>
         </ul>

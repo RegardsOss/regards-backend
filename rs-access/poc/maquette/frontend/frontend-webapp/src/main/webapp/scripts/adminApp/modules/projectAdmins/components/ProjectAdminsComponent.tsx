@@ -1,7 +1,7 @@
 //import { React, PropTypes } from 'react'
 //import * as React from 'react'
 import * as React from 'react'
-//import '../../../../../stylesheets/foundation-icons/foundation-icons.scss'
+var icons = require('../../../../../stylesheets/foundation-icons/foundation-icons.scss')
 import { map } from 'lodash'
 // Styles
 var classnames = require('classnames')
@@ -25,7 +25,7 @@ class ProjectAdminsComponent extends React.Component<ProjectAdminsProps, any> {
         <div className={className}>
           Project Administrators
           <button title='Add new administrator' onClick={() => onAddClick(project.id)}>
-            <i className={'fi-plus'} ></i>
+            <i className={icons['fi-plus']} ></i>
           </button>
           <br />
           List of administrators for {project.name}:
@@ -34,10 +34,10 @@ class ProjectAdminsComponent extends React.Component<ProjectAdminsProps, any> {
               <li key={id}>
                 {projectAdmin.name}
                 <button title='Configure admin user' onClick={() => onConfigureClick(id)}>
-                  <i className={'fi-wrench'}></i>
+                  <i className={icons['fi-wrench']}></i>
                 </button>
                 <button title='Delete admin user' onClick={() => onDeleteClick(id)}>
-                  <i className={'fi-trash'}></i>
+                  <i className={icons['fi-trash']}></i>
                 </button>
               </li>
             ))}

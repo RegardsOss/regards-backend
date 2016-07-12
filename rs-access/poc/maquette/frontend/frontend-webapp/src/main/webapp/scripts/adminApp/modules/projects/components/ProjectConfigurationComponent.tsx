@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Component, PropTypes } from 'react'
 import {reduxForm} from 'redux-form';
-//import icons from 'stylesheets/foundation-icons/foundation-icons.scss'
+var icons = require('stylesheets/foundation-icons/foundation-icons.scss')
 
 interface ProjectconfigurationTypes {
   fields?: Array<any>
@@ -15,15 +15,8 @@ interface ProjectconfigurationTypes {
 
 class ProjectConfigurationComponent extends Component<ProjectconfigurationTypes, any> {
   render() {
-    const {
-      show,
-      onSaveClick,
-      onCancelClick,
-      fields: {projectName},
-      handleSubmit,
-      submitting,
-      styles
-    } : any = this.props;
+    const { show, onSaveClick, onCancelClick }:any = this.props;
+    const {  fields: {projectName}, handleSubmit,  submitting,styles }:any = this.props
 
     if(show)
       return (
@@ -33,11 +26,11 @@ class ProjectConfigurationComponent extends Component<ProjectconfigurationTypes,
           </div>
           <div>
             <button className={styles['button'] + ' ' + styles['success']} disabled={submitting}>
-              <i className='fi-save'></i>
+              <i className={icons['fi-save']}></i>
               {submitting ? 'Submitting...' : ''} Save
             </button>
             <button type="button" className={styles['button'] + ' ' + styles['alert']} disabled={submitting} onClick={onCancelClick}>
-              <i className='fi-prohibited'></i>
+              <i className={icons['fi-prohibited']}></i>
               Cancel
             </button>
           </div>

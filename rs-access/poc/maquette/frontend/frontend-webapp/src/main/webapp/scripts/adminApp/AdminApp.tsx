@@ -43,7 +43,6 @@ class AdminApp extends React.Component<AminAppProps, any> {
     this.props.setTheme(themeToSet)
   }
 
-
   changeTheme(themeToSet: string){
     if (this.props.theme !== themeToSet){
       this.props.setTheme(themeToSet)

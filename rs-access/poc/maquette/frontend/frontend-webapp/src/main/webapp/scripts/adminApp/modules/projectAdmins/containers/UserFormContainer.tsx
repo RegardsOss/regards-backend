@@ -10,7 +10,7 @@ import * as React from 'react'
 import { Component, PropTypes } from 'react'
 import { reduxForm } from 'redux-form'
 export const fields = [ 'id', 'projectId', 'username', 'password', 'passwordConfirm']
-//import '../../../../../stylesheets/foundation-icons/foundation-icons.scss'
+var icons = require('../../../../../stylesheets/foundation-icons/foundation-icons.scss')
 // Selectors
 import {
   getSelectedProjectAdminId,
@@ -102,14 +102,14 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
               type="submit"
               className={styles['button'] + ' ' + styles['success']}
               disabled={submitting}>
-              <i className={'fi-save'}></i>
+              <i className={icons['fi-save']}></i>
               {submitting ? 'Submitting...' : ''} Save
             </button>
             <button
               type="button"
               className={styles['button'] + ' ' + styles['alert']}
               disabled={submitting} onClick={onCancelClick}>
-              <i className={'fi-prohibited'}></i>
+              <i className={icons['fi-prohibited']}></i>
               Cancel
             </button>
           </div>
