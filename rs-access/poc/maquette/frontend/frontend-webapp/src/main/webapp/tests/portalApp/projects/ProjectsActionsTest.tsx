@@ -1,11 +1,11 @@
 var configureMockStore = require('redux-mock-store')
+var { apiMiddleware } = require('redux-api-middleware')
 import thunk from 'redux-thunk'
 import * as nock from 'nock'
 import { expect } from 'chai' // You can use any testing library
 import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
     FAILED_PROJECTS, fetchProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions';
-import { apiMiddleware } from 'redux-api-middleware'
 
 const middlewares = [ thunk, apiMiddleware ]
 const mockStore = configureMockStore(middlewares)

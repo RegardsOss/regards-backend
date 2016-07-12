@@ -21,14 +21,13 @@ class Layout extends React.Component<LayoutProps, any> {
     const { theme } = this.props
     const styles = getThemeStyles(this.props.theme, 'userApp/base')
     const commonStyles = getThemeStyles(theme,'common/common.scss')
-    const dependencies = null
 
     return (
       <div className="full-div">
         <div className="header">
           <h1> Test Application {this.props.project} </h1>
         </div>
-        <AccessRightsComponent dependencies={dependencies}>
+        <AccessRightsComponent dependencies={null}>
           <NavigationContainer project={this.props.project} location={this.props.location}/>
         </AccessRightsComponent>
         <div className={styles.main}>

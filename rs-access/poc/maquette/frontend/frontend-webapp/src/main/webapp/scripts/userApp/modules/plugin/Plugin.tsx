@@ -3,23 +3,16 @@ import { connect } from 'react-redux'
 import AccessRightsComponent from '../../../common/access-rights/AccessRightsComponent'
 import PluginComponent from '../../../common/plugins/PluginComponent'
 
+import { PluginType } from '../../../common/plugins/PluginTypes'
+
 
 interface PluginProps {
   params: any,
-  plugin: any,
+  plugin: PluginType,
   plugins: Array<any>
 }
 
-class PluginContainer extends AccessRightsComponent<PluginProps, any> {
-
-  getDependencies(){
-    const { plugin } = this.props
-    if (plugin && plugin.getDependencies){
-      return plugin.getDependencies()
-    } else {
-      return null
-    }
-  }
+class PluginContainer extends React.Component<PluginProps, any> {
 
   render(){
     if (this.state.access === true){

@@ -6,6 +6,9 @@ import { setTheme } from '../common/theme/actions/ThemeActions'
 import Layout from './modules/layout/Layout'
 import Test from './modules/test/Test'
 
+import AccessRightsComponent from '../common/access-rights/AccessRightsComponent'
+import { Dependencies } from '../common/access-rights/AccessRightsViewType'
+
 import { PluginsStore } from '../common/plugins/PluginTypes'
 
 interface UserAppProps {
@@ -42,8 +45,17 @@ class UserApp extends React.Component<UserAppProps, any> {
     console.log("PROPS",this.props)
     const { location, params, content } = this.props
     const { project } = params
+    const dependencies:Dependencies = {
+      "GET" : ["dependence"]
+    }
     if (!content){
-      return (<Layout location={location} project={project}><Test /></Layout>)
+      return (
+        <Layout location={location} project={project} >
+          <AccessRightsComponent dependencies={dependencies} >
+            <Test />
+          </AccessRightsComponent>
+        </Layout>
+       )
     } else {
       return (<Layout location={location} project={project}>{this.props.content}</Layout>)
     }

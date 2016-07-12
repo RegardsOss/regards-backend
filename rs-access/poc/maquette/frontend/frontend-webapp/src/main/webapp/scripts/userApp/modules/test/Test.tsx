@@ -3,7 +3,7 @@ import AccessRightsComponent from '../../../common/access-rights/AccessRightsCom
 
 import { Dependencies } from '../../../common/access-rights/AccessRightsViewType'
 
-class Test extends AccessRightsComponent<any, any> {
+class Test extends React.Component<any, any> {
 
   getDependencies():Dependencies{
     return {
