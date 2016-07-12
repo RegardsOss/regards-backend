@@ -11,7 +11,7 @@ class PluginComponent extends React.Component {
     if (plugin && plugin.plugin){
       return React.createElement(plugin.plugin,null)
     } else {
-      return <div className="error"> Undefined plugin {plugin.name} </div>
+      return <div className="error"> Undefined plugin </div>
     }
   }
 }
