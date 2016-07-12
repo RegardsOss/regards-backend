@@ -75,4 +75,4 @@ const mapStateToProps = (state: any) => {
     theme: state.theme
   }
 }
-module.exports = connect<{},{},TestProps>(mapStateToProps)(Test)
+export default connect<{},{},TestProps>(mapStateToProps)(Test)

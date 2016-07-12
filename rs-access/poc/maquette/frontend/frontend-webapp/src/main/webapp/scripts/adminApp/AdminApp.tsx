@@ -7,7 +7,9 @@ import { setTheme } from '../common/theme/actions/ThemeActions'
 import { logout } from '../common/authentication/AuthenticateActions'
 import { getThemeStyles } from '../common/theme/ThemeUtils'
 import Authentication from './modules/authentication/Authentication'
+import { AuthenticationType } from '../common/authentication/AuthenticationTypes'
 import SelectThemeComponent from '../common/theme/components/SelectThemeComponent'
+import ErrorComponent from '../common/components/ApplicationErrorComponent'
 import Layout from './modules/layout/Layout'
 
 interface AminAppProps {
@@ -15,7 +17,7 @@ interface AminAppProps {
   route : any,
   params: any,
   theme: string,
-  authentication: any,
+  authentication: AuthenticationType,
   content: any,
   location: any,
   onLogout: ()=> void,
@@ -52,36 +54,41 @@ class AdminApp extends React.Component<AminAppProps, any> {
     const { theme, authentication, content, location, params, onLogout } = this.props
     const styles = getThemeStyles(theme, 'adminApp/styles')
     const commonStyles = getThemeStyles(theme,'common/common.scss')
-    const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
-    if (!authentication || !authentication.user){
-      return (
-        <div className={styles.main}>
-          <Authentication />
-
-          <SelectThemeComponent
-            styles={commonStyles}
-            themes={["cdpp","ssalto","default"]}
-            curentTheme={theme}
-            onThemeChange={this.changeTheme} />
-        </div>
-      );
-    } else {
+    if (authentication){
+      const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
+      if (!authenticated || authentication.user.name === 'public'){
         return (
-          <div>
-            <Layout
-              location={location}
-              content={content}
-              project={params.project}
-              instance={this.state.instance}
-              onLogout={onLogout}/>
+          <div className={styles.main}>
+            <Authentication />
 
             <SelectThemeComponent
-              styles={styles}
+              styles={commonStyles}
               themes={["cdpp","ssalto","default"]}
               curentTheme={theme}
               onThemeChange={this.changeTheme} />
-        </div>
+          </div>
         );
+      } else {
+          return (
+            <div>
+              <Layout
+                location={location}
+                content={content}
+                project={params.project}
+                instance={this.state.instance}
+                onLogout={onLogout}/>
+
+              <SelectThemeComponent
+                styles={styles}
+                themes={["cdpp","ssalto","default"]}
+                curentTheme={theme}
+                onThemeChange={this.changeTheme} />
+          </div>
+          );
+      }
+    }
+    else {
+      return <ErrorComponent />
     }
   }
 }

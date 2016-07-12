@@ -1,8 +1,9 @@
 import ProjectsContainer from './containers/ProjectsContainer'
+import { PlainRoute } from 'react-router'
 
 declare var require: any;
 
-export default {
+export const projectsRoutes:PlainRoute = {
   path: 'projects',
   getComponents(nextState: any, cb: any) {
     require.ensure([], (require: any) => {

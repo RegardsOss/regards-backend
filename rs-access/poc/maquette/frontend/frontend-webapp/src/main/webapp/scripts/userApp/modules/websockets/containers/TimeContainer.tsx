@@ -60,4 +60,3 @@ const mapStateToProps = (state:any) => {
 }
 const timeConnected = connect<{}, {}, TimeProps>(mapStateToProps,mapDispatchToProps)(TimeContainer)
 export default timeConnected
-module.exports = timeConnected

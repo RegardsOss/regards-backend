@@ -1,6 +1,8 @@
+import { PlainRoute } from 'react-router'
+
 declare var require: any;
 
-const routes = {
+export const homeRoutes:PlainRoute = {
   path: 'home',
 
   getComponents(nextState: any, cb: any) {
@@ -11,6 +13,3 @@ const routes = {
     })
   }
 }
-
-export default routes
-module.exports = routes

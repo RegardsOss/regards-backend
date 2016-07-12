@@ -4,6 +4,6 @@
 import { combineReducers } from 'redux'
 import { MenuReducer } from './MenuReducers'
 
-module.exports = combineReducers({
+export default combineReducers({
   menu: MenuReducer
 });

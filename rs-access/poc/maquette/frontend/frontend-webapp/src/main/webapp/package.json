@@ -8,6 +8,7 @@
     "start": "webpack-dev-server --progress --config webpack.dev.config.js",
     "prebuild": "npm test",
     "build": "webpack --progress --config webpack.dev.config.js",
+    "postinstall" : "typings install",
     "prebuildp": "npm install && npm test",
     "buildp": "webpack --progress --config webpack.prod.config.js",
     "pretest": "tsc",

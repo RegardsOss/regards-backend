@@ -39,6 +39,7 @@ class UserApp extends React.Component<UserAppProps, any> {
 
   render(){
     // Location ,params and content are set in this container props by react-router
+    console.log("PROPS",this.props)
     const { location, params, content } = this.props
     const { project } = params
     if (!content){
