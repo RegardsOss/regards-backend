@@ -9,6 +9,7 @@ import { ProjectAdminsContainer, UserFormContainer } from 'adminApp/modules/proj
 // Components
 import ManageProjectsComponent from '../components/ManageProjectsComponent'
 import ProjectConfigurationComponent from '../components/ProjectConfigurationComponent'
+import AccessRightsComponent from 'common/access-rights/AccessRightsComponent'
 // Actions
 import {
   addProject,
@@ -40,6 +41,14 @@ class ProjectsContainer extends React.Component {
       this.props.styles['callout'],
       this.props.styles['custom-callout']
     )
+    // TODO: Find a way to declare/store the dependencies
+    // const dependencies = {
+    //   'module' : '',
+    //   'GET' : ['toto'],
+    //   'POST' : ['tutu']
+    // }
+    const dependencies = null
+
     return (
       <fieldset className={className}>
         <legend>Projects</legend>
@@ -57,11 +66,15 @@ class ProjectsContainer extends React.Component {
           onAddClick={this.props.showProjectConfiguration}
           onDeleteClick={this.props.deleteProject}
           styles={this.props.styles} />
-        <ProjectAdminsContainer />
+        <AccessRightsComponent dependencies={dependencies}>
+          <ProjectAdminsContainer/>
+        </AccessRightsComponent>
       </fieldset>
     )
   }
 }
+
+// <ProjectAdminsContainer />
 
 ProjectsContainer.propTypes = {
   projects: PropTypes.array,

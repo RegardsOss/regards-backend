@@ -1,11 +1,9 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux';
-
-//import AccessRightsComponent from 'common/access-rights/AccessRightsComponent'
-
 // Containers
 import UserFormContainer from './UserFormContainer'
 // Components
+import AccessRightsComponent from 'common/access-rights/AccessRightsComponent'
 import ProjectAdminsComponent from '../components/ProjectAdminsComponent'
 // Actions
 import {
@@ -31,15 +29,6 @@ import icons from 'stylesheets/foundation-icons/foundation-icons.scss'
 import { getThemeStyles } from 'common/theme/ThemeUtils'
 
 class ProjectAdminsContainer extends React.Component {
-//class ProjectAdminsContainer extends AccessRightsComponent {
-
-  // getDependencies(){
-  //   return {
-  //     'module' : '',
-  //     'GET' : ['users'],
-  //     'POST' : ['Createproject']
-  //   }
-  // }
 
   componentWillReceiveProps(nextProps) {
     const oldProject = this.props.project

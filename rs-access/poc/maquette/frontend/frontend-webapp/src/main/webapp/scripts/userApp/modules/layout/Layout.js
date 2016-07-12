@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { getThemeStyles } from 'common/theme/ThemeUtils'
 import { setTheme } from 'common/theme/actions/ThemeActions'
 import SelectThemeComponent from 'common/theme/components/SelectThemeComponent'
-
+import AccessRightsComponent from 'common/access-rights/AccessRightsComponent'
 import NavigationContainer from './containers/NavigationContainer'
 
 class Layout extends React.Component {
@@ -13,12 +13,16 @@ class Layout extends React.Component {
     const { theme } = this.props
     const styles = getThemeStyles(this.props.theme, 'userApp/base')
     const commonStyles = getThemeStyles(theme,'common/common.scss')
+    const dependencies = null
+
     return (
       <div className="full-div">
         <div className="header">
           <h1> Test Application {this.props.project} </h1>
         </div>
-        <NavigationContainer project={this.props.project} location={this.props.location}/>
+        <AccessRightsComponent dependencies={dependencies}>
+          <NavigationContainer project={this.props.project} location={this.props.location}/>
+        </AccessRightsComponent>
         <div className={styles.main}>
           {this.props.children}
         </div>

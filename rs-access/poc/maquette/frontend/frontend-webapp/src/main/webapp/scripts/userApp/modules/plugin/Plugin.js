@@ -40,7 +40,7 @@ PluginContainer.propTypes = {
 
 const mapStateToProps = ( state ) => {
   return {
-    plugins: state.plugins.items
+    plugins: state.common.plugins.items
   }
 }
 module.exports = connect(mapStateToProps)(PluginContainer)

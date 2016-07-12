@@ -1,18 +1,13 @@
 import React from 'react'
 import { connect } from 'react-redux'
 
-import AccessRightsComponent from 'common/access-rights/AccessRightsComponent'
 import LinkComponent from '../components/LinkComponent'
 
-class NavigationContainer extends AccessRightsComponent {
-
-  getDependencies(){
-    return null
-  }
+class NavigationContainer extends React.Component {
 
   render(){
     const { location, plugins, project } = this.props
-    if (this.state.access === true && plugins.items){
+    if (plugins.items){
       return (
         <nav>
           <LinkComponent location={location} key="plop" to={"/user/"+project+"/test"}>Test de lien</LinkComponent>

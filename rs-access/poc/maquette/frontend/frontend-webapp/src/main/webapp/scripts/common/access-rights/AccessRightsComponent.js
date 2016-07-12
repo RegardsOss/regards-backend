@@ -32,7 +32,15 @@ class AccessRightsComponent extends React.Component{
   * }
   */
   getDependencies(){
-    return null;
+    return this.props.dependencies;
+  }
+
+  render() {
+    return (
+      <div>
+        {this.props.children}
+      </div>
+    )
   }
 
   /**
@@ -78,12 +86,17 @@ class AccessRightsComponent extends React.Component{
       });
     }
   }
+
+  getChildClassName(){
+    return this.props.children.type.WrappedComponent.name
+  }
 }
 
 AccessRightsComponent.contextTypes = {
   store: React.PropTypes.object,
   router: React.PropTypes.object,
-  route : React.PropTypes.object
+  route : React.PropTypes.object,
+  dependencies: React.PropTypes.object
 }
 
 export default AccessRightsComponent
