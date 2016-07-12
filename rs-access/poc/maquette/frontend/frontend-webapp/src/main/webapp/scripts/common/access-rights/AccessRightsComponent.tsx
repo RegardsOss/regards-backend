@@ -17,6 +17,7 @@ interface AccessRightsTypes {
 class AccessRightsComponent<P, S> extends React.Component<P, any>{
 
   unsubscribeViewAccessRights:any = null
+  oldRender:any = null
 
   /**
   * Constructor.
@@ -42,8 +43,16 @@ class AccessRightsComponent<P, S> extends React.Component<P, any>{
   *  DELETE : ["dependence"],
   * }
   */
-  getDependencies():Dependencies{
-    return null;
+  getDependencies(){
+    return this.props.dependencies;
+  }
+
+  render() {
+    return (
+      <div>
+        {this.props.children}
+      </div>
+    )
   }
 
   /**
@@ -57,6 +66,8 @@ class AccessRightsComponent<P, S> extends React.Component<P, any>{
       });
     } else {
       this.unsubscribeViewAccessRights = store.subscribe(this.checkViewAccessRights)
+      this.oldRender = Object.assign({}, this.render)
+      this.render = () => {return null}
       store.dispatch(fetchAccessRights(this.constructor.name, this.getDependencies()))
     }
   }
@@ -76,16 +87,20 @@ class AccessRightsComponent<P, S> extends React.Component<P, any>{
     if (view){
       if (view.access === true){
         console.log("Access granted to view : " + this.constructor.name)
+        // Activate component render
+        this.render = this.oldRender;
       } else {
         console.log("Access denied to view : " + this.constructor.name)
-        // Cancel render method
-        this.render = () => {return null}
       }
       this.unsubscribeViewAccessRights()
       this.setState({
         access: view.access
       });
     }
+  }
+
+  getChildClassName(){
+    return this.props.children.type.WrappedComponent.name
   }
 }
 

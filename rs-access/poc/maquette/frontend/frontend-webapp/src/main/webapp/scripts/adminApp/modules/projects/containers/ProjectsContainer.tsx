@@ -10,6 +10,8 @@ import { ProjectAdminsContainer, UserFormContainer } from '../../projectAdmins'
 // Components
 import ManageProjectsComponent from '../components/ManageProjectsComponent'
 import ProjectConfigurationComponent from '../components/ProjectConfigurationComponent'
+import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
+import ModuleComponent from '../../../../common/components/ModuleComponent'
 // Actions
 import {
   addProject,
@@ -56,27 +58,35 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
       this.props.styles['callout'],
       this.props.styles['custom-callout']
     )
+
     return (
-      <fieldset className={className}>
-        <legend>Projects</legend>
-        <ProjectConfigurationComponent
-          styles={this.props.styles}
-          show={this.props.projectConfigurationIsShown}
-          handleSubmit={this.props.handleSubmit}
-          onCancelClick={this.props.hideProjectConfiguration}
-          submitting={true}/>
+      <ModuleComponent>
+        <fieldset className={className}>
 
-        <ManageProjectsComponent
-          styles={this.props.styles}
-          projects={this.props.projects}
-          selectedProjectId={this.props.selectedProjectId}
-          onSelect={this.props.onSelect}
-          onAddClick={this.props.showProjectConfiguration}
-          onDeleteClick={this.props.deleteProject} />
+          <legend>Projects</legend>
 
-        <ProjectAdminsContainer />
+          <ProjectConfigurationComponent
+            styles={this.props.styles}
+            show={this.props.projectConfigurationIsShown}
+            onSubmit={this.props.handleSubmit}
+            onCancelClick={this.props.hideProjectConfiguration}
+            styles={this.props.styles} />
 
-      </fieldset>
+          <ManageProjectsComponent
+            styles={this.props.styles}
+            projects={this.props.projects}
+            selectedProjectId={this.props.selectedProjectId}
+            onSelect={this.props.onSelect}
+            onAddClick={this.props.showProjectConfiguration}
+            onDeleteClick={this.props.deleteProject}
+            styles={this.props.styles} />
+
+          <AccessRightsComponent dependencies={null}>
+            <ProjectAdminsContainer/>
+          </AccessRightsComponent>
+
+        </fieldset>
+      </ModuleComponent>
     )
   }
 }

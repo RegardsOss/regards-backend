@@ -53,7 +53,6 @@ class AdminApp extends React.Component<AminAppProps, any> {
     const { theme, authentication, content, location, params, onLogout } = this.props
     const styles = getThemeStyles(theme, 'adminApp/styles')
     const commonStyles = getThemeStyles(theme,'common/common.scss')
-
     if (authentication){
       const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
       if (!authenticated || authentication.user.name === 'public'){

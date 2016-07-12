@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 
-import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
-import { Dependencies } from '../../../../common/access-rights/AccessRightsViewType'
 import { PluginsStore } from '../../../../common/plugins/PluginTypes'
 import LinkComponent from '../components/LinkComponent'
 
@@ -13,15 +11,11 @@ interface NavigationProps {
   plugins?: PluginsStore
 }
 
-class NavigationContainer extends AccessRightsComponent<NavigationProps, any> {
-
-  getDependencies():Dependencies{
-    return null
-  }
+class NavigationContainer extends React.Component<NavigationProps, any> {
 
   render(){
     const { location, plugins, project } = this.props
-    if (this.state.access === true && plugins.items){
+    if (plugins.items){
       return (
         <nav>
           <LinkComponent location={location} key="plop" to={"/user/"+project+"/test"}>Test de lien</LinkComponent>
@@ -48,7 +42,7 @@ class NavigationContainer extends AccessRightsComponent<NavigationProps, any> {
 // Add projects from store to the container props
 const mapStateToProps = (state: any) => {
   return {
-    plugins: state.plugins
+    plugins: state.common.plugins
   }
 }
 const navigation = connect<{}, {}, NavigationProps>(mapStateToProps)(NavigationContainer);
