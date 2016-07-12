@@ -4,11 +4,11 @@ import {reduxForm} from 'redux-form';
 var icons = require('stylesheets/foundation-icons/foundation-icons.scss')
 
 interface ProjectconfigurationTypes {
-  fields?: Array<any>
+  // fields?: Array<any> // Pased by the reduxForm decorator
   handleSubmit: () => void,
   onCancelClick: () => void,
   onSaveClick?: ()=> void,
-  submitting: boolean,
+  // submitting: boolean, // Pased by the reduxForm decorator
   show: boolean,
   styles: any
 }

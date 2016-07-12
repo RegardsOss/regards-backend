@@ -68,9 +68,8 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
           <ProjectConfigurationComponent
             styles={this.props.styles}
             show={this.props.projectConfigurationIsShown}
-            onSubmit={this.props.handleSubmit}
-            onCancelClick={this.props.hideProjectConfiguration}
-            styles={this.props.styles} />
+            handleSubmit={this.props.handleSubmit}
+            onCancelClick={this.props.hideProjectConfiguration} />
 
           <ManageProjectsComponent
             styles={this.props.styles}
@@ -78,8 +77,7 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
             selectedProjectId={this.props.selectedProjectId}
             onSelect={this.props.onSelect}
             onAddClick={this.props.showProjectConfiguration}
-            onDeleteClick={this.props.deleteProject}
-            styles={this.props.styles} />
+            onDeleteClick={this.props.deleteProject} />
 
           <AccessRightsComponent dependencies={null}>
             <ProjectAdminsContainer/>

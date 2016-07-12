@@ -44,11 +44,5 @@ class LoginComponent extends React.Component<LoginProps,any> {
     );
   }
 }
-//
-// LoginComponent.propTypes = {
-//   styles: React.PropTypes.object.isRequired,
-//   onLogin: React.PropTypes.func.isRequired,
-//   errorMessage: React.PropTypes.string
-// }
 
 export default LoginComponent

@@ -1,6 +1,7 @@
 var { CALL_API, getJSON } = require('redux-api-middleware')
 import Schemas from '../../../common/api/schemas'
 import { normalize } from 'normalizr'
+import { Action, ActionCreator } from 'redux'
 
 const PROJECTS_API='http://localhost:8080/api/projects'
 export const PROJECTS_REQUEST = 'PROJECTS_REQUEST'
@@ -25,15 +26,21 @@ export const fetchProjects = () => ({
   }
 })
 
+interface ProjectAction extends Action {
+  id: string,
+  name: string
+}
+
 // Add a project to the list
 export const ADD_PROJECT = 'ADD_PROJECT'
-export function addProject(id: string, name: string) {
-  return {
-    type: ADD_PROJECT,
-    id,
-    name
-  }
-}
+
+export const addProject = (id: string, name: string):ProjectAction => ({
+  type: ADD_PROJECT,
+  id,
+  name
+})
+
+const plop:ProjectAction = addProject("plop","plop");
 
 export const DELETE_PROJECT = 'DELETE_PROJECT'
 export function deleteProject(id: string) {

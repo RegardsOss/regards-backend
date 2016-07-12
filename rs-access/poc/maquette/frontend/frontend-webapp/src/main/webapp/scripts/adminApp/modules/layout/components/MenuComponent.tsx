@@ -1,8 +1,9 @@
+// declare var require: any;
+
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { IndexLink, Link } from 'react-router'
 import MenuButtonComponent from './MenuButtonComponent'
-
 // Styles
 var classnames = require("classnames")
 var icons = require('../../../../../stylesheets/foundation-icons/foundation-icons.scss')

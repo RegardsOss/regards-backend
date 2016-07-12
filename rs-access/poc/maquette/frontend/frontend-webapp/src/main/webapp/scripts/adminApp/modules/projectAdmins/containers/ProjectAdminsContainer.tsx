@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 // Containers
 import UserFormContainer from './UserFormContainer'
 // Components
-import AccessRightsComponent from 'common/access-rights/AccessRightsComponent'
+import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
 import ProjectAdminsComponent from '../components/ProjectAdminsComponent'
 // Actions
 import {
