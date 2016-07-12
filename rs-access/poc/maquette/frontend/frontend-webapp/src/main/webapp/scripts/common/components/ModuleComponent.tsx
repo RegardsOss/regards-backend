@@ -11,7 +11,7 @@ interface ModuleComponentState {
 
 class ModuleComponent extends React.Component<ModuleComponentProps, ModuleComponentState> {
   getModuleVisibility() {
-    return false
+    return true
   }
 
   render() {
