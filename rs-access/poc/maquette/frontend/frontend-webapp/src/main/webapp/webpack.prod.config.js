@@ -1,5 +1,4 @@
 
-
 // Webpack configuration file
 
 const path = require('path')
@@ -21,7 +20,7 @@ module.exports = {
   // Webpack working directory
   context: __dirname,
   // Javascript main entry
-  entry: './scripts/main.js',
+  entry: './scripts/main.tsx',
   output: {
     // Webpack compilation directory
     path: __dirname + '/build',
@@ -34,16 +33,6 @@ module.exports = {
     // Automaticly get extensions files from javascript code with import or require.
     // exemple require('main') look for main, main.js or main.sass with our configuration
     extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js", '.scss'],
-    // Alias that can be used in javascript code for require or import
-    // Exemple : require ('AppStore') is equal to require ('scripts/common/store/Store.js');
-    alias: {
-      RegardsView: path.join(__dirname,"scripts/common/modulesManager/RegardsView.js"),
-      AppStore: path.join(__dirname,"scripts/common/store/Store.js")
-      common: path.join(__dirname,"scripts/common"),
-      adminApp: path.join(__dirname,"scripts/adminApp"),
-      userApp: path.join(__dirname,"scripts/userApp"),
-      portalApp: path.join(__dirname,"scripts/portalApp")
-    },
     // Root directories from wich requires are made
     root: [
       path.join(__dirname,"scripts"),
@@ -56,7 +45,8 @@ module.exports = {
       {
         test: /\.tsx{0,1}?$/,
         exclude: [/node_modules/,/json/],
-        loader: "babel-loader?presets=['es2015', 'react']!ts-loader"
+        loader: "babel-loader!ts-loader"
+        //loader: "babel-loader?presets=['es2015', 'react']!ts-loader"
       },
       // Transpile ES6 Javascript into ES5 with babel loader and react
       {test: /\.js$/, exclude: [/node_modules/,/json/],
