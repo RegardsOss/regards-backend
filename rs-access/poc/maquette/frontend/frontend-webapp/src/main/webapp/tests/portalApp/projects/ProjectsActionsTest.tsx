@@ -4,10 +4,10 @@ import * as nock from 'nock'
 import { expect } from 'chai' // You can use any testing library
 import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
-    FAILED_PROJECTS, fetchProjects,
-    requestProjects, receiveProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions';
+    FAILED_PROJECTS, fetchProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions';
+import { apiMiddleware } from 'redux-api-middleware'
 
-const middlewares = [ thunk ]
+const middlewares = [ thunk, apiMiddleware ]
 const mockStore = configureMockStore(middlewares)
 
 // Ce fichier permet de tester les actions liés aux projets
@@ -23,10 +23,7 @@ describe('Testing projects actions.', () => {
       .get('')
       .reply(500, null);
 
-    const expectedActions = [
-      { type: REQUEST_PROJECTS },
-      { type: FAILED_PROJECTS, error: "Internal Server Error" }
-    ]
+    const expectedActionTypes = [ REQUEST_PROJECTS, FAILED_PROJECTS ]
     const store = mockStore({ projects: [] });
 
     return store.dispatch(fetchProjects())
@@ -34,7 +31,8 @@ describe('Testing projects actions.', () => {
         // There must be two dispatched actions from fetchProjects.
         expect(store.getActions().length).to.equal(2);
         // Check each dispatch action
-        expect(store.getActions()).to.eql(expectedActions)
+        expect(store.getActions()[0].type).to.equal(expectedActionTypes[0])
+        expect(store.getActions()[1].type).to.equal(expectedActionTypes[1])
       })
   })
 
@@ -44,10 +42,8 @@ describe('Testing projects actions.', () => {
       .get('')
       .reply(200, [{"name":"cdpp"},{"name":"ssalto"}]);
 
-    const expectedActions:Array<any> = [
-      { type: REQUEST_PROJECTS },
-      { type: RECEIVE_PROJECTS, projects : [{name: 'cdpp'}, {name: 'ssalto'}], receivedAt: '' }
-    ]
+    // We only check on action types, not the full action content for simplicity
+    const expectedActionTypes:Array<String> = [ REQUEST_PROJECTS, RECEIVE_PROJECTS ]
     const store = mockStore({ projects: [] });
 
     return store.dispatch(fetchProjects())
@@ -55,12 +51,10 @@ describe('Testing projects actions.', () => {
         // There must be two dispatched actions from fetchProjects.
         expect(store.getActions().length).to.equal(2);
         // Check receivedAt time
-        var action:any = store.getActions()[1];
-        expect(action.receivedAt).to.be.at.most(Date.now());
-        // Add receivedAt time in expected action
-        expectedActions[1].receivedAt = action.receivedAt;
+        expect(store.getActions()[1].meta.receivedAt).to.be.at.most(Date.now());
         // Check each dispatch action
-        expect(store.getActions()).to.eql(expectedActions);
+        expect(store.getActions()[0].type).to.equal(expectedActionTypes[0])
+        expect(store.getActions()[1].type).to.equal(expectedActionTypes[1])
       })
   })
 })

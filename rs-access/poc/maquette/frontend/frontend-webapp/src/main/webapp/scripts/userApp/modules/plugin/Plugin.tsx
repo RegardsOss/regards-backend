@@ -43,7 +43,7 @@ class PluginContainer extends AccessRightsComponent<PluginProps, any> {
 
 const mapStateToProps = ( state:any ) => {
   return {
-    plugins: state.plugins.items
+    plugins: state.common.plugins.items
   }
 }
 

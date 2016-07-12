@@ -39,7 +39,8 @@ class PortalApp extends React.Component<PortalAppProps, any> {
     const styles = getThemeStyles(theme,'portalApp/styles')
     const commonStyles = getThemeStyles(theme,'common/common.scss')
 
-    if (!authentication || authentication.isFetching === true || !authentication.user || !authentication.user.access_token){
+    // if (!authentication || authentication.isFetching === true || !authentication.user || !authentication.user.access_token){
+    if (!authentication || !authentication.user){
       // If no user connected, display the error component
       return <ApplicationErrorComponent />
     } else if (this.props.children){
@@ -50,17 +51,17 @@ class PortalApp extends React.Component<PortalAppProps, any> {
     } else {
       // Else, display the portal
       return (
-      <div className={styles.main}>
-        <InstanceComponent styles={styles}/>
-        <ProjectsContainer styles={styles}/>
-        <SelectThemeComponent
-          styles={commonStyles}
-          themes={["cdpp","ssalto","default"]}
-          curentTheme={theme}
-          onThemeChange={this.props.initTheme} />
-      </div>
-    )
-  }
+        <div className={styles.main}>
+          <InstanceComponent styles={styles}/>
+          <ProjectsContainer styles={styles}/>
+          <SelectThemeComponent
+            styles={commonStyles}
+            themes={["cdpp","ssalto","default"]}
+            curentTheme={theme}
+            onThemeChange={this.props.initTheme} />
+        </div>
+      )
+    }
   }
 }
 

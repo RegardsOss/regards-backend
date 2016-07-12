@@ -2,10 +2,7 @@ import { expect } from 'chai' // You can use any testing library
 import projectsReducers from '../../../scripts/portalApp/modules/projects/reducers/ProjectsReducers'
 import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
-    FAILED_PROJECTS, fetchProjects,
-    requestProjects, receiveProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions'
-
-import { ProjectsStore } from '../../../scripts/portalApp/modules/projects/types/ProjectTypes'
+    FAILED_PROJECTS, fetchProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions';
 
 // Ce fichier permet de tester les reducers liés aux projets
 describe('Testing Projects reducers', () => {
@@ -25,7 +22,9 @@ describe('Testing Projects reducers', () => {
         lastUpdate: ''
     };
 
-    const action = requestProjects();
+    const action = {
+      type: REQUEST_PROJECTS
+    }
 
     const expectedResult:ProjectsStore = {
         isFetching : true,
@@ -44,12 +43,24 @@ describe('Testing Projects reducers', () => {
         lastUpdate: ''
     };
 
-    const action = receiveProjects([{"name":"cdpp"},{"name":"ssalto"}]);
+    const action = {
+      type: RECEIVE_PROJECTS,
+      payload: [
+        {"name":"cdpp"},
+        {"name":"ssalto"}
+      ],
+      meta: {
+        receivedAt: Date.now()
+      }
+    }
 
     const expectedResult = {
-        isFetching : false,
-        items: [{"name":"cdpp"},{"name":"ssalto"}],
-        lastUpdate: ''
+      isFetching : false,
+      items: [
+        {"name":"cdpp"},
+        {"name":"ssalto"}
+      ],
+      lastUpdate: ''
     };
 
     const result = projectsReducers(initstate, action);

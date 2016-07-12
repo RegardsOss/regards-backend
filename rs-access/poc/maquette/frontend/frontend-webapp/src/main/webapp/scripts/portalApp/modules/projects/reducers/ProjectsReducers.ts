@@ -17,8 +17,8 @@ export default (state:ProjectsStore = {
     case RECEIVE_PROJECTS:
       return Object.assign({}, state, {
         isFetching: false,
-        items: action.projects,
-        lastUpdate: action.receivedAt
+        items: action.payload,
+        lastUpdate: action.meta.receivedAt
       })
     case FAILED_PROJECTS:
       return Object.assign({}, state, {
