@@ -6,9 +6,9 @@ const PortalApp_1 = require('./portalApp/PortalApp');
 const childRoutes = [{
         path: '/',
         childRoutes: [
-            routes_1.default,
-            routes_2.default,
-            routes_3.default
+            routes_2.adminAppRoutes,
+            routes_1.userAppRoutes,
+            routes_3.portalAppRoutes
         ],
         getComponent(nextState, cb) {
             require.ensure([], (require) => {

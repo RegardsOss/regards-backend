@@ -7,4 +7,3 @@ class Home extends React.Component<any, any> {
 }
 
 export default Home
-module.exports = Home

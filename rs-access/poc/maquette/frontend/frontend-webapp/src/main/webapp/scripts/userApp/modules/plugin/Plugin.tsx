@@ -49,4 +49,3 @@ const mapStateToProps = ( state:any ) => {
 
 const pluginConnected = connect<{}, {}, PluginContainer>(mapStateToProps)(PluginContainer)
 export default pluginConnected
-module.exports = pluginConnected

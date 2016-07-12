@@ -6,6 +6,7 @@ const AuthenticateActions_1 = require('../common/authentication/AuthenticateActi
 const ThemeUtils_1 = require('../common/theme/ThemeUtils');
 const Authentication_1 = require('./modules/authentication/Authentication');
 const SelectThemeComponent_1 = require('../common/theme/components/SelectThemeComponent');
+const ApplicationErrorComponent_1 = require('../common/components/ApplicationErrorComponent');
 const Layout_1 = require('./modules/layout/Layout');
 class AdminApp extends React.Component {
     constructor() {
@@ -32,23 +33,28 @@ class AdminApp extends React.Component {
         const { theme, authentication, content, location, params, onLogout } = this.props;
         const styles = ThemeUtils_1.getThemeStyles(theme, 'adminApp/styles');
         const commonStyles = ThemeUtils_1.getThemeStyles(theme, 'common/common.scss');
-        const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now();
-        if (!authenticated || authentication.user.name === 'public') {
-            return (React.createElement("div", {className: styles.main}, 
-                React.createElement(Authentication_1.default, null), 
-                React.createElement(SelectThemeComponent_1.default, {styles: commonStyles, themes: ["cdpp", "ssalto", "default"], curentTheme: theme, onThemeChange: this.changeTheme})));
+        if (authentication) {
+            const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now();
+            if (!authenticated || authentication.user.name === 'public') {
+                return (React.createElement("div", {className: styles.main}, 
+                    React.createElement(Authentication_1.default, null), 
+                    React.createElement(SelectThemeComponent_1.default, {styles: commonStyles, themes: ["cdpp", "ssalto", "default"], curentTheme: theme, onThemeChange: this.changeTheme})));
+            }
+            else {
+                return (React.createElement("div", null, 
+                    React.createElement(Layout_1.default, {location: location, content: content, project: params.project, instance: this.state.instance, onLogout: onLogout}), 
+                    React.createElement(SelectThemeComponent_1.default, {styles: styles, themes: ["cdpp", "ssalto", "default"], curentTheme: theme, onThemeChange: this.changeTheme})));
+            }
         }
         else {
-            return (React.createElement("div", null, 
-                React.createElement(Layout_1.default, {location: location, content: content, project: params.project, instance: this.state.instance, onLogout: onLogout}), 
-                React.createElement(SelectThemeComponent_1.default, {styles: styles, themes: ["cdpp", "ssalto", "default"], curentTheme: theme, onThemeChange: this.changeTheme})));
+            return React.createElement(ApplicationErrorComponent_1.default, null);
         }
     }
 }
 const mapStateToProps = (state) => {
     return {
-        theme: state.theme,
-        authentication: state.authentication
+        theme: state.common.theme,
+        authentication: state.common.authentication
     };
 };
 const mapDispatchToProps = (dispatch) => {
@@ -60,5 +66,4 @@ const mapDispatchToProps = (dispatch) => {
 const connectedAdminApp = react_redux_1.connect(mapStateToProps, mapDispatchToProps)(AdminApp);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = connectedAdminApp;
-module.exports = connectedAdminApp;
 //# sourceMappingURL=AdminApp.js.map

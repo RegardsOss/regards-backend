@@ -25,8 +25,8 @@ class Authentication extends React.Component<any,any> {
 
 const mapStateToProps = (state: any)=> {
   return {
-    errorMessage: state.authentication.error,
-    theme: state.theme
+    errorMessage: state.common.authentication.error,
+    theme: state.common.theme
   }
 }
 

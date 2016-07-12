@@ -11,7 +11,7 @@ function requestAuthenticate(user: string) {
 }
 
 export const RECEIVE_AUTHENTICATE = 'RECEIVE_AUTHENTICATE'
-function receiveAuthenticate(user: string) {
+function receiveAuthenticate(user: any) {
   return {
     type: RECEIVE_AUTHENTICATE,
     user: user,

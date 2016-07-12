@@ -53,4 +53,3 @@ const mapStateToProps = (state: any) => {
 }
 const navigation = connect<{}, {}, NavigationProps>(mapStateToProps)(NavigationContainer);
 export default navigation
-module.exports = navigation

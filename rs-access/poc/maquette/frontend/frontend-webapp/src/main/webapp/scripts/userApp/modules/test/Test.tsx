@@ -17,4 +17,3 @@ class Test extends AccessRightsComponent<any, any> {
 }
 
 export default Test
-module.exports = Test

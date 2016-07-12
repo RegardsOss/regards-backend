@@ -3,9 +3,9 @@
  * /user  -> UserApp
  * /admin -> AdminApp
  */
-import userAppRoutes from './userApp/routes'
-import adminAppRoutes from './adminApp/routes'
-import portalAppRoutes from './portalApp/routes'
+import { userAppRoutes } from './userApp/routes'
+import { adminAppRoutes } from './adminApp/routes'
+import { portalAppRoutes } from './portalApp/routes'
 import PortalApp from './portalApp/PortalApp'
 
 import { PlainRoute } from 'react-router'
@@ -15,8 +15,8 @@ declare var require: any;
 const childRoutes:Array<PlainRoute> = [ {
   path: '/',
   childRoutes: [
-    userAppRoutes,
     adminAppRoutes,
+    userAppRoutes,
     portalAppRoutes
   ],
   getComponent(nextState:any, cb:any) {
