@@ -8,8 +8,7 @@ const routes_1 = require('./userApp/routes');
 const routes_2 = require('./adminApp/routes');
 const routes_3 = require('./portalApp/routes');
 const PortalApp_1 = require('./portalApp/PortalApp');
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = {
+exports.routes = {
     component: 'div',
     childRoutes: [{
             path: '/',

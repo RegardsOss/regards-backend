@@ -6,9 +6,9 @@ const react_redux_1 = require('react-redux');
 // Import application common store
 const configureStore_1 = require('./common/store/configureStore');
 const preloadedState_1 = require('./common/store/preloadedState');
-const routes = require('./routes');
+const routes_1 = require('./routes');
 const store = configureStore_1.default(preloadedState_1.default);
-ReactDOM.render(React.createElement(react_redux_1.Provider, {store: store}, React.createElement(react_router_1.Router, {history: react_router_1.browserHistory, routes: routes})), document.getElementById('app'));
+ReactDOM.render(React.createElement(react_redux_1.Provider, {store: store}, React.createElement(react_router_1.Router, {history: react_router_1.browserHistory, routes: routes_1.routes})), document.getElementById('app'));
 // Log sitemap
 function getSiteMap(parentRoute, routes) {
     routes.map((route) => {
@@ -26,5 +26,5 @@ function getSiteMap(parentRoute, routes) {
     });
 }
 // Log sitemap
-getSiteMap("", routes["childRoutes"]);
+getSiteMap("", routes_1.routes["childRoutes"]);
 //# sourceMappingURL=main.js.map

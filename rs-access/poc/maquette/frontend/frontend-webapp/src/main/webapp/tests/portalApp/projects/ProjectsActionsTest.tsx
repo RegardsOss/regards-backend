@@ -1,6 +1,6 @@
-import configureMockStore from 'redux-mock-store'
+var configureMockStore = require('redux-mock-store')
 import thunk from 'redux-thunk'
-import nock from 'nock'
+import * as nock from 'nock'
 import { expect } from 'chai' // You can use any testing library
 import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
@@ -44,7 +44,7 @@ describe('Testing projects actions.', () => {
       .get('')
       .reply(200, [{"name":"cdpp"},{"name":"ssalto"}]);
 
-    const expectedActions = [
+    const expectedActions:Array<any> = [
       { type: REQUEST_PROJECTS },
       { type: RECEIVE_PROJECTS, projects : [{name: 'cdpp'}, {name: 'ssalto'}], receivedAt: '' }
     ]
@@ -55,9 +55,10 @@ describe('Testing projects actions.', () => {
         // There must be two dispatched actions from fetchProjects.
         expect(store.getActions().length).to.equal(2);
         // Check receivedAt time
-        expect(store.getActions()[1].receivedAt).to.be.at.most(Date.now());
+        var action:any = store.getActions()[1];
+        expect(action.receivedAt).to.be.at.most(Date.now());
         // Add receivedAt time in expected action
-        expectedActions[1].receivedAt = store.getActions()[1].receivedAt;
+        expectedActions[1].receivedAt = action.receivedAt;
         // Check each dispatch action
         expect(store.getActions()).to.eql(expectedActions);
       })

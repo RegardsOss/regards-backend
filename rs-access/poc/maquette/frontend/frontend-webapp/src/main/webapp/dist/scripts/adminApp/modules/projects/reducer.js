@@ -1,6 +1,6 @@
 "use strict";
 const lodash_1 = require('lodash');
-const reducers_1 = require('../../common/reducers');
+const reducers_1 = require('../../../common/reducers');
 const actions_1 = require('./actions');
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = (state = {

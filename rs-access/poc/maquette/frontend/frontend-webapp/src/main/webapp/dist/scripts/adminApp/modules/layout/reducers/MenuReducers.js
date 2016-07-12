@@ -1,8 +1,7 @@
 "use strict";
 const MenuActions_1 = require('../actions/MenuActions');
 const AuthenticateActions_1 = require('../../../../common/authentication/AuthenticateActions');
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = (state, action) => {
+exports.MenuReducer = (state, action) => {
     switch (action.type) {
         case AuthenticateActions_1.LOGOUT:
             console.log("Logging out");
@@ -14,4 +13,6 @@ exports.default = (state, action) => {
             return state;
     }
 };
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = exports.MenuReducer;
 //# sourceMappingURL=MenuReducers.js.map

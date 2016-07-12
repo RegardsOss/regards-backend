@@ -1,1 +1,1 @@
-{"version":3,"file":"reducers.js","sourceRoot":"","sources":["../../../scripts/userApp/reducers.tsx"],"names":[],"mappings":";AAAA;;GAEG;AACH,wBAAgC,OAAO,CAAC,CAAA;AACxC,+BAAyB,4CAEzB,CAAC,CAFoE;AAErE;kBAAe,uBAAe,CAAC;IAC7B,EAAE,EAAE,sBAAY;CACjB,CAAC,CAAC"}
+{"version":3,"file":"reducers.js","sourceRoot":"","sources":["../../../scripts/userApp/reducers.ts"],"names":[],"mappings":";AAAA;;GAEG;AACH,wBAAgC,OAAO,CAAC,CAAA;AACxC,+BAAyB,4CAEzB,CAAC,CAFoE;AAErE;kBAAe,uBAAe,CAAC;IAC7B,EAAE,EAAE,sBAAY;CACjB,CAAC,CAAC"}

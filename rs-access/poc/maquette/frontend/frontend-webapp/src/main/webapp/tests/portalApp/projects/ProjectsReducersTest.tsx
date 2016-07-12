@@ -1,15 +1,17 @@
 import { expect } from 'chai' // You can use any testing library
-import reducers from '../../../scripts/portalApp/modules/projects/reducers/ProjectsReducers';
+import projectsReducers from '../../../scripts/portalApp/modules/projects/reducers/ProjectsReducers'
 import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
     FAILED_PROJECTS, fetchProjects,
-    requestProjects, receiveProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions';
+    requestProjects, receiveProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions'
+
+import { ProjectsStore } from '../../../scripts/portalApp/modules/projects/types/ProjectTypes'
 
 // Ce fichier permet de tester les reducers liés aux projets
 describe('Testing Projects reducers', () => {
 
   it('Should return the initial state', () => {
-    expect(reducers.projects(undefined, {})).to.eql({
+    expect(projectsReducers(undefined, {})).to.eql({
         isFetching : false,
         items: [],
         lastUpdate: ''
@@ -17,7 +19,7 @@ describe('Testing Projects reducers', () => {
   });
 
   it('Should set projects fetching true in state', () => {
-    const initstate = {
+    const initstate:ProjectsStore = {
         isFetching : false,
         items: [],
         lastUpdate: ''
@@ -25,18 +27,18 @@ describe('Testing Projects reducers', () => {
 
     const action = requestProjects();
 
-    const expectedResult = {
+    const expectedResult:ProjectsStore = {
         isFetching : true,
         items: [],
         lastUpdate: ''
     };
 
-    const result = reducers.projects(initstate, action);
+    const result = projectsReducers(initstate, action);
     expect(result).to.eql(expectedResult);
   });
 
   it('Should add projects to state', () => {
-    const initstate = {
+    const initstate:ProjectsStore = {
         isFetching : true,
         items: [],
         lastUpdate: ''
@@ -50,7 +52,7 @@ describe('Testing Projects reducers', () => {
         lastUpdate: ''
     };
 
-    const result = reducers.projects(initstate, action);
+    const result = projectsReducers(initstate, action);
     expectedResult.lastUpdate = result.lastUpdate;
     expect(result).to.eql(expectedResult);
   });

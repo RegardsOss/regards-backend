@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import ProjectComponent from '../components/ProjectComponent'
 import { fetchProjects } from '../actions/ProjectsActions'
 
-import { Project, ProjectsStore } from '../components/ProjectTypes'
+import { Project, ProjectsStore } from '../types/ProjectTypes'
 
 // Container props
 interface ProjectsProps{

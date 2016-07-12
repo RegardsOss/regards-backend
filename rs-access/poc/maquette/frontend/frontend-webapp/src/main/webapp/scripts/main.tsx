@@ -6,7 +6,7 @@ import { Provider } from 'react-redux'
 // Import application common store
 import configureStore from './common/store/configureStore'
 import preloadedState from './common/store/preloadedState'
-import * as routes from './routes'
+import { routes } from './routes'
 
 const store = configureStore(preloadedState)
 

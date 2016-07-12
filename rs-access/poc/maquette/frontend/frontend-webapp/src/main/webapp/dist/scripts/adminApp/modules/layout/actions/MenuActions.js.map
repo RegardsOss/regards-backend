@@ -1,1 +1,1 @@
-{"version":3,"file":"MenuActions.js","sourceRoot":"","sources":["../../../../../../scripts/adminApp/modules/layout/actions/MenuActions.tsx"],"names":[],"mappings":";AAAA,iDAAiD;AACpC,qBAAa,GAAG,eAAe,CAAC;AAC7C;IACE,MAAM,CAAC;QACL,IAAI,EAAE,qBAAa;KACpB,CAAA;AACH,CAAC;AAJe,oBAAY,eAI3B,CAAA"}
+{"version":3,"file":"MenuActions.js","sourceRoot":"","sources":["../../../../../../scripts/adminApp/modules/layout/actions/MenuActions.ts"],"names":[],"mappings":";AAAA,iDAAiD;AACpC,qBAAa,GAAG,eAAe,CAAC;AAC7C;IACE,MAAM,CAAC;QACL,IAAI,EAAE,qBAAa;KACpB,CAAA;AACH,CAAC;AAJe,oBAAY,eAI3B,CAAA"}

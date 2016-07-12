@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import { Link } from 'react-router';
 import { mount, shallow } from 'enzyme';
 import { expect } from 'chai'
@@ -25,7 +25,7 @@ describe('Testing projects components', () => {
       dispatch :dispatch,
       onLoad: onLoad
     };
-    const wrapper = shallow(<ProjectsContainer {...props}/>);
+    const wrapper = shallow(<ProjectsContainer styles={props.styles}/>);
     expect(wrapper.equals(<div>Loading projects ... </div>)).to.equal(true);
   });
 
@@ -55,7 +55,7 @@ describe('Testing projects components', () => {
         </ul>
       </div>
     );
-    const wrapper = shallow(<ProjectsContainer {...props}/>);
+    const wrapper = shallow(<ProjectsContainer styles={props.styles}/>);
     expect(wrapper.contains(result)).to.equal(true);
   });
 

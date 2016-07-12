@@ -7,7 +7,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-const react_1 = require('react');
+const React = require('react');
 const enzyme_1 = require('enzyme');
 const chai_1 = require('chai');
 const LoginComponent_1 = require('../../../scripts/adminApp/modules/authentication/components/LoginComponent');
@@ -24,7 +24,7 @@ describe('Testing login component', () => {
             errorMessage: '',
             styles: loginStyles
         };
-        const wrapper = enzyme_1.shallow(react_1.default.createElement(LoginComponent_1.default, __assign({}, props)));
+        const wrapper = enzyme_1.shallow(React.createElement(LoginComponent_1.default, __assign({}, props)));
         chai_1.expect(wrapper.find("div .login-modal")).to.have.length(1);
         chai_1.expect(wrapper.find("div .login-error")).to.have.length(1);
         chai_1.expect(wrapper.find("input #username")).to.have.length(1);
@@ -48,7 +48,7 @@ describe('Testing login component', () => {
             errorMessage: '',
             styles: loginStyles
         };
-        const wrapper = enzyme_1.shallow(react_1.default.createElement(LoginComponent_1.default, __assign({}, props)));
+        const wrapper = enzyme_1.shallow(React.createElement(LoginComponent_1.default, __assign({}, props)));
         const username = wrapper.find("input #username");
         username.simulate('change', { target: { value: 'test' } });
         const password = wrapper.find("input #password");

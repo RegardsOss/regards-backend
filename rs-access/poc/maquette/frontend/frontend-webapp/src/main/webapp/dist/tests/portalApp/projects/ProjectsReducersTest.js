@@ -5,7 +5,7 @@ const ProjectsActions_1 = require('../../../scripts/portalApp/modules/projects/a
 // Ce fichier permet de tester les reducers liés aux projets
 describe('Testing Projects reducers', () => {
     it('Should return the initial state', () => {
-        chai_1.expect(ProjectsReducers_1.default.projects(undefined, {})).to.eql({
+        chai_1.expect(ProjectsReducers_1.default(undefined, {})).to.eql({
             isFetching: false,
             items: [],
             lastUpdate: ''
@@ -23,7 +23,7 @@ describe('Testing Projects reducers', () => {
             items: [],
             lastUpdate: ''
         };
-        const result = ProjectsReducers_1.default.projects(initstate, action);
+        const result = ProjectsReducers_1.default(initstate, action);
         chai_1.expect(result).to.eql(expectedResult);
     });
     it('Should add projects to state', () => {
@@ -38,7 +38,7 @@ describe('Testing Projects reducers', () => {
             items: [{ "name": "cdpp" }, { "name": "ssalto" }],
             lastUpdate: ''
         };
-        const result = ProjectsReducers_1.default.projects(initstate, action);
+        const result = ProjectsReducers_1.default(initstate, action);
         expectedResult.lastUpdate = result.lastUpdate;
         chai_1.expect(result).to.eql(expectedResult);
     });

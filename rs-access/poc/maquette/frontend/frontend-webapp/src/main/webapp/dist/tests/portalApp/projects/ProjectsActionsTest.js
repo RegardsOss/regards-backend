@@ -1,19 +1,19 @@
 "use strict";
-const redux_mock_store_1 = require('redux-mock-store');
+var configureMockStore = require('redux-mock-store');
 const redux_thunk_1 = require('redux-thunk');
-const nock_1 = require('nock');
+const nock = require('nock');
 const chai_1 = require('chai'); // You can use any testing library
 const ProjectsActions_1 = require('../../../scripts/portalApp/modules/projects/actions/ProjectsActions');
 const middlewares = [redux_thunk_1.default];
-const mockStore = redux_mock_store_1.default(middlewares);
+const mockStore = configureMockStore(middlewares);
 // Ce fichier permet de tester les actions liés aux projets
 describe('Testing projects actions.', () => {
     afterEach(() => {
-        nock_1.default.cleanAll();
+        nock.cleanAll();
     });
     // Test dégradé dans le cas ou le serveur renvoie un erreur
     it('creates FAILED_PROJECTS action when fetching projects returning error', () => {
-        nock_1.default(ProjectsActions_1.PROJECTS_API)
+        nock(ProjectsActions_1.PROJECTS_API)
             .get('')
             .reply(500, null);
         const expectedActions = [
@@ -31,7 +31,7 @@ describe('Testing projects actions.', () => {
     });
     // Test nominal
     it('creates REQUEST_PROJECTS and RECEIVE_PROJECTS actions when fetching projects has been done', () => {
-        nock_1.default(ProjectsActions_1.PROJECTS_API)
+        nock(ProjectsActions_1.PROJECTS_API)
             .get('')
             .reply(200, [{ "name": "cdpp" }, { "name": "ssalto" }]);
         const expectedActions = [
@@ -44,9 +44,10 @@ describe('Testing projects actions.', () => {
             // There must be two dispatched actions from fetchProjects.
             chai_1.expect(store.getActions().length).to.equal(2);
             // Check receivedAt time
-            chai_1.expect(store.getActions()[1].receivedAt).to.be.at.most(Date.now());
+            var action = store.getActions()[1];
+            chai_1.expect(action.receivedAt).to.be.at.most(Date.now());
             // Add receivedAt time in expected action
-            expectedActions[1].receivedAt = store.getActions()[1].receivedAt;
+            expectedActions[1].receivedAt = action.receivedAt;
             // Check each dispatch action
             chai_1.expect(store.getActions()).to.eql(expectedActions);
         });

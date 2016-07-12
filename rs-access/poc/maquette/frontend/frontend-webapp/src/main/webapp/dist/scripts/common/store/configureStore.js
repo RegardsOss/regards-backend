@@ -20,20 +20,22 @@ function configureStore(preloadedState) {
         form: redux_form_1.reducer
     });
     // Create the application store
+    let win = window;
     const store = redux_1.createStore(rootReducer, preloadedState, redux_1.compose(redux_1.applyMiddleware(redux_thunk_1.default, // lets us dispatch() functions
     ActionLoggerMiddleware_1.default, // logs any dispatched action
     AuthorizationMiddleware_1.default, // inject authorization headers in all request actions
     apiMiddleware // middleware for calling an REST API
-    ), window["devToolsExtension"] ? window["devToolsExtension"]() : (f) => f // Enable redux dev tools
+    ), win["devToolsExtension"] ? win["devToolsExtension"]() : (f) => f // Enable redux dev tools
     ));
     // Log any change in the store
     const render = () => {
         console.log("STORE UPDATED : ", store.getState());
     };
     store.subscribe(render);
+    let mod = module;
     // Enable Webpack hot module replacement for reducers
-    if (module["hot"]) {
-        module["hot"].accept('../reducers', () => {
+    if (mod["hot"]) {
+        mod["hot"].accept('../reducers', () => {
             const nextRootReducer = require('../reducers').default;
             store.replaceReducer(nextRootReducer);
         });

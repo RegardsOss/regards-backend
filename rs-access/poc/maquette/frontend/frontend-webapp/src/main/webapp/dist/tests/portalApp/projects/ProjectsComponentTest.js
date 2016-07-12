@@ -7,7 +7,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-const react_1 = require('react');
+const React = require('react');
 const react_router_1 = require('react-router');
 const enzyme_1 = require('enzyme');
 const chai_1 = require('chai');
@@ -32,8 +32,8 @@ describe('Testing projects components', () => {
             dispatch: dispatch,
             onLoad: onLoad
         };
-        const wrapper = enzyme_1.shallow(react_1.default.createElement(ProjectsContainer_1.ProjectsContainer, __assign({}, props)));
-        chai_1.expect(wrapper.equals(react_1.default.createElement("div", null, "Loading projects ... "))).to.equal(true);
+        const wrapper = enzyme_1.shallow(React.createElement(ProjectsContainer_1.ProjectsContainer, {styles: props.styles}));
+        chai_1.expect(wrapper.equals(React.createElement("div", null, "Loading projects ... "))).to.equal(true);
     });
     it('Should render correctly the projects list', () => {
         const dispatch = () => { };
@@ -51,8 +51,8 @@ describe('Testing projects components', () => {
             dispatch: dispatch,
             onLoad: onLoad
         };
-        const result = (react_1.default.createElement("div", null, react_1.default.createElement("p", null, "Available projects on REGARDS instance :"), react_1.default.createElement("ul", null, react_1.default.createElement(ProjectComponent_1.default, {key: "cdpp", project: { name: 'cdpp' }, styles: projectsStyles}), react_1.default.createElement(ProjectComponent_1.default, {key: "ssalto", project: { name: 'ssalto' }, styles: projectsStyles}))));
-        const wrapper = enzyme_1.shallow(react_1.default.createElement(ProjectsContainer_1.ProjectsContainer, __assign({}, props)));
+        const result = (React.createElement("div", null, React.createElement("p", null, "Available projects on REGARDS instance :"), React.createElement("ul", null, React.createElement(ProjectComponent_1.default, {key: "cdpp", project: { name: 'cdpp' }, styles: projectsStyles}), React.createElement(ProjectComponent_1.default, {key: "ssalto", project: { name: 'ssalto' }, styles: projectsStyles}))));
+        const wrapper = enzyme_1.shallow(React.createElement(ProjectsContainer_1.ProjectsContainer, {styles: props.styles}));
         chai_1.expect(wrapper.contains(result)).to.equal(true);
     });
     it('Should render correctly a project link', () => {
@@ -64,8 +64,8 @@ describe('Testing projects components', () => {
             styles: projectsStyles,
             project: { name: 'cdpp' }
         };
-        const result = (react_1.default.createElement("li", {className: "link"}, react_1.default.createElement("p", null, "cdpp"), react_1.default.createElement(react_router_1.Link, {to: "/user/cdpp", className: "project-link"}, "ihm user"), react_1.default.createElement(react_router_1.Link, {to: "/admin/cdpp", className: "project-link"}, "ihm admin")));
-        const wrapper = enzyme_1.shallow(react_1.default.createElement(ProjectComponent_1.default, __assign({}, props)));
+        const result = (React.createElement("li", {className: "link"}, React.createElement("p", null, "cdpp"), React.createElement(react_router_1.Link, {to: "/user/cdpp", className: "project-link"}, "ihm user"), React.createElement(react_router_1.Link, {to: "/admin/cdpp", className: "project-link"}, "ihm admin")));
+        const wrapper = enzyme_1.shallow(React.createElement(ProjectComponent_1.default, __assign({}, props)));
         // To log result
         //console.log(wrapper.debug());
         chai_1.expect(wrapper.contains(result)).to.equal(true);

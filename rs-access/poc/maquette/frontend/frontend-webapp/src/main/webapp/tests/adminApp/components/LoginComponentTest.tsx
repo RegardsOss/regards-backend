@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import { shallow } from 'enzyme';
 import { expect } from 'chai';
 import LoginComponent from '../../../scripts/adminApp/modules/authentication/components/LoginComponent';
@@ -7,7 +7,7 @@ import LoginComponent from '../../../scripts/adminApp/modules/authentication/com
 
 describe('Testing login component', () => {
   it('Should render correctly the login component', () => {
-    const onLogin = (username, password) => { };
+    const onLogin = (username:string, password:string) => { };
     const loginStyles = {
       "login-modal": 'login-modal',
       "login-error": "login-error"
@@ -30,7 +30,7 @@ describe('Testing login component', () => {
   });
 
   it('Should active login action correctly', () => {
-    const onLogin = (username, password) => {
+    const onLogin = (username:string, password:string) => {
       expect(username).to.equal("test");
       expect(password).to.equal("test_password");
     };
