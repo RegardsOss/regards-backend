@@ -1,7 +1,7 @@
 //import { React, PropTypes } from 'react'
 //import * as React from 'react'
 import * as React from 'react'
-import '../../../../../stylesheets/foundation-icons/foundation-icons.scss'
+//import '../../../../../stylesheets/foundation-icons/foundation-icons.scss'
 import { map } from 'lodash'
 // Styles
 var classnames = require('classnames')

@@ -10,7 +10,7 @@ import * as React from 'react'
 import { Component, PropTypes } from 'react'
 import { reduxForm } from 'redux-form'
 export const fields = [ 'id', 'projectId', 'username', 'password', 'passwordConfirm']
-import '../../../../../stylesheets/foundation-icons/foundation-icons.scss'
+//import '../../../../../stylesheets/foundation-icons/foundation-icons.scss'
 // Selectors
 import {
   getSelectedProjectAdminId,

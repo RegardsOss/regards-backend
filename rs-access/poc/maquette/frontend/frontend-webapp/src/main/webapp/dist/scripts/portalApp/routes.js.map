@@ -1,1 +1,0 @@
-{"version":3,"file":"routes.js","sourceRoot":"","sources":["../../../scripts/portalApp/routes.ts"],"names":[],"mappings":";AAAA,4BAAsB,aAEtB,CAAC,CAFkC;AAInC;kBAAe;IACb,IAAI,EAAC,QAAQ;IAEb,YAAY,CAAC,SAAa,EAAE,EAAM;QAChC,OAAO,CAAC,MAAM,CAAC,EAAE,EAAE,CAAC,OAAW;YAC7B,EAAE,CAAC,IAAI,EAAE,mBAAS,CAAC,CAAA;QACrB,CAAC,CAAC,CAAA;IACJ,CAAC;CACF,CAAA"}

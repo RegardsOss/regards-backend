@@ -8,7 +8,7 @@ import LoginComponent from '../../../scripts/adminApp/modules/authentication/com
 describe('Testing login component', () => {
   it('Should render correctly the login component', () => {
     const onLogin = (username:string, password:string) => { };
-    const loginStyles = {
+    const loginStyles:any = {
       "login-modal": 'login-modal',
       "login-error": "login-error"
     };

@@ -5,7 +5,7 @@ import MenuButtonComponent from './MenuButtonComponent'
 
 // Styles
 var classnames = require("classnames")
-import '../../../../stylesheets/foundation-icons/foundation-icons.scss'
+//import '../../../../stylesheets/foundation-icons/foundation-icons.scss'
 import { getThemeStyles } from '../../../../common/theme/ThemeUtils'
 
 interface MenuProps {

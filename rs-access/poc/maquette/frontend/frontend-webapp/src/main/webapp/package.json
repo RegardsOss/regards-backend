@@ -11,8 +11,8 @@
     "prebuildp": "npm install && npm test",
     "buildp": "webpack --progress --config webpack.prod.config.js",
     "pretest": "tsc",
-    "test": "mocha --compilers js:babel-register tests --recursive",
-    "test:watch": "npm test -- --watch",
+    "test": "mocha --compilers js:babel-register dist/tests --recursive",
+    "test:watch": "npm test --watch",
     "presitemap": "webpack --config webpack.sitemap.config.js --progress",
     "sitemap": "node build/sitemap.js"
   },
