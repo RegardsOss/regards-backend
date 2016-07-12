@@ -1,6 +1,6 @@
 import * as React from 'react'
 import PluginType from './PluginTypes'
-import { CALL_API } from 'redux-api-middleware'
+var { CALL_API } = require('redux-api-middleware')
 
 const PLUGINS_API='http://localhost:8080/api/plugins'
 export const REQUEST_PLUGINS = 'REQUEST_PLUGINS'

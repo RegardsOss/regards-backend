@@ -20,9 +20,9 @@ class PluginComponent extends React.Component<PluginProps, any> {
   }
 }
 
-const mapStateToProps = (state) => ({})
-const mapDispatchToProps = (dispatch) => ({
-  pluginInitialized: (name, plugin) => dispatch(pluginInitialized(name, plugin))
+const mapStateToProps = (state:any) => ({})
+const mapDispatchToProps = (dispatch:any) => ({
+  pluginInitialized: (name:string, plugin:React.ComponentClass<any>) => dispatch(pluginInitialized(name, plugin))
 })
 
 export default connect()(PluginComponent)

@@ -5,16 +5,15 @@ import { AccessRightsView, Dependencies } from "./AccessRightsViewType"
 
 
 interface AccessRightsTypes {
-  store: any,
-  router: any,
-  route : any
+  dependencies:Dependencies
+  fetchAccessRights?: (dependencies:Dependencies)=> void
 }
 
 /**
 * Root class for all RegardsView in each modules.
 * This class handle the accessRights to the view modules.
 */
-class AccessRightsComponent<P, S> extends React.Component<P, any>{
+class AccessRightsComponent<P, S> extends React.Component<AccessRightsTypes, any>{
 
   unsubscribeViewAccessRights:any = null
   oldRender:any = null
@@ -43,7 +42,7 @@ class AccessRightsComponent<P, S> extends React.Component<P, any>{
   *  DELETE : ["dependence"],
   * }
   */
-  getDependencies(){
+  getDependencies():Dependencies{
     return this.props.dependencies;
   }
 
@@ -68,7 +67,7 @@ class AccessRightsComponent<P, S> extends React.Component<P, any>{
       this.unsubscribeViewAccessRights = store.subscribe(this.checkViewAccessRights)
       this.oldRender = Object.assign({}, this.render)
       this.render = () => {return null}
-      store.dispatch(fetchAccessRights(this.constructor.name, this.getDependencies()))
+      store.dispatch(fetchAccessRights(this.getDependencies()))
     }
   }
 
@@ -97,10 +96,6 @@ class AccessRightsComponent<P, S> extends React.Component<P, any>{
         access: view.access
       });
     }
-  }
-
-  getChildClassName(){
-    return this.props.children.type.WrappedComponent.name
   }
 }
 

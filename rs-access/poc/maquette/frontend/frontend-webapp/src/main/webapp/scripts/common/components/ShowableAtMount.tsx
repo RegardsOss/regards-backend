@@ -10,6 +10,8 @@ interface ShowableAtMountState {
 
 class ShowableAtMount extends React.Component<ShowableAtMountProps, ShowableAtMountState>{
 
+  oldRender:() => React.ReactElement<any>
+
   constructor() {
     super()
     this.oldRender = this.render

@@ -1,8 +1,8 @@
 import {
   REQUEST_PLUGINS,  RECEIVE_PLUGINS,
   FAILED_PLUGINS, PLUGIN_INITIALIZED } from './PluginsActions'
-import { PluginsStore } from './PluginTypes'
-import scriptjs from 'scriptjs'
+import { PluginsStore, PluginType } from './PluginTypes'
+var scriptjs = require('scriptjs')
 
 export default (state:PluginsStore = {
   isFetching : false,
@@ -16,7 +16,7 @@ export default (state:PluginsStore = {
       })
     case RECEIVE_PLUGINS:
       // TODO: Find somewhere else to handle this
-      action.payload.map( plugin => {
+      action.payload.map( (plugin:PluginType) => {
         const paths = plugin.paths.map(path => window.location.origin + "/plugins/" + path)
         scriptjs(paths, plugin.name)
       })
