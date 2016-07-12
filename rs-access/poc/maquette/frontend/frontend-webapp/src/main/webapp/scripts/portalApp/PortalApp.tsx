@@ -17,8 +17,7 @@ interface PortalAppProps {
   authentication?: any,
   theme?: string,
   initTheme?: (theme:string) => void,
-  publicAuthenticate?: ()=> void
-
+  publicAuthenticate?: ()=> void,
 }
 
 class PortalApp extends React.Component<PortalAppProps, any> {

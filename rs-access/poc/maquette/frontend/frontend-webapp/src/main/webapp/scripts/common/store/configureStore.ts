@@ -42,14 +42,5 @@ export default function configureStore(preloadedState:any):any {
   }
   store.subscribe(render)
 
-  let mod:any = module
-  // Enable Webpack hot module replacement for reducers
-  if (mod["hot"]) {
-    mod["hot"].accept('../reducers', () => {
-      const nextRootReducer = require('../reducers').default
-      store.replaceReducer(nextRootReducer)
-    })
-  }
-
   return store
 }
