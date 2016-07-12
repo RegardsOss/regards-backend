@@ -4,12 +4,12 @@ import { Link } from 'react-router'
 
 import { Project } from '../types/ProjectTypes'
 
-interface ProjectTypes {
+export interface ProjectTypes {
   project: Project,
   styles: any
 }
 
-class ProjectComponent extends React.Component<ProjectTypes, any> {
+export class ProjectComponent extends React.Component<ProjectTypes, any> {
   render(){
     // styles props is passed throught the react component creation
     const { styles } = this.props

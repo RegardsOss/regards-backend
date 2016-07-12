@@ -6,6 +6,7 @@ import { expect } from 'chai'
 // To get the react-redux connect component use "import ProjectsComponent" instead of "import { ProjectsComponent }"
 import { ProjectsContainer } from '../../../scripts/portalApp/modules/projects/containers/ProjectsContainer';
 import ProjectComponent from '../../../scripts/portalApp/modules/projects/components/ProjectComponent';
+import { ProjectsStore } from '../../../scripts/portalApp/modules/projects/types/ProjectTypes';
 
 // Test a component rendering
 
@@ -17,15 +18,18 @@ describe('Testing projects components', () => {
       link: 'link',
       projectlink: 'projectlink'
     };
+    const projects:ProjectsStore = {
+      isFetching: true,
+      items: [],
+      lastUpdate: ''
+    }
     let props = {
-      projects: {
-        isFetching: true
-      },
+      projects,
       styles: projectsStyles,
       dispatch :dispatch,
       onLoad: onLoad
     };
-    const wrapper = shallow(<ProjectsContainer styles={props.styles}/>);
+    const wrapper = shallow(<ProjectsContainer {...props} />);
     expect(wrapper.equals(<div>Loading projects ... </div>)).to.equal(true);
   });
 
@@ -36,11 +40,14 @@ describe('Testing projects components', () => {
       link: 'link',
       projectlink: 'projectlink'
     };
+    const projects:ProjectsStore = {
+      isFetching: false,
+      items: [{name: 'cdpp'},{name: 'ssalto'}],
+      lastUpdate:''
+    }
+
     let props = {
-      projects: {
-        isFetching: false,
-        items: [{name: 'cdpp'},{name: 'ssalto'}]
-      },
+      projects,
       styles: projectsStyles,
       dispatch :dispatch,
       onLoad : onLoad
@@ -55,7 +62,7 @@ describe('Testing projects components', () => {
         </ul>
       </div>
     );
-    const wrapper = shallow(<ProjectsContainer styles={props.styles}/>);
+    const wrapper = shallow(<ProjectsContainer {...props}/>);
     expect(wrapper.contains(result)).to.equal(true);
   });
 

@@ -21,8 +21,8 @@ describe('Testing login component', () => {
     const wrapper = shallow(<LoginComponent {...props}/>);
     expect(wrapper.find("div .login-modal")).to.have.length(1);
     expect(wrapper.find("div .login-error")).to.have.length(1);
-    expect(wrapper.find("input #username")).to.have.length(1);
-    expect(wrapper.find("input #password")).to.have.length(1);
+    expect(wrapper.find("input[type='text']")).to.have.length(1);
+    expect(wrapper.find("input[type='password']")).to.have.length(1);
     expect(wrapper.find("button")).to.have.length(1);
 
     // Test onLogin action
@@ -46,9 +46,9 @@ describe('Testing login component', () => {
     };
 
     const wrapper = shallow(<LoginComponent {...props}/>);
-    const username = wrapper.find("input #username");
+    const username = wrapper.find("input[type='text']");
     username.simulate('change', { target: { value: 'test' } });
-    const password = wrapper.find("input #password");
+    const password = wrapper.find("input[type='password']");
     password.simulate('change', { target: { value: 'test_password' } });
     // Test onLogin action
     wrapper.find("button").simulate('click');
