@@ -4,6 +4,8 @@ import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
     FAILED_PROJECTS, fetchProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions';
 
+import { ProjectsStore } from '../../../scripts/portalApp/modules/projects/types/ProjectTypes'
+
 // Ce fichier permet de tester les reducers liés aux projets
 describe('Testing Projects reducers', () => {
 
