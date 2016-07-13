@@ -16,8 +16,11 @@ class PluginComponent extends React.Component<PluginProps, any> {
 
   render(){
     const { plugin } = this.props
-    if (plugin && plugin.plugin){
-      return React.createElement(plugin.plugin,null)
+    // Check if plugin is loaded.
+    // If the plugin is loaded the react component
+    // associated is in the "loadedComponent" attribute of the plugin
+    if (plugin && plugin.loadedComponent){
+      return React.createElement(plugin.loadedComponent,null)
     } else {
       intializePlugin(plugin.paths, plugin.name,this.props.pluginInitialized)
       return <div className="error"> Undefined plugin </div>

@@ -29,7 +29,7 @@ export const PLUGIN_INITIALIZED = 'PLUGIN_INITIALIZED'
 export const pluginInitialized = (name:string, plugin:React.ComponentClass<any>) => ({
     type: PLUGIN_INITIALIZED,
     name: name,
-    plugin: plugin,
+    loadedComponent: plugin,
     error: ''
 })
 
