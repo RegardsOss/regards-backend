@@ -2,7 +2,6 @@ import {
   REQUEST_PLUGINS,  RECEIVE_PLUGINS,
   FAILED_PLUGINS, PLUGIN_INITIALIZED } from './PluginsActions'
 import { PluginsStore, PluginType } from './PluginTypes'
-// var scriptjs = require('scriptjs')
 
 export default (state:PluginsStore = {
   isFetching : false,

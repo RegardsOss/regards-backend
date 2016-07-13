@@ -10,7 +10,7 @@ import { ProjectsStore } from '../../../scripts/portalApp/modules/projects/types
 
 // Test a component rendering
 
-describe('Testing projects components', () => {
+describe('[PORTAL APP] Testing projects components', () => {
   it('Should render correctly the loading projects message', () => {
     const dispatch = () => { };
     const onLoad = () => { };
