@@ -1,12 +1,15 @@
 import * as React from "react"
-import { fetchAccessRights } from "./AccessRightsActions"
+import { connect } from 'react-redux'
 
+import { fetchAccessRights } from "./AccessRightsActions"
 import { AccessRightsView, Dependencies } from "./AccessRightsViewType"
 
 
 interface AccessRightsTypes {
-  dependencies:Dependencies
-  fetchAccessRights?: (dependencies:Dependencies)=> void
+  dependencies:Dependencies,
+  // Properties set by react redux connection
+  views?:Array<AccessRightsView>,
+  doFetchAccessRights?: (dependencies:Dependencies)=> void
 }
 
 /**
@@ -25,9 +28,6 @@ class AccessRightsComponent extends React.Component<AccessRightsTypes, any>{
   */
   constructor(){
     super();
-    this.state= {
-      access: false
-    }
     this.checkViewAccessRights = this.checkViewAccessRights.bind(this)
   }
 
@@ -58,28 +58,19 @@ class AccessRightsComponent extends React.Component<AccessRightsTypes, any>{
   * Method to check if the view is displayable
   */
   componentWillMount(){
-    const { store }:any = this.context
     if (this.getDependencies() === null){
       this.setState({
         access: true
       });
     } else {
-      this.unsubscribeViewAccessRights = store.subscribe(this.checkViewAccessRights)
       this.oldRender = Object.assign({}, this.render)
       this.render = () => {return null}
-      store.dispatch(fetchAccessRights(this.getDependencies()))
-    }
-  }
-
-  componentWillUnmount(){
-    if (this.unsubscribeViewAccessRights){
-      this.unsubscribeViewAccessRights()
+      this.props.doFetchAccessRights(this.getDependencies())
     }
   }
 
   checkViewAccessRights(){
-    const { store }:any = this.context
-    const view = store.getState().views.find( (curent:AccessRightsView) => {
+    const view = this.props.views.find( (curent:AccessRightsView) => {
       return curent.name === this.constructor.name
     });
     // If not, check access from server
@@ -91,12 +82,15 @@ class AccessRightsComponent extends React.Component<AccessRightsTypes, any>{
       } else {
         console.log("Access denied to view : " + this.constructor.name)
       }
-      this.unsubscribeViewAccessRights()
-      this.setState({
-        access: view.access
-      });
     }
   }
 }
 
-export default AccessRightsComponent
+const mapStateToProps = (state:any) => ({
+  views: state.views
+})
+const mapDispatchToProps = (dispatch:any) => ({
+  doFetchAccessRights: (dependencies:Dependencies) => dispatch(fetchAccessRights(dependencies))
+})
+
+export default connect<{}, {}, AccessRightsTypes>(mapStateToProps, mapDispatchToProps)(AccessRightsComponent)

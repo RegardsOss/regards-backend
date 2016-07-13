@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { connectTime, disconnectTime } from '../actions/WSTimeActions'
-import { startTime } from '../actions/TimeActions'
+import { startTimeWebSocket } from '../actions/TimeActions'
 import { getThemeStyles } from '../../../../common/theme/ThemeUtils'
 import Time from '../components/TimeComponent'
 
@@ -48,14 +48,14 @@ const mapDispatchToProps = (dispatch:any) => {
   return {
     webSocketConnect: () => dispatch(connectTime()),
     webSocketDisconnect: (sock:any) => dispatch(disconnectTime(sock)),
-    startTime: () => dispatch(startTime())
+    startTime: () => dispatch(startTimeWebSocket())
   }
 }
 const mapStateToProps = (state:any) => {
   return {
-    theme: state.theme,
-    time: state.ws.time,
-    started: state.ws.started
+    theme: state.common.theme,
+    time: state.userApp.ws.time,
+    started: state.userApp.ws.started
   }
 }
 const timeConnected = connect<{}, {}, TimeProps>(mapStateToProps,mapDispatchToProps)(TimeContainer)

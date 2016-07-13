@@ -2,7 +2,7 @@ import * as React from 'react'
 
 export type PluginType = {
   name: string,
-  plugin: React.ComponentClass<any>,
+  loadedComponent: React.ComponentClass<any>,
   paths: Array<string>
 }
 

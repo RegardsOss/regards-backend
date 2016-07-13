@@ -1,4 +1,4 @@
-import { RECEIVE_START_TIME }
+import { START_TIME_SUCCESS }
   from '../actions/TimeActions'
 import { SET_TIME } from '../actions/WSTimeActions'
 
@@ -7,7 +7,7 @@ export default (state:any = {
   time: ''
 }, action:any) => {
   switch(action.type){
-    case RECEIVE_START_TIME:
+    case START_TIME_SUCCESS:
       return Object.assign({}, state, {
         started: true
       })

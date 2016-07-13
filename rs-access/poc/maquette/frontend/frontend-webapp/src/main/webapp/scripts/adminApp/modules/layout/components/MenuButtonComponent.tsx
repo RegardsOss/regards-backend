@@ -26,13 +26,13 @@ class MenuButtonComponent extends React.Component<MenuButtonProps, any> {
       )
     else
       return (
-        <span
+        <a
           to={to}
           onClick={onClick}
           className={styles.menuelement +" "+ styles.unselected}>
           <i className={icon} title={label}></i>
           <span>{label}</span>
-        </span>
+        </a>
       )
   }
 }

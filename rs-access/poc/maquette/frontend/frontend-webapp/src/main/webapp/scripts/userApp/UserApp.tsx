@@ -4,10 +4,7 @@ import { connect } from 'react-redux'
 import { fetchPlugins } from '../common/plugins/PluginsActions'
 import { setTheme } from '../common/theme/actions/ThemeActions'
 import Layout from './modules/layout/Layout'
-import Test from './modules/test/Test'
-
-import AccessRightsComponent from '../common/access-rights/AccessRightsComponent'
-import { Dependencies } from '../common/access-rights/AccessRightsViewType'
+import TestContainer from './modules/test/TestContainer'
 
 import { PluginsStore } from '../common/plugins/PluginTypes'
 
@@ -42,18 +39,13 @@ class UserApp extends React.Component<UserAppProps, any> {
 
   render(){
     // Location ,params and content are set in this container props by react-router
-    console.log("PROPS",this.props)
     const { location, params, content } = this.props
     const { project } = params
-    const dependencies:Dependencies = {
-      "GET" : ["dependence"]
-    }
+
     if (!content){
       return (
         <Layout location={location} project={project} >
-          <AccessRightsComponent dependencies={dependencies} >
-            <Test />
-          </AccessRightsComponent>
+          <TestContainer />
         </Layout>
        )
     } else {
