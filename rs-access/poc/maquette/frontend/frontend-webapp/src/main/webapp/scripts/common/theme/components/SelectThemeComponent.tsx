@@ -1,3 +1,4 @@
+/** @module common */
 import * as React from 'react'
 
 interface SelectThemeTypes {
@@ -7,6 +8,10 @@ interface SelectThemeTypes {
   onThemeChange: (theme:string) => void
 }
 
+
+/**
+ * React component to display the Theme selector widget
+ */
 class SelectThemeComponent extends React.Component<SelectThemeTypes, any> {
   constructor(){
     super()

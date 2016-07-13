@@ -1,5 +1,4 @@
-// declare var require: any;
-
+/** @module AdminLayout */
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { IndexLink, Link } from 'react-router'
@@ -16,6 +15,13 @@ interface MenuProps {
   location: any
 }
 
+
+/**
+ * React Menu component. Display the admin application menu
+ * @prop {String} theme CSS Theme
+ * @prop {String} project Project
+ * @prop {Object} location react-router location
+ */
 class Menu extends React.Component<MenuProps, any> {
 
   render(){

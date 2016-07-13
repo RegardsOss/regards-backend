@@ -11,7 +11,7 @@ export const fetchAuthenticate = (username:String, password:String) => ({
       REQUEST_AUTHENTICATE,
       {
         type: RECEIVE_AUTHENTICATE,
-        meta: { authenticateDate: Date.now() }
+        meta: { authenticateDate: Date.now(), name: username }
       },
       FAILED_AUTHENTICATE
     ],

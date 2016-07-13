@@ -1,3 +1,4 @@
+/** @module AdminAuthentication */
 import * as React from 'react'
 import { connect } from 'react-redux'
 
@@ -6,6 +7,11 @@ import { getThemeStyles } from '../../../../common/theme/ThemeUtils'
 import LoginComponent from '../components/LoginComponent'
 import { fetchAuthenticate } from '../../../../common/authentication/AuthenticateActions'
 
+
+/**
+ * React container for authentication form.
+ * Contains logic for authentication
+ */
 class Authentication extends React.Component<any,any> {
 
   constructor(){

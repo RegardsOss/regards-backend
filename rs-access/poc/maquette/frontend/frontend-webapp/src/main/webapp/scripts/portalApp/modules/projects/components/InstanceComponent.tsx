@@ -1,3 +1,4 @@
+/** @module PortalProjects */
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
@@ -6,6 +7,10 @@ interface InstacenProps {
   styles: any
 }
 
+
+/**
+ * React component to display the Link to the Instance admin application
+ */
 class InstanceComponent extends React.Component<InstacenProps, any> {
 
   render(){

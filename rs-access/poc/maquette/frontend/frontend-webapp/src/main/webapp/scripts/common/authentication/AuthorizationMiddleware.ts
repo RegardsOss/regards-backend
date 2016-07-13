@@ -18,7 +18,7 @@ const getAuthorization = (state:any) => {
   const authentication = state.common.authentication
   // let authorization = "Basic "
   let authorization = "Basic " + btoa("acme:acmesecret")
-  if ( authentication && authentication.user && authentication.user.access_token){
+  if ( authentication && authentication.user && authentication.user.access_token && authentication.user.name && authentication.user.name !== "public"){
     authorization = "Bearer " + authentication.user.access_token
   }
   return authorization

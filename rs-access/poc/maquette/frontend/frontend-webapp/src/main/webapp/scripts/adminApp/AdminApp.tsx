@@ -1,4 +1,4 @@
-
+/** @module AdminApp */
 import * as React from 'react'
 import { connect } from 'react-redux'
 import * as ReactDOM from 'react-dom'
@@ -24,6 +24,11 @@ interface AminAppProps {
   setTheme: (name:string)=> void
 }
 
+
+/**
+ * React component to manage Administration application.
+ * This component display admin layout or login form if the user is not connected
+ */
 class AdminApp extends React.Component<AminAppProps, any> {
   constructor(){
     super();
@@ -31,7 +36,6 @@ class AdminApp extends React.Component<AminAppProps, any> {
       instance: false
     }
     this.changeTheme = this.changeTheme.bind(this)
-
   }
 
   componentWillMount(){
@@ -55,8 +59,9 @@ class AdminApp extends React.Component<AminAppProps, any> {
     const styles = getThemeStyles(theme, 'adminApp/styles')
     const commonStyles = getThemeStyles(theme,'common/common.scss')
     if (authentication){
-      const authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
-      if (!authenticated || authentication.user.name === 'public'){
+      let authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
+      authenticated = authenticated && (authentication.user.name !== undefined) && authentication.user.name !== 'public'
+      if (authenticated === false){
         return (
           <div className={styles.main}>
             <Authentication />
@@ -75,7 +80,6 @@ class AdminApp extends React.Component<AminAppProps, any> {
                 location={location}
                 content={content}
                 project={params.project}
-                instance={this.state.instance}
                 onLogout={onLogout}/>
 
               <SelectThemeComponent

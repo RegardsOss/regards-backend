@@ -1,3 +1,4 @@
+/** @module common */
 import * as React from 'react'
 import ShowableAtMount from './ShowableAtMount'
 
@@ -9,6 +10,10 @@ interface ModuleComponentState {
 // TODO
 }
 
+
+/**
+ * TODO
+ */
 class ModuleComponent extends React.Component<ModuleComponentProps, ModuleComponentState> {
   getModuleVisibility() {
     return true

@@ -38,6 +38,7 @@ describe('[COMMON] Testing authenticate reducer', () => {
         scope: "openid"
       },
       meta: {
+        name : 'testuser',
         authenticateDate: date
       }
     }
@@ -54,6 +55,7 @@ describe('[COMMON] Testing authenticate reducer', () => {
         token_type: "bearer",
         refresh_token: "d2b51af1-76b8-45d0-8e92-0e345ef45dca",
         expires_in: 21355,
+        name: 'testuser',
         scope: "openid"
       },
       authenticateDate: date,

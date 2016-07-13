@@ -1,3 +1,4 @@
+/** @module AdminProjectAdmins */
 import * as React from 'react'
 import { PropTypes } from "react"
 import { connect } from 'react-redux';
@@ -42,6 +43,10 @@ interface ProjectAdminsProps {
   handleDelete?:any
 }
 
+
+/**
+ * React container to manage ProjectAdminsComponent.
+ */
 class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
 
   componentWillReceiveProps(nextProps: any) {

@@ -1,3 +1,4 @@
+/** @module AdminProjectAdmins */
 var { CALL_API, getJSON } = require('redux-api-middleware')
 import Schemas from '../../../common/api/schemas'
 import { normalize } from 'normalizr'
@@ -7,9 +8,16 @@ export const PROJECT_ADMIN_REQUEST = 'PROJECT_ADMIN_REQUEST'
 export const PROJECT_ADMIN_SUCESS  = 'PROJECT_ADMIN_SUCESS'
 export const PROJECT_ADMIN_FAILURE = 'PROJECT_ADMIN_FAILURE'
 
-// Fetches all project admins
-// Relies on the custom API middleware defined in redux-api-middleware
-// Normalize the json response
+
+
+/**
+ * Asynchrone Action creator to fetch project administrors
+ * Fetches all project admins
+ * Relies on the custom API middleware defined in redux-api-middleware
+ * Normalize the json response
+ *
+ * @return {AsyncAction}
+ */
 export const fetchProjectAdmins = () => ({
   [CALL_API]: {
     // endpointKey : key,
@@ -27,10 +35,17 @@ export const fetchProjectAdmins = () => ({
   }
 })
 
-// Fetches all project admins
-// Relies on the custom API middleware defined in redux-api-middleware
-// Normalize the json response
-export const fetchProjectAdminsBy = (endpoint: any) => ({
+/**
+ * Asynchrone Action creator to fetch project administror by id
+ * Fetches a given administrator user by id
+ * Relies on the custom API middleware defined in redux-api-middleware
+ * Normalize the json response
+ *
+ * @param {String} endpoint backend endpoint to fetch project administrator
+ *
+ * @return {AsyncAction}
+ */
+export const fetchProjectAdminsBy = (endpoint: string) => ({
   [CALL_API]: {
     // endpointKey : key,
     // links: dataObject.links,
@@ -47,8 +62,15 @@ export const fetchProjectAdminsBy = (endpoint: any) => ({
   }
 })
 
-// Delete a project admins from the list
+
 export const DELETE_PROJECT_ADMIN = 'DELETE_PROJECT_ADMIN'
+/**
+ * Action creator to delete project administror by id
+ *
+ * @param {String} id backend endpoint to fetch project administrator
+ *
+ * @return {AsyncAction}
+ */
 export function deleteProjectAdmin(id: string) {
   return {
     type: DELETE_PROJECT_ADMIN,
@@ -57,7 +79,15 @@ export function deleteProjectAdmin(id: string) {
 }
 
 export const UPDATE_PROJECT_ADMIN = 'UPDATE_PROJECT_ADMIN'
-export function updateProjectAdmin(id: any, payload: any) {
+/**
+ * Action creator to update project administror
+ *
+ * @param {String} id User identifier
+ * @param {Object} payload User to update
+ *
+ * @return {AsyncAction}
+ */
+export function updateProjectAdmin(id: string, payload: any) {
   return {
     type: UPDATE_PROJECT_ADMIN,
     id,

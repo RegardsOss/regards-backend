@@ -1,4 +1,4 @@
-
+/** @module common */
 
 /**
 * Supply the css styles of a given css style file from a given theme.

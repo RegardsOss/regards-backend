@@ -1,7 +1,9 @@
+/** @module AdminLayout */
 import * as React from 'react'
 import { connect } from 'react-redux'
 import MenuComponent from './components/MenuComponent'
 import Home from '../home/Home'
+
 // Styles
 import { getThemeStyles } from '../../../common/theme/ThemeUtils'
 var classnames = require('classnames')
@@ -10,12 +12,18 @@ interface LayoutProps {
   location: any,
   content: any,
   project: string,
-  instance: boolean,
   onLogout: () => void
   // Properties set by react-redux connection
   theme?: string,
 }
 
+/**
+ * React container for admin application layout.
+ * @prop {Object} location   React-router location
+ * @prop {Any}    content    React component to display in layout content zone
+ * @prop {String} project    Project name of the admin application
+ * @prop {Function} onLogout Callback for logout
+ */
 class Layout extends React.Component<LayoutProps, any> {
   render(){
     // Add location to menu props in order to update view if location

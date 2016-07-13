@@ -1,3 +1,4 @@
+/** @module common */
 import * as React from "react"
 import { connect } from 'react-redux'
 
@@ -12,10 +13,20 @@ interface AccessRightsTypes {
   doFetchAccessRights?: (dependencies:Dependencies)=> void
 }
 
+
 /**
-* Root class for all RegardsView in each modules.
-* This class handle the accessRights to the view modules.
-*/
+ * React component to allow access-rights management.
+ * This component should be set around a component to display if the dependencies are availables to
+ * the connected user.
+ * Exemple :
+ * <AccessRightsComponent dependecies={Array<Dependencies>}>
+ *  <Exemple />
+ * </AccessRightsComponent>
+ *
+ * In this case the react component Exemple is displayed only if the dependencies are availables.
+ *
+ * @prop {Array<Dependencies>} depencies List of dependencies to be availables
+ */
 class AccessRightsComponent extends React.Component<AccessRightsTypes, any>{
 
   unsubscribeViewAccessRights:any = null
@@ -31,21 +42,6 @@ class AccessRightsComponent extends React.Component<AccessRightsTypes, any>{
     this.checkViewAccessRights = this.checkViewAccessRights.bind(this)
   }
 
-  /**
-  * Method to get the REST dependencies of the view.
-  * If all the dependencies are authorized, then the view can be displayed.
-  * return null for no dependencies or an object :
-  * {
-  *  GET : ["dependence"],
-  *  POST : ["dependence"],
-  *  PUT : ["dependence"],
-  *  DELETE : ["dependence"],
-  * }
-  */
-  getDependencies():Dependencies{
-    return this.props.dependencies;
-  }
-
   render() {
     return (
       <div>
@@ -58,14 +54,14 @@ class AccessRightsComponent extends React.Component<AccessRightsTypes, any>{
   * Method to check if the view is displayable
   */
   componentWillMount(){
-    if (this.getDependencies() === null){
+    if (this.props.dependencies === null){
       this.setState({
         access: true
       });
     } else {
       this.oldRender = Object.assign({}, this.render)
       this.render = () => {return null}
-      this.props.doFetchAccessRights(this.getDependencies())
+      this.props.doFetchAccessRights(this.props.dependencies)
     }
   }
 

@@ -1,3 +1,4 @@
+/** @module PortalProjects */
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
@@ -9,6 +10,13 @@ export interface ProjectTypes {
   styles: any
 }
 
+
+/**
+ * React component to display a project in the portal application
+ *
+ * @prop {Project} project Project to display
+ * @prop {Object} styles CSS Styles
+ */
 export class ProjectComponent extends React.Component<ProjectTypes, any> {
   render(){
     // styles props is passed throught the react component creation
