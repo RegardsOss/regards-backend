@@ -1,7 +1,8 @@
 import * as React from 'react'
 import PluginType from './PluginTypes'
+import { Action } from 'redux'
 var { CALL_API } = require('redux-api-middleware')
-declare var document:any
+
 if(typeof document !== 'undefined')
   var scriptjs = require('scriptjs')
 
@@ -27,6 +28,11 @@ export const fetchPlugins = () => ({
 })
 
 export const PLUGIN_INITIALIZED = 'PLUGIN_INITIALIZED'
+export interface PluginInitializedAction extends Action {
+  name: string
+  loadedComponent: React.ComponentClass<any>,
+  error: string
+}
 export const pluginInitialized = (name:string, plugin:React.ComponentClass<any>) => ({
     type: PLUGIN_INITIALIZED,
     name: name,
@@ -43,6 +49,6 @@ export const intializePlugin = (paths:Array<string>, name:string, dispatchAction
         return window.location.origin + "/plugins/" + path
   })
 
-if(typeof document !== 'undefined')
-    scriptjs(pathsToLoad, name)
+  if(typeof document !== 'undefined')
+      scriptjs(pathsToLoad, name)
 }

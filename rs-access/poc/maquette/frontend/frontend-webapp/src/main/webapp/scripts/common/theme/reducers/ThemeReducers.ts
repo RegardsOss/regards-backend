@@ -6,9 +6,3 @@ export default (state:string = '', action:any) => {
       return state
   }
 }
-
-// const themeReducers = {
-//   theme
-// }
-//
-// export default themeReducers
