@@ -1,8 +1,9 @@
 import * as React from 'react'
 import PluginType from './PluginTypes'
 var { CALL_API } = require('redux-api-middleware')
-
-var scriptjs = require('scriptjs')
+declare var document:any
+if(typeof document !== 'undefined')
+  var scriptjs = require('scriptjs')
 
 const PLUGINS_API='http://localhost:8080/api/plugins'
 export const REQUEST_PLUGINS = 'REQUEST_PLUGINS'
@@ -41,5 +42,7 @@ export const intializePlugin = (paths:Array<string>, name:string, dispatchAction
   const pathsToLoad = paths.map( path => {
         return window.location.origin + "/plugins/" + path
   })
-  scriptjs(pathsToLoad, name)
+
+if(typeof document !== 'undefined')
+    scriptjs(pathsToLoad, name)
 }
