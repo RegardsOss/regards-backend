@@ -6,7 +6,10 @@ const preloadedState:any = {
     authentication : {}
   },
   userApp : {
-    ws : {}
+    ws : {
+      time: null,
+      started: false
+    }
   },
   portalApp : {
     projects : {}

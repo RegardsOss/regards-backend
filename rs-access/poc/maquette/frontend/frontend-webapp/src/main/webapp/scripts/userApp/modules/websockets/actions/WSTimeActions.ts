@@ -16,10 +16,11 @@ export function setTime(time:any) {
 export function connectTime() {
   return function (dispatch:any, getState:any) {
     // Connect to websocket server
-    const url = TIME_WS_API + "?access_token="+getState().authentication.user.access_token
+    const url = TIME_WS_API + "?access_token="+getState().common.authentication.user.access_token
     const socket = new SockJS(url)
 
     // TODO : Replace stompjs lib
+    socket.onclose = ()=> console.log("WebSocket closed")
     return socket;
   }
 }
@@ -27,6 +28,6 @@ export function connectTime() {
 // Dysconnect from the websocket server
 export function disconnectTime(client:any) {
   return function (dispatch:any, getState:any) {
-    client.disconnect( () => { console.log("Disconnected from websocket server")})
+    client.close()
   }
 }

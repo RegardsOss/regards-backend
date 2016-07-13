@@ -25,4 +25,4 @@ const mapDispatchToProps = (dispatch:any) => ({
   pluginInitialized: (name:string, plugin:React.ComponentClass<any>) => dispatch(pluginInitialized(name, plugin))
 })
 
-export default connect()(PluginComponent)
+export default connect<{}, {}, PluginProps>(mapStateToProps, mapDispatchToProps)(PluginComponent)

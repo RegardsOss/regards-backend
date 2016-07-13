@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "start": "webpack-dev-server --progress --config webpack.dev.config.js",
-    "prebuild": "npm test",
+    "prebuild": "npm install && npm test",
     "build": "webpack --progress --config webpack.dev.config.js",
     "postinstall" : "typings install",
     "prebuildp": "npm install && npm test",

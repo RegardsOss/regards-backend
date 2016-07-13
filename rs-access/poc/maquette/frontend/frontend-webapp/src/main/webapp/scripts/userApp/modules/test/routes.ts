@@ -1,4 +1,4 @@
-import Test from './Test'
+import TestContainer from './TestContainer'
 import { PlainRoute } from 'react-router'
 
 declare var require: any;
@@ -8,7 +8,7 @@ export const testRoutes:PlainRoute = {
   getComponent(nextState:any, cb:any) {
     require.ensure([], (require:any) => {
       cb(null, {
-        content: Test
+        content: TestContainer
       })
     })
   }

@@ -34,7 +34,7 @@ class Menu extends React.Component<MenuProps, any> {
         <ul className={ulClassName}>
           <li>
             <MenuButtonComponent
-              to={"/admin/"+project+"/test"}
+              onClick={this.props.onLogout}
               styles={styles}
               label="Logout"
               icon={icons["fi-power"]}>
