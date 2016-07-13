@@ -1,11 +1,18 @@
 import * as React from 'react';
 
+
 interface LoginProps {
   styles: Object,
   onLogin: (username: string, password: string) => void,
   errorMessage: string
 }
 
+/**
+ * React component for login form in administration application
+ * @prop {Object} styles
+ * @prop {Function} onLogin Callback for on login action
+ * @prop {String} errorMessage Error message to display
+ */
 class LoginComponent extends React.Component<LoginProps,any> {
 
   constructor(){
@@ -15,9 +22,20 @@ class LoginComponent extends React.Component<LoginProps,any> {
       password: "",
       error :""
     }
-    this.handleKeyPress = this.handleKeyPress.bind(this)
   }
 
+  componentWillMount(){
+    this.handleKeyPress = this.handleKeyPress.bind(this);
+  }
+
+
+
+  /**
+   * handleKeyPress - Handle 'Enter' key press to validate form
+   *
+   * @param  {type} event: KeyboardEvent
+   * @return {type}
+   */
   handleKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter') {
       this.props.onLogin(this.state.username,this.state.password)

@@ -6,7 +6,7 @@ import * as ReactDOM from 'react-dom'
 import { setTheme } from '../common/theme/actions/ThemeActions'
 import { logout } from '../common/authentication/AuthenticateActions'
 import { getThemeStyles } from '../common/theme/ThemeUtils'
-import Authentication from './modules/authentication/Authentication'
+import Authentication from './modules/authentication/containers/AuthenticationContainer'
 import { AuthenticationType } from '../common/authentication/AuthenticationTypes'
 import SelectThemeComponent from '../common/theme/components/SelectThemeComponent'
 import ErrorComponent from '../common/components/ApplicationErrorComponent'
@@ -31,6 +31,7 @@ class AdminApp extends React.Component<AminAppProps, any> {
       instance: false
     }
     this.changeTheme = this.changeTheme.bind(this)
+
   }
 
   componentWillMount(){
