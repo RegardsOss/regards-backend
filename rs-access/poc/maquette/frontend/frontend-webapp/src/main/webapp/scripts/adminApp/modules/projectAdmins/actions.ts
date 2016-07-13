@@ -66,9 +66,9 @@ export function updateProjectAdmin(projectAdmin: any) {
 
 /**
  * [UPDATE_OR_CREATE_PROJECT_ADMIN description]
- * @type {String} id of the project admin to update/create
- * @type {String} name of the project admin to update/create
- * @type {String} list to projects ids to associate the project admin to
+ * @param {String} id of the project admin to update/create
+ * @param {String} name of the project admin to update/create
+ * @param {String} list to projects ids to associate the project admin to
  */
 export const UPDATE_OR_CREATE_PROJECT_ADMIN = 'UPDATE_OR_CREATE_PROJECT_ADMIN'
 export function updateOrCreateProjectAdmin(id: string, name: string, projects: Array<any>) {
