@@ -15,22 +15,19 @@ interface PluginProps {
 class PluginContainer extends React.Component<PluginProps, any> {
 
   render(){
-    if (this.state.access === true){
-      console.log("Rendering module")
-      // this.props : parameters passed by react component
-      // this.props.params : parameters passed by react router
-      const { params, plugins } = this.props
+    // this.props : parameters passed by react component
+    // this.props.params : parameters passed by react router
+    const { params, plugins } = this.props
 
-      if (plugins){
-        const plugin = plugins.find( plugin => {
-          return plugin.name === params.plugin
-        })
-
-        // Get plugin from store
-        return <PluginComponent plugin={plugin}/>
-      }
+    if (plugins){
+      const plugin = plugins.find( plugin => {
+      return plugin.name === params.plugin
+      })
+      // Get plugin from store
+      return <PluginComponent plugin={plugin}/>
+    } else {
+      return null
     }
-    return null
   }
 }
 

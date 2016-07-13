@@ -18,10 +18,10 @@ class NavigationContainer extends React.Component<NavigationProps, any> {
     if (plugins.items){
       return (
         <nav>
-          <LinkComponent location={location} key="plop" to={"/user/"+project+"/test"}>Test de lien</LinkComponent>
+          <LinkComponent location={location} key="test" to={"/user/"+project+"/test"}>Test de lien</LinkComponent>
           <LinkComponent location={location} key="time" to={"/user/"+project+"/time"}>Temps</LinkComponent>
           {plugins.items.map( plugin => {
-            if (plugin && plugin.plugin){
+            if (plugin){
               return (
                 <LinkComponent
                   location={location}
@@ -34,8 +34,14 @@ class NavigationContainer extends React.Component<NavigationProps, any> {
           })}
         </nav>
       )
+    } else {
+      return (
+        <nav>
+          <LinkComponent location={location} key="test" to={"/user/"+project+"/test"}>Test de lien</LinkComponent>
+          <LinkComponent location={location} key="time" to={"/user/"+project+"/time"}>Temps</LinkComponent>
+        </nav>
+      )
     }
-    return null
   }
 }
 

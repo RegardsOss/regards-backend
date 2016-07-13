@@ -36,11 +36,5 @@ export default function configureStore(preloadedState:any):any {
     )
   )
 
-  // Log any change in the store
-  const render = () => {
-    console.log("STORE UPDATED : ",store.getState())
-  }
-  store.subscribe(render)
-
   return store
 }

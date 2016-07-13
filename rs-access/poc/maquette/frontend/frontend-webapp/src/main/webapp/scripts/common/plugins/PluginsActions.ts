@@ -2,6 +2,8 @@ import * as React from 'react'
 import PluginType from './PluginTypes'
 var { CALL_API } = require('redux-api-middleware')
 
+var scriptjs = require('scriptjs')
+
 const PLUGINS_API='http://localhost:8080/api/plugins'
 export const REQUEST_PLUGINS = 'REQUEST_PLUGINS'
 export const RECEIVE_PLUGINS = 'RECEIVE_PLUGINS'
@@ -31,10 +33,13 @@ export const pluginInitialized = (name:string, plugin:React.ComponentClass<any>)
     error: ''
 })
 
-// // TODO: Reactivate this?
-// body.map( plugin => {
-//   const paths = plugin.paths.map( path => {
-//       return window.location.origin + "/plugins/" + path
-//   })
-//   scriptjs(paths, plugin.name)
-// })
+export const intializePlugin = (paths:Array<string>, name:string, dispatchAction:(action:any)=>void) => {
+  // Listen for pluin initialization done
+  document.addEventListener("plugin", (event:any) => {
+    dispatchAction(pluginInitialized(event.detail.name, event.detail.app))
+  });
+  const pathsToLoad = paths.map( path => {
+        return window.location.origin + "/plugins/" + path
+  })
+  scriptjs(pathsToLoad, name)
+}
