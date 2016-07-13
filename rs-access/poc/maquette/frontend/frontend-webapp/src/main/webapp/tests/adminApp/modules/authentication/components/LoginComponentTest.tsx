@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { shallow } from 'enzyme';
 import { expect } from 'chai';
-import LoginComponent from '../../../scripts/adminApp/modules/authentication/components/LoginComponent';
+import LoginComponent from '../../../../../scripts/adminApp/modules/authentication/components/LoginComponent';
 
 // Test a component rendering
 
-describe('Testing login component', () => {
+describe('[ADMIN APP] Testing login component', () => {
   it('Should render correctly the login component', () => {
     const onLogin = (username:string, password:string) => { };
     const loginStyles:any = {

@@ -26,7 +26,7 @@ export const fetchProjects = () => ({
   }
 })
 
-interface ProjectAction extends Action {
+export interface ProjectAction extends Action {
   id: string,
   name: string
 }
@@ -39,8 +39,6 @@ export const addProject = (id: string, name: string):ProjectAction => ({
   id,
   name
 })
-
-const plop:ProjectAction = addProject("plop","plop");
 
 export const DELETE_PROJECT = 'DELETE_PROJECT'
 export function deleteProject(id: string) {
