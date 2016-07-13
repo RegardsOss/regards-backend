@@ -1,3 +1,4 @@
+/** @module common */
 import * as React from "react"
 
 interface ShowableAtRenderProps{
@@ -8,6 +9,10 @@ interface ShowableAtRenderState{
   // TODO
 }
 
+
+/**
+ * TODO
+ */
 class ShowableAtRender extends React.Component<ShowableAtRenderProps, ShowableAtRenderState>{
 
   render() {

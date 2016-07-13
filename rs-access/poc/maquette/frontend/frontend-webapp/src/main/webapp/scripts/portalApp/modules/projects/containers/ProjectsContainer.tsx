@@ -1,3 +1,4 @@
+/** @module PortalProjects */
 import * as React from 'react'
 import { connect } from 'react-redux'
 import ProjectComponent from '../components/ProjectComponent'
@@ -14,6 +15,9 @@ interface ProjectsProps{
 }
 
 // Export class itself without connect to be able to use it in test without store connection.
+/**
+ * React container to manage projects in portal app
+ */
 export class ProjectsContainer extends React.Component<ProjectsProps, any> {
 
   componentWillMount(){

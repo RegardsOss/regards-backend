@@ -1,3 +1,4 @@
+/** @module common */
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { PluginType, PluginsStore } from './PluginTypes'
@@ -9,9 +10,13 @@ interface PluginProps {
   plugins?: PluginsStore,
   pluginInitialized?: (action:any) => void
 }
+
+
 /**
- Display the content of a plugin.
-*/
+ * React component to display a given plugin
+ *
+ * @prop {PluginType} plugin Plugin to display
+ */
 class PluginComponent extends React.Component<PluginProps, any> {
 
   render(){

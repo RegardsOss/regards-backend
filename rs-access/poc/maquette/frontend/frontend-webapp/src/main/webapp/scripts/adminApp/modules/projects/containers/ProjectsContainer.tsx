@@ -1,3 +1,4 @@
+/** @module AdminProjects */
 import * as React from 'react'
 import { Component, PropTypes } from 'react'
 import { bindActionCreators } from 'redux'
@@ -12,6 +13,8 @@ import ManageProjectsComponent from '../components/ManageProjectsComponent'
 import ProjectConfigurationComponent from '../components/ProjectConfigurationComponent'
 import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
 import ModuleComponent from '../../../../common/components/ModuleComponent'
+// Types
+import { Project } from '../types/ProjectTypes'
 // Actions
 import {
   addProject,
@@ -30,8 +33,7 @@ import {
   getProjectById } from '../../../reducer'
 
 interface ProjectsContainerTypes {
-  projects: Array<any>,
-  selectedProject: any,
+  projects: Array<Project>,
   projectConfigurationIsShown: boolean,
   styles : any,
   // Parameters set by react-redux connection
@@ -44,6 +46,15 @@ interface ProjectsContainerTypes {
   deleteProject? : () => void
 }
 
+
+/**
+ * React container to manage ManageProjectsComponent.
+ *
+ * @prop {Array<Project>} projects List of projects to display
+ * @prop {Boolean} projectConfigurationIsShown ProjectConfigurationComponent display status
+ * @prop {Object} styles CSS Styles
+ * 
+ */
 class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
   componentWillMount(){
     // onLoad method is set to the container props by react-redux connect.

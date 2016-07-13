@@ -17,7 +17,7 @@
     "presitemap": "webpack --config webpack.sitemap.config.js --progress",
     "sitemap": "node build/sitemap.js",
     "prejsdoc" : "tsc",
-    "jsdoc" : "jsdoc -c jsdoc.conf.json -r"
+    "jsdoc" : "jsdoc -c jsdoc.conf.json"
   },
   "author": "CS-SI",
   "license": "ISC",

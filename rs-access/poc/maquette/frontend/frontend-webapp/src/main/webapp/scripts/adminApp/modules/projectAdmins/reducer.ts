@@ -1,3 +1,4 @@
+/** @module AdminProjectAdmins */
 import { union, values, merge, isEqual } from 'lodash'
 import { deleteEntityReducer } from '../../../common/reducers'
 import {
@@ -9,7 +10,14 @@ import {
   UPDATE_OR_CREATE_PROJECT_ADMIN,
   DELETE_PROJECT_ADMIN } from './actions'
 
-export default (state: any = {
+/**
+ * ProjectAdmins reducer.
+ *
+ * @prop {Object} state
+ * @prop {Action} action Action to reduce type can be [PROJECT_ADMIN_REQUEST|PROJECT_ADMIN_SUCESS|PROJECT_ADMIN_FAILUREUPDATE_OR_CREATE_PROJECT_ADMIN|
+ * UPDATE_PROJECT_ADMIN|CREATE_PROJECT_ADMIN|DELETE_PROJECT_ADMIN]
+ */
+export const projectAdminsReducer =  (state: any = {
   isFetching : false,
   items: {},
   ids: [],
@@ -64,6 +72,6 @@ export default (state: any = {
 
 // Selectors
 export const getProjectAdminById = (state: any, id: string) => state.items[id]
-
 export const getProjectAdminsByProject = (state: any, project: string) => values(state.items) // TODO
   // (!project) ? [] : state.items.filter(pa => pa.projects.includes(project.id))
+export default projectAdminsReducer

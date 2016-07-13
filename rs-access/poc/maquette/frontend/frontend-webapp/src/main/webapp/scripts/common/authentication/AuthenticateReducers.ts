@@ -14,11 +14,13 @@ export default (state: any = {
         isFetching: true
       });
     case RECEIVE_AUTHENTICATE:
-      return Object.assign({}, state, {
+      let newState = Object.assign({}, state, {
         isFetching: false,
         user: action.payload,
         authenticateDate: action.meta.authenticateDate
       });
+      newState.user['name'] = action.meta.name
+      return newState;
     case FAILED_AUTHENTICATE:
       return Object.assign({}, state, {
         isFetching: false,

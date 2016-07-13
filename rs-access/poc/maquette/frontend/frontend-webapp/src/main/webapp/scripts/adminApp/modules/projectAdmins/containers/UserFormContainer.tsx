@@ -1,3 +1,4 @@
+/** @module AdminProjectAdmins */
 /**
  * This component implements concepts from the
  * AsynchronousBlurValidationForm component and the
@@ -55,6 +56,12 @@ interface FormPropTypes {
   styles: any
 }
 
+
+/**
+ * React component to display a form to add or update an administrator to a given project
+ *
+ * @prop {Function} handleSubmit Callback to add or update an administrator
+ */
 class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
   render() {
     const {

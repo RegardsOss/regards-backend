@@ -1,5 +1,5 @@
+/** @module AdminAuthentication */
 import * as React from 'react';
-
 
 interface LoginProps {
   styles: Object,

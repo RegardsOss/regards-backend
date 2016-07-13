@@ -1,3 +1,4 @@
+/** @module AdminProjects */
 import * as React from 'react'
 import { Component, PropTypes } from 'react'
 import {reduxForm} from 'redux-form';
@@ -13,6 +14,16 @@ interface ProjectconfigurationTypes {
   styles: any
 }
 
+
+/**
+ * React component to display a redux-form to edit a project
+ *
+ * @prop {boolean} show Display or not this form
+ * @prop {Object}  styles CSS Styles
+ * @prop {Function} handleSubmit Callback to submit project edition
+ * @prop {Function} onCancelClick Callback to cancel project edition
+ *
+ */
 class ProjectConfigurationComponent extends Component<ProjectconfigurationTypes, any> {
   render() {
     const { show, onSaveClick, onCancelClick }:any = this.props;

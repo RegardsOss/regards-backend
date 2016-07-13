@@ -1,14 +1,14 @@
-//import { React, PropTypes } from 'react'
-//import * as React from 'react'
+/** @module AdminProjectAdmins */
 import * as React from 'react'
 var icons = require('../../../../../stylesheets/foundation-icons/foundation-icons.scss')
 import { map } from 'lodash'
 // Styles
 var classnames = require('classnames')
 
+import { Project } from '../../projects/types/ProjectTypes'
 
 interface ProjectAdminsProps {
-  project: any,
+  project:Project,
   styles: any,
   projectAdmins: Array<any>,
   onAddClick: (id: string) => void,
@@ -16,6 +16,17 @@ interface ProjectAdminsProps {
   onDeleteClick: (id: string) => void
 }
 
+
+/**
+ * React component to display the list of administrators of a given project
+ *
+ * @prop {Project}     project          Project to display
+ * @prop {Object}      styles           CSS styles
+ * @prop {Array<User>} projectAdmins    List of administrators
+ * @prop {Function}    onAddClick       Callback to add a new administrator
+ * @prop {Function}    onConfigureClick Callback to configure an administrator
+ * @prop {Function}    onDeleteClick    Callback to delete an administrator
+ */
 class ProjectAdminsComponent extends React.Component<ProjectAdminsProps, any> {
   render(){
     const { project, projectAdmins, styles, onAddClick, onConfigureClick,onDeleteClick } : any = this.props;

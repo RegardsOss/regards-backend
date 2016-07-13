@@ -1,3 +1,4 @@
+/** @module PortalApp */
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
@@ -20,6 +21,10 @@ interface PortalAppProps {
   publicAuthenticate?: ()=> void,
 }
 
+
+/**
+ * React component to manage portal application.
+ */
 class PortalApp extends React.Component<PortalAppProps, any> {
 
   componentWillMount(){
