@@ -13,7 +13,7 @@ interface AccessRightsTypes {
 * Root class for all RegardsView in each modules.
 * This class handle the accessRights to the view modules.
 */
-class AccessRightsComponent<P, S> extends React.Component<AccessRightsTypes, any>{
+class AccessRightsComponent extends React.Component<AccessRightsTypes, any>{
 
   unsubscribeViewAccessRights:any = null
   oldRender:any = null

@@ -4,6 +4,7 @@ import {
   PROJECT_ADMIN_REQUEST,
   PROJECT_ADMIN_SUCESS,
   PROJECT_ADMIN_FAILURE,
+  CREATE_PROJECT_ADMIN,
   UPDATE_PROJECT_ADMIN,
   UPDATE_OR_CREATE_PROJECT_ADMIN,
   DELETE_PROJECT_ADMIN } from './actions'
@@ -14,9 +15,11 @@ export default (state: any = {
   ids: [],
   lastUpdate: ''
 }, action: any) => {
+  let newState = Object.assign({}, state)
   switch (action.type) {
     case PROJECT_ADMIN_REQUEST:
-      return Object.assign({}, state, {isFetching: true })
+      newState.isFetching = true
+      return newState
     case PROJECT_ADMIN_SUCESS:
       return Object.assign({}, state, {
         isFetching: false,
@@ -26,10 +29,7 @@ export default (state: any = {
     case PROJECT_ADMIN_FAILURE:
       return Object.assign({}, state, { isFetching: false })
     case UPDATE_OR_CREATE_PROJECT_ADMIN:
-      let newState = Object.assign({}, state)
-
       newState.items[action.id] = {
-        id: action.id,
         name: action.name,
         projects: action.projects
         // projects: arrayUnique(projectList.concat(action.projects))
@@ -47,6 +47,13 @@ export default (state: any = {
       //   projects: uniqWith(projectList.concat(action.projects), isEqual)
       //   // projects: arrayUnique(projectList.concat(action.projects))
       // })
+      return newState
+    case UPDATE_PROJECT_ADMIN:
+      newState.items[action.id] = action.payload
+      return newState
+    case CREATE_PROJECT_ADMIN:
+      newState.items[action.id] = action.payload
+      newState.ids.push(action.id)
       return newState
     case DELETE_PROJECT_ADMIN:
       return deleteEntityReducer(state, action)

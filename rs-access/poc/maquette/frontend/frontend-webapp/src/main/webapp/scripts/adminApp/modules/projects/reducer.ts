@@ -10,7 +10,7 @@ import {
 
 export default (state: any = {
   isFetching : false,
-  items: [],
+  items: {},
   ids: [],
   lastUpdate: ''
 }, action: any) => {
@@ -20,7 +20,7 @@ export default (state: any = {
     case PROJECTS_SUCESS:
       return Object.assign({}, state,{
         isFetching: false,
-        items: action.payload.entities.projects, // TODO: merge with previous items ?
+        items: action.payload.entities.projects,
         ids: union(state.ids, action.payload.result)
       })
     case PROJECTS_FAILURE:
@@ -33,14 +33,6 @@ export default (state: any = {
       }
       newState.ids.push(action.id)
       return newState
-      // return { ...state,
-      //   items: state.items.concat({
-      //     id: action.id,
-      //     name: action.name,
-      //     selected: false,
-      //     admins: []
-      //   })
-      // }
     case DELETE_PROJECT:
       return deleteEntityReducer(state, action)
     default:

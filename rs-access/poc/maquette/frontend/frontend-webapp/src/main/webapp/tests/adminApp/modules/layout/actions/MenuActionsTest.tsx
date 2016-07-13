@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import { showProjects } from '../../../scripts/adminApp/modules/layout/actions/MenuActions';
+import { showProjects } from '../../../../../scripts/adminApp/modules/layout/actions/MenuActions';
 
-describe('Testing Menu actions', () => {
+describe('[ADMIN APP] Testing Menu actions', () => {
 
   describe('Testing showProjects action', () => {
     it('Should be a function', () => {

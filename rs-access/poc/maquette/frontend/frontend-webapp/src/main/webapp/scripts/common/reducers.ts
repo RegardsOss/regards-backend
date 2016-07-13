@@ -6,7 +6,7 @@ import themeReducers from './theme/reducers/ThemeReducers'
 import pluginReducers from './plugins/PluginReducers'
 import accessRightsReducers from './access-rights/AccessRightsReducers'
 import authentication, * as fromAuthentication from './authentication/AuthenticateReducers'
-import { pick } from 'lodash'
+var _ = require('lodash')
 
 // Keeping both notations as an example
 export default combineReducers({
@@ -16,8 +16,9 @@ export default combineReducers({
   authentication
 });
 
-export const deleteEntityReducer = (state: any, action:any) =>
-(Object.assign({}, state,{
-  items: pick(state.items, (value:string, key:string) => key !== action.id),
-  ids: state.ids.filter( (id:string) => id !== action.id)
-}))
+export const deleteEntityReducer = (state: any, action:any) => (
+  Object.assign({}, state, {
+    items: _.pickBy(state.items, (value:string, key:string) => key !== action.id),
+    ids: state.ids.filter( (id:string) => id !== action.id)
+  })
+)

@@ -7,7 +7,7 @@ import {
   HIDE_PROJECT_ADMIN_CONFIGURATION,
 } from './actions'
 
-export default (state:Array<any> = [], action:any) => {
+export default (state:Object = {}, action:any) => {
   switch (action.type) {
     case SELECT_PROJECT:
       return Object.assign({}, state,{selectedProjectId: action.id })

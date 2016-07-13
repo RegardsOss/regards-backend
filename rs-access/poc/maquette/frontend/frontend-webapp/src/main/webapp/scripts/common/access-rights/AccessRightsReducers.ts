@@ -2,23 +2,26 @@ import {
   REQUEST_ACCESSRIGHTS,  RECEIVE_ACCESSRIGHTS,
   FAILED_ACCESSRIGHTS } from './AccessRightsActions'
 
-export default (state:Array<any> = [], action: any) => {
+export default (state:any = {
+  isFetching: false,
+  items: []
+}, action: any) => {
+  let newState = Object.assign({}, state)
   switch(action.type){
     case REQUEST_ACCESSRIGHTS:
-      return state;
+      newState.isFetching = true
+      return newState
     case RECEIVE_ACCESSRIGHTS:
-    case FAILED_ACCESSRIGHTS:
-    return [...state,{
-      name : action.view,
-      access: action.access
-    }];
+      newState.isFetching = false
+      newState.items.push({
+        name : action.view,
+        access: action.access
+      })
+      return newState
+      case FAILED_ACCESSRIGHTS:
+        newState.isFetching = false
+        return newState
     default:
       return state;
   }
 }
-//
-// const AccessRightsReducers = {
-//   views
-// }
-//
-// export default AccessRightsReducers
