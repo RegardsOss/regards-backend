@@ -2,8 +2,7 @@ var { CALL_API } = require('redux-api-middleware')
 
 import { Dependencies } from "./AccessRightsViewType"
 
-const ACCESS_RIGHTS_API='http://localhost:8080/api/access/rights'
-
+export const ACCESS_RIGHTS_API='http://localhost:8080/api/access/rights'
 export const REQUEST_ACCESSRIGHTS = 'REQUEST_ACCESSRIGHTS'
 export const RECEIVE_ACCESSRIGHTS = 'RECEIVE_ACCESSRIGHTS'
 export const FAILED_ACCESSRIGHTS = 'FAILED_ACCESSRIGHTS';

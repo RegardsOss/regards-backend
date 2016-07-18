@@ -23,29 +23,11 @@ export function selectProject(id: string) {
   }
 }
 
-// Delete a project from the list
-export const DELETE_PROJECT = 'DELETE_PROJECT'
-export function deleteProject(id: string) {
-  return {
-    type: DELETE_PROJECT,
-    id
-  }
-}
-
 // Set active a project admin in the IHM
 export const SELECT_PROJECT_ADMIN = 'SELECT_PROJECT_ADMIN'
 export function selectProjectAdmin(id: string) {
   return {
     type: SELECT_PROJECT_ADMIN,
-    id
-  }
-}
-
-// Delete a project from the list
-export const DELETE_PROJECT_ADMIN = 'DELETE_PROJECT_ADMIN'
-export function deleteProjectAdmin(id: string) {
-  return {
-    type: DELETE_PROJECT_ADMIN,
     id
   }
 }

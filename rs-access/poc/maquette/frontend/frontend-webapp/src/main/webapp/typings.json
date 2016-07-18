@@ -2,6 +2,7 @@
   "globalDependencies": {
     "chai": "registry:dt/chai#3.4.0+20160601211834",
     "enzyme": "registry:dt/enzyme#2.4.1+20160709041153",
+    "flux-standard-action": "registry:dt/flux-standard-action#0.5.0+20160316155526",
     "isomorphic-fetch": "registry:dt/isomorphic-fetch#0.0.0+20160524142046",
     "lodash": "registry:dt/lodash#3.10.0+20160619033623",
     "mocha": "registry:dt/mocha#2.2.5+20160619032855",

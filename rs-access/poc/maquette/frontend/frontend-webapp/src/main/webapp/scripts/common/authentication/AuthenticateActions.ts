@@ -1,6 +1,6 @@
 var { CALL_API } = require('redux-api-middleware')
 
-const AUTHENTICATE_API='http://localhost:8080/oauth/token'
+export const AUTHENTICATE_API='http://localhost:8080/oauth/token'
 export const REQUEST_AUTHENTICATE = 'REQUEST_AUTHENTICATE'
 export const RECEIVE_AUTHENTICATE = 'RECEIVE_AUTHENTICATE'
 export const FAILED_AUTHENTICATE = 'FAILED_AUTHENTICATE'

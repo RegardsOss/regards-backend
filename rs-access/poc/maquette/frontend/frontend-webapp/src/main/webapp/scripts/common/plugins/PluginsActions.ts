@@ -6,7 +6,7 @@ var { CALL_API } = require('redux-api-middleware')
 if(typeof document !== 'undefined')
   var scriptjs = require('scriptjs')
 
-const PLUGINS_API='http://localhost:8080/api/plugins'
+export const PLUGINS_API='http://localhost:8080/api/plugins'
 export const REQUEST_PLUGINS = 'REQUEST_PLUGINS'
 export const RECEIVE_PLUGINS = 'RECEIVE_PLUGINS'
 export const FAILED_PLUGINS = 'FAILED_PLUGINS'

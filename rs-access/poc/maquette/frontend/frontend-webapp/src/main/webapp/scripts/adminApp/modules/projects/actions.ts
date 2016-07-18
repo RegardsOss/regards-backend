@@ -3,7 +3,7 @@ import Schemas from '../../../common/api/schemas'
 import { normalize } from 'normalizr'
 import { Action, ActionCreator } from 'redux'
 
-const PROJECTS_API='http://localhost:8080/api/projects'
+export const PROJECTS_API='http://localhost:8080/api/projects'
 export const PROJECTS_REQUEST = 'PROJECTS_REQUEST'
 export const PROJECTS_SUCESS  = 'PROJECTS_SUCESS'
 export const PROJECTS_FAILURE = 'PROJECTS_FAILURE'

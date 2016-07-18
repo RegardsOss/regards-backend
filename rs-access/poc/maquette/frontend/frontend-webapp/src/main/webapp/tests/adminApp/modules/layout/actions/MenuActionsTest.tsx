@@ -1,15 +1,13 @@
 import { expect } from 'chai';
-import { showProjects } from '../../../../../scripts/adminApp/modules/layout/actions/MenuActions';
+import * as actions from '../../../../../scripts/adminApp/modules/layout/actions/MenuActions';
 
 describe('[ADMIN APP] Testing Menu actions', () => {
 
-  describe('Testing showProjects action', () => {
-    it('Should be a function', () => {
-      expect(showProjects).to.be.a('function')
-    })
-    it('Should return the object { type : "SHOW_PROJECTS" }', () => {
-      expect(showProjects()).to.deep.equal({ type : "SHOW_PROJECTS" })
-    })
+  it('should create an action to show projects', () => {
+    const expectedAction = {
+      type: 'SHOW_PROJECTS'
+    }
 
+    expect(actions.showProjects()).to.eql(expectedAction)
   })
 })

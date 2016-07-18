@@ -16,8 +16,8 @@
     "test:watch": "npm test --watch",
     "presitemap": "webpack --config webpack.sitemap.config.js --progress",
     "sitemap": "node build/sitemap.js",
-    "prejsdoc" : "tsc",
-    "jsdoc" : "jsdoc -c jsdoc.conf.json"
+    "prejsdoc": "tsc",
+    "jsdoc": "jsdoc -c jsdoc.conf.json"
   },
   "author": "CS-SI",
   "license": "ISC",
@@ -59,6 +59,7 @@
     "css-loader": "^0.23.1",
     "enzyme": "^2.3.0",
     "extract-text-webpack-plugin": "^1.0.1",
+    "flux-standard-action": "^0.6.1",
     "jsdom": "^9.2.1",
     "json-loader": "^0.5.4",
     "mocha": "^2.5.3",
