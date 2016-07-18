@@ -7,7 +7,7 @@ var classnames = require('classnames')
 
 import { Project } from '../../projects/types/ProjectTypes'
 
-interface ProjectAdminsProps {
+export interface ProjectAdminsProps {
   project:Project,
   styles: any,
   projectAdmins: Array<any>,

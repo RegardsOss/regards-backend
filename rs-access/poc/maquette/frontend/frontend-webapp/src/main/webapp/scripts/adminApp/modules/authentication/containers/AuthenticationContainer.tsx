@@ -12,7 +12,7 @@ import { fetchAuthenticate } from '../../../../common/authentication/Authenticat
  * React container for authentication form.
  * Contains logic for authentication
  */
-class Authentication extends React.Component<any,any> {
+export class Authentication extends React.Component<any,any> {
 
   constructor(){
     super();

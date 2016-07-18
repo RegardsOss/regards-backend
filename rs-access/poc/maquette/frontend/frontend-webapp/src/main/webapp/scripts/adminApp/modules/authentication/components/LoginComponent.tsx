@@ -1,7 +1,7 @@
 /** @module AdminAuthentication */
 import * as React from 'react';
 
-interface LoginProps {
+export interface LoginProps {
   styles: Object,
   onLogin: (username: string, password: string) => void,
   errorMessage: string
