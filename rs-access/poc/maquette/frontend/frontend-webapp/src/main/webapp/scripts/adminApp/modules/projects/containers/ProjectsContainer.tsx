@@ -1,6 +1,5 @@
 /** @module AdminProjects */
 import * as React from 'react'
-import { Component, PropTypes } from 'react'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { getThemeStyles } from '../../../../common/theme/ThemeUtils'
@@ -16,21 +15,10 @@ import ModuleComponent from '../../../../common/components/ModuleComponent'
 // Types
 import { Project } from '../types/ProjectTypes'
 // Actions
-import {
-  addProject,
-  deleteProject,
-  fetchProjects,
-  deleteSelectedProject } from '../actions'
-import {
-  selectProject,
-  showProjectConfiguration,
-  hideProjectConfiguration,
-  showProjectAdminConfiguration } from '../../ui/actions'
+import * as actions from '../actions'
+import * as uiActions from '../../ui/actions'
 // Selectors
-import {
-  getProjects,
-  getSelectedProjectId,
-  getProjectById } from '../../../reducer'
+import * as selectors from '../../../reducer'
 
 interface ProjectsContainerTypes {
   projects: Array<Project>,
@@ -46,14 +34,13 @@ interface ProjectsContainerTypes {
   deleteProject? : () => void
 }
 
-
 /**
  * React container to manage ManageProjectsComponent.
  *
  * @prop {Array<Project>} projects List of projects to display
  * @prop {Boolean} projectConfigurationIsShown ProjectConfigurationComponent display status
  * @prop {Object} styles CSS Styles
- * 
+ *
  */
 class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
   componentWillMount(){
@@ -101,22 +88,22 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
 }
 
 const mapStateToProps = (state: any) => ({
-  projects: map(getProjects(state).items, (value: any, key: string) => ({id:key, name:value.name})),
-  selectedProjectId: getSelectedProjectId(state),
+  projects: map(selectors.getProjects(state).items, (value: any, key: string) => ({id:key, name:value.name})),
+  selectedProjectId: selectors.getSelectedProjectId(state),
   projectConfigurationIsShown: state.adminApp.ui.projectConfigurationIsShown,
   styles: getThemeStyles(state.common.theme, 'adminApp/styles')
 })
 const mapDispatchToProps = (dispatch: any) => ({
-  onLoad:                   ()  => dispatch(fetchProjects()),
-  onSelect:                 (e: any) => dispatch(selectProject(e.target.value)),
-  deleteProject:            (id: string)=> dispatch(deleteProject(id)),
-  showProjectConfiguration: ()  => dispatch(showProjectConfiguration()),
-  hideProjectConfiguration: ()  => dispatch(hideProjectConfiguration()),
+  onLoad:                   ()  => dispatch(actions.fetchProjects()),
+  onSelect:                 (e: any) => dispatch(uiActions.selectProject(e.target.value)),
+  deleteProject:            (id: string)=> dispatch(actions.deleteProject(id)),
+  showProjectConfiguration: ()  => dispatch(uiActions.showProjectConfiguration()),
+  hideProjectConfiguration: ()  => dispatch(uiActions.hideProjectConfiguration()),
   handleSubmit:             (e: any) => {
     let idProject = "9999" // TODO
-    dispatch(addProject(idProject, e.projectName))
-    dispatch(hideProjectConfiguration())
-    dispatch(selectProject(idProject))
+    dispatch(actions.addProject(idProject, e.projectName))
+    dispatch(uiActions.hideProjectConfiguration())
+    dispatch(uiActions.selectProject(idProject))
   }
 })
 

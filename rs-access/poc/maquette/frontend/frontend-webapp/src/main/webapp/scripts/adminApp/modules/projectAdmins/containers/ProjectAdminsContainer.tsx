@@ -8,23 +8,10 @@ import UserFormContainer from './UserFormContainer'
 import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
 import ProjectAdminsComponent from '../components/ProjectAdminsComponent'
 // Actions
-import {
-  fetchProjectAdmins,
-  fetchProjectAdminsBy,
-  updateOrCreateProjectAdmin,
-  deleteProjectAdmin } from '../actions'
-import {
-  selectProjectAdmin,
-  showProjectAdminConfiguration,
-  hideProjectAdminConfiguration } from '../../ui/actions'
+import * as actions from '../actions'
+import * as uiActions from '../../ui/actions'
 // Selectors
-import {
-  getSelectedProjectId,
-  getProjectById,
-  getProjectAdmins,
-  getProjectAdminsByProject,
-  getSelectedProjectAdminId,
-  getProjectAdminById } from '../../../reducer'
+import * as selectors from '../../../reducer'
 // Styles
 var classnames = require('classnames')
 import { getThemeStyles } from '../../../../common/theme/ThemeUtils'
@@ -83,11 +70,11 @@ class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
 }
 
 const mapStateToProps = (state: any, ownProps: any) => {
-  const selectedProjectId = getSelectedProjectId(state)
-  const selectedProject = getProjectById(state, selectedProjectId)
-  const projectAdmins = getProjectAdmins(state) // TODO: By project: getProjectAdminsByProject(state, selectedProject)
-  const selectedProjectAdminId = getSelectedProjectAdminId(state)
-  const selectedProjectAdmin = getProjectAdminById(state, selectedProjectAdminId)
+  const selectedProjectId = selectors.getSelectedProjectId(state)
+  const selectedProject = selectors.getProjectById(state, selectedProjectId)
+  const projectAdmins = selectors.getProjectAdmins(state) // TODO: By project: getProjectAdminsByProject(state, selectedProject)
+  const selectedProjectAdminId = selectors.getSelectedProjectAdminId(state)
+  const selectedProjectAdmin = selectors.getProjectAdminById(state, selectedProjectAdminId)
   return {
     project: selectedProject,
     projectAdmins: projectAdmins,
@@ -97,19 +84,19 @@ const mapStateToProps = (state: any, ownProps: any) => {
   }
 }
 const mapDispatchToProps = (dispatch: any) => ({
-  fetchProjectAdminsBy: (href: any) => dispatch(fetchProjectAdminsBy(href)),
+  fetchProjectAdminsBy: (href: any) => dispatch(actions.fetchProjectAdminsBy(href)),
   showProjectAdminConfiguration: (id: string) => {
-    dispatch(selectProjectAdmin(id))
-    dispatch(showProjectAdminConfiguration())
+    dispatch(uiActions.selectProjectAdmin(id))
+    dispatch(uiActions.showProjectAdminConfiguration())
   },
-  hideProjectAdminConfiguration: () => dispatch(hideProjectAdminConfiguration()),
+  hideProjectAdminConfiguration: () => dispatch(uiActions.hideProjectAdminConfiguration()),
   onUserFormSubmit: (e: any) => {
-    dispatch(updateOrCreateProjectAdmin(e.id, e.username, e.projectId))
-    dispatch(hideProjectAdminConfiguration())
+    dispatch(actions.updateOrCreateProjectAdmin(e.id, e.username, e.projectId))
+    dispatch(uiActions.hideProjectAdminConfiguration())
   },
   handleDelete: (id: string) => {
-    dispatch(deleteProjectAdmin(id))
-    dispatch(hideProjectAdminConfiguration())
+    dispatch(actions.deleteProjectAdmin(id))
+    dispatch(uiActions.hideProjectAdminConfiguration())
   }
 })
 export default connect<{}, {}, ProjectAdminsProps>(mapStateToProps, mapDispatchToProps)(ProjectAdminsContainer);
