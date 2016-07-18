@@ -1,0 +1,31 @@
+server:
+  port: 7777
+
+
+endpoints:
+  restart:
+    enabled: true
+  shutdown:
+    enabled: true
+  health:
+    sensitive: false
+
+spring:
+  application:
+    name : HelloWorld
+
+cloud:
+  config:
+    discovery:
+      enabled=true
+
+eureka:
+  instance:
+    instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  client:
+    registryFetchIntervalSeconds: 5
+    serviceUrl:
+      defaultZone: http://localhost:9999/eureka/
+    
+my:
+  otherproperty: Config server not reached
