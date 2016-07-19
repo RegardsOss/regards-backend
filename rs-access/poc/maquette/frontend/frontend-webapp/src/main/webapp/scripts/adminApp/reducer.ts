@@ -17,13 +17,12 @@ export default combineReducers({
   ui
 });
 
-const selectors = {
-  projects: fromProjects,
-  projectAdmins: fromProjectAdmins,
-  ui: fromUi
-}
-
 // WIP
+// const selectors = {
+//   projects: fromProjects,
+//   projectAdmins: fromProjectAdmins,
+//   ui: fromUi
+// }
 // export const get = (state: any, element: string) =>
 //   state.adminApp[element]
 //
