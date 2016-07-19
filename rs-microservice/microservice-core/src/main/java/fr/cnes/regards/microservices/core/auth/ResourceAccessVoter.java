@@ -10,6 +10,7 @@ import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
@@ -41,14 +42,16 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
 	@Override
 	public int vote(Authentication authentication, Object object, Collection<ConfigAttribute> attributes) {
-
+		
 		if (object instanceof MethodInvocation) {
 			MethodInvocation mi = (MethodInvocation) object;
 			ResourceAccess access = mi.getMethod().getAnnotation(ResourceAccess.class);
+			RequestMapping mapping = mi.getMethod().getAnnotation(RequestMapping.class);
+			RequestMapping classMapping = mi.getMethod().getDeclaringClass().getAnnotation(RequestMapping.class);
 
-			Optional<List<GrantedAuthority>> option = authService.getAuthorities(access);
+			Optional<List<GrantedAuthority>> option = authService.getAuthorities(mapping, classMapping);
 			
-			if (option.isPresent()) {
+			if (access != null && option.isPresent()) {
 				// All user authorities
 				Collection<? extends GrantedAuthority> userAuthorities = authentication.getAuthorities();
 

@@ -1,5 +1,7 @@
 package fr.cnes.regards.microservices.core.controlers;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -9,6 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
+
+import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
+import fr.cnes.regards.microservices.core.auth.ResourceAccess;
+import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 
 
 @ConditionalOnProperty(name="eureka.client.enabled",havingValue="true")
@@ -46,6 +52,14 @@ public class EurekaController {
 	@Value("${cloud.config.server.name}")
 	String configServerName_;
 	
+	@Autowired
+	MethodAutorizationService authService_;
+
+	@PostConstruct
+	public void initAuthorisations() {
+		authService_.setAutorities("/eureka/me@GET",new RoleAuthority("ADMIN"));
+	}
+	
     
     public String configServiceUrl() {
     	// the name is the application name defined in the application.yml
@@ -62,6 +76,7 @@ public class EurekaController {
      * Return the adress of the current application from the Eureka registry
      * @return
      */
+    @ResourceAccess
 	@RequestMapping(value="me",method=RequestMethod.GET)
 	public String me() {
 		if (eurekaServerEnabled_){
@@ -75,6 +90,7 @@ public class EurekaController {
      * Return the adress of the current application from the Eureka registry
      * @return
      */
+    @ResourceAccess
 	@RequestMapping(value="config/adress",method=RequestMethod.GET)
 	public String configAddress() {
 		if (eurekaServerEnabled_ && configServerEnabled_){

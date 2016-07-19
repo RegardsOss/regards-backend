@@ -13,16 +13,4 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @Retention(RetentionPolicy.RUNTIME)
 @PreAuthorize("VOID")
 public @interface ResourceAccess {
-
-	/**
-	 * 
-	 * @return resource name
-	 */
-	String name();
-	
-	/**
-	 * 
-	 * @return http method
-	 */
-	String method();
 }

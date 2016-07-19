@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Service
 public class MethodAutorizationServiceImpl implements MethodAutorizationService {
@@ -17,7 +18,6 @@ public class MethodAutorizationServiceImpl implements MethodAutorizationService 
 
 	public MethodAutorizationServiceImpl() {
 		grantedAuthoritiesByResource = new HashMap<>();
-		setAutorities("ME@GET", new RoleAuthority("MSI"), new RoleAuthority("USER"));
 	}
 
 	public void setAutorities(String resourceName, GrantedAuthority... authorities) {
@@ -27,7 +27,9 @@ public class MethodAutorizationServiceImpl implements MethodAutorizationService 
 	}
 
 	@Override
-	public Optional<List<GrantedAuthority>> getAuthorities(final ResourceAccess access) {
-		return Optional.ofNullable(grantedAuthoritiesByResource.get(ResourceAccessUtils.getIdentifier(access)));
+	public Optional<List<GrantedAuthority>> getAuthorities(final RequestMapping access, RequestMapping classMapping) {
+		String resourceId = ResourceAccessUtils.getIdentifier(access, classMapping);
+		System.out.println("Accessing ressource id="+resourceId);
+		return Optional.ofNullable(grantedAuthoritiesByResource.get(resourceId));
 	}
 }

@@ -13,6 +13,14 @@ import org.springframework.security.config.annotation.method.configuration.Globa
 import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccessVoter;
 
+/**
+ * This class allow to add a security filter on method access.
+ * Each time a method is called, the accessDecisionManager check if the connected user
+ * can access the method via the ResourceAccessVoter class.
+ * 
+ * @author CS SI
+ *
+ */
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class MethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
 
