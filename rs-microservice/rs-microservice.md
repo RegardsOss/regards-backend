@@ -6,6 +6,12 @@ Development context
 
 REGARDS Microservices are REST services exposed by a Jetty web server contained in a Spring boot application.<br/> Each microservice is a Java 1.8 Maven project.
 
+Requirements for development:
+
+-	git client 1.8
+-	maven 3.x
+-	JDK 1.8
+
 Create a new microservice
 -------------------------
 
