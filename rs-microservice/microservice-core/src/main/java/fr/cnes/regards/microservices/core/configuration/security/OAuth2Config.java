@@ -1,6 +1,7 @@
 package fr.cnes.regards.microservices.core.configuration.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -19,12 +20,18 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
   public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
     endpoints.authenticationManager(authenticationManager);
   }
+  
+  @Value("${security.client}")
+  private String securityClient_;
+  
+  @Value("${security.secret}")
+  private String securityClientSecret_;
 
   @Override
   public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
     clients.inMemory()
-        .withClient("acme")
-        .secret("acmesecret")
+        .withClient(securityClient_)
+        .secret(securityClientSecret_)
         .authorizedGrantTypes("authorization_code", "refresh_token",
             "password").scopes("openid");
   }

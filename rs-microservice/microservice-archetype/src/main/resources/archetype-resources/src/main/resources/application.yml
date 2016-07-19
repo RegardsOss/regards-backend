@@ -2,14 +2,9 @@ server:
   adress: localhost
   port: 7777
 
-
-endpoints:
-  restart:
-    enabled: true
-  shutdown:
-    enabled: true
-  health:
-    sensitive: false
+security:
+  client: acme
+  secret: acmesecret
 
 spring:
   application:
@@ -35,7 +30,4 @@ eureka:
     registryFetchIntervalSeconds: 5
     serviceUrl:
       defaultZone: http://localhost:9999/eureka/
-    
-my:
-  otherproperty: Config server not reached
  

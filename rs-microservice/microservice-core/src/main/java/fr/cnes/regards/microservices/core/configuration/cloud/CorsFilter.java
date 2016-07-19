@@ -16,7 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  *
  * Add the allow origin in the response headers.
  *
- * @author sbinda
+ * @author CS SI
  *
  */
 @Component

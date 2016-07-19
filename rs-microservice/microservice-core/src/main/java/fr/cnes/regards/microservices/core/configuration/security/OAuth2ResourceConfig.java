@@ -11,6 +11,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
+		
+		// Allow springfox swagger request to pass trough authentication system
 		http
         .authorizeRequests()
         .antMatchers(

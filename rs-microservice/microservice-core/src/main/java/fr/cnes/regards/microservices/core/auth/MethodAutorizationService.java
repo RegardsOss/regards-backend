@@ -6,6 +6,12 @@ import java.util.Optional;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+/**
+ * Interface for Method authorization access service
+ * 
+ * @author CS SI
+ *
+ */
 public interface MethodAutorizationService {
 
 	Optional<List<GrantedAuthority>> getAuthorities(RequestMapping access, RequestMapping classMapping);
