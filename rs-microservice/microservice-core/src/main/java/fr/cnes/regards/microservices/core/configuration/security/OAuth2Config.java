@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.core.configuration;
+package fr.cnes.regards.microservices.core.configuration.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;

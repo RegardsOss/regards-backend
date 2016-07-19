@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.core.configuration;
+package fr.cnes.regards.microservices.core.configuration.cloud;
 
 import java.io.IOException;
 

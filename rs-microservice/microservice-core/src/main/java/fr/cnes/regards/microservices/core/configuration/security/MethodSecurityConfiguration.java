@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.core.configuration;
+package fr.cnes.regards.microservices.core.configuration.security;
 
 import java.util.ArrayList;
 import java.util.List;

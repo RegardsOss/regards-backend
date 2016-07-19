@@ -1,8 +1,10 @@
-package fr.cnes.regards.microservices.core.configuration;
+package fr.cnes.regards.microservices.core.configuration.swagger;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -30,6 +32,18 @@ public class SwaggerConfiguration {
 	public static final String securitySchemaOAuth2 = "oauth2schema";
     public static final String authorizationScopeGlobal = "global";
     public static final String authorizationScopeGlobalDesc ="accessEverything";
+    
+    @Value("${swagger.api.name}")
+    private String swaggerApiName_="default";
+    
+    @Value("${server.port}")
+    private String serverPort_;
+    
+    @Value("${server.adress}")
+    private String serverAdress_;
+    
+    @Autowired
+    private ApiInfoBuilder apiInfoBuilder_;
 	
 	@Bean
     public Docket AppApi() {
@@ -39,35 +53,30 @@ public class SwaggerConfiguration {
     	
     	List<SecurityContext> ctxs = new ArrayList<>();
     	ctxs.add(securityContext());
+    	
+    	ApiInfo infos = apiInfoBuilder_
+    			.termsOfServiceUrl("http://"+serverAdress_+":"+serverPort_)
+    			.build();
      	
         return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("poc-api")
-                .apiInfo(apiInfo())
+                .groupName(swaggerApiName_)
+                .apiInfo(infos)
                 .select()
                 .paths(apiPaths())
                 .build()
                 .securitySchemes(schemes)
         		.securityContexts(ctxs);
-        
     }
     
-    private ApiInfo apiInfo() {
-        return new ApiInfoBuilder()
-                .title("Springfox POC API")
-                .description("API de test pour springfox")
-                .termsOfServiceUrl("http://localhost:8080")
-                .license("Apache License Version 2.0")
-                .version("0.0.1")
-                .build();
-    }
+    
     
     private Predicate<String> apiPaths() {
-        return regex("/(api|ms).*");
+        return regex("/(api|config|eureka).*");
     }
     
     private OAuth securitySchema() {
         AuthorizationScope authorizationScope = new AuthorizationScope(authorizationScopeGlobal, authorizationScopeGlobal);
-        LoginEndpoint loginEndpoint = new LoginEndpoint("http://localhost:8080/oauth/token");
+        LoginEndpoint loginEndpoint = new LoginEndpoint("http://"+serverAdress_+":"+serverPort_+"/oauth/token");
         GrantType grantType = new ImplicitGrant(loginEndpoint, "access_token");
         List<AuthorizationScope> AuthList = new ArrayList<>();
         AuthList.add(authorizationScope);

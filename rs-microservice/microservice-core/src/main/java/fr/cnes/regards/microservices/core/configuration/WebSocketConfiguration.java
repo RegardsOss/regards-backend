@@ -2,9 +2,9 @@ package fr.cnes.regards.microservices.core.configuration;
 
 import java.util.List;
 
-//import org.eclipse.jetty.websocket.api.WebSocketBehavior;
-//import org.eclipse.jetty.websocket.api.WebSocketPolicy;
-//import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
+import org.eclipse.jetty.websocket.api.WebSocketBehavior;
+import org.eclipse.jetty.websocket.api.WebSocketPolicy;
+import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.MessageConverter;
@@ -12,7 +12,6 @@ import org.springframework.messaging.handler.invocation.HandlerMethodArgumentRes
 import org.springframework.messaging.handler.invocation.HandlerMethodReturnValueHandler;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -28,7 +27,7 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
     public void registerStompEndpoints(StompEndpointRegistry registry) {
 		// Endpoint to which the client must access to connect to websocket server
         registry.addEndpoint("/wsconnect")
-//        .setHandshakeHandler(handshakeHandler())
+        .setHandshakeHandler(handshakeHandler())
         .setAllowedOrigins("*")
         .withSockJS();
     }
@@ -41,16 +40,16 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
 		
 	}
     
-//    @Bean
-//    public DefaultHandshakeHandler handshakeHandler() {
-//
-//        WebSocketPolicy policy = new WebSocketPolicy(WebSocketBehavior.SERVER);
-//        policy.setInputBufferSize(8192);
-//        policy.setIdleTimeout(600000);
-//
-//        return new DefaultHandshakeHandler(
-//                new JettyRequestUpgradeStrategy(new WebSocketServerFactory(policy)));
-//    }
+    @Bean
+    public DefaultHandshakeHandler handshakeHandler() {
+
+        WebSocketPolicy policy = new WebSocketPolicy(WebSocketBehavior.SERVER);
+        policy.setInputBufferSize(8192);
+        policy.setIdleTimeout(600000);
+
+        return new DefaultHandshakeHandler(
+                new JettyRequestUpgradeStrategy(new WebSocketServerFactory(policy)));
+    }
 
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> arg0) {
