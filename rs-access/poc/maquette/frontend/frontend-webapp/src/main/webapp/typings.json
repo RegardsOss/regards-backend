@@ -4,7 +4,6 @@
     "enzyme": "registry:dt/enzyme#2.4.1+20160709041153",
     "flux-standard-action": "registry:dt/flux-standard-action#0.5.0+20160316155526",
     "isomorphic-fetch": "registry:dt/isomorphic-fetch#0.0.0+20160524142046",
-    "lodash": "registry:dt/lodash#3.10.0+20160619033623",
     "mocha": "registry:dt/mocha#2.2.5+20160619032855",
     "nock": "registry:dt/nock#0.54.0+20160613160405",
     "node": "registry:dt/node#6.0.0+20160709114037",
@@ -19,5 +18,8 @@
     "redux-mock-store": "registry:dt/redux-mock-store#0.0.6+20160514173414",
     "redux-thunk": "registry:dt/redux-thunk#2.1.0+20160703120921",
     "sockjs-client": "registry:dt/sockjs-client#1.0.3+20160626224127"
+  },
+  "dependencies": {
+    "lodash": "registry:npm/lodash#4.0.0+20160701205107"
   }
 }
