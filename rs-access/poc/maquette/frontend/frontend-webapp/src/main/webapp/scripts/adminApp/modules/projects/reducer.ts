@@ -41,5 +41,8 @@ export default (state: any = {
 }
 
 // Selectors
+// WIP
+// export const getById = (state: any, id: string) =>
+//   state.items[id]
 export const getProjects = (state: any) => state
 export const getProjectById = (state: any, id: string) => state.items[id]

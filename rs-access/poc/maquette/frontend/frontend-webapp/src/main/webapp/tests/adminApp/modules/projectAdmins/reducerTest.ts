@@ -128,6 +128,39 @@ describe('[ADMIN APP] Testing users reducer', () => {
     expect(reducer(initState, action)).to.eql(expectedState)
   })
 
+  it('should update or create a user in a single shot', () => {
+    const action = {
+      type: 'UPDATE_OR_CREATE_PROJECT_ADMIN',
+      id: 'Titi',
+      payload: {
+        name: 'Titi',
+        projects: [0,1]
+      }
+    }
+    const initStateForUpdate = {
+      items: {
+        Toto: {name: 'Toto', projects: Array()},
+        Titi: {name: 'nameToUpdate', projects: [0,1]}
+      },
+      ids: ['Toto', 'Titi']
+    }
+    const initStateForCreate = {
+      items: {
+        Toto: {name: 'Toto', projects: Array()}
+      },
+      ids: ['Toto']
+    }
+    const expectedState = {
+      items: {
+        Toto: {name: 'Toto', projects: Array()},
+        Titi: {name: 'Titi', projects: [0,1]}
+      },
+      ids: ['Toto', 'Titi']
+    }
+    expect(reducer(initStateForUpdate, action)).to.eql(expectedState)
+    expect(reducer(initStateForCreate, action)).to.eql(expectedState)
+  })
+
   it('should delete a user', () => {
     const action = {
       type: 'DELETE_PROJECT_ADMIN',

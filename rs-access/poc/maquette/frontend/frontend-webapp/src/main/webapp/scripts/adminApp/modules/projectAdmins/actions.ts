@@ -2,12 +2,12 @@
 var { CALL_API, getJSON } = require('redux-api-middleware')
 import Schemas from '../../../common/api/schemas'
 import { normalize } from 'normalizr'
+import { ProjectAdmin } from './types'
 
 export const PROJECT_ADMINS_API='http://localhost:8080/api/project-admins'
 export const PROJECT_ADMIN_REQUEST = 'PROJECT_ADMIN_REQUEST'
 export const PROJECT_ADMIN_SUCESS  = 'PROJECT_ADMIN_SUCESS'
 export const PROJECT_ADMIN_FAILURE = 'PROJECT_ADMIN_FAILURE'
-
 
 
 /**
@@ -95,7 +95,6 @@ export function updateProjectAdmin(id: string, payload: any) {
   }
 }
 
-
 export const CREATE_PROJECT_ADMIN = 'CREATE_PROJECT_ADMIN'
 /**
  * Create a project admin
@@ -111,21 +110,17 @@ export function createProjectAdmin(id: any, payload: any) {
   }
 }
 
-
-
 /**
- * [UPDATE_OR_CREATE_PROJECT_ADMIN description]
+ * Update or create a project admin
+ * If the user already exists, it will be updated,
+ * else it will be created
+ *
  * @param {String} id of the project admin to update/create
- * @param {String} name of the project admin to update/create
- * @param {String} list to projects ids to associate the project admin to
+ * @param {ProjectAdmin} the project admin's payload
  */
 export const UPDATE_OR_CREATE_PROJECT_ADMIN = 'UPDATE_OR_CREATE_PROJECT_ADMIN'
-export function updateOrCreateProjectAdmin(id: string, name: string, projects: Array<any>) {
-  throw new Error('TODO!!')
-  // return {
-  //   type: UPDATE_OR_CREATE_PROJECT_ADMIN,
-  //   id,
-  //   name,
-  //   projects
-  // }
-}
+export const updateOrCreateProjectAdmin = (id: string, payload: ProjectAdmin) => ({
+  type: UPDATE_OR_CREATE_PROJECT_ADMIN,
+  id,
+  payload
+})

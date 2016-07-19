@@ -119,4 +119,15 @@ describe('[ADMIN APP] Testing project admins actions', () => {
     expect(actions.createProjectAdmin('toto', {name:'Toto'})).to.eql(expectedAction)
   })
 
+  it('should create an action to update or create a project admin in single shot', () => {
+    const expectedAction = {
+      type: 'UPDATE_OR_CREATE_PROJECT_ADMIN',
+      id: 'toto',
+      payload: {
+        name: 'Toto'
+      }
+    }
+    expect(actions.updateOrCreateProjectAdmin('toto', {name:'Toto'})).to.eql(expectedAction)
+  })
+
 })

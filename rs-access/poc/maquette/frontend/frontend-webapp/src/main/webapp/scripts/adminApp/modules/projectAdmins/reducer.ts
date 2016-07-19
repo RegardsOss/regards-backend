@@ -1,5 +1,5 @@
 /** @module AdminProjectAdmins */
-import { union, values, merge, isEqual } from 'lodash'
+import { union, values, merge, isEqual, uniq } from 'lodash'
 import { deleteEntityReducer } from '../../../common/reducers'
 import {
   PROJECT_ADMIN_REQUEST,
@@ -37,24 +37,9 @@ export const projectAdminsReducer =  (state: any = {
     case PROJECT_ADMIN_FAILURE:
       return Object.assign({}, state, { isFetching: false })
     case UPDATE_OR_CREATE_PROJECT_ADMIN:
-      newState.items[action.id] = {
-        name: action.name,
-        projects: action.projects
-        // projects: arrayUnique(projectList.concat(action.projects))
-      }
-      // let selectedProjectAdmin = newState.find(pa => pa.id === action.id)
-      // let projectList = []
-      // if(selectedProjectAdmin) {
-      //   newState = newState.filter(pa => pa.id !== action.id)
-      //   projectList = selectedProjectAdmin.projects
-      // }
-      //
-      // newState = newState.concat({
-      //   id: action.id,
-      //   name: action.name,
-      //   projects: uniqWith(projectList.concat(action.projects), isEqual)
-      //   // projects: arrayUnique(projectList.concat(action.projects))
-      // })
+      newState.items[action.id] = action.payload
+      newState.ids.push(action.id)
+      newState.ids = uniq(newState.ids)
       return newState
     case UPDATE_PROJECT_ADMIN:
       newState.items[action.id] = action.payload
@@ -71,6 +56,10 @@ export const projectAdminsReducer =  (state: any = {
 }
 
 // Selectors
+// WIP
+// export const getById = (state: any, id: string) =>
+//   state.items[id]
+
 export const getProjectAdminById = (state: any, id: string) => state.items[id]
 export const getProjectAdminsByProject = (state: any, project: string) => values(state.items) // TODO
   // (!project) ? [] : state.items.filter(pa => pa.projects.includes(project.id))

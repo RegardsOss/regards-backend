@@ -9,7 +9,7 @@
  */
 import * as React from 'react'
 import { Component, PropTypes } from 'react'
-import { reduxForm } from 'redux-form'
+import { reduxForm, ReduxFormProps } from 'redux-form'
 export const fields = [ 'id', 'projectId', 'username', 'password', 'passwordConfirm']
 var icons = require('../../../../../stylesheets/foundation-icons/foundation-icons.scss')
 // Selectors
@@ -18,6 +18,11 @@ import {
   getProjectAdminById,
   getSelectedProjectId } from '../../../reducer'
 
+/**
+ * Form fields validation method
+ * @param  {[type]} values: any           [description]
+ * @return {[type]}         [description]
+ */
 const validate = (values: any)=> {
   const errors: any = {}
   if (!values.username) {
@@ -30,7 +35,7 @@ const validate = (values: any)=> {
     errors.passwordConfirm = 'Required'
   }
   if (values.password && values.passwordConfirm && values.password !== values.passwordConfirm) {
-    errors.passwordConfirm = 'Must match the password'
+    errors.passwordConfirm = 'The passwords must match'
   }
   return errors
 }
@@ -49,13 +54,14 @@ const asyncValidate = (values: any/*, dispatch */) => {
 
 interface FormPropTypes {
   fields?: any,
+  resetForm?: any,
   handleSubmit: ()=> void,
   onCancelClick? :()=> void,
   submitting?: boolean,
   show?: boolean,
-  styles: any
+  styles: any,
+  onSubmit: () => void
 }
-
 
 /**
  * React component to display a form to add or update an administrator to a given project
@@ -67,6 +73,7 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
     const {
       asyncValidating,
       fields: { id, projectId, username, password, passwordConfirm },
+      resetForm,
       handleSubmit,
       submitting,
       show,
@@ -86,7 +93,7 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
             <label>Username</label>
             <div>
               <input type="text" placeholder="Username" {...username} />
-              {asyncValidating === 'username' && <i /* spinning cog *//>}
+              {asyncValidating === 'username' && <i className={icons['fi-widget']}></i>}
             </div>
             {username.touched && username.error && <div>{username.error}</div>}
           </div>
