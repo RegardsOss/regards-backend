@@ -10,7 +10,11 @@ import Authentication from './modules/authentication/containers/AuthenticationCo
 import { AuthenticationType } from '../common/authentication/AuthenticationTypes'
 import SelectThemeComponent from '../common/theme/components/SelectThemeComponent'
 import ErrorComponent from '../common/components/ApplicationErrorComponent'
-import Layout from './modules/layout/Layout'
+
+import Layout from './modules/layout/containers/Layout'
+
+import MenuComponent from './modules/layout/components/MenuComponent'
+import Home from './modules/home/Home'
 
 interface AminAppProps {
   router: any,
@@ -77,17 +81,16 @@ class AdminApp extends React.Component<AminAppProps, any> {
           return (
             <div>
               <Layout
-                location={location}
-                content={content}
-                project={params.project}
-                onLogout={onLogout}/>
-
+                className='layout'
+                cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}
+                rowHeight={30} >
+              </Layout>
               <SelectThemeComponent
-                styles={styles}
+                styles={commonStyles}
                 themes={["cdpp","ssalto","default"]}
                 curentTheme={theme}
                 onThemeChange={this.changeTheme} />
-          </div>
+            </div>
           );
       }
     }
