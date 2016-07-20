@@ -3,7 +3,11 @@ const preloadedState:any = {
     theme: '',
     plugins : {},
     views : [],
-    authentication : {}
+    authentication : {},
+    i18n: {
+      locale : navigator.language,
+      messages :  {}
+    }
   },
   userApp : {
     ws : {

@@ -27,3 +27,16 @@ body, div {
   position: absolute;
   display: inline-block;
 }
+
+.select-language {
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: $secondcolor;
+  color: White;
+  margin: 15px;
+  padding: 5px;
+  bottom: 0px;
+  right: 0px;
+  position: absolute;
+  display: inline-block;
+}

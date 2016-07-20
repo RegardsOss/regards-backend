@@ -10,6 +10,9 @@ import InstanceComponent from './modules/projects/components/InstanceComponent'
 import ProjectsContainer from './modules/projects/containers/ProjectsContainer'
 import { getThemeStyles } from '../common/theme/ThemeUtils'
 import { setTheme } from '../common/theme/actions/ThemeActions'
+import SelectLocaleComponent from '../common/i18n/SelectLocaleComponent'
+import { updateLocale } from '../common/i18n/i18nActions'
+import { FormattedMessage } from 'react-intl'
 
 import { fetchAuthenticate } from '../common/authentication/AuthenticateActions'
 
@@ -19,6 +22,8 @@ interface PortalAppProps {
   theme?: string,
   initTheme?: (theme:string) => void,
   publicAuthenticate?: ()=> void,
+  locale?: string,
+  changeLocale?: (locale:string) => void
 }
 
 
@@ -56,6 +61,7 @@ class PortalApp extends React.Component<PortalAppProps, any> {
       // Else, display the portal
       return (
         <div className={styles.main}>
+          <FormattedMessage id="first" />
           <InstanceComponent styles={styles}/>
           <ProjectsContainer styles={styles}/>
           <SelectThemeComponent
@@ -63,6 +69,11 @@ class PortalApp extends React.Component<PortalAppProps, any> {
             themes={["cdpp","ssalto","default"]}
             curentTheme={theme}
             onThemeChange={this.props.initTheme} />
+          <SelectLocaleComponent
+            styles={commonStyles}
+            curentLocale={this.props.locale}
+            locales={['fr','en']}
+            onLocaleChange={this.props.changeLocale} />
         </div>
       )
     }
@@ -73,14 +84,16 @@ class PortalApp extends React.Component<PortalAppProps, any> {
 const mapStateToProps = (state:any) => {
   return {
     theme: state.common.theme,
-    authentication: state.common.authentication
+    authentication: state.common.authentication,
+    locale: state.common.i18n.locale
   }
 }
 // Add functions dependending on store dispatch to container props.
 const mapDispatchToProps = (dispatch:any) => {
   return {
     publicAuthenticate: () => dispatch(fetchAuthenticate("public","public")),
-    initTheme: (theme:string) =>  dispatch(setTheme(theme))
+    initTheme: (theme:string) =>  dispatch(setTheme(theme)),
+    changeLocale: (locale:string) => dispatch(updateLocale(locale))
   }
 }
 export default connect<{}, {}, PortalAppProps>(mapStateToProps,mapDispatchToProps)(PortalApp)

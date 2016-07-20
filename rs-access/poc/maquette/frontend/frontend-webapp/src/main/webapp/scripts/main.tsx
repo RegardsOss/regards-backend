@@ -8,12 +8,19 @@ import configureStore from './common/store/configureStore'
 import preloadedState from './common/store/preloadedState'
 import { routes } from './routes'
 
+import I18nContainer from './common/i18n/i18nContainer'
+import { updateLocale } from './common/i18n/i18nActions'
+
 const store = configureStore(preloadedState)
+// Init local to navigator locale
+store.dispatch(updateLocale(navigator.language))
 
 ReactDOM.render(
-  <Provider store={store}>
-    <Router history={browserHistory} routes={routes}/>
-  </Provider>,
+    <Provider store={store}>
+      <I18nContainer>
+        <Router history={browserHistory} routes={routes}/>
+      </I18nContainer>
+    </Provider>,
   document.getElementById('app')
 )
 

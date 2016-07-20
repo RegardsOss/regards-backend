@@ -11,7 +11,6 @@ const sassLoaders = [
   //'css?modules&importLoaders=1&localIdentName=[path]___[name]__[local]___[hash:base64:5]',
   'css?modules&importLoaders=1&localIdentName=[path]_[name]_[local]',
   // Loader to compile sasss files to css files
-  //'sass-loader?indentedSyntax=sass&includePaths[]=' + path.resolve(__dirname, 'steelsheets')
   'sass?sourceMap'
 ]
 
@@ -81,14 +80,6 @@ module.exports = {
         test: /\.tsx{0,1}?$/,
         exclude: [/node_modules/,/json/],
         loader: "babel-loader!ts-loader"
-        //loader: "babel-loader?presets=['es2015', 'react']!ts-loader"
-      },
-      // Transpile ES6 Javascript into ES5 with babel loader and react
-      {test: /\.js$/, exclude: [/node_modules/,/json/],
-        loader: 'babel',
-        query: {
-          presets: ['es2015', 'react'],
-        }
       },
       // Sass files compilation to css with css modules enable
       {
@@ -101,11 +92,13 @@ module.exports = {
       {test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?name=/img/[name].[ext]&limit=10000&minetype=application/font-woff" },
       {test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader?name=/img/[name].[ext]" },
       {test: /\.json$/, loader: "file-loader?name=/json/[name].[ext]"}
-
     ],
     preLoaders: [
         // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-        { test: /\.js$/, loader: "source-map-loader" }
+        { test: /\.js$/,
+          loader: "source-map-loader",
+          exclude: [ /node_modules\/react-intl/ ]
+        }
     ]
   },
   plugins: [
