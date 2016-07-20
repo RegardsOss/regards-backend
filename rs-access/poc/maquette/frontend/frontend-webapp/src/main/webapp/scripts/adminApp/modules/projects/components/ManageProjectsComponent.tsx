@@ -2,6 +2,7 @@
 import * as React from 'react'
 import { PropTypes } from 'react'
 import { connect } from 'react-redux'
+import { FormattedMessage, intlShape } from 'react-intl'
 var icons = require('stylesheets/foundation-icons/foundation-icons.scss')
 import RegardsSelect from '../../../../common/components/RegardsSelect'
 import { Project } from '../types/ProjectTypes'
@@ -27,20 +28,24 @@ interface ManageProjectsType {
  * @prop {Function}       onDeleteClick     Callback to delete a project
  */
 class ManageProjectsComponent extends React.Component<ManageProjectsType, any> {
+  context: any
+  static contextTypes = {
+      intl: intlShape
+  }
   render(){
     return (
       <div>
-        <span>Manage projects</span>
-        <button title='Add new project' onClick={this.props.onAddClick}>
+        <span><FormattedMessage id='projects.title'/></span>
+        <button title={this.context.intl.formatMessage({id:"projects.add.button.title"})} onClick={this.props.onAddClick}>
           <i className={icons['fi-plus']}></i>
         </button>
-        <button  title='Delete selected project' onClick={() => this.props.onDeleteClick(this.props.selectedProjectId)}>
+        <button  title={this.context.intl.formatMessage({id:"projects.delete.button.title"})} onClick={() => this.props.onDeleteClick(this.props.selectedProjectId)}>
           <i className={icons['fi-trash']}></i>
         </button>
         <br/>
         <RegardsSelect
         list={this.props.projects}
-        label={'Select a project'}
+        label={this.context.intl.formatMessage({id:"projects.list.select.label"})}
         onSelect={this.props.onSelect}
         displayAttribute="name"
         identityAttribute="id"/>

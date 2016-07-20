@@ -8,18 +8,15 @@ import configureStore from './common/store/configureStore'
 import preloadedState from './common/store/preloadedState'
 import { routes } from './routes'
 
-import I18nContainer from './common/i18n/i18nContainer'
-import { updateLocale } from './common/i18n/i18nActions'
+import I18nProvider from './common/i18n/I18nProvider'
 
 const store = configureStore(preloadedState)
-// Init local to navigator locale
-store.dispatch(updateLocale(navigator.language))
 
 ReactDOM.render(
     <Provider store={store}>
-      <I18nContainer>
+      <I18nProvider messageDir='common/i18n/messages'>
         <Router history={browserHistory} routes={routes}/>
-      </I18nContainer>
+      </I18nProvider>
     </Provider>,
   document.getElementById('app')
 )

@@ -6,6 +6,7 @@ import { map } from 'lodash'
 var classnames = require('classnames')
 
 import { Project } from '../../projects/types/ProjectTypes'
+import { FormattedMessage, intlShape } from 'react-intl'
 
 export interface ProjectAdminsProps {
   project:Project,
@@ -28,26 +29,30 @@ export interface ProjectAdminsProps {
  * @prop {Function}    onDeleteClick    Callback to delete an administrator
  */
 class ProjectAdminsComponent extends React.Component<ProjectAdminsProps, any> {
+  context: any
+  static contextTypes = {
+      intl: intlShape
+  }
   render(){
     const { project, projectAdmins, styles, onAddClick, onConfigureClick,onDeleteClick } : any = this.props;
     if(project) {
       const className = classnames(styles['callout'], styles['custom-callout'])
       return (
         <div className={className}>
-          Project Administrators
-          <button title='Add new administrator' onClick={() => onAddClick(project.id)}>
+          <FormattedMessage id='administrators.title'/>
+          <button title={this.context.intl.formatMessage({id:"administrators.add.button.title"})} onClick={() => onAddClick(project.id)}>
             <i className={icons['fi-plus']} ></i>
           </button>
           <br />
-          List of administrators for {project.name}:
+          <FormattedMessage id='administrators.project.list.label' values={{name: project.name}}/>
           <ul>
             {map(projectAdmins.items, (projectAdmin: any, id: string) => (
               <li key={id}>
                 {projectAdmin.name}
-                <button title='Configure admin user' onClick={() => onConfigureClick(id)}>
+                <button title={this.context.intl.formatMessage({id:"administrator.configure.button.title"})} onClick={() => onConfigureClick(id)}>
                   <i className={icons['fi-wrench']}></i>
                 </button>
-                <button title='Delete admin user' onClick={() => onDeleteClick(id)}>
+                <button title={this.context.intl.formatMessage({id:"administrator.delete.button.title"})} onClick={() => onDeleteClick(id)}>
                   <i className={icons['fi-trash']}></i>
                 </button>
               </li>

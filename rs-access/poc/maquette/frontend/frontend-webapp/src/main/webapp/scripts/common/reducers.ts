@@ -4,7 +4,7 @@
 import { combineReducers } from 'redux';
 import themeReducers from './theme/reducers/ThemeReducers'
 import pluginReducers from './plugins/PluginReducers'
-import i18nReducers from './i18n/i18nReducers'
+import i18nReducers from './i18n/I18nReducers'
 import accessRightsReducers from './access-rights/AccessRightsReducers'
 import authentication, * as fromAuthentication from './authentication/AuthenticateReducers'
 import { pickBy } from 'lodash'

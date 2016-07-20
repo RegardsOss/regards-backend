@@ -6,7 +6,7 @@ const preloadedState:any = {
     authentication : {},
     i18n: {
       locale : navigator.language,
-      messages :  {}
+      messages :  []
     }
   },
   userApp : {

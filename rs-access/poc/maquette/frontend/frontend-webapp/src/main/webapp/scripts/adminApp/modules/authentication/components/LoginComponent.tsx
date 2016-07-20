@@ -1,5 +1,8 @@
 /** @module AdminAuthentication */
 import * as React from 'react';
+import { FormattedMessage } from 'react-intl'
+
+import I18nProvider from '../../../../common/i18n/I18nProvider'
 
 export interface LoginProps {
   styles: Object,
@@ -45,20 +48,22 @@ class LoginComponent extends React.Component<LoginProps,any> {
   render(){
     const { styles } : any = this.props
     return (
-      <div className={styles["login-modal"]} onKeyDown={this.handleKeyPress}>
-        <p className={styles["login-error"]}>{this.props.errorMessage}</p>
-        <label htmlFor="username" >Username</label>
-        <input type='text' onChange={(event: React.FormEvent) => {
-          this.setState({ "username" :(event.target as any).value})
-        }}/>
-        <label htmlFor="password" >Password</label>
-        <input type="password" onChange={(event: React.FormEvent) => {
-          this.setState({"password": (event.target as any).value})
-        }}/>
-        <button className={styles.button} onClick={() => {
-            this.props.onLogin(this.state.username,this.state.password);
-          }}>Log in</button>
-      </div>
+      <I18nProvider messageDir="adminApp/modules/authentication/i18n">
+        <div className={styles["login-modal"]} onKeyDown={this.handleKeyPress}>
+          <p className={styles["login-error"]}>{this.props.errorMessage}</p>
+          <label htmlFor="username" ><FormattedMessage id="login.username" /></label>
+          <input type='text' onChange={(event: React.FormEvent) => {
+            this.setState({ "username" :(event.target as any).value})
+          }}/>
+          <label htmlFor="password" ><FormattedMessage id="login.password" /></label>
+          <input type="password" onChange={(event: React.FormEvent) => {
+            this.setState({"password": (event.target as any).value})
+          }}/>
+          <button className={styles.button} onClick={() => {
+              this.props.onLogin(this.state.username,this.state.password);
+            }}><FormattedMessage id="login.button" /></button>
+        </div>
+      </I18nProvider>
     );
   }
 }

@@ -2,6 +2,8 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { IndexLink, Link } from 'react-router'
+import { intlShape, FormattedMessage } from 'react-intl'
+
 import MenuButtonComponent from './MenuButtonComponent'
 // Styles
 var classnames = require("classnames")
@@ -24,6 +26,11 @@ interface MenuProps {
  */
 class Menu extends React.Component<MenuProps, any> {
 
+  context: any
+  static contextTypes = {
+      intl: intlShape
+  }
+
   render(){
     const { theme, project } = this.props
     const styles = getThemeStyles(theme, 'adminApp/styles')
@@ -42,7 +49,7 @@ class Menu extends React.Component<MenuProps, any> {
             <MenuButtonComponent
               onClick={this.props.onLogout}
               styles={styles}
-              label="Logout"
+              label={this.context.intl.formatMessage({id:"menu.logout"})}
               icon={icons["fi-power"]}>
             </MenuButtonComponent>
           </li>
@@ -50,7 +57,7 @@ class Menu extends React.Component<MenuProps, any> {
             <MenuButtonComponent
               to={"/admin/"+project+"/projects"}
               styles={styles}
-              label="Projects"
+              label={this.context.intl.formatMessage({id:"menu.projects"})}
               icon={icons["fi-widget"]}>
             </MenuButtonComponent>
           </li>

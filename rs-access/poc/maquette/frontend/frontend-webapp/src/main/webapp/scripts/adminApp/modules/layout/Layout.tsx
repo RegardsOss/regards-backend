@@ -1,6 +1,8 @@
 /** @module AdminLayout */
 import * as React from 'react'
 import { connect } from 'react-redux'
+
+import I18nProvider from '../../../common/i18n/I18nProvider'
 import MenuComponent from './components/MenuComponent'
 import Home from '../home/Home'
 
@@ -35,16 +37,18 @@ class Layout extends React.Component<LayoutProps, any> {
     const contentClassName = classnames(styles['content'], styles['small-12'], styles['large-11'], styles['columns'])
 
     return (
-      <div className={layoutClassName}>
-        <MenuComponent
-          theme={theme}
-          onLogout={onLogout}
-          project={project}
-          location={location}/>
-        <div className={contentClassName}>
-          {this.props.content || <Home />}
+      <I18nProvider messageDir="adminApp/modules/layout/i18n">
+        <div className={layoutClassName}>
+          <MenuComponent
+            theme={theme}
+            onLogout={onLogout}
+            project={project}
+            location={location}/>
+          <div className={contentClassName}>
+            {this.props.content || <Home />}
+          </div>
         </div>
-      </div>
+      </I18nProvider>
     );
   }
 }

@@ -3,6 +3,7 @@ import * as React from 'react'
 import { PropTypes } from "react"
 import { connect } from 'react-redux';
 // Containers
+import I18nProvider from '../../../../common/i18n/I18nProvider'
 import UserFormContainer from './UserFormContainer'
 // Components
 import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
@@ -50,22 +51,24 @@ class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
 
   render () {
     return (
-      <div>
-        <ProjectAdminsComponent
-          project={this.props.project}
-          projectAdmins={this.props.projectAdmins}
-          onAddClick={this.props.showProjectAdminConfiguration}
-          onConfigureClick={this.props.showProjectAdminConfiguration}
-          onDeleteClick={this.props.handleDelete}
-          styles={this.props.styles} />
+      <I18nProvider messageDir='adminApp/modules/projectAdmins/i18n'>
+        <div>
+          <ProjectAdminsComponent
+            project={this.props.project}
+            projectAdmins={this.props.projectAdmins}
+            onAddClick={this.props.showProjectAdminConfiguration}
+            onConfigureClick={this.props.showProjectAdminConfiguration}
+            onDeleteClick={this.props.handleDelete}
+            styles={this.props.styles} />
 
-        <UserFormContainer
-          show={this.props.projectAdminConfigurationIsShown}
-          handleSubmit={this.props.onUserFormSubmit}
-          onSubmit={this.props.onUserFormSubmit}
-          onCancelClick={this.props.hideProjectAdminConfiguration}
-          styles={this.props.styles} />
-    </div>
+          <UserFormContainer
+            show={this.props.projectAdminConfigurationIsShown}
+            handleSubmit={this.props.onUserFormSubmit}
+            onSubmit={this.props.onUserFormSubmit}
+            onCancelClick={this.props.hideProjectAdminConfiguration}
+            styles={this.props.styles} />
+          </div>
+      </I18nProvider>
     )
   }
 }

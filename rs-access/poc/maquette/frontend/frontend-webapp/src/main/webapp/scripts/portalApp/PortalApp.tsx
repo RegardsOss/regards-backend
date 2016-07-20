@@ -11,8 +11,9 @@ import ProjectsContainer from './modules/projects/containers/ProjectsContainer'
 import { getThemeStyles } from '../common/theme/ThemeUtils'
 import { setTheme } from '../common/theme/actions/ThemeActions'
 import SelectLocaleComponent from '../common/i18n/SelectLocaleComponent'
-import { updateLocale } from '../common/i18n/i18nActions'
+import { updateLocale } from '../common/i18n/I18nActions'
 import { FormattedMessage } from 'react-intl'
+import I18nProvider from '../common/i18n/I18nProvider'
 
 import { fetchAuthenticate } from '../common/authentication/AuthenticateActions'
 
@@ -61,7 +62,10 @@ class PortalApp extends React.Component<PortalAppProps, any> {
       // Else, display the portal
       return (
         <div className={styles.main}>
-          <FormattedMessage id="first" />
+          <FormattedMessage id="first" /><br/>
+          <I18nProvider messageDir='portalApp/i18n'>
+            <FormattedMessage id="first" />
+          </I18nProvider>
           <InstanceComponent styles={styles}/>
           <ProjectsContainer styles={styles}/>
           <SelectThemeComponent
