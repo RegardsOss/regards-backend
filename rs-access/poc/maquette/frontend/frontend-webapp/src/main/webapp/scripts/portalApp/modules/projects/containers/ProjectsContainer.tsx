@@ -13,7 +13,8 @@ interface ProjectsProps{
   styles: any,
   // Properties set by react redux connection
   onLoad?: ()=> void,
-  projects?: ProjectsStore
+  projects?: ProjectsStore,
+  i18n?: any
 }
 
 // Export class itself without connect to be able to use it in test without store connection.
@@ -57,7 +58,7 @@ export class ProjectsContainer extends React.Component<ProjectsProps, any> {
 const mapStateToProps = (state:any) => {
   return {
     projects: state.portalApp.projects,
-    locale: state.common.i18n.locale
+    i18n: state.common.i18n
   }
 }
 

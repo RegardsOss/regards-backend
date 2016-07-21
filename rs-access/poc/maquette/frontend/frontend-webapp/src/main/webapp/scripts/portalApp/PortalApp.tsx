@@ -22,7 +22,6 @@ interface PortalAppProps {
   theme?: string,
   initTheme?: (theme:string) => void,
   publicAuthenticate?: ()=> void,
-  locale?: string,
   changeLocale?: (locale:string) => void
 }
 

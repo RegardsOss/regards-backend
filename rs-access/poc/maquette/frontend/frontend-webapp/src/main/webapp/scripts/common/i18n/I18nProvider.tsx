@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { addLocaleData, IntlProvider } from 'react-intl'
 import * as fr from 'react-intl/locale-data/fr'
 import { updateMessages } from './I18nActions'
-import { localeMessagesStore } from './I18nReducers'
+import { localeMessagesStore } from './I18nTypes'
 
 addLocaleData(fr)
 

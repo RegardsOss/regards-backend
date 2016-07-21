@@ -2,7 +2,7 @@ declare var require: any;
 // For tests we need to define require.ensure method if not defined
 if (typeof require.ensure !== `function`) require.ensure = (d:any, c:any) => c(require);
 
-import { localeMessagesStore } from './I18nReducers'
+import { i18nStore, localeMessagesStore} from "./I18nTypes"
 
 export const SET_LOCALE = 'SET_LOCALE'
 export function setLocale(locale:string){
@@ -25,7 +25,8 @@ export function updateMessages(messagesDir:string, locale:string){
 
   return (dispatch:any, getState:any) => {
     require.ensure([], function(require:any) {
-      let messages = require('../../'+messagesDir+'/messages.'+locale)
+      // Warning de compilation
+      let messages = require('../../'+messagesDir+'/messages.'+locale+".ts")
       dispatch(setLocaleMessages(messagesDir, messages.default))
     })
   }
