@@ -1,5 +1,7 @@
 /** @module common */
 import * as React from 'react'
+import { FormattedMessage } from 'react-intl'
+import I18nProvider from '../../i18n/I18nProvider'
 
 interface SelectThemeTypes {
   styles: any,
@@ -32,16 +34,18 @@ class SelectThemeComponent extends React.Component<SelectThemeTypes, any> {
     const { styles, themes, onThemeChange } = this.props
 
     return (
-      <div className={styles["select-theme"]}>
-        <span> Select your theme : </span>
-        <select
-          value={this.props.curentTheme}
-          onChange={this.onChange}>
-            {themes.map( (theme) => {
-                return <option key={theme} value={theme}>{theme}</option>
-            })}
-        </select>
-      </div>
+      <I18nProvider messageDir="common/theme/i18n">
+        <div className={styles["select-theme"]}>
+          <span> <FormattedMessage id="select.theme.label" /> </span>
+          <select
+            value={this.props.curentTheme}
+            onChange={this.onChange}>
+              {themes.map( (theme) => {
+                  return <option key={theme} value={theme}>{theme}</option>
+              })}
+          </select>
+        </div>
+      </I18nProvider>
     )
   }
 

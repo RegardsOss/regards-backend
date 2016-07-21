@@ -14,9 +14,7 @@ const store = configureStore(preloadedState)
 
 ReactDOM.render(
     <Provider store={store}>
-      <I18nProvider messageDir='common/i18n/messages'>
-        <Router history={browserHistory} routes={routes}/>
-      </I18nProvider>
+      <Router history={browserHistory} routes={routes}/>
     </Provider>,
   document.getElementById('app')
 )

@@ -2,6 +2,7 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
+import { FormattedMessage } from 'react-intl'
 
 interface InstacenProps {
   styles: any
@@ -18,8 +19,8 @@ class InstanceComponent extends React.Component<InstacenProps, any> {
     const { styles } = this.props
     return (
       <div className={styles["instance-link"]}>
-        Accès direct à l'ihm d'administration de l'instance :
-        <Link to={"/admin/instance"}>ihm admin instance</Link><br/>
+        <FormattedMessage id="instance.access.label" />
+        <Link to={"/admin/instance"}><FormattedMessage id="instance.access.link"/></Link><br/>
       </div>
     )
   }

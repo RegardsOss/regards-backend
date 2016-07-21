@@ -1,6 +1,8 @@
 /** @module PortalProjects */
 import * as React from 'react'
 import { connect } from 'react-redux'
+import { FormattedMessage, intlShape } from 'react-intl'
+
 import ProjectComponent from '../components/ProjectComponent'
 import { fetchProjects } from '../actions/ProjectsActions'
 
@@ -19,7 +21,7 @@ interface ProjectsProps{
  * React container to manage projects in portal app
  */
 export class ProjectsContainer extends React.Component<ProjectsProps, any> {
-
+  
   componentWillMount(){
     // onLoad method is set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
@@ -39,7 +41,7 @@ export class ProjectsContainer extends React.Component<ProjectsProps, any> {
       // Else display projects links
       return (
         <div>
-          <p>Available projects on REGARDS instance :</p>
+          <p><FormattedMessage id="portalapp.projects.list.title" /></p>
           <ul>
             {projects.items.map(project =>
               <ProjectComponent key={project.name} project={project} styles={styles}/>

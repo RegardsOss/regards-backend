@@ -61,24 +61,23 @@ class PortalApp extends React.Component<PortalAppProps, any> {
     } else {
       // Else, display the portal
       return (
-        <div className={styles.main}>
-          <FormattedMessage id="first" /><br/>
-          <I18nProvider messageDir='portalApp/i18n'>
-            <FormattedMessage id="first" />
-          </I18nProvider>
-          <InstanceComponent styles={styles}/>
-          <ProjectsContainer styles={styles}/>
-          <SelectThemeComponent
-            styles={commonStyles}
-            themes={["cdpp","ssalto","default"]}
-            curentTheme={theme}
-            onThemeChange={this.props.initTheme} />
-          <SelectLocaleComponent
-            styles={commonStyles}
-            curentLocale={this.props.locale}
-            locales={['fr','en']}
-            onLocaleChange={this.props.changeLocale} />
-        </div>
+        <I18nProvider messageDir='portalApp/i18n'>
+          <div className={styles.main}>
+            <FormattedMessage id="portalapp.title" /><br/>
+            <InstanceComponent styles={styles}/>
+            <ProjectsContainer styles={styles}/>
+            <SelectThemeComponent
+              styles={commonStyles}
+              themes={["cdpp","ssalto","default"]}
+              curentTheme={theme}
+              onThemeChange={this.props.initTheme} />
+            <SelectLocaleComponent
+              styles={commonStyles}
+              curentLocale={this.props.locale}
+              locales={['fr','en']}
+              onLocaleChange={this.props.changeLocale} />
+          </div>
+        </I18nProvider>
       )
     }
   }

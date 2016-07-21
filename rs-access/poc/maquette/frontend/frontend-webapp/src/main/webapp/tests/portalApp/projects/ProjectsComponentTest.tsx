@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Link } from 'react-router';
 import { mount, shallow } from 'enzyme';
 import { expect } from 'chai'
+import { FormattedMessage } from 'react-intl'
 // Import unconnected version of ProjectsComponent. by using bracets {} around component.
 // To get the react-redux connect component use "import ProjectsComponent" instead of "import { ProjectsComponent }"
 import { ProjectsContainer } from '../../../scripts/portalApp/modules/projects/containers/ProjectsContainer';
@@ -55,7 +56,7 @@ describe('[PORTAL APP] Testing projects components', () => {
 
     const result = (
       <div>
-        <p>Available projects on REGARDS instance :</p>
+        <p><FormattedMessage id="portalapp.projects.list.title" /></p>
         <ul>
             <ProjectComponent key="cdpp" project={{name: 'cdpp'}} styles={projectsStyles}/>
             <ProjectComponent key= "ssalto" project={{name: 'ssalto'}} styles={projectsStyles}/>
@@ -79,8 +80,12 @@ describe('[PORTAL APP] Testing projects components', () => {
     const result = (
       <li className="link">
         <p>cdpp</p>
-          <Link to="/user/cdpp" className="project-link">ihm user</Link>
-          <Link to="/admin/cdpp" className="project-link">ihm admin</Link>
+          <Link to="/user/cdpp" className="project-link">
+            <FormattedMessage id="project.user.access.link" />
+          </Link>
+          <Link to="/admin/cdpp" className="project-link">
+            <FormattedMessage id="project.admin.access.link" />
+          </Link>
       </li>
     )
     const wrapper = shallow(<ProjectComponent {...props}/>);

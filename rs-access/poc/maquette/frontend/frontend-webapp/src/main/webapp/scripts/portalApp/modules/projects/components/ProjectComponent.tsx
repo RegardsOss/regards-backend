@@ -2,6 +2,7 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
+import { FormattedMessage } from 'react-intl'
 
 import { Project } from '../types/ProjectTypes'
 
@@ -24,8 +25,12 @@ export class ProjectComponent extends React.Component<ProjectTypes, any> {
     return (
       <li className={styles.link}>
         <p>{this.props.project.name}</p>
-        <Link to={"/user/" +this.props.project.name} className={styles["project-link"]}>ihm user</Link>
-        <Link to={"/admin/" +this.props.project.name} className={styles["project-link"]}>ihm admin</Link>
+        <Link to={"/user/" +this.props.project.name} className={styles["project-link"]}>
+          <FormattedMessage id="project.user.access.link" />
+        </Link>
+        <Link to={"/admin/" +this.props.project.name} className={styles["project-link"]}>
+          <FormattedMessage id="project.admin.access.link" />
+        </Link>
       </li>
     )
   }
