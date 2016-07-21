@@ -1,6 +1,6 @@
 /** @module AdminAuthentication */
 import * as React from 'react';
-import { FormattedMessage } from 'react-intl'
+import { FormattedMessage, intlShape } from 'react-intl'
 
 import I18nProvider from '../../../../common/i18n/I18nProvider'
 
@@ -47,10 +47,16 @@ class LoginComponent extends React.Component<LoginProps,any> {
 
   render(){
     const { styles } : any = this.props
+
+    let errorMessage:any = null
+    if (this.props.errorMessage && this.props.errorMessage !== ''){
+      errorMessage = <FormattedMessage id={this.props.errorMessage} />
+    }
+
     return (
       <I18nProvider messageDir="adminApp/modules/authentication/i18n">
         <div className={styles["login-modal"]} onKeyDown={this.handleKeyPress}>
-          <p className={styles["login-error"]}>{this.props.errorMessage}</p>
+          <p className={styles["login-error"]}>{errorMessage}</p>
           <label htmlFor="username" ><FormattedMessage id="login.username" /></label>
           <input type='text' onChange={(event: React.FormEvent) => {
             this.setState({ "username" :(event.target as any).value})
