@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 
 import { getThemeStyles } from '../../../common/theme/ThemeUtils'
 import { setTheme } from '../../../common/theme/actions/ThemeActions'
-import SelectThemeComponent from '../../../common/theme/components/SelectThemeComponent'
+import SelectTheme from '../../../common/theme/containers/SelectTheme'
 import AccessRightsComponent from '../../../common/access-rights/AccessRightsComponent'
 import NavigationContainer from './containers/NavigationContainer'
 
@@ -33,11 +33,6 @@ class Layout extends React.Component<LayoutProps, any> {
         <div className={styles.main}>
           {this.props.children}
         </div>
-        <SelectThemeComponent
-          styles={commonStyles}
-          themes={["cdpp","ssalto","default"]}
-          curentTheme={theme}
-          onThemeChange={this.props.setTheme} />
       </div>
     )
   }

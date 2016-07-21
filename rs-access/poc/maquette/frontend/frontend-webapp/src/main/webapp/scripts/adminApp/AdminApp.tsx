@@ -3,31 +3,32 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 import * as ReactDOM from 'react-dom'
 
-import { setTheme } from '../common/theme/actions/ThemeActions'
 import { logout } from '../common/authentication/AuthenticateActions'
 import { getThemeStyles } from '../common/theme/ThemeUtils'
 import Authentication from './modules/authentication/containers/AuthenticationContainer'
 import { AuthenticationType } from '../common/authentication/AuthenticationTypes'
-import SelectThemeComponent from '../common/theme/components/SelectThemeComponent'
+
 import ErrorComponent from '../common/components/ApplicationErrorComponent'
-
-import Layout from './modules/layout/containers/Layout'
-
-import MenuComponent from './modules/layout/components/MenuComponent'
+import Layout from '../common/layout/containers/Layout'
 import Home from './modules/home/Home'
+
+// Theme
+import ThemeHelper from '../common/theme/ThemeHelper'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
+
+import RaisedButton from 'material-ui/RaisedButton'
+import SelectTheme from '../common/theme/containers/SelectTheme'
 
 interface AminAppProps {
   router: any,
   route : any,
   params: any,
-  theme: string,
+  currentTheme: string,
   authentication: AuthenticationType,
   content: any,
   location: any,
-  onLogout: ()=> void,
-  setTheme: (name:string)=> void
+  onLogout: ()=> void
 }
-
 
 /**
  * React component to manage Administration application.
@@ -35,62 +36,40 @@ interface AminAppProps {
  */
 class AdminApp extends React.Component<AminAppProps, any> {
   constructor(){
-    super();
-    this.state = {
-      instance: false
-    }
-    this.changeTheme = this.changeTheme.bind(this)
-  }
-
-  componentWillMount(){
-    // Init admin theme
-    let themeToSet = this.props.params.project;
-    if (this.props.params.project === "instance"){
-      this.setState({instance: true});
-      themeToSet = "default";
-    }
-    this.props.setTheme(themeToSet)
-  }
-
-  changeTheme(themeToSet: string){
-    if (this.props.theme !== themeToSet){
-      this.props.setTheme(themeToSet)
-    }
+    super()
+    this.state = { instance: false }
   }
 
   render(){
-    const { theme, authentication, content, location, params, onLogout } = this.props
-    const styles = getThemeStyles(theme, 'adminApp/styles')
-    const commonStyles = getThemeStyles(theme,'common/common.scss')
+    const { currentTheme, authentication, content, location, params, onLogout } = this.props
+    const muiTheme = ThemeHelper.getByName(currentTheme)
+    // const styles = getThemeStyles(theme, 'adminApp/styles')
+    // const commonStyles = getThemeStyles(theme,'common/common.scss')
     if (authentication){
       let authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
       authenticated = authenticated && (authentication.user.name !== undefined) && authentication.user.name !== 'public'
       if (authenticated === false){
         return (
-          <div className={styles.main}>
-            <Authentication />
-
-            <SelectThemeComponent
-              styles={commonStyles}
-              themes={["cdpp","ssalto","default"]}
-              curentTheme={theme}
-              onThemeChange={this.changeTheme} />
-          </div>
+          <MuiThemeProvider muiTheme={muiTheme}>
+            <div>
+              <Authentication />
+            </div>
+          </MuiThemeProvider>
         );
       } else {
           return (
-            <div>
-              <Layout
-                className='layout'
-                cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}
-                rowHeight={30} >
-              </Layout>
-              <SelectThemeComponent
-                styles={commonStyles}
-                themes={["cdpp","ssalto","default"]}
-                curentTheme={theme}
-                onThemeChange={this.changeTheme} />
-            </div>
+            <MuiThemeProvider muiTheme={muiTheme}>
+                <Layout>
+                  <div key='1' style={{backgroundColor:'#ff4081',height: '100%'}}>
+                    <RaisedButton label="Click!" />
+                  </div>
+                  <div key='2' style={{backgroundColor:'#FFCA28'}}>
+                  </div>
+                  <div key='3'>
+                    <SelectTheme/>
+                  </div>
+                </Layout>
+            </MuiThemeProvider>
           );
       }
     }
@@ -101,17 +80,11 @@ class AdminApp extends React.Component<AminAppProps, any> {
 }
 
 // Add theme from store to the component props
-const mapStateToProps = (state: any) => {
-  return {
-    theme: state.common.theme,
-    authentication: state.common.authentication
-  }
-}
-const mapDispatchToProps = (dispatch: any) => {
-  return {
-    setTheme: (theme: string) => {dispatch(setTheme(theme))},
-    onLogout: () => {dispatch(logout())}
-  }
-}
-const connectedAdminApp = connect<{}, {}, AminAppProps>(mapStateToProps,mapDispatchToProps)(AdminApp)
-export default connectedAdminApp
+const mapStateToProps = (state: any) => ({
+  currentTheme: state.common.themes.selected,
+  authentication: state.common.authentication
+})
+const mapDispatchToProps = (dispatch: any) => ({
+  onLogout: () => {dispatch(logout())}
+})
+export default connect<{}, {}, AminAppProps>(mapStateToProps,mapDispatchToProps)(AdminApp)

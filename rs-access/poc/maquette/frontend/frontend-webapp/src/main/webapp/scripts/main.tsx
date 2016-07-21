@@ -9,7 +9,6 @@ import preloadedState from './common/store/preloadedState'
 import { routes } from './routes'
 
 const store = configureStore(preloadedState)
-
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory} routes={routes}/>

@@ -5,11 +5,10 @@ import { Link } from 'react-router'
 import * as ReactDOM from 'react-dom'
 
 import ApplicationErrorComponent from '../common/components/ApplicationErrorComponent'
-import SelectThemeComponent from '../common/theme/components/SelectThemeComponent'
+import SelectTheme from '../common/theme/containers/SelectTheme'
 import InstanceComponent from './modules/projects/components/InstanceComponent'
 import ProjectsContainer from './modules/projects/containers/ProjectsContainer'
 import { getThemeStyles } from '../common/theme/ThemeUtils'
-import { setTheme } from '../common/theme/actions/ThemeActions'
 
 import { fetchAuthenticate } from '../common/authentication/AuthenticateActions'
 
@@ -17,7 +16,6 @@ interface PortalAppProps {
   // Properties set by react-redux connectiona
   authentication?: any,
   theme?: string,
-  initTheme?: (theme:string) => void,
   publicAuthenticate?: ()=> void,
 }
 
@@ -31,7 +29,6 @@ class PortalApp extends React.Component<PortalAppProps, any> {
     // Init application theme
     // initTheme and publicAuthenticate methods are set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
-    this.props.initTheme("")
     this.props.publicAuthenticate()
   }
 
@@ -58,11 +55,7 @@ class PortalApp extends React.Component<PortalAppProps, any> {
         <div className={styles.main}>
           <InstanceComponent styles={styles}/>
           <ProjectsContainer styles={styles}/>
-          <SelectThemeComponent
-            styles={commonStyles}
-            themes={["cdpp","ssalto","default"]}
-            curentTheme={theme}
-            onThemeChange={this.props.initTheme} />
+          <SelectTheme />
         </div>
       )
     }
@@ -70,17 +63,11 @@ class PortalApp extends React.Component<PortalAppProps, any> {
 }
 
 // Add props from store to the container props
-const mapStateToProps = (state:any) => {
-  return {
-    theme: state.common.theme,
-    authentication: state.common.authentication
-  }
-}
+const mapStateToProps = (state:any) => ({
+  authentication: state.common.authentication
+})
 // Add functions dependending on store dispatch to container props.
-const mapDispatchToProps = (dispatch:any) => {
-  return {
-    publicAuthenticate: () => dispatch(fetchAuthenticate("public","public")),
-    initTheme: (theme:string) =>  dispatch(setTheme(theme))
-  }
-}
+const mapDispatchToProps = (dispatch:any) => ({
+  publicAuthenticate: () => dispatch(fetchAuthenticate("public","public")),
+})
 export default connect<{}, {}, PortalAppProps>(mapStateToProps,mapDispatchToProps)(PortalApp)

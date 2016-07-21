@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import * as actions from '../../../../../scripts/adminApp/modules/layout/actions/MenuActions';
+import * as actions from '../../../../scripts/adminApp/modules/menu/actions'
 
 describe('[ADMIN APP] Testing Menu actions', () => {
 

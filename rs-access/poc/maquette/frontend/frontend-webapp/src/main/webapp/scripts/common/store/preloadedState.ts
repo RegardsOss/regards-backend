@@ -1,6 +1,36 @@
 const preloadedState:any = {
   common: {
-    theme: '',
+    themes: {
+      items: ['lightBaseTheme', 'darkBaseTheme'],
+      selected: 'lightBaseTheme'
+    },
+    layout: {
+        lg: [
+          {i: '1', x: 0, y: 0, w: 1, h: 12},
+          {i: '2', x: 1, y: 0, w: 9, h: 12},
+          {i: '3', x: 10, y: 0, w: 2, h: 2}
+        ],
+        md: [
+          {i: '1', x: 0, y: 0, w: 1, h: 12},
+          {i: '2', x: 1, y: 0, w: 9, h: 12},
+          {i: '3', x: 9, y: 0, w: 2, h: 2}
+        ],
+        sm: [
+          {i: '1', x: 0, y: 0, w: 12, h: 2},
+          {i: '2', x: 0, y: 1, w: 12, h: 9},
+          {i: '3', x: 1, y: 1, w: 2, h: 2}
+        ],
+        xs: [
+          {i: '1', x: 0, y: 0, w: 12, h: 2},
+          {i: '2', x: 0, y: 1, w: 12, h: 9},
+          {i: '3', x: 1, y: 1, w: 2, h: 2}
+        ],
+        xxs: [
+          {i: '1', x: 0, y: 0, w: 12, h: 2},
+          {i: '2', x: 0, y: 1, w: 12, h: 9},
+          {i: '3', x: 1, y: 1, w: 2, h: 2}
+        ]
+      },
     plugins : {},
     views : [],
     authentication : {}
