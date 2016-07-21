@@ -26,7 +26,7 @@ export function updateMessages(messagesDir:string, locale:string){
   return (dispatch:any, getState:any) => {
     require.ensure([], function(require:any) {
       // Warning de compilation
-      let messages = require('../../'+messagesDir+'/messages.'+locale+".ts")
+      let messages = require('../../'+messagesDir+'/messages.'+locale+".i18n")
       dispatch(setLocaleMessages(messagesDir, messages.default))
     })
   }
