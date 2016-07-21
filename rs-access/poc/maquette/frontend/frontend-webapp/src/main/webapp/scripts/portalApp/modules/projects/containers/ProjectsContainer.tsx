@@ -21,7 +21,7 @@ interface ProjectsProps{
  * React container to manage projects in portal app
  */
 export class ProjectsContainer extends React.Component<ProjectsProps, any> {
-  
+
   componentWillMount(){
     // onLoad method is set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
@@ -56,14 +56,15 @@ export class ProjectsContainer extends React.Component<ProjectsProps, any> {
 // Add projects from store to the container props
 const mapStateToProps = (state:any) => {
   return {
-    projects: state.portalApp.projects
+    projects: state.portalApp.projects,
+    locale: state.common.i18n.locale
   }
 }
 
 // Add functions dependending on store dispatch to container props.
 const mapDispatchToProps = (dispatch:any) => {
   return {
-    onLoad: () => dispatch(fetchProjects())
+    onLoad: () => dispatch(fetchProjects()),
   }
 }
 export default connect<{},{},ProjectsProps>(mapStateToProps,mapDispatchToProps)(ProjectsContainer)

@@ -11,7 +11,6 @@ import ProjectsContainer from './modules/projects/containers/ProjectsContainer'
 import { getThemeStyles } from '../common/theme/ThemeUtils'
 import { setTheme } from '../common/theme/actions/ThemeActions'
 import SelectLocaleComponent from '../common/i18n/SelectLocaleComponent'
-import { updateLocale } from '../common/i18n/I18nActions'
 import { FormattedMessage } from 'react-intl'
 import I18nProvider from '../common/i18n/I18nProvider'
 
@@ -73,9 +72,7 @@ class PortalApp extends React.Component<PortalAppProps, any> {
               onThemeChange={this.props.initTheme} />
             <SelectLocaleComponent
               styles={commonStyles}
-              curentLocale={this.props.locale}
-              locales={['fr','en']}
-              onLocaleChange={this.props.changeLocale} />
+              locales={['fr','en']} />
           </div>
         </I18nProvider>
       )
@@ -87,16 +84,14 @@ class PortalApp extends React.Component<PortalAppProps, any> {
 const mapStateToProps = (state:any) => {
   return {
     theme: state.common.theme,
-    authentication: state.common.authentication,
-    locale: state.common.i18n.locale
+    authentication: state.common.authentication
   }
 }
 // Add functions dependending on store dispatch to container props.
 const mapDispatchToProps = (dispatch:any) => {
   return {
     publicAuthenticate: () => dispatch(fetchAuthenticate("public","public")),
-    initTheme: (theme:string) =>  dispatch(setTheme(theme)),
-    changeLocale: (locale:string) => dispatch(updateLocale(locale))
+    initTheme: (theme:string) =>  dispatch(setTheme(theme))
   }
 }
 export default connect<{}, {}, PortalAppProps>(mapStateToProps,mapDispatchToProps)(PortalApp)

@@ -1,11 +1,14 @@
 /** @module common */
 import * as React from 'react'
+import { connect } from 'react-redux'
+
+import { updateLocale } from './I18nActions'
 
 interface SelectLocaleTypes {
   styles: any,
   locales: Array<string>,
-  curentLocale: string,
-  onLocaleChange: (theme:string) => void
+  curentLocale?: string,
+  onLocaleChange?: (theme:string) => void
 }
 
 
@@ -46,4 +49,18 @@ class SelectLocaleComponent extends React.Component<SelectLocaleTypes, any> {
 
 }
 
-export default SelectLocaleComponent
+// Add projects from store to the container props
+const mapStateToProps = (state:any) => {
+  return {
+    curentLocale: state.common.i18n.locale
+  }
+}
+
+// Add functions dependending on store dispatch to container props.
+const mapDispatchToProps = (dispatch:any) => {
+  return {
+    onLocaleChange: (locale:string) => dispatch(updateLocale(locale))
+  }
+}
+
+export default connect<{}, {}, SelectLocaleTypes>(mapStateToProps,mapDispatchToProps)(SelectLocaleComponent)

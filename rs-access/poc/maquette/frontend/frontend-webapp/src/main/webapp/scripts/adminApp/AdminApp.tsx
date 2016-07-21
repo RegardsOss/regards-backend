@@ -10,7 +10,6 @@ import Authentication from './modules/authentication/containers/AuthenticationCo
 import { AuthenticationType } from '../common/authentication/AuthenticationTypes'
 import SelectThemeComponent from '../common/theme/components/SelectThemeComponent'
 import SelectLocaleComponent from '../common/i18n/SelectLocaleComponent'
-import { updateLocale } from '../common/i18n/I18nActions'
 import ErrorComponent from '../common/components/ApplicationErrorComponent'
 import Layout from './modules/layout/Layout'
 
@@ -23,10 +22,7 @@ interface AminAppProps {
   content: any,
   location: any,
   onLogout: ()=> void,
-  setTheme: (name:string)=> void,
-  // Properties set by react redux connection
-  locale?: string,
-  changeLocale?: (locale:string) => void
+  setTheme: (name:string)=> void
 }
 
 
@@ -79,9 +75,7 @@ class AdminApp extends React.Component<AminAppProps, any> {
 
               <SelectLocaleComponent
                 styles={commonStyles}
-                curentLocale={this.props.locale}
-                locales={['fr','en']}
-                onLocaleChange={this.props.changeLocale} />
+                locales={['fr','en']} />
           </div>
         );
       } else {
@@ -101,9 +95,7 @@ class AdminApp extends React.Component<AminAppProps, any> {
 
                 <SelectLocaleComponent
                   styles={commonStyles}
-                  curentLocale={this.props.locale}
-                  locales={['fr','en']}
-                  onLocaleChange={this.props.changeLocale} />
+                  locales={['fr','en']} />
           </div>
           );
       }
@@ -118,15 +110,13 @@ class AdminApp extends React.Component<AminAppProps, any> {
 const mapStateToProps = (state: any) => {
   return {
     theme: state.common.theme,
-    authentication: state.common.authentication,
-    locale: state.common.i18n.locale
+    authentication: state.common.authentication
   }
 }
 const mapDispatchToProps = (dispatch: any) => {
   return {
     setTheme: (theme: string) => {dispatch(setTheme(theme))},
-    onLogout: () => {dispatch(logout())},
-    changeLocale: (locale:string) => dispatch(updateLocale(locale))
+    onLogout: () => {dispatch(logout())}
   }
 }
 const connectedAdminApp = connect<{}, {}, AminAppProps>(mapStateToProps,mapDispatchToProps)(AdminApp)
