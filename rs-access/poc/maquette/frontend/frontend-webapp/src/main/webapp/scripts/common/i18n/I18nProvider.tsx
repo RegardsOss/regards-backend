@@ -17,7 +17,21 @@ interface i18nProps {
   children?: any
 }
 
-export class I18nContainer extends React.Component<i18nProps, any> {
+
+/**
+ * React provider to enable messages internationalisation.
+ * Under this provider, use the react-intl <FormatedMessage id='...' /> to display message
+ * in the current language. The curent language is stored in the redux store common.i18n.locale.
+ * By default the locale is the navigator langugage.
+ * Under this provider, we can also use the below syntaxe du get the localise messages :
+ *  this.context.intl.formatMessage({id:"..."})
+ * To do so, the react component must be configured with :
+ * context: any
+ * static contextTypes = {
+ *     intl: intlShape
+ * }
+ */
+export class I18nProvider extends React.Component<i18nProps, any> {
 
   componentWillMount(){
     // Get messages associated to this Prodiver via the messageDir
@@ -56,4 +70,4 @@ const mapDispatchToProps = (dispatch:any) => ({
   updateMessages: (messageDir:string, locale:string) => dispatch(updateMessages(messageDir,locale))
 })
 
-export default connect<{}, {}, i18nProps>(mapStateToProps, mapDispatchToProps)(I18nContainer)
+export default connect<{}, {}, i18nProps>(mapStateToProps, mapDispatchToProps)(I18nProvider)

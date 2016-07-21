@@ -8,14 +8,14 @@ interface SelectLocaleTypes {
   styles: any,
   locales: Array<string>,
   curentLocale?: string,
-  onLocaleChange?: (theme:string) => void
+  onLocaleChange?: (locale:string) => void
 }
 
 
 /**
  * React component to display the language selector widget
  */
-class SelectLocaleComponent extends React.Component<SelectLocaleTypes, any> {
+export class SelectLocaleComponent extends React.Component<SelectLocaleTypes, any> {
   constructor(){
     super()
     this.onChange = this.onChange.bind(this)

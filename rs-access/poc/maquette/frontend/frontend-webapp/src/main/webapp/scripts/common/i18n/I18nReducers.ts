@@ -1,4 +1,7 @@
 import { SET_LOCALE, SET_LOCALE_MSG } from "./I18nActions"
+// If navigator is not defined, set the locale to english
+if (typeof navigator === 'undefined')
+ var navigator:any = {language:'en'}
 
 export interface localeMessagesStore {
   messagesDir:string,

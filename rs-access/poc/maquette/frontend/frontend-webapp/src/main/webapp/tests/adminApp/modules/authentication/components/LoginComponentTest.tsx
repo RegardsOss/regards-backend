@@ -1,6 +1,7 @@
 import * as React from 'react'
-import { shallow } from 'enzyme';
-import { expect } from 'chai';
+import { shallow } from 'enzyme'
+import { expect } from 'chai'
+import * as sinon from 'sinon'
 import LoginComponent from '../../../../../scripts/adminApp/modules/authentication/components/LoginComponent';
 
 // Test a component rendering
@@ -8,12 +9,13 @@ import LoginComponent from '../../../../../scripts/adminApp/modules/authenticati
 describe('[ADMIN APP] Testing login component', () => {
   it('Should render correctly the login component', () => {
     const onLogin = (username:string, password:string) => { };
+    const spy = sinon.spy(onLogin)
     const loginStyles:any = {
       "login-modal": 'login-modal',
       "login-error": "login-error"
     };
     let props = {
-      onLogin: onLogin,
+      onLogin: spy,
       errorMessage: '',
       styles: loginStyles
     };
@@ -27,6 +29,7 @@ describe('[ADMIN APP] Testing login component', () => {
 
     // Test onLogin action
     wrapper.find("button").simulate('click');
+    expect(spy.calledOnce).to.equals(true)
   });
 
   it('Should active login action correctly', () => {
@@ -34,13 +37,14 @@ describe('[ADMIN APP] Testing login component', () => {
       expect(username).to.equal("test");
       expect(password).to.equal("test_password");
     };
+    const spy = sinon.spy(onLogin)
     const handleKeyPress = () => { };
     const loginStyles = {
       "login-modal": 'login-modal',
       "login-error": "login-error"
     };
     let props = {
-      onLogin: onLogin,
+      onLogin: spy,
       errorMessage: '',
       styles: loginStyles
     };
@@ -52,6 +56,7 @@ describe('[ADMIN APP] Testing login component', () => {
     password.simulate('change', { target: { value: 'test_password' } });
     // Test onLogin action
     wrapper.find("button").simulate('click');
+    expect(spy.calledOnce).to.equals(true)
   });
 
 });

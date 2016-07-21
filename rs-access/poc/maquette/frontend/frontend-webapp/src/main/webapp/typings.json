@@ -19,6 +19,7 @@
     "redux-logger": "registry:dt/redux-logger#2.6.0+20160619033847",
     "redux-mock-store": "registry:dt/redux-mock-store#0.0.6+20160514173414",
     "redux-thunk": "registry:dt/redux-thunk#2.1.0+20160703120921",
+    "sinon": "registry:dt/sinon#1.16.0+20160517064723",
     "sockjs-client": "registry:dt/sockjs-client#1.0.3+20160626224127"
   },
   "dependencies": {
