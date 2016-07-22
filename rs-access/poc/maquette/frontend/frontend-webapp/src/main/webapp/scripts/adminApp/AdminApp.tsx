@@ -11,13 +11,15 @@ import { AuthenticationType } from '../common/authentication/AuthenticationTypes
 import ErrorComponent from '../common/components/ApplicationErrorComponent'
 import Layout from '../common/layout/containers/Layout'
 import Home from './modules/home/Home'
+import MenuComponent from './modules/menu/components/MenuComponent'
 
 // Theme
 import ThemeHelper from '../common/theme/ThemeHelper'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
-
-import RaisedButton from 'material-ui/RaisedButton'
 import SelectTheme from '../common/theme/containers/SelectTheme'
+// Ui
+import RaisedButton from 'material-ui/RaisedButton'
+
 
 interface AminAppProps {
   router: any,
@@ -59,16 +61,17 @@ class AdminApp extends React.Component<AminAppProps, any> {
       } else {
           return (
             <MuiThemeProvider muiTheme={muiTheme}>
+              <div>
+                <MenuComponent />
                 <Layout>
-                  <div key='1' style={{backgroundColor:'#ff4081',height: '100%'}}>
-                    <RaisedButton label="Click!" />
+                  <div key='1'>
+                    {content}
                   </div>
                   <div key='2' style={{backgroundColor:'#FFCA28'}}>
-                  </div>
-                  <div key='3'>
                     <SelectTheme/>
                   </div>
                 </Layout>
+              </div>
             </MuiThemeProvider>
           );
       }

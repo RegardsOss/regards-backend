@@ -4,6 +4,7 @@ import { forEach } from 'lodash'
 import { setTheme } from '../actions/ThemeActions'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
+import {Card, CardText} from 'material-ui/Card';
 
 class SelectTheme extends React.Component<any, any> {
 
@@ -23,14 +24,16 @@ class SelectTheme extends React.Component<any, any> {
     })
 
     return (
-      <div>
-        <SelectField
-          value={this.props.currentTheme}
-          onChange={this.handleChange}
-          autoWidth={true} >
-          {items}
-        </SelectField>
-      </div>
+      <Card>
+        <CardText>
+          <SelectField
+            value={this.props.currentTheme}
+            onChange={this.handleChange}
+            fullWidth={true} >
+            {items}
+          </SelectField>
+        </CardText>
+      </Card>
     )
   }
 }

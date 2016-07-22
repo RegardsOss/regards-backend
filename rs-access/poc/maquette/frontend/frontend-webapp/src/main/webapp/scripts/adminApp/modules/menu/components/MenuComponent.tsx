@@ -2,62 +2,45 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { IndexLink, Link } from 'react-router'
-import MenuButtonComponent from './MenuButtonComponent'
-// Styles
-var classnames = require("classnames")
-var icons = require('../../../../../stylesheets/foundation-icons/foundation-icons.scss')
-// import { getThemeStyles } from '../../../../common/theme/ThemeUtils'
-
-interface MenuProps {
-  theme: string,
-  project: string,
-  onLogout?: () => void,
-  location: any
-}
-
+import Drawer from 'material-ui/Drawer'
+import MenuItem from 'material-ui/MenuItem'
+import IconButton from 'material-ui/IconButton'
+import PowerSettingsNew from 'material-ui/svg-icons/action/power-settings-new'
+import Divider from 'material-ui/Divider';
+import Settings from 'material-ui/svg-icons/action/settings'
+import People from 'material-ui/svg-icons/social/people'
+import Reply from 'material-ui/svg-icons/content/reply'
 
 /**
  * React Menu component. Display the admin application menu
- * @prop {String} theme CSS Theme
- * @prop {String} project Project
- * @prop {Object} location react-router location
  */
-class Menu extends React.Component<MenuProps, any> {
+class MenuComponent extends React.Component<{}, any> {
 
   render(){
-    const { theme, project } = this.props
-    // const styles = getThemeStyles(theme, 'adminApp/styles')
-    // const menuClassName = classnames(
-      // styles['menuContainer']
-      // styles['columns'],
-      // styles['large-1'],
-      // styles['small-12']
-    // )
-    // const ulClassName = classnames(styles['menu'], styles['vertical'], styles['icon-top'])
 
     return (
-      <div>
-        <ul>
-          <li>
-            <MenuButtonComponent
-              styles={null}
-              onClick={this.props.onLogout}
-              label="Logout"
-              icon={icons["fi-power"]}>
-            </MenuButtonComponent>
-          </li>
-          <li>
-            <MenuButtonComponent
-              to={"/admin/"+project+"/projects"}
-              styles={null}
-              label="Projects"
-              icon={icons["fi-widget"]}>
-            </MenuButtonComponent>
-          </li>
-        </ul>
-      </div>
+      <Drawer open={true}>
+        <Link to={"/admin/cdpp/projects"}>
+          <MenuItem primaryText="Projets" leftIcon={<Settings />} />
+        </Link>
+
+        <Link to={"/admin/cdpp/users"}>
+          <MenuItem primaryText="Utilisateurs" leftIcon={<People />} />
+        </Link>
+
+        <Divider />
+
+        <MenuItem primaryText="Se déconnecter" leftIcon={<PowerSettingsNew />} />
+
+        <Divider />
+
+        <Link to={"/admin/cdpp"}>
+          <MenuItem primaryText="Retour" leftIcon={<Reply />} />
+        </Link>
+
+      </Drawer>
     )
   }
 }
 
-export default Menu
+export default MenuComponent

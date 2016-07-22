@@ -11,12 +11,12 @@ import * as React from 'react'
 import { Component, PropTypes } from 'react'
 import { reduxForm, ReduxFormProps } from 'redux-form'
 export const fields = [ 'id', 'projectId', 'username', 'password', 'passwordConfirm']
-var icons = require('../../../../../stylesheets/foundation-icons/foundation-icons.scss')
+// var icons = require('../../../../../stylesheets/foundation-icons/foundation-icons.scss')
 // Selectors
-import {
-  getSelectedProjectAdminId,
-  getProjectAdminById,
-  getSelectedProjectId } from '../../../reducer'
+// import {
+//   getSelectedProjectAdminId,
+//   getProjectAdminById,
+//   getSelectedProjectId } from '../../../reducer'
 
 /**
  * Form fields validation method
@@ -59,7 +59,6 @@ interface FormPropTypes {
   onCancelClick? :()=> void,
   submitting?: boolean,
   show?: boolean,
-  styles: any,
   onSubmit: () => void
 }
 
@@ -78,11 +77,12 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
       submitting,
       show,
       onCancelClick,
-      styles
+      // styles
     }: any = this.props
 
     if(show)
-      return (<form onSubmit={handleSubmit}>
+      return (
+        <form onSubmit={handleSubmit}>
           <div>
             <div>
               <input type="hidden" placeholder="Id" {...id}/>
@@ -93,7 +93,7 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
             <label>Username</label>
             <div>
               <input type="text" placeholder="Username" {...username} />
-              {asyncValidating === 'username' && <i className={icons['fi-widget']}></i>}
+              {asyncValidating === 'username' && <i className={null}></i>}
             </div>
             {username.touched && username.error && <div>{username.error}</div>}
           </div>
@@ -114,16 +114,16 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
           <div>
             <button
               type="submit"
-              className={styles['button'] + ' ' + styles['success']}
+              // className={styles['button'] + ' ' + styles['success']}
               disabled={submitting}>
-              <i className={icons['fi-save']}></i>
+              <i className={null}></i>
               {submitting ? 'Submitting...' : ''} Save
             </button>
             <button
               type="button"
-              className={styles['button'] + ' ' + styles['alert']}
+              // className={styles['button'] + ' ' + styles['alert']}
               disabled={submitting} onClick={onCancelClick}>
-              <i className={icons['fi-prohibited']}></i>
+              <i className={null}></i>
               Cancel
             </button>
           </div>
@@ -134,24 +134,30 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
   }
 }
 
-const mapStateToProps = (state: any) => {
-  const selectedProjectAdminId = getSelectedProjectAdminId(state)
-  const selectedProjectAdmin = getProjectAdminById(state, selectedProjectAdminId)
-  const selectedProjectId = getSelectedProjectId(state)
-  return {
-    initialValues: {
-      id: selectedProjectAdminId,
-      username: selectedProjectAdmin ? selectedProjectAdmin.name : '',
-      projectId: selectedProjectId
-    }
-  }
-  // initialValues: getProjectAdminById(state, getSelectedProjectAdminId(state))
-}
+// const mapStateToProps = (state: any) => {
+//   const selectedProjectAdminId = getSelectedProjectAdminId(state)
+//   const selectedProjectAdmin = getProjectAdminById(state, selectedProjectAdminId)
+//   const selectedProjectId = getSelectedProjectId(state)
+//   return {
+//     initialValues: {
+//       id: selectedProjectAdminId,
+//       username: selectedProjectAdmin ? selectedProjectAdmin.name : '',
+//       projectId: selectedProjectId
+//     }
+//   }
+// }
 
+// export default reduxForm({
+//   form: 'asynchronousBlurValidation',
+//   fields,
+//   asyncValidate,
+//   asyncBlurFields: [ 'username' ],
+//   validate
+// }, mapStateToProps)(AsynchronousBlurValidationForm)
 export default reduxForm({
   form: 'asynchronousBlurValidation',
   fields,
   asyncValidate,
   asyncBlurFields: [ 'username' ],
   validate
-}, mapStateToProps)(AsynchronousBlurValidationForm)
+})(AsynchronousBlurValidationForm)

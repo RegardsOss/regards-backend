@@ -2,11 +2,17 @@
 import * as React from 'react'
 import { PropTypes } from "react"
 import { connect } from 'react-redux';
+// Types
+import { ProjectAdmin } from '../types'
 // Containers
-import UserFormContainer from './UserFormContainer'
+// import UserFormContainer from './UserFormContainer'
 // Components
 import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
-import ProjectAdminsComponent from '../components/ProjectAdminsComponent'
+import UserList from '../../../../common/users/components/UserList'
+import MenuItem from 'material-ui/MenuItem'
+import Build from 'material-ui/svg-icons/action/build'
+import Delete from 'material-ui/svg-icons/action/delete'
+import EditUserDialog from '../../../../common/users/components/EditUserDialog'
 // Actions
 import * as actions from '../actions'
 import * as uiActions from '../../ui/actions'
@@ -21,15 +27,16 @@ interface ProjectAdminsProps {
   activeProjectAdmin?: any,
   projectAdminConfigurationIsShown?: any,
   onUserFormSubmit?: () => void,
+  updateOrCreateProjectAdmin?: (id: string, payload: ProjectAdmin) => void,
   hideProjectAdminConfiguration?: () => void,
   styles?: any,
   project?: any,
   projectAdmins?: Array<any>,
   showProjectAdminConfiguration?: any,
   fetchProjectAdminsBy?: any,
-  handleDelete?:any
+  deleteProjectAdmin?:any,
+  selectedProjectAdminId?: string
 }
-
 
 /**
  * React container to manage ProjectAdminsComponent.
@@ -48,28 +55,59 @@ class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
     }
   }
 
+  state = {
+    dialogOpen: false
+  }
+
+  handleEditClick = (event: Object) => {
+    this.props.showProjectAdminConfiguration(this.props.selectedProjectAdminId)
+  }
+
+  handleDeleteClick = (event: Object) => {
+    this.props.deleteProjectAdmin(this.props.selectedProjectAdminId)
+  }
+
+  handleDialogOpen = () => {
+    this.setState({dialogOpen: true})
+  }
+
+  handleDialogClose = () => {
+    this.setState({dialogOpen: false})
+  }
+
+  handleDialogSave = () => {
+    this.handleDialogClose()
+    this.props.updateOrCreateProjectAdmin('9999', {name: 'Fake Name'})
+  }
+
   render () {
+    const usersListMenuElements = [
+      <MenuItem key={1} primaryText="Edit" leftIcon={<Build />} onTouchTap={this.handleDialogOpen} />,
+      <MenuItem key={2} primaryText="Delete" leftIcon={<Delete />} onTouchTap={this.handleDeleteClick} />
+    ]
+
     return (
       <div>
-        <ProjectAdminsComponent
-          project={this.props.project}
-          projectAdmins={this.props.projectAdmins}
-          onAddClick={this.props.showProjectAdminConfiguration}
-          onConfigureClick={this.props.showProjectAdminConfiguration}
-          onDeleteClick={this.props.handleDelete}
-          styles={this.props.styles} />
-
-        <UserFormContainer
-          show={this.props.projectAdminConfigurationIsShown}
-          handleSubmit={this.props.onUserFormSubmit}
-          onSubmit={this.props.onUserFormSubmit}
-          onCancelClick={this.props.hideProjectAdminConfiguration}
-          styles={this.props.styles} />
-    </div>
+        <UserList
+          subheader='Project administrators'
+          items={this.props.projectAdmins}
+          menuElements={usersListMenuElements}
+          />
+          <EditUserDialog
+            open={this.state.dialogOpen}
+            onClose={this.handleDialogClose}
+            onSave={this.handleDialogSave}
+          />
+      </div>
     )
   }
 }
-
+// <UserFormContainer
+// show={this.props.projectAdminConfigurationIsShown}
+// handleSubmit={this.props.onUserFormSubmit}
+// onSubmit={this.props.onUserFormSubmit}
+// onCancelClick={this.props.hideProjectAdminConfiguration}
+// styles={this.props.styles} />
 const mapStateToProps = (state: any, ownProps: any) => {
   const selectedProjectId = selectors.getSelectedProjectId(state)
   const selectedProject = selectors.getProjectById(state, selectedProjectId)
@@ -78,9 +116,9 @@ const mapStateToProps = (state: any, ownProps: any) => {
   const selectedProjectAdmin = selectors.getProjectAdminById(state, selectedProjectAdminId)
   return {
     project: selectedProject,
-    projectAdmins: projectAdmins,
+    projectAdmins: projectAdmins.items,
     projectAdminConfigurationIsShown: state.adminApp.ui.projectAdminConfigurationIsShown,
-    selectedProjectAdmin: selectedProjectAdmin,
+    selectedProjectAdminId: selectedProjectAdminId,
     styles: getThemeStyles(state.common.theme, 'adminApp/styles')
   }
 }
@@ -91,11 +129,12 @@ const mapDispatchToProps = (dispatch: any) => ({
     dispatch(uiActions.showProjectAdminConfiguration())
   },
   hideProjectAdminConfiguration: () => dispatch(uiActions.hideProjectAdminConfiguration()),
+  updateOrCreateProjectAdmin: (id: string, payload: ProjectAdmin) => dispatch(actions.updateOrCreateProjectAdmin(id, payload)),
   onUserFormSubmit: (e: any) => {
     dispatch(actions.updateOrCreateProjectAdmin(e.id, { name: e.username }))
     dispatch(uiActions.hideProjectAdminConfiguration())
   },
-  handleDelete: (id: string) => {
+  deleteProjectAdmin: (id: string) => {
     dispatch(actions.deleteProjectAdmin(id))
     dispatch(uiActions.hideProjectAdminConfiguration())
   }

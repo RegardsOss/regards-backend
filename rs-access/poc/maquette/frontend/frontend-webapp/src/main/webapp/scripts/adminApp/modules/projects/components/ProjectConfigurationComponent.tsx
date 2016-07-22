@@ -10,8 +10,7 @@ interface ProjectconfigurationTypes {
   onCancelClick: () => void,
   onSaveClick?: ()=> void,
   // submitting: boolean, // Pased by the reduxForm decorator
-  show: boolean,
-  styles: any
+  show: boolean
 }
 
 
@@ -36,11 +35,11 @@ class ProjectConfigurationComponent extends Component<ProjectconfigurationTypes,
             <input type="text" placeholder="Project Name" {...projectName}/>
           </div>
           <div>
-            <button className={styles['button'] + ' ' + styles['success']} disabled={submitting}>
+            <button disabled={submitting}>
               <i className={icons['fi-save']}></i>
               {submitting ? 'Submitting...' : ''} Save
             </button>
-            <button type="button" className={styles['button'] + ' ' + styles['alert']} disabled={submitting} onClick={onCancelClick}>
+            <button type="button" disabled={submitting} onClick={onCancelClick}>
               <i className={icons['fi-prohibited']}></i>
               Cancel
             </button>
