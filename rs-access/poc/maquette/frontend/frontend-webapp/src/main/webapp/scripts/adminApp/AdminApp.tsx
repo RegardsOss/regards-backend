@@ -12,14 +12,10 @@ import ErrorComponent from '../common/components/ApplicationErrorComponent'
 import Layout from '../common/layout/containers/Layout'
 import Home from './modules/home/Home'
 import MenuComponent from './modules/menu/components/MenuComponent'
-
 // Theme
 import ThemeHelper from '../common/theme/ThemeHelper'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import SelectTheme from '../common/theme/containers/SelectTheme'
-// Ui
-import RaisedButton from 'material-ui/RaisedButton'
-
 
 interface AminAppProps {
   router: any,
@@ -45,8 +41,7 @@ class AdminApp extends React.Component<AminAppProps, any> {
   render(){
     const { currentTheme, authentication, content, location, params, onLogout } = this.props
     const muiTheme = ThemeHelper.getByName(currentTheme)
-    // const styles = getThemeStyles(theme, 'adminApp/styles')
-    // const commonStyles = getThemeStyles(theme,'common/common.scss')
+
     if (authentication){
       let authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
       authenticated = authenticated && (authentication.user.name !== undefined) && authentication.user.name !== 'public'
@@ -57,7 +52,7 @@ class AdminApp extends React.Component<AminAppProps, any> {
               <Authentication />
             </div>
           </MuiThemeProvider>
-        );
+        )
       } else {
           return (
             <MuiThemeProvider muiTheme={muiTheme}>
@@ -67,13 +62,13 @@ class AdminApp extends React.Component<AminAppProps, any> {
                   <div key='1'>
                     {content}
                   </div>
-                  <div key='2' style={{backgroundColor:'#FFCA28'}}>
+                  <div key='2'>
                     <SelectTheme/>
                   </div>
                 </Layout>
               </div>
             </MuiThemeProvider>
-          );
+          )
       }
     }
     else {

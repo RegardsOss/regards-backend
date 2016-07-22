@@ -27,7 +27,7 @@ interface Savable {
  *
  * You can also close this dialog by clicking outside the dialog, or with the 'Esc' key.
  */
-class EditUserDialog extends React.Component<Openable & Savable, any> {
+class UserDialog extends React.Component<Openable & Savable, any> {
 
   render() {
     const actions = [
@@ -56,11 +56,11 @@ class EditUserDialog extends React.Component<Openable & Savable, any> {
           <UserForm
             handleSubmit={null} // this.props.onUserFormSubmit
             onSubmit={null} // this.props.onUserFormSubmit
-            onCancelClick={null} // this.props.hideProjectAdminConfiguration
+            onCancelClick={null} 
           />
         </Dialog>
     )
   }
 }
 
-export default EditUserDialog
+export default UserDialog
