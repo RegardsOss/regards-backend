@@ -5,12 +5,16 @@ import { Link } from 'react-router'
 import * as ReactDOM from 'react-dom'
 
 import ApplicationErrorComponent from '../common/components/ApplicationErrorComponent'
-import SelectTheme from '../common/theme/containers/SelectTheme'
 import InstanceComponent from './modules/projects/components/InstanceComponent'
 import ProjectsContainer from './modules/projects/containers/ProjectsContainer'
 import { getThemeStyles } from '../common/theme/ThemeUtils'
 
 import { fetchAuthenticate } from '../common/authentication/AuthenticateActions'
+
+// Theme
+import ThemeHelper from '../common/theme/ThemeHelper'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
+import SelectTheme from '../common/theme/containers/SelectTheme'
 
 interface PortalAppProps {
   // Properties set by react-redux connectiona
@@ -39,6 +43,8 @@ class PortalApp extends React.Component<PortalAppProps, any> {
     // Get theme styles
     const styles = getThemeStyles(theme,'portalApp/styles')
     const commonStyles = getThemeStyles(theme,'common/common.scss')
+    const muiTheme = ThemeHelper.getByName(theme)
+
 
     // if (!authentication || authentication.isFetching === true || !authentication.user || !authentication.user.access_token){
     if (!authentication || !authentication.user){
@@ -52,11 +58,13 @@ class PortalApp extends React.Component<PortalAppProps, any> {
     } else {
       // Else, display the portal
       return (
-        <div className={styles.main}>
-          <InstanceComponent styles={styles}/>
-          <ProjectsContainer styles={styles}/>
-          <SelectTheme />
-        </div>
+        <MuiThemeProvider muiTheme={muiTheme}>
+          <div className={styles.main}>
+            <InstanceComponent styles={styles}/>
+            <ProjectsContainer styles={styles}/>
+            <SelectTheme />
+          </div>
+        </MuiThemeProvider>
       )
     }
   }

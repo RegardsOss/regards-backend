@@ -1,10 +1,9 @@
 /** @module AdminLayout */
 import * as React from 'react'
 import { connect } from 'react-redux'
-import { IndexLink, Link } from 'react-router'
+import { Link } from 'react-router'
 import Drawer from 'material-ui/Drawer'
 import MenuItem from 'material-ui/MenuItem'
-import IconButton from 'material-ui/IconButton'
 import PowerSettingsNew from 'material-ui/svg-icons/action/power-settings-new'
 import Divider from 'material-ui/Divider';
 import Settings from 'material-ui/svg-icons/action/settings'
