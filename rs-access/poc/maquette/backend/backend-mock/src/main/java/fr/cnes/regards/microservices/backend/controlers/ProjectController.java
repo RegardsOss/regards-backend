@@ -6,6 +6,9 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +20,28 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.microservices.backend.pojo.Project;
+import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
+import fr.cnes.regards.microservices.core.auth.ResourceAccess;
+import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 
 @RestController
 @EnableResourceServer
 @RequestMapping("/api")
 public class ProjectController {
+	
+	@Autowired
+	MethodAutorizationService authService_;
+	
+	/**
+	 * Method to iniate REST resources authorizations.
+	 */
+	@PostConstruct
+	public void initAuthorisations() {
+		authService_.setAutorities("/api/project@GET",new RoleAuthority("PUBLIC"));
+		authService_.setAutorities("/api/projects@GET", new RoleAuthority("PUBLIC"));
+	}
 
+	@ResourceAccess
 	@RequestMapping(value="project", method = RequestMethod.GET)
 	public @ResponseBody HttpEntity<Project> getProject(
 			@RequestParam(value = "name", required = true) String pProjectName) {
@@ -31,6 +50,7 @@ public class ProjectController {
 		return new ResponseEntity<Project>(project, HttpStatus.OK);
 	}
 	
+	@ResourceAccess
 	@RequestMapping(value="projects", method = RequestMethod.GET)
     public @ResponseBody HttpEntity<List<Project>> getProjects() {
 		List<Project> projects = new ArrayList<>();
