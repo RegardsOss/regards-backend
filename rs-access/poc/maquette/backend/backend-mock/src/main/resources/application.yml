@@ -1,6 +1,6 @@
 server:
   adress: localhost
-  port: 7777
+  port: 8080
 
 security:
   client: acme
