@@ -28,10 +28,8 @@
     ]
   },
   "dependencies": {
-    "deep-freeze": "0.0.1",
     "foundation-sites": "^6.2.3",
     "isomorphic-fetch": "^2.2.1",
-    "jsdoc": "^3.4.0",
     "lodash": "^4.13.1",
     "react": "^15.0.2",
     "react-dom": "^15.0.2",
@@ -47,6 +45,8 @@
     "stompjs": "^2.3.3"
   },
   "devDependencies": {
+    "deep-freeze": "0.0.1",
+    "jsdoc": "^3.4.0",
     "autoprefixer": "^6.3.6",
     "babel": "^6.5.2",
     "babel-core": "^6.9.0",

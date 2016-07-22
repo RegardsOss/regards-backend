@@ -1,0 +1,33 @@
+server:
+  adress: localhost
+  port: 7777
+
+security:
+  client: acme
+  secret: acmesecret
+
+spring:
+  application:
+    name : backend-mock
+    
+swagger:
+  api:
+    name: backend-mock-api
+
+cloud:
+  config:
+    discovery:
+      enabled: true
+    server:
+      enabled: false
+      name: myconfigserver
+
+eureka:
+  instance:
+    instanceId: ${spring.application.name}:${spring.application.instance_id}:${random.value}
+  client:
+    enabled: false
+    registryFetchIntervalSeconds: 5
+    serviceUrl:
+      defaultZone: http://localhost:9999/eureka/
+ 
