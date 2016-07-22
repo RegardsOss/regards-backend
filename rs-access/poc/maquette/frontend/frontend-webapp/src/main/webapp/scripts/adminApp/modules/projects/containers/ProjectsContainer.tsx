@@ -8,7 +8,6 @@ import { map } from 'lodash'
 // Containers
 import { ProjectAdminsContainer } from '../../projectAdmins'
 // Components
-import ProjectConfigurationComponent from '../components/ProjectConfigurationComponent'
 import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
 import ModuleComponent from '../../../../common/components/ModuleComponent'
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card'
@@ -17,9 +16,10 @@ import RaisedButton from 'material-ui/RaisedButton'
 import SelectField from 'material-ui/SelectField';
 import AddBox from 'material-ui/svg-icons/content/add-box'
 import Delete from 'material-ui/svg-icons/action/delete'
+import Menu from 'material-ui/Menu';
 import MenuItem from 'material-ui/MenuItem'
 import AddProject from '../components/AddProject';
-
+import IconButton from 'material-ui/IconButton'
 // Types
 import { Project } from '../types/ProjectTypes'
 // Actions
@@ -60,31 +60,18 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
   }
 
   render () {
-    const className = classnames(
-      this.props.styles['columns'],
-      this.props.styles['small-4'],
-      this.props.styles['callout'],
-      this.props.styles['custom-callout']
+    const cardTitle = (
+      <div>
+        <span style={{float:'left'}}>Projects</span>
+        <AddProject onSave={this.props.onSave}/>
+      </div>
     )
 
     return (
       <ModuleComponent>
         <Card>
-          <CardTitle title="Projects" />
+          <CardTitle title={cardTitle} />
           <CardText>
-            <ProjectConfigurationComponent
-              show={this.props.projectConfigurationIsShown}
-              handleSubmit={this.props.onSave}
-              onCancelClick={this.props.hideProjectConfiguration} />
-            <div>
-              <AddProject onSave={this.props.onSave}/>
-              <RaisedButton
-                label="Delete"
-                labelPosition="before"
-                secondary={true}
-                icon={<Delete />}
-                onClick={() => this.props.deleteProject(this.props.projectId)} />
-            </div>
             <SelectField
               value={this.props.projectId}
               onChange={(e, index, value) => this.props.selectProject(value)}
@@ -93,8 +80,14 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
                 return <MenuItem key={project.id} value={project.id} primaryText={project.name} />
               })}
             </SelectField>
+            <RaisedButton
+              label="Delete"
+              labelPosition="before"
+              secondary={true}
+              icon={<Delete />}
+              onClick={() => this.props.deleteProject(this.props.projectId)} />
             <AccessRightsComponent dependencies={null}>
-              <ProjectAdminsContainer/>
+              <ProjectAdminsContainer />
             </AccessRightsComponent>
           </CardText>
         </Card>
@@ -102,6 +95,16 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
     )
   }
 }
+
+// <ProjectConfigurationComponent
+//   show={this.props.projectConfigurationIsShown}
+//   handleSubmit={this.props.onSave}
+//   onCancelClick={this.props.hideProjectConfiguration} />
+
+// <IconButton
+// onClick={() => this.props.deleteProject(this.props.projectId)} >
+// <Delete />
+// </IconButton>
 
 // <FlatButton
 //   label="Add"

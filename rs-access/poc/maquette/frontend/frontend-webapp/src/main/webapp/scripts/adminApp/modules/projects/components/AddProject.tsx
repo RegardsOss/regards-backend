@@ -4,6 +4,9 @@ import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 import AddBox from 'material-ui/svg-icons/content/add-box'
+import FloatingActionButton from 'material-ui/FloatingActionButton'
+import ContentAdd from 'material-ui/svg-icons/content/add'
+import IconButton from 'material-ui/IconButton'
 
 /**
  * Dialog with action buttons. The actions are passed in as an array of React objects,
@@ -53,11 +56,11 @@ export default class AddProject extends React.Component<any, any> {
 
     return (
       <div>
-        <RaisedButton
-          label="Add"
+        <FlatButton
           primary={true}
-          icon={<AddBox />}
-          onTouchTap={this.handleOpen} />
+          label="Add"
+          onTouchTap={this.handleOpen}
+          icon={<AddBox />} />
         <Dialog
           title="Add a new project"
           actions={actions}
