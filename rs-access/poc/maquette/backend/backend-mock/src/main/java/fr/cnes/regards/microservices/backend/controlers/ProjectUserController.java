@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.websocket.server.PathParam;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -37,10 +38,9 @@ public class ProjectUserController {
 		authService_.setAutorities("/api/project/users@GET",new RoleAuthority("ADMIN"));
 	}
 
-	@ResourceAccess
-	@RequestMapping(value = "/project/users", method = RequestMethod.GET)
+	@RequestMapping(value = "/project/users/{{project_id}}", method = RequestMethod.GET)
 	public @ResponseBody HttpEntity<List<ProjectUser>> getProjectUsers(
-			@RequestParam(value = "project_id", required = true) Integer project_id) {
+			@PathParam("project_id") Integer project_id) {
 
 		List<ProjectUser> users = new ArrayList<>();
 		users.add(new ProjectUser("Jose"));
