@@ -40,7 +40,7 @@ class AdminApp extends React.Component<AminAppProps, any> {
 
   render(){
     const { theme, authentication, content, location, params, onLogout } = this.props
-    
+
     // Build theme
     const muiTheme = ThemeHelper.getByName(theme)
 
