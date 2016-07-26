@@ -3,21 +3,18 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 
-interface InstacenProps {
-  styles: any
+interface InstanceProps {
 }
 
 
 /**
  * React component to display the Link to the Instance admin application
  */
-class InstanceComponent extends React.Component<InstacenProps, any> {
+class InstanceComponent extends React.Component<InstanceProps, any> {
 
   render(){
-    // styles props is passed throught the react component creation
-    const { styles } = this.props
     return (
-      <div className={styles["instance-link"]}>
+      <div>
         Accès direct à l'ihm d'administration de l'instance :
         <Link to={"/admin/instance"}>ihm admin instance</Link><br/>
       </div>

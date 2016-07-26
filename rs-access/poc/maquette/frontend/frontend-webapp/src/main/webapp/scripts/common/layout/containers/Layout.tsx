@@ -3,6 +3,9 @@ import { connect } from 'react-redux'
 import * as _ from 'lodash'
 import * as actions from '../actions'
 
+import 'react-grid-layout/css/styles.css'
+import 'react-resizable/css/styles.css'
+
 var WidthProvider = require('react-grid-layout').WidthProvider
 var ResponsiveReactGridLayout = require('react-grid-layout').Responsive
 ResponsiveReactGridLayout = WidthProvider(ResponsiveReactGridLayout)
@@ -16,7 +19,7 @@ class Layout extends React.Component<LayoutProps, any> {
   constructor() {
     super()
     this.onLayoutChange = this.onLayoutChange.bind(this)
-    // this.state = { layouts: props.layouts }
+    this.state = { margin: 10 }
   }
 
   onLayoutChange(layout:any, layouts:any) {
@@ -31,6 +34,7 @@ class Layout extends React.Component<LayoutProps, any> {
         className='layout'
         cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}
         rowHeight={30}
+        margin={[this.state.margin, this.state.margin]}
         style={{
           backgroundColor:'#00bcd4',
           position: 'absolute',
@@ -39,8 +43,8 @@ class Layout extends React.Component<LayoutProps, any> {
         }}
         layouts={this.props.layout}
         onLayoutChange={this.onLayoutChange}
-        isDraggable={true}
-        isResizable={true}
+        isDraggable={false}
+        isResizable={false}
         {...this.props}
         >
         {this.props.children}

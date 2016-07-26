@@ -31,11 +31,9 @@ class PluginContainer extends React.Component<PluginProps, any> {
   }
 }
 
-const mapStateToProps = ( state:any ) => {
-  return {
-    plugins: state.common.plugins.items
-  }
-}
+const mapStateToProps = ( state:any ) => ({
+  plugins: state.common.plugins.items
+})
 
 const pluginConnected = connect<{}, {}, PluginContainer>(mapStateToProps)(PluginContainer)
 export default pluginConnected

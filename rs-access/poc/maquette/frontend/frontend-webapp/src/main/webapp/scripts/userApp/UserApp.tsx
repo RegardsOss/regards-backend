@@ -2,7 +2,6 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 
 import { fetchPlugins } from '../common/plugins/PluginsActions'
-import { setTheme } from '../common/theme/actions/ThemeActions'
 import Layout from './modules/layout/Layout'
 import TestContainer from './modules/test/TestContainer'
 
@@ -16,7 +15,6 @@ import SelectTheme from '../common/theme/containers/SelectTheme'
 interface UserAppProps {
   plugins: PluginsStore,
   params:any,
-  initTheme: (theme:string) => void,
   fetchPlugins: () => void,
   location: any,
   content:any,
@@ -26,9 +24,6 @@ interface UserAppProps {
 class UserApp extends React.Component<UserAppProps, any> {
 
   componentWillMount(){
-    // Get project from params from react router. project param is the ":project" in userApp route
-    // See routes.js
-    const themeToSet = this.props.params.project
     // Plugins are set to the container props by react-redux connect.
     // See method mapStateToProps of this container
     const { plugins } = this.props
@@ -80,8 +75,7 @@ const mapStateToProps = (state:any) => ({
 })
 // Add functions dependending on store dispatch to container props.
 const mapDispatchToProps = (dispatch: any) => ({
-  fetchPlugins : () => dispatch(fetchPlugins()),
-  // initTheme : (theme:string) => dispatch(setTheme(theme))
+  fetchPlugins : () => dispatch(fetchPlugins())
 })
 const userAppConnected = connect<{}, {}, UserAppProps>(mapStateToProps,mapDispatchToProps)(UserApp)
 export default userAppConnected

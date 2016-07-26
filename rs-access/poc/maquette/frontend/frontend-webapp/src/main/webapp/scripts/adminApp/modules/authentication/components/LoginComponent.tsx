@@ -2,14 +2,12 @@
 import * as React from 'react';
 
 export interface LoginProps {
-  styles: Object,
   onLogin: (username: string, password: string) => void,
   errorMessage: string
 }
 
 /**
  * React component for login form in administration application
- * @prop {Object} styles
  * @prop {Function} onLogin Callback for on login action
  * @prop {String} errorMessage Error message to display
  */
@@ -28,8 +26,6 @@ class LoginComponent extends React.Component<LoginProps,any> {
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
-
-
   /**
    * handleKeyPress - Handle 'Enter' key press to validate form
    *
@@ -43,10 +39,9 @@ class LoginComponent extends React.Component<LoginProps,any> {
   }
 
   render(){
-    const { styles } : any = this.props
     return (
-      <div className={styles["login-modal"]} onKeyDown={this.handleKeyPress}>
-        <p className={styles["login-error"]}>{this.props.errorMessage}</p>
+      <div onKeyDown={this.handleKeyPress}>
+        <p>{this.props.errorMessage}</p>
         <label htmlFor="username" >Username</label>
         <input type='text' onChange={(event: React.FormEvent) => {
           this.setState({ "username" :(event.target as any).value})
@@ -55,7 +50,7 @@ class LoginComponent extends React.Component<LoginProps,any> {
         <input type="password" onChange={(event: React.FormEvent) => {
           this.setState({"password": (event.target as any).value})
         }}/>
-        <button className={styles.button} onClick={() => {
+        <button onClick={() => {
             this.props.onLogin(this.state.username,this.state.password);
           }}>Log in</button>
       </div>

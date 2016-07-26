@@ -1,4 +1,3 @@
-
 // Webpack configuration file
 
 const path = require('path')
@@ -6,13 +5,6 @@ const webpack = require('webpack')
 const autoprefixer = require('autoprefixer')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
-const sassLoaders = [
-  // Loader to generate react modules css classes
-  //'css?modules&importLoaders=1&localIdentName=[path]___[name]__[local]___[hash:base64:5]',
-  'css?modules&importLoaders=1&localIdentName=[path]_[name]_[local]',
-  // Loader to compile sasss files to css files
-  'sass?sourceMap'
-]
 
 module.exports = {
   // Hide stats information from children during webpack compilation
@@ -32,7 +24,7 @@ module.exports = {
   resolve: {
     // Automaticly get extensions files from javascript code with import or require.
     // exemple require('main') look for main, main.js or main.sass with our configuration
-    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js", '.scss'],
+    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
     // Root directories from wich requires are made
     root: [
       path.join(__dirname,"scripts"),
@@ -53,16 +45,9 @@ module.exports = {
         loader: 'babel',
         query: {
           presets: ['es2015', 'react'],
-          // This plugin allows Babel to transform rest properties for object
-          // destructuring assignment and spread properties for object literals.
-          // Allow use of syntax {...object} from ES7
-          plugins: ["transform-object-rest-spread"]
         }
       },
-      // Sass files compilation to css with css modules enable
-      {test: /\.scss$/, exclude: [/node_modules/,/scripts/,/stylesheets\/default/,/stylesheets\/vendors/],
-        loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
-      },
+      {test: /\.css$/, loader:  ExtractTextPlugin.extract("style-loader", "css-loader") },
       {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"},
       {test: /\.jpg$/, exclude: [/node_modules/], loader: "file-loader"},
       {test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?name=/img/[name].[ext]&limit=10000&minetype=application/font-woff" },

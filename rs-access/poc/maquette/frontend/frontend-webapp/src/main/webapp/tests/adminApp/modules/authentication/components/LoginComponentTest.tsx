@@ -8,19 +8,14 @@ import LoginComponent from '../../../../../scripts/adminApp/modules/authenticati
 describe('[ADMIN APP] Testing login component', () => {
   it('Should render correctly the login component', () => {
     const onLogin = (username:string, password:string) => { };
-    const loginStyles:any = {
-      "login-modal": 'login-modal',
-      "login-error": "login-error"
-    };
     let props = {
       onLogin: onLogin,
-      errorMessage: '',
-      styles: loginStyles
+      errorMessage: ''
     };
 
     const wrapper = shallow(<LoginComponent {...props}/>);
-    expect(wrapper.find("div .login-modal")).to.have.length(1);
-    expect(wrapper.find("div .login-error")).to.have.length(1);
+    expect(wrapper.find("div")).to.have.length(1);
+    expect(wrapper.find("p")).to.have.length(1);
     expect(wrapper.find("input[type='text']")).to.have.length(1);
     expect(wrapper.find("input[type='password']")).to.have.length(1);
     expect(wrapper.find("button")).to.have.length(1);
@@ -35,14 +30,9 @@ describe('[ADMIN APP] Testing login component', () => {
       expect(password).to.equal("test_password");
     };
     const handleKeyPress = () => { };
-    const loginStyles = {
-      "login-modal": 'login-modal',
-      "login-error": "login-error"
-    };
     let props = {
       onLogin: onLogin,
-      errorMessage: '',
-      styles: loginStyles
+      errorMessage: ''
     };
 
     const wrapper = shallow(<LoginComponent {...props}/>);

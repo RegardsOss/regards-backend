@@ -14,10 +14,6 @@ describe('[PORTAL APP] Testing projects components', () => {
   it('Should render correctly the loading projects message', () => {
     const dispatch = () => { };
     const onLoad = () => { };
-    const projectsStyles = {
-      link: 'link',
-      projectlink: 'projectlink'
-    };
     const projects:ProjectsStore = {
       isFetching: true,
       items: [],
@@ -25,7 +21,6 @@ describe('[PORTAL APP] Testing projects components', () => {
     }
     let props = {
       projects,
-      styles: projectsStyles,
       dispatch :dispatch,
       onLoad: onLoad
     };
@@ -36,10 +31,6 @@ describe('[PORTAL APP] Testing projects components', () => {
   it('Should render correctly the projects list', () => {
     const dispatch = () => { };
     const onLoad = () => { };
-    const projectsStyles = {
-      link: 'link',
-      projectlink: 'projectlink'
-    };
     const projects:ProjectsStore = {
       isFetching: false,
       items: [{name: 'cdpp'},{name: 'ssalto'}],
@@ -48,7 +39,6 @@ describe('[PORTAL APP] Testing projects components', () => {
 
     let props = {
       projects,
-      styles: projectsStyles,
       dispatch :dispatch,
       onLoad : onLoad
     };
@@ -57,8 +47,8 @@ describe('[PORTAL APP] Testing projects components', () => {
       <div>
         <p>Available projects on REGARDS instance :</p>
         <ul>
-            <ProjectComponent key="cdpp" project={{name: 'cdpp'}} styles={projectsStyles}/>
-            <ProjectComponent key= "ssalto" project={{name: 'ssalto'}} styles={projectsStyles}/>
+            <ProjectComponent key="cdpp" project={{name: 'cdpp'}} />
+            <ProjectComponent key= "ssalto" project={{name: 'ssalto'}} />
         </ul>
       </div>
     );
@@ -67,20 +57,15 @@ describe('[PORTAL APP] Testing projects components', () => {
   });
 
   it('Should render correctly a project link', () => {
-    const projectsStyles = {
-      link: 'link',
-      "project-link": 'project-link'
-    };
     let props = {
-      styles: projectsStyles,
       project: {name: 'cdpp'}
     };
 
     const result = (
-      <li className="link">
+      <li>
         <p>cdpp</p>
-          <Link to="/user/cdpp" className="project-link">ihm user</Link>
-          <Link to="/admin/cdpp" className="project-link">ihm admin</Link>
+        <Link to="/user/cdpp">ihm user</Link>
+        <Link to="/admin/cdpp">ihm admin</Link>
       </li>
     )
     const wrapper = shallow(<ProjectComponent {...props}/>);

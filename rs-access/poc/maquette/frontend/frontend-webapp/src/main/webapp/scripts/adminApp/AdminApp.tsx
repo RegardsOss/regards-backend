@@ -4,9 +4,9 @@ import { connect } from 'react-redux'
 import * as ReactDOM from 'react-dom'
 
 import { logout } from '../common/authentication/AuthenticateActions'
-import { getThemeStyles } from '../common/theme/ThemeUtils'
 import Authentication from './modules/authentication/containers/AuthenticationContainer'
 import { AuthenticationType } from '../common/authentication/AuthenticationTypes'
+import { isAuthenticated } from '../common/authentication/AuthenticateUtils'
 
 import ErrorComponent from '../common/components/ApplicationErrorComponent'
 import Layout from '../common/layout/containers/Layout'
@@ -44,33 +44,24 @@ class AdminApp extends React.Component<AminAppProps, any> {
     // Build theme
     const muiTheme = ThemeHelper.getByName(theme)
 
-    if (authentication){
-      let authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
-      authenticated = authenticated && (authentication.user.name !== undefined) && authentication.user.name !== 'public'
-      if (authenticated === false){
-        return (
-          <MuiThemeProvider muiTheme={muiTheme}>
-            <Authentication />
-          </MuiThemeProvider>
-        )
-      } else {
-          return (
-            <MuiThemeProvider muiTheme={muiTheme}>
-              <div>
-                <MenuComponent />
-                <Layout>
-                  <div key='1'>{content}</div>
-                  <div key='2'><SelectTheme/></div>
-                </Layout>
-              </div>
-            </MuiThemeProvider>
-          )
-      }
-    }
-    else {
+    // Authentication
+    const authenticated = isAuthenticated(authentication)
+    if (authenticated === false){
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
-          <ErrorComponent />
+          <Authentication />
+        </MuiThemeProvider>
+      )
+    } else {
+      return (
+        <MuiThemeProvider muiTheme={muiTheme}>
+          <div>
+            <MenuComponent />
+            <Layout>
+              <div key='1'>{content}</div>
+              <div key='2'><SelectTheme/></div>
+            </Layout>
+          </div>
         </MuiThemeProvider>
       )
     }

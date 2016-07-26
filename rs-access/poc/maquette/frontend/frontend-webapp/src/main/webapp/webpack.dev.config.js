@@ -1,4 +1,3 @@
-
 // Webpack configuration file
 
 const path = require('path')
@@ -6,14 +5,6 @@ const webpack = require('webpack')
 const autoprefixer = require('autoprefixer')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
-const sassLoaders = [
-  // Loader to generate react modules css classes
-  //'css?modules&importLoaders=1&localIdentName=[path]___[name]__[local]___[hash:base64:5]',
-  'css?modules&importLoaders=1&localIdentName=[path]_[name]_[local]',
-  // Loader to compile sasss files to css files
-  //'sass-loader?indentedSyntax=sass&includePaths[]=' + path.resolve(__dirname, 'steelsheets')
-  'sass?sourceMap'
-]
 
 module.exports = {
   // Hide stats information from children during webpack compilation
@@ -67,7 +58,7 @@ module.exports = {
     // Automaticly get extensions files from javascript code with import or require.
     // exemple require('main') look for main, main.js or main.sass with our configuration
     // extensions: ['', '.js', '.scss'],
-    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js", '.scss'],
+    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
     // Root directories from wich requires are made
     root: [
       path.join(__dirname,"scripts"),
@@ -90,12 +81,7 @@ module.exports = {
           presets: ['es2015', 'react'],
         }
       },
-      // Sass files compilation to css with css modules enable
-      {
-        test: /\.scss$/,
-        exclude: [/node_modules/,/scripts/,/stylesheets\/default/,/stylesheets\/vendors/],
-        loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
-      },
+      {test: /\.css$/, loader:  ExtractTextPlugin.extract("style-loader", "css-loader") },
       {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"},
       {test: /\.jpg$/, exclude: [/node_modules/], loader: "file-loader?name=/img/[name].[ext]"},
       {test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?name=/img/[name].[ext]&limit=10000&minetype=application/font-woff" },

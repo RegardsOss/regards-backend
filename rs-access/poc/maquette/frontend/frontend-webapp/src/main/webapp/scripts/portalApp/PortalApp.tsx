@@ -7,8 +7,6 @@ import * as ReactDOM from 'react-dom'
 import ApplicationErrorComponent from '../common/components/ApplicationErrorComponent'
 import InstanceComponent from './modules/projects/components/InstanceComponent'
 import ProjectsContainer from './modules/projects/containers/ProjectsContainer'
-import { getThemeStyles } from '../common/theme/ThemeUtils'
-
 import { fetchAuthenticate } from '../common/authentication/AuthenticateActions'
 
 // Theme
@@ -40,9 +38,7 @@ class PortalApp extends React.Component<PortalAppProps, any> {
     // authentication and theme are set in this container props by react-redux coonect.
     // See method mapStateToProps
     const { authentication, theme } = this.props
-    // Get theme styles
-    const styles = getThemeStyles('cdpp','portalApp/styles')
-    const commonStyles = getThemeStyles('cdpp','common/common.scss')
+
     // Build theme
     const muiTheme = ThemeHelper.getByName(theme)
 
@@ -67,9 +63,9 @@ class PortalApp extends React.Component<PortalAppProps, any> {
       // Else, display the portal
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
-          <div className={styles.main}>
-            <InstanceComponent styles={styles}/>
-            <ProjectsContainer styles={styles}/>
+          <div>
+            <InstanceComponent />
+            <ProjectsContainer />
             <SelectTheme />
           </div>
         </MuiThemeProvider>

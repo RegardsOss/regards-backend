@@ -2,11 +2,9 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 import { connectTime, disconnectTime } from '../actions/WSTimeActions'
 import { startTimeWebSocket } from '../actions/TimeActions'
-import { getThemeStyles } from '../../../../common/theme/ThemeUtils'
 import Time from '../components/TimeComponent'
 
 interface TimeProps {
-  theme?: string,
   time?: any,
   started?: boolean,
   webSocketConnect?: any,
@@ -33,30 +31,23 @@ class TimeContainer extends React.Component<TimeProps, any> {
 
   render(){
     // Render time
-    const styles = getThemeStyles(this.props.theme,'userApp/base')
     if (this.props.started === true){
       return (
-        <Time styles={styles}
-          time={this.props.time}/>
+        <Time time={this.props.time}/>
       )
     }
     return null
   }
 }
 
-const mapDispatchToProps = (dispatch:any) => {
-  return {
-    webSocketConnect: () => dispatch(connectTime()),
-    webSocketDisconnect: (sock:any) => dispatch(disconnectTime(sock)),
-    startTime: () => dispatch(startTimeWebSocket())
-  }
-}
-const mapStateToProps = (state:any) => {
-  return {
-    theme: state.common.theme,
-    time: state.userApp.ws.time,
-    started: state.userApp.ws.started
-  }
-}
+const mapDispatchToProps = (dispatch:any) => ({
+  webSocketConnect: () => dispatch(connectTime()),
+  webSocketDisconnect: (sock:any) => dispatch(disconnectTime(sock)),
+  startTime: () => dispatch(startTimeWebSocket())
+})
+const mapStateToProps = (state:any) => ({
+  time: state.userApp.ws.time,
+  started: state.userApp.ws.started
+})
 const timeConnected = connect<{}, {}, TimeProps>(mapStateToProps,mapDispatchToProps)(TimeContainer)
 export default timeConnected

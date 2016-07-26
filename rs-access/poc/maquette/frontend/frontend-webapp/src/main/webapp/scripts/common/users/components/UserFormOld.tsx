@@ -11,7 +11,6 @@ import * as React from 'react'
 import { Component, PropTypes } from 'react'
 import { reduxForm, ReduxFormProps } from 'redux-form'
 export const fields = [ 'id', 'projectId', 'username', 'password', 'passwordConfirm']
-// var icons = require('../../../../../stylesheets/foundation-icons/foundation-icons.scss')
 // Selectors
 // import {
 //   getSelectedProjectAdminId,
@@ -77,7 +76,6 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
       submitting,
       show,
       onCancelClick,
-      // styles
     }: any = this.props
 
     if(show)
@@ -114,14 +112,12 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
           <div>
             <button
               type="submit"
-              // className={styles['button'] + ' ' + styles['success']}
               disabled={submitting}>
               <i className={null}></i>
               {submitting ? 'Submitting...' : ''} Save
             </button>
             <button
               type="button"
-              // className={styles['button'] + ' ' + styles['alert']}
               disabled={submitting} onClick={onCancelClick}>
               <i className={null}></i>
               Cancel

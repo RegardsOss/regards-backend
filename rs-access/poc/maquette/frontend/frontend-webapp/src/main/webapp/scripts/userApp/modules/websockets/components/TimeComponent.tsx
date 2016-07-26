@@ -6,7 +6,7 @@ class Time extends React.Component<any, any> {
   }
   render(){
     return (
-      <div class={this.props.styles.timer}>
+      <div>
         {this.props.time}
       </div>
     )
