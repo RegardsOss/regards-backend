@@ -41,20 +41,28 @@ class PortalApp extends React.Component<PortalAppProps, any> {
     // See method mapStateToProps
     const { authentication, theme } = this.props
     // Get theme styles
-    const styles = getThemeStyles(theme,'portalApp/styles')
-    const commonStyles = getThemeStyles(theme,'common/common.scss')
+    const styles = getThemeStyles('cdpp','portalApp/styles')
+    const commonStyles = getThemeStyles('cdpp','common/common.scss')
+    // Build theme
     const muiTheme = ThemeHelper.getByName(theme)
-
 
     // if (!authentication || authentication.isFetching === true || !authentication.user || !authentication.user.access_token){
     if (!authentication || !authentication.user){
       // If no user connected, display the error component
-      return <ApplicationErrorComponent />
+      return (
+        <MuiThemeProvider muiTheme={muiTheme}>
+          <ApplicationErrorComponent />
+        </MuiThemeProvider>
+      )
     } else if (this.props.children){
       // If a children of this container is defined display it.
       // The children is set by react-router if any child route is reached.
       // The possible children of portal are define in the main routes.js.
-      return (<div>{this.props.children}</div>)
+      return (
+        <MuiThemeProvider muiTheme={muiTheme}>
+          {this.props.children}
+        </MuiThemeProvider>
+      )
     } else {
       // Else, display the portal
       return (
@@ -72,6 +80,7 @@ class PortalApp extends React.Component<PortalAppProps, any> {
 
 // Add props from store to the container props
 const mapStateToProps = (state:any) => ({
+  theme: state.common.themes.selected,
   authentication: state.common.authentication
 })
 // Add functions dependending on store dispatch to container props.

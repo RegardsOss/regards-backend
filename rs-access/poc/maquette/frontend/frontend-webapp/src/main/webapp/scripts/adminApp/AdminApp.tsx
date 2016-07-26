@@ -21,7 +21,7 @@ interface AminAppProps {
   router: any,
   route : any,
   params: any,
-  currentTheme: string,
+  theme: string,
   authentication: AuthenticationType,
   content: any,
   location: any,
@@ -39,8 +39,10 @@ class AdminApp extends React.Component<AminAppProps, any> {
   }
 
   render(){
-    const { currentTheme, authentication, content, location, params, onLogout } = this.props
-    const muiTheme = ThemeHelper.getByName(currentTheme)
+    const { theme, authentication, content, location, params, onLogout } = this.props
+    
+    // Build theme
+    const muiTheme = ThemeHelper.getByName(theme)
 
     if (authentication){
       let authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
@@ -48,9 +50,7 @@ class AdminApp extends React.Component<AminAppProps, any> {
       if (authenticated === false){
         return (
           <MuiThemeProvider muiTheme={muiTheme}>
-            <div>
-              <Authentication />
-            </div>
+            <Authentication />
           </MuiThemeProvider>
         )
       } else {
@@ -59,12 +59,8 @@ class AdminApp extends React.Component<AminAppProps, any> {
               <div>
                 <MenuComponent />
                 <Layout>
-                  <div key='1'>
-                    {content}
-                  </div>
-                  <div key='2'>
-                    <SelectTheme/>
-                  </div>
+                  <div key='1'>{content}</div>
+                  <div key='2'><SelectTheme/></div>
                 </Layout>
               </div>
             </MuiThemeProvider>
@@ -72,14 +68,18 @@ class AdminApp extends React.Component<AminAppProps, any> {
       }
     }
     else {
-      return <ErrorComponent />
+      return (
+        <MuiThemeProvider muiTheme={muiTheme}>
+          <ErrorComponent />
+        </MuiThemeProvider>
+      )
     }
   }
 }
 
 // Add theme from store to the component props
 const mapStateToProps = (state: any) => ({
-  currentTheme: state.common.themes.selected,
+  theme: state.common.themes.selected,
   authentication: state.common.authentication
 })
 const mapDispatchToProps = (dispatch: any) => ({

@@ -8,13 +8,19 @@ import TestContainer from './modules/test/TestContainer'
 
 import { PluginsStore } from '../common/plugins/PluginTypes'
 
+// Theme
+import ThemeHelper from '../common/theme/ThemeHelper'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
+import SelectTheme from '../common/theme/containers/SelectTheme'
+
 interface UserAppProps {
   plugins: PluginsStore,
   params:any,
   initTheme: (theme:string) => void,
   fetchPlugins: () => void,
   location: any,
-  content:any
+  content:any,
+  theme: string
 }
 
 class UserApp extends React.Component<UserAppProps, any> {
@@ -28,7 +34,7 @@ class UserApp extends React.Component<UserAppProps, any> {
     const { plugins } = this.props
     // initTheme method is set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
-    this.props.initTheme(themeToSet)
+    // this.props.initTheme(themeToSet)
 
     if (!plugins || !plugins.items || plugins.items.length === 0){
       // fetchPlugins method is set to the container props by react-redux connect.
@@ -39,32 +45,43 @@ class UserApp extends React.Component<UserAppProps, any> {
 
   render(){
     // Location ,params and content are set in this container props by react-router
-    const { location, params, content } = this.props
+    const { location, params, content, theme } = this.props
     const { project } = params
 
-    if (!content){
+    // Build theme
+    const muiTheme = ThemeHelper.getByName(theme)
+
+    if (content){
       return (
-        <Layout location={location} project={project} >
-          <TestContainer />
-        </Layout>
+        <MuiThemeProvider muiTheme={muiTheme}>
+          <Layout location={location} project={project} >
+            <TestContainer />
+          </Layout>
+        </MuiThemeProvider>
        )
     } else {
-      return (<Layout location={location} project={project}>{this.props.content}</Layout>)
+      return (
+        <MuiThemeProvider muiTheme={muiTheme}>
+          <div>
+            <SelectTheme />
+            <Layout location={location} project={project}>
+              {this.props.content}
+            </Layout>
+          </div>
+        </MuiThemeProvider>
+      )
     }
   }
 }
 
+const mapStateToProps = (state:any) => ({
+  theme: state.common.themes.selected,
+  plugins: state.plugins
+})
 // Add functions dependending on store dispatch to container props.
-const mapDispatchToProps = (dispatch: any) => {
-  return {
-    fetchPlugins : () => dispatch(fetchPlugins()),
-    initTheme : (theme:string) => dispatch(setTheme(theme))
-  }
-}
-const mapStateToProps = (state:any) => {
-  return {
-    plugins: state.plugins
-  }
-}
+const mapDispatchToProps = (dispatch: any) => ({
+  fetchPlugins : () => dispatch(fetchPlugins()),
+  // initTheme : (theme:string) => dispatch(setTheme(theme))
+})
 const userAppConnected = connect<{}, {}, UserAppProps>(mapStateToProps,mapDispatchToProps)(UserApp)
 export default userAppConnected
