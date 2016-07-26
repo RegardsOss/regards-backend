@@ -7,13 +7,12 @@ import { logout } from '../common/authentication/AuthenticateActions'
 import { getThemeStyles } from '../common/theme/ThemeUtils'
 import Authentication from './modules/authentication/containers/AuthenticationContainer'
 import { AuthenticationType } from '../common/authentication/AuthenticationTypes'
+import { isAuthenticated } from '../common/authentication/AuthenticateUtils'
 
 import ErrorComponent from '../common/components/ApplicationErrorComponent'
 import Layout from '../common/layout/containers/Layout'
 import Home from './modules/home/Home'
 import MenuComponent from './modules/menu/components/MenuComponent'
-// Theme
-//
 // Theme
 import AppBar from 'material-ui/AppBar';
 import RaisedButton from 'material-ui/RaisedButton'
