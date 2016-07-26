@@ -1,10 +1,11 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
-import { forEach } from 'lodash'
+import { map, keys } from 'lodash'
 import { setTheme } from '../actions/ThemeActions'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
-import {Card, CardText} from 'material-ui/Card';
+import {Card, CardText} from 'material-ui/Card'
+import ThemeHelper from '../ThemeHelper'
 
 class SelectTheme extends React.Component<any, any> {
 
@@ -19,8 +20,10 @@ class SelectTheme extends React.Component<any, any> {
   }
 
   render() {
-    const items = this.props.themes.map((theme: any) => {
-      return <MenuItem value={theme} key={theme} primaryText={theme} />
+    const themes = ThemeHelper.getThemes()
+    const themeNames = keys(themes)
+    const items = map(themeNames, (themeName: string) => {
+      return <MenuItem value={themeName} key={themeName} primaryText={themeName} />
     })
 
     return (
@@ -39,7 +42,7 @@ class SelectTheme extends React.Component<any, any> {
 }
 
 const mapStateToProps = (state: any) => ({
-  themes: state.common.themes.items,
+  // themes: state.common.themes.items,
   currentTheme: state.common.themes.selected
 })
 const mapDispatchToProps = (dispatch: any) => ({
