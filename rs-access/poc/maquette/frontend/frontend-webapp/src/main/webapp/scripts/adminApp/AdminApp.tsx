@@ -4,15 +4,25 @@ import { connect } from 'react-redux'
 import * as ReactDOM from 'react-dom'
 
 import { logout } from '../common/authentication/AuthenticateActions'
+import { getThemeStyles } from '../common/theme/ThemeUtils'
 import Authentication from './modules/authentication/containers/AuthenticationContainer'
 import { AuthenticationType } from '../common/authentication/AuthenticationTypes'
-import { isAuthenticated } from '../common/authentication/AuthenticateUtils'
 
 import ErrorComponent from '../common/components/ApplicationErrorComponent'
 import Layout from '../common/layout/containers/Layout'
 import Home from './modules/home/Home'
 import MenuComponent from './modules/menu/components/MenuComponent'
 // Theme
+//
+// Theme
+import AppBar from 'material-ui/AppBar';
+import RaisedButton from 'material-ui/RaisedButton'
+import IconMenu from 'material-ui/IconMenu';
+import MenuItem from 'material-ui/MenuItem';
+import FlatButton from 'material-ui/FlatButton';
+import IconButton from 'material-ui/IconButton';
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+
 import ThemeHelper from '../common/theme/ThemeHelper'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import SelectTheme from '../common/theme/containers/SelectTheme'
@@ -56,10 +66,34 @@ class AdminApp extends React.Component<AminAppProps, any> {
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
           <div>
-            <MenuComponent />
+            <AppBar key='0'
+              title="Regards admin dashboard"
+              iconElementRight={
+                <div>
+                  <IconMenu
+                    iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+                    anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+                    targetOrigin={{horizontal: 'left', vertical: 'top'}}
+                  >
+                    <MenuItem primaryText="Refresh" />
+                    <MenuItem primaryText="Send feedback" />
+                    <MenuItem primaryText="Settings" />
+                    <MenuItem primaryText="Help" />
+                    <MenuItem primaryText="Sign out" />
+                  </IconMenu>
+                </div>
+              }
+              />
+              <MenuComponent />
             <Layout>
-              <div key='1'>{content}</div>
-              <div key='2'><SelectTheme/></div>
+              <div key='1' style={{backgroundColor:'#ff4081',height: '100%'}}>
+                <RaisedButton label="Click!" />
+                  <SelectTheme/>
+              </div>
+
+              <div key='2' style={{backgroundColor:'#FFCA28'}}>
+                {content}
+              </div>
             </Layout>
           </div>
         </MuiThemeProvider>
@@ -76,4 +110,4 @@ const mapStateToProps = (state: any) => ({
 const mapDispatchToProps = (dispatch: any) => ({
   onLogout: () => {dispatch(logout())}
 })
-export default connect<{}, {}, AminAppProps>(mapStateToProps,mapDispatchToProps)(AdminApp)
+export default connect<{}, {}, AminAppProps>(mapStateToProps, mapDispatchToProps)(AdminApp)

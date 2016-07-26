@@ -1,4 +1,5 @@
 import { homeRoutes } from './modules/home/routes'
+import { testRoutes } from './modules/test/routes'
 import { projectsRoutes } from './modules/projects/routes'
 import AdminApp from './AdminApp'
 
@@ -10,7 +11,8 @@ export const adminAppRoutes:PlainRoute = {
   path:"admin/:project",
   childRoutes: [
     homeRoutes,
-    projectsRoutes
+    projectsRoutes,
+    projectUsersRoutes
   ],
   getComponent(nextState:any, cb:any) {
     require.ensure([], (require:any) => {

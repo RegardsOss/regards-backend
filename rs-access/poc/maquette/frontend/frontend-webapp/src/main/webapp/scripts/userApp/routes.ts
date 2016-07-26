@@ -7,16 +7,16 @@ import { PlainRoute } from 'react-router'
 
 declare var require: any;
 
-export const userAppRoutes:PlainRoute = {
-  path:"user/:project",
-  childRoutes: [
-    pluginRoutes,
-    testRoutes,
-    websocketsRoutes
-  ],
-  getComponent(nextState:any, cb:any) {
-    require.ensure([], (require:any) => {
-      cb(null, UserApp)
-    })
-  }
+export const userAppRoutes: PlainRoute = {
+    path: 'user/:project',
+    childRoutes: [
+        pluginRoutes,
+        testRoutes,
+        websocketsRoutes
+    ],
+    getComponent(nextState: any, cb: any) {
+        require.ensure([], (require: any) => {
+            cb(null, UserApp)
+        })
+    }
 }
