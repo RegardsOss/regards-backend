@@ -8,7 +8,6 @@ import { FormattedMessage, intlShape } from 'react-intl'
 import I18nProvider from '../../../../common/i18n/I18nProvider'
 import { ProjectAdminsContainer } from '../../projectAdmins'
 // Components
-import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
 import ModuleComponent from '../../../../common/components/ModuleComponent'
 import {Card, CardTitle, CardText} from 'material-ui/Card'
 import RaisedButton from 'material-ui/RaisedButton'
@@ -95,9 +94,7 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
               secondary={true}
               icon={<Delete />}
               onClick={this.handleDelete} />
-            <AccessRightsComponent dependencies={null}>
               <ProjectAdminsContainer />
-            </AccessRightsComponent>
           </CardText>
         </Card>
       </ModuleComponent>

@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 
-import AccessRightsComponent from '../../../common/access-rights/AccessRightsComponent'
 import NavigationContainer from './containers/NavigationContainer'
 
 interface LayoutProps {
@@ -17,9 +16,7 @@ class Layout extends React.Component<LayoutProps, any> {
         <div className="header">
           <h1> Test Application {this.props.project} </h1>
         </div>
-        <AccessRightsComponent dependencies={null}>
-          <NavigationContainer project={this.props.project} location={this.props.location}/>
-        </AccessRightsComponent>
+        <NavigationContainer project={this.props.project} location={this.props.location}/>
         <div>
           {this.props.children}
         </div>

@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
-import AccessRightsComponent from '../../../common/access-rights/AccessRightsComponent'
 import PluginComponent from '../../../common/plugins/PluginComponent'
 
 import { PluginType } from '../../../common/plugins/PluginTypes'

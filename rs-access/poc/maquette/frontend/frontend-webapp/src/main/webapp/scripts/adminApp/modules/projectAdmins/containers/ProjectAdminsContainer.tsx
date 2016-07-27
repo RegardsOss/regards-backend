@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 // Types
 import { ProjectAdmin } from '../types'
 // Components
-import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
 import UserList from '../../../../common/users/components/UserList'
 import MenuItem from 'material-ui/MenuItem'
 import Build from 'material-ui/svg-icons/action/build'
@@ -105,4 +104,4 @@ const mapDispatchToProps = (dispatch: any) => ({
   updateOrCreateProjectAdmin: (id: string, payload: ProjectAdmin) => dispatch(actions.updateOrCreateProjectAdmin(id, payload)),
   deleteProjectAdmin: (id: string) => dispatch(actions.deleteProjectAdmin(id))
 })
-export default connect<{}, {}, ProjectAdminsProps>(mapStateToProps, mapDispatchToProps)(ProjectAdminsContainer);
+export default connect<{}, {}, ProjectAdminsProps>(mapStateToProps, mapDispatchToProps)(ProjectAdminsContainer)

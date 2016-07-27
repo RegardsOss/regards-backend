@@ -4,7 +4,7 @@ import thunk from 'redux-thunk'
 import * as nock from 'nock'
 import { expect } from 'chai' // You can use any testing library
 import * as actions from '../../../scripts/common/access-rights/AccessRightsActions'
-import { Dependencies } from '../../../scripts/common/access-rights/AccessRightsViewType'
+import { DependencyAccessRight } from '../../../scripts/common/access-rights'
 import { Action, AnyMeta, TypedMeta, isFSA, isError } from 'flux-standard-action'
 import { FsaErrorAction, FsaErrorDefault } from '../../../scripts/common/api/types'
 
@@ -20,7 +20,7 @@ describe('[COMMON] Testing access rights actions', () => {
   // Test dégradé dans le cas ou le serveur renvoie un erreur
   it('creates FAILED_ACCESSRIGHTS action when fetching access rights returning error', () => {
     nock(actions.ACCESS_RIGHTS_API)
-      .get('')
+      .post('')
       .reply(500, 'Oops');
     const store = mockStore({ views: [] });
 
@@ -37,10 +37,10 @@ describe('[COMMON] Testing access rights actions', () => {
     }
     const expectedActions = [ requestAction, failureAction ]
 
-    const dependencies: Dependencies = {
-      GET: ['aGetDependency', 'anOtherGetDependency'],
-      DELETE: ['aDeleteDependency']
-    }
+    const dependencies:Array<DependencyAccessRight> = [
+      {id:"aGetDependency",verb:"GET",endpoint:"/aGetDependency",access:false},
+      {id:"anOtherGetDependency",verb:"GET",endpoint:"/anOtherGetDependency",access:false},
+      {id:"aDeleteDependency",verb:"DELETE",endpoint:"/aDeleteDependency",access:false}]
 
     return store.dispatch(actions.fetchAccessRights(dependencies))
       .then(() => { // return of async actions
@@ -51,16 +51,11 @@ describe('[COMMON] Testing access rights actions', () => {
   // Test nominal
   it('creates PROJECTS_REQUEST and PROJECTS_SUCESS actions when fetching access rights has been done', () => {
     nock(actions.ACCESS_RIGHTS_API)
-      .get('')
+      .post('')
       .reply(200, [
-        {
-          name: 'toto',
-          links: [{ rel: 'self', href: 'fakeHref' }]
-        },
-        {
-          name: 'titi',
-          links: [{ rel: 'self', href: 'otherFakeHref' }]
-        }
+        {id:"aGetDependency",verb:"GET",endpoint:"/aGetDependency",access:true},
+        {id:"anOtherGetDependency",verb:"GET",endpoint:"/anOtherGetDependency",access:false},
+        {id:"aDeleteDependency",verb:"DELETE",endpoint:"/aDeleteDependency",access:true}
       ]);
     const store = mockStore({ views: [] });
 
@@ -73,22 +68,17 @@ describe('[COMMON] Testing access rights actions', () => {
       type: 'RECEIVE_ACCESSRIGHTS',
       meta: undefined,
       payload: [
-        {
-          name: 'toto',
-          links: [{ rel: 'self', href: 'fakeHref' }]
-        },
-        {
-          name: 'titi',
-          links: [{ rel: 'self', href: 'otherFakeHref' }]
-        }
+        {id:"aGetDependency",verb:"GET",endpoint:"/aGetDependency",access:true},
+        {id:"anOtherGetDependency",verb:"GET",endpoint:"/anOtherGetDependency",access:false},
+        {id:"aDeleteDependency",verb:"DELETE",endpoint:"/aDeleteDependency",access:true}
       ]
     }
     const expectedActions = [ requestAction, successAction ]
 
-    const dependencies: Dependencies = {
-      GET: ['aGetDependency', 'anOtherGetDependency'],
-      DELETE: ['aDeleteDependency']
-    }
+    const dependencies:Array<DependencyAccessRight> = [
+      {id:"aGetDependency",verb:"GET",endpoint:"/aGetDependency",access:false},
+      {id:"anOtherGetDependency",verb:"GET",endpoint:"/anOtherGetDependency",access:false},
+      {id:"aDeleteDependency",verb:"DELETE",endpoint:"/aDeleteDependency",access:false}]
 
     return store.dispatch(actions.fetchAccessRights(dependencies))
       .then(() => { // return of async actions
