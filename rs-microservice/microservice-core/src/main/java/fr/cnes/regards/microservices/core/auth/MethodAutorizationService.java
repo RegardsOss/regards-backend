@@ -17,4 +17,6 @@ public interface MethodAutorizationService {
 	Optional<List<GrantedAuthority>> getAuthorities(RequestMapping access, RequestMapping classMapping);
 	
 	void setAutorities(String resourceName, GrantedAuthority... authorities);
+	
+	List<GrantedAuthority> getAutoritiesById(String pId);
 }

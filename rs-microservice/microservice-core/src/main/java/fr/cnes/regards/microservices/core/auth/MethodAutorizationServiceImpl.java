@@ -46,4 +46,9 @@ public class MethodAutorizationServiceImpl implements MethodAutorizationService 
 		System.out.println("Accessing ressource id="+resourceId);
 		return Optional.ofNullable(grantedAuthoritiesByResource.get(resourceId));
 	}
+
+	@Override
+	public List<GrantedAuthority> getAutoritiesById(String pId) {
+		return grantedAuthoritiesByResource.get(pId);
+	}
 }
