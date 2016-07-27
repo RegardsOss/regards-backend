@@ -16,8 +16,7 @@ describe('[ADMIN APP] Testing login component', () => {
     };
     let props = {
       onLogin: spy,
-      errorMessage: '',
-      styles: loginStyles
+      errorMessage: ''
     };
 
     const wrapper = shallow(<LoginComponent {...props}/>);
@@ -39,14 +38,9 @@ describe('[ADMIN APP] Testing login component', () => {
     };
     const spy = sinon.spy(onLogin)
     const handleKeyPress = () => { };
-    const loginStyles = {
-      "login-modal": 'login-modal',
-      "login-error": "login-error"
-    };
     let props = {
       onLogin: spy,
-      errorMessage: '',
-      styles: loginStyles
+      errorMessage: ''
     };
 
     const wrapper = shallow(<LoginComponent {...props}/>);

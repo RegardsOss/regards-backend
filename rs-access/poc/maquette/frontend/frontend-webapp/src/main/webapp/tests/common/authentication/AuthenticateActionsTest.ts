@@ -7,7 +7,7 @@ import * as actions from '../../../scripts/common/authentication/AuthenticateAct
 import { Action, AnyMeta, TypedMeta, isFSA, isError } from 'flux-standard-action'
 import { FsaErrorAction, FsaErrorDefault } from '../../../scripts/common/api/types'
 
-const middlewares = [ thunk, apiMiddleware ]
+const middlewares = [thunk, apiMiddleware]
 const mockStore = configureMockStore(middlewares)
 
 describe('[COMMON] Testing authentication actions', () => {
@@ -23,7 +23,7 @@ describe('[COMMON] Testing authentication actions', () => {
 
     nock(actions.AUTHENTICATE_API)
       .post('')
-      .query({grant_type: 'password', username, password})
+      .query({ grant_type: 'password', username, password })
       .reply(500, 'Oops');
     const store = mockStore({ authentication: [] });
 
@@ -32,13 +32,15 @@ describe('[COMMON] Testing authentication actions', () => {
       payload: undefined,
       meta: undefined
     }
-    const failureAction: FsaErrorAction & AnyMeta =  {
+    const failureAction: FsaErrorAction & AnyMeta = {
       type: 'FAILED_AUTHENTICATE',
       error: true,
-      meta: undefined,
+      meta: {
+        "errorMessage": "authentication.error"
+      },
       payload: FsaErrorDefault
     }
-    const expectedActions = [ requestAction, failureAction ]
+    const expectedActions = [requestAction, failureAction]
 
     return store.dispatch(actions.fetchAuthenticate(username, password))
       .then(() => { // return of async actions
@@ -55,13 +57,13 @@ describe('[COMMON] Testing authentication actions', () => {
 
     nock(actions.AUTHENTICATE_API)
       .post('')
-      .query({grant_type: 'password', username, password})
+      .query({ grant_type: 'password', username, password })
       .reply(200, {
-        "access_token":"9e2c4404-acd7-441c-9ee1-b97cbf0c51a5",
-        "token_type":"bearer",
-        "refresh_token":"a80a7a1b-7c98-43da-a7e6-04c7873ba1d7",
-        "expires_in":35332,
-        "scope":"openid"
+        "access_token": "9e2c4404-acd7-441c-9ee1-b97cbf0c51a5",
+        "token_type": "bearer",
+        "refresh_token": "a80a7a1b-7c98-43da-a7e6-04c7873ba1d7",
+        "expires_in": 35332,
+        "scope": "openid"
       });
     const store = mockStore({ authentication: [] });
 
@@ -73,18 +75,18 @@ describe('[COMMON] Testing authentication actions', () => {
     const successAction: Action<any> & AnyMeta = {
       type: 'RECEIVE_AUTHENTICATE',
       payload: {
-        "access_token":"9e2c4404-acd7-441c-9ee1-b97cbf0c51a5",
-        "token_type":"bearer",
-        "refresh_token":"a80a7a1b-7c98-43da-a7e6-04c7873ba1d7",
-        "expires_in":35332,
-        "scope":"openid"
+        "access_token": "9e2c4404-acd7-441c-9ee1-b97cbf0c51a5",
+        "token_type": "bearer",
+        "refresh_token": "a80a7a1b-7c98-43da-a7e6-04c7873ba1d7",
+        "expires_in": 35332,
+        "scope": "openid"
       },
       meta: {
         authenticateDate: 12345,
         name: username
       }
     }
-    const expectedActions = [ requestAction, successAction ]
+    const expectedActions = [requestAction, successAction]
 
     return store.dispatch(actions.fetchAuthenticate(username, password))
       .then(() => { // return of async actions

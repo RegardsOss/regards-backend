@@ -13,7 +13,7 @@ import { pickBy } from 'lodash'
 // Keeping both notations as an example
 export default combineReducers({
   i18n: i18nReducers,
-  theme: themeReducers,
+  themes: themeReducers,
   plugins: pluginReducers,
   views: accessRightsReducers,
   authentication,

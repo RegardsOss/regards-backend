@@ -7,6 +7,7 @@ import { expect } from 'chai'
 import { ProjectsContainer } from '../../../scripts/portalApp/modules/projects/containers/ProjectsContainer';
 import ProjectComponent from '../../../scripts/portalApp/modules/projects/components/ProjectComponent';
 import { ProjectsStore } from '../../../scripts/portalApp/modules/projects/types/ProjectTypes';
+import { FormattedMessage } from 'react-intl'
 
 // Test a component rendering
 
@@ -64,13 +65,17 @@ describe('[PORTAL APP] Testing projects components', () => {
     const result = (
       <li>
         <p>cdpp</p>
-        <Link to="/user/cdpp">ihm user</Link>
-        <Link to="/admin/cdpp">ihm admin</Link>
+        <Link to="/user/cdpp">
+        <FormattedMessage id="project.user.access.link"/>
+        </Link>
+        <Link to="/admin/cdpp">
+        <FormattedMessage id="project.admin.access.link"/>
+        </Link>
       </li>
     )
     const wrapper = shallow(<ProjectComponent {...props}/>);
     // To log result
-    //console.log(wrapper.debug());
+    // console.log(wrapper.debug(), result);
     expect(wrapper.contains(result)).to.equal(true);
   });
 

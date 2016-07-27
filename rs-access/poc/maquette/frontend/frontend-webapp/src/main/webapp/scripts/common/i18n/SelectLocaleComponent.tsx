@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { updateLocale } from './I18nActions'
 
 interface SelectLocaleTypes {
-  styles: any,
   locales: Array<string>,
   curentLocale?: string,
   onLocaleChange?: (locale:string) => void
@@ -32,10 +31,10 @@ export class SelectLocaleComponent extends React.Component<SelectLocaleTypes, an
   }
 
   render(){
-    const { styles, locales, onLocaleChange } = this.props
+    const { locales, onLocaleChange } = this.props
 
     return (
-      <div className={styles["select-language"]}>
+      <div>
         <select
           value={this.props.curentLocale}
           onChange={this.onChange}>

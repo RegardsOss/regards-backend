@@ -6,10 +6,8 @@ import { map } from 'lodash'
 import { FormattedMessage, intlShape } from 'react-intl'
 // Containers
 import I18nProvider from '../../../../common/i18n/I18nProvider'
-import { ProjectAdminsContainer, UserFormContainer } from '../../projectAdmins'
+import { ProjectAdminsContainer } from '../../projectAdmins'
 // Components
-import ManageProjectsComponent from '../components/ManageProjectsComponent'
-import ProjectConfigurationComponent from '../components/ProjectConfigurationComponent'
 import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
 import ModuleComponent from '../../../../common/components/ModuleComponent'
 import {Card, CardTitle, CardText} from 'material-ui/Card'
@@ -42,7 +40,6 @@ interface ProjectsContainerTypes {
  *
  * @prop {Array<Project>} projects List of projects to display
  * @prop {Boolean} projectConfigurationIsShown ProjectConfigurationComponent display status
- * @prop {Object} styles CSS Styles
  *
  */
 class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
@@ -71,7 +68,9 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
   render () {
     const cardTitle = (
       <div>
-        <span style={{float:'left'}}><FormattedMessage id='projects.legend'/></span>
+        <span style={{float:'left'}}>
+           <FormattedMessage id='projects.legend'/>
+        </span>
         <AddProject onSave={this.handleSave}/>
       </div>
     )
@@ -102,6 +101,7 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
           </CardText>
         </Card>
       </ModuleComponent>
+      </I18nProvider>
     )
   }
 }

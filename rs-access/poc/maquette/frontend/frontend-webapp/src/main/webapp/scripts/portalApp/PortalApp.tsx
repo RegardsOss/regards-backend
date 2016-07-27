@@ -5,7 +5,6 @@ import { Link } from 'react-router'
 import * as ReactDOM from 'react-dom'
 
 import ApplicationErrorComponent from '../common/components/ApplicationErrorComponent'
-import SelectThemeComponent from '../common/theme/components/SelectThemeComponent'
 import InstanceComponent from './modules/projects/components/InstanceComponent'
 import ProjectsContainer from './modules/projects/containers/ProjectsContainer'
 import SelectLocaleComponent from '../common/i18n/SelectLocaleComponent'
@@ -74,7 +73,6 @@ class PortalApp extends React.Component<PortalAppProps, any> {
             <ProjectsContainer />
             <SelectTheme />
             <SelectLocaleComponent
-              styles={commonStyles}
               locales={['fr','en']} />
           </div>
         </MuiThemeProvider>

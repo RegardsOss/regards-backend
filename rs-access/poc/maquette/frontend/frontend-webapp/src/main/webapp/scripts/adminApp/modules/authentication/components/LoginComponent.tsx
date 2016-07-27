@@ -1,6 +1,10 @@
 /** @module AdminAuthentication */
 import * as React from 'react';
 
+import { FormattedMessage } from 'react-intl'
+// Containers
+import I18nProvider from '../../../../common/i18n/I18nProvider'
+
 export interface LoginProps {
   onLogin: (username: string, password: string) => void,
   errorMessage: string
