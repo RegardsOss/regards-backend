@@ -14,6 +14,7 @@ interface PluginProps {
 class PluginContainer extends React.Component<PluginProps, any> {
 
   render(){
+    console.log("PLOP")
     // this.props : parameters passed by react component
     // this.props.params : parameters passed by react router
     const { params, plugins } = this.props

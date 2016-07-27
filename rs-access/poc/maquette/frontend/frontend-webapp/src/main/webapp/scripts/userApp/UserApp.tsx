@@ -1,11 +1,10 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 
-import { fetchPlugins } from '../common/plugins/PluginsActions'
+import { fetchAuthenticate } from '../common/authentication/AuthenticateActions'
+
 import Layout from './modules/layout/Layout'
 import TestContainer from './modules/test/TestContainer'
-
-import { PluginsStore } from '../common/plugins/PluginTypes'
 
 // Theme
 import ThemeHelper from '../common/theme/ThemeHelper'
@@ -13,28 +12,19 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import SelectTheme from '../common/theme/containers/SelectTheme'
 
 interface UserAppProps {
-  plugins: PluginsStore,
   params:any,
-  fetchPlugins: () => void,
   location: any,
   content:any,
-  theme: string
+  theme: string,
+  authentication?: any,
+  publicAuthenticate?: ()=> void
 }
 
 class UserApp extends React.Component<UserAppProps, any> {
 
   componentWillMount(){
-    // Plugins are set to the container props by react-redux connect.
-    // See method mapStateToProps of this container
-    const { plugins } = this.props
-    // initTheme method is set to the container props by react-redux connect.
-    // See method mapDispatchToProps of this container
-    // this.props.initTheme(themeToSet)
-
-    if (!plugins || !plugins.items || plugins.items.length === 0){
-      // fetchPlugins method is set to the container props by react-redux connect.
-      // See method mapDispatchToProps of this container
-      this.props.fetchPlugins()
+    if (!this.props.authentication.user){
+      this.props.publicAuthenticate()
     }
   }
 
@@ -46,7 +36,10 @@ class UserApp extends React.Component<UserAppProps, any> {
     // Build theme
     const muiTheme = ThemeHelper.getByName(theme)
 
-    if (content){
+    if (!this.props.authentication.user)
+      return <div>Loading ... </div>
+
+    if (!content){
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
           <Layout location={location} project={project} >
@@ -71,11 +64,11 @@ class UserApp extends React.Component<UserAppProps, any> {
 
 const mapStateToProps = (state:any) => ({
   theme: state.common.themes.selected,
-  plugins: state.plugins
+  authentication: state.common.authentication
 })
-// Add functions dependending on store dispatch to container props.
-const mapDispatchToProps = (dispatch: any) => ({
-  fetchPlugins : () => dispatch(fetchPlugins())
+const mapDispatchToProps = (dispatch:any) => ({
+  publicAuthenticate: () => dispatch(fetchAuthenticate("public","public"))
 })
-const userAppConnected = connect<{}, {}, UserAppProps>(mapStateToProps,mapDispatchToProps)(UserApp)
+
+const userAppConnected = connect<{}, {}, UserAppProps>(mapStateToProps, mapDispatchToProps)(UserApp)
 export default userAppConnected
