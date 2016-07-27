@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 import * as ReactDOM from 'react-dom'
 
 import { logout } from '../common/authentication/AuthenticateActions'
-import { getThemeStyles } from '../common/theme/ThemeUtils'
 import Authentication from './modules/authentication/containers/AuthenticationContainer'
 import { AuthenticationType } from '../common/authentication/AuthenticationTypes'
 import { isAuthenticated } from '../common/authentication/AuthenticateUtils'
@@ -103,7 +102,7 @@ class AdminApp extends React.Component<AminAppProps, any> {
 
 // Add theme from store to the component props
 const mapStateToProps = (state: any) => ({
-  theme: state.common.themes.selected,
+  theme: state.common.theme,
   authentication: state.common.authentication
 })
 const mapDispatchToProps = (dispatch: any) => ({

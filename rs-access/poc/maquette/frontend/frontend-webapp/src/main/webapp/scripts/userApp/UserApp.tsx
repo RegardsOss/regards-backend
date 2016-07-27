@@ -63,8 +63,8 @@ class UserApp extends React.Component<UserAppProps, any> {
 }
 
 const mapStateToProps = (state:any) => ({
-  theme: state.common.themes.selected,
-  authentication: state.common.authentication
+  theme: state.common.theme,
+  plugins: state.plugins
 })
 const mapDispatchToProps = (dispatch:any) => ({
   publicAuthenticate: () => dispatch(fetchAuthenticate("public","public"))

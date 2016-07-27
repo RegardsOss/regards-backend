@@ -12,12 +12,8 @@ describe('[COMMON] Testing theme reducer', () => {
       type: 'SET_THEME',
       theme: 'beautiful-theme'
     }
-    const initState = {
-      selected: 'ugly-theme'
-    }
-    const expectedState = {
-      selected: 'beautiful-theme'
-    }
+    const initState = 'ugly-theme'
+    const expectedState = 'beautiful-theme'
     expect(reducer(initState, action)).to.eql(expectedState)
   })
 

@@ -8,7 +8,6 @@ import ApplicationErrorComponent from '../common/components/ApplicationErrorComp
 import InstanceComponent from './modules/projects/components/InstanceComponent'
 import ProjectsContainer from './modules/projects/containers/ProjectsContainer'
 import SelectLocaleComponent from '../common/i18n/SelectLocaleComponent'
-import { getThemeStyles } from '../common/theme/ThemeUtils'
 import { setTheme } from '../common/theme/actions/ThemeActions'
 
 import { fetchAuthenticate } from '../common/authentication/AuthenticateActions'
@@ -87,7 +86,7 @@ class PortalApp extends React.Component<PortalAppProps, any> {
 
 // Add props from store to the container props
 const mapStateToProps = (state:any) => ({
-  theme: state.common.themes.selected,
+  theme: state.common.theme,
   authentication: state.common.authentication
 })
 // Add functions dependending on store dispatch to container props.
