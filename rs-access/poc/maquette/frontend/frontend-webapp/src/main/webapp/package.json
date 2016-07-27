@@ -53,8 +53,6 @@
     "stompjs": "^2.3.3"
   },
   "devDependencies": {
-    "deep-freeze": "0.0.1",
-    "jsdoc": "^3.4.0",
     "autoprefixer": "^6.3.6",
     "babel": "^6.5.2",
     "babel-core": "^6.9.0",
@@ -65,11 +63,14 @@
     "chai": "^3.5.0",
     "clean-webpack-plugin": "^0.1.9",
     "css-loader": "^0.23.1",
+    "deep-freeze": "0.0.1",
     "enzyme": "^2.3.0",
     "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.9.0",
+    "jsdoc": "^3.4.0",
     "jsdom": "^9.2.1",
     "json-loader": "^0.5.4",
-    "mocha": "^2.5.3",
+    "mocha": "^3.0.0-2",
     "nock": "^8.0.0",
     "node-sass": "^3.7.0",
     "postcss-loader": "^0.9.1",
@@ -83,12 +84,12 @@
     "source-map-loader": "^0.1.5",
     "style-loader": "^0.13.1",
     "ts-loader": "^0.8.2",
+    "tslint": "^3.13.0",
     "typescript": "^1.8.10",
     "typings": "^1.3.1",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.14.1",
-    "tslint": "^3.13.0"
+    "webpack-dev-server": "^1.14.1"
   },
   "engines": {
     "node": "*",
