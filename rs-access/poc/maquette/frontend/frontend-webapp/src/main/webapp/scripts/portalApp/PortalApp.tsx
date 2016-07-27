@@ -5,8 +5,13 @@ import { Link } from 'react-router'
 import * as ReactDOM from 'react-dom'
 
 import ApplicationErrorComponent from '../common/components/ApplicationErrorComponent'
+import SelectThemeComponent from '../common/theme/components/SelectThemeComponent'
 import InstanceComponent from './modules/projects/components/InstanceComponent'
 import ProjectsContainer from './modules/projects/containers/ProjectsContainer'
+import SelectLocaleComponent from '../common/i18n/SelectLocaleComponent'
+import { getThemeStyles } from '../common/theme/ThemeUtils'
+import { setTheme } from '../common/theme/actions/ThemeActions'
+
 import { fetchAuthenticate } from '../common/authentication/AuthenticateActions'
 
 // Theme
@@ -18,6 +23,7 @@ interface PortalAppProps {
   // Properties set by react-redux connectiona
   authentication?: any,
   theme?: string,
+  initTheme?: (theme:string) => void,
   publicAuthenticate?: ()=> void,
 }
 
@@ -67,6 +73,9 @@ class PortalApp extends React.Component<PortalAppProps, any> {
             <InstanceComponent />
             <ProjectsContainer />
             <SelectTheme />
+            <SelectLocaleComponent
+              styles={commonStyles}
+              locales={['fr','en']} />
           </div>
         </MuiThemeProvider>
       )

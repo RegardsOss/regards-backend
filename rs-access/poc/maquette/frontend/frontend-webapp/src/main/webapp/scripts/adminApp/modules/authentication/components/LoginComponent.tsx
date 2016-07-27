@@ -39,21 +39,28 @@ class LoginComponent extends React.Component<LoginProps,any> {
   }
 
   render(){
+    const { styles } : any = this.props
+    let errorMessage:any = null
+    if (this.props.errorMessage && this.props.errorMessage !== ''){
+      errorMessage = <FormattedMessage id={this.props.errorMessage} />
+    }
     return (
-      <div onKeyDown={this.handleKeyPress}>
-        <p>{this.props.errorMessage}</p>
-        <label htmlFor="username" >Username</label>
-        <input type='text' onChange={(event: React.FormEvent) => {
-          this.setState({ "username" :(event.target as any).value})
-        }}/>
-        <label htmlFor="password" >Password</label>
-        <input type="password" onChange={(event: React.FormEvent) => {
-          this.setState({"password": (event.target as any).value})
-        }}/>
-        <button onClick={() => {
-            this.props.onLogin(this.state.username,this.state.password);
-          }}>Log in</button>
-      </div>
+      <I18nProvider messageDir="adminApp/modules/authentication/i18n">
+        <div onKeyDown={this.handleKeyPress}>
+            <p>{errorMessage}</p>
+            <label htmlFor="username" ><FormattedMessage id="login.username" /></label>
+            <input type='text' onChange={(event: React.FormEvent) => {
+              this.setState({ "username" :(event.target as any).value})
+            }}/>
+            <label htmlFor="password" ><FormattedMessage id="login.password" /></label>
+            <input type="password" onChange={(event: React.FormEvent) => {
+              this.setState({"password": (event.target as any).value})
+            }}/>
+            <button onClick={() => {
+                this.props.onLogin(this.state.username,this.state.password);
+              }}><FormattedMessage id="login.button" /></button>
+          </div>
+      </I18nProvider>
     );
   }
 }

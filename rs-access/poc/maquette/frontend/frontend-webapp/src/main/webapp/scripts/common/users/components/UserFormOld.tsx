@@ -17,11 +17,11 @@ export const fields = [ 'id', 'projectId', 'username', 'password', 'passwordConf
 //   getProjectAdminById,
 //   getSelectedProjectId } from '../../../reducer'
 
-/**
- * Form fields validation method
- * @param  {[type]} values: any           [description]
- * @return {[type]}         [description]
- */
+ /**
+  * Form fields validation method
+  * @param {Object} values : TODO
+  * @return {Object} errors
+  */
 const validate = (values: any)=> {
   const errors: any = {}
   if (!values.username) {

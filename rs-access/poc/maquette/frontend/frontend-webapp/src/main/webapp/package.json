@@ -29,7 +29,6 @@
     ]
   },
   "dependencies": {
-    "deep-freeze": "0.0.1",
     "flux-standard-action": "^0.6.1",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.13.1",
@@ -53,6 +52,8 @@
     "stompjs": "^2.3.3"
   },
   "devDependencies": {
+    "deep-freeze": "0.0.1",
+    "jsdoc": "^3.4.0",
     "autoprefixer": "^6.3.6",
     "babel": "^6.5.2",
     "babel-core": "^6.9.0",
@@ -65,7 +66,7 @@
     "css-loader": "^0.23.1",
     "enzyme": "^2.3.0",
     "extract-text-webpack-plugin": "^1.0.1",
-    "jsdoc": "^3.4.0",
+    "flux-standard-action": "^0.6.1",
     "jsdom": "^9.2.1",
     "json-loader": "^0.5.4",
     "mocha": "^2.5.3",
@@ -78,6 +79,7 @@
     "redux-devtools-log-monitor": "^1.0.11",
     "redux-mock-store": "^1.1.0",
     "sass-loader": "^3.2.0",
+    "sinon": "^1.17.4",
     "source-map-loader": "^0.1.5",
     "style-loader": "^0.13.1",
     "ts-loader": "^0.8.2",

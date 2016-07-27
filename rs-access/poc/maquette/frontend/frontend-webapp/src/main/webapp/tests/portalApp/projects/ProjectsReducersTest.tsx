@@ -7,7 +7,7 @@ import {
 import { ProjectsStore } from '../../../scripts/portalApp/modules/projects/types/ProjectTypes'
 
 // Ce fichier permet de tester les reducers liés aux projets
-describe('Testing Projects reducers', () => {
+describe('[PORTAL APP] Testing Projects reducers', () => {
 
   it('Should return the initial state', () => {
     expect(projectsReducers(undefined, {})).to.eql({

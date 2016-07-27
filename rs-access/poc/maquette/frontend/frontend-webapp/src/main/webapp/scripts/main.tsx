@@ -8,11 +8,13 @@ import configureStore from './common/store/configureStore'
 import preloadedState from './common/store/preloadedState'
 import { routes } from './routes'
 
+import I18nProvider from './common/i18n/I18nProvider'
+
 const store = configureStore(preloadedState)
 ReactDOM.render(
-  <Provider store={store}>
-    <Router history={browserHistory} routes={routes}/>
-  </Provider>,
+    <Provider store={store}>
+      <Router history={browserHistory} routes={routes}/>
+    </Provider>,
   document.getElementById('app')
 )
 

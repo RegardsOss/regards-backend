@@ -24,7 +24,7 @@ export default (state: any = {
     case FAILED_AUTHENTICATE:
       return Object.assign({}, state, {
         isFetching: false,
-        error: action.error
+        error: action.meta.errorMessage
       });
     case LOGOUT:
       return {

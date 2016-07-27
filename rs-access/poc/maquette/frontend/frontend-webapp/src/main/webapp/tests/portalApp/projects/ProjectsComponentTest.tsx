@@ -45,7 +45,7 @@ describe('[PORTAL APP] Testing projects components', () => {
 
     const result = (
       <div>
-        <p>Available projects on REGARDS instance :</p>
+        <p><FormattedMessage id="portalapp.projects.list.title" /></p>
         <ul>
             <ProjectComponent key="cdpp" project={{name: 'cdpp'}} />
             <ProjectComponent key= "ssalto" project={{name: 'ssalto'}} />

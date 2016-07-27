@@ -9,6 +9,7 @@ import Authentication from './modules/authentication/containers/AuthenticationCo
 import { AuthenticationType } from '../common/authentication/AuthenticationTypes'
 import { isAuthenticated } from '../common/authentication/AuthenticateUtils'
 
+import SelectThemeComponent from '../common/theme/components/SelectThemeComponent'
 import ErrorComponent from '../common/components/ApplicationErrorComponent'
 import Layout from '../common/layout/containers/Layout'
 import Home from './modules/home/Home'
@@ -36,6 +37,7 @@ interface AminAppProps {
   location: any,
   onLogout: ()=> void
 }
+
 
 /**
  * React component to manage Administration application.
@@ -98,6 +100,9 @@ class AdminApp extends React.Component<AminAppProps, any> {
         </MuiThemeProvider>
       )
     }
+    else {
+      return <ErrorComponent />
+    }
   }
 }
 
@@ -109,4 +114,5 @@ const mapStateToProps = (state: any) => ({
 const mapDispatchToProps = (dispatch: any) => ({
   onLogout: () => {dispatch(logout())}
 })
-export default connect<{}, {}, AminAppProps>(mapStateToProps, mapDispatchToProps)(AdminApp)
+const connectedAdminApp = connect<{}, {}, AminAppProps>(mapStateToProps, mapDispatchToProps)(AdminApp)
+export default connectedAdminApp

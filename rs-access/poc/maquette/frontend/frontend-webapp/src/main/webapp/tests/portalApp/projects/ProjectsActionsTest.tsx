@@ -11,7 +11,7 @@ const middlewares = [ thunk, apiMiddleware ]
 const mockStore = configureMockStore(middlewares)
 
 // Ce fichier permet de tester les actions liés aux projets
-describe('Testing projects actions.', () => {
+describe('[PORTAL APP] Testing projects actions.', () => {
 
   afterEach(() => {
     nock.cleanAll()

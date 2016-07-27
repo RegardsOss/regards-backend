@@ -16,7 +16,7 @@
   </parent>
 
   <modules>
-    <module>backend-boot</module>
+    <module>backend-mock</module>
   </modules>
 
 </project>

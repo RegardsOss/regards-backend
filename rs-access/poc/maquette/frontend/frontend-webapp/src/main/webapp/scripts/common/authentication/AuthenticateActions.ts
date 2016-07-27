@@ -13,7 +13,17 @@ export const fetchAuthenticate = (username:String, password:String) => ({
         type: RECEIVE_AUTHENTICATE,
         meta: { authenticateDate: Date.now(), name: username }
       },
-      FAILED_AUTHENTICATE
+      {
+        type: FAILED_AUTHENTICATE,
+        meta: (action:any, state:any, res:any) => {
+          if (res.status === '500'){
+            return { errorMessage: 'authentication.error.500' }
+          } else {
+            return { errorMessage: 'authentication.error' }
+          }
+        }
+      }
+
     ],
     endpoint: AUTHENTICATE_API + "?grant_type=password&username=" + username + "&password=" + password,
     method: 'POST'

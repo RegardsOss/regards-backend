@@ -1,6 +1,8 @@
 /** @module PortalProjects */
 import * as React from 'react'
 import { connect } from 'react-redux'
+import { FormattedMessage, intlShape } from 'react-intl'
+
 import ProjectComponent from '../components/ProjectComponent'
 import { fetchProjects } from '../actions/ProjectsActions'
 
@@ -10,7 +12,8 @@ import { Project, ProjectsStore } from '../types/ProjectTypes'
 interface ProjectsProps{
   // Properties set by react redux connection
   onLoad?: ()=> void,
-  projects?: ProjectsStore
+  projects?: ProjectsStore,
+  i18n?: any
 }
 
 // Export class itself without connect to be able to use it in test without store connection.
@@ -37,7 +40,7 @@ export class ProjectsContainer extends React.Component<ProjectsProps, any> {
       // Else display projects links
       return (
         <div>
-          <p>Available projects on REGARDS instance :</p>
+          <p><FormattedMessage id="portalapp.projects.list.title" /></p>
           <ul>
             {projects.items.map(project =>
               <ProjectComponent key={project.name} project={project} />
@@ -51,7 +54,8 @@ export class ProjectsContainer extends React.Component<ProjectsProps, any> {
 
 // Add projects from store to the container props
 const mapStateToProps = (state:any) => ({
-  projects: state.portalApp.projects
+  projects: state.portalApp.projects,
+  i18n: state.common.i18n
 })
 
 // Add functions dependending on store dispatch to container props.

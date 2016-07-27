@@ -1,3 +1,4 @@
+
 // Webpack configuration file
 
 const path = require('path')
@@ -72,14 +73,6 @@ module.exports = {
         test: /\.tsx{0,1}?$/,
         exclude: [/node_modules/,/json/],
         loader: "babel-loader!ts-loader"
-        //loader: "babel-loader?presets=['es2015', 'react']!ts-loader"
-      },
-      // Transpile ES6 Javascript into ES5 with babel loader and react
-      {test: /\.js$/, exclude: [/node_modules/,/json/],
-        loader: 'babel',
-        query: {
-          presets: ['es2015', 'react'],
-        }
       },
       {test: /\.css$/, loader:  ExtractTextPlugin.extract("style-loader", "css-loader") },
       {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"},
@@ -87,11 +80,13 @@ module.exports = {
       {test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?name=/img/[name].[ext]&limit=10000&minetype=application/font-woff" },
       {test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader?name=/img/[name].[ext]" },
       {test: /\.json$/, loader: "file-loader?name=/json/[name].[ext]"}
-
     ],
     preLoaders: [
         // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-        { test: /\.js$/, loader: "source-map-loader" }
+        { test: /\.js$/,
+          loader: "source-map-loader",
+          exclude: [ /node_modules\/react-intl/ ]
+        }
     ]
   },
   plugins: [

@@ -3,9 +3,13 @@ import * as React from 'react'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { map } from 'lodash'
+import { FormattedMessage, intlShape } from 'react-intl'
 // Containers
-import { ProjectAdminsContainer } from '../../projectAdmins'
+import I18nProvider from '../../../../common/i18n/I18nProvider'
+import { ProjectAdminsContainer, UserFormContainer } from '../../projectAdmins'
 // Components
+import ManageProjectsComponent from '../components/ManageProjectsComponent'
+import ProjectConfigurationComponent from '../components/ProjectConfigurationComponent'
 import AccessRightsComponent from '../../../../common/access-rights/AccessRightsComponent'
 import ModuleComponent from '../../../../common/components/ModuleComponent'
 import {Card, CardTitle, CardText} from 'material-ui/Card'
@@ -37,6 +41,8 @@ interface ProjectsContainerTypes {
  * React container to manage ManageProjectsComponent.
  *
  * @prop {Array<Project>} projects List of projects to display
+ * @prop {Boolean} projectConfigurationIsShown ProjectConfigurationComponent display status
+ * @prop {Object} styles CSS Styles
  *
  */
 class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
@@ -65,12 +71,13 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
   render () {
     const cardTitle = (
       <div>
-        <span style={{float:'left'}}>Projects</span>
+        <span style={{float:'left'}}><FormattedMessage id='projects.legend'/></span>
         <AddProject onSave={this.handleSave}/>
       </div>
     )
 
     return (
+      <I18nProvider messageDir='adminApp/modules/projects/i18n'>
       <ModuleComponent>
         <Card>
           <CardTitle title={cardTitle} />
