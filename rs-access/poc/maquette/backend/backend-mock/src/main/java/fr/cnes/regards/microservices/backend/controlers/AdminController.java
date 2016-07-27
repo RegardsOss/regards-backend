@@ -1,7 +1,5 @@
 package fr.cnes.regards.microservices.backend.controlers;
 
-import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.microservices.backend.pojo.AccessRights;
-import fr.cnes.regards.microservices.backend.pojo.Plugin;
 import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
@@ -40,6 +37,14 @@ public class AdminController {
 		authService_.setAutorities("/api/access/rights@POST",new RoleAuthority("PUBLIC"),new RoleAuthority("USER"),new RoleAuthority("ADMIN"));
 	}
 
+	/**
+	 * Get the acces rights for the current logged in user for a list of depencendies (couple Verb + Endpoint)
+	 * 
+	 * @param pAccessRights : AccessRights to check
+	 * @param pPrincipal : Logged in user credentials
+	 * 
+	 * @return List<AccessRights>
+	 */
 	@ResourceAccess
 	@RequestMapping(value = "/access/rights", method = RequestMethod.POST)
 	public @ResponseBody List<AccessRights> getAccessRights(@RequestBody List<AccessRights> pAccessRights, OAuth2Authentication pPrincipal) {
