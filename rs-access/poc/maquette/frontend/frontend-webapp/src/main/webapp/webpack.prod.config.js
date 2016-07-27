@@ -49,9 +49,7 @@ module.exports = {
         }
       },
       // Sass files compilation to css with css modules enable
-      {test: /\.scss$/, exclude: [/node_modules/,/scripts/,/stylesheets\/default/,/stylesheets\/vendors/],
-        loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
-      },
+      {test: /\.css$/, loader:  ExtractTextPlugin.extract("style-loader", "css-loader") },
       {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"},
       {test: /\.jpg$/, exclude: [/node_modules/], loader: "file-loader"},
       {test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?name=/img/[name].[ext]&limit=10000&minetype=application/font-woff" },
