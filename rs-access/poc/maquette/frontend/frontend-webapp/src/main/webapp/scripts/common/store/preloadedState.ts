@@ -27,7 +27,14 @@ const preloadedState: any = {
             ]
         },
         plugins: {},
-        views: [],
+        api: {
+          isFetching: false,
+          items: []
+        },
+        i18n: {
+          locale : navigator.language,
+          messages :  []
+        },
         authentication: {}
     },
     userApp: {

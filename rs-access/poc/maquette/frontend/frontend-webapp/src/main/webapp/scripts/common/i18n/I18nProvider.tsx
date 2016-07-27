@@ -61,10 +61,13 @@ export class I18nProvider extends React.Component<i18nProps, any> {
   }
 }
 
-const mapStateToProps = (state:any) => ({
-  locale: state.common.i18n.locale,
-  messages: state.common.i18n.messages
-})
+const mapStateToProps = (state:any) => {
+  console.log("SEB",state)
+  return {
+    locale: state.common.i18n.locale,
+    messages: state.common.i18n.messages
+  }
+}
 
 const mapDispatchToProps = (dispatch:any) => ({
   updateMessages: (messageDir:string, locale:string) => dispatch(updateMessages(messageDir,locale))

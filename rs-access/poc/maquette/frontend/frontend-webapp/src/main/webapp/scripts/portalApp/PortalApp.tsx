@@ -13,6 +13,8 @@ import { setTheme } from '../common/theme/actions/ThemeActions'
 
 import { fetchAuthenticate } from '../common/authentication/AuthenticateActions'
 
+import I18nProvider from '../common/i18n/I18nProvider'
+
 // Theme
 import ThemeHelper from '../common/theme/ThemeHelper'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
@@ -68,6 +70,7 @@ class PortalApp extends React.Component<PortalAppProps, any> {
       // Else, display the portal
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
+          <I18nProvider messageDir="portalApp/i18n" >
           <div>
             <InstanceComponent />
             <ProjectsContainer />
@@ -75,6 +78,7 @@ class PortalApp extends React.Component<PortalAppProps, any> {
             <SelectLocaleComponent
               locales={['fr','en']} />
           </div>
+          </I18nProvider>
         </MuiThemeProvider>
       )
     }

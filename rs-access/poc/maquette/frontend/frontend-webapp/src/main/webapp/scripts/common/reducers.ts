@@ -15,7 +15,7 @@ export default combineReducers({
   i18n: i18nReducers,
   themes: themeReducers,
   plugins: pluginReducers,
-  views: accessRightsReducers,
+  api: accessRightsReducers,
   authentication,
   layout
 });
