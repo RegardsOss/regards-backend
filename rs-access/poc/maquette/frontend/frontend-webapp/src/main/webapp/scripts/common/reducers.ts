@@ -13,16 +13,16 @@ import { pickBy } from 'lodash'
 // Keeping both notations as an example
 export default combineReducers({
   i18n: i18nReducers,
-  themes: themeReducers,
+  theme: themeReducers,
   plugins: pluginReducers,
   api: accessRightsReducers,
   authentication,
   layout
 });
 
-export const deleteEntityReducer = (state: any, action:any) => (
+export const deleteEntityReducer = (state: any, action: any) => (
   Object.assign({}, state, {
-    items: pickBy(state.items, (value:string, key:string) => key !== action.id),
-    ids: state.ids.filter( (id:string) => id !== action.id)
+    items: pickBy(state.items, (value: string, key: string) => key !== action.id),
+    ids: state.ids.filter((id: string) => id !== action.id)
   })
 )

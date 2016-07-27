@@ -1,9 +1,6 @@
 const preloadedState: any = {
     common: {
-        themes: {
-            items: ['lightBaseTheme', 'darkBaseTheme'],
-            selected: 'lightBaseTheme'
-        },
+        theme: 'lightBaseTheme',
         layout: {
             lg: [
                 { i: '1', x: 2, y: 0, w: 3, h: 5 },

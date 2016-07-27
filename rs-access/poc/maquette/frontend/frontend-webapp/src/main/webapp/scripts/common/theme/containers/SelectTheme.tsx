@@ -7,7 +7,7 @@ import MenuItem from 'material-ui/MenuItem'
 import {Card, CardText} from 'material-ui/Card'
 import ThemeHelper from '../ThemeHelper'
 
-class SelectTheme extends React.Component<any, any> {
+export class SelectTheme extends React.Component<any, any> {
 
   constructor() {
     super()
@@ -30,7 +30,7 @@ class SelectTheme extends React.Component<any, any> {
       <Card>
         <CardText>
           <SelectField
-            value={this.props.currentTheme}
+            value={this.props.theme}
             onChange={this.handleChange}
             fullWidth={true} >
             {items}
@@ -42,8 +42,7 @@ class SelectTheme extends React.Component<any, any> {
 }
 
 const mapStateToProps = (state: any) => ({
-  // themes: state.common.themes.items,
-  currentTheme: state.common.themes.selected
+  theme: state.common.theme
 })
 const mapDispatchToProps = (dispatch: any) => ({
   setTheme: (theme: string) => dispatch(setTheme(theme))

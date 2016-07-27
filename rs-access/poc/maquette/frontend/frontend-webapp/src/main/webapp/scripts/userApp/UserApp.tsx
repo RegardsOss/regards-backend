@@ -70,7 +70,7 @@ class UserApp extends React.Component<UserAppProps, any> {
 }
 
 const mapStateToProps = (state:any) => ({
-  theme: state.common.themes.selected,
+  theme: state.common.theme,
   plugins: state.plugins
 })
 // Add functions dependending on store dispatch to container props.
