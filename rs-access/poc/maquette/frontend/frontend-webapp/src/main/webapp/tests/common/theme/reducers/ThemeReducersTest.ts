@@ -4,7 +4,7 @@ import reducer from '../../../../scripts/common/theme/reducers/ThemeReducers'
 describe('[COMMON] Testing theme reducer', () => {
 
   it('should return the initial state', () => {
-    expect(reducer(undefined, {})).to.eql('')
+    expect(reducer(undefined, {})).to.eql({})
   })
 
   it('should set the theme', () => {

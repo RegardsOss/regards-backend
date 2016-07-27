@@ -27,20 +27,23 @@ describe('[COMMON] Testing access-rigths reducer', () => {
   it('should handle fetch success by adding the recceived element', () => {
     const action = {
       type: 'RECEIVE_ACCESSRIGHTS',
-      view: 'titi',
-      access: false
+      payload: [
+        {id:"anOtherGetDependency",verb:"GET",endpoint:"/anOtherGetDependency",access:false},
+        {id:"aDeleteDependency",verb:"DELETE",endpoint:"/aDeleteDependency",access:true}
+      ]
     }
     const initState = {
       isFetching : true,
       items: [
-        {name:'toto', access:true}
+        {id:"aGetDependency",verb:"GET",endpoint:"/aGetDependency",access:true},
       ]
     }
     const expectedState = {
       isFetching : false,
       items: [
-        {name:'toto', access:true},
-        {name:'titi', access:false}
+        {id:"aGetDependency",verb:"GET",endpoint:"/aGetDependency",access:true},
+        {id:"anOtherGetDependency",verb:"GET",endpoint:"/anOtherGetDependency",access:false},
+        {id:"aDeleteDependency",verb:"DELETE",endpoint:"/aDeleteDependency",access:true}
       ]
     }
     expect(reducer(initState, action)).to.eql(expectedState)
