@@ -36,7 +36,7 @@ public class PluginController {
 	}
 
 	@ResourceAccess
-	@RequestMapping(value = "plugins", method = RequestMethod.GET)
+	@RequestMapping(value = "/plugins", method = RequestMethod.GET)
 	public @ResponseBody List<Plugin> getPlugins() {
 		List<Plugin> plugins = new ArrayList<>();
 		plugins.add(new Plugin("HelloWorldPlugin", "HelloWorldPlugin/hw.js"));

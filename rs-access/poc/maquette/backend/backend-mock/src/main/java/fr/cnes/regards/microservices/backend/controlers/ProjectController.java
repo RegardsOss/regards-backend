@@ -42,7 +42,7 @@ public class ProjectController {
 	}
 
 	@ResourceAccess
-	@RequestMapping(value="project", method = RequestMethod.GET)
+	@RequestMapping(value="/project", method = RequestMethod.GET)
 	public @ResponseBody HttpEntity<Project> getProject(
 			@RequestParam(value = "name", required = true) String pProjectName) {
 		Project project = new Project("cdpp");
@@ -51,7 +51,7 @@ public class ProjectController {
 	}
 	
 	@ResourceAccess
-	@RequestMapping(value="projects", method = RequestMethod.GET)
+	@RequestMapping(value="/projects", method = RequestMethod.GET)
     public @ResponseBody HttpEntity<List<Project>> getProjects() {
 		List<Project> projects = new ArrayList<>();
 		
