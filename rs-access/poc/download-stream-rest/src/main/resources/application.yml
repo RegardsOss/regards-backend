@@ -1,2 +1,0 @@
-server.session.timeout=120
-spring.mvc.async.request-timeout=500000
