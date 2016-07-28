@@ -11,7 +11,6 @@ import { routes } from './routes'
 import I18nProvider from './common/i18n/I18nProvider'
 
 const store = configureStore(preloadedState)
-
 ReactDOM.render(
     <Provider store={store}>
       <Router history={browserHistory} routes={routes}/>

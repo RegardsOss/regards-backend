@@ -7,8 +7,7 @@ import { FormattedMessage } from 'react-intl'
 import { Project } from '../types/ProjectTypes'
 
 export interface ProjectTypes {
-  project: Project,
-  styles: any
+  project: Project
 }
 
 
@@ -16,20 +15,17 @@ export interface ProjectTypes {
  * React component to display a project in the portal application
  *
  * @prop {Project} project Project to display
- * @prop {Object} styles CSS Styles
  */
 export class ProjectComponent extends React.Component<ProjectTypes, any> {
   render(){
-    // styles props is passed throught the react component creation
-    const { styles } = this.props
     return (
-      <li className={styles.link}>
+      <li>
         <p>{this.props.project.name}</p>
-        <Link to={"/user/" +this.props.project.name} className={styles["project-link"]}>
-          <FormattedMessage id="project.user.access.link" />
+        <Link to={"/user/" +this.props.project.name}>
+           <FormattedMessage id="project.user.access.link" />
         </Link>
-        <Link to={"/admin/" +this.props.project.name} className={styles["project-link"]}>
-          <FormattedMessage id="project.admin.access.link" />
+        <Link to={"/admin/" +this.props.project.name}>
+           <FormattedMessage id="project.admin.access.link" />
         </Link>
       </li>
     )

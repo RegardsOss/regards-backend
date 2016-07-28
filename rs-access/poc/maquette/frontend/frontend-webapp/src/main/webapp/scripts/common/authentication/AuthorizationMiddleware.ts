@@ -9,7 +9,7 @@ import {  REQUEST_AUTHENTICATE } from './AuthenticateActions'
 export default (store: any) => (next: any) => (action: any) => {
   let callAPI = action[CALL_API]
   if (callAPI){
-    callAPI["headers"] = (store: any) => ({ 'Accept': 'application/json', 'Authorization': getAuthorization(store,callAPI) || '' })
+    callAPI["headers"] = (store: any) => ({ 'Accept': 'application/json', 'Content-type':'application/json','Authorization': getAuthorization(store,callAPI) || '' })
   }
 
   return next(action)

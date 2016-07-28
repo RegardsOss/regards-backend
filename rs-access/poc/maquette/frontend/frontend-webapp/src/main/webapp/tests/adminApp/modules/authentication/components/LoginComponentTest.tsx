@@ -16,13 +16,12 @@ describe('[ADMIN APP] Testing login component', () => {
     };
     let props = {
       onLogin: spy,
-      errorMessage: '',
-      styles: loginStyles
+      errorMessage: ''
     };
 
     const wrapper = shallow(<LoginComponent {...props}/>);
-    expect(wrapper.find("div .login-modal")).to.have.length(1);
-    expect(wrapper.find("div .login-error")).to.have.length(1);
+    expect(wrapper.find("div")).to.have.length(1);
+    expect(wrapper.find("p")).to.have.length(1);
     expect(wrapper.find("input[type='text']")).to.have.length(1);
     expect(wrapper.find("input[type='password']")).to.have.length(1);
     expect(wrapper.find("button")).to.have.length(1);
@@ -39,14 +38,9 @@ describe('[ADMIN APP] Testing login component', () => {
     };
     const spy = sinon.spy(onLogin)
     const handleKeyPress = () => { };
-    const loginStyles = {
-      "login-modal": 'login-modal',
-      "login-error": "login-error"
-    };
     let props = {
       onLogin: spy,
-      errorMessage: '',
-      styles: loginStyles
+      errorMessage: ''
     };
 
     const wrapper = shallow(<LoginComponent {...props}/>);

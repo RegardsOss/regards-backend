@@ -11,7 +11,6 @@ interface PluginProps {
   pluginInitialized?: (action:any) => void
 }
 
-
 /**
  * React component to display a given plugin
  *

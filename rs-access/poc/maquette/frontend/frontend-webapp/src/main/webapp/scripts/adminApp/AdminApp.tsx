@@ -3,15 +3,27 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 import * as ReactDOM from 'react-dom'
 
-import { setTheme } from '../common/theme/actions/ThemeActions'
 import { logout } from '../common/authentication/AuthenticateActions'
-import { getThemeStyles } from '../common/theme/ThemeUtils'
 import Authentication from './modules/authentication/containers/AuthenticationContainer'
 import { AuthenticationType } from '../common/authentication/AuthenticationTypes'
-import SelectThemeComponent from '../common/theme/components/SelectThemeComponent'
-import SelectLocaleComponent from '../common/i18n/SelectLocaleComponent'
+import { isAuthenticated } from '../common/authentication/AuthenticateUtils'
+
 import ErrorComponent from '../common/components/ApplicationErrorComponent'
-import Layout from './modules/layout/Layout'
+import Layout from '../common/layout/containers/Layout'
+import Home from './modules/home/Home'
+import MenuComponent from './modules/menu/components/MenuComponent'
+// Theme
+import AppBar from 'material-ui/AppBar';
+import RaisedButton from 'material-ui/RaisedButton'
+import IconMenu from 'material-ui/IconMenu';
+import MenuItem from 'material-ui/MenuItem';
+import FlatButton from 'material-ui/FlatButton';
+import IconButton from 'material-ui/IconButton';
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+
+import ThemeHelper from '../common/theme/ThemeHelper'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
+import SelectTheme from '../common/theme/containers/SelectTheme'
 
 interface AminAppProps {
   router: any,
@@ -21,10 +33,8 @@ interface AminAppProps {
   authentication: AuthenticationType,
   content: any,
   location: any,
-  onLogout: ()=> void,
-  setTheme: (name:string)=> void
+  onLogout: ()=> void
 }
-
 
 /**
  * React component to manage Administration application.
@@ -32,92 +42,70 @@ interface AminAppProps {
  */
 class AdminApp extends React.Component<AminAppProps, any> {
   constructor(){
-    super();
-    this.state = {
-      instance: false
-    }
-    this.changeTheme = this.changeTheme.bind(this)
-  }
-
-  componentWillMount(){
-    // Init admin theme
-    let themeToSet = this.props.params.project;
-    if (this.props.params.project === "instance"){
-      this.setState({instance: true});
-      themeToSet = "default";
-    }
-    this.props.setTheme(themeToSet)
-  }
-
-  changeTheme(themeToSet: string){
-    if (this.props.theme !== themeToSet){
-      this.props.setTheme(themeToSet)
-    }
+    super()
+    this.state = { instance: false }
   }
 
   render(){
     const { theme, authentication, content, location, params, onLogout } = this.props
-    const styles = getThemeStyles(theme, 'adminApp/styles')
-    const commonStyles = getThemeStyles(theme,'common/common.scss')
-    if (authentication){
-      let authenticated = authentication.authenticateDate + authentication.user.expires_in > Date.now()
-      authenticated = authenticated && (authentication.user.name !== undefined) && authentication.user.name !== 'public'
-      if (authenticated === false){
-        return (
-          <div className={styles.main}>
-            <Authentication />
 
-            <SelectThemeComponent
-              styles={commonStyles}
-              themes={["cdpp","ssalto","default"]}
-              curentTheme={theme}
-              onThemeChange={this.changeTheme} />
+    // Build theme
+    const muiTheme = ThemeHelper.getByName(theme)
 
-              <SelectLocaleComponent
-                styles={commonStyles}
-                locales={['fr','en']} />
+    // Authentication
+    const authenticated = isAuthenticated(authentication)
+    if (authenticated === false){
+      return (
+        <MuiThemeProvider muiTheme={muiTheme}>
+          <Authentication />
+        </MuiThemeProvider>
+      )
+    } else {
+      return (
+        <MuiThemeProvider muiTheme={muiTheme}>
+          <div>
+            <AppBar key='0'
+              title="Regards admin dashboard"
+              iconElementRight={
+                <div>
+                  <IconMenu
+                    iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+                    anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+                    targetOrigin={{horizontal: 'left', vertical: 'top'}}
+                  >
+                    <MenuItem primaryText="Refresh" />
+                    <MenuItem primaryText="Send feedback" />
+                    <MenuItem primaryText="Settings" />
+                    <MenuItem primaryText="Help" />
+                    <MenuItem primaryText="Sign out" />
+                  </IconMenu>
+                </div>
+              }
+              />
+              <MenuComponent />
+            <Layout>
+              <div key='1' style={{backgroundColor:'#ff4081',height: '100%'}}>
+                <RaisedButton label="Click!" />
+                  <SelectTheme/>
+              </div>
+
+              <div key='2' style={{backgroundColor:'#FFCA28'}}>
+                {content}
+              </div>
+            </Layout>
           </div>
-        );
-      } else {
-          return (
-            <div>
-              <Layout
-                location={location}
-                content={content}
-                project={params.project}
-                onLogout={onLogout}/>
-
-              <SelectThemeComponent
-                styles={styles}
-                themes={["cdpp","ssalto","default"]}
-                curentTheme={theme}
-                onThemeChange={this.changeTheme} />
-
-                <SelectLocaleComponent
-                  styles={commonStyles}
-                  locales={['fr','en']} />
-          </div>
-          );
-      }
-    }
-    else {
-      return <ErrorComponent />
+        </MuiThemeProvider>
+      )
     }
   }
 }
 
 // Add theme from store to the component props
-const mapStateToProps = (state: any) => {
-  return {
-    theme: state.common.theme,
-    authentication: state.common.authentication
-  }
-}
-const mapDispatchToProps = (dispatch: any) => {
-  return {
-    setTheme: (theme: string) => {dispatch(setTheme(theme))},
-    onLogout: () => {dispatch(logout())}
-  }
-}
-const connectedAdminApp = connect<{}, {}, AminAppProps>(mapStateToProps,mapDispatchToProps)(AdminApp)
-export default connectedAdminApp
+const mapStateToProps = (state: any) => ({
+  theme: state.common.theme,
+  authentication: state.common.authentication
+})
+const mapDispatchToProps = (dispatch: any) => ({
+  onLogout: () => {dispatch(logout())}
+})
+export default connect<{}, {}, AminAppProps>(mapStateToProps, mapDispatchToProps)(AdminApp)

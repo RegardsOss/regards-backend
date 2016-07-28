@@ -1,24 +1,23 @@
 import {
   REQUEST_ACCESSRIGHTS,  RECEIVE_ACCESSRIGHTS,
   FAILED_ACCESSRIGHTS } from './AccessRightsActions'
+import { DependencyAccessRight } from './AccessRightsTypes'
+import * as Immutable from 'immutable'
 
 export default (state:any = {
   isFetching: false,
   items: []
 }, action: any) => {
-  let newState = Object.assign({}, state)
+  let newState = Immutable.fromJS(state).toJS();
   switch(action.type){
     case REQUEST_ACCESSRIGHTS:
       newState.isFetching = true
       return newState
     case RECEIVE_ACCESSRIGHTS:
       newState.isFetching = false
-      newState.items.push({
-        name : action.view,
-        access: action.access
-      })
+      newState.items = newState.items.concat(action.payload);
       return newState
-      case FAILED_ACCESSRIGHTS:
+    case FAILED_ACCESSRIGHTS:
         newState.isFetching = false
         return newState
     default:

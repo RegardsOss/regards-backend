@@ -1,13 +1,13 @@
 var { CALL_API } = require('redux-api-middleware')
 
-import { Dependencies } from "./AccessRightsViewType"
+import { DependencyAccessRight } from "./AccessRightsTypes"
 
 export const ACCESS_RIGHTS_API='http://localhost:8080/api/access/rights'
 export const REQUEST_ACCESSRIGHTS = 'REQUEST_ACCESSRIGHTS'
 export const RECEIVE_ACCESSRIGHTS = 'RECEIVE_ACCESSRIGHTS'
 export const FAILED_ACCESSRIGHTS = 'FAILED_ACCESSRIGHTS';
 
-export const fetchAccessRights = (dependencies:Dependencies) => ({
+export const fetchAccessRights = (dependencies:Array<DependencyAccessRight>) => ({
   [CALL_API]: {
     types: [
       REQUEST_ACCESSRIGHTS,
@@ -15,7 +15,7 @@ export const fetchAccessRights = (dependencies:Dependencies) => ({
       FAILED_ACCESSRIGHTS
     ],
     endpoint: ACCESS_RIGHTS_API,
-    method: 'GET',
-    body: dependencies
+    method: 'POST',
+    body: JSON.stringify(dependencies)
   }
 })

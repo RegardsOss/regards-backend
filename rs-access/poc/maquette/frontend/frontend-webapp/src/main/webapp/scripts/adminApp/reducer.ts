@@ -4,14 +4,12 @@
 import { combineReducers } from 'redux';
 // import authentication from '../modules/authentication/reducers/TODO'
 // import home from '../modules/home/reducers/TODO'
-// import layout from './modules/layout/reducers/MenuReducers'
 import projects, * as fromProjects from './modules/projects/reducer'
 import projectAdmins, * as fromProjectAdmins from './modules/projectAdmins/reducer'
 import ui, * as fromUi from './modules/ui/reducer'
 import { values } from 'lodash'
 
 export default combineReducers({
-  // layout,
   projects,
   projectAdmins,
   ui

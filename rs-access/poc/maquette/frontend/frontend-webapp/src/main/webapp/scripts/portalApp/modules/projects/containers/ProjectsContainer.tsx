@@ -10,7 +10,6 @@ import { Project, ProjectsStore } from '../types/ProjectTypes'
 
 // Container props
 interface ProjectsProps{
-  styles: any,
   // Properties set by react redux connection
   onLoad?: ()=> void,
   projects?: ProjectsStore,
@@ -30,10 +29,9 @@ export class ProjectsContainer extends React.Component<ProjectsProps, any> {
   }
 
   render(){
-    // styles props is passed throught the react component creation
-    // porjects props is set to the container by tge react-redux connect.
+    // projects props is set to the container by tge react-redux connect.
     // See method mapStateToProps
-    const { styles, projects } = this.props
+    const { projects } = this.props
 
     // If projects are loading display a loading information message
     if (projects.isFetching === true || !projects.items){
@@ -45,7 +43,7 @@ export class ProjectsContainer extends React.Component<ProjectsProps, any> {
           <p><FormattedMessage id="portalapp.projects.list.title" /></p>
           <ul>
             {projects.items.map(project =>
-              <ProjectComponent key={project.name} project={project} styles={styles}/>
+              <ProjectComponent key={project.name} project={project} />
             )}
           </ul>
         </div>
@@ -55,17 +53,13 @@ export class ProjectsContainer extends React.Component<ProjectsProps, any> {
 }
 
 // Add projects from store to the container props
-const mapStateToProps = (state:any) => {
-  return {
-    projects: state.portalApp.projects,
-    i18n: state.common.i18n
-  }
-}
+const mapStateToProps = (state:any) => ({
+  projects: state.portalApp.projects,
+  i18n: state.common.i18n
+})
 
 // Add functions dependending on store dispatch to container props.
-const mapDispatchToProps = (dispatch:any) => {
-  return {
-    onLoad: () => dispatch(fetchProjects()),
-  }
-}
+const mapDispatchToProps = (dispatch:any) => ({
+  onLoad: () => dispatch(fetchProjects())
+})
 export default connect<{},{},ProjectsProps>(mapStateToProps,mapDispatchToProps)(ProjectsContainer)

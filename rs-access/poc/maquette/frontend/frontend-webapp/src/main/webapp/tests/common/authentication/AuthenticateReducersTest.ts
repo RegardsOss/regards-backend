@@ -6,7 +6,7 @@ describe('[COMMON] Testing authenticate reducer', () => {
 
   it('should return the initial state', () => {
     expect(reducer(undefined, {})).to.eql({
-      isFetching : false,
+      isFetching: false,
       user: {},
       authenticateDate: '',
       error: ''
@@ -18,10 +18,10 @@ describe('[COMMON] Testing authenticate reducer', () => {
       type: 'REQUEST_AUTHENTICATE'
     }
     const initState = {
-      isFetching : false
+      isFetching: false
     }
     const expectedState = {
-      isFetching : true
+      isFetching: true
     }
     expect(reducer(initState, action)).to.eql(expectedState)
   })
@@ -38,18 +38,18 @@ describe('[COMMON] Testing authenticate reducer', () => {
         scope: "openid"
       },
       meta: {
-        name : 'testuser',
+        name: 'testuser',
         authenticateDate: date
       }
     }
     const initState = {
-      isFetching : true,
+      isFetching: true,
       user: {},
       authenticateDate: '',
       error: ''
     }
     const expectedState = {
-      isFetching : false,
+      isFetching: false,
       user: {
         access_token: "72ad6d01-25d6-4c57-8f72-4b060ab7fa57",
         token_type: "bearer",
@@ -67,17 +67,19 @@ describe('[COMMON] Testing authenticate reducer', () => {
   it('should handle fetch failure', () => {
     const action = {
       type: 'FAILED_AUTHENTICATE',
-      error: 'Oops there was an error!'
+      meta: {
+        errorMessage: 'Oops there was an error!'
+      }
     }
     const initState = {
-      isFetching : true,
-      user: {"toto":"toto"},
+      isFetching: true,
+      user: { "toto": "toto" },
       authenticateDate: '',
       error: ''
     }
     const expectedState = {
-      isFetching : false,
-      user: {"toto":"toto"},
+      isFetching: false,
+      user: { "toto": "toto" },
       authenticateDate: '',
       error: 'Oops there was an error!'
     }
@@ -89,7 +91,7 @@ describe('[COMMON] Testing authenticate reducer', () => {
       type: 'LOGOUT'
     }
     const initState = {
-      isFetching : false,
+      isFetching: false,
       user: {
         access_token: "72ad6d01-25d6-4c57-8f72-4b060ab7fa57",
         token_type: "bearer",
@@ -101,7 +103,7 @@ describe('[COMMON] Testing authenticate reducer', () => {
       error: 'This is some cool text'
     }
     const expectedState = {
-      isFetching : false,
+      isFetching: false,
       user: {},
       authenticateDate: '',
       error: ''

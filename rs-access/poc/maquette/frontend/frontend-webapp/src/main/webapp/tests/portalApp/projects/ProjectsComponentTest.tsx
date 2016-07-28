@@ -2,12 +2,12 @@ import * as React from 'react'
 import { Link } from 'react-router';
 import { mount, shallow } from 'enzyme';
 import { expect } from 'chai'
-import { FormattedMessage } from 'react-intl'
 // Import unconnected version of ProjectsComponent. by using bracets {} around component.
 // To get the react-redux connect component use "import ProjectsComponent" instead of "import { ProjectsComponent }"
 import { ProjectsContainer } from '../../../scripts/portalApp/modules/projects/containers/ProjectsContainer';
 import ProjectComponent from '../../../scripts/portalApp/modules/projects/components/ProjectComponent';
 import { ProjectsStore } from '../../../scripts/portalApp/modules/projects/types/ProjectTypes';
+import { FormattedMessage } from 'react-intl'
 
 // Test a component rendering
 
@@ -15,10 +15,6 @@ describe('[PORTAL APP] Testing projects components', () => {
   it('Should render correctly the loading projects message', () => {
     const dispatch = () => { };
     const onLoad = () => { };
-    const projectsStyles = {
-      link: 'link',
-      projectlink: 'projectlink'
-    };
     const projects:ProjectsStore = {
       isFetching: true,
       items: [],
@@ -26,7 +22,6 @@ describe('[PORTAL APP] Testing projects components', () => {
     }
     let props = {
       projects,
-      styles: projectsStyles,
       dispatch :dispatch,
       onLoad: onLoad
     };
@@ -37,10 +32,6 @@ describe('[PORTAL APP] Testing projects components', () => {
   it('Should render correctly the projects list', () => {
     const dispatch = () => { };
     const onLoad = () => { };
-    const projectsStyles = {
-      link: 'link',
-      projectlink: 'projectlink'
-    };
     const projects:ProjectsStore = {
       isFetching: false,
       items: [{name: 'cdpp'},{name: 'ssalto'}],
@@ -49,7 +40,6 @@ describe('[PORTAL APP] Testing projects components', () => {
 
     let props = {
       projects,
-      styles: projectsStyles,
       dispatch :dispatch,
       onLoad : onLoad
     };
@@ -58,8 +48,8 @@ describe('[PORTAL APP] Testing projects components', () => {
       <div>
         <p><FormattedMessage id="portalapp.projects.list.title" /></p>
         <ul>
-            <ProjectComponent key="cdpp" project={{name: 'cdpp'}} styles={projectsStyles}/>
-            <ProjectComponent key= "ssalto" project={{name: 'ssalto'}} styles={projectsStyles}/>
+            <ProjectComponent key="cdpp" project={{name: 'cdpp'}} />
+            <ProjectComponent key= "ssalto" project={{name: 'ssalto'}} />
         </ul>
       </div>
     );
@@ -68,29 +58,24 @@ describe('[PORTAL APP] Testing projects components', () => {
   });
 
   it('Should render correctly a project link', () => {
-    const projectsStyles = {
-      link: 'link',
-      "project-link": 'project-link'
-    };
     let props = {
-      styles: projectsStyles,
       project: {name: 'cdpp'}
     };
 
     const result = (
-      <li className="link">
+      <li>
         <p>cdpp</p>
-          <Link to="/user/cdpp" className="project-link">
-            <FormattedMessage id="project.user.access.link" />
-          </Link>
-          <Link to="/admin/cdpp" className="project-link">
-            <FormattedMessage id="project.admin.access.link" />
-          </Link>
+        <Link to="/user/cdpp">
+        <FormattedMessage id="project.user.access.link"/>
+        </Link>
+        <Link to="/admin/cdpp">
+        <FormattedMessage id="project.admin.access.link"/>
+        </Link>
       </li>
     )
     const wrapper = shallow(<ProjectComponent {...props}/>);
     // To log result
-    //console.log(wrapper.debug());
+    // console.log(wrapper.debug(), result);
     expect(wrapper.contains(result)).to.equal(true);
   });
 
