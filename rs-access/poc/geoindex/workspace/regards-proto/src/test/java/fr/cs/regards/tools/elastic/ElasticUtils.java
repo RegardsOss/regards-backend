@@ -32,6 +32,7 @@ public abstract class ElasticUtils {
 		requestHeaders.setContentType(new MediaType("application", "json"));
 		HttpEntity<T> requestEntity = new HttpEntity<T>(object, requestHeaders);
 		
+		
 		restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
 	}
 	

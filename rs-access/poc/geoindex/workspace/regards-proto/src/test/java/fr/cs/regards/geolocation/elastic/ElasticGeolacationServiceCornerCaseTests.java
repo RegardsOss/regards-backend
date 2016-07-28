@@ -23,8 +23,8 @@ import fr.cs.regards.tools.geojson.GeoJSONTools;
 
 public class ElasticGeolacationServiceCornerCaseTests {
 	private static String BASE_URL = "http://localhost:9200";
-	private static String TEST_INDEX = "test_corner_case";
-	static String INDEX = String.format("%s/%s/", BASE_URL, TEST_INDEX);
+	private static String TEST_INDEX = "test_corner_case_2";
+	static String INDEX = String.format("%s/%s", BASE_URL, TEST_INDEX);
 	private static ElasticGeolacationService geolocService = new ElasticGeolacationService(INDEX + "/_search");
 
 	@Before

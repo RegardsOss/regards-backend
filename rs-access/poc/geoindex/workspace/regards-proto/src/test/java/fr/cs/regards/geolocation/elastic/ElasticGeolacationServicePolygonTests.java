@@ -28,8 +28,8 @@ import fr.cs.regards.tools.geojson.GeoJSONTools;
 public class ElasticGeolacationServicePolygonTests {
 	private static final String POLYGON_ID = "testPolygon";
 	private static String BASE_URL = "http://localhost:9200";
-	private static String TEST_INDEX = "test_polygon";
-	static String INDEX = String.format("%s/%s/", BASE_URL, TEST_INDEX);
+	private static String TEST_INDEX = "test_polygon_2";
+	static String INDEX = String.format("%s/%s", BASE_URL, TEST_INDEX);
 	private static ElasticGeolacationService geolocService = new ElasticGeolacationService(INDEX+"/_search");
 	
 	

@@ -39,6 +39,7 @@ public class ElasticGeolacationService implements GeolocationService {
 	
 	
 	public ElasticGeolacationService(String url){
+		System.out.println("Service init with = "+url);
 		try {
 			this.url = new URL(url);
 			String[] tokens = this.url.getPath().split("/");
@@ -65,7 +66,7 @@ public class ElasticGeolacationService implements GeolocationService {
 		REST.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
 		REST.getMessageConverters().add(new StringHttpMessageConverter());
 		ResponseEntity<ElasticResponse> resp = REST.exchange(url.toString(), HttpMethod.POST, requestEntity, ElasticResponse.class);
-		System.out.println(new ObjectMapper().writeValueAsString(resp.getBody()));
+		System.out.println("Response : "+new ObjectMapper().writeValueAsString(resp.getBody()));
 		List<Hit> hits = resp.getBody().hits.hits;
 		List<Feature> features = new ArrayList<Feature>(hits.size());
 		hits.forEach(hit -> {
@@ -84,7 +85,7 @@ public class ElasticGeolacationService implements GeolocationService {
 		//Create the query
 		String jsonCriteria = ElasticCriteria.convert(criteria).toJSON();
 		String query = String.format(SEARCH_TPL, jsonCriteria);
-		System.out.println(query);
+		System.out.println("Query sent "+query);
 		HttpEntity<String> requestEntity = new HttpEntity<String>(query, requestHeaders);
 		return requestEntity;
 	}

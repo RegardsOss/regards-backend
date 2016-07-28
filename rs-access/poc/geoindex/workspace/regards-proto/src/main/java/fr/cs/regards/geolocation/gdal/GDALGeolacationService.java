@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.gdal.gdal.gdal;
 import org.gdal.ogr.DataSource;
 import org.gdal.ogr.Driver;
 import org.gdal.ogr.FeatureDefn;
@@ -35,17 +36,23 @@ public class GDALGeolacationService implements GeolocationService {
 	
 
 	public GDALGeolacationService(String dataSourceName, String layerName) {
+		System.out.println(dataSourceName);
 		if(OGR__NOT_REGISTERED){
 			ogr.RegisterAll();
 			OGR__NOT_REGISTERED = false;
 		}
-		DataSource existingDataSource = ogr.Open(dataSourceName, 1);
-		if(existingDataSource == null){
-			Driver driver = ogr.GetDriverByName("ElasticSearch");
-			dataSource = driver.CreateDataSource(dataSourceName);
+		int nb = ogr.GetDriverCount();
+		for (int i=0;i<nb;i++) {
+			Driver myDriver = ogr.GetDriver(i);
+			System.out.println("num "+i+" : "+myDriver.getName());
 		}
-		else{
-			dataSource = existingDataSource;
+		
+		dataSource = ogr.Open(dataSourceName, 1);
+		System.out.println("data source name = "+dataSourceName);
+		if(dataSource == null){
+			throw new RuntimeException("exc:"+gdal.GetLastErrorMsg());
+//			Driver driver = ogr.GetDriverByName("ElasticSearch");
+//			dataSource = driver.CreateDataSource(dataSourceName);
 		}
 		System.out.println(dataSource.getName());
 		Layer existingLayer = dataSource.GetLayer(layerName);

@@ -91,10 +91,10 @@ public class PostgisGeolacationServiceCornerCaseTests {
 		}
 		{
 			Polygon cpoly = new Polygon();
-			Coordinate cp1 = new Coordinate(0, -81);
-			Coordinate cp2 = new Coordinate(90, -81);
-			Coordinate cp3 = new Coordinate(180, -80);
-			Coordinate cp4 = new Coordinate(-90, -80);
+			Coordinate cp1 = new Coordinate(-90, -80);
+			Coordinate cp2 = new Coordinate(0, -80);
+			Coordinate cp3 = new Coordinate(90, -80);
+			Coordinate cp4 = new Coordinate(180, -80);
 			cpoly.setCoordinates(Arrays.asList(cp1, cp2, cp3, cp4));
 			GeolocationCriteria<Polygon> crit1 = new GeolocationCriteria<>();
 			crit1.setShape(cpoly);
