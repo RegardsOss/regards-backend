@@ -1,28 +1,42 @@
 # Software Reuse File
+
 |               | Name                      | Company | Responsibility   |
 | ------------- | :-----------------------: | :-----: | :--------------: |
 | Written by    | Xavier-Alexandre Brochard | CS      | Development Team |
 | Verified by   |                           |         |                  |
 | Approved by   |                           |         |                  ||
+
 ## Document Status Sheet
+
 | Issue | Date        | Reasons for change       |
 | ------| :---------: | :----------------------: |
 | 00    | 2016-07-28  | Creation of the document |
 |       |             |                          ||
+
 ## Table of contents
+
 1. [Introduction](#introduction)
   1. [Purpose of the document](#purpose-of-the-document)
   2. [Scope](#scope)
   3. [Document structure](#document-structure)
   4. [References](#references)
-  1. [Applicable and Reference documents](#applicable-and-reference-documents)
+    1. [Applicable and Reference documents](#applicable-and-reference-documents)
     2. [Definitions](#definitions)
-    2. [Third party products and required software licences](#third-party-products-and-required-software-licences)
+2. [Third party products and required software licences](#third-party-products-and-required-software-licences)
   1. [General](#general)
     1. [Free licence categorization and meaning](#free-licence-categorization-and-meaning)
     2. [Impact of free licences on customers](#impact-of-free-licences-on-customers)
-  2. [React](#react)
-  3. [Redux](#redux)
+  2. [Runtime](#runtime)
+    1. [React](#react)
+    2. [Redux](#redux)
+    3. [Material-UI](#material-ui)
+    3. [Lodash](#lodash)
+  3. [Compile time](#compile-time)
+    1. [Webpack](#webpack)
+    2. [TypeScript](#typescript)
+  3. [Testing](#testing)
+    1. [Mocha](#mocha)
+    1. [Chai](#chai)
 3. [Rights to use, copy, modify, distribute for each software component](#rights-to-use,-copy,-modify,-distribute-for-each-software-component)
 
 ### 1. Introduction
@@ -36,7 +50,9 @@ It explains the reason why the software is proposed for reuse, where and the ext
 
 #### 2. Scope
 
-The document describes the software to be re-used during the pre-development phase (proof-of-concepts phase) of REGARDS.
+The document describes the software to be re-used in the frontend application during the pre-development phase (proof-of-concepts phase) of REGARDS.
+
+For the sake of simplicity, only the most significant COTS will be described here.
 
 #### 3. Document structure
 
@@ -86,7 +102,7 @@ allow distribution of the modifications** (these are known as the four freedoms 
 
 **Permissive licenses** like MIT, BSD or Apache licenses do not mandate any licensing terms for derived product. This means an image processing filter built using an Apache license library can be distributed under any licenses terms, even if the original Apache code itself has been modified.
 
-As seen, copyleft notion has to deal with distribution agreement. It is better identified as a "reciprocal" effect but may sometimes be negatively referred to as "viral propagation", "infection" or "contamination" in some cases. For instance, let’s consider a project which includes any amount of source code from free licensed product "A" and there is a need to make changes to some part of source code, corresponding to additional code "A’ ", on the one hand, plus a need to add a wrapping layer "B", on the other hand. "A" + "A’ ""+ "B" aiming to create a new "Alpha" application. "Alpha" product diffusion license can be chosen only according to "A" original license itself as explained hereafter:
+As seen, copyleft notion has to deal with distribution agreement. It is better identified as a "reciprocal" effect but may sometimes be negatively referred to as "viral propagation", "infection" or "contamination" in some cases. For instance, let’s consider a project which includes any amount of source code from free licensed product "A" and there is a need to make changes to some part of source code, corresponding to additional code "A’ ", on the one hand, plus a need to add a wrapping layer "B", on the other hand. "A" + "A’ " + "B" aiming to create a new "Alpha" application. "Alpha" product diffusion license can be chosen only according to "A" original license itself as explained hereafter:
 * whenever "A" is distributed under the terms of a **strong** copyleft license, the entire new or modified pieces of code ("A’ " in this example) or derived work ("B") becomes subject to the terms of the original license,
 * Whenever "A" is distributed under the terms of a **weak** copyleft license, in some cases only modified work becomes subject to the terms of the original license. Thus, whereas "A" and "A’ " will be subject to the terms of "A" original license, yet "B" may be submitted to another kind of license. Some conditions must be fulfilled in such a case: if both "A" and "A’ " are part of a **dynamically linked** library and the final user is given
 the capability of replacing "A+A’ " in order to introduce his own modification ""A+A’+A’’ ", then "B" may be distributed under a different license. On the other side, if both "A" and "A’ " are part of a **statically linked** library, then "B" should be distributed under the terms of the same license. Exact conditions of distribution are described within the license terms themselves. A careful attention must be paid onto the distribution license version, either LGPL v2.1 or LGPL v3, which differ on this point
@@ -111,50 +127,107 @@ Therefore, CS proposes, when possible, to avoid **strong** copyleft COTS usage w
 
 Using **weak** copyleft licenses products without any change enables to guarantee that no code developed within the project should fall under distribution rules that may get incompatible to related intellectual property laws.
 
-#### 2. React
+#### 2. Runtime
+
+##### 1. React
 
 | Feature | Value |
 | ----- | :-----: |
 | Name | React |
+| Main features | React is a component-based JavaScript library for building user interfaces. |
 | Developer/Ownership | Facebook, Inc. |
-| Licencing conditions | BSD License |
+| Licencing conditions | Open source - BSD License |
 | Industrial Property Constraints | Redistribution and use in source and binary forms, with or without modification, are permitted provided [those conditions](#https://github.com/facebook/react/blob/master/LICENSE). |
-| Applicable dispositions for maintenance, installation and training | todo |
-| Commercial SW needed for execution | todo |
-| Development and execution environment | todo |
 | Version and components | 15.0.2 |
 | Language | JavaScript, C++, TypeScript, CoffeScript, Python, C |
-| Size | todo |
 
-#### 3. Redux
+##### 2. Redux
 
 | Feature | Value |
 | ----- | :-----: |
 | Name | Redux |
+| Main features | Redux is a predictable state container for JavaScript apps. |
 | Developer/Ownership | Dan Abramov |
-| Licencing conditions | MIT License (MIT) |
+| Licencing conditions | Open source - MIT License (MIT) |
 | Industrial Property Constraints | Permission is granted, free of charge, to deal in the Software without restriction, subject to [those conditions](#https://github.com/reactjs/redux/blob/master/LICENSE.md) |
-| Applicable dispositions for maintenance, installation and training | todo |
-| Commercial SW needed for execution | todo |
-| Development and execution environment | todo |
 | Version and components | 3.5.2 |
 | Language | JavaScript, TypeScript |
-| Size | todo |
 
-#### 4. Material-UI
+##### 3. Material-UI
 
 | Feature | Value |
 | ----- | :-----: |
 | Name | Material-UI |
+| Main features | Material-UI is a set of React components that implement Google's Material Design specification. |
 | Developer/Ownership | Call-Em-All |
-| Licencing conditions | MIT License (MIT) |
+| Licencing conditions | Open source - MIT License (MIT) |
 | Industrial Property Constraints | Permission is granted, free of charge, to deal in the Software without restriction, subject to [those conditions](#https://github.com/callemall/material-ui/blob/master/LICENSE) |
-| Applicable dispositions for maintenance, installation and training | todo |
-| Commercial SW needed for execution | todo |
-| Development and execution environment | todo |
 | Version and components | 0.15.2 |
 | Language | JavaScript |
-| Size | todo |
+
+##### 4. Lodash
+
+| Feature | Value |
+| ----- | :-----: |
+| Name | Lodash |
+| Main features | Lodash is a JavaScript utility library delivering modularity, performance, & extras. |
+| Developer/Ownership | jQuery Foundation and other contributors |
+| Licencing conditions | Open source - MIT License (MIT) |
+| Industrial Property Constraints | Permission is granted, free of charge, to deal in the Software without restriction, subject to [those conditions](#https://github.com/lodash/lodash/blob/master/LICENSE) |
+| Version and components | 4.13.1 |
+| Language | JavaScript |
+
+#### 2. Compile time
+
+##### 1. Webpack
+
+| Feature | Value |
+| ----- | :-----: |
+| Name | Webpack |
+| Main features | Webpack is a bundler for modules. The main purpose is to bundle JavaScript files for usage in a browser, yet it is also capable of transforming, bundling, or packaging just about any resource or asset. |
+| Developer/Ownership | Tobias Koppers |
+| Licencing conditions | Open soure - MIT License (MIT) |
+| Industrial Property Constraints | Permission is granted, free of charge, to deal in the Software without restriction, subject to [those conditions](#https://github.com/webpack/webpack/blob/master/LICENSE) |
+| Version and components | 1.13.1 |
+| Language | JavaScript |
+
+##### 2. TypeScript
+
+| Feature | Value |
+| ----- | :-----: |
+| Name | TypeScript |
+| Main features | TypeScript is a language (a typed superset of JavaScript) for application-scale JavaScript. TypeScript adds optional types, classes, and modules to JavaScript. TypeScript compiles to readable, standards-based JavaScript. |
+| Developer/Ownership | Microsoft |
+| Licencing conditions | Open source - Apache License |
+| Industrial Property Constraints | Perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare Derivative Works of, publicly display, publicly perform, sublicense, and distribute the Work and such Derivative Works in Source or Object form. |
+| Version and components | 1.8.10 |
+| Language | TypeScript |
+
+#### 3. Testing
+
+##### 1. Mocha
+
+| Feature | Value |
+| ----- | :-----: |
+| Name | Mocha |
+| Main features | Mocha is a feature-rich JavaScript test framework running on Node.js and in the browser. |
+| Developer/Ownership | TJ Holowaychuk |
+| Licencing conditions | Open source - MIT License (MIT) |
+| Industrial Property Constraints | Permission is granted, free of charge, to deal in the Software without restriction, subject to [those conditions](#https://github.com/mochajs/mocha/blob/master/LICENSE) |
+| Version and components | 3.0.0-2 |
+| Language | JavaScript, HTML |
+
+##### 2. Chai
+
+| Feature | Value |
+| ----- | :-----: |
+| Name | Chai |
+| Main features | Chai is an assertion framework for node.js and the browser that can be paired with any testing framework. |
+| Developer/Ownership | Jake Luer |
+| Licencing conditions | Open source - MIT License (MIT) |
+| Industrial Property Constraints | Permission is granted, free of charge, to deal in the Software without restriction, subject to [those conditions](#https://github.com/chaijs/chai#license) |
+| Version and components | 3.5.0 |
+| Language | JavaScript |
 
 ### 3. Rights to use, copy, modify, distribute for each software component
 
@@ -163,3 +236,8 @@ Using **weak** copyleft licenses products without any change enables to guarante
 | React | Yes | Yes | Yes | Yes |
 | Redux | Yes | Yes | Yes | Yes |
 | Material-UI | Yes | Yes | Yes | Yes |
+| Lodash | Yes | Yes | Yes | Yes |
+| Webpack | Yes | Yes | Yes | Yes |
+| TypeScript | Yes | Yes | Yes | Yes |
+| Mocha | Yes | Yes | Yes | Yes |
+| Chai | Yes | Yes | Yes | Yes |
