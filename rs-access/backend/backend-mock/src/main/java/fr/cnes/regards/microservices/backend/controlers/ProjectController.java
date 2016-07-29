@@ -28,17 +28,17 @@ import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 @EnableResourceServer
 @RequestMapping("/api")
 public class ProjectController {
-	
+
 	@Autowired
 	MethodAutorizationService authService_;
-	
+
 	/**
 	 * Method to iniate REST resources authorizations.
 	 */
 	@PostConstruct
 	public void initAuthorisations() {
-		authService_.setAutorities("/api/project@GET",new RoleAuthority("PUBLIC"));
-		authService_.setAutorities("/api/projects@GET", new RoleAuthority("PUBLIC"));
+		authService_.setAutorities("/api/project@GET",new RoleAuthority("PUBLIC"), new RoleAuthority("ADMIN"));
+		authService_.setAutorities("/api/projects@GET", new RoleAuthority("PUBLIC"), new RoleAuthority("ADMIN"));
 	}
 
 	@ResourceAccess
@@ -49,24 +49,24 @@ public class ProjectController {
 		project.add(linkTo(methodOn(ProjectController.class).getProject("cdpp")).withSelfRel());
 		return new ResponseEntity<Project>(project, HttpStatus.OK);
 	}
-	
+
 	@ResourceAccess
 	@RequestMapping(value="/projects", method = RequestMethod.GET)
     public @ResponseBody HttpEntity<List<Project>> getProjects() {
 		List<Project> projects = new ArrayList<>();
-		
+
 		Project project = new Project("cdpp");
 		String[] cdppAdmins = { "Alice", "David", "Bob" };
 		project.add(linkTo(methodOn(ProjectController.class).getProject("cdpp")).withSelfRel());
 		project.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdminsByNames(cdppAdmins)).withRel("users"));
 		projects.add(project);
-		
+
 		project = new Project("ssalto");
 		String[] ssaltoAdmins = { "Carl", "David" };
 		project.add(linkTo(methodOn(ProjectController.class).getProject("ssalto")).withSelfRel());
 		project.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdminsByNames(ssaltoAdmins)).withRel("users"));
-		projects.add(project);		
+		projects.add(project);
 		return new ResponseEntity<List<Project>>(projects, HttpStatus.OK);
     }
-	
+
 }
