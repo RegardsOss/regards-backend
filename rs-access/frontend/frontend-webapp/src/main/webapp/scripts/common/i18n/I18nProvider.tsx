@@ -1,18 +1,18 @@
 /** @module common */
-import * as React from 'react'
-import { connect } from 'react-redux'
-import { addLocaleData, IntlProvider } from 'react-intl'
-import * as fr from 'react-intl/locale-data/fr'
-import { updateMessages } from './I18nActions'
-import { localeMessagesStore } from './I18nTypes'
+import * as React from "react";
+import { connect } from "react-redux";
+import { addLocaleData, IntlProvider } from "react-intl";
+import * as fr from "react-intl/locale-data/fr";
+import { updateMessages } from "./I18nActions";
+import { localeMessagesStore } from "./I18nTypes";
 
-addLocaleData(fr)
+addLocaleData (fr)
 
 interface i18nProps {
-  messageDir : string,
+  messageDir: string,
   // Properties set by react redux connection
   locale?: string,
-  updateMessages?: (messagesDir:string, locale:string)=>void,
+  updateMessages?: (messagesDir: string, locale: string)=>void,
   messages?: Array<localeMessagesStore>,
   children?: any
 }
@@ -33,21 +33,21 @@ interface i18nProps {
  */
 export class I18nProvider extends React.Component<i18nProps, any> {
 
-  componentWillMount(){
+  componentWillMount() {
     // Get messages associated to this Prodiver via the messageDir
-    let localMessages = this.props.messages.find( (message) => message.messagesDir === this.props.messageDir)
+    let localMessages = this.props.messages.find ((message) => message.messagesDir === this.props.messageDir)
 
     // init messages if not set
-    if (!localMessages){
-      this.props.updateMessages(this.props.messageDir,this.props.locale)
+    if (!localMessages) {
+      this.props.updateMessages (this.props.messageDir, this.props.locale)
     }
   }
 
-  render(){
+  render() {
 
     // Get messages associated to this Prodiver via the messageDir
-    let localMessages = this.props.messages.find( (message) => message.messagesDir === this.props.messageDir)
-    if (localMessages){
+    let localMessages = this.props.messages.find ((message) => message.messagesDir === this.props.messageDir)
+    if (localMessages) {
       return (
         <IntlProvider
           locale={this.props.locale}
@@ -61,16 +61,16 @@ export class I18nProvider extends React.Component<i18nProps, any> {
   }
 }
 
-const mapStateToProps = (state:any) => {
-  console.log("SEB",state)
+const mapStateToProps = (state: any) => {
+  console.log ("SEB", state)
   return {
     locale: state.common.i18n.locale,
     messages: state.common.i18n.messages
   }
 }
 
-const mapDispatchToProps = (dispatch:any) => ({
-  updateMessages: (messageDir:string, locale:string) => dispatch(updateMessages(messageDir,locale))
+const mapDispatchToProps = (dispatch: any) => ({
+  updateMessages: (messageDir: string, locale: string) => dispatch (updateMessages (messageDir, locale))
 })
 
-export default connect<{}, {}, i18nProps>(mapStateToProps, mapDispatchToProps)(I18nProvider)
+export default connect<{}, {}, i18nProps> (mapStateToProps, mapDispatchToProps) (I18nProvider)

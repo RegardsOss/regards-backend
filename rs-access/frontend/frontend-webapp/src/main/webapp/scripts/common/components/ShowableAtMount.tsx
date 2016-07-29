@@ -1,29 +1,31 @@
-import * as React from "react"
+import * as React from "react";
 
 interface ShowableAtMountProps {
-  show:Boolean
+  show: Boolean
 }
 
 interface ShowableAtMountState {
 // TODO
 }
 
-class ShowableAtMount extends React.Component<ShowableAtMountProps, ShowableAtMountState>{
+class ShowableAtMount extends React.Component<ShowableAtMountProps, ShowableAtMountState> {
 
-  oldRender:() => React.ReactElement<any>
+  oldRender: () => React.ReactElement<any>
 
   constructor() {
-    super()
+    super ()
     this.oldRender = this.render
-    this.render = () => {return null}
+    this.render = () => {
+      return null
+    }
   }
 
   render() {
     return (<div>{this.props.children}</div>)
   }
 
-  componentWillMount(){
-    if(this.props.show)
+  componentWillMount() {
+    if (this.props.show)
       this.render = this.oldRender
   }
 

@@ -1,3 +1,4 @@
+import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Router, browserHistory, PlainRoute } from "react-router";
 import { Provider } from "react-redux";

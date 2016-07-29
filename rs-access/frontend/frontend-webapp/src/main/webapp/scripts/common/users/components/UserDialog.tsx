@@ -1,11 +1,7 @@
-import * as React from 'react';
-import Dialog from 'material-ui/Dialog';
-import FlatButton from 'material-ui/FlatButton';
-import RaisedButton from 'material-ui/RaisedButton';
-import TextField from 'material-ui/TextField';
-import AddBox from 'material-ui/svg-icons/content/add-box'
-
-import UserForm from './UserForm'
+import * as React from "react";
+import Dialog from "material-ui/Dialog";
+import FlatButton from "material-ui/FlatButton";
+import UserForm from "./UserForm";
 
 // TODO
 interface HandlesUser {
@@ -45,20 +41,20 @@ class UserDialog extends React.Component<Openable & Savable, any> {
     ]
 
     return (
-        <Dialog
-          title="Edit a user"
-          actions={actions}
-          modal={false}
-          open={this.props.open}
-          onRequestClose={this.props.onClose}
-          style={{zIndex:10000}}
-        >
-          <UserForm
-            handleSubmit={null} // this.props.onUserFormSubmit
-            onSubmit={null} // this.props.onUserFormSubmit
-            onCancelClick={null} 
-          />
-        </Dialog>
+      <Dialog
+        title="Edit a user"
+        actions={actions}
+        modal={false}
+        open={this.props.open}
+        onRequestClose={this.props.onClose}
+        style={{zIndex:10000}}
+      >
+        <UserForm
+          handleSubmit={null} // this.props.onUserFormSubmit
+          onSubmit={null} // this.props.onUserFormSubmit
+          onCancelClick={null}
+        />
+      </Dialog>
     )
   }
 }

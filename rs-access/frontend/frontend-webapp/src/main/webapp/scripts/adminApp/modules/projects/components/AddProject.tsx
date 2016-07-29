@@ -1,12 +1,8 @@
-import * as React from 'react';
-import Dialog from 'material-ui/Dialog';
-import FlatButton from 'material-ui/FlatButton';
-import RaisedButton from 'material-ui/RaisedButton';
-import TextField from 'material-ui/TextField';
-import AddBox from 'material-ui/svg-icons/content/add-box'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
-import ContentAdd from 'material-ui/svg-icons/content/add'
-import IconButton from 'material-ui/IconButton'
+import * as React from "react";
+import Dialog from "material-ui/Dialog";
+import FlatButton from "material-ui/FlatButton";
+import TextField from "material-ui/TextField";
+import AddBox from "material-ui/svg-icons/content/add-box";
 
 /**
  * Dialog with action buttons. The actions are passed in as an array of React objects,
@@ -21,20 +17,20 @@ export default class AddProject extends React.Component<any, any> {
   };
 
   handleOpen = () => {
-    this.setState({open: true})
+    this.setState ({open: true})
   }
 
   handleClose = () => {
-    this.setState({open: false})
+    this.setState ({open: false})
   }
 
   handleSave = () => {
-    this.handleClose()
-    this.props.onSave(this.state.value)
+    this.handleClose ()
+    this.props.onSave (this.state.value)
   }
 
   handleChange = (event: any) => {
-    this.setState({
+    this.setState ({
       value: event.target.value,
     })
   }
@@ -60,7 +56,7 @@ export default class AddProject extends React.Component<any, any> {
           primary={true}
           label="Add"
           onTouchTap={this.handleOpen}
-          icon={<AddBox />} />
+          icon={<AddBox />}/>
         <Dialog
           title="Add a new project"
           actions={actions}
@@ -70,7 +66,7 @@ export default class AddProject extends React.Component<any, any> {
         >
           <TextField
             floatingLabelText="Project name"
-            onChange={this.handleChange} />
+            onChange={this.handleChange}/>
         </Dialog>
       </div>
     );

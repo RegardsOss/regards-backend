@@ -1,14 +1,13 @@
-import * as React from 'react'
-import { connect } from 'react-redux'
-import ProjectUsersContainer from './ProjectUsersContainer'
-import ProjectUserEditContainer from './ProjectUserEditContainer'
-import ProjectUserCreateContainer from './ProjectUserCreateContainer'
+import * as React from "react";
+import ProjectUsersContainer from "./ProjectUsersContainer";
+import ProjectUserEditContainer from "./ProjectUserEditContainer";
+import ProjectUserCreateContainer from "./ProjectUserCreateContainer";
 
 interface MockProps {
   // From router
-    router: any,
-    route : any,
-    params: any,
+  router: any,
+  route: any,
+  params: any,
 }
 
 class MockContainer extends React.Component<any, MockProps> {
@@ -16,23 +15,25 @@ class MockContainer extends React.Component<any, MockProps> {
   static contextTypes: {
     muiTheme: Object
   }
-  constructor(){
-    super();
+
+  constructor() {
+    super ();
   }
-  render () {
+
+  render() {
     const {router, route, params} = this.props;
     const userList = [{
       name: "Eric",
-      id:"1"
+      id: "1"
     }, {
       name: "Joseph",
-      id:"10"
+      id: "10"
     }, {
       name: "Martin",
-      id:"100"
+      id: "100"
     }, {
       name: "John doe",
-      id:"1000"
+      id: "1000"
     }]
     return (
       <div>

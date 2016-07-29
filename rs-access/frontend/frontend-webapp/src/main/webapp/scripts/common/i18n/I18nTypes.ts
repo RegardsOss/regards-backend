@@ -1,7 +1,6 @@
-
 export interface localeMessagesStore {
-  messagesDir:string,
-  messages:Object
+  messagesDir: string,
+  messages: Object
 }
 
 export interface i18nStore {

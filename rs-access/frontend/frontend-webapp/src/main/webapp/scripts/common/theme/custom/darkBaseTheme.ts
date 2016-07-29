@@ -1,9 +1,8 @@
 // Default theme
-import darkBaseTheme from 'material-ui/styles/baseThemes/darkBaseTheme'
+import darkBaseTheme from "material-ui/styles/baseThemes/darkBaseTheme";
+import { merge } from "lodash";
 
-import { merge } from 'lodash'
-
-export default merge({}, darkBaseTheme, {
+export default merge ({}, darkBaseTheme, {
   linkWithoutDecoration: {
     textDecoration: "blink"
   }

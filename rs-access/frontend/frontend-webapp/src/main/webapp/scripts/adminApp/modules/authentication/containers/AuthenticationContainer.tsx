@@ -1,9 +1,8 @@
 /** @module AdminAuthentication */
-import * as React from 'react'
-import { connect } from 'react-redux'
-
-import LoginComponent from '../components/LoginComponent'
-import { fetchAuthenticate } from '../../../../common/authentication/AuthenticateActions'
+import * as React from "react";
+import { connect } from "react-redux";
+import LoginComponent from "../components/LoginComponent";
+import { fetchAuthenticate } from "../../../../common/authentication/AuthenticateActions";
 
 
 /**
@@ -12,11 +11,11 @@ import { fetchAuthenticate } from '../../../../common/authentication/Authenticat
  */
 export class Authentication extends React.Component<any,any> {
 
-  constructor(){
-    super();
+  constructor() {
+    super ();
   }
 
-  render(){
+  render() {
     return (
       <LoginComponent
         onLogin={this.props.onLogin}
@@ -30,7 +29,7 @@ const mapStateToProps = (state: any)=> ({
   theme: state.common.theme
 })
 
-const mapDispatchToProps = ( dispatch: any )=> ({
-  onLogin: (userName: string,password: string) => dispatch(fetchAuthenticate(userName, password))
+const mapDispatchToProps = (dispatch: any)=> ({
+  onLogin: (userName: string, password: string) => dispatch (fetchAuthenticate (userName, password))
 })
-export default connect(mapStateToProps,mapDispatchToProps)(Authentication)
+export default connect (mapStateToProps, mapDispatchToProps) (Authentication)

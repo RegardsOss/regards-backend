@@ -1,10 +1,11 @@
-import * as React from 'react'
+import * as React from "react";
 
 class Time extends React.Component<any, any> {
-  constructor(){
-    super()
+  constructor() {
+    super ()
   }
-  render(){
+
+  render() {
     return (
       <div>
         {this.props.time}

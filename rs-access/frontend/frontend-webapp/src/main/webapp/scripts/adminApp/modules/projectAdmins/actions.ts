@@ -1,12 +1,12 @@
 /** @module AdminProjectAdmins */
-var { CALL_API, getJSON } = require('redux-api-middleware')
-import Schemas from '../../../common/api/schemas'
-import { normalize } from 'normalizr'
-import { ProjectAdmin } from './types'
+var {CALL_API, getJSON} = require ('redux-api-middleware')
+import Schemas from "../../../common/api/schemas";
+import { normalize } from "normalizr";
+import { ProjectAdmin } from "./types";
 
-export const PROJECT_ADMINS_API='http://localhost:8080/api/project-admins'
+export const PROJECT_ADMINS_API = 'http://localhost:8080/api/project-admins'
 export const PROJECT_ADMIN_REQUEST = 'PROJECT_ADMIN_REQUEST'
-export const PROJECT_ADMIN_SUCESS  = 'PROJECT_ADMIN_SUCESS'
+export const PROJECT_ADMIN_SUCESS = 'PROJECT_ADMIN_SUCESS'
 export const PROJECT_ADMIN_FAILURE = 'PROJECT_ADMIN_FAILURE'
 
 
@@ -26,7 +26,7 @@ export const fetchProjectAdmins = () => ({
       PROJECT_ADMIN_REQUEST,
       {
         type: PROJECT_ADMIN_SUCESS,
-        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ADMIN_ARRAY))
+        payload: (action: any, state: any, res: any) => getJSON (res).then ((json: any) => normalize (json, Schemas.PROJECT_ADMIN_ARRAY))
       },
       PROJECT_ADMIN_FAILURE
     ],
@@ -53,7 +53,7 @@ export const fetchProjectAdminsBy = (endpoint: string) => ({
       PROJECT_ADMIN_REQUEST,
       {
         type: PROJECT_ADMIN_SUCESS,
-        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ADMIN_ARRAY))
+        payload: (action: any, state: any, res: any) => getJSON (res).then ((json: any) => normalize (json, Schemas.PROJECT_ADMIN_ARRAY))
       },
       PROJECT_ADMIN_FAILURE
     ],

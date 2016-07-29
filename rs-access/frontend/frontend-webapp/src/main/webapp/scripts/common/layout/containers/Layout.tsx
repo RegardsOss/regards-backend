@@ -1,14 +1,12 @@
-import * as React from 'react'
-import { connect } from 'react-redux'
-import * as _ from 'lodash'
-import * as actions from '../actions'
+import * as React from "react";
+import { connect } from "react-redux";
+import * as actions from "../actions";
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
 
-import 'react-grid-layout/css/styles.css'
-import 'react-resizable/css/styles.css'
-
-var WidthProvider = require('react-grid-layout').WidthProvider
-var ResponsiveReactGridLayout = require('react-grid-layout').Responsive
-ResponsiveReactGridLayout = WidthProvider(ResponsiveReactGridLayout)
+var WidthProvider = require ('react-grid-layout').WidthProvider
+var ResponsiveReactGridLayout = require ('react-grid-layout').Responsive
+ResponsiveReactGridLayout = WidthProvider (ResponsiveReactGridLayout)
 
 interface LayoutProps {
   layout?: any,
@@ -17,12 +15,12 @@ interface LayoutProps {
 
 class Layout extends React.Component<LayoutProps, any> {
   constructor() {
-    super()
-    this.onLayoutChange = this.onLayoutChange.bind(this)
-    this.state = { margin: 10 }
+    super ()
+    this.onLayoutChange = this.onLayoutChange.bind (this)
+    this.state = {margin: 10}
   }
 
-  onLayoutChange(layout:any, layouts:any) {
+  onLayoutChange(layout: any, layouts: any) {
     // console.log('Layout changed')
     // this.state.layouts = layouts
     // this.props.setLayout(layouts)
@@ -46,17 +44,17 @@ class Layout extends React.Component<LayoutProps, any> {
         isDraggable={false}
         isResizable={false}
         {...this.props}
-        >
+      >
         {this.props.children}
       </ResponsiveReactGridLayout>
     )
   }
 }
 
-const mapStateToProps = (state:any) => ({
+const mapStateToProps = (state: any) => ({
   layout: state.common.layout
 })
-const mapDispatchToProps = (dispatch:any) => ({
-  setLayout: (layout: any) => dispatch(actions.setLayout(layout))
+const mapDispatchToProps = (dispatch: any) => ({
+  setLayout: (layout: any) => dispatch (actions.setLayout (layout))
 })
-export default connect<{}, {}, LayoutProps>(mapStateToProps,mapDispatchToProps)(Layout)
+export default connect<{}, {}, LayoutProps> (mapStateToProps, mapDispatchToProps) (Layout)

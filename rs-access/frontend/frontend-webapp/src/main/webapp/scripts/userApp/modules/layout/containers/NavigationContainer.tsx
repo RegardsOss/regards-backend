@@ -1,9 +1,8 @@
-import * as React from 'react'
-import { connect } from 'react-redux'
-
-import { PluginsStore } from '../../../../common/plugins/PluginTypes'
-import { fetchPlugins } from '../../../../common/plugins/PluginsActions'
-import LinkComponent from '../components/LinkComponent'
+import * as React from "react";
+import { connect } from "react-redux";
+import { PluginsStore } from "../../../../common/plugins/PluginTypes";
+import { fetchPlugins } from "../../../../common/plugins/PluginsActions";
+import LinkComponent from "../components/LinkComponent";
 
 
 interface NavigationProps {
@@ -16,30 +15,30 @@ interface NavigationProps {
 
 class NavigationContainer extends React.Component<NavigationProps, any> {
 
-  componentWillMount(){
+  componentWillMount() {
     // Plugins are set to the container props by react-redux connect.
     // See method mapStateToProps of this container
-    const { plugins } = this.props
+    const {plugins} = this.props
     // initTheme method is set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
     // this.props.initTheme(themeToSet)
 
-    if (!plugins || !plugins.items || plugins.items.length === 0){
+    if (!plugins || !plugins.items || plugins.items.length === 0) {
       // fetchPlugins method is set to the container props by react-redux connect.
       // See method mapDispatchToProps of this container
-      this.props.fetchPlugins()
+      this.props.fetchPlugins ()
     }
   }
 
-  render(){
-    const { location, plugins, project } = this.props
-    if (plugins.items){
+  render() {
+    const {location, plugins, project} = this.props
+    if (plugins.items) {
       return (
         <nav>
           <LinkComponent location={location} key="test" to={"/user/"+project+"/test"}>Test de lien</LinkComponent>
           <LinkComponent location={location} key="time" to={"/user/"+project+"/time"}>Temps</LinkComponent>
-          {plugins.items.map( plugin => {
-            if (plugin){
+          {plugins.items.map (plugin => {
+            if (plugin) {
               return (
                 <LinkComponent
                   location={location}
@@ -71,7 +70,7 @@ const mapStateToProps = (state: any) => {
 }
 // Add functions dependending on store dispatch to container props.
 const mapDispatchToProps = (dispatch: any) => ({
-  fetchPlugins : () => dispatch(fetchPlugins())
+  fetchPlugins: () => dispatch (fetchPlugins ())
 })
-const navigation = connect<{}, {}, NavigationProps>(mapStateToProps, mapDispatchToProps)(NavigationContainer);
+const navigation = connect<{}, {}, NavigationProps> (mapStateToProps, mapDispatchToProps) (NavigationContainer);
 export default navigation

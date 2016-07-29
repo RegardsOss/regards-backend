@@ -1,7 +1,7 @@
-function setTheme (theme: string){
+function setTheme(theme: string) {
   return {
-    type : 'SET_THEME',
-    theme : theme,
+    type: 'SET_THEME',
+    theme: theme,
   }
 }
 

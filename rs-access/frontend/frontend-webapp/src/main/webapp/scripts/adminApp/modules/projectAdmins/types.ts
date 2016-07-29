@@ -1,9 +1,9 @@
 type Link = {
-  rel:string,
-  href:string
+  rel: string,
+  href: string
 }
 
 export type ProjectAdmin = {
-  name:string
-  links?:Array<Link>
+  name: string
+  links?: Array<Link>
 }

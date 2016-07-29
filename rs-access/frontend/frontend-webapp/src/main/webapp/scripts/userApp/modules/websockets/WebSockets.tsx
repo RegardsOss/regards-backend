@@ -1,9 +1,9 @@
-import * as React from 'react'
-import TimeContainer from './containers/TimeContainer'
+import * as React from "react";
+import TimeContainer from "./containers/TimeContainer";
 
 class WebSockets extends React.Component<any, any> {
 
-  render(){
+  render() {
     // Render time
     return (
       <TimeContainer />

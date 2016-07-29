@@ -1,14 +1,14 @@
-import { AuthenticationType } from './AuthenticationTypes'
+import { AuthenticationType } from "./AuthenticationTypes";
 
 export const isAuthenticated = (authentication: AuthenticationType): boolean => {
   let authenticated = false
-  if(authentication
+  if (authentication
     && authentication.authenticateDate
     && authentication.user
     && authentication.user.expires_in) {
-      authenticated = authentication.authenticateDate + (authentication.user.expires_in*1000) > Date.now()
-      authenticated = authenticated && (authentication.user.name !== undefined) && authentication.user.name !== 'public'
-    }
+    authenticated = authentication.authenticateDate + (authentication.user.expires_in * 1000) > Date.now ()
+    authenticated = authenticated && (authentication.user.name !== undefined) && authentication.user.name !== 'public'
+  }
 
-    return authenticated
+  return authenticated
 }

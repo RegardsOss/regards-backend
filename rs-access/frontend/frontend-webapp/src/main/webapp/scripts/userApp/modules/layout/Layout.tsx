@@ -1,7 +1,5 @@
-import * as React from 'react'
-import { connect } from 'react-redux'
-
-import NavigationContainer from './containers/NavigationContainer'
+import * as React from "react";
+import NavigationContainer from "./containers/NavigationContainer";
 
 interface LayoutProps {
   project: string,
@@ -10,7 +8,7 @@ interface LayoutProps {
 
 class Layout extends React.Component<LayoutProps, any> {
 
-  render(){
+  render(): any {
     return (
       <div className="full-div">
         <div className="header">

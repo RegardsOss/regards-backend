@@ -1,25 +1,22 @@
-import * as React from 'react'
-import { bindActionCreators } from 'redux'
-import { connect } from 'react-redux'
-import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
-import FlatButton from 'material-ui/FlatButton';
-import {List, ListItem} from 'material-ui/List';
-import ContentInbox from 'material-ui/svg-icons/content/inbox';
-import TextField from 'material-ui/TextField';
-
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
+import * as React from "react";
+import { Card, CardActions, CardHeader, CardText } from "material-ui/Card";
+import FlatButton from "material-ui/FlatButton";
+import TextField from "material-ui/TextField";
+import SelectField from "material-ui/SelectField";
+import MenuItem from "material-ui/MenuItem";
 
 class ProjectUserCreateContainer extends React.Component<any, any> {
   context: any;
   static contextTypes: {
     muiTheme: Object
   }
-  constructor(){
-    super();
+
+  constructor() {
+    super ();
   }
-  render () {
-    console.log(this.context)
+
+  render() {
+    console.log (this.context)
     return (
       <Card
         initiallyExpanded={true}
@@ -44,16 +41,16 @@ class ProjectUserCreateContainer extends React.Component<any, any> {
           /><br />
 
           <SelectField>
-            <MenuItem value={1} primaryText="Custom width" />
-            <MenuItem value={2} primaryText="Every Night" />
-            <MenuItem value={3} primaryText="Weeknights" />
-            <MenuItem value={4} primaryText="Weekends" />
-            <MenuItem value={5} primaryText="Weekly" />
+            <MenuItem value={1} primaryText="Custom width"/>
+            <MenuItem value={2} primaryText="Every Night"/>
+            <MenuItem value={3} primaryText="Weeknights"/>
+            <MenuItem value={4} primaryText="Weekends"/>
+            <MenuItem value={5} primaryText="Weekly"/>
           </SelectField>
         </CardText>
         <CardActions >
-          <FlatButton label="Create user" />
-          <FlatButton label="Cancel" />
+          <FlatButton label="Create user"/>
+          <FlatButton label="Cancel"/>
         </CardActions>
       </Card>
     )

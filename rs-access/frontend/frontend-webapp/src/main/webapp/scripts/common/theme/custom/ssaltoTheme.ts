@@ -1,12 +1,15 @@
-import { merge } from 'lodash'
-// Import the colors of your theme
-// http://www.material-ui.com/#/customization/colors
 import {
-  lightGreen500, lightGreen700, grey300, limeA200, grey700, blueGrey800,
-  brown50, amber50, deepOrange900, blueGrey900, cyan500, darkBlack, brown900
-} from 'material-ui/styles/colors'
-import {fade} from 'material-ui/utils/colorManipulator'
-import spacing from 'material-ui/styles/spacing'
+  lightGreen500,
+  lightGreen700,
+  grey300,
+  grey700,
+  blueGrey800,
+  brown50,
+  deepOrange900
+} from "material-ui/styles/colors";
+import { fade } from "material-ui/utils/colorManipulator";
+import spacing from "material-ui/styles/spacing";
+// http://www.material-ui.com/#/customization/colors
 
 /**
  *  Custom theme for cdpp project.
@@ -24,7 +27,7 @@ export default {
     accent2Color: grey300,
     accent3Color: grey700,
     textColor: lightGreen700,
-    secondaryTextColor: fade(blueGrey800, 0.54),
+    secondaryTextColor: fade (blueGrey800, 0.54),
     alternateTextColor: brown50,
   },
   linkWithoutDecoration: {

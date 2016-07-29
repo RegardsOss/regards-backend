@@ -2,7 +2,6 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { fetchAuthenticate } from "../common/authentication/AuthenticateActions";
 import Layout from "./modules/layout/Layout";
-import TestContainer from "./modules/test/TestContainer";
 import ThemeHelper from "../common/theme/ThemeHelper";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import SelectTheme from "../common/theme/containers/SelectTheme";
@@ -24,7 +23,7 @@ class UserApp extends React.Component<UserAppProps, any> {
     }
   }
 
-  render(): void {
+  render(): any {
     // Location ,params and content are set in this container props by react-router
     const {location, params, content, theme} = this.props
     const {project} = params
@@ -39,7 +38,7 @@ class UserApp extends React.Component<UserAppProps, any> {
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
           <Layout location={location} project={project}>
-            <TestContainer />
+            Hello world
           </Layout>
         </MuiThemeProvider>
       )

@@ -1,14 +1,14 @@
-import { createStore, combineReducers, applyMiddleware, compose } from 'redux'
+import { createStore, applyMiddleware, compose } from "redux";
+import thunk from "redux-thunk";
+import authorizationMiddleware from "../authentication/AuthorizationMiddleware";
+import * as createLogger from "redux-logger";
+import rootReducer from "../../reducer";
 // Middlewares
-import thunk from 'redux-thunk'
-import authorizationMiddleware from '../authentication/AuthorizationMiddleware'
-var { apiMiddleware } = require('redux-api-middleware');
-import * as createLogger from 'redux-logger'
+var {apiMiddleware} = require ('redux-api-middleware');
 // Root reducer
-import rootReducer from '../../reducer'
 
-export default function configureStore(preloadedState:any):any {
-  const logger = createLogger(); // Pass an options object for specific configuration
+export default function configureStore(preloadedState: any): any {
+  const logger = createLogger (); // Pass an options object for specific configuration
 
   // Define the used middlewares (order matters)
   const middlewares = [
@@ -19,13 +19,13 @@ export default function configureStore(preloadedState:any):any {
   ]
 
   // Create the application store
-  let win:any = window
-  const store = createStore(
+  let win: any = window
+  const store = createStore (
     rootReducer,
     preloadedState,
-    compose(
-      applyMiddleware(...middlewares),
-      win["devToolsExtension"] ? win["devToolsExtension"]() : (f:any) => f // Enable redux dev tools
+    compose (
+      applyMiddleware (...middlewares),
+      win["devToolsExtension"] ? win["devToolsExtension"] () : (f: any) => f // Enable redux dev tools
     )
   )
 

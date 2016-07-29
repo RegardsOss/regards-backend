@@ -1,14 +1,14 @@
-import { PlainRoute } from 'react-router'
+import { PlainRoute } from "react-router";
 
 declare var require: any;
 
-export const homeRoutes:PlainRoute = {
+export const homeRoutes: PlainRoute = {
   path: 'home',
 
   getComponents(nextState: any, cb: any) {
-    require.ensure([], (require: any) => {
-      cb(null, {
-        content: require('./Home')
+    require.ensure ([], (require: any) => {
+      cb (null, {
+        content: require ('./Home')
       })
     })
   }

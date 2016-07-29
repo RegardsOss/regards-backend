@@ -1,11 +1,11 @@
-var { CALL_API, getJSON } = require('redux-api-middleware')
-import Schemas from '../../../common/api/schemas'
-import { normalize } from 'normalizr'
-import { Action, ActionCreator } from 'redux'
+var {CALL_API, getJSON} = require ('redux-api-middleware')
+import Schemas from "../../../common/api/schemas";
+import { normalize } from "normalizr";
+import { Action } from "redux";
 
-export const PROJECTS_API='http://localhost:8080/api/projects'
+export const PROJECTS_API = 'http://localhost:8080/api/projects'
 export const PROJECTS_REQUEST = 'PROJECTS_REQUEST'
-export const PROJECTS_SUCESS  = 'PROJECTS_SUCESS'
+export const PROJECTS_SUCESS = 'PROJECTS_SUCESS'
 export const PROJECTS_FAILURE = 'PROJECTS_FAILURE'
 
 // Fetches all projects
@@ -17,7 +17,7 @@ export const fetchProjects = () => ({
       PROJECTS_REQUEST,
       {
         type: PROJECTS_SUCESS,
-        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ARRAY))
+        payload: (action: any, state: any, res: any) => getJSON (res).then ((json: any) => normalize (json, Schemas.PROJECT_ARRAY))
       },
       PROJECTS_FAILURE
     ],
@@ -34,7 +34,7 @@ export interface ProjectAction extends Action {
 // Add a project to the list
 export const ADD_PROJECT = 'ADD_PROJECT'
 
-export const addProject = (id: string, name: string):ProjectAction => ({
+export const addProject = (id: string, name: string): ProjectAction => ({
   type: ADD_PROJECT,
   id,
   name

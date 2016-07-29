@@ -1,10 +1,10 @@
-import * as React from 'react';
+import * as React from "react";
 
 /**
-*  Provides component interfaces to retrieve mui style
-*/
+ *  Provides component interfaces to retrieve mui style
+ */
 export interface ThemeContextInterface {
-     muiTheme: any;
+  muiTheme: any;
 }
 
 export const ThemeContextType = {

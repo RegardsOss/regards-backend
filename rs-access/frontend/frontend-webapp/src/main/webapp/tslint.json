@@ -76,6 +76,7 @@
     "radix": true,
     "semicolon": "never",
     "switch-default": true,
+    "no-shadowed-variable": true,
     "triple-equals": [
       true,
       "allow-null-check"
