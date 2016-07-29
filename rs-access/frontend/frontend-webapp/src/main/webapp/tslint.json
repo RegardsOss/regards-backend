@@ -10,8 +10,7 @@
     "class-name": true,
     "comment-format": [
       true,
-      "check-space",
-      "check-lowercase"
+      "check-space"
     ],
     "curly": false,
     "eofline": true,
@@ -73,10 +72,6 @@
       "check-catch",
       "check-else",
       "check-whitespace"
-    ],
-    "quotemark": [
-      true,
-      "single"
     ],
     "radix": true,
     "semicolon": "never",

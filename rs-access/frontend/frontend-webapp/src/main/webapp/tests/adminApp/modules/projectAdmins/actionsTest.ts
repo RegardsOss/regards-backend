@@ -1,12 +1,12 @@
 var configureMockStore = require('redux-mock-store')
-var { apiMiddleware } = require('redux-api-middleware')
-import thunk from 'redux-thunk'
-import * as nock from 'nock'
-import { expect } from 'chai' // You can use any testing library
-import * as actions from '../../../../scripts/adminApp/modules/projectAdmins/actions';
-import { Action, AnyMeta, TypedMeta, isFSA, isError } from 'flux-standard-action'
-import { FsaErrorAction, FsaErrorDefault } from '../../../../scripts/common/api/types'
-const middlewares = [ thunk, apiMiddleware ]
+var {apiMiddleware} = require('redux-api-middleware')
+import thunk from "redux-thunk";
+import * as nock from "nock";
+import {expect} from "chai";
+import * as actions from "../../../../scripts/adminApp/modules/projectAdmins/actions";
+import {Action, AnyMeta} from "flux-standard-action";
+import {FsaErrorAction, FsaErrorDefault} from "../../../../scripts/common/api/types"; // You can use any testing library
+const middlewares = [thunk, apiMiddleware]
 const mockStore = configureMockStore(middlewares)
 
 describe('[ADMIN APP] Testing project admins actions', () => {
@@ -20,20 +20,20 @@ describe('[ADMIN APP] Testing project admins actions', () => {
     nock(actions.PROJECT_ADMINS_API)
       .get('')
       .reply(500, 'Oops');
-    const store = mockStore({ projectAdmins: [] });
+    const store = mockStore({projectAdmins: []});
 
-    const requestAction: Action<any> & AnyMeta = {
+    const requestAction:Action<any> & AnyMeta = {
       type: 'PROJECT_ADMIN_REQUEST',
       payload: undefined,
       meta: undefined
     }
-    const failureAction: FsaErrorAction & AnyMeta =  {
+    const failureAction:FsaErrorAction & AnyMeta = {
       type: 'PROJECT_ADMIN_FAILURE',
       error: true,
       meta: undefined,
       payload: FsaErrorDefault
     }
-    const expectedActions = [ requestAction, failureAction ]
+    const expectedActions = [requestAction, failureAction]
 
     return store.dispatch(actions.fetchProjectAdmins())
       .then(() => { // return of async actions
@@ -48,40 +48,40 @@ describe('[ADMIN APP] Testing project admins actions', () => {
       .reply(200, [
         {
           name: 'Alice',
-          links: [{ rel: 'self', href: 'fakeHref' }]
+          links: [{rel: 'self', href: 'fakeHref'}]
         },
         {
           name: 'Bob',
-          links: [{ rel: 'self', href: 'otherFakeHref' }]
+          links: [{rel: 'self', href: 'otherFakeHref'}]
         }
       ]);
-    const store = mockStore({ projectAdmins: [] });
+    const store = mockStore({projectAdmins: []});
 
-    const requestAction: Action<any> & AnyMeta = {
+    const requestAction:Action<any> & AnyMeta = {
       type: 'PROJECT_ADMIN_REQUEST',
       payload: undefined,
       meta: undefined
     }
-    const successAction: Action<any> & AnyMeta = {
+    const successAction:Action<any> & AnyMeta = {
       type: 'PROJECT_ADMIN_SUCESS',
       meta: undefined,
       payload: {
         entities: {
           projectAdmins: {
-            fakeHref:{
+            fakeHref: {
               name: 'Alice',
-              links: [{ rel: 'self', href: 'fakeHref' }]
+              links: [{rel: 'self', href: 'fakeHref'}]
             },
-            otherFakeHref:{
+            otherFakeHref: {
               name: 'Bob',
-              links: [{ rel: 'self', href: 'otherFakeHref' }]
+              links: [{rel: 'self', href: 'otherFakeHref'}]
             }
           }
         },
         result: ['fakeHref', 'otherFakeHref']
       }
     }
-    const expectedActions = [ requestAction, successAction ]
+    const expectedActions = [requestAction, successAction]
 
     return store.dispatch(actions.fetchProjectAdmins())
       .then(() => { // return of async actions
@@ -105,7 +105,7 @@ describe('[ADMIN APP] Testing project admins actions', () => {
         name: 'Toto'
       }
     }
-    expect(actions.updateProjectAdmin('toto', {name:'Toto'})).to.eql(expectedAction)
+    expect(actions.updateProjectAdmin('toto', {name: 'Toto'})).to.eql(expectedAction)
   })
 
   it('should create an action to create a project admin', () => {
@@ -116,7 +116,7 @@ describe('[ADMIN APP] Testing project admins actions', () => {
         name: 'Toto'
       }
     }
-    expect(actions.createProjectAdmin('toto', {name:'Toto'})).to.eql(expectedAction)
+    expect(actions.createProjectAdmin('toto', {name: 'Toto'})).to.eql(expectedAction)
   })
 
   it('should create an action to update or create a project admin in single shot', () => {
@@ -127,7 +127,7 @@ describe('[ADMIN APP] Testing project admins actions', () => {
         name: 'Toto'
       }
     }
-    expect(actions.updateOrCreateProjectAdmin('toto', {name:'Toto'})).to.eql(expectedAction)
+    expect(actions.updateOrCreateProjectAdmin('toto', {name: 'Toto'})).to.eql(expectedAction)
   })
 
 })
