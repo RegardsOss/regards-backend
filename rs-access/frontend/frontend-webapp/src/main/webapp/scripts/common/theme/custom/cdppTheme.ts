@@ -46,4 +46,7 @@ export default {
     clockCircleColor: fade(darkBlack, 0.07),
     shadowColor: blueGrey900,
   },
+  linkWithoutDecoration: {
+    textDecoration: "blink"
+  }
 };

@@ -27,4 +27,7 @@ export default {
     secondaryTextColor: fade(blueGrey800, 0.54),
     alternateTextColor: brown50,
   },
+  linkWithoutDecoration: {
+    textDecoration: "blink"
+  }
 };

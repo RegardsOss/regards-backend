@@ -23,7 +23,7 @@ module.exports = {
     chunkFilename: "[id].chunck.js"
   },
   // Enable sourcemaps for debugging webpack's output.
-  devtool: "source-map",
+  devtool  : "cheap-module-source-map",
   devServer: {
     stats: { children: false, colors: true },
     // Web directory serve by the webpack dev server

@@ -3,29 +3,32 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton';
-import {List, ListItem} from 'material-ui/List';
+import {List} from 'material-ui/List';
 import IconPeople from 'material-ui/svg-icons/social/people';
 import { map } from 'lodash'
+import {User} from '../../../../common/users/types'
 
-interface MenuButtonProps {
-    styles: any,
-    label: string,
-    to?: string,
-    icon: string,
-    onClick?: () => void
-}
+import ProjectUserComponent from '../components/ProjectUserComponent';
 interface ProjectUsersProps {
-  users: any
+  users: Array<User>,
+  // From router
+    router: any,
+    route : any,
+    params: any,
 }
 
-class ProjectUsersContainer extends React.Component<any, ProjectUsersProps> {
-  users: Array<any>;
-  constructor(){
-    super();
+class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
+  constructor(props: any){
+    super(props);
   }
+
+  generateUserEditUrl = (user: User) => {
+    return "/admin/"+this.props.params.project+"/users/"+user.id;
+  }
+
   render () {
-    const {users} = this.props;
-    console.log(users)
+
+    const {users, params} = this.props;
     return (
       <Card
         initiallyExpanded={true}
@@ -36,8 +39,12 @@ class ProjectUsersContainer extends React.Component<any, ProjectUsersProps> {
           showExpandableButton={true}
         />
         <List>
-          {map(this.users, (user: any, id: String) =>(
-            <ListItem key={id} primaryText={user.name} leftIcon={<IconPeople />} />
+          {map(users, (user: User, id: String) =>(
+            <ProjectUserComponent
+              user={user}
+              key={user.id}
+              redirectOnSelectTo={this.generateUserEditUrl(user)}
+            />
           ))}
         </List>
         <CardActions >
@@ -52,6 +59,5 @@ class ProjectUsersContainer extends React.Component<any, ProjectUsersProps> {
 const mapStateToProps = (state: any) => ({
 });
 const mapDispatchToProps = (dispatch: any) => ({
-
 });
 export default connect<{}, {}, ProjectUsersProps>(mapStateToProps, mapDispatchToProps)(ProjectUsersContainer);

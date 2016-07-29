@@ -4,7 +4,14 @@ import ProjectUsersContainer from './ProjectUsersContainer'
 import ProjectUserEditContainer from './ProjectUserEditContainer'
 import ProjectUserCreateContainer from './ProjectUserCreateContainer'
 
-class MockContainer extends React.Component<any, any> {
+interface MockProps {
+  // From router
+    router: any,
+    route : any,
+    params: any,
+}
+
+class MockContainer extends React.Component<any, MockProps> {
   context: any;
   static contextTypes: {
     muiTheme: Object
@@ -13,28 +20,27 @@ class MockContainer extends React.Component<any, any> {
     super();
   }
   render () {
-    console.log("The context is ", this.context)
+    const {router, route, params} = this.props;
     const userList = [{
-      name: "Eric"
+      name: "Eric",
+      id:"1"
     }, {
-      name: "Joseph"
+      name: "Joseph",
+      id:"10"
     }, {
-      name: "Martin"
+      name: "Martin",
+      id:"100"
     }, {
-      name: "John doe"
+      name: "John doe",
+      id:"1000"
     }]
     return (
       <div>
-        <ProjectUsersContainer users={userList} />
+        <ProjectUsersContainer users={userList} router={router} route={route} params={params}/>
         <ProjectUserEditContainer />
         <ProjectUserCreateContainer />
       </div>
     )
   }
 }
-const mapStateToProps = (state: any) => ({
-});
-const mapDispatchToProps = (dispatch: any) => ({
-
-});
 export default MockContainer;

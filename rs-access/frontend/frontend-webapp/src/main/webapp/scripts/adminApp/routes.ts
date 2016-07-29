@@ -1,6 +1,6 @@
 import { homeRoutes } from './modules/home/routes'
 import { projectsRoutes } from './modules/projects/routes'
-import { projectUsersRoutes } from './modules/projectUsers/routes'
+import { projectUsersRoutes, projectUserEditRoute } from './modules/projectUsers/routes'
 import AdminApp from './AdminApp'
 
 import { PlainRoute } from 'react-router'
@@ -12,6 +12,7 @@ export const adminAppRoutes: PlainRoute = {
   childRoutes: [
     homeRoutes,
     projectsRoutes,
+    projectUserEditRoute,
     projectUsersRoutes
   ],
   getComponent(nextState: any, cb: any) {

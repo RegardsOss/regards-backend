@@ -1,0 +1,45 @@
+/** @module ProjectUsers */
+import * as React from 'react';
+// Containers
+import I18nProvider from '../../../../common/i18n/I18nProvider'
+
+import {User} from '../../../../common/users/types'
+import {ListItem} from 'material-ui/List';
+import IconPeople from 'material-ui/svg-icons/social/people';
+import { Link } from 'react-router'
+
+import { ThemeContextType, ThemeContextInterface } from '../../../../common/theme/ThemeContainerInterface'
+
+export interface ProjectUserProps {
+  user: User,
+  redirectOnSelectTo: string,
+  muiTheme?: any
+}
+
+
+
+/**
+ * React component
+ */
+class ProjectUserComponent extends React.Component<ProjectUserProps,any> {
+  context: ThemeContextInterface;
+  static contextTypes = ThemeContextType;
+  render(){
+    const {user, redirectOnSelectTo} = this.props;
+    const {muiTheme} = this.context;
+    console.log("mui", this.context)
+    return (
+      <I18nProvider messageDir="adminApp/modules/projectUsers/i18n">
+        <Link to={redirectOnSelectTo} style={{textDecoration:muiTheme.linkWithoutDecoration.textDecoration}}>
+            <ListItem
+            key={user.id}
+            primaryText={user.name}
+            leftIcon={<IconPeople />}
+            />
+        </Link>
+      </I18nProvider>
+    );
+  }
+}
+
+export default ProjectUserComponent;
