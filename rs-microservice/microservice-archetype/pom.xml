@@ -7,11 +7,12 @@
 	<artifactId>microservice-archetype</artifactId>
 	<description>Microservice creation archetype </description>
 	<packaging>jar</packaging>
-	
+	<version>0.0.1</version>
+
 	<parent>
-    	<groupId>fr.cnes.regards.microservices</groupId>
-    	<artifactId>rs-microservice</artifactId>
-    	<version>0.0.1</version>
-  	</parent>
+		<groupId>fr.cnes.regards.microservices</groupId>
+		<artifactId>rs-microservice</artifactId>
+		<version>0.0.1</version>
+	</parent>
 
 </project>
