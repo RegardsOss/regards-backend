@@ -1,9 +1,9 @@
 import * as React from "react";
 import { Action } from "redux";
-var {CALL_API} = require ('redux-api-middleware')
-
+const {CALL_API} = require ('redux-api-middleware')
+let scriptjs: any;
 if (typeof document !== 'undefined')
-  var scriptjs = require ('scriptjs')
+  scriptjs = require ('scriptjs')
 
 export const PLUGINS_API = 'http://localhost:8080/api/plugins'
 export const REQUEST_PLUGINS = 'REQUEST_PLUGINS'
@@ -39,7 +39,7 @@ export const pluginInitialized = (name: string, plugin: React.ComponentClass<any
   error: ''
 })
 
-export const intializePlugin = (paths: Array<string>, name: string, dispatchAction: (action: any)=>void) => {
+export const intializePlugin = (paths: Array<string>, name: string, dispatchAction: (action: any) => void) => {
   // Listen for pluin initialization done
   document.addEventListener ("plugin", (event: any) => {
     dispatchAction (pluginInitialized (event.detail.name, event.detail.app))

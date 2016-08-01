@@ -18,7 +18,7 @@ interface PluginProps {
  */
 class PluginComponent extends React.Component<PluginProps, any> {
 
-  render() {
+  render(): any {
     const {plugin} = this.props
     // Check if plugin is loaded.
     // If the plugin is loaded the react component

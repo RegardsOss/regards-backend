@@ -8,7 +8,7 @@ class ProjectUserEditContainer extends React.Component<any, any> {
     super ();
   }
 
-  render() {
+  render(): any {
     return (
       <Card
         initiallyExpanded={true}

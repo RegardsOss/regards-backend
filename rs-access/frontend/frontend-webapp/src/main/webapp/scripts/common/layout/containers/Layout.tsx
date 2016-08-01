@@ -4,13 +4,13 @@ import * as actions from "../actions";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
-var WidthProvider = require ('react-grid-layout').WidthProvider
-var ResponsiveReactGridLayout = require ('react-grid-layout').Responsive
+const WidthProvider = require ('react-grid-layout').WidthProvider
+let ResponsiveReactGridLayout = require ('react-grid-layout').Responsive
 ResponsiveReactGridLayout = WidthProvider (ResponsiveReactGridLayout)
 
 interface LayoutProps {
   layout?: any,
-  setLayout?: (layout: any)=>void
+  setLayout?: (layout: any) => void
 }
 
 class Layout extends React.Component<LayoutProps, any> {
@@ -20,13 +20,13 @@ class Layout extends React.Component<LayoutProps, any> {
     this.state = {margin: 10}
   }
 
-  onLayoutChange(layout: any, layouts: any) {
+  onLayoutChange(layout: any, layouts: any): any {
     // console.log('Layout changed')
     // this.state.layouts = layouts
     // this.props.setLayout(layouts)
   }
 
-  render() {
+  render(): any {
     return (
       <ResponsiveReactGridLayout
         className='layout'

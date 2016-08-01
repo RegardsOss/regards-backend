@@ -4,7 +4,7 @@ import authorizationMiddleware from "../authentication/AuthorizationMiddleware";
 import * as createLogger from "redux-logger";
 import rootReducer from "../../reducer";
 // Middlewares
-var {apiMiddleware} = require ('redux-api-middleware');
+let {apiMiddleware} = require ('redux-api-middleware');
 // Root reducer
 
 export default function configureStore(preloadedState: any): any {
@@ -25,7 +25,7 @@ export default function configureStore(preloadedState: any): any {
     preloadedState,
     compose (
       applyMiddleware (...middlewares),
-      win["devToolsExtension"] ? win["devToolsExtension"] () : (f: any) => f // Enable redux dev tools
+      win.devToolsExtension ? win.devToolsExtension () : (f: any) => f // Enable redux dev tools
     )
   )
 

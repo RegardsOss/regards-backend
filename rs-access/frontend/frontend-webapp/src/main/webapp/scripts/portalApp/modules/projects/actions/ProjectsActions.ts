@@ -1,4 +1,4 @@
-var {CALL_API} = require ('redux-api-middleware')
+const {CALL_API} = require ('redux-api-middleware')
 
 // Backend api adress
 export const PROJECTS_API = 'http://localhost:8080/api/projects'

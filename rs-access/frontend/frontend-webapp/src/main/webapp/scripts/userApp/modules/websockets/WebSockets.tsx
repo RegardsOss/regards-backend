@@ -3,7 +3,7 @@ import TimeContainer from "./containers/TimeContainer";
 
 class WebSockets extends React.Component<any, any> {
 
-  render() {
+  render(): any {
     // Render time
     return (
       <TimeContainer />

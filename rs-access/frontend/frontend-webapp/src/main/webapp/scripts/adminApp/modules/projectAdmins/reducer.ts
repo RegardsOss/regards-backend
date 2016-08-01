@@ -15,7 +15,8 @@ import {
  * ProjectAdmins reducer.
  *
  * @prop {Object} state
- * @prop {Action} action Action to reduce type can be [PROJECT_ADMIN_REQUEST|PROJECT_ADMIN_SUCESS|PROJECT_ADMIN_FAILUREUPDATE_OR_CREATE_PROJECT_ADMIN|
+ * @prop {Action} action Action to reduce type can be [PROJECT_ADMIN_REQUEST|
+ * PROJECT_ADMIN_SUCESS|PROJECT_ADMIN_FAILUREUPDATE_OR_CREATE_PROJECT_ADMIN|
  * UPDATE_PROJECT_ADMIN|CREATE_PROJECT_ADMIN|DELETE_PROJECT_ADMIN]
  */
 export const projectAdminsReducer = (state: any = {

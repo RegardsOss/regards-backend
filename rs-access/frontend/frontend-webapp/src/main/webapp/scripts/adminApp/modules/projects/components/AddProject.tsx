@@ -11,7 +11,7 @@ import AddBox from "material-ui/svg-icons/content/add-box";
  * You can also close this dialog by clicking outside the dialog, or with the 'Esc' key.
  */
 export default class AddProject extends React.Component<any, any> {
-  state = {
+  state: any = {
     open: false,
     value: ''
   };
@@ -35,7 +35,7 @@ export default class AddProject extends React.Component<any, any> {
     })
   }
 
-  render() {
+  render(): any {
     const actions = [
       <FlatButton
         label="Cancel"

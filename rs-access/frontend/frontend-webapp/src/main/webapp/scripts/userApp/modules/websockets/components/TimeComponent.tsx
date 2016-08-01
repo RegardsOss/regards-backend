@@ -5,7 +5,7 @@ class Time extends React.Component<any, any> {
     super ()
   }
 
-  render() {
+  render(): any {
     return (
       <div>
         {this.props.time}

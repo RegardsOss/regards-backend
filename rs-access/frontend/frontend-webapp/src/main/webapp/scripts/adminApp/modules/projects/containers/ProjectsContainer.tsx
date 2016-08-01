@@ -42,7 +42,7 @@ interface ProjectsContainerTypes {
  */
 class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
 
-  componentWillMount() {
+  componentWillMount(): any {
     // onLoad method is set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
     this.props.onLoad ()
@@ -63,7 +63,7 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
     this.props.selectProject (payload)
   }
 
-  render() {
+  render(): any {
     const cardTitle = (
       <div>
         <span style={{float:'left'}}>

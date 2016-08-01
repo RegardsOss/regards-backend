@@ -12,7 +12,7 @@ interface InstanceProps {
  */
 class InstanceComponent extends React.Component<InstanceProps, any> {
 
-  render() {
+  render(): any {
     return (
       <div>
         <FormattedMessage id="instance.access.label"/>

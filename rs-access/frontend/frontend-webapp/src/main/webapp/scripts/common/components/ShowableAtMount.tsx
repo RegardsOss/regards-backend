@@ -20,11 +20,11 @@ class ShowableAtMount extends React.Component<ShowableAtMountProps, ShowableAtMo
     }
   }
 
-  render() {
+  render(): any {
     return (<div>{this.props.children}</div>)
   }
 
-  componentWillMount() {
+  componentWillMount(): any {
     if (this.props.show)
       this.render = this.oldRender
   }

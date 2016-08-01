@@ -1,4 +1,4 @@
-var {CALL_API, getJSON} = require ('redux-api-middleware')
+const {CALL_API, getJSON} = require ('redux-api-middleware')
 import Schemas from "../../../common/api/schemas";
 import { normalize } from "normalizr";
 import { Action } from "redux";
@@ -41,7 +41,7 @@ export const addProject = (id: string, name: string): ProjectAction => ({
 })
 
 export const DELETE_PROJECT = 'DELETE_PROJECT'
-export function deleteProject(id: string) {
+export function deleteProject(id: string): Object {
   return {
     type: DELETE_PROJECT,
     id
@@ -49,7 +49,7 @@ export function deleteProject(id: string) {
 }
 
 export const DELETE_SELECTED_PROJECT = 'DELETE_SELECTED_PROJECT'
-export function deleteSelectedProject() {
+export function deleteSelectedProject(): Object {
   return {
     type: DELETE_SELECTED_PROJECT
   }

@@ -23,9 +23,9 @@ class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
     return "/admin/" + this.props.params.project + "/users/" + user.id;
   }
 
-  render() {
+  render(): any {
 
-    const {users, params} = this.props;
+    const {users} = this.props;
     return (
       <Card
         initiallyExpanded={true}
@@ -36,7 +36,7 @@ class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
           showExpandableButton={true}
         />
         <List>
-          {map (users, (user: User, id: String) =>(
+          {map (users, (user: User, id: String) => (
             <ProjectUserComponent
               user={user}
               key={user.id}

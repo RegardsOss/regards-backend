@@ -4,14 +4,14 @@ import { connect } from "react-redux";
 import { fetchAccessRights } from "./AccessRightsActions";
 import { DependencyAccessRight } from "./AccessRightsTypes";
 
-export default function checkDependencies(dependencies: Array<DependencyAccessRight>) {
+export default function checkDependencies(dependencies: Array<DependencyAccessRight>): any {
 
-  return function (DecoratedComponent: React.ComponentClass<any>) {
+  return function (DecoratedComponent: React.ComponentClass<any>): any {
 
     class AccessRightsDecorator extends React.Component<any, any> {
 
       checkDependencies(): boolean {
-        const ret: boolean = false
+        // const ret: boolean = false
 
         if (!dependencies || dependencies.length === 0) {
           return true
@@ -35,7 +35,7 @@ export default function checkDependencies(dependencies: Array<DependencyAccessRi
         }
       }
 
-      componentWillMount() {
+      componentWillMount(): any {
         // GET ALL missing dependencies
         const missingDependencies: Array<DependencyAccessRight> = dependencies.map ((dependency: DependencyAccessRight) => {
           const found = this.props.api.find ((apiDependeny: DependencyAccessRight) => apiDependeny.id === dependency.id)
@@ -50,7 +50,7 @@ export default function checkDependencies(dependencies: Array<DependencyAccessRi
 
       }
 
-      render() {
+      render(): any {
         if (this.checkDependencies () === true) {
           return <DecoratedComponent {...this.props} />
         } else {

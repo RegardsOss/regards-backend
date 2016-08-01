@@ -15,11 +15,11 @@ import { ThemeContextType, ThemeContextInterface } from "../../../../common/them
  * React Menu component. Display the admin application menu
  */
 class MenuComponent extends React.Component<{}, any> {
-
+  static contextTypes: Object = ThemeContextType;
   context: ThemeContextInterface;
-  static contextTypes = ThemeContextType;
 
-  render() {
+
+  render(): any {
     const {muiTheme} = this.context;
 
     return (

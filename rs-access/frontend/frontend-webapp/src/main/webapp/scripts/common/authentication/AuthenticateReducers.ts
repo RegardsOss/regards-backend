@@ -17,7 +17,7 @@ export default (state: any = {
         user: action.payload,
         authenticateDate: action.meta.authenticateDate
       });
-      newState.user['name'] = action.meta.name
+      newState.user.name = action.meta.name
       return newState;
     case FAILED_AUTHENTICATE:
       return Object.assign ({}, state, {

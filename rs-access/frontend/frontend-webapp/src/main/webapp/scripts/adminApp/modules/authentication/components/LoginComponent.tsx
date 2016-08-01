@@ -13,7 +13,7 @@ export interface LoginProps {
  * @prop {Function} onLogin Callback for on login action
  * @prop {String} errorMessage Error message to display
  */
-class LoginComponent extends React.Component<LoginProps,any> {
+class LoginComponent extends React.Component<LoginProps, any> {
 
   constructor() {
     super ();
@@ -24,7 +24,7 @@ class LoginComponent extends React.Component<LoginProps,any> {
     }
   }
 
-  componentWillMount() {
+  componentWillMount(): any {
     this.handleKeyPress = this.handleKeyPress.bind (this);
   }
 
@@ -34,14 +34,13 @@ class LoginComponent extends React.Component<LoginProps,any> {
    * @param  {type} event: KeyboardEvent
    * @return {type}
    */
-  handleKeyPress(event: KeyboardEvent) {
+  handleKeyPress(event: KeyboardEvent): any {
     if (event.key === 'Enter') {
       this.props.onLogin (this.state.username, this.state.password)
     }
   }
 
-  render() {
-    const {styles} : any = this.props
+  render(): any {
     let errorMessage: any = null
     if (this.props.errorMessage && this.props.errorMessage !== '') {
       errorMessage = <FormattedMessage id={this.props.errorMessage}/>

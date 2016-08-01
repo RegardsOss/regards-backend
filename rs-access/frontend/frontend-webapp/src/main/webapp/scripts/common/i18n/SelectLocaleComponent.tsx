@@ -19,18 +19,18 @@ export class SelectLocaleComponent extends React.Component<SelectLocaleTypes, an
     this.onChange = this.onChange.bind (this)
   }
 
-  onChange(e: any) {
+  onChange(e: any): void {
     this.props.onLocaleChange (e.target.value)
   }
 
-  componentWillMount() {
+  componentWillMount(): void {
     this.setState ({
       selectedValue: this.props.curentLocale
     })
   }
 
-  render() {
-    const {locales, onLocaleChange} = this.props
+  render(): any {
+    const {locales} = this.props
 
     return (
       <div>

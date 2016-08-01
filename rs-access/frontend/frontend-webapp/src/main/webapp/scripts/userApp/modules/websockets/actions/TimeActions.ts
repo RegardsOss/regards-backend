@@ -1,4 +1,4 @@
-var {CALL_API, getJSON} = require ('redux-api-middleware')
+const {CALL_API} = require ('redux-api-middleware')
 
 export const START_TIME_API = 'http://localhost:8080/api/time/start'
 export const START_TIME_REQUEST = 'START_TIME_REQUEST'

@@ -7,7 +7,7 @@ import { connect } from "react-redux";
  */
 class ApplicationErrorComponent extends React.Component<any, any> {
 
-  render() {
+  render(): any {
     return (
       <div>
         Application unavailable

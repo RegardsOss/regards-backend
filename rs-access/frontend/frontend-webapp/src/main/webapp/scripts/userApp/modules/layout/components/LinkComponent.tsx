@@ -8,7 +8,7 @@ interface LinkProps {
 
 class Linkcomponent extends React.Component<LinkProps, any> {
 
-  render() {
+  render(): any {
     // to props is passed throught the react component creation
     // children props is the children of te curent component. This props is autmatically set
     // by react when creatin the component.

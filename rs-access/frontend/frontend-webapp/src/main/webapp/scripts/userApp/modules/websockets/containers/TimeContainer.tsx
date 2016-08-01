@@ -17,19 +17,19 @@ class TimeContainer extends React.Component<TimeProps, any> {
   // Websocket client
   client: any
 
-  componentWillMount() {
+  componentWillMount(): any {
     // Action to connect to websocket server
     this.client = this.props.webSocketConnect ()
     // Action to start the thread which send time by websocket
     this.props.startTime ()
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): any {
     // Action to disconnect from web socket server
     this.props.webSocketDisconnect (this.client)
   }
 
-  render() {
+  render(): any {
     // Render time
     if (this.props.started === true) {
       return (

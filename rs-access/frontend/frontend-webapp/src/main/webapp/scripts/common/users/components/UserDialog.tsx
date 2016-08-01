@@ -25,7 +25,7 @@ interface Savable {
  */
 class UserDialog extends React.Component<Openable & Savable, any> {
 
-  render() {
+  render(): any {
     const actions = [
       <FlatButton
         label="Cancel"

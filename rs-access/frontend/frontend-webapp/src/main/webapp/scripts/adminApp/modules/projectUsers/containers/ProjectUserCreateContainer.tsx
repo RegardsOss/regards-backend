@@ -6,16 +6,17 @@ import SelectField from "material-ui/SelectField";
 import MenuItem from "material-ui/MenuItem";
 
 class ProjectUserCreateContainer extends React.Component<any, any> {
-  context: any;
   static contextTypes: {
     muiTheme: Object
   }
-
+  context: any;
   constructor() {
     super ();
   }
 
-  render() {
+
+
+  render(): any {
     console.log (this.context)
     return (
       <Card

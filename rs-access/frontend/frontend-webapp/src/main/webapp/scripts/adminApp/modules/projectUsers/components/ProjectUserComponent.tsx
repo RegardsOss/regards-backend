@@ -18,11 +18,10 @@ export interface ProjectUserProps {
 /**
  * React component
  */
-class ProjectUserComponent extends React.Component<ProjectUserProps,any> {
+class ProjectUserComponent extends React.Component<ProjectUserProps, any> {
+  static contextTypes: Object = ThemeContextType;
   context: ThemeContextInterface;
-  static contextTypes = ThemeContextType;
-
-  render() {
+  render(): any {
     const {user, redirectOnSelectTo} = this.props;
     const {muiTheme} = this.context;
     console.log ("mui", this.context)

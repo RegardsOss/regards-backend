@@ -4,16 +4,16 @@ import { connect } from "react-redux";
 import { addLocaleData, IntlProvider } from "react-intl";
 import * as fr from "react-intl/locale-data/fr";
 import { updateMessages } from "./I18nActions";
-import { localeMessagesStore } from "./I18nTypes";
+import { LocaleMessagesStore } from "./I18nTypes";
 
 addLocaleData (fr)
 
-interface i18nProps {
+interface I18nProps {
   messageDir: string,
   // Properties set by react redux connection
   locale?: string,
-  updateMessages?: (messagesDir: string, locale: string)=>void,
-  messages?: Array<localeMessagesStore>,
+  updateMessages?: (messagesDir: string, locale: string) => void,
+  messages?: Array<LocaleMessagesStore>,
   children?: any
 }
 
@@ -31,9 +31,9 @@ interface i18nProps {
  *     intl: intlShape
  * }
  */
-export class I18nProvider extends React.Component<i18nProps, any> {
+export class I18nProvider extends React.Component<I18nProps, any> {
 
-  componentWillMount() {
+  componentWillMount(): any {
     // Get messages associated to this Prodiver via the messageDir
     let localMessages = this.props.messages.find ((message) => message.messagesDir === this.props.messageDir)
 
@@ -43,7 +43,7 @@ export class I18nProvider extends React.Component<i18nProps, any> {
     }
   }
 
-  render() {
+  render(): any {
 
     // Get messages associated to this Prodiver via the messageDir
     let localMessages = this.props.messages.find ((message) => message.messagesDir === this.props.messageDir)
@@ -73,4 +73,4 @@ const mapDispatchToProps = (dispatch: any) => ({
   updateMessages: (messageDir: string, locale: string) => dispatch (updateMessages (messageDir, locale))
 })
 
-export default connect<{}, {}, i18nProps> (mapStateToProps, mapDispatchToProps) (I18nProvider)
+export default connect<{}, {}, I18nProps> (mapStateToProps, mapDispatchToProps) (I18nProvider)

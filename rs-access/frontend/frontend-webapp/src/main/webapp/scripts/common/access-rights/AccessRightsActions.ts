@@ -1,4 +1,4 @@
-var {CALL_API} = require ('redux-api-middleware')
+const {CALL_API} = require ('redux-api-middleware')
 
 import { DependencyAccessRight } from "./AccessRightsTypes";
 

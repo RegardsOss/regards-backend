@@ -22,7 +22,7 @@ export const fields = ['id', 'projectId', 'username', 'password', 'passwordConfi
  * @param {Object} values : TODO
  * @return {Object} errors
  */
-const validate = (values: any)=> {
+const validate = (values: any) => {
   const errors: any = {}
   if (!values.username) {
     errors.username = 'Required'
@@ -41,21 +41,25 @@ const validate = (values: any)=> {
 
 const asyncValidate = (values: any/*, dispatch */) => {
   return new Promise ((resolve, reject) => {
-    setTimeout (() => {
-      if (['john', 'paul', 'george', 'ringo'].find ((value: string) => value === values.username)) {
-        reject ({username: 'That username is taken'})
-      } else {
-        resolve ()
-      }
-    }, 500) // simulate server latency
+    // simulate server latency
+    setTimeout (
+      () => {
+        if (['john', 'paul', 'george', 'ringo'].find ((value: string) => value === values.username)) {
+          reject ({username: 'That username is taken'})
+        } else {
+          resolve ()
+        }
+      },
+      500
+    )
   })
 }
 
 interface FormPropTypes {
   fields?: any,
   resetForm?: any,
-  handleSubmit: ()=> void,
-  onCancelClick?: ()=> void,
+  handleSubmit: () => void,
+  onCancelClick?: () => void,
   submitting?: boolean,
   show?: boolean,
   onSubmit: () => void
@@ -67,18 +71,17 @@ interface FormPropTypes {
  * @prop {Function} handleSubmit Callback to add or update an administrator
  */
 class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
-  render() {
+  render(): any {
     const {
       asyncValidating,
       fields: {id, projectId, username, password, passwordConfirm},
-      resetForm,
       handleSubmit,
       submitting,
       show,
       onCancelClick,
     }: any = this.props
 
-    if (show)
+    if (show) {
       return (
         <form onSubmit={handleSubmit}>
           <div>
@@ -125,8 +128,9 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
           </div>
         </form>
       )
-    else
+    } else {
       return null
+    }
   }
 }
 

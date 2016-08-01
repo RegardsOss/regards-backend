@@ -25,11 +25,13 @@ interface ProjectAdminsProps {
  * React container to manage ProjectAdminsComponent.
  */
 class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
-
-  componentWillReceiveProps(nextProps: any) {
+  state: any = {
+    dialogOpen: false
+  }
+  componentWillReceiveProps(nextProps: any): any {
     const oldProject = this.props.project
     const nextProject = nextProps.project
-    if (nextProject && nextProject != oldProject) {
+    if (nextProject && nextProject !== oldProject) {
       const link = nextProject.links.find ((link: any) => link.rel === "users")
       if (link) {
         const href = link.href;
@@ -38,9 +40,7 @@ class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
     }
   }
 
-  state = {
-    dialogOpen: false
-  }
+
 
   handleDeleteClick = (event: Object) => {
     this.props.deleteProjectAdmin (this.props.selectedProjectAdminId)
@@ -59,7 +59,7 @@ class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
     this.props.updateOrCreateProjectAdmin ('9999', {name: 'Fake Name'})
   }
 
-  render() {
+  render(): any {
     const usersListMenuElements = [
       <MenuItem key={1} primaryText="Edit" leftIcon={<Build />} onTouchTap={this.handleDialogOpen}/>,
       <MenuItem key={2} primaryText="Delete" leftIcon={<Delete />} onTouchTap={this.handleDeleteClick}/>

@@ -1,4 +1,4 @@
-var {CALL_API} = require ('redux-api-middleware')
+const {CALL_API} = require ('redux-api-middleware')
 
 export const AUTHENTICATE_API = 'http://localhost:8080/oauth/token'
 export const REQUEST_AUTHENTICATE = 'REQUEST_AUTHENTICATE'
@@ -31,7 +31,7 @@ export const fetchAuthenticate = (username: String, password: String) => ({
 })
 
 export const LOGOUT = 'LOGOUT'
-export function logout() {
+export function logout(): Object {
   return {
     type: LOGOUT
   }

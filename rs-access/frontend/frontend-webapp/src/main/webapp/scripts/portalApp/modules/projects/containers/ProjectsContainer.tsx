@@ -9,7 +9,7 @@ import { ProjectsStore } from "../types/ProjectTypes";
 // Container props
 interface ProjectsProps {
   // Properties set by react redux connection
-  onLoad?: ()=> void,
+  onLoad?: () => void,
   projects?: ProjectsStore,
   i18n?: any
 }
@@ -20,13 +20,13 @@ interface ProjectsProps {
  */
 export class ProjectsContainer extends React.Component<ProjectsProps, any> {
 
-  componentWillMount() {
+  componentWillMount(): any {
     // onLoad method is set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
     this.props.onLoad ()
   }
 
-  render() {
+  render(): any {
     // projects props is set to the container by tge react-redux connect.
     // See method mapStateToProps
     const {projects} = this.props
@@ -60,4 +60,4 @@ const mapStateToProps = (state: any) => ({
 const mapDispatchToProps = (dispatch: any) => ({
   onLoad: () => dispatch (fetchProjects ())
 })
-export default connect<{},{},ProjectsProps> (mapStateToProps, mapDispatchToProps) (ProjectsContainer)
+export default connect<{}, {}, ProjectsProps> (mapStateToProps, mapDispatchToProps) (ProjectsContainer)

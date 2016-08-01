@@ -1,9 +1,9 @@
-export interface localeMessagesStore {
+export interface LocaleMessagesStore {
   messagesDir: string,
   messages: Object
 }
 
-export interface i18nStore {
+export interface I18nStore {
   locale: string,
-  messages: Array<localeMessagesStore>
+  messages: Array<LocaleMessagesStore>
 }

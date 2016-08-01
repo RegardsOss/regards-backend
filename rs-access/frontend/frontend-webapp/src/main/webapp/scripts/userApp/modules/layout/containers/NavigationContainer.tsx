@@ -15,7 +15,7 @@ interface NavigationProps {
 
 class NavigationContainer extends React.Component<NavigationProps, any> {
 
-  componentWillMount() {
+  componentWillMount(): any {
     // Plugins are set to the container props by react-redux connect.
     // See method mapStateToProps of this container
     const {plugins} = this.props
@@ -30,13 +30,23 @@ class NavigationContainer extends React.Component<NavigationProps, any> {
     }
   }
 
-  render() {
+  render(): any {
     const {location, plugins, project} = this.props
     if (plugins.items) {
       return (
         <nav>
-          <LinkComponent location={location} key="test" to={"/user/"+project+"/test"}>Test de lien</LinkComponent>
-          <LinkComponent location={location} key="time" to={"/user/"+project+"/time"}>Temps</LinkComponent>
+          <LinkComponent
+            location={location}
+            key="test"
+            to={"/user/" + project + "/test"}>
+            Test de lien
+          </LinkComponent>
+          <LinkComponent
+            location={location}
+             key="time"
+             to={"/user/" + project + "/time"}>
+            Temps
+          </LinkComponent>
           {plugins.items.map (plugin => {
             if (plugin) {
               return (
@@ -54,8 +64,8 @@ class NavigationContainer extends React.Component<NavigationProps, any> {
     } else {
       return (
         <nav>
-          <LinkComponent location={location} key="test" to={"/user/"+project+"/test"}>Test de lien</LinkComponent>
-          <LinkComponent location={location} key="time" to={"/user/"+project+"/time"}>Temps</LinkComponent>
+          <LinkComponent location={location} key="test" to={"/user/" + project + "/test"}>Test de lien</LinkComponent>
+          <LinkComponent location={location} key="time" to={"/user/" + project + "/time"}>Temps</LinkComponent>
         </nav>
       )
     }

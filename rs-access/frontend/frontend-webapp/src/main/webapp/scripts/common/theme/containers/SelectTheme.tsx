@@ -14,12 +14,12 @@ export class SelectTheme extends React.Component<any, any> {
     this.handleChange = this.handleChange.bind (this)
   }
 
-  handleChange(event: any, index: any, value: any) {
+  handleChange(event: any, index: any, value: any): any {
     this.setState ({value})
     this.props.setTheme (value)
   }
 
-  render() {
+  render(): any {
     const themes = ThemeHelper.getThemes ()
     const themeNames = keys (themes)
     const items = map (themeNames, (themeName: string) => {

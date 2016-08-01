@@ -4,7 +4,7 @@ import TextField from "material-ui/TextField";
 
 class UserForm extends React.Component<any, any> {
 
-  render() {
+  render(): any {
     return (
       <form>
         <TextField
