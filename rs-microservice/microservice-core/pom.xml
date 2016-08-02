@@ -5,7 +5,6 @@
 
 	<name>microservice-core</name>
 	<artifactId>microservice-core</artifactId>
-	<version>0.0.1</version>
 	<description>Microservice core</description>
 	
 	<parent>

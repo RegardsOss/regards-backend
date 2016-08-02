@@ -7,10 +7,8 @@
 	<artifactId>microservice-archetype</artifactId>
 	<description>Microservice creation archetype </description>
 	<packaging>jar</packaging>
-	<version>0.0.1</version>
 
 	<parent>
-<<<<<<< HEAD
     	<groupId>fr.cnes.regards.microservices</groupId>
     	<artifactId>rs-microservice</artifactId>
     	<version>0.0.1</version>
@@ -28,11 +26,4 @@
 			</plugin>
 		</plugins>
 	</build>
-=======
-		<groupId>fr.cnes.regards.microservices</groupId>
-		<artifactId>rs-microservice</artifactId>
-		<version>0.0.1</version>
-	</parent>
->>>>>>> branch 'master' of https://sbinda@thor.si.c-s.fr/git/rs-microservice
-
 </project>
