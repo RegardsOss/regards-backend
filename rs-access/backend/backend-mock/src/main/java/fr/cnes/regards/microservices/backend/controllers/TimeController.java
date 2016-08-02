@@ -1,10 +1,10 @@
-package fr.cnes.regards.microservices.backend.controlers;
+package fr.cnes.regards.microservices.backend.controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-public class TimeController extends Controler {
+public class TimeController extends Controller {
 
 	private static SendTime timeThread_ = null;
 

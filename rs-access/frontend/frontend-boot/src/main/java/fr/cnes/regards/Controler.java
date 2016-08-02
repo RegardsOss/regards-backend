@@ -1,4 +1,4 @@
-package fr.cs.regards;
+package fr.cnes.regards;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;

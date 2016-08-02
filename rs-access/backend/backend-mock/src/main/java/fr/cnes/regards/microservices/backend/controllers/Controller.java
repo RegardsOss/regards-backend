@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.controlers;
+package fr.cnes.regards.microservices.backend.controllers;
 
 import java.util.Date;
 
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 // need the authentication token
 @EnableResourceServer
 @RequestMapping("/api")
-public class Controler {
+public class Controller {
 
 	@Autowired
 	private SimpMessagingTemplate template;

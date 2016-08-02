@@ -10,9 +10,9 @@
 
   <name>frontend</name>
 
-  <parent>
+ <parent>
     <groupId>fr.cs.regards</groupId>
-    <artifactId>maquette</artifactId>
+    <artifactId>rs-access</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
