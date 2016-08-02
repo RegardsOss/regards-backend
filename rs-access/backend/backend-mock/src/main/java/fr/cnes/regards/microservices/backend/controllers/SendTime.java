@@ -1,11 +1,11 @@
-package fr.cnes.regards.microservices.backend.controlers;
+package fr.cnes.regards.microservices.backend.controllers;
 
 
 public class SendTime implements Runnable {
 
-    private Controler listener;
+    private Controller listener;
 
-    public SendTime(Controler listener) {
+    public SendTime(Controller listener) {
         this.listener = listener;
     }
 

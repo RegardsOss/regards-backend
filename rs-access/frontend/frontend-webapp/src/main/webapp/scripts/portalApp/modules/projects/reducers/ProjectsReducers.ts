@@ -1,27 +1,24 @@
-import {
-  REQUEST_PROJECTS,  RECEIVE_PROJECTS,
-  FAILED_PROJECTS } from '../actions/ProjectsActions'
+import { REQUEST_PROJECTS, RECEIVE_PROJECTS, FAILED_PROJECTS } from "../actions/ProjectsActions";
+import { ProjectsStore } from "../types/ProjectTypes";
 
-import { ProjectsStore } from '../types/ProjectTypes'
-
-export default (state:ProjectsStore = {
-  isFetching : false,
+export default (state: ProjectsStore = {
+  isFetching: false,
   items: [],
   lastUpdate: ''
-}, action:any) => {
-  switch(action.type){
+}, action: any) => {
+  switch (action.type) {
     case REQUEST_PROJECTS:
-      return Object.assign({}, state, {
+      return Object.assign ({}, state, {
         isFetching: true
       })
     case RECEIVE_PROJECTS:
-      return Object.assign({}, state, {
+      return Object.assign ({}, state, {
         isFetching: false,
         items: action.payload,
         lastUpdate: action.meta.receivedAt
       })
     case FAILED_PROJECTS:
-      return Object.assign({}, state, {
+      return Object.assign ({}, state, {
         isFetching: false
       })
     default:

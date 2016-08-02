@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.controlers;
+package fr.cnes.regards.microservices.backend.controllers;
 
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.TextMessage;

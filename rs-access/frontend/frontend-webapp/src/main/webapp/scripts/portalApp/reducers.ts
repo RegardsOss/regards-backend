@@ -1,9 +1,9 @@
 /**
  * Combine all reducers for this aa to a single root reducer.
  */
-import { combineReducers } from 'redux';
-import ProjectsReducers from './modules/projects/reducers/ProjectsReducers'
+import { combineReducers } from "redux";
+import ProjectsReducers from "./modules/projects/reducers/ProjectsReducers";
 
-export default combineReducers({
+export default combineReducers ({
   projects: ProjectsReducers
 });

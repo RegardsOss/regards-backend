@@ -1,6 +1,6 @@
-import { SET_LAYOUT } from './actions'
+import { SET_LAYOUT } from "./actions";
 
-export default (state:Object = {}, action:any) => {
+export default (state: Object = {}, action: any) => {
   switch (action.type) {
     case SET_LAYOUT:
       return action.layout

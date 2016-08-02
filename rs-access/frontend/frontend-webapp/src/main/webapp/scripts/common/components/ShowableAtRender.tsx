@@ -1,11 +1,11 @@
 /** @module common */
-import * as React from "react"
+import * as React from "react";
 
-interface ShowableAtRenderProps{
-  show:Boolean
+interface ShowableAtRenderProps {
+  show: Boolean
 }
 
-interface ShowableAtRenderState{
+interface ShowableAtRenderState {
   // TODO
 }
 
@@ -13,15 +13,15 @@ interface ShowableAtRenderState{
 /**
  * TODO
  */
-class ShowableAtRender extends React.Component<ShowableAtRenderProps, ShowableAtRenderState>{
+class ShowableAtRender extends React.Component<ShowableAtRenderProps, ShowableAtRenderState> {
 
-  render() {
-    if(this.props.show)
+  render(): any {
+    if (this.props.show) {
       return <div>{this.props.children}</div>
-    else
+    } else {
       return null
+    }
   }
-
 }
 
 export default ShowableAtRender

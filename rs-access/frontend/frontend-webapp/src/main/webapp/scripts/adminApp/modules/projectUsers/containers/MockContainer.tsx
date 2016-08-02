@@ -1,40 +1,45 @@
-import * as React from 'react'
-import { connect } from 'react-redux'
-import ProjectUsersContainer from './ProjectUsersContainer'
-import ProjectUserEditContainer from './ProjectUserEditContainer'
-import ProjectUserCreateContainer from './ProjectUserCreateContainer'
+import * as React from "react";
+import ProjectUsersContainer from "./ProjectUsersContainer";
+import ProjectUserEditContainer from "./ProjectUserEditContainer";
+import ProjectUserCreateContainer from "./ProjectUserCreateContainer";
 
-class MockContainer extends React.Component<any, any> {
-  context: any;
+interface MockProps {
+  // From router
+  router: any,
+  route: any,
+  params: any,
+}
+
+class MockContainer extends React.Component<any, MockProps> {
   static contextTypes: {
     muiTheme: Object
+  };
+  context: any;
+  constructor() {
+    super ();
   }
-  constructor(){
-    super();
-  }
-  render () {
-    console.log("The context is ", this.context)
+  render(): any {
+    const {router, route, params} = this.props;
     const userList = [{
-      name: "Eric"
+      name: "Eric",
+      id: "1"
     }, {
-      name: "Joseph"
+      name: "Joseph",
+      id: "10"
     }, {
-      name: "Martin"
+      name: "Martin",
+      id: "100"
     }, {
-      name: "John doe"
+      name: "John doe",
+      id: "1000"
     }]
     return (
       <div>
-        <ProjectUsersContainer users={userList} />
+        <ProjectUsersContainer users={userList} router={router} route={route} params={params}/>
         <ProjectUserEditContainer />
         <ProjectUserCreateContainer />
       </div>
     )
   }
 }
-const mapStateToProps = (state: any) => ({
-});
-const mapDispatchToProps = (dispatch: any) => ({
-
-});
 export default MockContainer;

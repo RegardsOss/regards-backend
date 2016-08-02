@@ -1,16 +1,14 @@
-import * as React from 'react'
-import { bindActionCreators } from 'redux'
-import { connect } from 'react-redux'
-import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
-import FlatButton from 'material-ui/FlatButton';
-import {List, ListItem} from 'material-ui/List';
-import ContentInbox from 'material-ui/svg-icons/content/inbox';
+import * as React from "react";
+import { connect } from "react-redux";
+import { Card, CardActions, CardHeader } from "material-ui/Card";
+import FlatButton from "material-ui/FlatButton";
 
 class ProjectUserEditContainer extends React.Component<any, any> {
-  constructor(){
-    super();
+  constructor() {
+    super ();
   }
-  render () {
+
+  render(): any {
     return (
       <Card
         initiallyExpanded={true}
@@ -22,17 +20,14 @@ class ProjectUserEditContainer extends React.Component<any, any> {
           showExpandableButton={true}
         />
         <CardActions >
-          <FlatButton label="Add user" />
-          <FlatButton label="Remove user" />
+          <FlatButton label="Add user"/>
+          <FlatButton label="Remove user"/>
         </CardActions>
       </Card>
     )
   }
 }
 // export default ProjectUserEditContainer;
-const mapStateToProps = (state: any) => ({
-});
-const mapDispatchToProps = (dispatch: any) => ({
-
-});
-export default connect<{}, {}, any>(mapStateToProps, mapDispatchToProps)(ProjectUserEditContainer);
+const mapStateToProps = (state: any) => ({});
+const mapDispatchToProps = (dispatch: any) => ({});
+export default connect<{}, {}, any> (mapStateToProps, mapDispatchToProps) (ProjectUserEditContainer);

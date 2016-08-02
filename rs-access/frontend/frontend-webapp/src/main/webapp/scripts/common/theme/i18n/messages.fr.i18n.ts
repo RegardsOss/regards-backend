@@ -1,5 +1,5 @@
 const messages = {
-  "select.theme.label":"Selectionner votre theme : ",
+  "select.theme.label": "Selectionner votre theme : ",
 }
 
 export default messages

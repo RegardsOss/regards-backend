@@ -1,43 +1,48 @@
 /** @module AdminLayout */
-import * as React from 'react'
-import { connect } from 'react-redux'
-import { Link } from 'react-router'
-import Drawer from 'material-ui/Drawer'
-import MenuItem from 'material-ui/MenuItem'
-import PowerSettingsNew from 'material-ui/svg-icons/action/power-settings-new'
-import Divider from 'material-ui/Divider';
-import Settings from 'material-ui/svg-icons/action/settings'
-import People from 'material-ui/svg-icons/social/people'
-import Reply from 'material-ui/svg-icons/content/reply'
+import * as React from "react";
+import { Link } from "react-router";
+import Drawer from "material-ui/Drawer";
+import MenuItem from "material-ui/MenuItem";
+import PowerSettingsNew from "material-ui/svg-icons/action/power-settings-new";
+import Divider from "material-ui/Divider";
+import Settings from "material-ui/svg-icons/action/settings";
+import People from "material-ui/svg-icons/social/people";
+import Reply from "material-ui/svg-icons/content/reply";
+import { ThemeContextType, ThemeContextInterface } from "../../../../common/theme/ThemeContainerInterface";
+
 
 /**
  * React Menu component. Display the admin application menu
  */
 class MenuComponent extends React.Component<{}, any> {
+  static contextTypes: Object = ThemeContextType;
+  context: ThemeContextInterface;
 
-  render(){
+
+  render(): any {
+    const {muiTheme} = this.context;
 
     return (
       <Drawer
         open={true}
         containerStyle={{width:'100%', height:'100%'}}
         >
-        <Link to={"/admin/cdpp/projects"}>
+        <Link to={"/admin/cdpp/projects"} style={{textDecoration:muiTheme.linkWithoutDecoration.textDecoration}}>
           <MenuItem primaryText="Projets" leftIcon={<Settings />} />
         </Link>
 
-        <Link to={"/admin/cdpp/users"}>
-          <MenuItem primaryText="Utilisateurs" leftIcon={<People />} />
+        <Link to={"/admin/cdpp/users"} style={{textDecoration:muiTheme.linkWithoutDecoration.textDecoration}}>
+          <MenuItem primaryText="Utilisateurs" leftIcon={<People />}/>
         </Link>
 
         <Divider />
 
-        <MenuItem primaryText="Se déconnecter" leftIcon={<PowerSettingsNew />} />
+        <MenuItem primaryText="Se déconnecter" leftIcon={<PowerSettingsNew />}/>
 
         <Divider />
 
-        <Link to={"/admin/cdpp"}>
-          <MenuItem primaryText="Retour" leftIcon={<Reply />} />
+        <Link to={"/admin/cdpp"} style={{textDecoration:muiTheme.linkWithoutDecoration.textDecoration}}>
+          <MenuItem primaryText="Retour" leftIcon={<Reply />}/>
         </Link>
 
       </Drawer>

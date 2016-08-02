@@ -1,6 +1,6 @@
 /** @module common */
-import * as React from 'react'
-import ShowableAtMount from './ShowableAtMount'
+import * as React from "react";
+import ShowableAtMount from "./ShowableAtMount";
 
 interface ModuleComponentProps {
 // TODO
@@ -15,11 +15,11 @@ interface ModuleComponentState {
  * TODO
  */
 class ModuleComponent extends React.Component<ModuleComponentProps, ModuleComponentState> {
-  getModuleVisibility() {
+  getModuleVisibility(): Boolean {
     return true
   }
 
-  render() {
+  render(): any {
     return (
       <ShowableAtMount show={this.getModuleVisibility()}>
         { this.props.children }

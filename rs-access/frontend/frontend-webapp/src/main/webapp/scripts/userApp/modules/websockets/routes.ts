@@ -1,14 +1,14 @@
-import WebSockets from './WebSockets'
-import { PlainRoute } from 'react-router'
+import WebSockets from "./WebSockets";
+import { PlainRoute } from "react-router";
 
 declare var require: any;
 
-export const websocketsRoutes:PlainRoute = {
-  path:"time",
+export const websocketsRoutes: PlainRoute = {
+  path: "time",
 
-  getComponent(nextState:any, cb:any) {
-    require.ensure([], (require:any) => {
-      cb(null, {
+  getComponent(nextState: any, cb: any): any {
+    require.ensure ([], (require: any) => {
+      cb (null, {
         content: WebSockets
       })
     })

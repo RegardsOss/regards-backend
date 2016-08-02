@@ -1,12 +1,12 @@
 /** @module AdminProjectAdmins */
-var { CALL_API, getJSON } = require('redux-api-middleware')
-import Schemas from '../../../common/api/schemas'
-import { normalize } from 'normalizr'
-import { ProjectAdmin } from './types'
+const {CALL_API, getJSON} = require ('redux-api-middleware')
+import Schemas from "../../../common/api/schemas";
+import { normalize } from "normalizr";
+import { ProjectAdmin } from "./types";
 
-export const PROJECT_ADMINS_API='http://localhost:8080/api/project-admins'
+export const PROJECT_ADMINS_API = 'http://localhost:8080/api/project-admins'
 export const PROJECT_ADMIN_REQUEST = 'PROJECT_ADMIN_REQUEST'
-export const PROJECT_ADMIN_SUCESS  = 'PROJECT_ADMIN_SUCESS'
+export const PROJECT_ADMIN_SUCESS = 'PROJECT_ADMIN_SUCESS'
 export const PROJECT_ADMIN_FAILURE = 'PROJECT_ADMIN_FAILURE'
 
 
@@ -26,7 +26,7 @@ export const fetchProjectAdmins = () => ({
       PROJECT_ADMIN_REQUEST,
       {
         type: PROJECT_ADMIN_SUCESS,
-        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ADMIN_ARRAY))
+        payload: (action: any, state: any, res: any) => getJSON (res).then ((json: any) => normalize (json, Schemas.PROJECT_ADMIN_ARRAY))
       },
       PROJECT_ADMIN_FAILURE
     ],
@@ -53,7 +53,7 @@ export const fetchProjectAdminsBy = (endpoint: string) => ({
       PROJECT_ADMIN_REQUEST,
       {
         type: PROJECT_ADMIN_SUCESS,
-        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ADMIN_ARRAY))
+        payload: (action: any, state: any, res: any) => getJSON (res).then ((json: any) => normalize (json, Schemas.PROJECT_ADMIN_ARRAY))
       },
       PROJECT_ADMIN_FAILURE
     ],
@@ -71,7 +71,7 @@ export const DELETE_PROJECT_ADMIN = 'DELETE_PROJECT_ADMIN'
  *
  * @return {AsyncAction}
  */
-export function deleteProjectAdmin(id: string) {
+export function deleteProjectAdmin(id: string): any {
   return {
     type: DELETE_PROJECT_ADMIN,
     id
@@ -87,7 +87,7 @@ export const UPDATE_PROJECT_ADMIN = 'UPDATE_PROJECT_ADMIN'
  *
  * @return {AsyncAction}
  */
-export function updateProjectAdmin(id: string, payload: any) {
+export function updateProjectAdmin(id: string, payload: any): any {
   return {
     type: UPDATE_PROJECT_ADMIN,
     id,
@@ -102,7 +102,7 @@ export const CREATE_PROJECT_ADMIN = 'CREATE_PROJECT_ADMIN'
  * @param  {ProjectAdmin}
  * @return {CreateProjectAdminAction}
  */
-export function createProjectAdmin(id: any, payload: any) {
+export function createProjectAdmin(id: any, payload: any): any {
   return {
     type: CREATE_PROJECT_ADMIN,
     id,
@@ -119,7 +119,7 @@ export function createProjectAdmin(id: any, payload: any) {
  * @param {ProjectAdmin} the project admin's payload
  */
 export const UPDATE_OR_CREATE_PROJECT_ADMIN = 'UPDATE_OR_CREATE_PROJECT_ADMIN'
-export const updateOrCreateProjectAdmin = (id: string, payload: ProjectAdmin) => ({
+export const updateOrCreateProjectAdmin = (id: string, payload: ProjectAdmin): any => ({
   type: UPDATE_OR_CREATE_PROJECT_ADMIN,
   id,
   payload

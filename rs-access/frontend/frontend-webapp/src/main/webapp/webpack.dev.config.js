@@ -1,4 +1,3 @@
-
 // Webpack configuration file
 
 const path = require('path')
@@ -9,7 +8,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 module.exports = {
   // Hide stats information from children during webpack compilation
-  stats: { children: false },
+  stats: {children: false},
   // Webpack working directory
   context: __dirname,
   // Javascript main entry
@@ -20,12 +19,16 @@ module.exports = {
     // Webpack main bundle file name
     filename: "bundle.js",
     // Webpack chunks files names
-    chunkFilename: "[id].chunck.js"
+    chunkFilename: "[id].chunck.js",
+    publicPath: "/"
   },
   // Enable sourcemaps for debugging webpack's output.
-  devtool: "source-map",
+  devtool: "cheap-module-source-map",
   devServer: {
-    stats: { children: false, colors: true },
+    stats: {
+      children: false,
+      colors: true
+    },
     // Web directory serve by the webpack dev server
     contentBase: __dirname,
     // ??? Without this there is no hot replacement during developpment
@@ -38,21 +41,32 @@ module.exports = {
     historyApiFallback: {
       // Rewrite to get bundle.js
       rewrites: [{
-        from: /\/(\d\.)?bundle\.js(\.map)?/,
-        to: context => context.match[0]
+        from: /\/bundle\.js(\.map)?/,
+        to: function (context) {
+          return context.match[0]
+        }
       },
-      // Rewrite to get chunks.
-      { from: /\/(\d\.)?chunck\.js(\.map)?/,
-        to: context => context.match[0]
-      },
-      // Rewrite to get styles.css
-      { from: /\/(\d\.)?styles\.css(\.map)?/,
-        to: context => "/css/"+context.match[0]
-      },
-      { from: /(\*.jpg)$/,
-        to: context => "/img/"+context.match[0]
-      },
-    ]
+        // Rewrite to get chunks.
+        {
+          from: /\/(\d\.)?chunck\.js(\.map)?/,
+          to: function (context) {
+            return context.match[0]
+          }
+        },
+        // Rewrite to get styles.css
+        {
+          from: /\/(\d\.)?styles\.css(\.map)?/,
+          to: function (context) {
+            return "/css/" + context.match[0]
+          }
+        },
+        {
+          from: /(\*.jpg)$/,
+          to: function (context) {
+            return "/img/" + context.match[0]
+          }
+        },
+      ]
     }
   },
   resolve: {
@@ -62,7 +76,7 @@ module.exports = {
     extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
     // Root directories from wich requires are made
     root: [
-      path.join(__dirname,"scripts"),
+      path.join(__dirname, "scripts"),
       path.join(__dirname),
     ]
   },
@@ -71,7 +85,7 @@ module.exports = {
       // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
       {
         test: /\.tsx{0,1}?$/,
-        exclude: [/node_modules/,/json/],
+        exclude: [/node_modules/, /json/],
         loader: "babel-loader!ts-loader"
       },
       {test: /\.css$/, loader:  ExtractTextPlugin.extract("style-loader", "css-loader") },
@@ -82,16 +96,17 @@ module.exports = {
       {test: /\.json$/, loader: "file-loader?name=/json/[name].[ext]"}
     ],
     preLoaders: [
-        // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-        { test: /\.js$/,
-          loader: "source-map-loader",
-          exclude: [ /node_modules\/react-intl/ ]
-        }
+      // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+      {
+        test: /\.js$/,
+        loader: "source-map-loader",
+        exclude: [/node_modules\/react-intl/]
+      }
     ]
   },
   plugins: [
     // Create a single css file for the whole application
-    new ExtractTextPlugin('/css/styles.css',{allChunks: true}),
+    new ExtractTextPlugin('/css/styles.css', {allChunks: true}),
     new CleanWebpackPlugin(['build'], {
       root: __dirname,
       verbose: false,

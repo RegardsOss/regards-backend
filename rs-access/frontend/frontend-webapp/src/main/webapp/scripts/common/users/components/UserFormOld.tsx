@@ -7,22 +7,22 @@
  * @see http://redux-form.com/5.2.5/#/examples/asynchronous-blur-validation?_k=2q0jpm
  * @see http://redux-form.com/5.2.5/#/examples/initializing-from-state?_k=7f95k7
  */
-import * as React from 'react'
-import { Component, PropTypes } from 'react'
-import { reduxForm, ReduxFormProps } from 'redux-form'
-export const fields = [ 'id', 'projectId', 'username', 'password', 'passwordConfirm']
+import * as React from "react";
+import { Component } from "react";
+import { reduxForm } from "redux-form";
+export const fields = ['id', 'projectId', 'username', 'password', 'passwordConfirm']
 // Selectors
 // import {
 //   getSelectedProjectAdminId,
 //   getProjectAdminById,
 //   getSelectedProjectId } from '../../../reducer'
 
- /**
-  * Form fields validation method
-  * @param {Object} values : TODO
-  * @return {Object} errors
-  */
-const validate = (values: any)=> {
+/**
+ * Form fields validation method
+ * @param {Object} values : TODO
+ * @return {Object} errors
+ */
+const validate = (values: any) => {
   const errors: any = {}
   if (!values.username) {
     errors.username = 'Required'
@@ -40,22 +40,26 @@ const validate = (values: any)=> {
 }
 
 const asyncValidate = (values: any/*, dispatch */) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if ([ 'john', 'paul', 'george', 'ringo' ].find( (value: string) => value === values.username)) {
-        reject({ username: 'That username is taken' })
-      } else {
-        resolve()
-      }
-    }, 500) // simulate server latency
+  return new Promise ((resolve, reject) => {
+    // simulate server latency
+    setTimeout (
+      () => {
+        if (['john', 'paul', 'george', 'ringo'].find ((value: string) => value === values.username)) {
+          reject ({username: 'That username is taken'})
+        } else {
+          resolve ()
+        }
+      },
+      500
+    )
   })
 }
 
 interface FormPropTypes {
   fields?: any,
   resetForm?: any,
-  handleSubmit: ()=> void,
-  onCancelClick? :()=> void,
+  handleSubmit: () => void,
+  onCancelClick?: () => void,
   submitting?: boolean,
   show?: boolean,
   onSubmit: () => void
@@ -67,18 +71,17 @@ interface FormPropTypes {
  * @prop {Function} handleSubmit Callback to add or update an administrator
  */
 class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
-  render() {
+  render(): any {
     const {
       asyncValidating,
-      fields: { id, projectId, username, password, passwordConfirm },
-      resetForm,
+      fields: {id, projectId, username, password, passwordConfirm},
       handleSubmit,
       submitting,
       show,
       onCancelClick,
     }: any = this.props
 
-    if(show)
+    if (show) {
       return (
         <form onSubmit={handleSubmit}>
           <div>
@@ -125,8 +128,9 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
           </div>
         </form>
       )
-    else
+    } else {
       return null
+    }
   }
 }
 
@@ -150,10 +154,10 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
 //   asyncBlurFields: [ 'username' ],
 //   validate
 // }, mapStateToProps)(AsynchronousBlurValidationForm)
-export default reduxForm({
+export default reduxForm ({
   form: 'asynchronousBlurValidation',
   fields,
   asyncValidate,
-  asyncBlurFields: [ 'username' ],
+  asyncBlurFields: ['username'],
   validate
-})(AsynchronousBlurValidationForm)
+}) (AsynchronousBlurValidationForm)

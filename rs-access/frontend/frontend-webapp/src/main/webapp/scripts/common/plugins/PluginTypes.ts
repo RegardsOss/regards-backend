@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react";
 
 export type PluginType = {
   name: string,
@@ -7,7 +7,7 @@ export type PluginType = {
 }
 
 export type PluginsStore = {
-  isFetching:boolean,
+  isFetching: boolean,
   items: Array<PluginType>,
   lastUpdate: string
 }

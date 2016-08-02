@@ -3,9 +3,9 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <name>maquette</name>
+  <name>rs-access</name>
   <groupId>fr.cs.regards</groupId>
-  <artifactId>maquette</artifactId>
+  <artifactId>rs-access</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
   <packaging>pom</packaging>

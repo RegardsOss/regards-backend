@@ -9,21 +9,16 @@ const preloadedState: any = {
         { i: 'selectTheme', x: 10, y: 3, w: 2, h: 2 },
       ],
       md: [
-        { i: '0', x: 0, y: 0, w: 2, h: 12 },
-        { i: '1', x: 0, y: 0, w: 3, h: 12 },
-        { i: '2', x: 3, y: 0, w: 9, h: 2 }
+        { i: 'sideBar', x: 10, y: 2, w: 2, h: 6 },
+        { i: 'appBar', x: 0, y: 0, w: 10, h: 2 },
+        { i: 'content', x: 0, y: 0, w: 8, h: 5 },
+        { i: 'selectTheme', x: 10, y: 3, w: 2, h: 2 },
       ],
       sm: [
-        { i: '1', x: 0, y: 0, w: 3, h: 2 },
-        { i: '2', x: 10, y: 0, w: 2, h: 2 }
-      ],
-      xs: [
-        { i: '1', x: 0, y: 0, w: 3, h: 2 },
-        { i: '2', x: 10, y: 0, w: 2, h: 2 }
-      ],
-      xxs: [
-        { i: '1', x: 0, y: 0, w: 3, h: 2 },
-        { i: '2', x: 10, y: 0, w: 2, h: 2 }
+        { i: 'sideBar', x: 0, y: 2, w: 12, h: 2 },
+        { i: 'appBar', x: 0, y: 0, w: 10, h: 2 },
+        { i: 'content', x: 0, y: 4, w: 12, h: 5 },
+        { i: 'selectTheme', x: 0, y: 10, w: 2, h: 2 },
       ]
     },
     plugins: {},

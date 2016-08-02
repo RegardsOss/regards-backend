@@ -1,8 +1,8 @@
-import React from 'react';
-import { initPlugin } from './RegardsPlugin';
+import React from 'react'
+import { exportPlugin } from './RegardsPlugin'
 
 // Ajout des styles spécifiques au plugin
-require('./css/plugin.css');
+require('./css/plugin.css')
 
 // Définition du composant React renvoyé par le plugin
 class HelloWorldPlugin extends React.Component {
@@ -13,9 +13,9 @@ class HelloWorldPlugin extends React.Component {
       <div className="plugin-bg">
         <h1 className="hello-style">HelloWorld Plugin from frontend-plugins</h1>
       </div>
-    );
+    )
   }
 }
 
 // Indique au système que le plugin est disponible
-initPlugin("HelloWorldPlugin",HelloWorldPlugin);
+exportPlugin("HelloWorldPlugin",HelloWorldPlugin)
