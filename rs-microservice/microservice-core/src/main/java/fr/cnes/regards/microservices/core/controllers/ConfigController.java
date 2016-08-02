@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.core.controlers;
+package fr.cnes.regards.microservices.core.controllers;
 
 import javax.annotation.PostConstruct;
 
