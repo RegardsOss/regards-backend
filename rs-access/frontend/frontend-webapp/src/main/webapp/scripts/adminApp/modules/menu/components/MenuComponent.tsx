@@ -18,7 +18,10 @@ class MenuComponent extends React.Component<{}, any> {
   render(){
 
     return (
-      <Drawer open={true}>
+      <Drawer
+        open={true}
+        containerStyle={{width:'100%', height:'100%'}}
+        >
         <Link to={"/admin/cdpp/projects"}>
           <MenuItem primaryText="Projets" leftIcon={<Settings />} />
         </Link>

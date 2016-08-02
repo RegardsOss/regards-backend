@@ -36,6 +36,22 @@ interface AminAppProps {
   onLogout: ()=> void
 }
 
+const AdminAppBarIcon = (
+  <div>
+    <IconMenu
+      iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+      anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+      targetOrigin={{horizontal: 'left', vertical: 'top'}}
+    >
+      <MenuItem primaryText="Refresh" />
+      <MenuItem primaryText="Send feedback" />
+      <MenuItem primaryText="Settings" />
+      <MenuItem primaryText="Help" />
+      <MenuItem primaryText="Sign out" />
+    </IconMenu>
+  </div>
+)
+
 /**
  * React component to manage Administration application.
  * This component display admin layout or login form if the user is not connected
@@ -63,37 +79,14 @@ class AdminApp extends React.Component<AminAppProps, any> {
     } else {
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
-          <div>
-            <AppBar key='0'
-              title="Regards admin dashboard"
-              iconElementRight={
-                <div>
-                  <IconMenu
-                    iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
-                    anchorOrigin={{horizontal: 'left', vertical: 'top'}}
-                    targetOrigin={{horizontal: 'left', vertical: 'top'}}
-                  >
-                    <MenuItem primaryText="Refresh" />
-                    <MenuItem primaryText="Send feedback" />
-                    <MenuItem primaryText="Settings" />
-                    <MenuItem primaryText="Help" />
-                    <MenuItem primaryText="Sign out" />
-                  </IconMenu>
-                </div>
-              }
-              />
-              <MenuComponent />
-            <Layout>
-              <div key='1' style={{backgroundColor:'#ff4081',height: '100%'}}>
-                <RaisedButton label="Click!" />
-                  <SelectTheme/>
-              </div>
-
-              <div key='2' style={{backgroundColor:'#FFCA28'}}>
-                {content}
-              </div>
-            </Layout>
-          </div>
+            <div>
+              <Layout>
+                <div key='sideBar'><MenuComponent /></div>
+                <div key='appBar'><AppBar title="Regards admin dashboard" iconElementRight={AdminAppBarIcon} /></div>
+                <div key='content'>{content}</div>
+                <div key='selectTheme'><SelectTheme /></div>
+              </Layout>
+            </div>
         </MuiThemeProvider>
       )
     }

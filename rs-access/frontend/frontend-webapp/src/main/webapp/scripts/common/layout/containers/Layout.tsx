@@ -12,7 +12,10 @@ ResponsiveReactGridLayout = WidthProvider(ResponsiveReactGridLayout)
 
 interface LayoutProps {
   layout?: any,
-  setLayout?: (layout: any)=>void
+  setLayout?: (layout: any)=>void,
+  sideBarElement?: JSX.Element,
+  appBarElement?: JSX.Element,
+  contentElements?: Array<JSX.Element>, // An array of react components
 }
 
 class Layout extends React.Component<LayoutProps, any> {
@@ -29,26 +32,30 @@ class Layout extends React.Component<LayoutProps, any> {
   }
 
   render() {
+
     return (
-      <ResponsiveReactGridLayout
-        className='layout'
-        cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}
-        rowHeight={30}
-        margin={[this.state.margin, this.state.margin]}
-        style={{
-          backgroundColor:'#00bcd4',
-          position: 'absolute',
-          height: '100%',
-          width: '100%'
-        }}
-        layouts={this.props.layout}
-        onLayoutChange={this.onLayoutChange}
-        isDraggable={false}
-        isResizable={false}
-        {...this.props}
-        >
-        {this.props.children}
-      </ResponsiveReactGridLayout>
+      <div>
+        <ResponsiveReactGridLayout
+          className='layout'
+          breakpoints={{lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0}}
+          cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}
+          rowHeight={30}
+          margin={[this.state.margin, this.state.margin]}
+          style={{
+            backgroundColor:'#ECEFF1',
+            position: 'absolute',
+            height: '100%',
+            width: '100%'
+          }}
+          layouts={this.props.layout}
+          onLayoutChange={this.onLayoutChange}
+          isDraggable={false}
+          isResizable={false}
+          {...this.props}
+          >
+          {this.props.children}
+        </ResponsiveReactGridLayout>
+      </div>
     )
   }
 }
