@@ -12,8 +12,8 @@
     "typings": "typings install --global --save",
     "prebuildp": "npm install && npm test",
     "buildp": "webpack --progress --config webpack.prod.config.js",
-    "pretest": "tsc",
-    "test": "mocha --compilers js:babel-register dist/tests --recursive",
+    "pretest": "tsc && (npm run lint || true)",
+    "test": "mocha --compilers js:babel-register dist/tests --inline-diffs --recursive",
     "test:watch": "npm test --watch",
     "presitemap": "webpack --config webpack.sitemap.config.js --progress",
     "sitemap": "node build/sitemap.js",
@@ -93,7 +93,6 @@
     "webpack-dev-server": "^1.14.1"
   },
   "engines": {
-    "node": "*",
-    "npm": "*"
+    "node": ">=0.12.0"
   }
 }

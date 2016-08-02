@@ -34,7 +34,7 @@ class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
     if (nextProject && nextProject !== oldProject) {
       const link = nextProject.links.find ((link: any) => link.rel === "users")
       if (link) {
-        const href = link.href;
+        const href = link.href
         this.props.fetchProjectAdminsBy (href)
       }
     }

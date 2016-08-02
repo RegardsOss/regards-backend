@@ -18,7 +18,7 @@ class MockContainer extends React.Component<any, MockProps> {
   constructor() {
     super ();
   }
-  render(): any {
+  render(): JSX.Element {
     const {router, route, params} = this.props;
     const userList = [{
       name: "Eric",

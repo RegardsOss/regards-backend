@@ -9,6 +9,7 @@ const getAuthorization = (state: any, callAPI: any) => {
   // Init the authorization bearer of the fetch request
   const authentication = state.common.authentication
   // let authorization = "Basic "
+  // Todo: Extract this value to lets the administrator deploys the frontend with another key
   let authorization = "Basic " + btoa ("acme:acmesecret")
   if (authentication && authentication.user && authentication.user.access_token && callAPI.types[0] !== REQUEST_AUTHENTICATE) {
     authorization = "Bearer " + authentication.user.access_token

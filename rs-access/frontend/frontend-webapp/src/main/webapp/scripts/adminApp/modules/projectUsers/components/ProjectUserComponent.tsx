@@ -24,7 +24,6 @@ class ProjectUserComponent extends React.Component<ProjectUserProps, any> {
   render(): any {
     const {user, redirectOnSelectTo} = this.props;
     const {muiTheme} = this.context;
-    console.log ("mui", this.context)
     return (
       <I18nProvider messageDir="adminApp/modules/projectUsers/i18n">
         <Link to={redirectOnSelectTo} style={{textDecoration:muiTheme.linkWithoutDecoration.textDecoration}}>

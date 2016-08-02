@@ -54,7 +54,7 @@ class AdminApp extends React.Component<AminAppProps, any> {
     this.state = {instance: false}
   }
 
-  render(): any {
+  render(): JSX.Element {
     const {theme, authentication, content} = this.props
 
     // Build theme

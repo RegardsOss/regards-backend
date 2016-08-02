@@ -8,6 +8,8 @@ import { User } from "../../../../common/users/types";
 import ProjectUserComponent from "../components/ProjectUserComponent";
 interface ProjectUsersProps {
   users: Array<User>,
+  // From mapDispatchToProps
+  fetchProjectUsers? : any,
   // From router
   router: any,
   route: any,
@@ -23,7 +25,7 @@ class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
     return "/admin/" + this.props.params.project + "/users/" + user.id;
   }
 
-  render(): any {
+  render(): JSX.Element {
 
     const {users} = this.props;
     return (
@@ -51,8 +53,24 @@ class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
       </Card>
     )
   }
+
+
+  componentWillReceiveProps(nextProps: any): any {
+    /*
+    const oldProject = this.props.project
+    const nextProject = nextProps.project
+    if (nextProject && nextProject !== oldProject) {
+      const link = nextProject.links.find ((link: any) => link.rel === "users")
+      if (link) {
+        const href = link.href;
+        this.props.fetchProjectUsers (href)
+      }
+    }*/
+  }
 }
 
 const mapStateToProps = (state: any) => ({});
-const mapDispatchToProps = (dispatch: any) => ({});
+const mapDispatchToProps = (dispatch: any) => ({
+  //fetchProjectUsers: (projectId: string) => dispatch (actions.fetchProjectUsers (projectId)),
+});
 export default connect<{}, {}, ProjectUsersProps> (mapStateToProps, mapDispatchToProps) (ProjectUsersContainer);

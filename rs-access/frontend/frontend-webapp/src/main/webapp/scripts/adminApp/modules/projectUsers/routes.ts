@@ -1,8 +1,20 @@
-import MockContainer from "./containers/MockContainer";
+import ProjectUsersContainer from "./containers/ProjectUsersContainer";
 import ProjectUserEditContainer from "./containers/ProjectUserEditContainer";
 import { PlainRoute } from "react-router";
+import ProjectUserCreateContainer from "./containers/ProjectUserCreateContainer";
 
 declare var require: any;
+
+export const projectUserCreateRoute: PlainRoute = {
+  path: 'users/create',
+  getComponents(nextState: any, cb: any): any {
+    require.ensure ([], (require: any) => {
+      cb (null, {
+        content: ProjectUserCreateContainer
+      })
+    })
+  }
+}
 
 export const projectUserEditRoute: PlainRoute = {
   path: 'users/:user_id',
@@ -20,7 +32,7 @@ export const projectUsersRoutes: PlainRoute = {
   getComponents(nextState: any, cb: any): any {
     require.ensure ([], (require: any) => {
       cb (null, {
-        content: MockContainer
+        content: ProjectUsersContainer
       })
     })
   }
