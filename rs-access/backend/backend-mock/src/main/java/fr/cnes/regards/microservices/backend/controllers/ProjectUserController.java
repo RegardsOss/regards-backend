@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.websocket.server.PathParam;
 
+import fr.cnes.regards.microservices.backend.pojo.ProjectUser;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -33,7 +34,7 @@ public class ProjectUserController {
     MethodAutorizationService authService_;
 
     /**
-     * Method to iniate REST resources authorizations.
+     * Method to initiate REST resources authorizations.
      */
     @PostConstruct
     public void initAuthorisations() {
@@ -41,10 +42,13 @@ public class ProjectUserController {
     }
 
     @RequestMapping(value = "/users", method = RequestMethod.GET)
-    public @ResponseBody HttpEntity<List<Account>> getProjectUsers() {
+    public HttpEntity<List<Account>> getProjectUsers() {
         List<Account> accounts = new ArrayList<>();
 
+        List<ProjectUser> pUsers = new ArrayList();
+        pUsers.add(new ProjectUser());
         Account account = new Account("John", "Constantine", "john.constantine@...", "jconstantine", "passw0rd");
+        account.setProjectUsers(pUsers);
         account.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin("John")).withSelfRel());
         account.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin("John")).withRel("role"));
         account.add(linkTo(methodOn(ProjectController.class).getProject("John")).withRel("projet"));

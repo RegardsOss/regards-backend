@@ -1,14 +1,22 @@
 package fr.cnes.regards.microservices.backend.pojo;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.hateoas.ResourceSupport;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Account extends ResourceSupport {
 	private String email;
     private String firstName;
     private String lastName;
     private String login;
+
+    @JsonIgnore
     private String password;
     private int status;
+
+    private List<ProjectUser> projectUsers;
 
 	public Account(String firstName, String lastName, String email, String login, String password) {
         this.firstName = firstName;
@@ -17,6 +25,7 @@ public class Account extends ResourceSupport {
         this.login = login;
         this.password = password;
         this.status = AccountStatus.ACTIVE.getValue();
+        this.projectUsers = new ArrayList();
 	}
 
     public String getEmail() {
@@ -67,4 +76,11 @@ public class Account extends ResourceSupport {
         this.status = status;
     }
 
+    public List<ProjectUser> getProjectUsers() {
+        return projectUsers;
+    }
+
+    public void setProjectUsers(List<ProjectUser> projectUsers) {
+        this.projectUsers = projectUsers;
+    }
 }
