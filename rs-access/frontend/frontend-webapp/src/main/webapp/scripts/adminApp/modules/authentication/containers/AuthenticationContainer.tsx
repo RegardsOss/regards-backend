@@ -5,11 +5,17 @@ import LoginComponent from "../components/LoginComponent";
 import { fetchAuthenticate } from "../../../../common/authentication/AuthenticateActions";
 
 
+
+export interface AuthenticationProps {
+  onLogin?: (username: string, password: string) => void,
+  errorMessage?: string
+}
+
 /**
  * React container for authentication form.
  * Contains logic for authentication
  */
-export class Authentication extends React.Component<any, any> {
+export class Authentication extends React.Component<AuthenticationProps, any> {
 
   constructor() {
     super ();
@@ -25,11 +31,11 @@ export class Authentication extends React.Component<any, any> {
 }
 
 const mapStateToProps = (state: any) => ({
-  errorMessage: state.common.authentication.error,
-  theme: state.common.theme
+  errorMessage: state.common.authentication.error
 })
 
 const mapDispatchToProps = (dispatch: any) => ({
   onLogin: (userName: string, password: string) => dispatch (fetchAuthenticate (userName, password))
 })
-export default connect (mapStateToProps, mapDispatchToProps) (Authentication)
+// export default connect (mapStateToProps, mapDispatchToProps) (Authentication)
+export default connect<{}, {}, AuthenticationProps> (mapStateToProps, mapDispatchToProps) (Authentication);
