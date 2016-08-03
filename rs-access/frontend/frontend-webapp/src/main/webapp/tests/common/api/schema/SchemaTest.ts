@@ -22,6 +22,30 @@ describe ('[COMMON] Testing schemas', () => {
         "login": "jconstantine",
         "password": "passw0rd",
         "status": 0,
+        "projectUsers": [
+          {
+            "status": 0,
+            "lastConnection": 1470224658811,
+            "lastUpdate": 1470224658811,
+            "role": {
+              "nom": "Guest",
+              "parentRole": null,
+              "permissions": []
+            },
+            "links": []
+          },
+          {
+            "status": 0,
+            "lastConnection": 1470224658811,
+            "lastUpdate": 1470224658811,
+            "role": {
+              "nom": "Guest",
+              "parentRole": null,
+              "permissions": []
+            },
+            "links": []
+          }
+        ],
         "links": [
           {
             "rel": "self",
@@ -48,6 +72,7 @@ describe ('[COMMON] Testing schemas', () => {
         "login": "fbar",
         "password": "passw0rd",
         "status": 0,
+        "projectUsers": [],
         "links": [
           {
             "rel": "self",
@@ -68,7 +93,7 @@ describe ('[COMMON] Testing schemas', () => {
         ]
       }
     ]
-    const expectedResult: any = {"entities":{"user":{"http://localhost:8080/api/project-admin?name=John":{"email":"john.constantine@...","firstName":"John","lastName":"Constantine","login":"jconstantine","password":"passw0rd","status":0,"links":[{"rel":"self","href":"http://localhost:8080/api/project-admin?name=John"},{"rel":"role","href":"http://localhost:8080/api/project-admin?name=John"},{"rel":"projet","href":"http://localhost:8080/api/project?name=John"},{"rel":"projetUser","href":"http://localhost:8080/api/project?name=John"}]},"http://localhost:8080/api/project-admin?name=Foo":{"email":"fbar@...","firstName":"Foo","lastName":"Bar","login":"fbar","password":"passw0rd","status":0,"links":[{"rel":"self","href":"http://localhost:8080/api/project-admin?name=Foo"},{"rel":"role","href":"http://localhost:8080/api/project-admin?name=Foo"},{"rel":"projet","href":"http://localhost:8080/api/project?name=Foo"},{"rel":"projetUser","href":"http://localhost:8080/api/project?name=Foo"}]}}},"result":["http://localhost:8080/api/project-admin?name=John","http://localhost:8080/api/project-admin?name=Foo"]}
+    const expectedResult: any = {"entities":{"user":{"http://localhost:8080/api/project-admin?name=John":{"email":"john.constantine@...","firstName":"John","lastName":"Constantine","login":"jconstantine","password":"passw0rd","status":0,"projectUsers":[{"status":0,"lastConnection":1470224658811,"lastUpdate":1470224658811,"role":{"nom":"Guest","parentRole":null,"permissions":[]},"links":[]},{"status":0,"lastConnection":1470224658811,"lastUpdate":1470224658811,"role":{"nom":"Guest","parentRole":null,"permissions":[]},"links":[]}],"links":[{"rel":"self","href":"http://localhost:8080/api/project-admin?name=John"},{"rel":"role","href":"http://localhost:8080/api/project-admin?name=John"},{"rel":"projet","href":"http://localhost:8080/api/project?name=John"},{"rel":"projetUser","href":"http://localhost:8080/api/project?name=John"}]},"http://localhost:8080/api/project-admin?name=Foo":{"email":"fbar@...","firstName":"Foo","lastName":"Bar","login":"fbar","password":"passw0rd","status":0,"projectUsers":[],"links":[{"rel":"self","href":"http://localhost:8080/api/project-admin?name=Foo"},{"rel":"role","href":"http://localhost:8080/api/project-admin?name=Foo"},{"rel":"projet","href":"http://localhost:8080/api/project?name=Foo"},{"rel":"projetUser","href":"http://localhost:8080/api/project?name=Foo"}]}}},"result":["http://localhost:8080/api/project-admin?name=John","http://localhost:8080/api/project-admin?name=Foo"]}
     const result = normalize (response, Schemas.USER_ARRAY);
     assert.deepEqual (result, expectedResult)
   })

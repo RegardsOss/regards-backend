@@ -42,7 +42,7 @@ describe('[ADMIN APP] Testing projects actions', () => {
   })
 
   // Test nominal
-  it('creates PROJECTS_REQUEST and PROJECTS_SUCESS actions when fetching projecs has been done', () => {
+  it('creates PROJECTS_REQUEST and PROJECTS_SUCCESS actions when fetching projects has been done', () => {
     nock(actions.PROJECTS_API)
       .get('')
       .reply(200, [
@@ -63,7 +63,7 @@ describe('[ADMIN APP] Testing projects actions', () => {
       meta: undefined
     }
     const successAction: Action<any> & AnyMeta = {
-      type: 'PROJECTS_SUCESS',
+      type: 'PROJECTS_SUCCESS',
       meta: undefined,
       payload: {
         entities: {

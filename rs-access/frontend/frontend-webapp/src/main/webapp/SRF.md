@@ -111,7 +111,7 @@ the capability of replacing "A+A’ " in order to introduce his own modification
 Distribution licenses type depends on two major characteristics.
 
 
-First, the kind of distribution of a given license is conditioned by the intention or not to have it distributed to third parties or not. Thus, whenever developers use a given product, even modified, for private usage (private may be understood even within a firm), the derived product may be kept private and secret and need no specific license itself.  
+First, the kind of distribution of a given license is conditioned by the intention or not to have it distributed to third parties or not. Thus, whenever developers use a given product, even modified, for private usage (private may be understood even within a firm), the derived product may be kept private and secret and need no specific license itself.
 However, whenever it is intended to distribute the product to third parties, then either updated or derived products should be distributed under free licenses as well.
 
 
@@ -200,7 +200,7 @@ Using **weak** copyleft licenses products without any change enables to guarante
 | Developer/Ownership | Microsoft |
 | Licencing conditions | Open source - Apache License |
 | Industrial Property Constraints | Perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare Derivative Works of, publicly display, publicly perform, sublicense, and distribute the Work and such Derivative Works in Source or Object form. |
-| Version and components | 1.8.10 |
+| Version and components | 2.0.0 |
 | Language | TypeScript |
 
 #### 3. Testing

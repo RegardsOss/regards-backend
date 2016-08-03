@@ -8,7 +8,6 @@ import { isAuthenticated } from "../common/authentication/AuthenticateUtils";
 import Layout from "../common/layout/containers/Layout";
 import MenuComponent from "./modules/menu/components/MenuComponent";
 import AppBar from "material-ui/AppBar";
-import RaisedButton from "material-ui/RaisedButton";
 import IconMenu from "material-ui/IconMenu";
 import MenuItem from "material-ui/MenuItem";
 import IconButton from "material-ui/IconButton";

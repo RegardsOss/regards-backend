@@ -1,6 +1,6 @@
 import { union } from "lodash";
 import { deleteEntityReducer } from "../../../common/reducers";
-import { PROJECTS_REQUEST, PROJECTS_SUCESS, PROJECTS_FAILURE, ADD_PROJECT, DELETE_PROJECT } from "./actions";
+import { PROJECTS_REQUEST, PROJECTS_SUCCESS, PROJECTS_FAILURE, ADD_PROJECT, DELETE_PROJECT } from "./actions";
 
 export default (state: any = {
   isFetching: false,
@@ -11,7 +11,7 @@ export default (state: any = {
   switch (action.type) {
     case PROJECTS_REQUEST:
       return Object.assign ({}, state, {isFetching: true})
-    case PROJECTS_SUCESS:
+    case PROJECTS_SUCCESS:
       return Object.assign ({}, state, {
         isFetching: false,
         items: action.payload.entities.projects,

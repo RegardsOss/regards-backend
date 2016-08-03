@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import { Action } from 'redux'
 import reducer from '../../../../scripts/adminApp/modules/projects/reducer'
 import { ProjectAction } from '../../../../scripts/adminApp/modules/projects/actions'
+import { PROJECTS_REQUEST, PROJECTS_SUCCESS, ADD_PROJECT, PROJECTS_FAILURE, DELETE_PROJECT } from '../../../../scripts/adminApp/modules/projects/actions'
 
 describe('[ADMIN APP] Testing projects reducer', () => {
 
@@ -16,7 +17,7 @@ describe('[ADMIN APP] Testing projects reducer', () => {
 
   it('should handle fetch request', () => {
     const action: Action = {
-      type: 'PROJECTS_REQUEST'
+      type: PROJECTS_REQUEST
     }
     const initState = {
       isFetching : false
@@ -29,7 +30,7 @@ describe('[ADMIN APP] Testing projects reducer', () => {
 
   it('should handle fetch success', () => {
     const action = {
-      type: 'PROJECTS_SUCESS',
+      type: PROJECTS_SUCCESS,
       payload: {
         entities: {
           projects: {
@@ -60,7 +61,7 @@ describe('[ADMIN APP] Testing projects reducer', () => {
 
   it('should handle fetch failure', () => {
     const action = {
-      type: "PROJECTS_FAILURE",
+      type: PROJECTS_FAILURE,
       error: "Oops there was an error!"
     }
     const initState = {
@@ -80,7 +81,7 @@ describe('[ADMIN APP] Testing projects reducer', () => {
 
   it('should create a project', () => {
     const action: ProjectAction = {
-      type: 'ADD_PROJECT',
+      type: ADD_PROJECT,
       id: 'idofthesecondproject',
       name: 'ssalto'
     }
@@ -102,7 +103,7 @@ describe('[ADMIN APP] Testing projects reducer', () => {
 
   it('should delete a project', () => {
     const action = {
-      type: 'DELETE_PROJECT',
+      type: DELETE_PROJECT,
       id: 'idofthesecondproject'
     }
     const initState = {

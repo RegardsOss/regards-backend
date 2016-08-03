@@ -9,7 +9,7 @@ import ProjectUserComponent from "../components/ProjectUserComponent";
 interface ProjectUsersProps {
   users: Array<User>,
   // From mapDispatchToProps
-  fetchProjectUsers? : any,
+  fetchProjectUsers?: any,
   // From router
   router: any,
   route: any,
@@ -71,6 +71,6 @@ class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
 
 const mapStateToProps = (state: any) => ({});
 const mapDispatchToProps = (dispatch: any) => ({
-  //fetchProjectUsers: (projectId: string) => dispatch (actions.fetchProjectUsers (projectId)),
+  // fetchProjectUsers: (projectId: string) => dispatch (actions.fetchProjectUsers (projectId)),
 });
 export default connect<{}, {}, ProjectUsersProps> (mapStateToProps, mapDispatchToProps) (ProjectUsersContainer);

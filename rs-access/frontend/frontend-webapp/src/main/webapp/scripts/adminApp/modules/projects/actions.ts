@@ -1,11 +1,11 @@
 const {CALL_API, getJSON} = require ('redux-api-middleware')
-import Schemas from "../../../common/api/schemas";
+import Schemas from "../../../../scripts/common/api/schemas";
 import { normalize } from "normalizr";
 import { Action } from "redux";
 
 export const PROJECTS_API = 'http://localhost:8080/api/projects'
 export const PROJECTS_REQUEST = 'PROJECTS_REQUEST'
-export const PROJECTS_SUCESS = 'PROJECTS_SUCESS'
+export const PROJECTS_SUCCESS = 'PROJECTS_SUCCESS'
 export const PROJECTS_FAILURE = 'PROJECTS_FAILURE'
 
 // Fetches all projects
@@ -16,7 +16,7 @@ export const fetchProjects = () => ({
     types: [
       PROJECTS_REQUEST,
       {
-        type: PROJECTS_SUCESS,
+        type: PROJECTS_SUCCESS,
         payload: (action: any, state: any, res: any) => getJSON (res).then ((json: any) => normalize (json, Schemas.PROJECT_ARRAY))
       },
       PROJECTS_FAILURE
