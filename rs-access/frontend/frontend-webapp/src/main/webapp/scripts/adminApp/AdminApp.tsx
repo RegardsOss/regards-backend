@@ -64,7 +64,9 @@ class AdminApp extends React.Component<AminAppProps, any> {
     if (authenticated === false) {
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
-          <Authentication />
+          <Layout>
+            <div key='authentication'><Authentication /></div>
+          </Layout>
         </MuiThemeProvider>
       )
     } else {

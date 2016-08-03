@@ -21,7 +21,7 @@ export class Authentication extends React.Component<AuthenticationProps, any> {
     super ();
   }
 
-  render(): any {
+  render(): JSX.Element {
     return (
       <LoginComponent
         onLogin={this.props.onLogin}

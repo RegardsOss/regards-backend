@@ -7,7 +7,14 @@ import MenuItem from "material-ui/MenuItem";
 import { Card, CardText } from "material-ui/Card";
 import ThemeHelper from "../ThemeHelper";
 
-export class SelectTheme extends React.Component<any, any> {
+interface SelectThemeProps {
+  // From mapStateToProps
+  theme?: any,
+  // From mapDispatchToProps
+  setTheme?: any,
+}
+
+export class SelectTheme extends React.Component<SelectThemeProps, any> {
 
   constructor() {
     super ()
@@ -48,4 +55,4 @@ const mapDispatchToProps = (dispatch: any) => ({
   setTheme: (theme: string) => dispatch (setTheme (theme))
 })
 
-export default connect<{}, {}, {}> (mapStateToProps, mapDispatchToProps) (SelectTheme);
+export default connect<{}, {}, SelectThemeProps> (mapStateToProps, mapDispatchToProps) (SelectTheme);

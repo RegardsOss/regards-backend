@@ -43,7 +43,7 @@ class Layout extends React.Component<LayoutProps, any> {
         autoSite={true}
         layouts={this.props.layout}
         onLayoutChange={this.onLayoutChange}
-        isDraggable={true}
+        isDraggable={false}
         isResizable={true}
         {...this.props}
         >
