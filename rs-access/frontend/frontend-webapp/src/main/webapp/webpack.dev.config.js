@@ -100,7 +100,7 @@ module.exports = {
       {
         test: /\.js$/,
         loader: "source-map-loader",
-        exclude: [/node_modules\/react-intl/]
+        exclude: [/node_modules\/intl-*/]
       }
     ]
   },
