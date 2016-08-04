@@ -1,20 +1,21 @@
 /** @module AdminApp */
-import * as React from "react";
-import { connect } from "react-redux";
-import { logout } from "../common/authentication/AuthenticateActions";
-import Authentication from "./modules/authentication/containers/AuthenticationContainer";
-import { AuthenticationType } from "../common/authentication/AuthenticationTypes";
-import { isAuthenticated } from "../common/authentication/AuthenticateUtils";
-import Layout from "../common/layout/containers/Layout";
-import MenuComponent from "./modules/menu/components/MenuComponent";
-import AppBar from "material-ui/AppBar";
-import IconMenu from "material-ui/IconMenu";
-import MenuItem from "material-ui/MenuItem";
-import IconButton from "material-ui/IconButton";
-import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
-import ThemeHelper from "../common/theme/ThemeHelper";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import SelectTheme from "../common/theme/containers/SelectTheme";
+import * as React from "react"
+import { connect } from "react-redux"
+import { logout } from "../common/authentication/AuthenticateActions"
+import Authentication from "./modules/authentication/containers/AuthenticationContainer"
+import { AuthenticationType } from "../common/authentication/AuthenticationTypes"
+import { isAuthenticated } from "../common/authentication/AuthenticateUtils"
+import Layout from "../common/layout/containers/Layout"
+import MenuContainer from "./modules/menu/containers/MenuContainer"
+import AppBar from "material-ui/AppBar"
+import IconMenu from "material-ui/IconMenu"
+import MenuItem from "material-ui/MenuItem"
+import IconButton from "material-ui/IconButton"
+import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert"
+import ThemeHelper from "../common/theme/ThemeHelper"
+import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"
+import SelectTheme from "../common/theme/containers/SelectTheme"
+import SelectLanguage from "../common/i18n/containers/SelectLocaleContainer"
 
 interface AminAppProps {
   router: any,
@@ -74,10 +75,11 @@ class AdminApp extends React.Component<AminAppProps, any> {
         <MuiThemeProvider muiTheme={muiTheme}>
             <div>
               <Layout>
-                <div key='sideBar'><MenuComponent /></div>
+                <div key='sideBar'><MenuContainer /></div>
                 <div key='appBar'><AppBar title="Regards admin dashboard" iconElementRight={AdminAppBarIcon} /></div>
                 <div key='content'>{content}</div>
                 <div key='selectTheme'><SelectTheme /></div>
+                <div key='selectLanguage'><SelectLanguage locales={['en','fr']}/></div>
               </Layout>
             </div>
         </MuiThemeProvider>

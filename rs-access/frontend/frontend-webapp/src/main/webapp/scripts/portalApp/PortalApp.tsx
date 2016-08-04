@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import ApplicationErrorComponent from "../common/components/ApplicationErrorComponent";
 import InstanceComponent from "./modules/projects/components/InstanceComponent";
 import ProjectsContainer from "./modules/projects/containers/ProjectsContainer";
-import SelectLocaleComponent from "../common/i18n/SelectLocaleComponent";
+import SelectLocaleComponent from "../common/i18n/containers/SelectLocaleContainer";
 import { fetchAuthenticate } from "../common/authentication/AuthenticateActions";
 import I18nProvider from "../common/i18n/I18nProvider";
 import ThemeHelper from "../common/theme/ThemeHelper";

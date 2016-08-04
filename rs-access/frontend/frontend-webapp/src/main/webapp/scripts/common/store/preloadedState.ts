@@ -6,22 +6,25 @@ const preloadedState: any = {
         { i: 'sideBar', x: 0, y: 0, w: 2, h: 10 },
         { i: 'appBar', x: 2, y: 0, w: 10, h: 2 },
         { i: 'content', x: 2, y: 0, w: 4, h: 5 },
-        { i: 'selectTheme', x: 10, y: 3, w: 2, h: 2 },
-        { i: 'authentication', x: 4, y: 2, w: 4, h: 2 }
+        { i: 'authentication', x: 4, y: 0, w: 4, h: 2 },
+        { i: 'selectTheme', x: 12, y: 0, w: 2, h: 2.5 },
+        { i: 'selectLanguage', x: 12, y: 0, w: 1, h: 4.2 }
       ],
       md: [
         { i: 'sideBar', x: 10, y: 2, w: 2, h: 6 },
         { i: 'appBar', x: 0, y: 0, w: 10, h: 2 },
         { i: 'content', x: 0, y: 0, w: 8, h: 5 },
         { i: 'selectTheme', x: 10, y: 3, w: 2, h: 2 },
-        { i: 'authentication', x: 4, y: 2, w: 4, h: 2 }
+        { i: 'authentication', x: 4, y: 2, w: 4, h: 2 },
+        { i: 'selectLanguage', x: 10, y: 6, w: 1, h: 2 }
       ],
       sm: [
         { i: 'sideBar', x: 0, y: 2, w: 12, h: 2 },
         { i: 'appBar', x: 0, y: 0, w: 10, h: 2 },
         { i: 'content', x: 0, y: 4, w: 12, h: 5 },
         { i: 'selectTheme', x: 0, y: 10, w: 2, h: 2 },
-        { i: 'authentication', x: 4, y: 2, w: 2, h: 2 }
+        { i: 'authentication', x: 4, y: 2, w: 2, h: 2 },
+        { i: 'selectLanguage', x: 10, y: 6, w: 1, h: 2 }
       ]
     },
     plugins: {},
