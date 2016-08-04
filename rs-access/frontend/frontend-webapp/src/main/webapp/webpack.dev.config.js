@@ -111,7 +111,9 @@ module.exports = {
       root: __dirname,
       verbose: false,
       dry: false
-    })
+    }),
+    // Allow to define React as a global variable for JSX.
+    new webpack.ProvidePlugin({"React": "react",}),
   ],
   postcss: [
     // Plugin to Automaticly add vendors prefix to css classes
@@ -123,7 +125,7 @@ module.exports = {
     net: 'empty',
     tls: 'empty',
     dns: 'empty'
-  },
+  }
   // When importing a module whose path matches one of the following, just
   // assume a corresponding global variable exists and use that instead.
   // This is important because it allows us to avoid bundling all of our

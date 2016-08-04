@@ -11,6 +11,7 @@
     "node": "registry:dt/node#6.0.0+20160728152422",
     "normalizr": "registry:dt/normalizr#2.0.1+20160501130729",
     "react": "registry:dt/react#0.14.0+20160720060442",
+    "react-addons-update": "registry:dt/react-addons-update#0.14.0+20160316155526",
     "react-dom": "registry:dt/react-dom#0.14.0+20160412154040",
     "react-global": "registry:dt/react-global#0.14.0+20160316155526",
     "react-intl": "registry:dt/react-intl#2.0.0+20160412155000",
