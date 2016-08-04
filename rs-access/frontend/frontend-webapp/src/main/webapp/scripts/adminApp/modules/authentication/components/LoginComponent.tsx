@@ -5,7 +5,6 @@ import I18nProvider from "../../../../common/i18n/I18nProvider";
 import { Card, CardActions, CardTitle, CardText } from "material-ui/Card";
 import TextField from "material-ui/TextField";
 import RaisedButton from "material-ui/RaisedButton";
-import Layout from "../../../../common/layout/containers/Layout";
 
 export interface LoginProps {
   onLogin: (username: string, password: string) => void,

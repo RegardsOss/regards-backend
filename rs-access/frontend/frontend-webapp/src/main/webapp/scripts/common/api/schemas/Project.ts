@@ -1,5 +1,4 @@
 import { Schema, arrayOf } from "normalizr";
-import ProjectAdmin from './ProjectAdmin'
 import { find } from 'lodash'
 import { HATEOASLink } from './common'
 
@@ -21,4 +20,3 @@ export default {
   PROJECT: projectSchema,
   PROJECT_ARRAY: arrayOf(projectSchema)
 }
-

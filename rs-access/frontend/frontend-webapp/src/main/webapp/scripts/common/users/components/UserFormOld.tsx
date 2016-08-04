@@ -7,7 +7,6 @@
  * @see http://redux-form.com/5.2.5/#/examples/asynchronous-blur-validation?_k=2q0jpm
  * @see http://redux-form.com/5.2.5/#/examples/initializing-from-state?_k=7f95k7
  */
-import * as React from "react";
 import { Component } from "react";
 import { reduxForm } from "redux-form";
 export const fields = ['id', 'projectId', 'username', 'password', 'passwordConfirm']

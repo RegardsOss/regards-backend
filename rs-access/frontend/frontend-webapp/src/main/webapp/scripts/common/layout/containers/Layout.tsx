@@ -10,7 +10,7 @@ ResponsiveReactGridLayout = WidthProvider (ResponsiveReactGridLayout)
 
 interface LayoutProps {
   layout?: any,
-  setLayout?: (layout: any) =>void,
+  setLayout?: (layout: any) => void,
 }
 
 class Layout extends React.Component<LayoutProps, any> {

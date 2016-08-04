@@ -1,10 +1,10 @@
 import { Schema, arrayOf } from "normalizr";
 import { find } from 'lodash'
-import { HATEOASLink } from './common'
-const test: HATEOASLink =  {
+//  import { HATEOASLink } from './common'
+/* const test: HATEOASLink =  {
   rel: "something",
   href: 'something else'
-}
+}*/
 const userSchema = new Schema ('user', {
   idAttribute: (user) => {
     const itself: any = find(user.links, {"rel": "self"})
