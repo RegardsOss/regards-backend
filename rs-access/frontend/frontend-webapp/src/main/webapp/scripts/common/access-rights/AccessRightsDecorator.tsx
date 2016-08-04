@@ -67,7 +67,7 @@ export default function checkDependencies(dependencies: Array<DependencyAccessRi
 
     const mapDispatchToProps = (dispatch: any) => {
       return {
-        getDependencies: (dependencies: Array<DependencyAccessRight>) => dispatch (fetchAccessRights (dependencies))
+        getDependencies: (ldependencies: Array<DependencyAccessRight>) => dispatch (fetchAccessRights (ldependencies))
       }
     }
 

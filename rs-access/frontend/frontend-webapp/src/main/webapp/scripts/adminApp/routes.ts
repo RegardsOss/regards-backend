@@ -4,8 +4,6 @@ import { projectUsersRoutes, projectUserEditRoute, projectUserCreateRoute } from
 import AdminApp from "./AdminApp";
 import { PlainRoute } from "react-router";
 
-declare var require: any;
-
 export const adminAppRoutes: PlainRoute = {
   path: "admin/:project",
   childRoutes: [

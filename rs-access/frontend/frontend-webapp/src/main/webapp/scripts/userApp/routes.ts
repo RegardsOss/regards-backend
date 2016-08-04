@@ -3,8 +3,6 @@ import { websocketsRoutes } from "./modules/websockets/routes";
 import UserApp from "./UserApp";
 import { PlainRoute } from "react-router";
 
-declare var require: any;
-
 export const userAppRoutes: PlainRoute = {
   path: 'user/:project',
   childRoutes: [

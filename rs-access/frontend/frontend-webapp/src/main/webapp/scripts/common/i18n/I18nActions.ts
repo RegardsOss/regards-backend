@@ -1,4 +1,3 @@
-declare var require: any;
 // For tests we need to define require.ensure method if not defined
 if (typeof require.ensure !== `function`) require.ensure = (d: any, c: any) => c (require);
 

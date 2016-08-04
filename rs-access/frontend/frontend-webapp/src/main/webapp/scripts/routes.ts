@@ -9,8 +9,6 @@ import { portalAppRoutes } from "./portalApp/routes";
 import PortalApp from "./portalApp/PortalApp";
 import { PlainRoute } from "react-router";
 
-declare var require: any;
-
 const childRoutes: Array<PlainRoute> = [{
   path: "/",
   childRoutes: [

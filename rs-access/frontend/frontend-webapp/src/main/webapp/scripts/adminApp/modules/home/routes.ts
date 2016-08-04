@@ -1,7 +1,5 @@
 import { PlainRoute } from "react-router";
 
-declare var require: any;
-
 export const homeRoutes: PlainRoute = {
   path: 'home',
 

@@ -3,8 +3,6 @@ import ProjectUserEditContainer from "./containers/ProjectUserEditContainer";
 import { PlainRoute } from "react-router";
 import ProjectUserCreateContainer from "./containers/ProjectUserCreateContainer";
 
-declare var require: any;
-
 export const projectUserCreateRoute: PlainRoute = {
   path: 'users/create',
   getComponents(nextState: any, cb: any): any {

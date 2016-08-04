@@ -23,10 +23,10 @@ const getAuthorization = (state: any, callAPI: any) => {
 export default (store: any) => (next: any) => (action: any) => {
   let callAPI = action[CALL_API]
   if (callAPI) {
-    callAPI.headers = (store: any) => ({
+    callAPI.headers = (callStore: any) => ({
       'Accept': 'application/json',
       'Content-type': 'application/json',
-      'Authorization': getAuthorization (store, callAPI) || ''
+      'Authorization': getAuthorization (callStore, callAPI) || ''
     })
   }
 

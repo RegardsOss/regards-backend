@@ -48,7 +48,6 @@ module.exports = {
           presets: ['es2015', 'react'],
         }
       },
-      // Sass files compilation to css with css modules enable
       {test: /\.css$/, loader:  ExtractTextPlugin.extract("style-loader", "css-loader") },
       {test: /\.json$/, exclude: [/node_modules/], loader: "json-loader"},
       {test: /\.jpg$/, exclude: [/node_modules/], loader: "file-loader"},
