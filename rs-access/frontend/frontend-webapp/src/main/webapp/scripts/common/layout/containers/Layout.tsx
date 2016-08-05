@@ -9,6 +9,7 @@ let ResponsiveReactGridLayout = require ('react-grid-layout').Responsive
 ResponsiveReactGridLayout = WidthProvider (ResponsiveReactGridLayout)
 
 interface LayoutProps {
+  style?: any,
   layout?: any,
   setLayout?: (layout: any) => void,
 }
@@ -26,27 +27,30 @@ class Layout extends React.Component<LayoutProps, any> {
     // this.props.setLayout(layouts)
   }
 
-  render(): any {
+  render(): JSX.Element {
+    const {style, layout} = this.props;
+    const defaultStyle = {
+      backgroundColor:'#ECEFF1', // #ECEFF1
+      height: "100vh"
+    };
+    let layoutStyle = style ? Object.assign ({}, defaultStyle, style) : defaultStyle;
+
     return (
       <ResponsiveReactGridLayout
+        {...this.props}
         className='layout'
         breakpoints={{lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0}}
-        cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}
+        cols={{lg: 12, md: 12, sm: 12, xs: 12, xxs: 12}}
         rowHeight={30}
         margin={[this.state.margin, this.state.margin]}
-        style={{
-          backgroundColor:'#ECEFF1', // #ECEFF1
-          position: 'absolute',
-          height: '100%',
-          width: '100%'
-        }}
-        autoSite={true}
-        layouts={this.props.layout}
+        style={layoutStyle}
+        layouts={layout}
         onLayoutChange={this.onLayoutChange}
+        verticalCompact={false} // If true, the layout will compact vertically
+        autoSize={false} // If true, the container height swells and contracts to fit contents
         isDraggable={false}
         isResizable={true}
-        {...this.props}
-        >
+      >
         {this.props.children}
       </ResponsiveReactGridLayout>
     )

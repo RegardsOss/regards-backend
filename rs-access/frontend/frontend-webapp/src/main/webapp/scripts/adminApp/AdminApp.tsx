@@ -65,7 +65,8 @@ class AdminApp extends React.Component<AminAppProps, any> {
     if (authenticated === false) {
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
-          <Layout>
+          <Layout style={{display: "flex",alignItems: "center"}}>
+            <div key='selectTheme'><SelectTheme /></div>
             <div key='authentication'><Authentication /></div>
           </Layout>
         </MuiThemeProvider>
@@ -73,15 +74,13 @@ class AdminApp extends React.Component<AminAppProps, any> {
     } else {
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
-            <div>
-              <Layout>
-                <div key='sideBar'><MenuContainer /></div>
-                <div key='appBar'><AppBar title="Regards admin dashboard" iconElementRight={AdminAppBarIcon} /></div>
-                <div key='content'>{content}</div>
-                <div key='selectTheme'><SelectTheme /></div>
-                <div key='selectLanguage'><SelectLanguage locales={['en','fr']}/></div>
-              </Layout>
-            </div>
+            <Layout>
+              <div key='sideBar'><MenuContainer /></div>
+              <div key='appBar'><AppBar title="Regards admin dashboard" iconElementRight={AdminAppBarIcon} /></div>
+              <div key='content'>{content}</div>
+              <div key='selectTheme'><SelectTheme /></div>
+              <div key='selectLanguage'><SelectLanguage locales={['en','fr']}/></div>
+            </Layout>
         </MuiThemeProvider>
       )
     }

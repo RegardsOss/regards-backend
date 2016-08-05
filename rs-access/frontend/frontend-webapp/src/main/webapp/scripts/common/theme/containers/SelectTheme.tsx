@@ -18,12 +18,14 @@ export class SelectTheme extends React.Component<SelectThemeProps, any> {
 
   constructor() {
     super ()
-    this.handleChange = this.handleChange.bind (this)
   }
 
   handleChange(event: any, index: any, value: any): any {
     this.setState ({value})
     this.props.setTheme (value)
+  }
+  componentWillMount(): any {
+    this.handleChange = this.handleChange.bind (this)
   }
 
   render(): any {
