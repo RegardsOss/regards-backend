@@ -1,10 +1,10 @@
 /** @module common */
-import * as React from "react";
-import { connect } from "react-redux";
-import { addLocaleData, IntlProvider } from "react-intl";
-import * as fr from "react-intl/locale-data/fr";
-import { updateMessages } from "./I18nActions";
-import { LocaleMessagesStore } from "./I18nTypes";
+import * as React from "react"
+import { connect } from "react-redux"
+import { addLocaleData, IntlProvider } from "react-intl"
+import * as fr from "react-intl/locale-data/fr"
+import { updateMessages } from "./I18nActions"
+import { LocaleMessagesStore } from "./I18nTypes"
 
 addLocaleData (fr)
 

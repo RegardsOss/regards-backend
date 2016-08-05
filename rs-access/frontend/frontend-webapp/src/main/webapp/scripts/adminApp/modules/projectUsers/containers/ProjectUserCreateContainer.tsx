@@ -1,9 +1,9 @@
-import * as React from "react";
-import { Card, CardActions, CardHeader, CardText } from "material-ui/Card";
-import FlatButton from "material-ui/FlatButton";
-import TextField from "material-ui/TextField";
-import SelectField from "material-ui/SelectField";
-import MenuItem from "material-ui/MenuItem";
+import * as React from "react"
+import { Card, CardActions, CardHeader, CardText } from "material-ui/Card"
+import FlatButton from "material-ui/FlatButton"
+import TextField from "material-ui/TextField"
+import SelectField from "material-ui/SelectField"
+import MenuItem from "material-ui/MenuItem"
 
 class ProjectUserCreateContainer extends React.Component<any, any> {
   static contextTypes: {
@@ -11,7 +11,7 @@ class ProjectUserCreateContainer extends React.Component<any, any> {
   }
   context: any;
   constructor() {
-    super ();
+    super ()
   }
 
 
@@ -58,7 +58,7 @@ class ProjectUserCreateContainer extends React.Component<any, any> {
   }
 }
 
-export default ProjectUserCreateContainer;
+export default ProjectUserCreateContainer
 // const mapStateToProps = (state: any) => ({
 // });
 // const mapDispatchToProps = (dispatch: any) => ({

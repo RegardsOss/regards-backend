@@ -1,11 +1,11 @@
-import * as React from "react";
-import { connect } from "react-redux";
-import { Card, CardActions, CardHeader } from "material-ui/Card";
-import FlatButton from "material-ui/FlatButton";
-import { List } from "material-ui/List";
-import { map } from "lodash";
-import { User } from "../../../../common/users/types";
-import ProjectUserComponent from "../components/ProjectUserComponent";
+import * as React from "react"
+import { connect } from "react-redux"
+import { Card, CardActions, CardHeader } from "material-ui/Card"
+import FlatButton from "material-ui/FlatButton"
+import { List } from "material-ui/List"
+import { map } from "lodash"
+import { User } from "../../../../common/users/types"
+import ProjectUserComponent from "../components/ProjectUserComponent"
 interface ProjectUsersProps {
   users: Array<User>,
   // From mapDispatchToProps
@@ -69,8 +69,8 @@ class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
   }
 }
 
-const mapStateToProps = (state: any) => ({});
+const mapStateToProps = (state: any) => ({})
 const mapDispatchToProps = (dispatch: any) => ({
   // fetchProjectUsers: (projectId: string) => dispatch (actions.fetchProjectUsers (projectId)),
 });
-export default connect<{}, {}, ProjectUsersProps> (mapStateToProps, mapDispatchToProps) (ProjectUsersContainer);
+export default connect<{}, {}, ProjectUsersProps> (mapStateToProps, mapDispatchToProps) (ProjectUsersContainer)

@@ -1,7 +1,7 @@
-import * as React from "react";
-import ProjectUsersContainer from "./ProjectUsersContainer";
-import ProjectUserEditContainer from "./ProjectUserEditContainer";
-import ProjectUserCreateContainer from "./ProjectUserCreateContainer";
+import * as React from "react"
+import ProjectUsersContainer from "./ProjectUsersContainer"
+import ProjectUserEditContainer from "./ProjectUserEditContainer"
+import ProjectUserCreateContainer from "./ProjectUserCreateContainer"
 
 interface MockProps {
   // From router
@@ -19,7 +19,7 @@ class MockContainer extends React.Component<any, MockProps> {
     super ();
   }
   render(): JSX.Element {
-    const {router, route, params} = this.props;
+    const {router, route, params} = this.props
     const userList = [{
       name: "Eric",
       id: "1"
@@ -42,4 +42,4 @@ class MockContainer extends React.Component<any, MockProps> {
     )
   }
 }
-export default MockContainer;
+export default MockContainer

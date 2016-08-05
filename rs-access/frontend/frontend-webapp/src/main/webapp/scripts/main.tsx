@@ -1,9 +1,9 @@
-import * as ReactDOM from "react-dom";
-import { Router, browserHistory, PlainRoute } from "react-router";
-import { Provider } from "react-redux";
-import configureStore from "./common/store/configureStore";
-import preloadedState from "./common/store/preloadedState";
-import { routes } from "./routes";
+import * as ReactDOM from "react-dom"
+import { Router, browserHistory, PlainRoute } from "react-router"
+import { Provider } from "react-redux"
+import configureStore from "./common/store/configureStore"
+import preloadedState from "./common/store/preloadedState"
+import { routes } from "./routes"
 
 const store = configureStore (preloadedState)
 ReactDOM.render (

@@ -1,7 +1,7 @@
-import * as React from "react";
-import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
-import UserForm from "./UserForm";
+import * as React from "react"
+import Dialog from "material-ui/Dialog"
+import FlatButton from "material-ui/FlatButton"
+import UserForm from "./UserForm"
 
 // TODO
 interface HandlesUser {

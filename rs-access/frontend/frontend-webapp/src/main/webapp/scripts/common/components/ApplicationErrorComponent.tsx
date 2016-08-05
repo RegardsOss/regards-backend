@@ -1,6 +1,6 @@
 /** @module common */
-import * as React from "react";
-import { connect } from "react-redux";
+import * as React from "react"
+import { connect } from "react-redux"
 
 /**
  * React component to display a global application error.
@@ -12,7 +12,7 @@ class ApplicationErrorComponent extends React.Component<any, any> {
       <div>
         Application unavailable
       </div>
-    );
+    )
   }
 }
 

@@ -1,8 +1,8 @@
-import * as React from "react";
-import { connect } from "react-redux";
-import { PluginsStore } from "../../../../common/plugins/PluginTypes";
-import { fetchPlugins } from "../../../../common/plugins/PluginsActions";
-import LinkComponent from "../components/LinkComponent";
+import * as React from "react"
+import { connect } from "react-redux"
+import { PluginsStore } from "../../../../common/plugins/PluginTypes"
+import { fetchPlugins } from "../../../../common/plugins/PluginsActions"
+import LinkComponent from "../components/LinkComponent"
 
 
 interface NavigationProps {
@@ -82,5 +82,5 @@ const mapStateToProps = (state: any) => {
 const mapDispatchToProps = (dispatch: any) => ({
   fetchPlugins: () => dispatch (fetchPlugins ())
 })
-const navigation = connect<{}, {}, NavigationProps> (mapStateToProps, mapDispatchToProps) (NavigationContainer);
+const navigation = connect<{}, {}, NavigationProps> (mapStateToProps, mapDispatchToProps) (NavigationContainer)
 export default navigation

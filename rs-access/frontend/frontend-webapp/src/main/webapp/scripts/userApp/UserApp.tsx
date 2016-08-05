@@ -1,10 +1,10 @@
-import * as React from "react";
-import { connect } from "react-redux";
-import { fetchAuthenticate } from "../common/authentication/AuthenticateActions";
-import Layout from "./modules/layout/Layout";
-import ThemeHelper from "../common/theme/ThemeHelper";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import SelectTheme from "../common/theme/containers/SelectTheme";
+import * as React from "react"
+import { connect } from "react-redux"
+import { fetchAuthenticate } from "../common/authentication/AuthenticateActions"
+import Layout from "./modules/layout/Layout"
+import ThemeHelper from "../common/theme/ThemeHelper"
+import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"
+import SelectTheme from "../common/theme/containers/SelectTheme"
 
 interface UserAppProps {
   params: any,

@@ -1,10 +1,10 @@
 /** @module PortalProjects */
-import * as React from "react";
-import { connect } from "react-redux";
-import { FormattedMessage } from "react-intl";
-import ProjectComponent from "../components/ProjectComponent";
-import { fetchProjects } from "../actions/ProjectsActions";
-import { ProjectsStore } from "../types/ProjectTypes";
+import * as React from "react"
+import { connect } from "react-redux"
+import { FormattedMessage } from "react-intl"
+import ProjectComponent from "../components/ProjectComponent"
+import { fetchProjects } from "../actions/ProjectsActions"
+import { ProjectsStore } from "../types/ProjectTypes"
 
 // Container props
 interface ProjectsProps {

@@ -1,8 +1,8 @@
-import * as React from "react";
-import { connect } from "react-redux";
-import { connectTime, disconnectTime } from "../actions/WSTimeActions";
-import { startTimeWebSocket } from "../actions/TimeActions";
-import Time from "../components/TimeComponent";
+import * as React from "react"
+import { connect } from "react-redux"
+import { connectTime, disconnectTime } from "../actions/WSTimeActions"
+import { startTimeWebSocket } from "../actions/TimeActions"
+import Time from "../components/TimeComponent"
 
 interface TimeProps {
   time?: any,

@@ -1,8 +1,8 @@
 /** @module common */
-import * as React from "react";
-import { connect } from "react-redux";
-import { PluginType, PluginsStore } from "./PluginTypes";
-import { intializePlugin } from "./PluginsActions";
+import * as React from "react"
+import { connect } from "react-redux"
+import { PluginType, PluginsStore } from "./PluginTypes"
+import { intializePlugin } from "./PluginsActions"
 
 interface PluginProps {
   plugin: PluginType

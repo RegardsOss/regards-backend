@@ -1,5 +1,5 @@
 /** @module common */
-import * as React from "react";
+import * as React from "react"
 
 interface ShowableAtRenderProps {
   show: Boolean

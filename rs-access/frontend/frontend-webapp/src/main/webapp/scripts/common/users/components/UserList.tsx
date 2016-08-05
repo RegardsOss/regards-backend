@@ -1,11 +1,11 @@
-import * as React from "react";
-import { List, ListItem } from "material-ui/List";
-import Subheader from "material-ui/Subheader";
-import { map } from "lodash";
-import IconMenu from "material-ui/IconMenu";
-import IconButton from "material-ui/IconButton";
-import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
-import { grey400 } from "material-ui/styles/colors";
+import * as React from "react"
+import { List, ListItem } from "material-ui/List"
+import Subheader from "material-ui/Subheader"
+import { map } from "lodash"
+import IconMenu from "material-ui/IconMenu"
+import IconButton from "material-ui/IconButton"
+import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert"
+import { grey400 } from "material-ui/styles/colors"
 
 interface UserListProps {
   subheader?: string

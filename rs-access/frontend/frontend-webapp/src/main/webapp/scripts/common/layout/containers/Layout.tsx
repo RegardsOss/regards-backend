@@ -1,8 +1,8 @@
-import * as React from "react";
-import { connect } from "react-redux";
-import * as actions from "../actions";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
+import * as React from "react"
+import { connect } from "react-redux"
+import * as actions from "../actions"
+import "react-grid-layout/css/styles.css"
+import "react-resizable/css/styles.css"
 
 const WidthProvider = require ('react-grid-layout').WidthProvider
 let ResponsiveReactGridLayout = require ('react-grid-layout').Responsive
@@ -28,12 +28,12 @@ class Layout extends React.Component<LayoutProps, any> {
   }
 
   render(): JSX.Element {
-    const {style, layout} = this.props;
+    const {style, layout} = this.props
     const defaultStyle = {
-      backgroundColor:'#ECEFF1', // #ECEFF1
+      backgroundColor: '#ECEFF1', // #ECEFF1
       height: "100vh"
-    };
-    let layoutStyle = style ? Object.assign ({}, defaultStyle, style) : defaultStyle;
+    }
+    let layoutStyle = style ? Object.assign ({}, defaultStyle, style) : defaultStyle
 
     return (
       <ResponsiveReactGridLayout

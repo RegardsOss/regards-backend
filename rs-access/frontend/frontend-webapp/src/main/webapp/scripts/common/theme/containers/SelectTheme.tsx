@@ -1,11 +1,11 @@
-import * as React from "react";
-import { connect } from "react-redux";
-import { map, keys } from "lodash";
-import { setTheme } from "../actions/ThemeActions";
-import SelectField from "material-ui/SelectField";
-import MenuItem from "material-ui/MenuItem";
-import { Card, CardText } from "material-ui/Card";
-import ThemeHelper from "../ThemeHelper";
+import * as React from "react"
+import { connect } from "react-redux"
+import { map, keys } from "lodash"
+import { setTheme } from "../actions/ThemeActions"
+import SelectField from "material-ui/SelectField"
+import MenuItem from "material-ui/MenuItem"
+import { Card, CardText } from "material-ui/Card"
+import ThemeHelper from "../ThemeHelper"
 
 interface SelectThemeProps {
   // From mapStateToProps

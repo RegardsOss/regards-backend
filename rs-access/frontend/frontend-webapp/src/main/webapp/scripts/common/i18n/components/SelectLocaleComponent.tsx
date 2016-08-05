@@ -21,7 +21,7 @@ class SelectLocaleComponent extends React.Component<SelectLocaleTypes, any> {
   static contextTypes: Object = {
     intl: intlShape
   }
-  context: any;
+  context: any
 
   constructor() {
     super ()
