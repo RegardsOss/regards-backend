@@ -1,4 +1,4 @@
-import { merge } from "lodash";
+import { merge } from "lodash"
 import {
   lightGreen500,
   lightGreen700,
@@ -12,9 +12,9 @@ import {
   cyan500,
   darkBlack,
   brown900
-} from "material-ui/styles/colors";
-import { fade } from "material-ui/utils/colorManipulator";
-import spacing from "material-ui/styles/spacing";
+} from "material-ui/styles/colors"
+import { fade } from "material-ui/utils/colorManipulator"
+import spacing from "material-ui/styles/spacing"
 // http://www.material-ui.com/#/customization/colors
 
 /**
@@ -58,4 +58,4 @@ export default {
   linkWithoutDecoration: {
     textDecoration: "blink"
   }
-};
+}

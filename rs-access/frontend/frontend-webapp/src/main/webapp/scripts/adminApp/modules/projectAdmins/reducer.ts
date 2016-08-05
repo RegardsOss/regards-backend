@@ -1,6 +1,6 @@
 /** @module AdminProjectAdmins */
-import { union, values, uniq } from "lodash";
-import { deleteEntityReducer } from "../../../common/reducers";
+import { union, values, uniq } from "lodash"
+import { deleteEntityReducer } from "../../../common/reducers"
 import {
   PROJECT_ADMIN_REQUEST,
   PROJECT_ADMIN_SUCESS,
@@ -9,7 +9,7 @@ import {
   UPDATE_PROJECT_ADMIN,
   UPDATE_OR_CREATE_PROJECT_ADMIN,
   DELETE_PROJECT_ADMIN
-} from "./actions";
+} from "./actions"
 
 /**
  * ProjectAdmins reducer.

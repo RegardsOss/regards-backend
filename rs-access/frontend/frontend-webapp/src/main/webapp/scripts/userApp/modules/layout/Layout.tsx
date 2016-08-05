@@ -1,5 +1,5 @@
-import * as React from "react";
-import NavigationContainer from "./containers/NavigationContainer";
+import * as React from "react"
+import NavigationContainer from "./containers/NavigationContainer"
 
 interface LayoutProps {
   project: string,

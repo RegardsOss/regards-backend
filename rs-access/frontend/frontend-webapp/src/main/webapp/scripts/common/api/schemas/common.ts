@@ -1,4 +1,4 @@
 export interface HATEOASLink {
-  rel: String;
+  rel: String
   href: String
 }

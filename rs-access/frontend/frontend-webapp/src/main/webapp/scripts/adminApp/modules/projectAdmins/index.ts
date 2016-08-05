@@ -11,6 +11,6 @@
  *
  */
 
-import ProjectAdminsContainer from "./containers/ProjectAdminsContainer";
+import ProjectAdminsContainer from "./containers/ProjectAdminsContainer"
 
 export { ProjectAdminsContainer }

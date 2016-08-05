@@ -19,11 +19,11 @@ export interface ProjectUserProps {
  * React component
  */
 class ProjectUserComponent extends React.Component<ProjectUserProps, any> {
-  static contextTypes: Object = ThemeContextType;
-  context: ThemeContextInterface;
+  static contextTypes: Object = ThemeContextType
+  context: ThemeContextInterface
   render(): any {
-    const {user, redirectOnSelectTo} = this.props;
-    const {muiTheme} = this.context;
+    const {user, redirectOnSelectTo} = this.props
+    const {muiTheme} = this.context
     return (
       <I18nProvider messageDir="adminApp/modules/projectUsers/i18n">
         <Link to={redirectOnSelectTo} style={{textDecoration:muiTheme.linkWithoutDecoration.textDecoration}}>

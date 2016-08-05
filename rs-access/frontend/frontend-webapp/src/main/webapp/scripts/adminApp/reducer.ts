@@ -1,13 +1,13 @@
 /**
  * Combine all reducers for this app to a single root reducer.
  */
-import { combineReducers } from "redux";
-import projects from "./modules/projects/reducer";
-import * as fromProjects from "./modules/projects/reducer";
-import projectAdmins from "./modules/projectAdmins/reducer";
-import * as fromProjectAdmins from "./modules/projectAdmins/reducer";
-import ui from "./modules/ui/reducer";
-import * as fromUi from "./modules/ui/reducer";
+import { combineReducers } from "redux"
+import projects from "./modules/projects/reducer"
+import * as fromProjects from "./modules/projects/reducer"
+import projectAdmins from "./modules/projectAdmins/reducer"
+import * as fromProjectAdmins from "./modules/projectAdmins/reducer"
+import ui from "./modules/ui/reducer"
+import * as fromUi from "./modules/ui/reducer"
 // import authentication from '../modules/authentication/reducers/TODO'
 // import home from '../modules/home/reducers/TODO'
 
@@ -15,7 +15,7 @@ export default combineReducers ({
   projects,
   projectAdmins,
   ui
-});
+})
 
 // WIP
 // const selectors = {

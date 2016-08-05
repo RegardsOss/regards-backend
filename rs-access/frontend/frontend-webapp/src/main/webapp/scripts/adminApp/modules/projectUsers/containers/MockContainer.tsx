@@ -13,10 +13,10 @@ interface MockProps {
 class MockContainer extends React.Component<any, MockProps> {
   static contextTypes: {
     muiTheme: Object
-  };
-  context: any;
+  }
+  context: any
   constructor() {
-    super ();
+    super ()
   }
   render(): JSX.Element {
     const {router, route, params} = this.props

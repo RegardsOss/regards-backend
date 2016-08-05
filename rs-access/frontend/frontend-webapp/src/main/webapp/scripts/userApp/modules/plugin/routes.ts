@@ -1,5 +1,5 @@
-import Plugin from "./Plugin";
-import { PlainRoute } from "react-router";
+import Plugin from "./Plugin"
+import { PlainRoute } from "react-router"
 
 export const pluginRoutes: PlainRoute = {
   path: "plugins/:plugin",

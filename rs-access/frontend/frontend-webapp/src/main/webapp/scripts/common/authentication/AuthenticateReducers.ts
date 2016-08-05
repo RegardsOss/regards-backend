@@ -1,4 +1,4 @@
-import { REQUEST_AUTHENTICATE, RECEIVE_AUTHENTICATE, FAILED_AUTHENTICATE, LOGOUT } from "./AuthenticateActions";
+import { REQUEST_AUTHENTICATE, RECEIVE_AUTHENTICATE, FAILED_AUTHENTICATE, LOGOUT } from "./AuthenticateActions"
 
 export default (state: any = {
   isFetching: false,
@@ -10,20 +10,20 @@ export default (state: any = {
     case REQUEST_AUTHENTICATE:
       return Object.assign ({}, state, {
         isFetching: true
-      });
+      })
     case RECEIVE_AUTHENTICATE:
       let newState = Object.assign ({}, state, {
         isFetching: false,
         user: action.payload,
         authenticateDate: action.meta.authenticateDate
-      });
+      })
       newState.user.name = action.meta.name
-      return newState;
+      return newState
     case FAILED_AUTHENTICATE:
       return Object.assign ({}, state, {
         isFetching: false,
         error: action.meta.errorMessage
-      });
+      })
     case LOGOUT:
       return {
         isFetching: false,
@@ -32,6 +32,6 @@ export default (state: any = {
         error: ''
       }
     default:
-      return state;
+      return state
   }
 }

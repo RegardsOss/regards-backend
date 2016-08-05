@@ -1,4 +1,4 @@
-import { SET_LAYOUT } from "./actions";
+import { SET_LAYOUT } from "./actions"
 
 export default (state: Object = {}, action: any) => {
   switch (action.type) {

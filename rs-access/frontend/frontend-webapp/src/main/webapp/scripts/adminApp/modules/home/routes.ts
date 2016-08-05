@@ -1,4 +1,4 @@
-import { PlainRoute } from "react-router";
+import { PlainRoute } from "react-router"
 
 export const homeRoutes: PlainRoute = {
   path: 'home',

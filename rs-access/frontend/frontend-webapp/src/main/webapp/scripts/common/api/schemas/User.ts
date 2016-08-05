@@ -1,4 +1,4 @@
-import { Schema, arrayOf } from "normalizr";
+import { Schema, arrayOf } from "normalizr"
 import { find } from 'lodash'
 //  import { HATEOASLink } from './common'
 /* const test: HATEOASLink =  {
@@ -8,7 +8,7 @@ import { find } from 'lodash'
 const userSchema = new Schema ('user', {
   idAttribute: (user) => {
     const itself: any = find(user.links, {"rel": "self"})
-    return itself ? itself.href : 'KEY_NOT_FOUND';
+    return itself ? itself.href : 'KEY_NOT_FOUND'
   }
 })
 /*

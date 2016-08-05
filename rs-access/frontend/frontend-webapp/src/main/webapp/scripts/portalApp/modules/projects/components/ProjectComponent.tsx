@@ -1,8 +1,8 @@
 /** @module PortalProjects */
-import * as React from "react";
-import { Link } from "react-router";
-import { FormattedMessage } from "react-intl";
-import { Project } from "../types/ProjectTypes";
+import * as React from "react"
+import { Link } from "react-router"
+import { FormattedMessage } from "react-intl"
+import { Project } from "../types/ProjectTypes"
 
 export interface ProjectTypes {
   project: Project

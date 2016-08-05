@@ -1,7 +1,7 @@
-import * as React from "react";
-import { Action } from "redux";
+import * as React from "react"
+import { Action } from "redux"
 const {CALL_API} = require ('redux-api-middleware')
-let scriptjs: any;
+let scriptjs: any
 if (typeof document !== 'undefined')
   scriptjs = require ('scriptjs')
 
@@ -43,7 +43,7 @@ export const intializePlugin = (paths: Array<string>, name: string, dispatchActi
   // Listen for pluin initialization done
   document.addEventListener ("plugin", (event: any) => {
     dispatchAction (pluginInitialized (event.detail.name, event.detail.app))
-  });
+  })
   const pathsToLoad = paths.map (path => {
     return window.location.origin + "/plugins/" + path
   })

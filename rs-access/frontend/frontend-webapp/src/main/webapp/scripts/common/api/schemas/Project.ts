@@ -1,4 +1,4 @@
-import { Schema, arrayOf } from "normalizr";
+import { Schema, arrayOf } from "normalizr"
 import { find } from 'lodash'
 import { HATEOASLink } from './common'
 

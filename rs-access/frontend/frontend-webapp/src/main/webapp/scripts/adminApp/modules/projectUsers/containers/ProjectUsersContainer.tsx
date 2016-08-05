@@ -18,16 +18,16 @@ interface ProjectUsersProps {
 
 class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
   constructor(props: any) {
-    super (props);
+    super (props)
   }
 
   generateUserEditUrl = (user: User) => {
-    return "/admin/" + this.props.params.project + "/users/" + user.id;
+    return "/admin/" + this.props.params.project + "/users/" + user.id
   }
 
   render(): JSX.Element {
 
-    const {users} = this.props;
+    const {users} = this.props
     return (
       <Card
         initiallyExpanded={true}
@@ -72,5 +72,5 @@ class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
 const mapStateToProps = (state: any) => ({})
 const mapDispatchToProps = (dispatch: any) => ({
   // fetchProjectUsers: (projectId: string) => dispatch (actions.fetchProjectUsers (projectId)),
-});
+})
 export default connect<{}, {}, ProjectUsersProps> (mapStateToProps, mapDispatchToProps) (ProjectUsersContainer)

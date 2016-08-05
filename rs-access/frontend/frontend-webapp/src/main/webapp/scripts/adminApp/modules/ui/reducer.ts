@@ -1,4 +1,4 @@
-import { SELECT_PROJECT, SELECT_PROJECT_ADMIN } from "./actions";
+import { SELECT_PROJECT, SELECT_PROJECT_ADMIN } from "./actions"
 
 export default (state: Object = {}, action: any) => {
   switch (action.type) {

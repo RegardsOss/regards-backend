@@ -1,10 +1,9 @@
 /** @module AdminAuthentication */
-import * as React from "react";
-import { FormattedMessage } from "react-intl";
-import { Card, CardActions, CardTitle, CardText } from "material-ui/Card";
-import TextField from "material-ui/TextField";
-import RaisedButton from "material-ui/RaisedButton";
-import { ThemeContextType, ThemeContextInterface } from "../../../../common/theme/ThemeContainerInterface";
+import * as React from "react"
+import { FormattedMessage } from "react-intl"
+import { Card, CardActions, CardTitle, CardText } from "material-ui/Card"
+import TextField from "material-ui/TextField"
+import RaisedButton from "material-ui/RaisedButton"
 
 export interface LoginProps {
   onLogin: (username: string, password: string) => void,
@@ -19,7 +18,7 @@ export interface LoginProps {
  */
 class LoginComponent extends React.Component<LoginProps, any> {
   constructor() {
-    super ();
+    super ()
     this.state = {
       username: "",
       password: "",
@@ -66,33 +65,33 @@ class LoginComponent extends React.Component<LoginProps, any> {
     }
 
     return (
-        <Card>
-          <CardTitle title="Connexion au panel d'admin"/>
-          <CardText>
-            <div onKeyDown={this.handleKeyPress}>
-              {errorMessage}
-              <TextField
-                floatingLabelText={<FormattedMessage id="login.username"/>}
-                fullWidth={true}
-                onChange={this.handleUserInputChange}
-              />
-              <TextField
-                floatingLabelText={<FormattedMessage id="login.password"/>}
-                type="password"
-                fullWidth={true}
-                onChange={this.handlePasswordInputChange}
-              />
-            </div>
-          </CardText>
-          <CardActions style={{display: "flex",justifyContent: "center"}}>
-            <RaisedButton
-              label={<FormattedMessage id="login.button"/>}
-              primary={true}
-              onClick={this.handleButtonPress}
+      <Card>
+        <CardTitle title="Connexion au panel d'admin"/>
+        <CardText>
+          <div onKeyDown={this.handleKeyPress}>
+            {errorMessage}
+            <TextField
+              floatingLabelText={<FormattedMessage id="login.username"/>}
+              fullWidth={true}
+              onChange={this.handleUserInputChange}
             />
-          </CardActions>
-        </Card>
-    );
+            <TextField
+              floatingLabelText={<FormattedMessage id="login.password"/>}
+              type="password"
+              fullWidth={true}
+              onChange={this.handlePasswordInputChange}
+            />
+          </div>
+        </CardText>
+        <CardActions style={{display: "flex",justifyContent: "center"}}>
+          <RaisedButton
+            label={<FormattedMessage id="login.button"/>}
+            primary={true}
+            onClick={this.handleButtonPress}
+          />
+        </CardActions>
+      </Card>
+    )
   }
 }
 

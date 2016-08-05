@@ -1,4 +1,4 @@
-import * as SockJS from "sockjs-client";
+import * as SockJS from "sockjs-client"
 
 // Backend websocket connection endpoint
 export const TIME_WS_API = 'http://localhost:8080/wsconnect'
@@ -21,7 +21,7 @@ export function connectTime(): any {
 
     // TODO : Replace stompjs lib
     socket.onclose = () => console.log ("WebSocket closed")
-    return socket;
+    return socket
   }
 }
 

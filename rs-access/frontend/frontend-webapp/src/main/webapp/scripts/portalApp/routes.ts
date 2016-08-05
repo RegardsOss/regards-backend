@@ -1,5 +1,5 @@
-import PortalApp from "./PortalApp";
-import { PlainRoute } from "react-router";
+import PortalApp from "./PortalApp"
+import { PlainRoute } from "react-router"
 
 export const portalAppRoutes: PlainRoute = {
   path: "portal",

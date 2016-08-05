@@ -1,8 +1,8 @@
-import * as React from "react";
-import { connect } from "react-redux";
-import I18nProvider from "../../../../common/i18n/I18nProvider";
-import LoginComponent from "../components/LoginComponent";
-import { fetchAuthenticate } from "../../../../common/authentication/AuthenticateActions";
+import * as React from "react"
+import { connect } from "react-redux"
+import I18nProvider from "../../../../common/i18n/I18nProvider"
+import LoginComponent from "../components/LoginComponent"
+import { fetchAuthenticate } from "../../../../common/authentication/AuthenticateActions"
 
 export interface AuthenticationProps {
   // From mapStateToProps
@@ -25,7 +25,7 @@ export class Authentication extends React.Component<AuthenticationProps, any> {
           onLogin={this.props.onLogin}
           errorMessage={this.props.errorMessage}/>
       </I18nProvider>
-    );
+    )
   }
 }
 
@@ -39,4 +39,4 @@ const mapDispatchToProps = (dispatch: any) => ({
   onLogin: (userName: string, password: string) => dispatch (fetchAuthenticate (userName, password))
 })
 
-export default connect<{}, {}, AuthenticationProps> (mapStateToProps, mapDispatchToProps) (Authentication);
+export default connect<{}, {}, AuthenticationProps> (mapStateToProps, mapDispatchToProps) (Authentication)

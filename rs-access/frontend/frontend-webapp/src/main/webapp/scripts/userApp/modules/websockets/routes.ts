@@ -1,5 +1,5 @@
-import WebSockets from "./WebSockets";
-import { PlainRoute } from "react-router";
+import WebSockets from "./WebSockets"
+import { PlainRoute } from "react-router"
 
 export const websocketsRoutes: PlainRoute = {
   path: "time",

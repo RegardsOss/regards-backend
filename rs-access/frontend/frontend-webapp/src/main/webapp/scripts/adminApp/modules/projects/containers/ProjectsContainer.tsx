@@ -1,21 +1,21 @@
 /** @module AdminProjects */
-import * as React from "react";
-import { connect } from "react-redux";
-import { map } from "lodash";
-import { FormattedMessage } from "react-intl";
-import I18nProvider from "../../../../common/i18n/I18nProvider";
-import { ProjectAdminsContainer } from "../../projectAdmins";
-import ModuleComponent from "../../../../common/components/ModuleComponent";
-import { Card, CardTitle, CardText } from "material-ui/Card";
-import RaisedButton from "material-ui/RaisedButton";
-import SelectField from "material-ui/SelectField";
-import Delete from "material-ui/svg-icons/action/delete";
-import MenuItem from "material-ui/MenuItem";
-import AddProject from "../components/AddProject";
-import { Project } from "../types/ProjectTypes";
-import * as actions from "../actions";
-import * as uiActions from "../../ui/actions";
-import * as selectors from "../../../reducer";
+import * as React from "react"
+import { connect } from "react-redux"
+import { map } from "lodash"
+import { FormattedMessage } from "react-intl"
+import I18nProvider from "../../../../common/i18n/I18nProvider"
+import { ProjectAdminsContainer } from "../../projectAdmins"
+import ModuleComponent from "../../../../common/components/ModuleComponent"
+import { Card, CardTitle, CardText } from "material-ui/Card"
+import RaisedButton from "material-ui/RaisedButton"
+import SelectField from "material-ui/SelectField"
+import Delete from "material-ui/svg-icons/action/delete"
+import MenuItem from "material-ui/MenuItem"
+import AddProject from "../components/AddProject"
+import { Project } from "../types/ProjectTypes"
+import * as actions from "../actions"
+import * as uiActions from "../../ui/actions"
+import * as selectors from "../../../reducer"
 // Containers
 // Components
 // Types
@@ -113,4 +113,4 @@ const mapDispatchToProps = (dispatch: any) => ({
   addProject: (id: string, name: string) => dispatch (actions.addProject (id, name))
 })
 
-export default connect<{}, {}, ProjectsContainerTypes> (mapStateToProps, mapDispatchToProps) (ProjectsContainer);
+export default connect<{}, {}, ProjectsContainerTypes> (mapStateToProps, mapDispatchToProps) (ProjectsContainer)

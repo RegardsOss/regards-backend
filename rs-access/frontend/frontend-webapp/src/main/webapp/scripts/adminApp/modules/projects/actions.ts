@@ -1,7 +1,7 @@
 const {CALL_API, getJSON} = require ('redux-api-middleware')
-import Schemas from "../../../../scripts/common/api/schemas";
-import { normalize } from "normalizr";
-import { Action } from "redux";
+import Schemas from "../../../../scripts/common/api/schemas"
+import { normalize } from "normalizr"
+import { Action } from "redux"
 
 export const PROJECTS_API = 'http://localhost:8080/api/projects'
 export const PROJECTS_REQUEST = 'PROJECTS_REQUEST'

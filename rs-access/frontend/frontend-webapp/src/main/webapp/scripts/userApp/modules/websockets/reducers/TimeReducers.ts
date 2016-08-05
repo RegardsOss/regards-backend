@@ -1,5 +1,5 @@
-import { START_TIME_SUCCESS } from "../actions/TimeActions";
-import { SET_TIME } from "../actions/WSTimeActions";
+import { START_TIME_SUCCESS } from "../actions/TimeActions"
+import { SET_TIME } from "../actions/WSTimeActions"
 
 export default (state: any = {
   started: false,

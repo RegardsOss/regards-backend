@@ -1,8 +1,8 @@
 /** @module common */
-import * as React from "react";
-import { connect } from "react-redux";
-import { fetchAccessRights } from "./AccessRightsActions";
-import { DependencyAccessRight } from "./AccessRightsTypes";
+import * as React from "react"
+import { connect } from "react-redux"
+import { fetchAccessRights } from "./AccessRightsActions"
+import { DependencyAccessRight } from "./AccessRightsTypes"
 
 export default function checkDependencies(dependencies: Array<DependencyAccessRight>): any {
 

@@ -9,7 +9,7 @@ class ProjectUserCreateContainer extends React.Component<any, any> {
   static contextTypes: {
     muiTheme: Object
   }
-  context: any;
+  context: any
   constructor() {
     super ()
   }

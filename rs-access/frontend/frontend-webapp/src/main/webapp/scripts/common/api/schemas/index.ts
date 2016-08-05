@@ -1,5 +1,5 @@
-import UserSchema from "./User";
-import ProjectSchema from "./Project";
+import UserSchema from "./User"
+import ProjectSchema from "./Project"
 import ProjectAdminSchema from './ProjectAdmin'
 // We use this Normalizr schemas to transform API responses from a nested form
 // to a flat form where repos and users are placed in `entities`, and nested

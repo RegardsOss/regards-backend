@@ -13,7 +13,7 @@ class ProjectUserEditContainer extends React.Component<any, any> {
 
   render(): JSX.Element {
     const nbElement = 20
-    const rulesList: Array<Object> = [];
+    const rulesList: Array<Object> = []
     for (let i = 0; i < nbElement; i++) {
       rulesList.push({
         verb: i % 3 === 0 ? 'get' : 'post',

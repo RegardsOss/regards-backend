@@ -1,5 +1,5 @@
 const {CALL_API} = require ('redux-api-middleware')
-import { REQUEST_AUTHENTICATE } from "./AuthenticateActions";
+import { REQUEST_AUTHENTICATE } from "./AuthenticateActions"
 
 // Redux middleware provides a third-party extension point
 // between dispatching an action, and the moment it reaches the reducer

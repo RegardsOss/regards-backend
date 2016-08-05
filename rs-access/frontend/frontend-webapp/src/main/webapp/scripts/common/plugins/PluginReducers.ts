@@ -1,5 +1,5 @@
-import { REQUEST_PLUGINS, RECEIVE_PLUGINS, FAILED_PLUGINS, PLUGIN_INITIALIZED } from "./PluginsActions";
-import { PluginsStore } from "./PluginTypes";
+import { REQUEST_PLUGINS, RECEIVE_PLUGINS, FAILED_PLUGINS, PLUGIN_INITIALIZED } from "./PluginsActions"
+import { PluginsStore } from "./PluginTypes"
 
 export default (state: PluginsStore = {
   isFetching: false,
@@ -35,7 +35,7 @@ export default (state: PluginsStore = {
             loadedComponent: action.loadedComponent
           })
         } else {
-          return Object.assign ({}, plugin);
+          return Object.assign ({}, plugin)
         }
       })
       return result

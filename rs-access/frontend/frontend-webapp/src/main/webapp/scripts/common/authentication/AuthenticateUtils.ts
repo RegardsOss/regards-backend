@@ -1,4 +1,4 @@
-import { AuthenticationType } from "./AuthenticationTypes";
+import { AuthenticationType } from "./AuthenticationTypes"
 
 export const isAuthenticated = (authentication: AuthenticationType): boolean => {
   let authenticated = false

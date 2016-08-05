@@ -1,4 +1,4 @@
-import { Schema, arrayOf } from "normalizr";
+import { Schema, arrayOf } from "normalizr"
 import ProjectSchema from './Project'
 
 // Schemas for API responses.

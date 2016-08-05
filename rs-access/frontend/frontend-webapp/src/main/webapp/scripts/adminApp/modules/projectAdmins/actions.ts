@@ -1,8 +1,8 @@
 /** @module AdminProjectAdmins */
 const {CALL_API, getJSON} = require ('redux-api-middleware')
-import Schemas from "../../../common/api/schemas";
-import { normalize } from "normalizr";
-import { ProjectAdmin } from "./types";
+import Schemas from "../../../common/api/schemas"
+import { normalize } from "normalizr"
+import { ProjectAdmin } from "./types"
 
 export const PROJECT_ADMINS_API = 'http://localhost:8080/api/project-admins'
 export const PROJECT_ADMIN_REQUEST = 'PROJECT_ADMIN_REQUEST'

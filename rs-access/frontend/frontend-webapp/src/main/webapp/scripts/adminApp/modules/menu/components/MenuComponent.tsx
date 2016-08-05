@@ -21,7 +21,7 @@ class MenuComponent extends React.Component<{}, any> {
     intl: intlShape,
     muiTheme: ThemeContextType.muiTheme
   }
-  context: any;
+  context: any
 
 
   render(): any {

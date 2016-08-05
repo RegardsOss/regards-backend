@@ -1,8 +1,8 @@
-import { SET_LOCALE, SET_LOCALE_MSG } from "./I18nActions";
-import { I18nStore, LocaleMessagesStore } from "./I18nTypes";
+import { SET_LOCALE, SET_LOCALE_MSG } from "./I18nActions"
+import { I18nStore, LocaleMessagesStore } from "./I18nTypes"
 
 // If navigator is not defined, set the locale to english
-let navigator: any;
+let navigator: any
 if (typeof navigator === 'undefined') {
   navigator = {language: 'en'}
 }

@@ -1,4 +1,4 @@
-import { Action } from "flux-standard-action";
+import { Action } from "flux-standard-action"
 
 interface FsaError extends Error {
   response: any,
@@ -7,7 +7,7 @@ interface FsaError extends Error {
 }
 
 export interface FsaErrorAction extends Action<FsaError> {
-  error: boolean;
+  error: boolean
 }
 
 export const FsaErrorDefault: FsaError = {

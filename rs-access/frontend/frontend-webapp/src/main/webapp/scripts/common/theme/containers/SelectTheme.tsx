@@ -57,4 +57,4 @@ const mapDispatchToProps = (dispatch: any) => ({
   setTheme: (theme: string) => dispatch (setTheme (theme))
 })
 
-export default connect<{}, {}, SelectThemeProps> (mapStateToProps, mapDispatchToProps) (SelectTheme);
+export default connect<{}, {}, SelectThemeProps> (mapStateToProps, mapDispatchToProps) (SelectTheme)

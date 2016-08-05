@@ -1,7 +1,7 @@
-import ProjectUsersContainer from "./containers/ProjectUsersContainer";
-import ProjectUserEditContainer from "./containers/ProjectUserEditContainer";
-import { PlainRoute } from "react-router";
-import ProjectUserCreateContainer from "./containers/ProjectUserCreateContainer";
+import ProjectUsersContainer from "./containers/ProjectUsersContainer"
+import ProjectUserEditContainer from "./containers/ProjectUserEditContainer"
+import { PlainRoute } from "react-router"
+import ProjectUserCreateContainer from "./containers/ProjectUserCreateContainer"
 
 export const projectUserCreateRoute: PlainRoute = {
   path: 'users/create',

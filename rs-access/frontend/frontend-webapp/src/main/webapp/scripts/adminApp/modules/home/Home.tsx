@@ -1,5 +1,5 @@
 /** @module AdminHome */
-import * as React from "react";
+import * as React from "react"
 
 /**
  * React component for home page

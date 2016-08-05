@@ -1,8 +1,8 @@
-import * as React from "react";
-import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
-import TextField from "material-ui/TextField";
-import AddBox from "material-ui/svg-icons/content/add-box";
+import * as React from "react"
+import Dialog from "material-ui/Dialog"
+import FlatButton from "material-ui/FlatButton"
+import TextField from "material-ui/TextField"
+import AddBox from "material-ui/svg-icons/content/add-box"
 
 /**
  * Dialog with action buttons. The actions are passed in as an array of React objects,
@@ -14,7 +14,7 @@ export default class AddProject extends React.Component<any, any> {
   state: any = {
     open: false,
     value: ''
-  };
+  }
 
   handleOpen = () => {
     this.setState ({open: true})
@@ -48,7 +48,7 @@ export default class AddProject extends React.Component<any, any> {
         keyboardFocused={true}
         onTouchTap={this.handleSave}
       />,
-    ];
+    ]
 
     return (
       <div>
@@ -69,6 +69,6 @@ export default class AddProject extends React.Component<any, any> {
             onChange={this.handleChange}/>
         </Dialog>
       </div>
-    );
+    )
   }
 }

@@ -1,6 +1,6 @@
-import { union } from "lodash";
-import { deleteEntityReducer } from "../../../common/reducers";
-import { PROJECTS_REQUEST, PROJECTS_SUCCESS, PROJECTS_FAILURE, ADD_PROJECT, DELETE_PROJECT } from "./actions";
+import { union } from "lodash"
+import { deleteEntityReducer } from "../../../common/reducers"
+import { PROJECTS_REQUEST, PROJECTS_SUCCESS, PROJECTS_FAILURE, ADD_PROJECT, DELETE_PROJECT } from "./actions"
 
 export default (state: any = {
   isFetching: false,
