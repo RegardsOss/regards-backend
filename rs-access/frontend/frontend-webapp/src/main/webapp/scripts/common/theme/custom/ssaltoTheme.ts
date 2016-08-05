@@ -16,6 +16,7 @@ import spacing from "material-ui/styles/spacing"
  *  Only provide the keys you wish to customize, they will be merged to default
  *  theme variables when calling 'material-ui/styles/getMuiTheme'
  */
+require('./background.jpg');
 export default {
   spacing: spacing,
   fontFamily: 'Roboto, sans-serif',
@@ -32,5 +33,12 @@ export default {
   },
   linkWithoutDecoration: {
     textDecoration: "blink"
+  },
+  adminApp: {
+    loginForm: {
+      backgroundColor: "transparent",
+      backgroundImage: "url('/img/background.jpg')"
+    }
   }
 }
+

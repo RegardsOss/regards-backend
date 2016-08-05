@@ -57,5 +57,10 @@ export default {
   },
   linkWithoutDecoration: {
     textDecoration: "blink"
+  },
+  adminApp: {
+    loginForm: {
+      backgroundColor: grey700
+    }
   }
 }

@@ -65,7 +65,7 @@ class LoginComponent extends React.Component<LoginProps, any> {
 
     return (
       <Card>
-        <CardTitle title="Connexion au panel d'admin"/>
+        <CardTitle title={<FormattedMessage id="login.title"/>}/>
         <CardText>
           <div onKeyDown={this.handleKeyPress}>
             {errorMessage}

@@ -5,5 +5,11 @@ import { merge } from "lodash"
 export default merge ({}, lightBaseTheme, {
   linkWithoutDecoration: {
     textDecoration: "blink"
+  },
+  adminApp: {
+    loginForm: {
+      backgroundColor: '#ECEFF1'
+    }
   }
+
 })

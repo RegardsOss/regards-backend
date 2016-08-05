@@ -35,11 +35,11 @@ const AdminAppBarIcon = (
       anchorOrigin={{horizontal: 'left', vertical: 'top'}}
       targetOrigin={{horizontal: 'left', vertical: 'top'}}
     >
-      <MenuItem primaryText="Refresh" />
-      <MenuItem primaryText="Send feedback" />
-      <MenuItem primaryText="Settings" />
-      <MenuItem primaryText="Help" />
-      <MenuItem primaryText="Sign out" />
+      <MenuItem primaryText="Refresh"/>
+      <MenuItem primaryText="Send feedback"/>
+      <MenuItem primaryText="Settings"/>
+      <MenuItem primaryText="Help"/>
+      <MenuItem primaryText="Sign out"/>
     </IconMenu>
   </div>
 )
@@ -63,24 +63,26 @@ class AdminApp extends React.Component<AminAppProps, any> {
     // Authentication
     const authenticated = isAuthenticated (authentication)
     if (authenticated === false) {
+      const layoutStyle = Object.assign({}, {display: "flex",alignItems: "center"}, muiTheme.adminApp.loginForm);
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
-          <Layout style={{display: "flex",alignItems: "center"}}>
+          <Layout style={layoutStyle}>
             <div key='selectTheme'><SelectTheme /></div>
             <div key='authentication'><Authentication /></div>
+            <div key='selectLanguage'><SelectLanguage locales={['en','fr']}/></div>
           </Layout>
         </MuiThemeProvider>
       )
     } else {
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
-            <Layout>
-              <div key='sideBar'><MenuContainer /></div>
-              <div key='appBar'><AppBar title="Regards admin dashboard" iconElementRight={AdminAppBarIcon} /></div>
-              <div key='content'>{content}</div>
-              <div key='selectTheme'><SelectTheme /></div>
-              <div key='selectLanguage'><SelectLanguage locales={['en','fr']}/></div>
-            </Layout>
+          <Layout>
+            <div key='sideBar'><MenuContainer /></div>
+            <div key='appBar'><AppBar title="Regards admin dashboard" iconElementRight={AdminAppBarIcon}/></div>
+            <div key='content'>{content}</div>
+            <div key='selectTheme'><SelectTheme /></div>
+            <div key='selectLanguage'><SelectLanguage locales={['en','fr']}/></div>
+          </Layout>
         </MuiThemeProvider>
       )
     }
