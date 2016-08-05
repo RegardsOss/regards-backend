@@ -59,7 +59,7 @@ class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
     this.props.updateOrCreateProjectAdmin ('9999', {name: 'Fake Name'})
   }
 
-  render(): any {
+  render(): JSX.Element {
     const usersListMenuElements = [
       <MenuItem key={1} primaryText="Edit" leftIcon={<Build />} onTouchTap={this.handleDialogOpen}/>,
       <MenuItem key={2} primaryText="Delete" leftIcon={<Delete />} onTouchTap={this.handleDeleteClick}/>

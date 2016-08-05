@@ -33,7 +33,7 @@ class SelectLocaleComponent extends React.Component<SelectLocaleTypes, any> {
     this.props.setLocale (value)
   }
 
-  render(): any {
+  render(): JSX.Element {
 
     const items = map (this.props.locales, (locale: string) => {
       return <MenuItem value={locale} key={locale} primaryText={locale}/>

@@ -70,7 +70,7 @@ interface FormPropTypes {
  * @prop {Function} handleSubmit Callback to add or update an administrator
  */
 class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
-  render(): any {
+  render(): JSX.Element {
     const {
       asyncValidating,
       fields: {id, projectId, username, password, passwordConfirm},

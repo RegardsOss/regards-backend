@@ -29,7 +29,7 @@ class TimeContainer extends React.Component<TimeProps, any> {
     this.props.webSocketDisconnect (this.client)
   }
 
-  render(): any {
+  render(): JSX.Element {
     // Render time
     if (this.props.started === true) {
       return (

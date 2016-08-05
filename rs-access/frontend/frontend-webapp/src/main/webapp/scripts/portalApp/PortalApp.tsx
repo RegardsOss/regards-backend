@@ -33,7 +33,7 @@ class PortalApp extends React.Component<PortalAppProps, any> {
     this.props.publicAuthenticate ()
   }
 
-  render(): any {
+  render(): JSX.Element {
     // authentication and theme are set in this container props by react-redux coonect.
     // See method mapStateToProps
     const {authentication, theme} = this.props

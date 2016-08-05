@@ -5,18 +5,24 @@ import {
   grey700,
   blueGrey800,
   brown50,
-  deepOrange900
+  deepOrange900,
+  red900
 } from "material-ui/styles/colors"
 import { fade } from "material-ui/utils/colorManipulator"
 import spacing from "material-ui/styles/spacing"
 // http://www.material-ui.com/#/customization/colors
 
 /**
+ * Add the following file to the project build
+ */
+require('./background.jpg');
+
+/**
  *  Custom theme for cdpp project.
  *  Only provide the keys you wish to customize, they will be merged to default
  *  theme variables when calling 'material-ui/styles/getMuiTheme'
  */
-require('./background.jpg');
+
 export default {
   spacing: spacing,
   fontFamily: 'Roboto, sans-serif',
@@ -30,6 +36,9 @@ export default {
     textColor: lightGreen700,
     secondaryTextColor: fade (blueGrey800, 0.54),
     alternateTextColor: brown50,
+    errorColor: {
+      color: red900
+    }
   },
   linkWithoutDecoration: {
     textDecoration: "blink"

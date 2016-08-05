@@ -27,7 +27,7 @@ export class SelectLocaleContainer extends React.Component<SelectLocaleTypes, an
     this.props.setLocale (value)
   }
 
-  render(): any {
+  render(): JSX.Element {
 
     return (
       <I18nProvider messageDir="common/i18n/messages">

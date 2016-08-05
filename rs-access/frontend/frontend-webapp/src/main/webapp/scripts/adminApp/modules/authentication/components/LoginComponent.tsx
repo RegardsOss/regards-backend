@@ -1,9 +1,10 @@
 /** @module AdminAuthentication */
-import * as React from "react"
-import { FormattedMessage } from "react-intl"
-import { Card, CardActions, CardTitle, CardText } from "material-ui/Card"
-import TextField from "material-ui/TextField"
-import RaisedButton from "material-ui/RaisedButton"
+import * as React from "react";
+import { FormattedMessage } from "react-intl";
+import { Card, CardActions, CardTitle, CardText } from "material-ui/Card";
+import TextField from "material-ui/TextField";
+import RaisedButton from "material-ui/RaisedButton";
+import ErrorDecorator from "./ErrorDecorator";
 
 export interface LoginProps {
   onLogin: (username: string, password: string) => void,
@@ -21,7 +22,7 @@ class LoginComponent extends React.Component<LoginProps, any> {
     this.state = {
       username: "",
       password: "",
-      error: ""
+      showError: false
     }
   }
 
@@ -39,28 +40,35 @@ class LoginComponent extends React.Component<LoginProps, any> {
    * @return {type}
    */
   handleKeyPress(event: KeyboardEvent): any {
-    this.setState ({"error": ''})
+    this.setState ({"showError": true})
     if (event.key === 'Enter') {
       this.props.onLogin (this.state.username, this.state.password)
     }
   }
 
   handleUserInputChange(event: React.FormEvent): any {
-    this.setState ({"username": (event.target as any).value})
+    this.setState ({
+      "username": (event.target as any).value,
+      "showError": false
+    })
   }
 
   handlePasswordInputChange(event: React.FormEvent): any {
-    this.setState ({"password": (event.target as any).value})
+    this.setState ({
+      "password": (event.target as any).value,
+      "showError": false
+    })
   }
 
   handleButtonPress(event: React.FormEvent): any {
     this.props.onLogin (this.state.username, this.state.password)
+    this.setState ({"showError": true})
   }
 
   render(): JSX.Element {
     let errorMessage: any = null
-    if (this.props.errorMessage && this.props.errorMessage !== '') {
-      errorMessage = <p><FormattedMessage id={this.props.errorMessage}/></p>
+    if (this.state.showError && this.props.errorMessage && this.props.errorMessage !== '') {
+      errorMessage = <ErrorDecorator><FormattedMessage id={this.props.errorMessage}/></ErrorDecorator>
     }
 
     return (

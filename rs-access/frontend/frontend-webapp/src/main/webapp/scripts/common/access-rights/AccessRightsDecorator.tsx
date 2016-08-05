@@ -50,7 +50,7 @@ export default function checkDependencies(dependencies: Array<DependencyAccessRi
 
       }
 
-      render(): any {
+      render(): JSX.Element {
         if (this.checkDependencies () === true) {
           return <DecoratedComponent {...this.props} />
         } else {

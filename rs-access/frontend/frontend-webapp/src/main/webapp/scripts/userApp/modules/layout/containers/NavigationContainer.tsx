@@ -30,7 +30,7 @@ class NavigationContainer extends React.Component<NavigationProps, any> {
     }
   }
 
-  render(): any {
+  render(): JSX.Element {
     const {location, plugins, project} = this.props
     if (plugins.items) {
       return (

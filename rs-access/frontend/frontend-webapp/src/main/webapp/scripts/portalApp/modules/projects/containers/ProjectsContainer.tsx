@@ -26,7 +26,7 @@ export class ProjectsContainer extends React.Component<ProjectsProps, any> {
     this.props.onLoad ()
   }
 
-  render(): any {
+  render(): JSX.Element {
     // projects props is set to the container by tge react-redux connect.
     // See method mapStateToProps
     const {projects} = this.props

@@ -15,7 +15,7 @@ export interface ProjectTypes {
  * @prop {Project} project Project to display
  */
 export class ProjectComponent extends React.Component<ProjectTypes, any> {
-  render(): any {
+  render(): JSX.Element {
     return (
       <li>
         <p>{this.props.project.name}</p>

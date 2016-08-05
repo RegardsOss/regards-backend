@@ -24,7 +24,7 @@ class MenuComponent extends React.Component<{}, any> {
   context: any
 
 
-  render(): any {
+  render(): JSX.Element {
     const {muiTheme} = this.context
 
     return (

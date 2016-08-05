@@ -20,7 +20,7 @@ class ShowableAtMount extends React.Component<ShowableAtMountProps, ShowableAtMo
     }
   }
 
-  render(): any {
+  render(): JSX.Element {
     return (<div>{this.props.children}</div>)
   }
 

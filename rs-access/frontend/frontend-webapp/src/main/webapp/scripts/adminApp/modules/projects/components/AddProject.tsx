@@ -35,7 +35,7 @@ export default class AddProject extends React.Component<any, any> {
     })
   }
 
-  render(): any {
+  render(): JSX.Element {
     const actions = [
       <FlatButton
         label="Cancel"

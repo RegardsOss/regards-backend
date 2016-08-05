@@ -43,7 +43,7 @@ export class I18nProvider extends React.Component<I18nProps, any> {
     }
   }
 
-  render(): any {
+  render(): JSX.Element {
 
     // Get messages associated to this Prodiver via the messageDir
     let localMessages = this.props.messages.find ((message) => message.messagesDir === this.props.messageDir)

@@ -28,7 +28,7 @@ export class SelectTheme extends React.Component<SelectThemeProps, any> {
     this.handleChange = this.handleChange.bind (this)
   }
 
-  render(): any {
+  render(): JSX.Element {
     const themes = ThemeHelper.getThemes ()
     const themeNames = keys (themes)
     const items = map (themeNames, (themeName: string) => {

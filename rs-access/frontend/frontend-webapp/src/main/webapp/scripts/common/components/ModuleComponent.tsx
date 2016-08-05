@@ -19,7 +19,7 @@ class ModuleComponent extends React.Component<ModuleComponentProps, ModuleCompon
     return true
   }
 
-  render(): any {
+  render(): JSX.Element {
     return (
       <ShowableAtMount show={this.getModuleVisibility()}>
         { this.props.children }

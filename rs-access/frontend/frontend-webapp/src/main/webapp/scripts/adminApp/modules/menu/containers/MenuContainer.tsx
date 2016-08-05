@@ -3,7 +3,7 @@ import MenuComponent from '../components/MenuComponent'
 
 class MenuContainer extends React.Component<{}, any> {
 
-  render(): any {
+  render(): JSX.Element {
 
     return (
       <I18nProvider messageDir='adminApp/modules/menu/i18n'>

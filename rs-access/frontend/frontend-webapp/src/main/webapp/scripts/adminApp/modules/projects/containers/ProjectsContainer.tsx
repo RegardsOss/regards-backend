@@ -63,7 +63,7 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
     this.props.selectProject (payload)
   }
 
-  render(): any {
+  render(): JSX.Element {
     const cardTitle = (
       <div>
         <span style={{float:'left'}}>

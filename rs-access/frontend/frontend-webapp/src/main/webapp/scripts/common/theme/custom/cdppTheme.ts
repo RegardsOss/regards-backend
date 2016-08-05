@@ -11,7 +11,8 @@ import {
   blueGrey900,
   cyan500,
   darkBlack,
-  brown900
+  brown900,
+  red900
 } from "material-ui/styles/colors"
 import { fade } from "material-ui/utils/colorManipulator"
 import spacing from "material-ui/styles/spacing"
@@ -54,6 +55,9 @@ export default {
     pickerHeaderColor: cyan500,
     clockCircleColor: fade (darkBlack, 0.07),
     shadowColor: blueGrey900,
+    errorColor: {
+      color: red900
+    }
   },
   linkWithoutDecoration: {
     textDecoration: "blink"
