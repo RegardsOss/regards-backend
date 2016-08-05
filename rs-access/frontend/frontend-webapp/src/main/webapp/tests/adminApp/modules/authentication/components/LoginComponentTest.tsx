@@ -1,9 +1,8 @@
 import * as React from 'react'
-import { mount } from 'enzyme'
+import { shallow } from 'enzyme'
 import { expect } from 'chai'
 import * as sinon from 'sinon'
 import LoginComponent from '../../../../../scripts/adminApp/modules/authentication/components/LoginComponent';
-
 
 // Test a component rendering
 
@@ -17,22 +16,17 @@ describe('[ADMIN APP] Testing login component', () => {
     };
     let props = {
       onLogin: spy,
-      errorMessage: '',
-      muiTheme: '',
-      store: {}
+      errorMessage: ''
     };
 
-    const wrapper = mount(<LoginComponent {...props}/>);
-    console.log(wrapper)
-    expect(wrapper.find("button")).to.have.length(1);
-
-    expect(wrapper.find("div")).to.have.length(1);
-    expect(wrapper.find("input[type='text']")).to.have.length(1);
-    expect(wrapper.find("input[type='password']")).to.have.length(1);
+    const wrapper = shallow(<LoginComponent {...props}/>);
+    expect(wrapper.find("Card")).to.have.length(1);
+    expect(wrapper.find("p")).to.have.length(0);
+    expect(wrapper.find("TextField")).to.have.length(2);
+    expect(wrapper.find("RaisedButton")).to.have.length(1);
 
     // Test onLogin action
-    wrapper.find("button").simulate('click');
-    console.log(wrapper.find("button"))
+    wrapper.find("RaisedButton").simulate('click');
     expect(spy.calledOnce).to.equals(true)
   });
 
@@ -48,13 +42,13 @@ describe('[ADMIN APP] Testing login component', () => {
       errorMessage: ''
     };
 
-    const wrapper = mount(<LoginComponent {...props}/>);
-    const username = wrapper.find("input[type='text']");
+    const wrapper = shallow(<LoginComponent {...props}/>);
+    const username = wrapper.find("TextField[type='text']");
     username.simulate('change', { target: { value: 'test' } });
-    const password = wrapper.find("input[type='password']");
+    const password = wrapper.find("TextField[type='password']");
     password.simulate('change', { target: { value: 'test_password' } });
     // Test onLogin action
-    wrapper.find("button").simulate('click');
+    wrapper.find("RaisedButton").simulate('click');
     expect(spy.calledOnce).to.equals(true)
   });
 

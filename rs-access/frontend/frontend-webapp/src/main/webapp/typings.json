@@ -20,7 +20,7 @@
     "react-router/history": "registry:dt/react-router/history#2.0.0+20160608102730",
     "react-tap-event-plugin": "registry:dt/react-tap-event-plugin#0.0.0+20160602142434",
     "redux": "registry:dt/redux#3.5.2+20160703092728",
-    "redux-form": "registry:dt/redux-form#4.0.3+20160703120921",
+    "redux-form": "registry:dt/redux-form#4.0.3+20160803140805",
     "redux-logger": "registry:dt/redux-logger#2.6.0+20160619033847",
     "redux-thunk": "registry:dt/redux-thunk#2.1.0+20160703120921",
     "require-patch": "file:./localtypings/require-patch/require-patch.d.ts",

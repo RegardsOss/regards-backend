@@ -7,8 +7,7 @@ import RaisedButton from "material-ui/RaisedButton"
 
 export interface LoginProps {
   onLogin: (username: string, password: string) => void,
-  errorMessage: string,
-  muiTheme?: any
+  errorMessage: string
 }
 
 /**
@@ -71,6 +70,7 @@ class LoginComponent extends React.Component<LoginProps, any> {
           <div onKeyDown={this.handleKeyPress}>
             {errorMessage}
             <TextField
+              type="text"
               floatingLabelText={<FormattedMessage id="login.username"/>}
               fullWidth={true}
               onChange={this.handleUserInputChange}
