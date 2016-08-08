@@ -49,21 +49,21 @@ const AdminAppBarIcon = (
  * This component display admin layout or login form if the user is not connected
  */
 class AdminApp extends React.Component<AminAppProps, any> {
-  constructor() {
-    super ()
+  constructor () {
+    super()
     this.state = {instance: false}
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     const {theme, authentication, content} = this.props
 
     // Build theme
-    const muiTheme = ThemeHelper.getByName (theme)
+    const muiTheme = ThemeHelper.getByName(theme)
 
     // Authentication
-    const authenticated = isAuthenticated (authentication)
+    const authenticated = isAuthenticated(authentication)
     if (authenticated === false) {
-      const layoutStyle = Object.assign({}, {display: "flex",alignItems: "center"}, muiTheme.adminApp.loginForm);
+      const layoutStyle = Object.assign({}, {display: "flex", alignItems: "center"}, muiTheme.adminApp.loginForm);
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
           <Layout style={layoutStyle}>
@@ -76,13 +76,15 @@ class AdminApp extends React.Component<AminAppProps, any> {
     } else {
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
-          <Layout>
-            <div key='sideBar'><MenuContainer /></div>
-            <div key='appBar'><AppBar title="Regards admin dashboard" iconElementRight={AdminAppBarIcon}/></div>
-            <div key='content'>{content}</div>
-            <div key='selectTheme'><SelectTheme /></div>
-            <div key='selectLanguage'><SelectLanguage locales={['en','fr']}/></div>
-          </Layout>
+          <div>
+            <Layout>
+              <div key='sideBar'><MenuContainer /></div>
+              <div key='appBar'><AppBar title="Regards admin dashboard" iconElementRight={AdminAppBarIcon}/></div>
+              <div key='content'>{content}</div>
+              <div key='selectTheme'><SelectTheme /></div>
+              <div key='selectLanguage'><SelectLanguage locales={['en','fr']}/></div>
+            </Layout>
+          </div>
         </MuiThemeProvider>
       )
     }
@@ -96,7 +98,7 @@ const mapStateToProps = (state: any) => ({
 })
 const mapDispatchToProps = (dispatch: any) => ({
   onLogout: () => {
-    dispatch (logout ())
+    dispatch(logout())
   }
 })
-export default connect<{}, {}, AminAppProps> (mapStateToProps, mapDispatchToProps) (AdminApp)
+export default connect<{}, {}, AminAppProps>(mapStateToProps, mapDispatchToProps)(AdminApp)
