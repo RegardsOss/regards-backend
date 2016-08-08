@@ -2,8 +2,12 @@ import cdppTheme from "./cdppTheme"
 import ssaltoTheme from "./ssaltoTheme"
 import lightBaseTheme from "./lightBaseTheme"
 import darkBaseTheme from "./darkBaseTheme"
-// Import here more custom themes
-//import './background.jpg'
+
+/**
+ * Add the following file to the project build
+ */
+import './background.jpg';
+
 // Register them here
 export default {
   cdppTheme,

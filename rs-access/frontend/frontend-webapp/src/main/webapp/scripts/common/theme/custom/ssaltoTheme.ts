@@ -12,10 +12,6 @@ import { fade } from "material-ui/utils/colorManipulator"
 import spacing from "material-ui/styles/spacing"
 // http://www.material-ui.com/#/customization/colors
 
-/**
- * Add the following file to the project build
- */
-require('./background.jpg');
 
 /**
  *  Custom theme for cdpp project.
