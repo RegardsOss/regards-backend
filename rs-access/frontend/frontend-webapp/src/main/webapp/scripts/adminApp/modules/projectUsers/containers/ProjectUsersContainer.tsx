@@ -7,6 +7,8 @@ import ProjectUserContainer from "./ProjectUserContainer"
 import Actions from "../actions"
 import * as selectors from "../../../reducer"
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
+import I18nProvider from "../../../../common/i18n/I18nProvider"
+import { FormattedMessage } from "react-intl"
 const URL_PROJECTS_USERS = "http://localhost:8080/api/users"
 
 interface ProjectUsersProps {
@@ -17,7 +19,7 @@ interface ProjectUsersProps {
   // From router
   router: any,
   route: any,
-  params: any,
+  params: any
 }
 
 /**
@@ -34,48 +36,39 @@ class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
 
     const {userLinks, params} = this.props
     return (
-      <Card
-        initiallyExpanded={true}
-      >
-        <CardHeader
-          title="User list"
-          actAsExpander={true}
-          showExpandableButton={false}
-        />
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHeaderColumn>HTTP Verb</TableHeaderColumn>
-              <TableHeaderColumn>Route Name</TableHeaderColumn>
-              <TableHeaderColumn>Access right</TableHeaderColumn>
-              <TableHeaderColumn>HTTP Verb</TableHeaderColumn>
-              <TableHeaderColumn>Route Name</TableHeaderColumn>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {map(userLinks, (userLink: string, id: string) => (
-              <ProjectUserContainer
-                userLink={userLink}
-                projectName={params.project}
-                key={id}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+      <I18nProvider messageDir='adminApp/modules/projectUsers/i18n'>
+        <Card
+          initiallyExpanded={true}>
+          <CardHeader
+            title="User list"
+            actAsExpander={true}
+            showExpandableButton={false}
+          />
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHeaderColumn></TableHeaderColumn>
+                <TableHeaderColumn><FormattedMessage id="userlist.login"/></TableHeaderColumn>
+                <TableHeaderColumn><FormattedMessage id="userlist.firstName"/></TableHeaderColumn>
+                <TableHeaderColumn><FormattedMessage id="userlist.lastName"/></TableHeaderColumn>
+                <TableHeaderColumn><FormattedMessage id="userlist.email"/></TableHeaderColumn>
+                <TableHeaderColumn><FormattedMessage id="userlist.status"/></TableHeaderColumn>
+                <TableHeaderColumn><FormattedMessage id="userlist.action"/></TableHeaderColumn>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {map(userLinks, (userLink: string, id: string) => (
+                <ProjectUserContainer
+                  userLink={userLink}
+                  projectName={params.project}
+                  key={id}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      </I18nProvider>
     )
-  }
-
-
-  componentWillReceiveProps (nextProps: any): any {
-    /*
-     if (nextProject && nextProject !== oldProject) {
-     const link = nextProject.links.find((link: any) => link.rel === "users")
-     if (link) {
-     const href = link.href;
-     this.props.fetchProjectUsers(href)
-     }
-     }*/
   }
 }
 

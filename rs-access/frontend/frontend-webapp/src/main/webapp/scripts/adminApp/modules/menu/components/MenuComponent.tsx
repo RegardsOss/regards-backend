@@ -8,24 +8,21 @@ import Divider from "material-ui/Divider"
 import Settings from "material-ui/svg-icons/action/settings"
 import People from "material-ui/svg-icons/social/people"
 import Reply from "material-ui/svg-icons/content/reply"
-import { intlShape } from "react-intl"
 
-import { ThemeContextType } from "../../../../common/theme/ThemeContainerInterface"
+import { ThemeContextType, ThemeContextInterface } from "../../../../common/theme/ThemeContainerInterface"
+import { FormattedMessage } from "react-intl"
 
 /**
  * React Menu component. Display the admin application menu
  */
 class MenuComponent extends React.Component<{}, any> {
-
-  static contextTypes: Object = {
-    intl: intlShape,
-    muiTheme: ThemeContextType.muiTheme
-  }
-  context: any
-
+  static contextTypes: Object = ThemeContextType
+  context: ThemeContextInterface
 
   render(): JSX.Element {
+
     const {muiTheme} = this.context
+    const style = muiTheme.linkWithoutDecoration
 
     return (
 
@@ -33,22 +30,22 @@ class MenuComponent extends React.Component<{}, any> {
         open={true}
         containerStyle={{width:'100%', height:'100%'}}
         >
-        <Link to={"/admin/cdpp/projects"} style={{textDecoration:muiTheme.linkWithoutDecoration.textDecoration}}>
-          <MenuItem primaryText={this.context.intl.formatMessage({id:"menu.projects"})} leftIcon={<Settings />} />
+        <Link to={"/admin/cdpp/projects"} style={style}>
+          <MenuItem primaryText={<FormattedMessage id="menu.projects"/>} leftIcon={<Settings />} />
         </Link>
 
-        <Link to={"/admin/cdpp/users"} style={{textDecoration:muiTheme.linkWithoutDecoration.textDecoration}}>
-          <MenuItem primaryText={this.context.intl.formatMessage({id:"menu.users"})} leftIcon={<People />}/>
+        <Link to={"/admin/cdpp/users"} style={style}>
+          <MenuItem primaryText={<FormattedMessage id="menu.users"/>} leftIcon={<People />}/>
         </Link>
 
         <Divider />
 
-        <MenuItem primaryText={this.context.intl.formatMessage({id:"menu.logout"})} leftIcon={<PowerSettingsNew />}/>
+        <MenuItem primaryText={<FormattedMessage id="menu.logout"/>} leftIcon={<PowerSettingsNew />}/>
 
         <Divider />
 
-        <Link to={"/admin/cdpp"} style={{textDecoration:muiTheme.linkWithoutDecoration.textDecoration}}>
-          <MenuItem primaryText={this.context.intl.formatMessage({id:"menu.back"})} leftIcon={<Reply />}/>
+        <Link to={"/admin/cdpp"} style={style}>
+          <MenuItem primaryText={<FormattedMessage id="menu.back"/>} leftIcon={<Reply />}/>
         </Link>
 
       </Drawer>

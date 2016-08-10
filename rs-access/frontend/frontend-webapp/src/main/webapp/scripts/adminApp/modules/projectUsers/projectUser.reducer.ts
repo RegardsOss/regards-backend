@@ -1,4 +1,3 @@
-import { union } from "lodash"
 import { PROJECT_USER_REQUEST, PROJECT_USER_SUCCESS, PROJECT_USER_FAILURE } from "./actions"
 
 export default (state: any = {

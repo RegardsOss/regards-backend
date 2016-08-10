@@ -2,7 +2,7 @@
 import lightBaseTheme from "material-ui/styles/baseThemes/lightBaseTheme"
 import { merge } from "lodash"
 
-import { red900 } from "material-ui/styles/colors"
+import { red900, grey900, blueGrey50 } from "material-ui/styles/colors"
 export default merge ({}, lightBaseTheme, {
   palette: {
     errorColor: {
@@ -10,11 +10,12 @@ export default merge ({}, lightBaseTheme, {
     }
   },
   linkWithoutDecoration: {
-    textDecoration: "blink"
+    textDecoration: "blink",
+    color: grey900
   },
   adminApp: {
     loginForm: {
-      backgroundColor: '#ECEFF1',
+      backgroundColor: blueGrey50,
       display: "flex",
       alignItems: "center"
     }

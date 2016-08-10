@@ -3,7 +3,6 @@ import { connect } from "react-redux"
 import { User } from "../../../../common/users/types"
 import ProjectUserComponent from "../components/ProjectUserComponent"
 import * as selectors from "../../../reducer"
-const URL_PROJECTS_USERS = "http://localhost:8080/api/users"
 
 interface ProjectUsersProps {
   projectName: string,
@@ -40,7 +39,5 @@ const mapStateToProps = (state: any, ownProps: any) => {
     user: user
   }
 }
-const mapDispatchToProps = (dispatch: any) => ({
-
-})
+const mapDispatchToProps = (dispatch: any) => ({})
 export default connect<{}, {}, ProjectUsersProps>(mapStateToProps, mapDispatchToProps)(ProjectUsersContainer)

@@ -10,14 +10,9 @@ class ProjectUserCreateContainer extends React.Component<any, any> {
     muiTheme: Object
   }
   context: any
-  constructor() {
-    super ()
-  }
 
-
-
-  render(): JSX.Element {
-    console.log (this.context)
+  render (): JSX.Element {
+    console.log(this.context)
     return (
       <Card
         initiallyExpanded={true}
