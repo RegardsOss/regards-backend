@@ -37,13 +37,13 @@ class AdminApp extends React.Component<AminAppProps, any> {
 
     // Authentication
     const authenticated = isAuthenticated(authentication)
-    let hmi: any = [];
+    let hmi: any = []
     if (authenticated === false) {
       hmi.push(<AuthenticationLayout key="1"/>)
     } else {
       hmi.push(<MainAdminLayout key="2" {...this.props}>
         {content}
-      </MainAdminLayout>);
+      </MainAdminLayout>)
     }
     return (
       <MuiThemeProvider muiTheme={muiTheme}>

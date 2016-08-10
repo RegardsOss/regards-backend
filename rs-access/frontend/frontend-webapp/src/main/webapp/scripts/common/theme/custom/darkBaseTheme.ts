@@ -14,7 +14,9 @@ export default merge ({}, darkBaseTheme, {
   adminApp: {
     loginForm: {
       backgroundColor: "transparent",
-      backgroundImage: "url('/img/background.jpg')"
+      backgroundImage: "url('/img/background.jpg')",
+      display: "flex",
+      alignItems: "center"
     }
   }
 })

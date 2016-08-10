@@ -64,7 +64,9 @@ export default {
   },
   adminApp: {
     loginForm: {
-      backgroundColor: grey700
+      backgroundColor: grey700,
+      display: "flex",
+      alignItems: "center"
     }
   }
 }

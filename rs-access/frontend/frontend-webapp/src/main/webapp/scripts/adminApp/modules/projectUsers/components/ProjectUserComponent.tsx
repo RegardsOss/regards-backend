@@ -6,6 +6,9 @@ import { ListItem } from "material-ui/List"
 import IconPeople from "material-ui/svg-icons/social/people"
 import { Link } from "react-router"
 import { ThemeContextType, ThemeContextInterface } from "../../../../common/theme/ThemeContainerInterface"
+import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from "material-ui/Table"
+import Checkbox from 'material-ui/Checkbox'
+
 // Containers
 
 export interface ProjectUserProps {
@@ -27,13 +30,36 @@ class ProjectUserComponent extends React.Component<ProjectUserProps, any> {
     const style = muiTheme.palette.errorColor
     return (
       <I18nProvider messageDir="adminApp/modules/projectUsers/i18n">
-        <Link to={redirectOnSelectTo} style={style}>
-          <ListItem
-            key={user.id}
-            primaryText={user.name}
-            leftIcon={<IconPeople />}
-          />
-        </Link>
+          <TableRow>
+            <TableRowColumn>
+              <Link to={redirectOnSelectTo} style={style}>
+                {user.login}
+              </Link>
+            </TableRowColumn>
+            <TableRowColumn>
+              <Link to={redirectOnSelectTo} style={style}>
+                <Checkbox
+                  label="azertyui"
+                />
+                {user.firstName}
+              </Link>
+              </TableRowColumn>
+            <TableRowColumn>
+              <Link to={redirectOnSelectTo} style={style}>
+                {user.lastName}
+              </Link>
+              </TableRowColumn>
+            <TableRowColumn>
+              <Link to={redirectOnSelectTo} style={style}>
+                {user.email}
+              </Link>
+              </TableRowColumn>
+            <TableRowColumn>
+              <Link to={redirectOnSelectTo} style={style}>
+                {user.status}
+              </Link>
+              </TableRowColumn>
+          </TableRow>
       </I18nProvider>
     )
   }

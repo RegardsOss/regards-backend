@@ -1,10 +1,10 @@
 /** @module AdminAuthentication */
-import * as React from "react";
-import { FormattedMessage } from "react-intl";
-import { Card, CardActions, CardTitle, CardText } from "material-ui/Card";
-import TextField from "material-ui/TextField";
-import RaisedButton from "material-ui/RaisedButton";
-import ErrorDecorator from "./ErrorDecorator";
+import * as React from "react"
+import { FormattedMessage } from "react-intl"
+import { Card, CardActions, CardTitle, CardText } from "material-ui/Card"
+import TextField from "material-ui/TextField"
+import RaisedButton from "material-ui/RaisedButton"
+import ErrorDecorator from "./ErrorDecorator"
 
 export interface LoginProps {
   onLogin: (username: string, password: string) => void,
@@ -17,8 +17,8 @@ export interface LoginProps {
  * @prop {String} errorMessage Error message to display
  */
 class LoginComponent extends React.Component<LoginProps, any> {
-  constructor() {
-    super ()
+  constructor (props: LoginProps) {
+    super(props)
     this.state = {
       username: "",
       password: "",
@@ -26,11 +26,13 @@ class LoginComponent extends React.Component<LoginProps, any> {
     }
   }
 
-  componentWillMount(): any {
-    this.handleKeyPress = this.handleKeyPress.bind (this)
-    this.handleUserInputChange = this.handleUserInputChange.bind (this)
-    this.handlePasswordInputChange = this.handlePasswordInputChange.bind (this)
-    this.handleButtonPress = this.handleButtonPress.bind (this)
+  componentWillMount (): any {
+    this.handleKeyPress = this.handleKeyPress.bind(this)
+    this.handleUserInputChange = this.handleUserInputChange.bind(this)
+    this.handlePasswordInputChange = this.handlePasswordInputChange.bind(this)
+    this.handleButtonPress = this.handleButtonPress.bind(this)
+    console.log("Leo" ,"Auto connect")
+    this.props.onLogin("admin", "admin")
   }
 
   /**
@@ -39,33 +41,33 @@ class LoginComponent extends React.Component<LoginProps, any> {
    * @param  {type} event: KeyboardEvent
    * @return {type}
    */
-  handleKeyPress(event: KeyboardEvent): any {
-    this.setState ({"showError": true})
+  handleKeyPress (event: KeyboardEvent): any {
+    this.setState({"showError": true})
     if (event.key === 'Enter') {
-      this.props.onLogin (this.state.username, this.state.password)
+      this.props.onLogin(this.state.username, this.state.password)
     }
   }
 
-  handleUserInputChange(event: React.FormEvent): any {
-    this.setState ({
+  handleUserInputChange (event: React.FormEvent): any {
+    this.setState({
       "username": (event.target as any).value,
       "showError": false
     })
   }
 
-  handlePasswordInputChange(event: React.FormEvent): any {
-    this.setState ({
+  handlePasswordInputChange (event: React.FormEvent): any {
+    this.setState({
       "password": (event.target as any).value,
       "showError": false
     })
   }
 
-  handleButtonPress(event: React.FormEvent): any {
-    this.props.onLogin (this.state.username, this.state.password)
-    this.setState ({"showError": true})
+  handleButtonPress (event: React.FormEvent): any {
+    this.props.onLogin(this.state.username, this.state.password)
+    this.setState({"showError": true})
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     let errorMessage: any = null
     if (this.state.showError && this.props.errorMessage && this.props.errorMessage !== '') {
       errorMessage = <ErrorDecorator><FormattedMessage id={this.props.errorMessage}/></ErrorDecorator>

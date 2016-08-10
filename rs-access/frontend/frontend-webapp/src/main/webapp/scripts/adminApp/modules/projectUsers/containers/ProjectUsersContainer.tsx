@@ -1,13 +1,17 @@
 import * as React from "react"
 import { connect } from "react-redux"
-import { Card, CardActions, CardHeader } from "material-ui/Card"
-import FlatButton from "material-ui/FlatButton"
-import { List } from "material-ui/List"
+import { Card, CardHeader } from "material-ui/Card"
 import { map } from "lodash"
 import { User } from "../../../../common/users/types"
-import ProjectUserComponent from "../components/ProjectUserComponent"
+import ProjectUserContainer from "./ProjectUserContainer"
+import Actions from "../actions"
+import * as selectors from "../../../reducer"
+import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
+const URL_PROJECTS_USERS = "http://localhost:8080/api/users"
+
 interface ProjectUsersProps {
-  users: Array<User>,
+  // From mapStateToProps
+  userLinks?: Array<User>,
   // From mapDispatchToProps
   fetchProjectUsers?: any,
   // From router
@@ -16,18 +20,19 @@ interface ProjectUsersProps {
   params: any,
 }
 
+/**
+ * Show the list of users for the current project
+ */
 class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
-  constructor(props: any) {
-    super (props)
+  constructor (props: any) {
+    super(props)
+    // Fetch users for the current project when the container is created
+    this.props.fetchProjectUsers(URL_PROJECTS_USERS)
   }
 
-  generateUserEditUrl = (user: User) => {
-    return "/admin/" + this.props.params.project + "/users/" + user.id
-  }
+  render (): JSX.Element {
 
-  render(): JSX.Element {
-
-    const {users} = this.props
+    const {userLinks, params} = this.props
     return (
       <Card
         initiallyExpanded={true}
@@ -35,42 +40,53 @@ class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
         <CardHeader
           title="User list"
           actAsExpander={true}
-          showExpandableButton={true}
+          showExpandableButton={false}
         />
-        <List>
-          {map (users, (user: User, id: String) => (
-            <ProjectUserComponent
-              user={user}
-              key={user.id}
-              redirectOnSelectTo={this.generateUserEditUrl(user)}
-            />
-          ))}
-        </List>
-        <CardActions >
-          <FlatButton label="Add user"/>
-          <FlatButton label="Remove user"/>
-        </CardActions>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHeaderColumn>HTTP Verb</TableHeaderColumn>
+              <TableHeaderColumn>Route Name</TableHeaderColumn>
+              <TableHeaderColumn>Access right</TableHeaderColumn>
+              <TableHeaderColumn>HTTP Verb</TableHeaderColumn>
+              <TableHeaderColumn>Route Name</TableHeaderColumn>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {map(userLinks, (userLink: string, id: string) => (
+              <ProjectUserContainer
+                userLink={userLink}
+                projectName={params.project}
+                key={id}
+              />
+            ))}
+          </TableBody>
+        </Table>
       </Card>
     )
   }
 
 
-  componentWillReceiveProps(nextProps: any): any {
+  componentWillReceiveProps (nextProps: any): any {
     /*
-    const oldProject = this.props.project
-    const nextProject = nextProps.project
-    if (nextProject && nextProject !== oldProject) {
-      const link = nextProject.links.find ((link: any) => link.rel === "users")
-      if (link) {
-        const href = link.href;
-        this.props.fetchProjectUsers (href)
-      }
-    }*/
+     if (nextProject && nextProject !== oldProject) {
+     const link = nextProject.links.find((link: any) => link.rel === "users")
+     if (link) {
+     const href = link.href;
+     this.props.fetchProjectUsers(href)
+     }
+     }*/
   }
 }
 
-const mapStateToProps = (state: any) => ({})
+
+const mapStateToProps = (state: any, ownProps: any) => {
+  const userLinks = selectors.getUserLinks(state)
+  return {
+    userLinks: userLinks
+  }
+}
 const mapDispatchToProps = (dispatch: any) => ({
-  // fetchProjectUsers: (projectId: string) => dispatch (actions.fetchProjectUsers (projectId)),
+  fetchProjectUsers: (urlProjectUsers: string) => dispatch(Actions.fetchProjectUsers(urlProjectUsers)),
 })
-export default connect<{}, {}, ProjectUsersProps> (mapStateToProps, mapDispatchToProps) (ProjectUsersContainer)
+export default connect<{}, {}, ProjectUsersProps>(mapStateToProps, mapDispatchToProps)(ProjectUsersContainer)

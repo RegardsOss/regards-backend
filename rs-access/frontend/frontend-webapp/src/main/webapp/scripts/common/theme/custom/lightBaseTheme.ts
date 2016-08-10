@@ -14,7 +14,9 @@ export default merge ({}, lightBaseTheme, {
   },
   adminApp: {
     loginForm: {
-      backgroundColor: '#ECEFF1'
+      backgroundColor: '#ECEFF1',
+      display: "flex",
+      alignItems: "center"
     }
   }
 

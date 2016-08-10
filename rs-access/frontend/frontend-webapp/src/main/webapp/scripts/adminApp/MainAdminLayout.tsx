@@ -45,9 +45,9 @@ class MainAdminLayout extends React.Component<MainAdminLayoutProps, any> {
     this.state = {instance: false}
   }
 
-  render (): JSX.Element {
-    const {theme, content} = this.props
 
+  render (): JSX.Element {
+    const {content} = this.props
 
     return (
       <div>

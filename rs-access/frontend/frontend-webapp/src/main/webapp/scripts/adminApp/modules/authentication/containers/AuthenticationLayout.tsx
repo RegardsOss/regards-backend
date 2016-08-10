@@ -14,10 +14,7 @@ export class AuthenticationLayout extends React.Component<any, any> {
   }
 
   render (): JSX.Element {
-    const layoutStyle = Object.assign({}, {
-      display: "flex",
-      alignItems: "center"
-    }, this.context.muiTheme.adminApp.loginForm);
+    const layoutStyle = this.context.muiTheme.adminApp.loginForm
     return (
       <Layout style={layoutStyle}>
         <div key='selectTheme'><SelectTheme /></div>

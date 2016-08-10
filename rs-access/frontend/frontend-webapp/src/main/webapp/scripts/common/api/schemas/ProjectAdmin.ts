@@ -1,12 +1,14 @@
 import { Schema, arrayOf } from "normalizr"
-import ProjectSchema from './Project'
-
+import ProjectSchema from "./Project"
+/**
+ * This type is not used anymore - à confirmer
+ */
 // Schemas for API responses.
-const projectAdminSchema = new Schema ('projectAdmins', {
+const projectAdminSchema = new Schema('projectAdmins', {
   idAttribute: projectAdmin => projectAdmin.links[0].href
 })
 
-projectAdminSchema.define ({
+projectAdminSchema.define({
   projects: ProjectSchema.PROJECT_ARRAY
 })
 
