@@ -6,7 +6,7 @@ import darkBaseTheme from "./darkBaseTheme"
 /**
  * Add the following file to the project build
  */
-import './background.jpg';
+import './background.jpg'
 
 // Register them here
 export default {

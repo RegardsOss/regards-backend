@@ -2,7 +2,6 @@
 import * as React from "react"
 import { connect } from "react-redux"
 import { logout } from "../common/authentication/AuthenticateActions"
-import Authentication from "./modules/authentication/containers/AuthenticationContainer"
 import { AuthenticationType } from "../common/authentication/AuthenticationTypes"
 import { isAuthenticated } from "../common/authentication/AuthenticateUtils"
 import Layout from "../common/layout/containers/Layout"
@@ -14,9 +13,8 @@ import IconButton from "material-ui/IconButton"
 import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert"
 import ThemeHelper from "../common/theme/ThemeHelper"
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"
-import SelectTheme from "../common/theme/containers/SelectTheme"
-import SelectLanguage from "../common/i18n/containers/SelectLocaleContainer"
-
+import AuthenticationLayout from "./modules/authentication/containers/AuthenticationLayout"
+import MainAdminLayout from "./MainAdminLayout"
 interface AminAppProps {
   router: any,
   route: any,
@@ -28,64 +26,40 @@ interface AminAppProps {
   onLogout: () => void
 }
 
-const AdminAppBarIcon = (
-  <div>
-    <IconMenu
-      iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
-      anchorOrigin={{horizontal: 'left', vertical: 'top'}}
-      targetOrigin={{horizontal: 'left', vertical: 'top'}}
-    >
-      <MenuItem primaryText="Refresh"/>
-      <MenuItem primaryText="Send feedback"/>
-      <MenuItem primaryText="Settings"/>
-      <MenuItem primaryText="Help"/>
-      <MenuItem primaryText="Sign out"/>
-    </IconMenu>
-  </div>
-)
 
 /**
  * React component to manage Administration application.
- * This component display admin layout or login form if the user is not connected
+ * This component displays admin layout or login form if the user is not connected
  */
 class AdminApp extends React.Component<AminAppProps, any> {
-  constructor() {
-    super ()
+  constructor () {
+    super()
     this.state = {instance: false}
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     const {theme, authentication, content} = this.props
-
     // Build theme
-    const muiTheme = ThemeHelper.getByName (theme)
+    const muiTheme = ThemeHelper.getByName(theme)
 
     // Authentication
-    const authenticated = isAuthenticated (authentication)
+    const authenticated = isAuthenticated(authentication)
+    let hmi: any = []
     if (authenticated === false) {
-      const layoutStyle = Object.assign({}, {display: "flex",alignItems: "center"}, muiTheme.adminApp.loginForm);
-      return (
-        <MuiThemeProvider muiTheme={muiTheme}>
-          <Layout style={layoutStyle}>
-            <div key='selectTheme'><SelectTheme /></div>
-            <div key='authentication'><Authentication /></div>
-            <div key='selectLanguage'><SelectLanguage locales={['en','fr']}/></div>
-          </Layout>
-        </MuiThemeProvider>
-      )
+      hmi.push(<AuthenticationLayout key="1"/>)
     } else {
-      return (
-        <MuiThemeProvider muiTheme={muiTheme}>
-          <Layout>
-            <div key='sideBar'><MenuComponent /></div>
-            <div key='appBar'><AppBar title="Regards admin dashboard" iconElementRight={AdminAppBarIcon}/></div>
-            <div key='content'>{content}</div>
-            <div key='selectTheme'><SelectTheme /></div>
-            <div key='selectLanguage'><SelectLanguage locales={['en','fr']}/></div>
-          </Layout>
-        </MuiThemeProvider>
-      )
+      hmi.push(<MainAdminLayout key="2" {...this.props}>
+        {content}
+      </MainAdminLayout>)
     }
+    return (
+      <MuiThemeProvider muiTheme={muiTheme}>
+        <div>
+          {hmi}
+        </div>
+      </MuiThemeProvider>
+    )
+
   }
 }
 
@@ -97,4 +71,4 @@ const mapStateToProps = (state: any) => ({
 const mapDispatchToProps = (dispatch: any) => ({
   onLogout: () => dispatch (logout ())
 })
-export default connect<{}, {}, AminAppProps> (mapStateToProps, mapDispatchToProps) (AdminApp)
+export default connect<{}, {}, AminAppProps>(mapStateToProps, mapDispatchToProps)(AdminApp)

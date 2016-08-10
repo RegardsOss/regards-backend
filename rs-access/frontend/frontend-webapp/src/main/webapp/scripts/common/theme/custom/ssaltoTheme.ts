@@ -42,7 +42,9 @@ export default {
   adminApp: {
     loginForm: {
       backgroundColor: "transparent",
-      backgroundImage: "url('/img/background.jpg')"
+      backgroundImage: "url('/img/background.jpg')",
+      display: "flex",
+      alignItems: "center"
     }
   }
 }

@@ -3,15 +3,15 @@ import { connect } from "react-redux"
 import { Card, CardActions, CardHeader, CardText } from "material-ui/Card"
 import FlatButton from "material-ui/FlatButton"
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from "material-ui/Table"
-import Checkbox from 'material-ui/Checkbox'
+import Checkbox from "material-ui/Checkbox"
 import { map } from "lodash"
 
 class ProjectUserEditContainer extends React.Component<any, any> {
-  constructor() {
-    super ()
+  constructor () {
+    super()
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     const nbElement = 20
     const rulesList: Array<Object> = []
     for (let i = 0; i < nbElement; i++) {
@@ -42,7 +42,7 @@ class ProjectUserEditContainer extends React.Component<any, any> {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {map (rulesList, (el: any ,i: number) => (
+              {map(rulesList, (el: any, i: number) => (
                 <TableRow key={i}>
                   <TableRowColumn>{el.verb}</TableRowColumn>
                   <TableRowColumn>{el.uri}</TableRowColumn>
@@ -67,4 +67,4 @@ class ProjectUserEditContainer extends React.Component<any, any> {
 // export default ProjectUserEditContainer;
 const mapStateToProps = (state: any) => ({})
 const mapDispatchToProps = (dispatch: any) => ({})
-export default connect<{}, {}, any> (mapStateToProps, mapDispatchToProps) (ProjectUserEditContainer)
+export default connect<{}, {}, any>(mapStateToProps, mapDispatchToProps)(ProjectUserEditContainer)

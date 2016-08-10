@@ -42,28 +42,28 @@ interface ProjectsContainerTypes {
  */
 class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
 
-  componentWillMount(): any {
+  componentWillMount (): any {
     // onLoad method is set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
-    this.props.onLoad ()
+    this.props.onLoad()
   }
 
   handleSave = () => {
     const id = '999'
     const name = 'Fake Project'
-    this.props.addProject (id, name)
-    this.props.selectProject (id)
+    this.props.addProject(id, name)
+    this.props.selectProject(id)
   }
 
   handleDelete = () => {
-    this.props.deleteProject (this.props.projectId)
+    this.props.deleteProject(this.props.projectId)
   }
 
   handleChange = (event: Object, key: number, payload: any) => {
-    this.props.selectProject (payload)
+    this.props.selectProject(payload)
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     const cardTitle = (
       <div>
         <span style={{float:'left'}}>
@@ -83,7 +83,7 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
                 value={this.props.projectId}
                 onChange={this.handleChange}
                 floatingLabelText="Select a project">
-                {this.props.projects.map ((project) => {
+                {this.props.projects.map((project) => {
                   return <MenuItem key={project.id} value={project.id} primaryText={project.name}/>
                 })}
               </SelectField>
@@ -103,14 +103,14 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
 }
 
 const mapStateToProps = (state: any) => ({
-  projects: map (selectors.getProjects (state).items, (value: any, key: string) => ({id: key, name: value.name})),
-  projectId: selectors.getSelectedProjectId (state)
+  projects: map(selectors.getProjects(state).items, (value: any, key: string) => ({id: key, name: value.name})),
+  projectId: selectors.getSelectedProjectId(state)
 })
 const mapDispatchToProps = (dispatch: any) => ({
-  onLoad: () => dispatch (actions.fetchProjects ()),
-  selectProject: (id: string) => dispatch (uiActions.selectProject (id)),
-  deleteProject: (id: string) => dispatch (actions.deleteProject (id)),
-  addProject: (id: string, name: string) => dispatch (actions.addProject (id, name))
+  onLoad: () => dispatch(actions.fetchProjects()),
+  selectProject: (id: string) => dispatch(uiActions.selectProject(id)),
+  deleteProject: (id: string) => dispatch(actions.deleteProject(id)),
+  addProject: (id: string, name: string) => dispatch(actions.addProject(id, name))
 })
 
-export default connect<{}, {}, ProjectsContainerTypes> (mapStateToProps, mapDispatchToProps) (ProjectsContainer)
+export default connect<{}, {}, ProjectsContainerTypes>(mapStateToProps, mapDispatchToProps)(ProjectsContainer)

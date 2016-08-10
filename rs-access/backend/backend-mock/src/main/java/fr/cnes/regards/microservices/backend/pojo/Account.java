@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Account extends ResourceSupport {
-	private String email;
+    private Long accountId;
+    private String email;
     private String firstName;
     private String lastName;
     private String login;
@@ -18,7 +19,8 @@ public class Account extends ResourceSupport {
 
     private List<ProjectUser> projectUsers;
 
-	public Account(String firstName, String lastName, String email, String login, String password) {
+	public Account(Long accountId, String firstName, String lastName, String email, String login, String password) {
+        this.accountId = accountId;
         this.firstName = firstName;
         this.lastName = lastName;
 	    this.email = email;
@@ -27,6 +29,14 @@ public class Account extends ResourceSupport {
         this.status = AccountStatus.ACTIVE.getValue();
         this.projectUsers = new ArrayList();
 	}
+
+    public Long getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
+    }
 
     public String getEmail() {
         return email;

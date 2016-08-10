@@ -23,10 +23,10 @@ export default combineReducers({
   endpoints: endpointsReducer
 })
 
-export const deleteEntityReducer = (state: any, action: any) => (
+export const deleteEntityReducer = (state: any, removeAction: any) => (
   Object.assign({}, state, {
-    items: pickBy(state.items, (value: string, key: string) => key !== action.id),
-    ids: state.ids.filter((id: string) => id !== action.id)
+    items: pickBy(state.items, (value: string, key: string) => key !== removeAction.id),
+    ids: state.ids.filter((id: string) => id !== removeAction.id)
   })
 )
 

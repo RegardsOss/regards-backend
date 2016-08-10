@@ -14,10 +14,7 @@ import { map } from 'lodash'
 import MenuElement from './MenuElement'
 import { HateoasControlledMenuElement } from './MenuElement'
 import I18nProvider from '../../../../common/i18n/I18nProvider'
-
-interface Props {
-  endpoints: any
-}
+import { FormattedMessage } from "react-intl"
 
 /**
  * React Menu component. Display the admin application menu
@@ -33,7 +30,7 @@ class MenuComponent extends React.Component<any, any> {
   render(): JSX.Element {
     const { muiTheme } = this.context
     const { endpoints } = this.props
-    const linkStyle = { textDecoration:muiTheme.linkWithoutDecoration.textDecoration }
+    const style = muiTheme.linkWithoutDecoration
 
     return (
         <Drawer open={true} containerStyle={{width:'100%', height:'100%'}} >
@@ -41,23 +38,23 @@ class MenuComponent extends React.Component<any, any> {
             endpointKey='projects_url'
             key='0'
             to={"/admin/cdpp/projects"}
-            linkStyle={linkStyle}
-            primaryText={this.context.intl.formatMessage({id:"menu.projects"})}
+            linkStyle={style}
+            primaryText={<FormattedMessage id="menu.projects"/>}
             leftIcon={<Settings />}
           />
           <HateoasControlledMenuElement
             endpointKey='projects_users_url'
             key='1'
             to={"/admin/cdpp/users"}
-            linkStyle={linkStyle}
-            primaryText={this.context.intl.formatMessage({id:"menu.users"})}
+            linkStyle={style}
+            primaryText={<FormattedMessage id="menu.users"/>}
             leftIcon={<People />}
           />
           <Divider />
-          <MenuItem primaryText={this.context.intl.formatMessage({id:"menu.logout"})} leftIcon={<PowerSettingsNew />}/>
+          <MenuItem primaryText={<FormattedMessage id="menu.logout"/>} leftIcon={<PowerSettingsNew />}/>
           <Divider />
-          <Link to={"/admin/cdpp"} style={{textDecoration:muiTheme.linkWithoutDecoration.textDecoration}}>
-            <MenuItem primaryText={this.context.intl.formatMessage({id:"menu.back"})} leftIcon={<Reply />}/>
+          <Link to={"/admin/cdpp"} style={style}>
+            <MenuItem primaryText={<FormattedMessage id="menu.back"/>} leftIcon={<Reply />}/>
           </Link>
         </Drawer>
     )

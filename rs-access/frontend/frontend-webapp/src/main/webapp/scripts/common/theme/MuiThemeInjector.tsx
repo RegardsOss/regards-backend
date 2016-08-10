@@ -1,6 +1,6 @@
 /** @module CommonTheme */
 import * as React from 'react'
-import { ThemeContextType } from "../../../../common/theme/ThemeContainerInterface"
+import { ThemeContextType } from "./ThemeContainerInterface"
 
 /**
  * Retrieves the Material UI theme fom the context
