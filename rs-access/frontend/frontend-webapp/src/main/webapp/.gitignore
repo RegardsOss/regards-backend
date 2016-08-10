@@ -4,3 +4,4 @@ typings/
 jsdoc/
 build/
 npm-debug.log*
+coverage/
