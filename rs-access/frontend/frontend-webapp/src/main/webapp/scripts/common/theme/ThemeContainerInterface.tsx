@@ -10,3 +10,11 @@ export interface ThemeContextInterface {
 export const ThemeContextType = {
   muiTheme: React.PropTypes.object.isRequired
 }
+
+/**
+ * A React component which can receive or not
+ * a muiTheme prop implement this interface
+ */
+export interface MuiThemeInjectable {
+  muiTheme?: any
+}

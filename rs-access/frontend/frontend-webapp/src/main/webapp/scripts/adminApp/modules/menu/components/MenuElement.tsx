@@ -1,0 +1,26 @@
+/** @module AdminMenu */
+import * as React from 'react'
+import { Link } from 'react-router'
+import MenuItem from 'material-ui/MenuItem'
+import { applyHateoasDisplayControl } from '../../../../common/display-control/DisplayControlDecorator'
+
+interface Props {
+  to: string,
+  linkStyle: any,
+  primaryText: string,
+  leftIcon: JSX.Element
+}
+
+export default class MenuElement extends React.Component<Props, any> {
+
+  render(): JSX.Element {
+    return (
+      <Link to={this.props.to} style={this.props.linkStyle}>
+        <MenuItem primaryText={this.props.primaryText} leftIcon={this.props.leftIcon} />
+      </Link>
+    )
+  }
+}
+
+// Decorate it with the Hateoas display control logic
+export const HateoasControlledMenuElement = applyHateoasDisplayControl(MenuElement)

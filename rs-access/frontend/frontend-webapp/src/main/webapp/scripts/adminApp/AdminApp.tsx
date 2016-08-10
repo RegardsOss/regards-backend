@@ -6,7 +6,7 @@ import Authentication from "./modules/authentication/containers/AuthenticationCo
 import { AuthenticationType } from "../common/authentication/AuthenticationTypes"
 import { isAuthenticated } from "../common/authentication/AuthenticateUtils"
 import Layout from "../common/layout/containers/Layout"
-import MenuContainer from "./modules/menu/containers/MenuContainer"
+import MenuComponent from "./modules/menu/containers/MenuContainer"
 import AppBar from "material-ui/AppBar"
 import IconMenu from "material-ui/IconMenu"
 import MenuItem from "material-ui/MenuItem"
@@ -77,7 +77,7 @@ class AdminApp extends React.Component<AminAppProps, any> {
       return (
         <MuiThemeProvider muiTheme={muiTheme}>
           <Layout>
-            <div key='sideBar'><MenuContainer /></div>
+            <div key='sideBar'><MenuComponent /></div>
             <div key='appBar'><AppBar title="Regards admin dashboard" iconElementRight={AdminAppBarIcon}/></div>
             <div key='content'>{content}</div>
             <div key='selectTheme'><SelectTheme /></div>
@@ -95,8 +95,6 @@ const mapStateToProps = (state: any) => ({
   authentication: state.common.authentication
 })
 const mapDispatchToProps = (dispatch: any) => ({
-  onLogout: () => {
-    dispatch (logout ())
-  }
+  onLogout: () => dispatch (logout ())
 })
 export default connect<{}, {}, AminAppProps> (mapStateToProps, mapDispatchToProps) (AdminApp)
