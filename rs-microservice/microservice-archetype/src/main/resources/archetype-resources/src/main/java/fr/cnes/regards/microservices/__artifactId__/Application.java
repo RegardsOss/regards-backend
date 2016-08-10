@@ -2,6 +2,7 @@ package fr.cnes.regards.microservices.${artifactId};
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -9,6 +10,7 @@ import springfox.documentation.builders.ApiInfoBuilder;
 /**
  * Main class to start Spring boot application for microservice ${artifactId}
  */
+@EnableDiscoveryClient
 @SpringBootApplication(scanBasePackages={"fr.cnes.regards.microservices.${artifactId}","fr.cnes.regards.microservices.core"})
 public class Application {
 	

@@ -24,12 +24,4 @@ cloud:
       enabled: false
       name: myconfigserver
 
-eureka:
-  instance:
-    instanceId: ${dollar}{spring.application.name}${dollar}${semicolon}${dollar}{spring.application.instance_id${dollar}${semicolon}${dollar}{random.value}}
-  client:
-    enabled: false
-    registryFetchIntervalSeconds: 5
-    serviceUrl:
-      defaultZone: http://localhost:9999/eureka/
  
