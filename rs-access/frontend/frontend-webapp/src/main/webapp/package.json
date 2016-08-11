@@ -16,7 +16,7 @@
     "pretest": "tsc && (npm run lint --silent || true) && npm run copy-assets",
     "test": "mocha --require ./tests/ImportHelper.mock.test.js --require source-map-support/register --compilers js:babel-register dist/tests --inline-diffs --recursive",
     "test:watch": "npm test -- --watch",
-    "test-cov" : "istanbul cover _mocha -- --require ./tests/ImportHelper.mock.test.js --compilers js:babel-core/register dist/tests --recursive",
+    "test-cov": "nyc npm test",
     "presitemap": "webpack --config webpack.sitemap.config.js --progress",
     "sitemap": "node build/sitemap.js",
     "prejsdoc": "tsc",
@@ -31,6 +31,20 @@
       "es2015",
       "react"
     ]
+  },
+  "nyc": {
+    "include": [
+      "dist/scripts/**/*.js"
+    ],
+    "require": [
+      "babel-core/register",
+      "source-map-support/register"
+    ],
+    "reporter": [
+      "json",
+      "html"
+    ],
+    "all": true
   },
   "dependencies": {
     "flux-standard-action": "^0.6.1",
@@ -76,6 +90,7 @@
     "json-loader": "^0.5.4",
     "mocha": "^3.0.0-2",
     "nock": "^8.0.0",
+    "nyc": "^7.1.0",
     "postcss-loader": "^0.9.1",
     "react-addons-test-utils": "^15.1.0",
     "redux-devtools": "^3.3.1",
