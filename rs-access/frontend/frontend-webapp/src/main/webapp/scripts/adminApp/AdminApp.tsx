@@ -4,6 +4,13 @@ import { connect } from "react-redux"
 import { logout } from "../common/authentication/AuthenticateActions"
 import { AuthenticationType } from "../common/authentication/AuthenticationTypes"
 import { isAuthenticated } from "../common/authentication/AuthenticateUtils"
+import Layout from "../common/layout/containers/Layout"
+import MenuComponent from "./modules/menu/containers/MenuContainer"
+import AppBar from "material-ui/AppBar"
+import IconMenu from "material-ui/IconMenu"
+import MenuItem from "material-ui/MenuItem"
+import IconButton from "material-ui/IconButton"
+import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert"
 import ThemeHelper from "../common/theme/ThemeHelper"
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"
 import AuthenticationLayout from "./modules/authentication/containers/AuthenticationLayout"
@@ -62,8 +69,6 @@ const mapStateToProps = (state: any) => ({
   authentication: state.common.authentication
 })
 const mapDispatchToProps = (dispatch: any) => ({
-  onLogout: () => {
-    dispatch(logout())
-  }
+  onLogout: () => dispatch (logout ())
 })
 export default connect<{}, {}, AminAppProps>(mapStateToProps, mapDispatchToProps)(AdminApp)

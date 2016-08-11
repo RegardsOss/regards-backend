@@ -1,7 +1,9 @@
+import { connect } from 'react-redux'
 import I18nProvider from '../../../../common/i18n/I18nProvider'
 import MenuComponent from '../components/MenuComponent'
+import * as selectors from "../../../../reducer"
 
-class MenuContainer extends React.Component<{}, any> {
+export default class MenuContainer extends React.Component<{}, {}> {
 
   render(): JSX.Element {
 
@@ -13,5 +15,3 @@ class MenuContainer extends React.Component<{}, any> {
   }
 
 }
-
-export default MenuContainer

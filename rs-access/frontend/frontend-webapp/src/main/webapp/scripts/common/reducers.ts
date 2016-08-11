@@ -9,20 +9,27 @@ import accessRightsReducers from "./access-rights/AccessRightsReducers"
 import authentication from "./authentication/AuthenticateReducers"
 import layout from "./layout/reducer"
 import { pickBy } from "lodash"
+import { reducer as endpointsReducer } from './endpoints'
+import * as fromEndpoints from './endpoints'
 
 // Keeping both notations as an example
-export default combineReducers ({
+export default combineReducers({
   i18n: i18nReducers,
   theme: themeReducers,
   plugins: pluginReducers,
   api: accessRightsReducers,
   authentication,
-  layout
+  layout,
+  endpoints: endpointsReducer
 })
 
 export const deleteEntityReducer = (state: any, removeAction: any) => (
-  Object.assign ({}, state, {
-    items: pickBy (state.items, (value: string, key: string) => key !== removeAction.id),
-    ids: state.ids.filter ((id: string) => id !== removeAction.id)
+  Object.assign({}, state, {
+    items: pickBy(state.items, (value: string, key: string) => key !== removeAction.id),
+    ids: state.ids.filter((id: string) => id !== removeAction.id)
   })
 )
+
+// Selectors
+export const getEndpointsItems = (state: any) =>
+  fromEndpoints.getEndpointsItems(state.endpoints)

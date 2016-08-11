@@ -55,7 +55,7 @@ public class ProjectAdminController {
 	public @ResponseBody HttpEntity<List<ProjectAdmin>> getProjectAdminsByNames(
 			@RequestParam(value = "names", required = true) String[] names) {
 		List<ProjectAdmin> projectAdmins = new ArrayList<>(names.length);
-
+		
 		for (String name : names) {
 			ProjectAdmin projectAdmin = new ProjectAdmin(name);
 			projectAdmin.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin(name)).withSelfRel());
