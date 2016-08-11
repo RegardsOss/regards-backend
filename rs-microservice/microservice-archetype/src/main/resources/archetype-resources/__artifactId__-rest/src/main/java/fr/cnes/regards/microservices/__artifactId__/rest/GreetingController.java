@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.${artifactId};
+package fr.cnes.regards.microservices.${artifactId}.rest;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
+import fr.cnes.regards.microservices.${artifactId}.domain.Greeting;
+import fr.cnes.regards.microservices.${artifactId}.service.GreetingsService;
 
 
 /**
@@ -29,6 +31,9 @@ public class GreetingController {
 	
 	@Autowired
 	MethodAutorizationService authService_;
+	
+	@Autowired
+	GreetingsService myService_;
 	
 	/**
 	 * Method to iniate REST resources authorizations.

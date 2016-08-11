@@ -3,15 +3,46 @@
   name="microservice-archetype">
 	<fileSets>
 		<fileSet filtered="true" packaged="false">
-			<directory>src/main/java/fr/cnes/regards/microservices/__artifactId__</directory>
+			<directory>__artifactId__-domain/</directory>
+			<includes>
+				<include>pom.xml</include>
+			</includes>
+		</fileSet>
+		<fileSet filtered="true" packaged="false">
+			<directory>__artifactId__-domain/src/main/java/fr/cnes/regards/microservices/__artifactId__/domain</directory>
 			<includes>
 				<include>**/*.java</include>
 			</includes>
 		</fileSet>
 		<fileSet filtered="true" packaged="false">
-			<directory>src/main/resources</directory>
+			<directory>__artifactId__-rest/</directory>
+			<includes>
+				<include>pom.xml</include>
+			</includes>
+		</fileSet>
+		<fileSet filtered="true" packaged="false">
+			<directory>__artifactId__-rest/src/main/java/fr/cnes/regards/microservices/__artifactId__/rest</directory>
+			<includes>
+				<include>**/*.java</include>
+			</includes>
+		</fileSet>
+		<fileSet filtered="true" packaged="false">
+			<directory>__artifactId__-rest/src/main/resources</directory>
 			<includes>
 				<include>**/*</include>
+			</includes>
+		</fileSet>
+		<fileSet filtered="true" packaged="false">
+			<directory>__artifactId__-service/</directory>
+			<includes>
+				<include>pom.xml</include>
+			</includes>
+		</fileSet>
+		<fileSet filtered="true" packaged="false">
+			<directory>__artifactId__-service/src/main/java/fr/cnes/regards/microservices/__artifactId__/service</directory>
+			<includes>
+				<include>pom.xml</include>
+				<include>**/*.java</include>
 			</includes>
 		</fileSet>
   </fileSets>

@@ -10,6 +10,7 @@
   <modules>
   	<module>microservice-archetype</module>
   	<module>microservice-core</module>
+  	<module>microservice-jobs</module>
   </modules>
 
 

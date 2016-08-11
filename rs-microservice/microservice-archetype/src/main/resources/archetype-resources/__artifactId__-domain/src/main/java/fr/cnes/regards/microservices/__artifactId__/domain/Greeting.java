@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.${artifactId};
+package fr.cnes.regards.microservices.${artifactId}.domain;
 
 public class Greeting {
 
