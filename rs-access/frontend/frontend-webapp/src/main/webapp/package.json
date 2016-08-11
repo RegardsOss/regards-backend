@@ -14,9 +14,9 @@
     "buildp": "webpack --progress --config webpack.prod.config.js",
     "copy-assets": "cp ./scripts/common/theme/custom/background.jpg dist/scripts/common/theme/custom/",
     "pretest": "tsc && (npm run lint --silent || true) && npm run copy-assets",
-    "test": "mocha --require ./tests/ImportHelper.mock.test.js --require source-map-support/register --compilers js:babel-register dist/tests --inline-diffs --recursive",
+    "test:nocov": "mocha --require ./tests/ImportHelper.mock.test.js --require source-map-support/register --compilers js:babel-register dist/tests --inline-diffs --recursive",
+    "test": "nyc npm run test:nocov",
     "test:watch": "npm test -- --watch",
-    "test-cov": "nyc npm test",
     "presitemap": "webpack --config webpack.sitemap.config.js --progress",
     "sitemap": "node build/sitemap.js",
     "prejsdoc": "tsc",
@@ -36,13 +36,17 @@
     "include": [
       "dist/scripts/**/*.js"
     ],
+    "exclude": [
+      "dist/scripts/**/messages.*.i18n.js"
+    ],
     "require": [
       "babel-core/register",
       "source-map-support/register"
     ],
     "reporter": [
       "json",
-      "html"
+      "html",
+      "text"
     ],
     "all": true
   },
