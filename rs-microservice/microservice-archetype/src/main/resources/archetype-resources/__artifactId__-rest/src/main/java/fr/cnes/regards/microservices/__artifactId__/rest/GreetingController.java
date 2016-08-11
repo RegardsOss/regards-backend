@@ -1,7 +1,5 @@
 package fr.cnes.regards.microservices.${artifactId}.rest;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +23,6 @@ import fr.cnes.regards.microservices.${artifactId}.service.GreetingsService;
 @RestController
 @RequestMapping("/api")
 public class GreetingController {
-	
-	private static final String template = "Hello, %s!";
-	private final AtomicLong counter = new AtomicLong();
 	
 	@Autowired
 	MethodAutorizationService authService_;
@@ -54,7 +49,7 @@ public class GreetingController {
 	@ResourceAccess
 	@RequestMapping(value="/greeting",method=RequestMethod.GET)
 	public Greeting greeting(@RequestParam(value = "name", defaultValue = "World") String name) {
-		return new Greeting(counter.incrementAndGet(), String.format(template, name));
+	    return myService_.getGreeting(name);
 	}
 	
 	/**
@@ -67,7 +62,7 @@ public class GreetingController {
 	@ResourceAccess
 	@RequestMapping(value="/me",method=RequestMethod.GET)
 	public Greeting me(@RequestParam(value = "name", defaultValue = "me") String name) {
-		return new Greeting(counter.incrementAndGet(), String.format(template, name));
+	    return myService_.getGreeting(name);
 	}
 	
 }
