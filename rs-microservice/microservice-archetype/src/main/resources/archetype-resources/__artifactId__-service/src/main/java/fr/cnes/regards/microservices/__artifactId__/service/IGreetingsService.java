@@ -1,7 +1,6 @@
 package fr.cnes.regards.microservices.${artifactId}.service;
 
 import fr.cnes.regards.microservices.${artifactId}.domain.Greeting;
-import fr.cnes.regards.microservices.myMicroServicePlugin.domain.Greeting;
 
 public interface IGreetingsService {
 

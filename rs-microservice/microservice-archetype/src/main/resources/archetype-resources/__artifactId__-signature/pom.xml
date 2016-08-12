@@ -2,10 +2,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
  
-  <artifactId>${artifactId}-service</artifactId>
+  <artifactId>${artifactId}-signature</artifactId>
   <packaging>jar</packaging>
  
-  <name>REGARDS SERVICE Microservice - ${artifactId} </name>
+  <name>REGARDS SIGNATURE Microservice - ${artifactId} </name>
   <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
   
   <parent>
@@ -15,21 +15,11 @@
   </parent>
   
   <dependencies>
-    <!-- Microservice internal dependencies -->
+  	<!-- Microservice internal dependencies -->
   	<dependency>
 		<groupId>fr.cnes.regards.microservices.${groupId}</groupId>
 		<artifactId>${artifactId}-domain</artifactId>
 		<version>${version}</version>
-	</dependency>
-	<dependency>
-		<groupId>fr.cnes.regards.microservices</groupId>
-		<artifactId>microservice-jobs</artifactId>
-		<version>0.0.1</version>
-	</dependency>
-	<!-- Spring dependencies -->
-	<dependency>
-    	<groupId>org.springframework</groupId>
-    	<artifactId>spring-context</artifactId>
 	</dependency>
 	<!--  Netflix Feign REST Client -->
 	<dependency>

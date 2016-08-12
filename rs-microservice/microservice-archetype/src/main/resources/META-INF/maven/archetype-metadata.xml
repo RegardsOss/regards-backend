@@ -3,6 +3,30 @@
   name="microservice-archetype">
 	<fileSets>
 		<fileSet filtered="true" packaged="false">
+			<directory>__artifactId__-signature/</directory>
+			<includes>
+				<include>pom.xml</include>
+			</includes>
+		</fileSet>
+		<fileSet filtered="true" packaged="false">
+			<directory>__artifactId__-signature/src/main/java/fr/cnes/regards/microservices/__artifactId__/signature</directory>
+			<includes>
+				<include>**/*.java</include>
+			</includes>
+		</fileSet>
+		<fileSet filtered="true" packaged="false">
+			<directory>__artifactId__-dao/</directory>
+			<includes>
+				<include>pom.xml</include>
+			</includes>
+		</fileSet>
+		<fileSet filtered="true" packaged="false">
+			<directory>__artifactId__-dao/src/main/java/fr/cnes/regards/microservices/__artifactId__/dao</directory>
+			<includes>
+				<include>**/*.java</include>
+			</includes>
+		</fileSet>
+		<fileSet filtered="true" packaged="false">
 			<directory>__artifactId__-domain/</directory>
 			<includes>
 				<include>pom.xml</include>

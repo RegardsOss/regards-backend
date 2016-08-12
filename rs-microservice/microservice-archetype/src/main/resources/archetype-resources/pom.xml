@@ -17,6 +17,8 @@
   </parent>
   
   <modules>
+  	<module>${artifactId}-signature</module>
+  	<module>${artifactId}-dao</module>
   	<module>${artifactId}-domain</module>
   	<module>${artifactId}-service</module>
   	<module>${artifactId}-rest</module>

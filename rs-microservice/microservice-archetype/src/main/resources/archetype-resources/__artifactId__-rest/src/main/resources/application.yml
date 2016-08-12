@@ -19,7 +19,7 @@ swagger:
 cloud:
   config:
     discovery:
-      enabled: true
+      enabled: false
     server:
       enabled: false
       name: myconfigserver

@@ -2,9 +2,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
  
-  <groupId>fr.cnes.regards.microservices.${groupId}</groupId>
   <artifactId>${artifactId}-domain</artifactId>
-  <version>${version}</version>
   <packaging>jar</packaging>
  
   <name>REGARDS DOMAIN Microservice - ${artifactId} </name>
@@ -17,16 +15,12 @@
   </parent>
   
   <dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-jobs</artifactId>
-			<version>0.0.1</version>
-		</dependency>
-		<dependency>
-    		<groupId>org.springframework</groupId>
-    		<artifactId>spring-context</artifactId>
-		</dependency>
-  	</dependencies>
+	<!-- Spring dependencies -->
+	<dependency>
+    	<groupId>org.springframework</groupId>
+    	<artifactId>spring-context</artifactId>
+	</dependency>
+  </dependencies>
 
 	<build>
 		<plugins>
