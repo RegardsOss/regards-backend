@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { shallow, mount } from 'enzyme';
 import { expect } from 'chai';
-import { Authentication } from '../../../../../scripts/adminApp/modules/authentication/containers/AuthenticationContainer'
-import LoginComponent, { LoginProps } from '../../../../../scripts/adminApp/modules/authentication/components/LoginComponent'
+import { Authentication } from '../../../../../src/adminApp/modules/authentication/containers/AuthenticationContainer'
+import LoginComponent, { LoginProps } from '../../../../../src/adminApp/modules/authentication/components/LoginComponent'
 
 function setup() {
   const props = {

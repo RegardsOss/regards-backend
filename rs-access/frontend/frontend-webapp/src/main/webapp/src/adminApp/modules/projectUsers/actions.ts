@@ -5,6 +5,7 @@ export const PROJECT_USER_REQUEST = 'ADMIN_PROJECT_USER_REQUEST'
 export const PROJECT_USER_SUCCESS = 'ADMIN_PROJECT_USER_SUCCESS'
 export const PROJECT_USER_FAILURE = 'ADMIN_PROJECT_USER_FAILURE'
 
+export const PROJECT_USER_DELETE = 'ADMIN_PROJECT_USER_DELETE'
 
 /**
  * Asynchrone Action creator to fetch project user list
@@ -31,6 +32,22 @@ const fetchProjectUsers = (urlProjectUsers: String) => ({
 })
 
 
+
+/**
+ * Action creator to delete project administror by id
+ *
+ * @param {String} link to the backend endpoint to remove an user
+ *
+ * @return {AsyncAction}
+ */
+export function deleteProjectAdmin(link: string): any {
+  return {
+    type: PROJECT_USER_DELETE,
+    link
+  }
+}
+
 export default {
-  fetchProjectUsers
+  fetchProjectUsers,
+  deleteProjectAdmin
 }

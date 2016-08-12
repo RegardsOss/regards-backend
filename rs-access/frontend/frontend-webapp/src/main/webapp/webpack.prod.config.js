@@ -13,7 +13,7 @@ module.exports = {
   // Webpack working directory
   context: __dirname,
   // Javascript main entry
-  entry: './scripts/main.tsx',
+  entry: './src/main.tsx',
   output: {
     // Webpack compilation directory
     path: __dirname + '/build',

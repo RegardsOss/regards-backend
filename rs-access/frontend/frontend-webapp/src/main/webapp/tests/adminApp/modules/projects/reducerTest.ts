@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 import { Action } from 'redux'
-import reducer from '../../../../scripts/adminApp/modules/projects/reducer'
-import { ProjectAction } from '../../../../scripts/adminApp/modules/projects/actions'
-import { PROJECTS_REQUEST, PROJECTS_SUCCESS, ADD_PROJECT, PROJECTS_FAILURE, DELETE_PROJECT } from '../../../../scripts/adminApp/modules/projects/actions'
+import reducer from '../../../../src/adminApp/modules/projects/reducer'
+import { ProjectAction } from '../../../../src/adminApp/modules/projects/actions'
+import { PROJECTS_REQUEST, PROJECTS_SUCCESS, ADD_PROJECT, PROJECTS_FAILURE, DELETE_PROJECT } from '../../../../src/adminApp/modules/projects/actions'
 
 describe('[ADMIN APP] Testing projects reducer', () => {
 

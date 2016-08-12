@@ -3,7 +3,7 @@ import { shallow } from 'enzyme'
 import { expect } from 'chai'
 import * as sinon from 'sinon'
 import MenuItem from "material-ui/MenuItem"
-import SelectLocaleComponent from '../../../scripts/common/i18n/components/SelectLocaleComponent'
+import SelectLocaleComponent from '../../../src/common/i18n/components/SelectLocaleComponent'
 
 // Test a component rendering
 

@@ -4,7 +4,7 @@ import thunk from 'redux-thunk'
 import { expect } from 'chai' // You can use any testing library
 import { Action, AnyMeta, TypedMeta, isFSA, isError } from 'flux-standard-action'
 
-import { SET_LOCALE, SET_LOCALE_MSG, updateLocale } from '../../../scripts/common/i18n/I18nActions'
+import { SET_LOCALE, SET_LOCALE_MSG, updateLocale } from '../../../src/common/i18n/I18nActions'
 
 const middlewares = [ thunk, apiMiddleware ]
 const mockStore = configureMockStore(middlewares)

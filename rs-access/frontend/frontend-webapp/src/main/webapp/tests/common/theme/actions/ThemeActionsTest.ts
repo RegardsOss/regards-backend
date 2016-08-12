@@ -1,5 +1,5 @@
 import { expect } from 'chai' // You can use any testing library
-import * as actions from '../../../../scripts/common/theme/actions/ThemeActions'
+import * as actions from '../../../../src/common/theme/actions/ThemeActions'
 
 describe('[COMMON] Testing theme actions', () => {
 

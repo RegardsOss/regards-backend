@@ -2,8 +2,8 @@ import * as React from 'react'
 import { shallow, mount } from 'enzyme';
 import { expect } from 'chai';
 import { forEach } from 'lodash'
-import { SelectTheme } from '../../../../scripts/common/theme/containers/SelectTheme'
-import ThemeHelper from '../../../../scripts/common/theme/ThemeHelper'
+import { SelectTheme } from '../../../../src/common/theme/containers/SelectTheme'
+import ThemeHelper from '../../../../src/common/theme/ThemeHelper'
 import {Card, CardText} from 'material-ui/Card'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'

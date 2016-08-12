@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Action } from 'redux'
-import reducer from '../../../../scripts/adminApp/modules/projectAdmins/reducer'
+import reducer from '../../../../src/adminApp/modules/projectAdmins/reducer'
 
 describe('[ADMIN APP] Testing users reducer', () => {
 

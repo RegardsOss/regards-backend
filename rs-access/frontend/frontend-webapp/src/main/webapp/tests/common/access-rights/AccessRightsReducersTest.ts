@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Action } from 'redux'
-import reducer from '../../../scripts/common/access-rights/AccessRightsReducers'
+import reducer from '../../../src/common/access-rights/AccessRightsReducers'
 
 describe('[COMMON] Testing access-rigths reducer', () => {
 

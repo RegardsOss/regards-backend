@@ -4,22 +4,22 @@ This is the REGARDS Access frontend.
 
 ## Dependencies
 
-- node  
+- node
 - babel etc..
 
 ## Architecture
 
 - build/ : Webpack compilation directory
 - node_modules/ : vendors
-- scripts/
+- src/
   - adminApp/ : Contains the admin web application
   - common/ : Contains the common modules.
-    - access-rights/ :  
+    - access-rights/ :
     Contains the root AccessRightsComponent which allow to manage component access rights from REST dependencies.
-    - plugins/ :  
-    Contains the PluginActions and PluginReducers which allow to load plugins if any.  
+    - plugins/ :
+    Contains the PluginActions and PluginReducers which allow to load plugins if any.
     Contains the PluginComponent which allow to display a given loaded plugins.
-    - store/ :  
+    - store/ :
     Contains the Redux Store. Each module must register his reducers to the store.
 - plugins/ : Contains all embeded plugins.
 - portalApp/ : Contains the user web application
@@ -27,7 +27,7 @@ This is the REGARDS Access frontend.
     - pluginModule/ :
     Contains the views to display plugins in the user app.
     - testModule/ :
-    Contains a view example for access denied to REST resource.  
+    Contains a view example for access denied to REST resource.
     This view shall not be display.
 - steelsheets/ : application styles (sass)
 
@@ -35,5 +35,5 @@ This is the REGARDS Access frontend.
 ## Plugins
 
 
-All plugins in plugins/ directory have to be React components.  
+All plugins in plugins/ directory have to be React components.
 See the maven project frontend-plugins to see plugin exemple HelloWorldPlugin

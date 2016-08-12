@@ -2,7 +2,7 @@ import * as React from 'react'
 import { shallow } from 'enzyme'
 import { expect } from 'chai'
 import * as sinon from 'sinon'
-import LoginComponent from '../../../../../scripts/adminApp/modules/authentication/components/LoginComponent';
+import LoginComponent from '../../../../../src/adminApp/modules/authentication/components/LoginComponent';
 
 // Test a component rendering
 

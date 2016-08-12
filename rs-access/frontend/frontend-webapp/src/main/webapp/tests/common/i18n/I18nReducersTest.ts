@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 import { Action } from 'redux'
 
-import reducer from '../../../scripts/common/i18n/I18nReducers';
-import { SET_LOCALE, SET_LOCALE_MSG } from '../../../scripts/common/i18n/I18nActions'
+import reducer from '../../../src/common/i18n/I18nReducers';
+import { SET_LOCALE, SET_LOCALE_MSG } from '../../../src/common/i18n/I18nActions'
 
 describe('[COMMON] Testing i18n reducer', () => {
 

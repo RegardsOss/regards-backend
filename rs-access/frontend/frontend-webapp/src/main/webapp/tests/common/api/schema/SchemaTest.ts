@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import Schemas from "../../../../scripts/common/api/schemas/index";
+import Schemas from "../../../../src/common/api/schemas/index";
 import { normalize } from "normalizr";
 
 describe ('[COMMON] Testing schemas', () => {

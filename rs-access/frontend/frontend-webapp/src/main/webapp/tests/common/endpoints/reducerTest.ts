@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 import { Action } from 'redux'
-import { actions, reducer, fetchEndpoints } from '../../../scripts/common/endpoints'
-// import { ProjectAction } from '../../../../scripts/adminApp/modules/projects/actions'
-// import { PROJECTS_REQUEST, PROJECTS_SUCCESS, ADD_PROJECT, PROJECTS_FAILURE, DELETE_PROJECT } from '../../../../scripts/adminApp/modules/projects/actions'
+import { actions, reducer, fetchEndpoints } from '../../../src/common/endpoints'
+// import { ProjectAction } from '../../../../src/adminApp/modules/projects/actions'
+// import { PROJECTS_REQUEST, PROJECTS_SUCCESS, ADD_PROJECT, PROJECTS_FAILURE, DELETE_PROJECT } from '../../../../src/adminApp/modules/projects/actions'
 
 describe('[COMMON] Testing endpoints reducer', () => {
 

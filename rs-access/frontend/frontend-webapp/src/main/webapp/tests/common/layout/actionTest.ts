@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import * as actions from '../../../scripts/common/layout/actions'
+import * as actions from '../../../src/common/layout/actions'
 
 describe('[COMMON] Testing layout actions', () => {
 

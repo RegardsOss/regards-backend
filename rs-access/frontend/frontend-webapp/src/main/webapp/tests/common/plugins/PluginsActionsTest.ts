@@ -3,10 +3,10 @@ var { apiMiddleware } = require('redux-api-middleware')
 import thunk from 'redux-thunk'
 import * as nock from 'nock'
 import { expect } from 'chai' // You can use any testing library
-import * as actions from '../../../scripts/common/plugins/PluginsActions'
-import { PluginsStore, PluginType } from '../../../scripts/common/plugins/PluginTypes'
+import * as actions from '../../../src/common/plugins/PluginsActions'
+import { PluginsStore, PluginType } from '../../../src/common/plugins/PluginTypes'
 import { Action, AnyMeta, TypedMeta, isFSA, isError } from 'flux-standard-action'
-import { FsaErrorAction, FsaErrorDefault } from '../../../scripts/common/api/types'
+import { FsaErrorAction, FsaErrorDefault } from '../../../src/common/api/types'
 import * as React from 'react'
 
 const middlewares = [ thunk, apiMiddleware ]

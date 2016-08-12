@@ -4,9 +4,9 @@ import { mount, shallow } from 'enzyme';
 import { expect } from 'chai'
 // Import unconnected version of ProjectsComponent. by using bracets {} around component.
 // To get the react-redux connect component use "import ProjectsComponent" instead of "import { ProjectsComponent }"
-import { ProjectsContainer } from '../../../scripts/portalApp/modules/projects/containers/ProjectsContainer';
-import ProjectComponent from '../../../scripts/portalApp/modules/projects/components/ProjectComponent';
-import { ProjectsStore } from '../../../scripts/portalApp/modules/projects/types/ProjectTypes';
+import { ProjectsContainer } from '../../../src/portalApp/modules/projects/containers/ProjectsContainer';
+import ProjectComponent from '../../../src/portalApp/modules/projects/components/ProjectComponent';
+import { ProjectsStore } from '../../../src/portalApp/modules/projects/types/ProjectTypes';
 import { FormattedMessage } from 'react-intl'
 
 // Test a component rendering

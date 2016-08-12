@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Action } from 'redux'
-import reducer from '../../../scripts/common/authentication/AuthenticateReducers';
+import reducer from '../../../src/common/authentication/AuthenticateReducers';
 
 describe('[COMMON] Testing authenticate reducer', () => {
 

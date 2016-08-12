@@ -1,10 +1,10 @@
 import { expect } from 'chai' // You can use any testing library
-import projectsReducers from '../../../scripts/portalApp/modules/projects/reducers/ProjectsReducers'
+import projectsReducers from '../../../src/portalApp/modules/projects/reducers/ProjectsReducers'
 import {
     PROJECTS_API, REQUEST_PROJECTS,  RECEIVE_PROJECTS,
-    FAILED_PROJECTS, fetchProjects } from '../../../scripts/portalApp/modules/projects/actions/ProjectsActions';
+    FAILED_PROJECTS, fetchProjects } from '../../../src/portalApp/modules/projects/actions/ProjectsActions';
 
-import { ProjectsStore } from '../../../scripts/portalApp/modules/projects/types/ProjectTypes'
+import { ProjectsStore } from '../../../src/portalApp/modules/projects/types/ProjectTypes'
 
 // Ce fichier permet de tester les reducers liés aux projets
 describe('[PORTAL APP] Testing Projects reducers', () => {

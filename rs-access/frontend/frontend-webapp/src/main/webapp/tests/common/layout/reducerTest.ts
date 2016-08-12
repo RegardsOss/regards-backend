@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import reducer from '../../../scripts/common/layout/reducer'
+import reducer from '../../../src/common/layout/reducer'
 
 describe('[COMMON] Testing layout reducer', () => {
 

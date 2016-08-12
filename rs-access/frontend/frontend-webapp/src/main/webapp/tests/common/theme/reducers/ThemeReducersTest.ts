@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import reducer from '../../../../scripts/common/theme/reducers/ThemeReducers'
+import reducer from '../../../../src/common/theme/reducers/ThemeReducers'
 
 describe('[COMMON] Testing theme reducer', () => {
 

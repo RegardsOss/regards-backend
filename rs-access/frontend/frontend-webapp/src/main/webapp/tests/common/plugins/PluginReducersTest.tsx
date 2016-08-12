@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 import { Action } from 'redux'
-import reducer from '../../../scripts/common/plugins/PluginReducers';
-import { PluginsStore, PluginType } from '../../../scripts/common/plugins/PluginTypes'
-import { PluginInitializedAction } from '../../../scripts/common/plugins/PluginsActions'
+import reducer from '../../../src/common/plugins/PluginReducers';
+import { PluginsStore, PluginType } from '../../../src/common/plugins/PluginTypes'
+import { PluginInitializedAction } from '../../../src/common/plugins/PluginsActions'
 import * as React from 'react'
 
 describe('[COMMON] Testing plugin reducer', () => {

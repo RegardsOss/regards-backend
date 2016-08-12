@@ -12,7 +12,7 @@
     "typings": "typings install --global --save",
     "prebuildp": "npm install && npm test",
     "buildp": "webpack --progress --config webpack.prod.config.js",
-    "copy-assets": "cp ./scripts/common/theme/custom/background.jpg dist/scripts/common/theme/custom/",
+    "copy-assets": "cp ./src/common/theme/custom/background.jpg dist/src/common/theme/custom/",
     "pretest": "tsc && (npm run lint --silent || true) && npm run copy-assets",
     "test:nocov": "mocha --require ./tests/ImportHelper.mock.test.js --require source-map-support/register --compilers js:babel-register dist/tests --inline-diffs --recursive",
     "test": "nyc npm run test:nocov",
@@ -22,7 +22,7 @@
     "prejsdoc": "tsc",
     "tsc:watch": "tsc -w",
     "jsdoc": "jsdoc -c jsdoc.conf.json",
-    "lint": "tslint -c tslint.json 'scripts/{,**/}*.ts' 'scripts/{,**/}*.tsx'"
+    "lint": "tslint -c tslint.json 'src/{,**/}*.ts' 'src/{,**/}*.tsx'"
   },
   "author": "CS-SI",
   "license": "ISC",
@@ -55,7 +55,7 @@
     "immutable": "^3.8.1",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.13.1",
-    "material-ui": "^0.15.3",
+    "material-ui": "^0.15.4",
     "normalizr": "^2.1.0",
     "react": "^15.0.2",
     "react-dom": "^15.0.2",
