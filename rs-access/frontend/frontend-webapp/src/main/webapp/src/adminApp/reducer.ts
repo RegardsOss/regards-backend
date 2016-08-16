@@ -8,22 +8,22 @@ import projectAdmins from "./modules/projectAdmins/reducer"
 import * as fromProjectAdmins from "./modules/projectAdmins/reducer"
 import ui from "./modules/ui/reducer"
 import * as fromUi from "./modules/ui/reducer"
-import ProjectUsersReducer from "./modules/projectUsers/user.reducer"
 import * as UserSelectors from "./modules/projectUsers/user.reducer"
 import RoleReducer from "./modules/projectUsers/role.reducer"
-import ProjectUserReducer from "./modules/projectUsers/projectUser.reducer"
+import UsersReducers from "./modules/userManagement/reducer.ts"
 // import * as RoleSelectors from "./modules/projectUsers/role.reducer"
 // import * as ProjectUserSelectors from "./modules/projectUsers/projectUser.reducer"
 // import authentication from '../modules/authentication/reducers/TODO'
 // import home from '../modules/home/reducers/TODO'
+//
+
 
 export default combineReducers({
   projects,
   projectAdmins,
   ui,
-  users: ProjectUsersReducer,
   roles: RoleReducer,
-  projectUsers: ProjectUserReducer
+  users: UsersReducers
 })
 
 // WIP
