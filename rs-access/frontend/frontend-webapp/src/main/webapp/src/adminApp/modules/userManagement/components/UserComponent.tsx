@@ -38,7 +38,7 @@ export default class UserComponent extends React.Component<UserInterface, any> {
   }
 
   render(): JSX.Element {
-
+    console.log("Render user:",this.props.user.account.accountId)
     return (
       <TableRow {...this.props} >
         {

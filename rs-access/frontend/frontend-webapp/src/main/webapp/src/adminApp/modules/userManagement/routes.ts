@@ -5,7 +5,7 @@ import UserEditComponent from './components/UserEditComponent'
 import UserCreateComponent from './components/UserCreateComponent'
 
 export const usersRoute: PlainRoute = {
-  path: 'users',
+  path: 'users2',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
       cb(null, {

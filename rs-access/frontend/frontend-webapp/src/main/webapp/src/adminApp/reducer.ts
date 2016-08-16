@@ -10,6 +10,8 @@ import ui from "./modules/ui/reducer"
 import * as fromUi from "./modules/ui/reducer"
 import * as UserSelectors from "./modules/projectUsers/user.reducer"
 import RoleReducer from "./modules/projectUsers/role.reducer"
+import ProjectUsersReducer from "./modules/projectUsers/user.reducer"
+import ProjectUserReducer from "./modules/projectUsers/projectUser.reducer"
 import UsersReducers from "./modules/userManagement/reducer.ts"
 // import * as RoleSelectors from "./modules/projectUsers/role.reducer"
 // import * as ProjectUserSelectors from "./modules/projectUsers/projectUser.reducer"
@@ -22,8 +24,11 @@ export default combineReducers({
   projects,
   projectAdmins,
   ui,
+  users: ProjectUsersReducer,
   roles: RoleReducer,
-  users: UsersReducers
+  users_: UsersReducers,
+  projectUsers: ProjectUserReducer
+
 })
 
 // WIP
