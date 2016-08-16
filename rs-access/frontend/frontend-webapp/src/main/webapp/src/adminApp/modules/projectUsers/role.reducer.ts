@@ -22,5 +22,5 @@ export default (state: any = {
   }
 }
 
-//export const getRoles = (state: any) => state
+// export const getRoles = (state: any) => state
 export const getRolesById = (state: any, id: string) => state.roles[id]

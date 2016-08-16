@@ -28,6 +28,7 @@
     "sockjs-client": "registry:dt/sockjs-client#1.0.3+20160626224127"
   },
   "dependencies": {
+    "@regards-oss/common": "file:./node_modules/@regards-oss/common/index.d.ts",
     "lodash": "registry:npm/lodash#4.0.0+20160723033700"
   }
 }

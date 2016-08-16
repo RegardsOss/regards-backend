@@ -26,8 +26,8 @@ export default (state: any = {
 export const getProjectUsersId = (state: any) => state.userIds
 export const getUsersById = (state: any, id: string) => state.users[id]
 
-//export const getProjectUsers = (state: any) => state
+// export const getProjectUsers = (state: any) => state
 export const getProjectUsersById = (state: any, id: string) => state.projectUsers[id]
 
-//export const getRoles = (state: any) => state
+// export const getRoles = (state: any) => state
 export const getRolesById = (state: any, id: string) => state.roles[id]

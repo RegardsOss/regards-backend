@@ -31,13 +31,6 @@ class ProjectUserComponent extends React.Component<ProjectUserProps, any> {
   static contextTypes: Object = ThemeContextType
   context: ThemeContextInterface
 
-
-  handleView = () => {
-  }
-
-  handleEdit = () => {
-  }
-
   handleDelete = () => {
     this.props.handleDelete()
   }
