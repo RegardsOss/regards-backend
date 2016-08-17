@@ -21,7 +21,7 @@ export default class DatasetCreateContainer extends React.Component<DatasetCreat
 
   render (): JSX.Element {
     return (
-      <I18nProvider messageDir='adminApp/modules/projectUsers/i18n'>
+      <I18nProvider messageDir='adminApp/modules/userManagement/i18n'>
         <Card
           initiallyExpanded={true}>
           <CardHeader

@@ -8,13 +8,9 @@ import projectAdmins from "./modules/projectAdmins/reducer"
 import * as fromProjectAdmins from "./modules/projectAdmins/reducer"
 import ui from "./modules/ui/reducer"
 import * as fromUi from "./modules/ui/reducer"
-import * as UserSelectors from "./modules/projectUsers/user.reducer"
-import RoleReducer from "./modules/projectUsers/role.reducer"
-import ProjectUsersReducer from "./modules/projectUsers/user.reducer"
-import ProjectUserReducer from "./modules/projectUsers/projectUser.reducer"
-import UsersReducers from "./modules/userManagement/reducer.ts"
-// import * as RoleSelectors from "./modules/projectUsers/role.reducer"
-// import * as ProjectUserSelectors from "./modules/projectUsers/projectUser.reducer"
+import * as ProjectAccountsSelectors from "./modules/userManagement/projectAccount.reducer"
+import RoleReducer from "./modules/userManagement/role.reducer"
+import ProjectAccountReducers from "./modules/userManagement/projectAccount.reducer"
 // import authentication from '../modules/authentication/reducers/TODO'
 // import home from '../modules/home/reducers/TODO'
 //
@@ -24,11 +20,8 @@ export default combineReducers({
   projects,
   projectAdmins,
   ui,
-  users: ProjectUsersReducer,
-  roles: RoleReducer,
-  users_: UsersReducers,
-  projectUsers: ProjectUserReducer
-
+  projectAccounts: ProjectAccountReducers,
+  roles: RoleReducer
 })
 
 // WIP
@@ -65,8 +58,8 @@ export const getProjectAdminById = (state: any, id: string) =>
 export const getProjectAdminsByProject = (state: any, project: string) =>
   fromProjectAdmins.getProjectAdminsByProject(state.adminApp.projectAdmins, project)
 
-export const getUserLinks = (state: any) =>
-  UserSelectors.getProjectUsersId(state.adminApp.users)
+export const getProjectAccountsId = (state: any) =>
+  ProjectAccountsSelectors.getProjectAccountsId(state.adminApp.projectAccounts)
 
-export const getUsersById = (state: any, userLink: string) =>
-  UserSelectors.getUsersById(state.adminApp.users, userLink)
+export const getProjectAccountById = (state: any, projectAccountId: number) =>
+  ProjectAccountsSelectors.getProjectAccountById(state.adminApp.projectAccounts, projectAccountId)

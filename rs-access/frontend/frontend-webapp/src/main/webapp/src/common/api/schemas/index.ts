@@ -1,4 +1,4 @@
-import UserSchema from "./User"
+import ProjectAccountSchema from "./ProjectAccount"
 import ProjectSchema from "./Project"
 import ProjectAdminSchema from "./ProjectAdmin"
 // We use this Normalizr schemas to transform API responses from a nested form
@@ -9,8 +9,8 @@ import ProjectAdminSchema from "./ProjectAdmin"
 
 // Schemas for API responses.
 export default {
-  USER: UserSchema.USER_SCHEMA,
-  USER_ARRAY: UserSchema.USER_SCHEMA_ARRAY,
+  PROJECT_ACCOUNT: ProjectAccountSchema.PROJECT_ACCOUNT_SCHEMA,
+  PROJECT_ACCOUNT_ARRAY: ProjectAccountSchema.PROJECT_ACCOUNT_SCHEMA_ARRAY,
 
   PROJECT: ProjectSchema.PROJECT,
   PROJECT_ARRAY: ProjectSchema.PROJECT_ARRAY,
@@ -18,4 +18,3 @@ export default {
   PROJECT_ADMIN: ProjectAdminSchema.PROJECT_ADMIN,
   PROJECT_ADMIN_ARRAY: ProjectAdminSchema.PROJECT_ADMIN_ARRAY,
 }
-

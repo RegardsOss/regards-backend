@@ -13,14 +13,14 @@ import { intlShape } from "react-intl"
 /**
  *
  */
-export interface UserDeleteInterface {
+export interface ProjectAccountDeleteInterface {
   onClose: any,
   onDelete: any
 }
 /**
  *
  */
-class UserDeleteComponent extends React.Component<UserDeleteInterface, any> {
+export default class ProjectAccountDeleteComponent extends React.Component<ProjectAccountDeleteInterface, any> {
 
   /**
    *
@@ -77,5 +77,3 @@ class UserDeleteComponent extends React.Component<UserDeleteInterface, any> {
     )
   }
 }
-
-export default UserDeleteComponent

@@ -1,34 +1,40 @@
 package fr.cnes.regards.microservices.backend.pojo;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.springframework.hateoas.ResourceSupport;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.springframework.hateoas.ResourceSupport;
+
 public class Account extends ResourceSupport {
+
     private Long accountId;
+
     private String email;
+
     private String firstName;
+
     private String lastName;
+
     private String login;
 
     @JsonIgnore
     private String password;
+
     private int status;
 
     private List<ProjectAccount> projectAccounts;
 
-	public Account(Long accountId, String firstName, String lastName, String email, String login, String password) {
+    public Account(Long accountId, String firstName, String lastName, String email, String login, String password) {
         this.accountId = accountId;
         this.firstName = firstName;
         this.lastName = lastName;
-	    this.email = email;
+        this.email = email;
         this.login = login;
         this.password = password;
         this.status = AccountStatus.ACTIVE.getValue();
-        this.projectAccounts = new ArrayList();
-	}
+        this.projectAccounts = new ArrayList<>();
+    }
 
     public Long getAccountId() {
         return accountId;

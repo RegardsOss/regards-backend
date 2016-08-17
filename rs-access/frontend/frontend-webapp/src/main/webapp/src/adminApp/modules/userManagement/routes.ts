@@ -1,56 +1,37 @@
+import ProjectAcountsContainer from "./containers/ProjectAccountsContainer"
+import ProjectAccountEditContainer from "./containers/ProjectAccountEditContainer"
 import { PlainRoute } from "react-router"
-import UsersContainer from './containers/UsersContainer'
+import ProjectAccountCreateContainer from "./containers/ProjectAccountCreateContainer"
 
-import UserEditComponent from './components/UserEditComponent'
-import UserCreateComponent from './components/UserCreateComponent'
-
-export const usersRoute: PlainRoute = {
-  path: 'users2',
+export const projectAccountCreateRoute: PlainRoute = {
+  path: 'users/create',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
       cb(null, {
-        content: UsersContainer
+        content: ProjectAccountCreateContainer
       })
     })
   }
 }
 
-export const userViewRoute: PlainRoute = {
+export const projectAccountEditRoute: PlainRoute = {
   path: 'users/:user_id',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
       cb(null, {
-        content: UserEditComponent
+        content: ProjectAccountEditContainer
       })
     })
   }
 }
 
-export const userEditRoute: PlainRoute = {
-  path: 'users/:user_id/edit',
+export const projectAccountsRoutes: PlainRoute = {
+  path: 'users',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
       cb(null, {
-        content: UserEditComponent
+        content: ProjectAcountsContainer
       })
     })
   }
-}
-
-export const userCreateRoute: PlainRoute = {
-  path: 'user/create',
-  getComponents(nextState: any, cb: any): any {
-    require.ensure([], (require: any) => {
-      cb(null, {
-        content:UserCreateComponent
-      })
-    })
-  }
-}
-
-export const usersRoutes = {
-  usersRoute,
-  userViewRoute,
-  userEditRoute,
-  userCreateRoute
 }

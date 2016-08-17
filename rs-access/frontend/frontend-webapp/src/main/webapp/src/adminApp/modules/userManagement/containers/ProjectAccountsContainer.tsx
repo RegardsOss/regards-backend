@@ -2,22 +2,22 @@ import * as React from "react"
 import { connect } from "react-redux"
 import { Card, CardHeader } from "material-ui/Card"
 import { map } from "lodash"
-import { User } from "../../../../common/users/types"
-import ProjectUserContainer from "./ProjectUserContainer"
+import { ProjectAccount } from "../../../../common/models/users/types"
+import ProjectAccountContainer from "./ProjectAccountContainer"
 import Actions from "../actions"
 import * as selectors from "../../../reducer"
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
 import I18nProvider from "../../../../common/i18n/I18nProvider"
 import { FormattedMessage } from "react-intl"
-const URL_PROJECTS_USERS = "http://localhost:8080/api/users"
+const URL_PROJECTS_ACCOUNTS = "http://localhost:8080/api/projectAccounts"
 
 
-interface ProjectUsersProps {
+interface ProjectAccountsProps {
   // From mapStateToProps
-  userLinks?: Array<User>,
+  projectAccounts?: Array<ProjectAccount>,
   // From mapDispatchToProps
-  fetchProjectUsers?: (urlProjectUsers: string) => void,
-  deleteProjectUser?: (linkDeleteUser: string) => void,
+  fetchProjectAccounts?: (urlProjectAccounts: string) => void,
+  deleteProjectAccount?: (linkDeleteProjectAccount: string) => void,
   // From router
   router: any,
   route: any,
@@ -27,21 +27,22 @@ interface ProjectUsersProps {
 /**
  * Show the list of users for the current project
  */
-class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
+class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any> {
 
 
   constructor (props: any) {
     super(props)
     // Fetch users for the current project when the container is created
-    this.props.fetchProjectUsers(URL_PROJECTS_USERS)
+    this.props.fetchProjectAccounts(URL_PROJECTS_ACCOUNTS)
   }
 
   render (): JSX.Element {
 
-    const {userLinks, params} = this.props
+    const {projectAccounts, params} = this.props
     console.log("The state is now ", this.state)
+    console.log("SEB",  this.props.projectAccounts)
     return (
-      <I18nProvider messageDir='adminApp/modules/projectUsers/i18n'>
+      <I18nProvider messageDir='adminApp/modules/userManagement/i18n'>
         <Card
           initiallyExpanded={true}>
           <CardHeader
@@ -69,11 +70,11 @@ class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
             </TableHeader>
             <TableBody displayRowCheckbox={false} preScanRows={false}>
 
-              {map(userLinks, (userLink: string, id: string) => (
-                <ProjectUserContainer
-                  userLink={userLink}
+              {map(projectAccounts, (projectAccount: ProjectAccount, id: string) => (
+                <ProjectAccountContainer
+                  projectAccount={projectAccount}
                   projectName={params.project}
-                  key={id}
+                  key={projectAccount.account.accountId}
                 />
               ))}
 
@@ -87,12 +88,12 @@ class ProjectUsersContainer extends React.Component<ProjectUsersProps, any> {
 
 
 const mapStateToProps = (state: any, ownProps: any) => {
-  const userLinks = selectors.getUserLinks(state)
+  const projectAccounts = selectors.getProjectAccountsId(state)
   return {
-    userLinks: userLinks
+    projectAccounts: projectAccounts
   }
 }
 const mapDispatchToProps = (dispatch: any) => ({
-  fetchProjectUsers: (urlProjectUsers: string) => dispatch(Actions.fetchProjectUsers(urlProjectUsers))
+  fetchProjectAccounts: (urlProjectAccounts: string) => dispatch(Actions.fetchProjectAccounts(urlProjectAccounts))
 })
-export default connect<{}, {}, ProjectUsersProps>(mapStateToProps, mapDispatchToProps)(ProjectUsersContainer)
+export default connect<{}, {}, ProjectAccountsProps>(mapStateToProps, mapDispatchToProps)(ProjectAcountsContainer)

@@ -62,7 +62,6 @@ export class I18nProvider extends React.Component<I18nProps, any> {
 }
 
 const mapStateToProps = (state: any) => {
-  console.log ("SEB", state)
   return {
     locale: state.common.i18n.locale,
     messages: state.common.i18n.messages

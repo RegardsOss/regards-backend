@@ -1,19 +1,13 @@
 import { Schema, arrayOf } from "normalizr"
 import { find } from "lodash"
-import { HATEOASLink, MISSING_LINK } from "./common"
-
-interface ResultingProject {
-  links: Array<HATEOASLink>
-}
+import { Project } from '../../models/projects/types'
 
 // Read more about Normalizr: https://github.com/paularmstrong/normalizr
 const projectSchema = new Schema('projects', {
-  idAttribute: (project: ResultingProject) => {
-    const itself: HATEOASLink = find(project.links, {"rel": "self"})
-    return itself ? itself.href : MISSING_LINK
+  idAttribute: (project: Project) => {
+    return project.name
   }
 })
-
 
 // Schemas for API responses.
 export default {

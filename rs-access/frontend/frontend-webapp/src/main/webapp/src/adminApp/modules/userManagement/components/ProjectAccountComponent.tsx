@@ -1,6 +1,6 @@
-/** @module ProjectUsers */
+/** @module UserManagement */
 import * as React from "react"
-import { User } from "../../../../common/users/types"
+import { ProjectAccount } from "../../../../common/models/users/types"
 import { Link } from "react-router"
 import { ThemeContextType, ThemeContextInterface } from "../../../../common/theme/ThemeContainerInterface"
 import { TableRowColumn, TableRow } from "material-ui/Table"
@@ -14,8 +14,8 @@ import { FormattedMessage } from "react-intl"
 /**
  *
  */
-export interface ProjectUserProps {
-  user: User
+export interface ProjectAccountProps {
+  projectAccount: ProjectAccount
   redirectOnSelectTo: string
   muiTheme?: any
   handleDelete: () => void
@@ -27,7 +27,7 @@ export interface ProjectUserProps {
 /**
  * React component
  */
-class ProjectUserComponent extends React.Component<ProjectUserProps, any> {
+class ProjectAccountComponent extends React.Component<ProjectAccountProps, any> {
   static contextTypes: Object = ThemeContextType
   context: ThemeContextInterface
 
@@ -40,35 +40,45 @@ class ProjectUserComponent extends React.Component<ProjectUserProps, any> {
    * @returns {any}
    */
   render (): JSX.Element {
-    const {user, redirectOnSelectTo} = this.props
+    const {projectAccount, redirectOnSelectTo} = this.props
     const {muiTheme} = this.context
     const style = muiTheme.linkWithoutDecoration
+
+    // Manage delete link only f the hateos delete link is provided
+    const deletelink = projectAccount.links.find( (link) => {
+      return link.rel === 'delete'
+    });
+    let itemDeleteLink:JSX.Element = null;
+    if (deletelink) {
+      itemDeleteLink= <MenuItem onTouchTap={this.props.handleDelete} primaryText={<FormattedMessage id="dropdown.delete"/>}/>
+    }
+
     return (
       <TableRow>
         <TableRowColumn>
           {this.props.children}
           <Link to={redirectOnSelectTo} style={style}>
-            {user.login}
+            {projectAccount.account.login}
           </Link>
         </TableRowColumn>
         < TableRowColumn >
           <Link to={redirectOnSelectTo} style={style}>
-            {user.firstName}
+            {projectAccount.account.firstName}
           </Link>
         </ TableRowColumn >
         <TableRowColumn>
           <Link to={redirectOnSelectTo} style={style}>
-            {user.lastName}
+            {projectAccount.account.lastName}
           </Link>
         </TableRowColumn>
         < TableRowColumn >
           <Link to={redirectOnSelectTo} style={style}>
-            {user.email}
+            {projectAccount.account.email}
           </Link>
         </ TableRowColumn >
         <TableRowColumn>
           <Link to={redirectOnSelectTo} style={style}>
-            {user.status}
+            {projectAccount.account.status}
           </Link>
         </TableRowColumn>
         < TableRowColumn >
@@ -82,7 +92,7 @@ class ProjectUserComponent extends React.Component<ProjectUserProps, any> {
             anchorOrigin={{horizontal: 'left', vertical: 'top'}}
             targetOrigin={{horizontal: 'left', vertical: 'top'}}
           >
-            <MenuItem onTouchTap={this.props.handleDelete} primaryText={<FormattedMessage id="dropdown.delete"/>}/>
+            {itemDeleteLink}
             <MenuItem onTouchTap={this.props.handleView} primaryText={<FormattedMessage id="dropdown.view"/>}/>
             <MenuItem onTouchTap={this.props.handleEdit} primaryText={<FormattedMessage id="dropdown.edit"/>}/>
           </IconMenu>
@@ -93,4 +103,4 @@ class ProjectUserComponent extends React.Component<ProjectUserProps, any> {
   }
 }
 
-export default ProjectUserComponent
+export default ProjectAccountComponent

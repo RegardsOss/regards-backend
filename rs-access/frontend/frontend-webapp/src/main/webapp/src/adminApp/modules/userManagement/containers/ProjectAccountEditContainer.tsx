@@ -6,7 +6,7 @@ import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowCol
 import Checkbox from "material-ui/Checkbox"
 import { map } from "lodash"
 
-class UserEditComponent extends React.Component<any, any> {
+class ProjectAccountEditContainer extends React.Component<any, any> {
   constructor () {
     super()
   }
@@ -64,5 +64,7 @@ class UserEditComponent extends React.Component<any, any> {
     )
   }
 }
-
-export default UserEditComponent
+// export default ProjectUserEditContainer;
+const mapStateToProps = (state: any) => ({})
+const mapDispatchToProps = (dispatch: any) => ({})
+export default connect<{}, {}, any>(mapStateToProps, mapDispatchToProps)(ProjectAccountEditContainer)

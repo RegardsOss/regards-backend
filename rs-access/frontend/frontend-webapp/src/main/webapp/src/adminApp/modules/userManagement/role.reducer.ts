@@ -1,21 +1,24 @@
-import { PROJECT_USER_REQUEST, PROJECT_USER_SUCCESS, PROJECT_USER_FAILURE } from "./actions"
+import { PROJECT_ACCOUNT_REQUEST, PROJECT_ACCOUNT_SUCCESS, PROJECT_ACCOUNT_FAILURE } from "./actions"
 
-export default (state: any = {
+import { ApiStateResult } from '../../../common/models/api/types'
+import { Role } from '../../../common/models/users/types'
+
+export default (state:ApiStateResult<Role> = {
   isFetching: false,
-  items: {},
+  items: [],
   ids: [],
   lastUpdate: ''
 }, action: any) => {
   switch (action.type) {
-    case PROJECT_USER_REQUEST:
+    case PROJECT_ACCOUNT_REQUEST:
       return Object.assign({}, state, {isFetching: true})
-    case PROJECT_USER_SUCCESS:
+    case PROJECT_ACCOUNT_SUCCESS:
       return Object.assign({}, state, {
         isFetching: false,
         items: action.payload.entities.roles,
         ids: []
       })
-    case PROJECT_USER_FAILURE:
+    case PROJECT_ACCOUNT_FAILURE:
       return Object.assign({}, state, {isFetching: false})
     default:
       return state

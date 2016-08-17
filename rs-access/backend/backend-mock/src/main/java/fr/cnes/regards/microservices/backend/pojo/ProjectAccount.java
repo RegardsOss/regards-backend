@@ -1,16 +1,24 @@
 package fr.cnes.regards.microservices.backend.pojo;
 
-import org.springframework.hateoas.ResourceSupport;
-
 import java.util.Date;
 
+import org.springframework.hateoas.ResourceSupport;
+
 public class ProjectAccount extends ResourceSupport {
-    private long projectAccountId;
+
+    private Long projectAccountId;
+
     private int status;
+
     private long lastConnection;
+
     private long lastUpdate;
+
     private Role role;
+
     private Project project;
+
+    private Account account;
 
     public ProjectAccount() {
         super();
@@ -20,11 +28,11 @@ public class ProjectAccount extends ResourceSupport {
         this.role = new Role("Guest");
     }
 
-    public long getProjectAccountId() {
+    public Long getProjectAccountId() {
         return projectAccountId;
     }
 
-    public void setProjectAccountId(long projectAccountId) {
+    public void setProjectAccountId(Long projectAccountId) {
         this.projectAccountId = projectAccountId;
     }
 
@@ -66,5 +74,13 @@ public class ProjectAccount extends ResourceSupport {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account pAccount) {
+        account = pAccount;
     }
 }

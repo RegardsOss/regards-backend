@@ -29,40 +29,40 @@ import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 @RequestMapping("/api")
 public class ProjectAdminController {
 
-	@Autowired
-	MethodAutorizationService authService_;
+    @Autowired
+    MethodAutorizationService authService_;
 
-	/**
-	 * Method to iniate REST resources authorizations.
-	 */
-	@PostConstruct
-	public void initAuthorisations() {
-		authService_.setAutorities("/api/project-admin@GET",new RoleAuthority("ADMIN"));
-		authService_.setAutorities("/api/project-admins@GET", new RoleAuthority("ADMIN"));
-	}
+    /**
+     * Method to iniate REST resources authorizations.
+     */
+    @PostConstruct
+    public void initAuthorisations() {
+        authService_.setAutorities("/api/project-admin@GET", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/api/project-admins@GET", new RoleAuthority("ADMIN"));
+    }
 
-	@ResourceAccess
-	@RequestMapping(value = "/project-admin", method = RequestMethod.GET)
-	public @ResponseBody HttpEntity<ProjectAdmin> getProjectAdmin(
-			@RequestParam(value = "name", required = true) String name) {
-		ProjectAdmin projectAdmin = new ProjectAdmin(name);
-		projectAdmin.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin(name)).withSelfRel());
-		return new ResponseEntity<>(projectAdmin, HttpStatus.OK);
-	}
+    @ResourceAccess
+    @RequestMapping(value = "/project-admin", method = RequestMethod.GET)
+    public @ResponseBody HttpEntity<ProjectAdmin> getProjectAdmin(
+            @RequestParam(value = "name", required = true) String name) {
+        ProjectAdmin projectAdmin = new ProjectAdmin(name);
+        projectAdmin.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin(name)).withSelfRel());
+        return new ResponseEntity<>(projectAdmin, HttpStatus.OK);
+    }
 
-	@ResourceAccess
-	@RequestMapping(value = "/project-admins", method = RequestMethod.GET)
-	public @ResponseBody HttpEntity<List<ProjectAdmin>> getProjectAdminsByNames(
-			@RequestParam(value = "names", required = true) String[] names) {
-		List<ProjectAdmin> projectAdmins = new ArrayList<>(names.length);
+    @ResourceAccess
+    @RequestMapping(value = "/project-admins", method = RequestMethod.GET)
+    public @ResponseBody HttpEntity<List<ProjectAdmin>> getProjectAdminsByNames(
+            @RequestParam(value = "names", required = true) String[] names) {
+        List<ProjectAdmin> projectAdmins = new ArrayList<>(names.length);
 
-		for (String name : names) {
-			ProjectAdmin projectAdmin = new ProjectAdmin(name);
-			projectAdmin.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin(name)).withSelfRel());
-			projectAdmins.add(projectAdmin);
-		}
+        for (String name : names) {
+            ProjectAdmin projectAdmin = new ProjectAdmin(name);
+            projectAdmin.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin(name)).withSelfRel());
+            projectAdmins.add(projectAdmin);
+        }
 
-		return new ResponseEntity<>(projectAdmins, HttpStatus.OK);
-	}
+        return new ResponseEntity<>(projectAdmins, HttpStatus.OK);
+    }
 
 }
