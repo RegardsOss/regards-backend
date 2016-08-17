@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.controllers;
+package fr.cnes.regards.microservices.backend.controllers.sandbox;
 
 import java.util.Date;
 

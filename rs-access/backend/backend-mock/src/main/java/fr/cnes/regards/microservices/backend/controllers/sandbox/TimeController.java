@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.controllers;
+package fr.cnes.regards.microservices.backend.controllers.sandbox;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -11,7 +11,7 @@ public class TimeController extends Controller {
 	/**
 	 * Method to start the web socket server timer. The timer send current date
 	 * every 2 seconds to the web sockets servers
-	 * 
+	 *
 	 * @return
 	 */
 	@RequestMapping(value = "time/start", method = RequestMethod.GET)

@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.controllers;
+package fr.cnes.regards.microservices.backend.controllers.administration;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;

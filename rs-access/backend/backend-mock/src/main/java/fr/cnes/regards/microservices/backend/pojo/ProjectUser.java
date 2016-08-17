@@ -5,6 +5,7 @@ import org.springframework.hateoas.ResourceSupport;
 import java.util.Date;
 
 public class ProjectUser extends ResourceSupport {
+    private long projectUserId;
     private int status;
     private long lastConnection;
     private long lastUpdate;
@@ -17,6 +18,22 @@ public class ProjectUser extends ResourceSupport {
         this.lastUpdate = new Date().getTime();
         this.status = ProjectUserStatus.ACCESS_GRANTED.getValue();
         this.role = new Role("Guest");
+    }
+
+    public long getProjectUserId() {
+        return projectUserId;
+    }
+
+    public void setProjectUserId(long projectUserId) {
+        this.projectUserId = projectUserId;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public int getStatus() {

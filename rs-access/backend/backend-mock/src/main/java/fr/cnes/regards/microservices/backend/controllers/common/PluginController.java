@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.controllers;
+package fr.cnes.regards.microservices.backend.controllers.common;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +23,10 @@ import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 @EnableResourceServer
 @RequestMapping("/api")
 public class PluginController {
-	
+
 	@Autowired
 	MethodAutorizationService authService_;
-	
+
 	/**
 	 * Method to iniate REST resources authorizations.
 	 */

@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.controllers;
+package fr.cnes.regards.microservices.backend.controllers.administration;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -28,10 +28,10 @@ import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 @EnableResourceServer
 @RequestMapping("/api")
 public class ProjectAdminController {
-	
+
 	@Autowired
 	MethodAutorizationService authService_;
-	
+
 	/**
 	 * Method to iniate REST resources authorizations.
 	 */
@@ -49,20 +49,20 @@ public class ProjectAdminController {
 		projectAdmin.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin(name)).withSelfRel());
 		return new ResponseEntity<ProjectAdmin>(projectAdmin, HttpStatus.OK);
 	}
-	
+
 	@ResourceAccess
 	@RequestMapping(value = "/project-admins", method = RequestMethod.GET)
 	public @ResponseBody HttpEntity<List<ProjectAdmin>> getProjectAdminsByNames(
 			@RequestParam(value = "names", required = true) String[] names) {
 		List<ProjectAdmin> projectAdmins = new ArrayList<>(names.length);
-		
+
 		for (String name : names) {
 			ProjectAdmin projectAdmin = new ProjectAdmin(name);
 			projectAdmin.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin(name)).withSelfRel());
 			projectAdmins.add(projectAdmin);
 		}
-		
+
 		return new ResponseEntity<List<ProjectAdmin>>(projectAdmins, HttpStatus.OK);
 	}
-	
+
 }

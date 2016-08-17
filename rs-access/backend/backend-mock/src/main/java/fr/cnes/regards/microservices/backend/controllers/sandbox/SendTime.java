@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.controllers;
+package fr.cnes.regards.microservices.backend.controllers.sandbox;
 
 
 public class SendTime implements Runnable {
@@ -18,6 +18,6 @@ public class SendTime implements Runnable {
             } catch ( InterruptedException e ) {
                 e.printStackTrace();
             }
-        }   
+        }
     }
 }
