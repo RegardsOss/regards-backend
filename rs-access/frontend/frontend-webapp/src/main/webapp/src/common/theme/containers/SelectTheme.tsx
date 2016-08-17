@@ -4,7 +4,7 @@ import { map, keys } from "lodash"
 import { setTheme } from "../actions/ThemeActions"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
-import { Card, CardText } from "material-ui/Card"
+import { Card, CardText, CardTitle } from "material-ui/Card"
 import ThemeHelper from "../ThemeHelper"
 
 interface SelectThemeProps {
@@ -37,6 +37,7 @@ export class SelectTheme extends React.Component<SelectThemeProps, any> {
 
     return (
       <Card>
+        <CardTitle title="Theme"/>
         <CardText>
           <SelectField
             value={this.props.theme}
