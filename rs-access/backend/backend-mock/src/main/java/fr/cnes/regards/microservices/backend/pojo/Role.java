@@ -9,21 +9,21 @@ import java.util.List;
  * Created by lmieulet on 02/08/16.
  */
 public class Role extends ResourceSupport {
-    private String nom;
+    private String name;
     private Role parentRole;
-    private List<ResourcesAccess> permissionx;
+    private List<ResourceAccess> permissions;
 
-    public Role(String nom) {
-        this.nom = nom;
-        this.permissionx = new ArrayList();
+    public Role(String name) {
+        this.name = name;
+        this.permissions = new ArrayList();
     }
 
-    public String getNom() {
-        return nom;
+    public String getName() {
+        return name;
     }
 
-    public void setNom(String nom) {
-        this.nom = nom;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Role getParentRole() {
@@ -34,11 +34,11 @@ public class Role extends ResourceSupport {
         this.parentRole = parentRole;
     }
 
-    public List<ResourcesAccess> getPermissions() {
-        return permissionx;
+    public List<ResourceAccess> getPermissions() {
+        return permissions;
     }
 
-    public void setPermissions(List<ResourcesAccess> permissions) {
-        this.permissionx = permissions;
+    public void setPermissions(List<ResourceAccess> permissions) {
+        this.permissions = permissions;
     }
 }

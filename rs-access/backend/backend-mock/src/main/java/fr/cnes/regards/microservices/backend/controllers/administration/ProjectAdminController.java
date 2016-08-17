@@ -47,7 +47,7 @@ public class ProjectAdminController {
 			@RequestParam(value = "name", required = true) String name) {
 		ProjectAdmin projectAdmin = new ProjectAdmin(name);
 		projectAdmin.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin(name)).withSelfRel());
-		return new ResponseEntity<ProjectAdmin>(projectAdmin, HttpStatus.OK);
+		return new ResponseEntity<>(projectAdmin, HttpStatus.OK);
 	}
 
 	@ResourceAccess
@@ -62,7 +62,7 @@ public class ProjectAdminController {
 			projectAdmins.add(projectAdmin);
 		}
 
-		return new ResponseEntity<List<ProjectAdmin>>(projectAdmins, HttpStatus.OK);
+		return new ResponseEntity<>(projectAdmins, HttpStatus.OK);
 	}
 
 }

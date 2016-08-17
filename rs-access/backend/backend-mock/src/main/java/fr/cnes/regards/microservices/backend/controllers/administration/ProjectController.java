@@ -47,7 +47,7 @@ public class ProjectController {
 			@RequestParam(value = "name", required = true) String pProjectName) {
 		Project project = new Project("cdpp");
 		project.add(linkTo(methodOn(ProjectController.class).getProject("cdpp")).withSelfRel());
-		return new ResponseEntity<Project>(project, HttpStatus.OK);
+		return new ResponseEntity<>(project, HttpStatus.OK);
 	}
 
 	@ResourceAccess
@@ -66,7 +66,7 @@ public class ProjectController {
 		project.add(linkTo(methodOn(ProjectController.class).getProject("ssalto")).withSelfRel());
 		project.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdminsByNames(ssaltoAdmins)).withRel("users"));
 		projects.add(project);
-		return new ResponseEntity<List<Project>>(projects, HttpStatus.OK);
+		return new ResponseEntity<>(projects, HttpStatus.OK);
     }
 
 }

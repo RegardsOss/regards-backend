@@ -9,8 +9,6 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import fr.cnes.regards.microservices.backend.controllers.administration.ProjectController;
-import fr.cnes.regards.microservices.backend.controllers.administration.ProjectUserController;
 import fr.cnes.regards.microservices.backend.pojo.AccessRights;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +92,7 @@ public class EndpointController {
         // Note this is unfortunately hand-written. If you add a new entity, have to manually add a new link
         final List<Link> links = asList(
   		  linkTo(methodOn(ProjectController.class).getProjects()).withRel("projects_url"),
-  		  linkTo(methodOn(ProjectUserController.class).getProjectUsers()).withRel("projects_users_url")
+  		  linkTo(methodOn(ProjectAccountController.class).getProjectUsers()).withRel("projects_users_url")
         );
 
         final HashMap<String, String> map = new HashMap<>();

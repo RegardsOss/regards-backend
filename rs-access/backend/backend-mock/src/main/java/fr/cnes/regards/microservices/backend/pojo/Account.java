@@ -17,7 +17,7 @@ public class Account extends ResourceSupport {
     private String password;
     private int status;
 
-    private List<ProjectUser> projectUsers;
+    private List<ProjectAccount> projectAccounts;
 
 	public Account(Long accountId, String firstName, String lastName, String email, String login, String password) {
         this.accountId = accountId;
@@ -27,7 +27,7 @@ public class Account extends ResourceSupport {
         this.login = login;
         this.password = password;
         this.status = AccountStatus.ACTIVE.getValue();
-        this.projectUsers = new ArrayList();
+        this.projectAccounts = new ArrayList();
 	}
 
     public Long getAccountId() {
@@ -86,11 +86,11 @@ public class Account extends ResourceSupport {
         this.status = status;
     }
 
-    public List<ProjectUser> getProjectUsers() {
-        return projectUsers;
+    public List<ProjectAccount> getProjectAccounts() {
+        return projectAccounts;
     }
 
-    public void setProjectUsers(List<ProjectUser> projectUsers) {
-        this.projectUsers = projectUsers;
+    public void setProjectAccounts(List<ProjectAccount> projectAccounts) {
+        this.projectAccounts = projectAccounts;
     }
 }

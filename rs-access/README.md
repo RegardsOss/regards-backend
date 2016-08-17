@@ -8,7 +8,7 @@
 
 # Start backend
 
-`java -jar backend/backend-mock/target/backend-mock-1.0-SNAPSHOT.jar`
+`java -jar -Xms100m -Xmx100m backend/backend-mock/target/backend-mock-1.0-SNAPSHOT.jar`
 
 # Start frontend
 

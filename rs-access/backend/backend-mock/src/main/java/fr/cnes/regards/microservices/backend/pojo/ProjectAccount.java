@@ -4,15 +4,15 @@ import org.springframework.hateoas.ResourceSupport;
 
 import java.util.Date;
 
-public class ProjectUser extends ResourceSupport {
-    private long projectUserId;
+public class ProjectAccount extends ResourceSupport {
+    private long projectAccountId;
     private int status;
     private long lastConnection;
     private long lastUpdate;
     private Role role;
     private Project project;
 
-    public ProjectUser() {
+    public ProjectAccount() {
         super();
         this.lastConnection = new Date().getTime();
         this.lastUpdate = new Date().getTime();
@@ -20,12 +20,12 @@ public class ProjectUser extends ResourceSupport {
         this.role = new Role("Guest");
     }
 
-    public long getProjectUserId() {
-        return projectUserId;
+    public long getProjectAccountId() {
+        return projectAccountId;
     }
 
-    public void setProjectUserId(long projectUserId) {
-        this.projectUserId = projectUserId;
+    public void setProjectAccountId(long projectAccountId) {
+        this.projectAccountId = projectAccountId;
     }
 
     public Project getProject() {
