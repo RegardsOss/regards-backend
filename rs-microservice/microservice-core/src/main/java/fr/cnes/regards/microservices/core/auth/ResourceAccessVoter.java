@@ -55,16 +55,29 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
             return ACCESS_DENIED;
         }
 
-        // Check if user has correct authority
-        for (GrantedAuthority userAuthority : userAuthorities) {
-            for (GrantedAuthority resourceAuthority : option.get()) {
+        return checkAuthorities(option.get(), userAuthorities);
+    }
+
+    /**
+     *
+     * Check if the user authorities contains on of the method authorities
+     *
+     * @param methodAutorities
+     * @param userAutorities
+     * @return
+     * @since 0.0.1
+     */
+    private int checkAuthorities(List<GrantedAuthority> methodAutorities,
+            Collection<? extends GrantedAuthority> userAutorities) {
+
+        for (GrantedAuthority userAuthority : userAutorities) {
+            for (GrantedAuthority resourceAuthority : methodAutorities) {
                 if (userAuthority.getAuthority().equals(resourceAuthority.getAuthority())) {
                     return ACCESS_GRANTED;
                 }
             }
         }
 
-        // Default behaviour
         return ACCESS_DENIED;
     }
 
