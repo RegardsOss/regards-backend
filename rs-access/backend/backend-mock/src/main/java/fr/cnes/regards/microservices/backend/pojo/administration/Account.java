@@ -1,10 +1,10 @@
-package fr.cnes.regards.microservices.backend.pojo;
-
-import java.util.ArrayList;
-import java.util.List;
+package fr.cnes.regards.microservices.backend.pojo.administration;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.hateoas.ResourceSupport;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Account extends ResourceSupport {
 
@@ -23,7 +23,7 @@ public class Account extends ResourceSupport {
 
     private int status;
 
-    private List<ProjectAccount> projectAccounts;
+    private List<ProjectUser> projectAccounts;
 
     public Account(Long accountId, String firstName, String lastName, String email, String login, String password) {
         this.accountId = accountId;
@@ -92,11 +92,11 @@ public class Account extends ResourceSupport {
         this.status = status;
     }
 
-    public List<ProjectAccount> getProjectAccounts() {
+    public List<ProjectUser> getProjectAccounts() {
         return projectAccounts;
     }
 
-    public void setProjectAccounts(List<ProjectAccount> projectAccounts) {
+    public void setProjectAccounts(List<ProjectUser> projectAccounts) {
         this.projectAccounts = projectAccounts;
     }
 }

@@ -13,9 +13,9 @@ public class SendTime implements Runnable {
     public void run() {
         while (true) {
             try {
-                Thread.sleep( 2000 );
+                Thread.sleep(2000);
                 listener.sendTime();
-            } catch ( InterruptedException e ) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }

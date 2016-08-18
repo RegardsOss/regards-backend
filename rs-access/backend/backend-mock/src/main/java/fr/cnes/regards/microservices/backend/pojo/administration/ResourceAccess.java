@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.pojo;
+package fr.cnes.regards.microservices.backend.pojo.administration;
 
 /**
  * Created by lmieulet on 02/08/16.

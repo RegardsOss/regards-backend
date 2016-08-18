@@ -5,7 +5,7 @@ let scriptjs: any
 if (typeof document !== 'undefined')
   scriptjs = require ('scriptjs')
 
-export const PLUGINS_API = 'http://localhost:8080/api/plugins'
+export const PLUGINS_API = 'http://localhost:8080/api/access/plugins'
 export const REQUEST_PLUGINS = 'REQUEST_PLUGINS'
 export const RECEIVE_PLUGINS = 'RECEIVE_PLUGINS'
 export const FAILED_PLUGINS = 'FAILED_PLUGINS'

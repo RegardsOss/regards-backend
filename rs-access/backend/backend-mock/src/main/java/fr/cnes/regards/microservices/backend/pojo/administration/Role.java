@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.pojo;
+package fr.cnes.regards.microservices.backend.pojo.administration;
 
 import org.springframework.hateoas.ResourceSupport;
 

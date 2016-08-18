@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.pojo;
+package fr.cnes.regards.microservices.backend.pojo.administration;
 
 public enum ProjectUserStatus {
     WAITING_ACCESS(0),
@@ -7,6 +7,7 @@ public enum ProjectUserStatus {
     ACCESS_INACTIVE(3);
 
     private int value;
+
     ProjectUserStatus(int value) {
         value = value;
     }

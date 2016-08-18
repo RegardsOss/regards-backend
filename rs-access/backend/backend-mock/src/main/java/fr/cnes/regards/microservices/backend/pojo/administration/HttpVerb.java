@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.backend.pojo;
+package fr.cnes.regards.microservices.backend.pojo.administration;
 
 /**
  * Created by lmieulet on 02/08/16.
@@ -15,7 +15,7 @@ public enum HttpVerb {
 
     private int value;
 
-    HttpVerb (int value) {
+    HttpVerb(int value) {
         value = value;
     }
 

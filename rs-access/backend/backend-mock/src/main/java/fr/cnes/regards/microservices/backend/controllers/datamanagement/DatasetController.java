@@ -1,6 +1,7 @@
 package fr.cnes.regards.microservices.backend.controllers.datamanagement;
 
-import fr.cnes.regards.microservices.backend.pojo.Account;
+import fr.cnes.regards.microservices.backend.pojo.administration.Account;
+import fr.cnes.regards.microservices.backend.pojo.datamanagement.Dataset;
 import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-
 @RestController
 @EnableResourceServer
 @RequestMapping("/api")
 public class DatasetController {
 
+    // Mock db
+    static List<Dataset> inMemoryDList = null;
     @Autowired
     MethodAutorizationService authService_;
 
@@ -37,8 +38,8 @@ public class DatasetController {
         authService_.setAutorities("/api/users@GET", new RoleAuthority("ADMIN"));
     }
 
-    @RequestMapping(value = "/azertyuiop", method = RequestMethod.GET)
-    public HttpEntity<List<Account>> getProjectUsers() {
+    @RequestMapping(value = "/datasets", method = RequestMethod.GET)
+    public HttpEntity<List<Account>> getDatasets() {
         List<Account> accounts = new ArrayList<>();
         AtomicLong counter = new AtomicLong();
 
@@ -46,13 +47,21 @@ public class DatasetController {
         return new ResponseEntity<>(accounts, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/azertyuiop/{{user_id}}", method = RequestMethod.GET)
-    public @ResponseBody HttpEntity<Account> getProjectUser(@PathParam("user_id") Integer userId) {
+    @RequestMapping(value = "/datasets", method = RequestMethod.POST)
+    public HttpEntity<List<Account>> addDatasets() {
+        List<Account> accounts = new ArrayList<>();
+        AtomicLong counter = new AtomicLong();
+
+
+        return new ResponseEntity<>(accounts, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/datasets/{{dataset_id}}", method = RequestMethod.GET)
+    public @ResponseBody HttpEntity<Account> getProjectUser(@PathParam("dataset_id") Integer datasetId) {
         AtomicLong counter = new AtomicLong();
         Account user = new Account(counter.incrementAndGet(), "John", "Constantine", "john.constantine@...", "jconstantine", "passw0rd");
 
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
-
 
 }

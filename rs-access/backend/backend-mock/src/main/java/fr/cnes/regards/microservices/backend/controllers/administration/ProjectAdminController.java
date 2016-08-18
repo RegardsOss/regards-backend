@@ -1,28 +1,22 @@
 package fr.cnes.regards.microservices.backend.controllers.administration;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-
+import fr.cnes.regards.microservices.backend.pojo.sandbox.ProjectAdmin;
+import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
+import fr.cnes.regards.microservices.core.auth.ResourceAccess;
+import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.microservices.backend.pojo.ProjectAdmin;
-import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
-import fr.cnes.regards.microservices.core.auth.ResourceAccess;
-import fr.cnes.regards.microservices.core.auth.RoleAuthority;
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController
 @EnableResourceServer

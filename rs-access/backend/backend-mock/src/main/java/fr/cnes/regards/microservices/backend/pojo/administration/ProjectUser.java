@@ -1,10 +1,10 @@
-package fr.cnes.regards.microservices.backend.pojo;
-
-import java.util.Date;
+package fr.cnes.regards.microservices.backend.pojo.administration;
 
 import org.springframework.hateoas.ResourceSupport;
 
-public class ProjectAccount extends ResourceSupport {
+import java.util.Date;
+
+public class ProjectUser extends ResourceSupport {
 
     private Long projectAccountId;
 
@@ -20,7 +20,7 @@ public class ProjectAccount extends ResourceSupport {
 
     private Account account;
 
-    public ProjectAccount() {
+    public ProjectUser() {
         super();
         this.lastConnection = new Date().getTime();
         this.lastUpdate = new Date().getTime();
