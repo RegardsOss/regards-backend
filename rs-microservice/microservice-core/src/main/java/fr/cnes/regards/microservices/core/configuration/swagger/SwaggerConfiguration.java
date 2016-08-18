@@ -36,7 +36,7 @@ public class SwaggerConfiguration {
     public static final String AUTH_SCOPE_GLOBAL_DESC = "accessEverything";
 
     @Value("${swagger.api.name}")
-    private final String swaggerApiName_ = "default";
+    private static final String SWAGGER_API_NAME = "default";
 
     @Value("${server.port}")
     private String serverPort;
@@ -58,7 +58,7 @@ public class SwaggerConfiguration {
 
         ApiInfo infos = apiInfoBuilder.termsOfServiceUrl("http://" + serverAdress + ":" + serverPort).build();
 
-        return new Docket(DocumentationType.SWAGGER_2).groupName(swaggerApiName_).apiInfo(infos).select()
+        return new Docket(DocumentationType.SWAGGER_2).groupName(SWAGGER_API_NAME).apiInfo(infos).select()
                 .paths(apiPaths()).build().securitySchemes(schemes).securityContexts(ctxs);
     }
 

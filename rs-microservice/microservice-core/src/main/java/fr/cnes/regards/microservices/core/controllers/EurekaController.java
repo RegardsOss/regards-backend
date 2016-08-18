@@ -43,7 +43,7 @@ public class EurekaController {
      * Is the Config server enabled
      */
     @Value("${cloud.config.server.enabled}")
-    boolean configServerEnabled_ = false;
+    boolean configServerEnabled = false;
 
     /**
      * Config server application name
@@ -95,7 +95,7 @@ public class EurekaController {
     @ResourceAccess
     @RequestMapping(value = "config/adress", method = RequestMethod.GET)
     public String configAddress() {
-        if (eurekaServerEnabled && configServerEnabled_) {
+        if (eurekaServerEnabled && configServerEnabled) {
             return "Config server : " + configServiceUrl();
         }
         else {
