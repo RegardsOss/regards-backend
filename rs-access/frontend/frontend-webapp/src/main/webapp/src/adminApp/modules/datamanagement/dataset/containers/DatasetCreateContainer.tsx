@@ -1,27 +1,18 @@
 import * as React from "react"
-import { Card, CardHeader } from "material-ui/Card"
-import I18nProvider from "../../../../../common/i18n/I18nProvider"
+import { Card, CardHeader, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
-const URL_PROJECTS_USERS = "http://localhost:8080/api/users"
+import TextField from "material-ui/TextField"
+import I18nProvider from "../../../../../common/i18n/I18nProvider"
 
-
-interface DatasetCreateProps {
-  test?: any
-}
 
 /**
- * Show the list of users for the current project
  */
-export default class DatasetCreateContainer extends React.Component<DatasetCreateProps, any> {
+export default class DatasetCreateContainer extends React.Component<any, any> {
 
-
-  constructor (props: any) {
-    super(props)
-  }
 
   render (): JSX.Element {
     return (
-      <I18nProvider messageDir='adminApp/modules/userManagement/i18n'>
+      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
         <Card
           initiallyExpanded={true}>
           <CardHeader
@@ -29,6 +20,13 @@ export default class DatasetCreateContainer extends React.Component<DatasetCreat
             actAsExpander={true}
             showExpandableButton={false}
           />
+          <CardText>
+            <TextField
+              type="text"
+              floatingLabelText={<FormattedMessage id="login.username"/>}
+              fullWidth={true}
+            />
+          </CardText>
         </Card>
       </I18nProvider>
     )

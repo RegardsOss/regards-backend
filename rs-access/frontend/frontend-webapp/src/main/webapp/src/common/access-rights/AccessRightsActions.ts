@@ -1,4 +1,4 @@
-const {CALL_API} = require ('redux-api-middleware')
+const {CALL_API} = require('redux-api-middleware')
 
 import { DependencyAccessRight } from "./AccessRightsTypes"
 
@@ -16,6 +16,6 @@ export const fetchAccessRights = (dependencies: Array<DependencyAccessRight>) =>
     ],
     endpoint: ACCESS_RIGHTS_API,
     method: 'POST',
-    body: JSON.stringify (dependencies)
+    body: JSON.stringify(dependencies)
   }
 })

@@ -1,5 +1,6 @@
 package fr.cnes.regards.microservices.backend.controllers.administration;
 
+import fr.cnes.regards.microservices.backend.controllers.datamanagement.ConnectionController;
 import fr.cnes.regards.microservices.backend.pojo.administration.AccessRights;
 import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
@@ -89,9 +90,11 @@ public class EndpointController {
 
     public HashMap<String, String> buildEndpoints() {
         // Note this is unfortunately hand-written. If you add a new entity, have to manually add a new link
-        final List<Link> links = asList(linkTo(methodOn(ProjectController.class).getProjects()).withRel("projects_url"),
-                linkTo(methodOn(ProjectAccountController.class).getProjectAccounts())
-                        .withRel("projects_users_url"));
+        final List<Link> links = asList(
+                linkTo(methodOn(ProjectController.class).getProjects()).withRel("projects_url"),
+                linkTo(methodOn(ProjectAccountController.class).getProjectAccounts()).withRel("projects_users_url"),
+                linkTo(methodOn(ConnectionController.class).getConnections()).withRel("projects_connections_url")
+        );
 
         final HashMap<String, String> map = new HashMap<>();
         for (Link link : links) {

@@ -45,12 +45,13 @@ class ProjectAccountComponent extends React.Component<ProjectAccountProps, any> 
     const style = muiTheme.linkWithoutDecoration
 
     // Manage delete link only f the hateos delete link is provided
-    const deletelink = projectAccount.links.find( (link) => {
+    const deletelink = projectAccount.links.find((link) => {
       return link.rel === 'delete'
-    });
-    let itemDeleteLink:JSX.Element = null;
+    })
+    let itemDeleteLink: JSX.Element = null
     if (deletelink) {
-      itemDeleteLink= <MenuItem onTouchTap={this.props.handleDelete} primaryText={<FormattedMessage id="dropdown.delete"/>}/>
+      itemDeleteLink =
+        <MenuItem onTouchTap={this.props.handleDelete} primaryText={<FormattedMessage id="dropdown.delete"/>}/>
     }
 
     return (

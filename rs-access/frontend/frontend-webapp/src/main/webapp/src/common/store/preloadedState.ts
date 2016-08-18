@@ -4,7 +4,7 @@ const preloadedState: any = {
     layout: {
       lg: [
         { i: 'appBar', x: 0, y: 0, w: 12, h: 2 },
-        { i: 'sideBar', x: 0, y: 2, w: 2, h: 6 },
+        { i: 'sideBar', x: 0, y: 2, w: 2, h: 13 },
 
         { i: 'content', x: 2, y: 2, w: 8, h: 5 },
         { i: 'selectTheme', x: 10, y: 6, w: 2, h: 2 },

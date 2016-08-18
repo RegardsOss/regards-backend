@@ -1,6 +1,5 @@
 import { Schema, arrayOf } from "normalizr"
-import { find } from "lodash"
-import { Project } from '../../models/projects/types'
+import { Project } from "../../models/projects/types"
 
 // Read more about Normalizr: https://github.com/paularmstrong/normalizr
 const projectSchema = new Schema('projects', {

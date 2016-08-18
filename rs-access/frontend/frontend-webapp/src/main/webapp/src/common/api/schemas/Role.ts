@@ -3,7 +3,7 @@ import { Role } from "../../models/users/types"
 
 const NAME = "roles"
 const roleSchema = new Schema(NAME, {
-  idAttribute: (role:Role) => {
+  idAttribute: (role: Role) => {
     return role.name
   }
 })

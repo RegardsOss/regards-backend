@@ -1,17 +1,11 @@
 const messages = {
-  "userlist.header": "Liste des utilisateurs",
-  "userlist.login": "Identifiant",
-  "userlist.firstName": "Prénom",
-  "userlist.lastName": "Nom",
-  "userlist.email": "E-mail",
-  "userlist.status": "Status",
-  "userlist.action": "Actions",
-  "dropdown.edit": "Editer",
-  "dropdown.view": "Afficher",
-  "dropdown.delete": "Supprimer",
-  "dialog.delete.accept": "Delete",
-  "dialog.delete.title": "Delete the user",
-  "dialog.delete.cancel": "Cancel",
+  "datamanagement.header": "Gestion des données",
+  "datamanagement.collection.add": "Add collection",
+  "datamanagement.collection.list": "List collections",
+  "datamanagement.dataset.add": "Add dataset",
+  "datamanagement.dataset.list": "List datasets",
+  "datamanagement.dataset.form.header": "Créer un nouveau jeu de données",
+  "datamanagement.dataset.form.create.label": "Libellé",
 
 }
 

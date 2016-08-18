@@ -40,7 +40,7 @@ class ProjectAccountContainer extends React.Component<ProjectAccountProps, any> 
   }
 
   deleteUser = () => {
-    const user = this.props.projectAccount;
+    const user = this.props.projectAccount
     const LINK_TYPE_DELETE = "role" // TODO: to change
     const userDeleteLink = find(user.links, {"rel": LINK_TYPE_DELETE})
     if (userDeleteLink) {
@@ -66,14 +66,14 @@ class ProjectAccountContainer extends React.Component<ProjectAccountProps, any> 
   }
 
   handleView = () => {
-    const user = this.props.projectAccount;
+    const user = this.props.projectAccount
     const urlTo = "/admin/" + this.props.projectName + "/users/" + user.account.accountId;
     browserHistory.push(urlTo)
   }
 
   handleEdit = () => {
     const user = this.props.projectAccount;
-    const urlTo = "/admin/" + this.props.projectName + "/users/" + user.account.accountId + "/edit";
+    const urlTo = "/admin/" + this.props.projectName + "/users/" + user.account.accountId + "/edit"
     browserHistory.push(urlTo)
   }
 

@@ -4,6 +4,10 @@ import { Provider } from "react-redux"
 import configureStore from "./common/store/configureStore"
 import preloadedState from "./common/store/preloadedState"
 import { routes } from "./routes"
+import {test} from "@regards-oss/common"
+
+
+console.log(test());
 
 const store = configureStore (preloadedState)
 ReactDOM.render (

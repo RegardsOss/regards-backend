@@ -2,8 +2,8 @@ import * as React from "react"
 import { connect } from "react-redux"
 import I18nProvider from "../../../../common/i18n/I18nProvider"
 import LoginComponent from "../components/LoginComponent"
-import { bootstrapApp, fetchAuthenticate } from "../../../../common/authentication/AuthenticateActions"
-import { fetchEndpoints } from '../../../../common/endpoints'
+import { fetchAuthenticate } from "../../../../common/authentication/AuthenticateActions"
+import { fetchEndpoints } from "../../../../common/endpoints"
 
 export interface AuthenticationProps {
   // From mapStateToProps
@@ -16,16 +16,16 @@ export interface AuthenticationProps {
 
 export class Authentication extends React.Component<AuthenticationProps, any> {
 
-  constructor() {
-    super ()
+  constructor () {
+    super()
   }
 
   handleLogin = (userName: string, password: string) => {
     Promise.resolve(this.props.fetchAuthenticate(userName, password))
-    .then(this.props.fetchEndpoints)
+           .then(this.props.fetchEndpoints)
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     return (
       <I18nProvider messageDir="adminApp/modules/authentication/i18n">
         <LoginComponent
@@ -43,8 +43,8 @@ const mapStateToProps = (state: any) => ({
   errorMessage: state.common.authentication.error
 })
 const mapDispatchToProps = (dispatch: any) => ({
-  fetchAuthenticate: (userName: string, password: string) => dispatch (fetchAuthenticate (userName, password)),
+  fetchAuthenticate: (userName: string, password: string) => dispatch(fetchAuthenticate(userName, password)),
   fetchEndpoints: () => dispatch(fetchEndpoints())
 })
 
-export default connect<{}, {}, AuthenticationProps> (mapStateToProps, mapDispatchToProps) (Authentication)
+export default connect<{}, {}, AuthenticationProps>(mapStateToProps, mapDispatchToProps)(Authentication)

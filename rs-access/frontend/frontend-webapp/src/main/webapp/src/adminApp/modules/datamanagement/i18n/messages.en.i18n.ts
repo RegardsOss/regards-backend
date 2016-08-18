@@ -1,17 +1,11 @@
 const messages = {
-  "userlist.header": "Users list",
-  "userlist.login": "Login",
-  "userlist.firstName": "Firstname",
-  "userlist.lastName": "Lastname",
-  "userlist.email": "E-mail",
-  "userlist.status": "Status",
-  "userlist.action": "Actions",
-  "dropdown.edit": "Edit",
-  "dropdown.view": "Show",
-  "dropdown.delete": "Delete",
-  "dialog.delete.accept": "Delete",
-  "dialog.delete.title": "Delete the user",
-  "dialog.delete.cancel": "Cancel",
+  "datamanagement.header": "Data Management",
+  "datamanagement.collection.add": "Add collection",
+  "datamanagement.collection.list": "List collections",
+  "datamanagement.dataset.add": "Add dataset",
+  "datamanagement.dataset.list": "List datasets",
+  "datamanagement.dataset.form.header": "Create a new dataset",
+  "datamanagement.dataset.form.create.label": "Label",
 }
 
 export default messages

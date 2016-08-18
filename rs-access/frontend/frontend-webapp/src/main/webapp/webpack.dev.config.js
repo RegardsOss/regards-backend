@@ -56,9 +56,9 @@ module.exports = {
     extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
     // Root directories from wich requires are made
     root: [
-      path.join(__dirname, "scripts"),
-      path.join(__dirname),
-    ]
+      path.join(__dirname)
+    ],
+    modulesDirectories: ["web_modules", "node_modules"]
   },
   module: {
     loaders: [
@@ -94,6 +94,11 @@ module.exports = {
     }),
     // Allow to define React as a global variable for JSX.
     new webpack.ProvidePlugin({"React": "react",}),
+    new webpack.DefinePlugin({
+      "process.env": {
+        NODE_ENV: JSON.stringify('development')
+      }
+    }),
   ],
   postcss: [
     // Plugin to Automaticly add vendors prefix to css classes

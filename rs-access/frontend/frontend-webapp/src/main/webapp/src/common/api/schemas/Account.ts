@@ -1,10 +1,9 @@
 import { Schema, arrayOf } from "normalizr"
-import { find } from "lodash"
 import projectAccountSchema from "./ProjectAccount"
 import { Account } from "../../models/users/types"
 
 const accountSchema = new Schema('accounts', {
-  idAttribute: (account:Account) => {
+  idAttribute: (account: Account) => {
     return account.accountId
   }
 })
