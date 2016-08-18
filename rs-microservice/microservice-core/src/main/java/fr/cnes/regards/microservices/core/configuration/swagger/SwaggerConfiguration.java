@@ -29,11 +29,11 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2 // Enable swagger 2.0 spec
 public class SwaggerConfiguration {
 
-    public static final String securitySchemaOAuth2 = "oauth2schema";
+    public static final String SECURITY_SCHEMA_OAUTH2 = "oauth2schema";
 
-    public static final String authorizationScopeGlobal = "global";
+    public static final String AUTH_SCOPE_GLOBAL = "global";
 
-    public static final String authorizationScopeGlobalDesc = "accessEverything";
+    public static final String AUTH_SCOPE_GLOBAL_DESC = "accessEverything";
 
     @Value("${swagger.api.name}")
     private final String swaggerApiName_ = "default";
@@ -67,8 +67,7 @@ public class SwaggerConfiguration {
     }
 
     private OAuth securitySchema() {
-        AuthorizationScope authorizationScope = new AuthorizationScope(authorizationScopeGlobal,
-                authorizationScopeGlobal);
+        AuthorizationScope authorizationScope = new AuthorizationScope(AUTH_SCOPE_GLOBAL, AUTH_SCOPE_GLOBAL_DESC);
         LoginEndpoint loginEndpoint = new LoginEndpoint("http://" + serverAdress + ":" + serverPort + "/oauth/token");
         GrantType grantType = new ImplicitGrant(loginEndpoint, "access_token");
         List<AuthorizationScope> authList = new ArrayList<>();
@@ -76,7 +75,7 @@ public class SwaggerConfiguration {
         List<GrantType> grants = new ArrayList<>();
         grants.add(grantType);
 
-        return new OAuth(securitySchemaOAuth2, authList, grants);
+        return new OAuth(SECURITY_SCHEMA_OAUTH2, authList, grants);
     }
 
     private SecurityContext securityContext() {
@@ -84,12 +83,11 @@ public class SwaggerConfiguration {
     }
 
     private List<SecurityReference> defaultAuth() {
-        AuthorizationScope authorizationScope = new AuthorizationScope(authorizationScopeGlobal,
-                authorizationScopeGlobalDesc);
+        AuthorizationScope authorizationScope = new AuthorizationScope(AUTH_SCOPE_GLOBAL, AUTH_SCOPE_GLOBAL_DESC);
         AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
         authorizationScopes[0] = authorizationScope;
         List<SecurityReference> refs = new ArrayList<>();
-        refs.add(new SecurityReference(securitySchemaOAuth2, authorizationScopes));
+        refs.add(new SecurityReference(SECURITY_SCHEMA_OAUTH2, authorizationScopes));
         return refs;
     }
 

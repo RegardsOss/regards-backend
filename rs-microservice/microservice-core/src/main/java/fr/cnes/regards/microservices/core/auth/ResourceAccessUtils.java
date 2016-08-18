@@ -6,7 +6,7 @@ public class ResourceAccessUtils {
 
     private static final String SEPARATOR = "@";
 
-    public ResourceAccessUtils() {
+    private ResourceAccessUtils() {
         super();
     }
 

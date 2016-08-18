@@ -25,7 +25,7 @@ public class EurekaController {
      * Eureka client
      */
     @Autowired
-    private EurekaClient discoveryClient_;
+    private EurekaClient discoveryClient;
 
     /**
      * Is the Eureka server enabled
@@ -49,25 +49,25 @@ public class EurekaController {
      * Config server application name
      */
     @Value("${cloud.config.server.name}")
-    String configServerName_;
+    String configServerName;
 
     @Autowired
-    MethodAutorizationService authService_;
+    MethodAutorizationService authService;
 
     @PostConstruct
     public void initAuthorisations() {
-        authService_.setAutorities("/eureka/me@GET", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/eureka/me@GET", new RoleAuthority("ADMIN"));
     }
 
     public String configServiceUrl() {
         // the name is the application name defined in the application.yml
-        InstanceInfo instance = discoveryClient_.getNextServerFromEureka(configServerName_, false);
+        InstanceInfo instance = discoveryClient.getNextServerFromEureka(configServerName, false);
         return instance.getHomePageUrl();
     }
 
     public String myserviceUrl() {
         // the name is the application name defined in the application.yml
-        InstanceInfo instance = discoveryClient_.getNextServerFromEureka(appName, false);
+        InstanceInfo instance = discoveryClient.getNextServerFromEureka(appName, false);
         return instance.getHomePageUrl();
     }
 

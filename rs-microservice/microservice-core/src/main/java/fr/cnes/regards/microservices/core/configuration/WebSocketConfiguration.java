@@ -49,18 +49,22 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> arg0) {
+        // Not implemented
     }
 
     @Override
     public void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> arg0) {
+        // Not implemented
     }
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration arg0) {
+        // Not implemented
     }
 
     @Override
     public void configureClientOutboundChannel(ChannelRegistration arg0) {
+        // Not implemented
     }
 
     @Override
@@ -70,6 +74,7 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
 
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration arg0) {
+        // Not implemented
     }
 
 }

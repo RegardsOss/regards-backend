@@ -13,6 +13,12 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 @EnableAuthorizationServer
 public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
+    @Value("${security.client}")
+    private String securityClient;
+
+    @Value("${security.secret}")
+    private String securityClientSecret;
+
     @Autowired
     private AuthenticationManager authenticationManager;
 
@@ -20,12 +26,6 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
         endpoints.authenticationManager(authenticationManager);
     }
-
-    @Value("${security.client}")
-    private String securityClient;
-
-    @Value("${security.secret}")
-    private String securityClientSecret;
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
