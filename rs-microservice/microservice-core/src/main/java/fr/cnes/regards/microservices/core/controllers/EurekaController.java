@@ -31,13 +31,13 @@ public class EurekaController {
      * Is the Eureka server enabled
      */
     @Value("${eureka.client.enabled}")
-    boolean eurekaServerEnabled_ = false;
+    boolean eurekaServerEnabled = false;
 
     /**
      * Microservice application name
      */
     @Value("${spring.application.name}")
-    String appName_;
+    String appName;
 
     /**
      * Is the Config server enabled
@@ -67,19 +67,19 @@ public class EurekaController {
 
     public String myserviceUrl() {
         // the name is the application name defined in the application.yml
-        InstanceInfo instance = discoveryClient_.getNextServerFromEureka(appName_, false);
+        InstanceInfo instance = discoveryClient_.getNextServerFromEureka(appName, false);
         return instance.getHomePageUrl();
     }
 
     /**
      * Return the adress of the current application from the Eureka registry
-     * 
+     *
      * @return
      */
     @ResourceAccess
     @RequestMapping(value = "me", method = RequestMethod.GET)
     public String me() {
-        if (eurekaServerEnabled_) {
+        if (eurekaServerEnabled) {
             return "Myself : " + myserviceUrl();
         }
         else {
@@ -89,13 +89,13 @@ public class EurekaController {
 
     /**
      * Return the adress of the current application from the Eureka registry
-     * 
+     *
      * @return
      */
     @ResourceAccess
     @RequestMapping(value = "config/adress", method = RequestMethod.GET)
     public String configAddress() {
-        if (eurekaServerEnabled_ && configServerEnabled_) {
+        if (eurekaServerEnabled && configServerEnabled_) {
             return "Config server : " + configServiceUrl();
         }
         else {

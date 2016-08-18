@@ -22,24 +22,21 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
-	
-	@Override
+
+    @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-		// Endpoint to which the client must access to connect to websocket server
-        registry.addEndpoint("/wsconnect")
-        .setHandshakeHandler(handshakeHandler())
-        .setAllowedOrigins("*")
-        .withSockJS();
+        // Endpoint to which the client must access to connect to websocket server
+        registry.addEndpoint("/wsconnect").setHandshakeHandler(handshakeHandler()).setAllowedOrigins("*").withSockJS();
     }
-	
-	@Override
-	public void configureMessageBroker(MessageBrokerRegistry config) {
-		// endpoint to which websocket client should listen to get messages
-		config.enableSimpleBroker("/topic");
-		config.setApplicationDestinationPrefixes("/myApp");
-		
-	}
-    
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        // endpoint to which websocket client should listen to get messages
+        config.enableSimpleBroker("/topic");
+        config.setApplicationDestinationPrefixes("/myApp");
+
+    }
+
     @Bean
     public DefaultHandshakeHandler handshakeHandler() {
 
@@ -47,45 +44,32 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
         policy.setInputBufferSize(8192);
         policy.setIdleTimeout(600000);
 
-        return new DefaultHandshakeHandler(
-                new JettyRequestUpgradeStrategy(new WebSocketServerFactory(policy)));
+        return new DefaultHandshakeHandler(new JettyRequestUpgradeStrategy(new WebSocketServerFactory(policy)));
     }
 
-	@Override
-	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> arg0) {
+    }
 
-	@Override
-	public void addReturnValueHandlers(
-			List<HandlerMethodReturnValueHandler> arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> arg0) {
+    }
 
-	@Override
-	public void configureClientInboundChannel(ChannelRegistration arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration arg0) {
+    }
 
-	@Override
-	public void configureClientOutboundChannel(ChannelRegistration arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration arg0) {
+    }
 
-	@Override
-	public boolean configureMessageConverters(List<MessageConverter> arg0) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    public boolean configureMessageConverters(List<MessageConverter> arg0) {
+        return false;
+    }
 
-	@Override
-	public void configureWebSocketTransport(WebSocketTransportRegistration arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration arg0) {
+    }
 
 }

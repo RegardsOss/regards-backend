@@ -24,15 +24,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class CorsFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
         response.setHeader("Access-Control-Allow-Headers", "authorization, content-type");
         response.setHeader("Access-Control-Max-Age", "3600");
-        //response.setHeader("Access-Control-Allow-Credentials","true");
-        
+
         if (!"OPTIONS".equals(request.getMethod())) {
-        	filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);
         }
     }
 }

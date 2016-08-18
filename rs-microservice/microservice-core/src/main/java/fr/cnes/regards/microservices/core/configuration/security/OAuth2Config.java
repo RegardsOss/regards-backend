@@ -13,26 +13,23 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 @EnableAuthorizationServer
 public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
-  @Autowired
-  private AuthenticationManager authenticationManager;
-  
-  @Override
-  public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-    endpoints.authenticationManager(authenticationManager);
-  }
-  
-  @Value("${security.client}")
-  private String securityClient_;
-  
-  @Value("${security.secret}")
-  private String securityClientSecret_;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
-  @Override
-  public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-    clients.inMemory()
-        .withClient(securityClient_)
-        .secret(securityClientSecret_)
-        .authorizedGrantTypes("authorization_code", "refresh_token",
-            "password").scopes("openid");
-  }
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+        endpoints.authenticationManager(authenticationManager);
+    }
+
+    @Value("${security.client}")
+    private String securityClient;
+
+    @Value("${security.secret}")
+    private String securityClientSecret;
+
+    @Override
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+        clients.inMemory().withClient(securityClient).secret(securityClientSecret)
+                .authorizedGrantTypes("authorization_code", "refresh_token", "password").scopes("openid");
+    }
 }

@@ -20,10 +20,15 @@ import fr.cnes.regards.microservices.core.configuration.cloud.CorsFilter;
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    public void registerGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().withUser("root_admin").password("root_admin").roles("ROOT_ADMIN").and()
-                .withUser("admin").password("admin").roles("ADMIN").and().withUser("public").password("public")
-                .roles("PUBLIC").and().withUser("user").password("user").roles("USER");
+    public void registerGlobal(AuthenticationManagerBuilder auth) throws WebSecurityException {
+        try {
+            auth.inMemoryAuthentication().withUser("root_admin").password("root_admin").roles("ROOT_ADMIN").and()
+                    .withUser("admin").password("admin").roles("ADMIN").and().withUser("public").password("public")
+                    .roles("PUBLIC").and().withUser("user").password("user").roles("USER");
+        }
+        catch (Exception e) {
+            throw new WebSecurityException("Exception while configuring in memory users", e);
+        }
     }
 
     @Override

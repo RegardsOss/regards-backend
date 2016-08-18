@@ -1,6 +1,5 @@
 package fr.cnes.regards.microservices.core.auth;
 
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -12,43 +11,42 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * Service MethodAutorizationServiceImpl
- * Allow to set/get the REST resource method access authorizations.
- * An authorization is a defined by a endpoint, a HTTP Verb and a list of authorized user ROLES
- * 
+ * Service MethodAutorizationServiceImpl Allow to set/get the REST resource method access authorizations. An
+ * authorization is a defined by a endpoint, a HTTP Verb and a list of authorized user ROLES
+ *
  * @author CS SI
  *
  */
 @Service
 public class MethodAutorizationServiceImpl implements MethodAutorizationService {
 
-	Map<String, List<GrantedAuthority>> grantedAuthoritiesByResource;
+    Map<String, List<GrantedAuthority>> grantedAuthoritiesByResource;
 
-	public MethodAutorizationServiceImpl() {
-		grantedAuthoritiesByResource = new HashMap<>();
-	}
+    public MethodAutorizationServiceImpl() {
+        grantedAuthoritiesByResource = new HashMap<>();
+    }
 
-	/**
-	 * Add a resource authorization
-	 */
-	public void setAutorities(String resourceName, GrantedAuthority... authorities) {
-		if (resourceName != null && authorities != null) {
-			grantedAuthoritiesByResource.put(resourceName, Arrays.asList(authorities));
-		}
-	}
+    /**
+     * Add a resource authorization
+     */
+    @Override
+    public void setAutorities(String resourceName, GrantedAuthority... authorities) {
+        if ((resourceName != null) && (authorities != null)) {
+            grantedAuthoritiesByResource.put(resourceName, Arrays.asList(authorities));
+        }
+    }
 
-	/**
-	 * Get a resource authorizations
-	 */
-	@Override
-	public Optional<List<GrantedAuthority>> getAuthorities(final RequestMapping access, RequestMapping classMapping) {
-		String resourceId = ResourceAccessUtils.getIdentifier(access, classMapping);
-		System.out.println("Accessing ressource id="+resourceId);
-		return Optional.ofNullable(grantedAuthoritiesByResource.get(resourceId));
-	}
+    /**
+     * Get a resource authorizations
+     */
+    @Override
+    public Optional<List<GrantedAuthority>> getAuthorities(final RequestMapping access, RequestMapping classMapping) {
+        String resourceId = ResourceAccessUtils.getIdentifier(access, classMapping);
+        return Optional.ofNullable(grantedAuthoritiesByResource.get(resourceId));
+    }
 
-	@Override
-	public List<GrantedAuthority> getAutoritiesById(String pId) {
-		return grantedAuthoritiesByResource.get(pId);
-	}
+    @Override
+    public List<GrantedAuthority> getAutoritiesById(String pId) {
+        return grantedAuthoritiesByResource.get(pId);
+    }
 }

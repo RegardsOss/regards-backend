@@ -15,35 +15,36 @@ import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 @RestController
 @RequestMapping("/config")
 public class ConfigController {
-	
-	/**
-	 * Is the Config server enabled
-	 */
-	@Value("${cloud.config.server.enabled}")
-	boolean configServerEnabled_ = false;
-	
-	/**
-	 * Property to read from the config server
-	 */
-	@Value("${my.otherproperty}")
-	String name = "Default value";
-	
-	@Autowired
-	MethodAutorizationService authService_;
 
-	@PostConstruct
-	public void initAuthorisations() {
-		authService_.setAutorities("/config/value@GET",new RoleAuthority("ADMIN"));
-	}
-	
-	@ResourceAccess
-	@RequestMapping(value="/value",method=RequestMethod.GET)
-	public String getConfigValue() {
-		if (configServerEnabled_){
-			return name;
-		} else {
-			return "Config server disabled !";
-		}
-	}
+    /**
+     * Is the Config server enabled
+     */
+    @Value("${cloud.config.server.enabled}")
+    boolean configServerEnabled = false;
+
+    /**
+     * Property to read from the config server
+     */
+    @Value("${my.otherproperty}")
+    String name = "Default value";
+
+    @Autowired
+    MethodAutorizationService authService;
+
+    @PostConstruct
+    public void initAuthorisations() {
+        authService.setAutorities("/config/value@GET", new RoleAuthority("ADMIN"));
+    }
+
+    @ResourceAccess
+    @RequestMapping(value = "/value", method = RequestMethod.GET)
+    public String getConfigValue() {
+        if (configServerEnabled) {
+            return name;
+        }
+        else {
+            return "Config server disabled !";
+        }
+    }
 
 }
