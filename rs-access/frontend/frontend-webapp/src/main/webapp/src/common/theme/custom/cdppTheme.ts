@@ -22,7 +22,7 @@ import spacing from "material-ui/styles/spacing"
  * You can redefine here some spacing
  * @see 'material-ui/styles/spacing' source code for a list of available properties
  */
-const customSpacing = merge ({}, spacing, {
+const customSpacing = merge({}, spacing, {
   desktopGutter: 50,
   desktopDropDownMenuItemHeight: 10,
   desktopDropDownMenuFontSize: 20,
@@ -47,13 +47,13 @@ export default {
     accent2Color: grey300,
     accent3Color: grey700,
     textColor: blueGrey800,
-    secondaryTextColor: fade (blueGrey800, 0.54),
+    secondaryTextColor: fade(blueGrey800, 0.54),
     alternateTextColor: brown50,
     canvasColor: amber50,
     borderColor: grey300,
-    disabledColor: fade (brown900, 0.3),
+    disabledColor: fade(brown900, 0.3),
     pickerHeaderColor: cyan500,
-    clockCircleColor: fade (darkBlack, 0.07),
+    clockCircleColor: fade(darkBlack, 0.07),
     shadowColor: blueGrey900,
     errorColor: {
       color: red900

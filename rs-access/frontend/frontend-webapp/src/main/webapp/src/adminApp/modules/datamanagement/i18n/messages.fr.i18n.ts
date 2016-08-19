@@ -6,7 +6,6 @@ const messages = {
   "datamanagement.dataset.list": "List datasets",
   "datamanagement.dataset.form.header": "Créer un nouveau jeu de données",
   "datamanagement.dataset.form.create.label": "Libellé",
-
 }
 
 export default messages

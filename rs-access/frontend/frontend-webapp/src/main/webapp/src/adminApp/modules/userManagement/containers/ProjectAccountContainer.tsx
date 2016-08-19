@@ -67,12 +67,12 @@ class ProjectAccountContainer extends React.Component<ProjectAccountProps, any> 
 
   handleView = () => {
     const user = this.props.projectAccount
-    const urlTo = "/admin/" + this.props.projectName + "/users/" + user.account.accountId;
+    const urlTo = "/admin/" + this.props.projectName + "/users/" + user.account.accountId
     browserHistory.push(urlTo)
   }
 
   handleEdit = () => {
-    const user = this.props.projectAccount;
+    const user = this.props.projectAccount
     const urlTo = "/admin/" + this.props.projectName + "/users/" + user.account.accountId + "/edit"
     browserHistory.push(urlTo)
   }

@@ -1,8 +1,12 @@
 import * as React from "react"
-import { Card, CardHeader, CardText } from "material-ui/Card"
-import { FormattedMessage } from "react-intl"
-import TextField from "material-ui/TextField"
 import I18nProvider from "../../../../../common/i18n/I18nProvider"
+import PickModelFormComponent from "../components/add/PickModelFormComponent"
+import CreateModelFormComponent from "../components/add/CreateModelFormComponent"
+import StepperCreateDatasetComponent from "../components/add/StepperCreateDatasetComponent"
+import PickDatasourceFormComponent from "../components/add/PickDatasourceFormComponent"
+import CreateDatasetSuccessComponent from "../components/add/CreateDatasetSuccessComponent"
+import CreateDatasourceFormComponent from "../components/add/CreateDatasourceFormComponent"
+import CreateConnectionFormComponent from "../components/add/CreateConnectionFormComponent"
 
 
 /**
@@ -13,21 +17,20 @@ export default class DatasetCreateContainer extends React.Component<any, any> {
   render (): JSX.Element {
     return (
       <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
-        <Card
-          initiallyExpanded={true}>
-          <CardHeader
-            title={<FormattedMessage id="userlist.header"/>}
-            actAsExpander={true}
-            showExpandableButton={false}
-          />
-          <CardText>
-            <TextField
-              type="text"
-              floatingLabelText={<FormattedMessage id="login.username"/>}
-              fullWidth={true}
-            />
-          </CardText>
-        </Card>
+        <div>
+          <StepperCreateDatasetComponent />
+          <PickModelFormComponent />
+          <hr />
+          <CreateModelFormComponent />
+          <hr />
+          <PickDatasourceFormComponent />
+          <hr />
+          <CreateDatasetSuccessComponent />
+          <hr />
+          <CreateDatasourceFormComponent />
+          <hr />
+          <CreateConnectionFormComponent />
+        </div>
       </I18nProvider>
     )
   }
@@ -40,3 +43,4 @@ export default class DatasetCreateContainer extends React.Component<any, any> {
  })
  export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
  */
+
