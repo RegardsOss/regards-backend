@@ -28,7 +28,7 @@ export default class StepperCreateDatasetComponent extends React.Component<any, 
     }
   }
 
-  getStepContent (stepIndex) {
+  getStepContent (stepIndex: number): string {
     switch (stepIndex) {
       case 0:
         return 'Select campaign settings...'

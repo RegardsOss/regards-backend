@@ -3,7 +3,7 @@ import { Card, CardHeader, CardText } from "material-ui/Card"
 import I18nProvider from "../../../../common/i18n/I18nProvider"
 import { FormattedMessage } from "react-intl"
 import { Link } from "react-router"
-
+import { STATES } from "../dataset/containers/DatasetCreateContainer"
 
 interface DatamanagementCreateProps {
   test?: any
@@ -17,6 +17,31 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
 
   constructor (props: any) {
     super(props)
+  }
+
+  getUrlCollectionCreate = () => {
+    return "/admin/cdpp/datamanagement/collection/create/"
+  }
+  getUrlCollection = () => {
+    return "/admin/cdpp/datamanagement/collection/"
+  }
+  getUrlDatasetCreate = () => {
+    return "/admin/cdpp/datamanagement/dataset/create/" + STATES.SELECT_MODELE
+  }
+  getUrlDataset = () => {
+    return "/admin/cdpp/datamanagement/dataset/"
+  }
+  getModelList = () => {
+    return "/admin/cdpp/datamanagement/model/create"
+  }
+  getModelCreate = () => {
+    return "/admin/cdpp/datamanagement/model/"
+  }
+  getDatasourceList = () => {
+    return "/admin/cdpp/datamanagement/model/create"
+  }
+  getDatasourceCreate = () => {
+    return "/admin/cdpp/datamanagement/model/"
   }
 
   render (): JSX.Element {
@@ -36,7 +61,7 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
             <Card
               initiallyExpanded={true}>
               />
-              <Link to={"/admin/cdpp/datamanagement/"} style={style}>
+              <Link to={this.getUrlCollectionCreate()} style={style}>
                 <CardText>
                   <FormattedMessage id="datamanagement.collection.add"/>
                 </CardText>
@@ -46,7 +71,7 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
             <Card
               initiallyExpanded={true}>
               />
-              <Link to={"/admin/cdpp/datamanagement/"} style={style}>
+              <Link to={this.getUrlCollection()} style={style}>
                 <CardText>
                   <FormattedMessage id="datamanagement.collection.list"/>
                 </CardText>
@@ -57,7 +82,17 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
             <Card
               initiallyExpanded={true}>
               />
-              <Link to={"/admin/cdpp/datamanagement/dataset"} style={style}>
+              <Link to={this.getUrlDatasetCreate()} style={style}>
+                <CardText>
+                  <FormattedMessage id="datamanagement.dataset.list"/>
+                </CardText>
+              </Link>
+
+            </Card>
+            <Card
+              initiallyExpanded={true}>
+              />
+              <Link to={this.getUrlDataset()} style={style}>
                 <CardText>
                   <FormattedMessage id="datamanagement.dataset.list"/>
                 </CardText>
@@ -68,12 +103,41 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
             <Card
               initiallyExpanded={true}>
               />
-              <Link to={"/admin/cdpp/datamanagement/dataset/create"} style={style}>
+              <Link to={this.getModelList()} style={style}>
                 <CardText>
-                  <FormattedMessage id="datamanagement.dataset.add"/>
+                  Model list
                 </CardText>
               </Link>
+            </Card>
 
+            <Card
+              initiallyExpanded={true}>
+              />
+              <Link to={this.getModelCreate()} style={style}>
+                <CardText>
+                  Add model
+                </CardText>
+              </Link>
+            </Card>
+
+            <Card
+              initiallyExpanded={true}>
+              />
+              <Link to={this.getDatasourceList()} style={style}>
+                <CardText>
+                  Datasource list
+                </CardText>
+              </Link>
+            </Card>
+
+            <Card
+              initiallyExpanded={true}>
+              />
+              <Link to={this.getDatasourceCreate()} style={style}>
+                <CardText>
+                  Add datasource
+                </CardText>
+              </Link>
             </Card>
           </div>
         </div>

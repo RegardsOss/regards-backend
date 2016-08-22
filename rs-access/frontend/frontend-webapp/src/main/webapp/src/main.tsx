@@ -7,7 +7,7 @@ import { routes } from "./routes"
 import {test} from "@regards-oss/common"
 
 
-console.log(test());
+console.log(test())
 
 const store = configureStore (preloadedState)
 ReactDOM.render (

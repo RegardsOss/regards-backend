@@ -1,7 +1,9 @@
 import { PlainRoute } from "react-router"
 import DatasetCreateContainer from "./dataset/containers/DatasetCreateContainer"
-import DatasetContainer from "./dataset/containers/DatasetContainer"
+import DatasetListContainer from "./dataset/containers/DatasetListContainer"
 import DatamanagementContainer from "./containers/DatamanagementContainer"
+import CollectionCreateContainer from "./collection/containers/CollectionCreateContainer"
+import CollectionListContainer from "./collection/containers/CollectionListContainer"
 
 export const datamanagementRoute: PlainRoute = {
   path: 'datamanagement',
@@ -14,23 +16,47 @@ export const datamanagementRoute: PlainRoute = {
   }
 }
 
-export const datasetRoute: PlainRoute = {
+export const datasetListRoute: PlainRoute = {
   path: 'datamanagement/dataset',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
       cb(null, {
-        content: DatasetContainer
+        content: DatasetListContainer
       })
     })
   }
 }
 
 export const datasetCreateRoute: PlainRoute = {
-  path: 'datamanagement/dataset/create',
+  path: 'datamanagement/dataset/create/:step',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
       cb(null, {
         content: DatasetCreateContainer
+      })
+    })
+  }
+}
+
+
+
+export const collectionListRoute: PlainRoute = {
+  path: 'datamanagement/collection',
+  getComponents(nextState: any, cb: any): any {
+    require.ensure([], (require: any) => {
+      cb(null, {
+        content: CollectionListContainer
+      })
+    })
+  }
+}
+
+export const collectionCreateRoute: PlainRoute = {
+  path: 'datamanagement/collection/create',
+  getComponents(nextState: any, cb: any): any {
+    require.ensure([], (require: any) => {
+      cb(null, {
+        content: CollectionCreateContainer
       })
     })
   }

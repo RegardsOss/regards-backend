@@ -31,7 +31,8 @@ class Layout extends React.Component<LayoutProps, any> {
     const {style, layout} = this.props
     const defaultStyle = {
       backgroundColor: '#ECEFF1', // #ECEFF1
-      height: "100vh"
+      minHeight: "100vh",
+      maxHeight: "10000vh",
     }
     let layoutStyle = style ? Object.assign ({}, defaultStyle, style) : defaultStyle
 

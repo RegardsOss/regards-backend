@@ -1,5 +1,4 @@
-
 export interface HateosLink {
-  rel:string,
+  rel: string,
   href: string
 }

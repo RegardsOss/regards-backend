@@ -31,8 +31,10 @@ class LoginComponent extends React.Component<LoginProps, any> {
     this.handleUserInputChange = this.handleUserInputChange.bind(this)
     this.handlePasswordInputChange = this.handlePasswordInputChange.bind(this)
     this.handleButtonPress = this.handleButtonPress.bind(this)
-    console.log("Leo", "Auto connect")
-    this.props.onLogin("admin", "admin")
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Leo", "Auto connect")
+      this.props.onLogin("admin", "admin")
+    }
   }
 
   /**

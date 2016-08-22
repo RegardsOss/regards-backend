@@ -1,9 +1,6 @@
 import * as React from "react"
 import { Card, CardHeader, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
-import TextField from "material-ui/TextField"
-import FlatButton from "material-ui/FlatButton"
-import TimePicker from "material-ui/TimePicker"
 
 
 /**

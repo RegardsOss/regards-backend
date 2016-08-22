@@ -4,9 +4,8 @@ import { FormattedMessage } from "react-intl"
 import TextField from "material-ui/TextField"
 import FlatButton from "material-ui/FlatButton"
 import TimePicker from "material-ui/TimePicker"
-
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
+import SelectField from "material-ui/SelectField"
+import MenuItem from "material-ui/MenuItem"
 
 /**
  */
