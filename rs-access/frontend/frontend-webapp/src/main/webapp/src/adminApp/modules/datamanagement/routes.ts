@@ -28,7 +28,7 @@ export const datasetListRoute: PlainRoute = {
 }
 
 export const datasetCreateRoute: PlainRoute = {
-  path: 'datamanagement/dataset/create/:step',
+  path: 'datamanagement/dataset/create',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
       cb(null, {

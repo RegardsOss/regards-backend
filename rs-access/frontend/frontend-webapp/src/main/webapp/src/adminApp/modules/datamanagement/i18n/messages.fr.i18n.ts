@@ -4,7 +4,7 @@ const messages = {
   "datamanagement.collection.list": "List collections",
   "datamanagement.dataset.add": "Add dataset",
   "datamanagement.dataset.list": "List datasets",
-  "datamanagement.dataset.form.header": "Créer un nouveau jeu de données",
+  "datamanagement.dataset.form.header": "Création d'un nouveau jeu de données",
   "datamanagement.dataset.form.create.label": "Libellé",
 }
 

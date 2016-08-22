@@ -11,14 +11,17 @@ import * as fromUi from "./modules/ui/reducer"
 import RoleReducer from "./modules/userManagement/role.reducer"
 import ProjectAccountReducers from "./modules/userManagement/projectAccount.reducer"
 import * as ProjectAccountsSelectors from "./modules/userManagement/projectAccount.reducer"
-
 import AccountReducers from "./modules/userManagement/account.reducer"
 import * as AccountsSelectors from "./modules/userManagement/account.reducer"
+import { DatasetFormReducer, DatasetFormSelectors } from "./modules/datamanagement/reducer"
 
 // import authentication from '../modules/authentication/reducers/TODO'
 // import home from '../modules/home/reducers/TODO'
 //
 
+const forms =  combineReducers({
+  createDataset: DatasetFormReducer
+})
 
 export default combineReducers({
   projects,
@@ -26,8 +29,8 @@ export default combineReducers({
   ui,
   projectAccounts: ProjectAccountReducers,
   roles: RoleReducer,
-  accounts: AccountReducers
-
+  accounts: AccountReducers,
+  forms
 })
 
 // WIP
@@ -72,3 +75,10 @@ export const getProjectAccountById = (state: any, projectAccountId: number) =>
 
 export const getAccountById = (state: any, accountId: number) =>
   AccountsSelectors.getAccountById(state.adminApp.accounts, accountId)
+
+export const getFormViewState = (state: any) =>
+  DatasetFormSelectors.getFormViewState(state.adminApp.forms.createDataset)
+
+export const getFormDatasetAttributes = (state: any) =>
+  DatasetFormSelectors.getFormDatasetAttributes(state.adminApp.forms.createDataset)
+

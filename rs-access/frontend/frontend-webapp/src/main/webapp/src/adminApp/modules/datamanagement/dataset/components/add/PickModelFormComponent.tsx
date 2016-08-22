@@ -5,12 +5,24 @@ import TextField from "material-ui/TextField"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
 import FlatButton from "material-ui/FlatButton"
+import TimePicker from "material-ui/TimePicker"
 
-
+interface PickModelFormProps {
+  handleNextStep: () => void
+  handleNewModel: () => void
+}
 /**
  */
-export default class PickModelFormComponent extends React.Component<any, any> {
+export default class PickModelFormComponent extends React.Component<PickModelFormProps, any> {
 
+  handleNextButton = () => {
+    this.props.handleNextStep()
+  }
+
+
+  handleCreateNewModel = () => {
+    this.props.handleNewModel()
+  }
 
   render (): JSX.Element {
     return (
@@ -27,32 +39,60 @@ export default class PickModelFormComponent extends React.Component<any, any> {
             floatingLabelText={<FormattedMessage id="datamanagement.dataset.form.create.label"/>}
             fullWidth={true}
           />
+          <div>
+
+            <SelectField
+              floatingLabelText="Type de modèle"
+              value={3}
+            >
+              <MenuItem value={1} primaryText="Never"/>
+              <MenuItem value={2} primaryText="Every Night"/>
+              <MenuItem value={3} primaryText="Weeknights"/>
+              <MenuItem value={4} primaryText="Weekends"/>
+              <MenuItem value={5} primaryText="Weekly"/>
+            </SelectField>
+            <FlatButton
+              label="Create new model"
+              primary={true}
+              onTouchTap={this.handleCreateNewModel}
+            />
+          </div>
+          <hr />
+          <TextField
+            type="number"
+            floatingLabelText="Attribut 1 de type number"
+            fullWidth={true}
+          />
+          <TextField
+            type="text"
+            floatingLabelText="Attribut 2 de type string"
+            fullWidth={true}
+          />
+          <TimePicker
+            format="24hr"
+            hintText="Attribut 3 de type date"
+            fullWidth={true}
+          />
           <SelectField
-            floatingLabelText="Type de modèle"
+            floatingLabelText="Input type"
             value={3}
             fullWidth={true}
           >
-            <MenuItem value={1} primaryText="Never"/>
-            <MenuItem value={2} primaryText="Every Night"/>
-            <MenuItem value={3} primaryText="Weeknights"/>
-            <MenuItem value={4} primaryText="Weekends"/>
-            <MenuItem value={5} primaryText="Weekly"/>
+            <MenuItem value={1} primaryText="Integer"/>
+            <MenuItem value={2} primaryText="Float"/>
+            <MenuItem value={3} primaryText="String"/>
+            <MenuItem value={4} primaryText="Geometric"/>
           </SelectField>
-          <FlatButton label="Create new model" primary={true}/>
           <br />
           <FlatButton label="Cancel" primary={true}/>
-          <FlatButton label="Next" secondary={true}/>
+          <FlatButton
+            label="Next"
+            secondary={true}
+            onTouchTap={this.handleNextButton}
+          />
 
         </CardText>
       </Card>
     )
   }
 }
-
-/*
- const mapStateToProps = (state: any, ownProps: any) => {
- }
- const mapDispatchToProps = (dispatch: any) => ({
- })
- export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
- */

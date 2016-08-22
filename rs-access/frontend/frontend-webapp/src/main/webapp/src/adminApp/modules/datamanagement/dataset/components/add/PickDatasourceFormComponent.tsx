@@ -6,10 +6,18 @@ import MenuItem from "material-ui/MenuItem"
 import FlatButton from "material-ui/FlatButton"
 
 
+interface PickDatasourceFormProps {
+  handleNextStep: () => void
+}
 /**
  */
-export default class PickDatasourceFormComponent extends React.Component<any, any> {
+export default class PickDatasourceFormComponent extends React.Component<PickDatasourceFormProps, any> {
 
+
+
+  handleNextButton = () => {
+    this.props.handleNextStep()
+  }
 
   render (): JSX.Element {
     return (
@@ -21,20 +29,25 @@ export default class PickDatasourceFormComponent extends React.Component<any, an
           showExpandableButton={false}
         />
         <CardText>
-          <SelectField
-            floatingLabelText="Type de source de données"
-            value={3}
-            fullWidth={true}
-          >
-            <MenuItem value={1} primaryText="Oracle"/>
-            <MenuItem value={2} primaryText="Mysql"/>
-            <MenuItem value={3} primaryText="PostgreSQL"/>
-            <MenuItem value={4} primaryText="Weekends"/>
-            <MenuItem value={5} primaryText="Weekly"/>
-          </SelectField>
-          <FlatButton label="Add datasource" primary={true}/>
+          <div>
+            <SelectField
+              floatingLabelText="Type de source de données"
+              value={3}
+            >
+              <MenuItem value={1} primaryText="Oracle"/>
+              <MenuItem value={2} primaryText="Mysql"/>
+              <MenuItem value={3} primaryText="PostgreSQL"/>
+              <MenuItem value={4} primaryText="Weekends"/>
+              <MenuItem value={5} primaryText="Weekly"/>
+            </SelectField>
+            <FlatButton label="Add datasource" primary={true}/>
+          </div>
           <br />
-          <FlatButton label="Next" secondary={true}/>
+          <FlatButton
+            label="Next"
+            secondary={true}
+            onTouchTap={this.handleNextButton}
+          />
 
         </CardText>
       </Card>
