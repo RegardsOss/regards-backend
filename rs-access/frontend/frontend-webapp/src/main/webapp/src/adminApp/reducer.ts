@@ -8,9 +8,13 @@ import projectAdmins from "./modules/projectAdmins/reducer"
 import * as fromProjectAdmins from "./modules/projectAdmins/reducer"
 import ui from "./modules/ui/reducer"
 import * as fromUi from "./modules/ui/reducer"
-import * as ProjectAccountsSelectors from "./modules/userManagement/projectAccount.reducer"
 import RoleReducer from "./modules/userManagement/role.reducer"
 import ProjectAccountReducers from "./modules/userManagement/projectAccount.reducer"
+import * as ProjectAccountsSelectors from "./modules/userManagement/projectAccount.reducer"
+
+import AccountReducers from "./modules/userManagement/account.reducer"
+import * as AccountsSelectors from "./modules/userManagement/account.reducer"
+
 // import authentication from '../modules/authentication/reducers/TODO'
 // import home from '../modules/home/reducers/TODO'
 //
@@ -21,7 +25,9 @@ export default combineReducers({
   projectAdmins,
   ui,
   projectAccounts: ProjectAccountReducers,
-  roles: RoleReducer
+  roles: RoleReducer,
+  accounts: AccountReducers
+
 })
 
 // WIP
@@ -63,3 +69,6 @@ export const getProjectAccountsId = (state: any) =>
 
 export const getProjectAccountById = (state: any, projectAccountId: number) =>
   ProjectAccountsSelectors.getProjectAccountById(state.adminApp.projectAccounts, projectAccountId)
+
+export const getAccountById = (state: any, accountId: number) =>
+  AccountsSelectors.getAccountById(state.adminApp.accounts, accountId)

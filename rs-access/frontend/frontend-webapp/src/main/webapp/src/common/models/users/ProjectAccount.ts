@@ -8,6 +8,6 @@ export interface ProjectAccount {
   lastupdate: string,
   role: string,
   project: string,
-  account: Account,
+  account: number,
   links: Array<HateosLink>
 }

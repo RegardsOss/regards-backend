@@ -10,11 +10,13 @@ import IconButton from "material-ui/IconButton"
 import IconMenu from "material-ui/IconMenu"
 import MenuItem from "material-ui/MenuItem"
 import { FormattedMessage } from "react-intl"
+import { Account } from "../../../../common/models/users/types"
 // Containers
 /**
  *
  */
 export interface ProjectAccountProps {
+  account: Account
   projectAccount: ProjectAccount
   redirectOnSelectTo: string
   muiTheme?: any
@@ -40,7 +42,7 @@ class ProjectAccountComponent extends React.Component<ProjectAccountProps, any> 
    * @returns {any}
    */
   render (): JSX.Element {
-    const {projectAccount, redirectOnSelectTo} = this.props
+    const {projectAccount, account, redirectOnSelectTo} = this.props
     const {muiTheme} = this.context
     const style = muiTheme.linkWithoutDecoration
 
@@ -59,27 +61,27 @@ class ProjectAccountComponent extends React.Component<ProjectAccountProps, any> 
         <TableRowColumn>
           {this.props.children}
           <Link to={redirectOnSelectTo} style={style}>
-            {projectAccount.account.login}
+            {account.login}
           </Link>
         </TableRowColumn>
         < TableRowColumn >
           <Link to={redirectOnSelectTo} style={style}>
-            {projectAccount.account.firstName}
+            {account.firstName}
           </Link>
         </ TableRowColumn >
         <TableRowColumn>
           <Link to={redirectOnSelectTo} style={style}>
-            {projectAccount.account.lastName}
+            {account.lastName}
           </Link>
         </TableRowColumn>
         < TableRowColumn >
           <Link to={redirectOnSelectTo} style={style}>
-            {projectAccount.account.email}
+            {account.email}
           </Link>
         </ TableRowColumn >
         <TableRowColumn>
           <Link to={redirectOnSelectTo} style={style}>
-            {projectAccount.account.status}
+            {account.status}
           </Link>
         </TableRowColumn>
         < TableRowColumn >

@@ -1,6 +1,6 @@
 import * as React from "react"
 import { connect } from "react-redux"
-import { ProjectAccount } from "../../../../common/models/users/types"
+import { ProjectAccount, Account } from "../../../../common/models/users/types"
 import ProjectAccountComponent from "../components/ProjectAccountComponent"
 import * as selectors from "../../../reducer"
 import { browserHistory } from "react-router"
@@ -9,9 +9,10 @@ import Actions from "../actions"
 import ProjectAccountDeleteComponent from "../components/ProjectAccountDeleteComponent"
 
 interface ProjectAccountProps {
+  projectAccount: ProjectAccount,
   projectName: string,
   // From mapStateToProps
-  projectAccount?: ProjectAccount,
+  account?: Account,
   // From mapDispatchToProps
   deleteProjectAccount?: (linkDeleteProjectAccount: string) => void
 }
@@ -26,7 +27,7 @@ class ProjectAccountContainer extends React.Component<ProjectAccountProps, any> 
   }
 
   generateUserProfileUrl = (projectAccount: ProjectAccount) => {
-    return "/admin/" + this.props.projectName + "/users/" + projectAccount.account.accountId
+    return "/admin/" + this.props.projectName + "/users/" + projectAccount.account
   }
 
   /**
@@ -40,9 +41,9 @@ class ProjectAccountContainer extends React.Component<ProjectAccountProps, any> 
   }
 
   deleteUser = () => {
-    const user = this.props.projectAccount
+    const account = this.props.account
     const LINK_TYPE_DELETE = "role" // TODO: to change
-    const userDeleteLink = find(user.links, {"rel": LINK_TYPE_DELETE})
+    const userDeleteLink: any = find(account.links, {"rel": LINK_TYPE_DELETE})
     if (userDeleteLink) {
       this.props.deleteProjectAccount(userDeleteLink.href)
     } else {
@@ -66,19 +67,19 @@ class ProjectAccountContainer extends React.Component<ProjectAccountProps, any> 
   }
 
   handleView = () => {
-    const user = this.props.projectAccount
-    const urlTo = "/admin/" + this.props.projectName + "/users/" + user.account.accountId
+    const user = this.props.account
+    const urlTo = "/admin/" + this.props.projectName + "/users/" + user.accountId
     browserHistory.push(urlTo)
   }
 
   handleEdit = () => {
-    const user = this.props.projectAccount
-    const urlTo = "/admin/" + this.props.projectName + "/users/" + user.account.accountId + "/edit"
+    const user = this.props.account
+    const urlTo = "/admin/" + this.props.projectName + "/users/" + user.accountId + "/edit"
     browserHistory.push(urlTo)
   }
 
   render (): JSX.Element {
-    const {projectAccount} = this.props
+    const {projectAccount, account} = this.props
     let dialog: JSX.Element
     if (this.state.openDeleteDialog) {
       dialog = <ProjectAccountDeleteComponent
@@ -88,6 +89,7 @@ class ProjectAccountContainer extends React.Component<ProjectAccountProps, any> 
     }
     return (
       <ProjectAccountComponent
+        account={account}
         projectAccount={projectAccount}
         handleView={this.handleView}
         handleEdit={this.handleEdit}
@@ -102,9 +104,9 @@ class ProjectAccountContainer extends React.Component<ProjectAccountProps, any> 
 
 
 const mapStateToProps = (state: any, ownProps: ProjectAccountProps) => {
-  const user = selectors.getProjectAccountById(state, ownProps.projectAccount.account.accountId)
+  const account = selectors.getAccountById(state, ownProps.projectAccount.account)
   return {
-    user: user
+    account: account
   }
 }
 const mapDispatchToProps = (dispatch: any) => ({

@@ -74,7 +74,7 @@ class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any>
                 <ProjectAccountContainer
                   projectAccount={projectAccount}
                   projectName={params.project}
-                  key={projectAccount.account.accountId}
+                  key={projectAccount.projectAccountId}
                 />
               ))}
 
