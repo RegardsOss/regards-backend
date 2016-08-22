@@ -18,7 +18,6 @@
 
   <modules>
     <module>frontend-boot</module>
-    <module>frontend-plugins</module>
     <module>frontend-webapp</module>
   </modules>
 
