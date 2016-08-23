@@ -6,6 +6,8 @@ import { Link } from "react-router"
 
 interface DatamanagementCreateProps {
   test?: any
+  // From router
+  params: any
 }
 
 /**
@@ -19,28 +21,36 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
   }
 
   getCollectionCreate = () => {
-    return "/admin/cdpp/datamanagement/collection/create/"
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/collection/create"
   }
   getCollectionList = () => {
-    return "/admin/cdpp/datamanagement/collection/"
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/collection"
   }
   getDatasetCreate = () => {
-    return "/admin/cdpp/datamanagement/dataset/create/"
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/dataset/create"
   }
   getDatasetList = () => {
-    return "/admin/cdpp/datamanagement/dataset/"
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/dataset"
   }
   getModelList = () => {
-    return "/admin/cdpp/datamanagement/model/create"
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/model"
   }
   getModelCreate = () => {
-    return "/admin/cdpp/datamanagement/model/"
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/model/create"
   }
   getDatasourceList = () => {
-    return "/admin/cdpp/datamanagement/model/create"
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/datasource/create"
   }
   getDatasourceCreate = () => {
-    return "/admin/cdpp/datamanagement/model/"
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/datasource"
   }
 
   render (): JSX.Element {

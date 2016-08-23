@@ -16,11 +16,6 @@ import { Project } from "../types/ProjectTypes"
 import * as actions from "../actions"
 import * as uiActions from "../../ui/actions"
 import * as selectors from "../../../reducer"
-// Containers
-// Components
-// Types
-// Actions
-// Selectors
 
 interface ProjectsContainerTypes {
   // From mapStateToProps

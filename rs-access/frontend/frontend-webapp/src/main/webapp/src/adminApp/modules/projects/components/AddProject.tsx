@@ -10,32 +10,37 @@ import AddBox from "material-ui/svg-icons/content/add-box"
  *
  * You can also close this dialog by clicking outside the dialog, or with the 'Esc' key.
  */
-export default class AddProject extends React.Component<any, any> {
+
+
+interface AddProjectProps {
+  onSave: (value: string) => void
+}
+export default class AddProject extends React.Component<AddProjectProps, any> {
   state: any = {
     open: false,
     value: ''
   }
 
   handleOpen = () => {
-    this.setState ({open: true})
+    this.setState({open: true})
   }
 
   handleClose = () => {
-    this.setState ({open: false})
+    this.setState({open: false})
   }
 
   handleSave = () => {
-    this.handleClose ()
-    this.props.onSave (this.state.value)
+    this.handleClose()
+    this.props.onSave(this.state.value)
   }
 
   handleChange = (event: any) => {
-    this.setState ({
+    this.setState({
       value: event.target.value,
     })
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     const actions = [
       <FlatButton
         label="Cancel"

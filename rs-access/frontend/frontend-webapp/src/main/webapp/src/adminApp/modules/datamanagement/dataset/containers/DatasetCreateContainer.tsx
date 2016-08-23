@@ -65,8 +65,7 @@ export class DatasetCreateContainer extends React.Component<DatasetCreateProps, 
 
   handleNewModel = () => {
     const from = encodeURIComponent(this.props.location.pathname)
-    console.log(this.props.params)
-    const urlTo = "/admin/" + this.props.params.project + "/model/" + from
+    const urlTo = "/admin/" + this.props.params.project + "/datamanagement/model/create/" + from
     browserHistory.push(urlTo)
   }
 

@@ -6,11 +6,7 @@ import {
   projectAccountCreateRoute
 } from "./modules/userManagement/routes"
 import {
-  datamanagementRoute,
-  datasetListRoute,
-  datasetCreateRoute,
-  collectionListRoute,
-  collectionCreateRoute
+  datamanagementRouter
 } from "./modules/datamanagement/routes"
 import AdminApp from "./AdminApp"
 
@@ -22,11 +18,8 @@ export const adminAppRoutes: PlainRoute = {
     projectAccountEditRoute,
     projectAccountsRoutes,
     projectAccountCreateRoute,
-    datamanagementRoute,
-    datasetListRoute,
-    collectionCreateRoute,
-    datasetCreateRoute,
-    collectionListRoute,
+    datamanagementRouter
+
   ],
   getComponent(nextState: any, cb: any): void {
     require.ensure([], (require: any) => {
