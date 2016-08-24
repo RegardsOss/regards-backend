@@ -1,14 +1,20 @@
 import * as React from "react"
 import I18nProvider from "../../../../../common/i18n/I18nProvider"
+import { connect } from "react-redux"
+import { ModelAttribute } from "../ModelAttribute"
+import { addModel } from "../actions"
 import ModelCreateComponent from "../components/ModelCreateComponent"
+import { browserHistory } from "react-router"
 
 /**
  */
 interface ModelCreateProps {
   // From router
   params: any
+  // From mapDispatchToProps
+  addModel?: (id: number, name: string, attributes: Array<ModelAttribute>) => void
 }
-export default class ModelCreateContainer extends React.Component<ModelCreateProps, any> {
+export class ModelCreateContainer extends React.Component<ModelCreateProps, any> {
 
   getCancelUrl = () => {
     const from = this.props.params.from
@@ -20,8 +26,13 @@ export default class ModelCreateContainer extends React.Component<ModelCreatePro
       return "/admin/" + projectName + "/datamanagement/model"
     }
   }
-  handleNextStep = () => {
+
+  handleNextStep = (name: string, attributes: Array<ModelAttribute>) => {
+    const id = Math.floor(Math.random() * 6) + 1
+    this.props.addModel(id, name, attributes)
+    browserHistory.push(this.getCancelUrl())
   }
+
   render (): JSX.Element {
     return (
       <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
@@ -33,15 +44,7 @@ export default class ModelCreateContainer extends React.Component<ModelCreatePro
     )
   }
 }
-/*
- const mapStateToProps = (state: any, ownProps: any) => {
- const viewState = Selectors.getFormViewState(state)
- return {
- viewState: viewState
- }
- }
- const mapDispatchToProps = (dispatch: any) => ({
- setViewState: (newState: string) => dispatch(Actions.setViewState(newState))
- })
- export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
- */
+const mapDispatchToProps = (dispatch: any) => ({
+  addModel: (id: number, name: string, attributes: Array<ModelAttribute>) => dispatch(addModel(id, name, attributes)),
+})
+export default connect<{}, {}, ModelCreateProps>(null, mapDispatchToProps)(ModelCreateContainer)

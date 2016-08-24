@@ -6,6 +6,9 @@ const messages = {
   "datamanagement.dataset.list": "List datasets",
   "datamanagement.dataset.form.header": "Create a new dataset",
   "datamanagement.dataset.form.create.label": "Label",
+  "datamanagement.model.create.attribute.name": "Name",
+  "datamanagement.model.create.attribute.type": "Type",
+  "datamanagement.model.create.attribute.actions": "Actions"
 }
 
 export default messages

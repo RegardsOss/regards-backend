@@ -4,6 +4,7 @@ import { FormattedMessage } from "react-intl"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
 import FlatButton from "material-ui/FlatButton"
+import TextField from "material-ui/TextField"
 
 
 interface PickDatasourceFormProps {

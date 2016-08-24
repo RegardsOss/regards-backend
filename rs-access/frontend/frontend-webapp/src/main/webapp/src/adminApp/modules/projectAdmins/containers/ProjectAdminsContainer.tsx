@@ -2,11 +2,11 @@
 import * as React from "react"
 import { connect } from "react-redux"
 import { ProjectAdmin } from "../types"
-import UserList from "../../../../common/users/components/UserList"
+import UserList from "../components/UserList"
 import MenuItem from "material-ui/MenuItem"
 import Build from "material-ui/svg-icons/action/build"
 import Delete from "material-ui/svg-icons/action/delete"
-import UserDialog from "../../../../common/users/components/UserDialog"
+import UserDialog from "../components/UserDialog"
 import * as actions from "../actions"
 import * as selectors from "../../../reducer"
 
