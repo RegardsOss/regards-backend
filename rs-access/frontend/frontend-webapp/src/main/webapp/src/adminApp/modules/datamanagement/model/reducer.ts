@@ -1,22 +1,22 @@
 import { ADD_MODEL } from "./actions"
-
+import { Model } from "./Model"
 
 const predefinedValues: any = {
   1: {
     name: 'AIR_SPACIAL_COMPLEX',
     id: 1,
     attributes: [{
-      label: "Attr1",
+      name: "Int #1",
       type: "integer"
     }, {
-      label: "Attr1",
-      type: "float"
+      name: "Int #2",
+      type: "integer"
     }, {
-      label: "Attr1",
+      name: "Some string #1",
       type: "string"
     }, {
-      label: "Attr1",
-      type: "geometric"
+      name: "Some string #2",
+      type: "string"
     }]
   }
 }
@@ -42,5 +42,5 @@ export default (state: any = {
 // WIP
 // export const getById = (state: any, id: string) =>
 //   state.items[id]
-export const getModel = (state: any) => state
+export const getModel = (state: any) => state.items
 export const getModelById = (state: any, id: string) => state.items[id]

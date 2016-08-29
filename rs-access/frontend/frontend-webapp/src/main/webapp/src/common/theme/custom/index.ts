@@ -10,8 +10,8 @@ import './background.jpg'
 
 // Register them here
 export default {
-  cdppTheme,
-  ssaltoTheme,
-  lightBaseTheme,
-  darkBaseTheme
+  cdpp: cdppTheme,
+  ssalto: ssaltoTheme,
+  Light: lightBaseTheme,
+  Dark: darkBaseTheme
 }

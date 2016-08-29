@@ -13,12 +13,18 @@ import ProjectAccountReducers from "./modules/userManagement/projectAccount.redu
 import * as ProjectAccountsSelectors from "./modules/userManagement/projectAccount.reducer"
 import AccountReducers from "./modules/userManagement/account.reducer"
 import * as AccountsSelectors from "./modules/userManagement/account.reducer"
-import { DatasetFormReducer, DatasetFormSelectors,ModelReducer, ModelSelectors } from "./modules/datamanagement/reducer"
-// import authentication from '../modules/authentication/reducers/TODO'
-// import home from '../modules/home/reducers/TODO'
-//
+import {
+  DatasetFormReducer,
+  DatasetFormSelectors,
+  DatasetReducer,
+  DatasetSelectors,
+  ModelReducer,
+  ModelSelectors
+} from "./modules/datamanagement/reducer"
 
-const forms =  combineReducers({
+
+
+const forms = combineReducers({
   createDataset: DatasetFormReducer
 })
 
@@ -26,11 +32,12 @@ export default combineReducers({
   projects,
   projectAdmins,
   ui,
-  projectAccounts: ProjectAccountReducers,
   roles: RoleReducer,
   accounts: AccountReducers,
+  projectAccounts: ProjectAccountReducers,
+  model: ModelReducer,
+  dataset: DatasetReducer,
   forms,
-  model: ModelReducer
 })
 
 // WIP
@@ -76,11 +83,12 @@ export const getProjectAccountById = (state: any, projectAccountId: number) =>
 export const getAccountById = (state: any, accountId: number) =>
   AccountsSelectors.getAccountById(state.adminApp.accounts, accountId)
 
-export const getFormViewState = (state: any) =>
-  DatasetFormSelectors.getFormViewState(state.adminApp.forms.createDataset)
+export const getFormDatasetViewState = (state: any) =>
+  DatasetFormSelectors.getFormDatasetViewState(state.adminApp.forms.createDataset)
 
-export const getFormDatasetAttributes = (state: any) =>
-  DatasetFormSelectors.getFormDatasetAttributes(state.adminApp.forms.createDataset)
 
 export const getModels = (state: any) =>
   ModelSelectors.getModel(state.adminApp.model)
+
+export const getDatasets = (state: any) =>
+  DatasetSelectors.getDatasets(state.adminApp.dataset)

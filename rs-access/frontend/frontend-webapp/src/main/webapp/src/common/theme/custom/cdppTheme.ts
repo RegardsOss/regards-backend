@@ -67,6 +67,10 @@ export default {
       backgroundColor: grey700,
       display: "flex",
       alignItems: "center"
+    },
+    layout: {
+      backgroundColor: "transparent",
+      backgroundImage: "url('/img/background.jpg')",
     }
   }
 }

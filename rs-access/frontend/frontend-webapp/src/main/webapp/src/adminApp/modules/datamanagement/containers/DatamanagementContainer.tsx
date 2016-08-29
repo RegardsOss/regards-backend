@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Card, CardHeader, CardText } from "material-ui/Card"
+import { Card, CardTitle, CardText } from "material-ui/Card"
 import I18nProvider from "../../../../common/i18n/I18nProvider"
 import { FormattedMessage } from "react-intl"
 import { Link } from "react-router"
@@ -46,11 +46,19 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
   }
   getDatasourceList = () => {
     const projectName = this.props.params.project
-    return "/admin/" + projectName + "/datamanagement/datasource/create"
+    return "/admin/" + projectName + "/datamanagement/datasource"
   }
   getDatasourceCreate = () => {
     const projectName = this.props.params.project
-    return "/admin/" + projectName + "/datamanagement/datasource"
+    return "/admin/" + projectName + "/datamanagement/datasource/create"
+  }
+  getConnectionList = () => {
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/connection"
+  }
+  getConnectionCreate = () => {
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/connection/create"
   }
 
   render (): JSX.Element {
@@ -60,10 +68,8 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
         <div>
           <Card
             initiallyExpanded={true}>
-            <CardHeader
+            <CardTitle
               title={<FormattedMessage id="datamanagement.header"/>}
-              actAsExpander={true}
-              showExpandableButton={false}
             />
           </Card>
           <div style={style}>
@@ -114,7 +120,7 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
               />
               <Link to={this.getModelList()} style={style}>
                 <CardText>
-                  List models
+                  <FormattedMessage id="datamanagement.model.list"/>
                 </CardText>
               </Link>
             </Card>
@@ -124,7 +130,7 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
               />
               <Link to={this.getModelCreate()} style={style}>
                 <CardText>
-                  Add model
+                  <FormattedMessage id="datamanagement.model.add"/>
                 </CardText>
               </Link>
             </Card>
@@ -134,7 +140,7 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
               />
               <Link to={this.getDatasourceList()} style={style}>
                 <CardText>
-                  List datasources
+                  <FormattedMessage id="datamanagement.datasource.list"/>
                 </CardText>
               </Link>
             </Card>
@@ -144,7 +150,27 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
               />
               <Link to={this.getDatasourceCreate()} style={style}>
                 <CardText>
-                  Add datasource
+                  <FormattedMessage id="datamanagement.datasource.add"/>
+                </CardText>
+              </Link>
+            </Card>
+
+            <Card
+              initiallyExpanded={true}>
+              />
+              <Link to={this.getConnectionList()} style={style}>
+                <CardText>
+                  <FormattedMessage id="datamanagement.connection.list"/>
+                </CardText>
+              </Link>
+            </Card>
+
+            <Card
+              initiallyExpanded={true}>
+              />
+              <Link to={this.getConnectionCreate()} style={style}>
+                <CardText>
+                  <FormattedMessage id="datamanagement.connection.add"/>
                 </CardText>
               </Link>
             </Card>

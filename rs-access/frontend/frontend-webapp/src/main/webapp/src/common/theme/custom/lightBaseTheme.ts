@@ -18,6 +18,10 @@ export default merge ({}, lightBaseTheme, {
       backgroundColor: blueGrey50,
       display: "flex",
       alignItems: "center"
+    },
+    layout: {
+      backgroundColor: "transparent",
+      backgroundImage: "url('/img/background.jpg')",
     }
   }
 

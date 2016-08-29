@@ -17,6 +17,10 @@ export default merge ({}, darkBaseTheme, {
       backgroundImage: "url('/img/background.jpg')",
       display: "flex",
       alignItems: "center"
+    },
+    layout: {
+      backgroundColor: "transparent",
+      backgroundImage: "url('/img/background.jpg')",
     }
   }
 })

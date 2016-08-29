@@ -4,25 +4,30 @@ import FlatButton from "material-ui/FlatButton"
 import TextField from "material-ui/TextField"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
-
+import { JavaTypes } from "../../JavaTypes"
+import { FormattedMessage, intlShape } from "react-intl"
 
 interface CreateAttributeModalProps {
   handleCreateNewParameter: (label: string, type: string) => void
   handleCloseModal: () => void
 }
 export default class CreateAttributeModal extends React.Component<CreateAttributeModalProps, any> {
+  static contextTypes: Object = {
+    intl: intlShape
+  }
   state: any = {
     label: "",
     type: 0
   }
+  context: any
 
 
   handleClose = () => {
     this.props.handleCloseModal()
   }
   addAttribute = () => {
-    const {label, type} = this.state;
-    this.props.handleCreateNewParameter(label, type);
+    const {label, type} = this.state
+    this.props.handleCreateNewParameter(label, type)
   }
   handleAddAndReset = (event: React.FormEvent) => {
     this.addAttribute()
@@ -50,10 +55,11 @@ export default class CreateAttributeModal extends React.Component<CreateAttribut
 
   render (): JSX.Element {
     const {label, type} = this.state
+    const title = this.context.intl.formatMessage({id: "datamanagement.model.add.modal.header"})
 
     let actions = [
       <FlatButton
-        label="Close"
+        label={<FormattedMessage id="datamanagement.model.add.modal.action.close" />}
         primary={true}
         onTouchTap={this.handleClose}
       />
@@ -61,44 +67,51 @@ export default class CreateAttributeModal extends React.Component<CreateAttribut
     // Display save buttons only if attribute is well defined
     if (label.length > 0 && type !== 0) {
       actions.push(<FlatButton
-        label="Create and close"
+        label={<FormattedMessage id="datamanagement.model.add.modal.action.create_and_close" />}
         primary={true}
         onTouchTap={this.handleAddAndClose}
       />)
       actions.push(<FlatButton
-        label="Create and add another"
+        label={<FormattedMessage id="datamanagement.model.add.modal.action.create_and_reset" />}
         primary={true}
         onTouchTap={this.handleAddAndReset}
       />)
     }
 
+    let selectTypeItems: Array<JSX.Element> = []
+    for (const i in JavaTypes) {
+      selectTypeItems.push(
+        (<MenuItem
+          key={JavaTypes[i].value}
+          value={JavaTypes[i].value}
+          primaryText={<FormattedMessage id={JavaTypes[i].toString()}/>}
+        />)
+      )
+    }
+
     return (
       <div>
         <Dialog
-          title="Add a new project"
+          title={title}
           actions={actions}
           modal={false}
           open={true}
           onRequestClose={this.handleClose}
         >
-
-          <h3>Create a new attribute</h3>
           <TextField
             type="text"
-            floatingLabelText="Parameter name"
+            floatingLabelText={<FormattedMessage id="datamanagement.model.add.modal.input.name" />}
             value={label}
             fullWidth={true}
             onChange={this.handleAttributeLabelChange}
           />
           <SelectField
-            floatingLabelText="Type"
+            floatingLabelText={<FormattedMessage id="datamanagement.model.add.modal.input.type" />}
             value={type}
+            fullWidth={true}
             onChange={this.handleAttributeTypeChange}
           >
-            <MenuItem value="integer" primaryText="Integer"/>
-            <MenuItem value="float" primaryText="Float"/>
-            <MenuItem value="string" primaryText="String"/>
-            <MenuItem value="geometric" primaryText="Geometric"/>
+            {selectTypeItems}
           </SelectField>
         </Dialog>
       </div>

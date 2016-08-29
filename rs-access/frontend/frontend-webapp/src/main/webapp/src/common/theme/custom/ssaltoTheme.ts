@@ -45,6 +45,9 @@ export default {
       backgroundImage: "url('/img/background.jpg')",
       display: "flex",
       alignItems: "center"
+    },
+    layout: {
+
     }
   }
 }

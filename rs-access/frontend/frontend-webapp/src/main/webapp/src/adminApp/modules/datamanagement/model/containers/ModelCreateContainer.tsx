@@ -28,7 +28,7 @@ export class ModelCreateContainer extends React.Component<ModelCreateProps, any>
   }
 
   handleNextStep = (name: string, attributes: Array<ModelAttribute>) => {
-    const id = Math.floor(Math.random() * 6) + 1
+    const id = Math.floor(Math.random() * 60) + 10
     this.props.addModel(id, name, attributes)
     browserHistory.push(this.getCancelUrl())
   }

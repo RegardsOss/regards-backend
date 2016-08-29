@@ -6,7 +6,7 @@ import { Link } from "react-router"
  * Generic back button
  */
 interface MainButtonProps {
-  label: string
+  label: string | JSX.Element
   url?: string
   style?: any
   onTouchTap?: (event: any) => void

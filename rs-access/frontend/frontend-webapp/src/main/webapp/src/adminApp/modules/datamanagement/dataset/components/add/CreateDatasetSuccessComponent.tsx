@@ -21,7 +21,7 @@ export default class CreateDatasetSuccessComponent extends React.Component<Creat
       <Card
         initiallyExpanded={true}>
         <CardHeader
-          title={<FormattedMessage id="datamanagement.create.model.header"/>}
+          title={<FormattedMessage id="datamanagement.dataset.add.header"/>}
           actAsExpander={true}
           showExpandableButton={false}
         />

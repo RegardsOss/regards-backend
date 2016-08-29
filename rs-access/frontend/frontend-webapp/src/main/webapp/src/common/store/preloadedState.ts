@@ -1,14 +1,14 @@
 const preloadedState: any = {
   common: {
-    theme: 'lightBaseTheme',
+    theme: 'Light',
     layout: {
       lg: [
         { i: 'appBar', x: 0, y: 0, w: 12, h: 2 },
         { i: 'sideBar', x: 0, y: 2, w: 2, h: 13 },
 
         { i: 'content', x: 2, y: 2, w: 8, h: 5 },
-        { i: 'selectTheme', x: 10, y: 6, w: 2, h: 2 },
-        { i: 'selectLanguage', x: 10, y: 2, w: 2, h: 2 },
+        { i: 'selectTheme', x: 10, y: 2, w: 1, h: 2 },
+        { i: 'selectLanguage', x: 11, y: 2, w: 1, h: 2 },
 
         { i: 'authentication', x: 4, y: 0, w: 4, h: 8 },
       ],
@@ -17,8 +17,8 @@ const preloadedState: any = {
         { i: 'sideBar', x: 0, y: 2, w: 4, h: 6 },
 
         { i: 'content', x: 4, y: 2, w: 8, h: 5 },
-        { i: 'selectTheme', x: 0, y: 8, w: 4, h: 2 },
-        { i: 'selectLanguage', x: 0, y: 11, w: 4, h: 2 },
+        { i: 'selectTheme', x: 0, y: 8, w: 2, h: 2 },
+        { i: 'selectLanguage', x: 2, y: 8, w: 2, h: 2 },
 
         { i: 'authentication', x: 4, y: 0, w: 4, h: 8 },
       ],
