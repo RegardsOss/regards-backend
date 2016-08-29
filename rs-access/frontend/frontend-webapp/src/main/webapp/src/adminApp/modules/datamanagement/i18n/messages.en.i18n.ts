@@ -30,6 +30,7 @@ const messages = {
   "datamanagement.dataset.list.header": "List datasets",
   "datamanagement.dataset.list.action.add": "Add a dataset",
   "datamanagement.dataset.list.action.cancel": "Cancel",
+  "datamanagement.dataset.add": "Add dataset",
   "datamanagement.dataset.add.header": "New dataset",
   "datamanagement.dataset.add.1.label": "Label",
   "datamanagement.dataset.add.1.modelType": "Model type",
@@ -46,7 +47,6 @@ const messages = {
   "datamanagement.dataset.add.1.stepper": "Fill dataset attributes",
   "datamanagement.dataset.add.2.stepper": "Configure datasource",
   "datamanagement.dataset.add.3.stepper": "Done",
-
 
   "datamanagement.datasource.add": "Create a new  datasource",
   "datamanagement.datasource.list": "List datasources",

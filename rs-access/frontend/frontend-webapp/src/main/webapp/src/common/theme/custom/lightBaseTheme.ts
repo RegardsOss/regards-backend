@@ -1,9 +1,8 @@
 // Default theme
 import lightBaseTheme from "material-ui/styles/baseThemes/lightBaseTheme"
 import { merge } from "lodash"
-
 import { red900, grey900, blueGrey50 } from "material-ui/styles/colors"
-export default merge ({}, lightBaseTheme, {
+export default merge({}, lightBaseTheme, {
   palette: {
     errorColor: {
       color: red900
@@ -21,7 +20,27 @@ export default merge ({}, lightBaseTheme, {
     },
     layout: {
       backgroundColor: "transparent",
-      backgroundImage: "url('/img/background.jpg')",
+      background: "url('/img/background.jpg') top right no-repeat",
+      backgroundAttachment: "fixed"
+    },
+    datamanagement: {
+      home: {
+        items: {
+          classes: ["col-xs-50", "col-sm-33", "col-lg-16"],
+          styles: {
+            padding: "10px 0",
+            textAlign: "center"
+          }
+        },
+        container: {
+          classes: ["row"],
+          styles: {
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "10px"
+          }
+        }
+      }
     }
   }
 

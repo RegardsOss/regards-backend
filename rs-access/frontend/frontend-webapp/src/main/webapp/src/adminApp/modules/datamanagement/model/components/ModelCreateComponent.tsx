@@ -167,7 +167,7 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
         <CardTitle
           title={
             <FormattedMessage
-              id="datamanagement.dataset.add.header"
+              id="datamanagement.model.add.header"
               values={
                 {
                   label: <i>{labelAsTitle}</i>
