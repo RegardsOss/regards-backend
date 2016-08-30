@@ -135,7 +135,7 @@ export const datamanagementhome: PlainRoute = {
   }
 }
 
-export const datamanagementRouter: PlainRoute  = {
+export const datamanagementRouter: PlainRoute = {
   path: '',
   childRoutes: [
     datamanagementhome,

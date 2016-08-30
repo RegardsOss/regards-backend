@@ -1,4 +1,4 @@
-import { HateosLink } from '../hateos/types'
+import { HateosLink } from "../hateos/types"
 
 export interface Project {
   name: string,

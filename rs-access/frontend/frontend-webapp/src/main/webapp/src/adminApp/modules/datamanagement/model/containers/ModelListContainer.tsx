@@ -24,7 +24,7 @@ export class ModelListContainer extends React.Component<ModelListProps, any> {
   }
 
   render (): JSX.Element {
-    const { models } = this.props
+    const {models} = this.props
     return (
       <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
         <ModelListComponent

@@ -15,11 +15,11 @@ interface ModuleComponentState {
  * TODO
  */
 class ModuleComponent extends React.Component<ModuleComponentProps, ModuleComponentState> {
-  getModuleVisibility(): Boolean {
+  getModuleVisibility (): Boolean {
     return true
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     return (
       <ShowableAtMount show={this.getModuleVisibility()}>
         { this.props.children }

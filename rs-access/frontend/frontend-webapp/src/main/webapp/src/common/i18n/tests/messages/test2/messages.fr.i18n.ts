@@ -1,5 +1,5 @@
 const messages = {
-  "message2":"deuxieme message",
+  "message2": "deuxieme message",
 }
 
 export default messages

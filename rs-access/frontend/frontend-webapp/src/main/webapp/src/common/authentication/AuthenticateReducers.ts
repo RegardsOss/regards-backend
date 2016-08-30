@@ -8,11 +8,11 @@ export default (state: any = {
 }, action: any) => {
   switch (action.type) {
     case REQUEST_AUTHENTICATE:
-      return Object.assign ({}, state, {
+      return Object.assign({}, state, {
         isFetching: true
       })
     case RECEIVE_AUTHENTICATE:
-      let newState = Object.assign ({}, state, {
+      let newState = Object.assign({}, state, {
         isFetching: false,
         user: action.payload,
         authenticateDate: action.meta.authenticateDate
@@ -20,7 +20,7 @@ export default (state: any = {
       newState.user.name = action.meta.name
       return newState
     case FAILED_AUTHENTICATE:
-      return Object.assign ({}, state, {
+      return Object.assign({}, state, {
         isFetching: false,
         error: action.meta.errorMessage
       })

@@ -1,4 +1,3 @@
-
 export default (state: any = {
   isFetching: false,
   items: {},

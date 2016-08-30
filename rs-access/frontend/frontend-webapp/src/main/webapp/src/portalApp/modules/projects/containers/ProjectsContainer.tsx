@@ -20,13 +20,13 @@ interface ProjectsProps {
  */
 export class ProjectsContainer extends React.Component<ProjectsProps, any> {
 
-  componentWillMount(): any {
+  componentWillMount (): any {
     // onLoad method is set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
-    this.props.onLoad ()
+    this.props.onLoad()
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     // projects props is set to the container by tge react-redux connect.
     // See method mapStateToProps
     const {projects} = this.props
@@ -40,7 +40,7 @@ export class ProjectsContainer extends React.Component<ProjectsProps, any> {
         <div>
           <p><FormattedMessage id="portalapp.projects.list.title"/></p>
           <ul>
-            {projects.items.map (project =>
+            {projects.items.map(project =>
               <ProjectComponent key={project.name} project={project}/>
             )}
           </ul>
@@ -58,6 +58,6 @@ const mapStateToProps = (state: any) => ({
 
 // Add functions dependending on store dispatch to container props.
 const mapDispatchToProps = (dispatch: any) => ({
-  onLoad: () => dispatch (fetchProjects ())
+  onLoad: () => dispatch(fetchProjects())
 })
-export default connect<{}, {}, ProjectsProps> (mapStateToProps, mapDispatchToProps) (ProjectsContainer)
+export default connect<{}, {}, ProjectsProps>(mapStateToProps, mapDispatchToProps)(ProjectsContainer)

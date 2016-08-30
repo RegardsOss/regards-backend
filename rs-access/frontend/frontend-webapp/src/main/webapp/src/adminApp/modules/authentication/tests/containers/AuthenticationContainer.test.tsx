@@ -1,10 +1,8 @@
-import * as React from 'react'
-import { shallow, mount } from 'enzyme';
-import { expect } from 'chai';
-import { Authentication } from '../../containers/AuthenticationContainer'
-import LoginComponent, { LoginProps } from '../../components/LoginComponent'
+import * as React from "react"
+import { shallow } from "enzyme"
+import { Authentication } from "../../containers/AuthenticationContainer"
 
-function setup() {
+function setup () {
   const props = {
     errorMessage: 'Oops',
     theme: 'default',

@@ -17,19 +17,19 @@ interface UserAppProps {
 
 class UserApp extends React.Component<UserAppProps, any> {
 
-  componentWillMount(): void {
+  componentWillMount (): void {
     if (!this.props.authentication.user) {
-      this.props.publicAuthenticate ()
+      this.props.publicAuthenticate()
     }
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     // Location ,params and content are set in this container props by react-router
     const {location, params, content, theme} = this.props
     const {project} = params
 
     // Build theme
-    const muiTheme = ThemeHelper.getByName (theme)
+    const muiTheme = ThemeHelper.getByName(theme)
 
     if (!this.props.authentication.user)
       return <div>Loading ... </div>
@@ -63,8 +63,8 @@ const mapStateToProps = (state: any) => ({
   authentication: state.common.authentication
 })
 const mapDispatchToProps = (dispatch: any) => ({
-  publicAuthenticate: () => dispatch (fetchAuthenticate ("public", "public"))
+  publicAuthenticate: () => dispatch(fetchAuthenticate("public", "public"))
 })
 
-const userAppConnected = connect<{}, {}, UserAppProps> (mapStateToProps, mapDispatchToProps) (UserApp)
+const userAppConnected = connect<{}, {}, UserAppProps>(mapStateToProps, mapDispatchToProps)(UserApp)
 export default userAppConnected

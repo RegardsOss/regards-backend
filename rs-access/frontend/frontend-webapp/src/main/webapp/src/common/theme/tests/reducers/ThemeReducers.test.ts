@@ -1,5 +1,5 @@
-import { expect } from 'chai'
-import reducer from '../../reducers/ThemeReducers'
+import { expect } from "chai"
+import reducer from "../../reducers/ThemeReducers"
 
 describe('[COMMON] Testing theme reducer', () => {
 

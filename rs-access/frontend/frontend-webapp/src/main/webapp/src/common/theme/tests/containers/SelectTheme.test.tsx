@@ -1,14 +1,13 @@
-import * as React from 'react'
-import { shallow, mount } from 'enzyme';
-import { expect } from 'chai';
-import { forEach } from 'lodash'
-import { SelectTheme } from '../../containers/SelectTheme'
-import ThemeHelper from '../../ThemeHelper'
-import {Card, CardText} from 'material-ui/Card'
-import SelectField from 'material-ui/SelectField'
-import MenuItem from 'material-ui/MenuItem'
+import * as React from "react"
+import { shallow } from "enzyme"
+import { expect } from "chai"
+import { SelectTheme } from "../../containers/SelectTheme"
+import ThemeHelper from "../../ThemeHelper"
+import { Card, CardText } from "material-ui/Card"
+import SelectField from "material-ui/SelectField"
+import MenuItem from "material-ui/MenuItem"
 
-function setup() {
+function setup () {
   const props = {
     theme: 'titi'
   }
@@ -46,7 +45,7 @@ describe('[COMMON] Testing select theme container', () => {
     // Mock the themes list
     ThemeHelper.getThemes = () => ['titi', 'toto']
 
-    const { enzymeWrapper } = setup()
+    const {enzymeWrapper} = setup()
     // const expectedDOM =  (
     //   <Card>
     //     <CardText>

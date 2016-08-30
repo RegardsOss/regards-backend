@@ -1,14 +1,20 @@
-import { expect } from 'chai'
-import { Action } from 'redux'
-import reducer from '../reducer'
-import { ProjectAction } from '../actions'
-import { PROJECTS_REQUEST, PROJECTS_SUCCESS, ADD_PROJECT, PROJECTS_FAILURE, DELETE_PROJECT } from '../actions'
+import { expect } from "chai"
+import { Action } from "redux"
+import reducer from "../reducer"
+import {
+  ProjectAction,
+  PROJECTS_REQUEST,
+  PROJECTS_SUCCESS,
+  ADD_PROJECT,
+  PROJECTS_FAILURE,
+  DELETE_PROJECT
+} from "../actions"
 
 describe('[ADMIN APP] Testing projects reducer', () => {
 
   it('should return the initial state', () => {
     expect(reducer(undefined, {})).to.eql({
-      isFetching : false,
+      isFetching: false,
       items: {},
       ids: [],
       lastUpdate: ''
@@ -20,10 +26,10 @@ describe('[ADMIN APP] Testing projects reducer', () => {
       type: PROJECTS_REQUEST
     }
     const initState = {
-      isFetching : false
+      isFetching: false
     }
     const expectedState = {
-      isFetching : true
+      isFetching: true
     }
     expect(reducer(initState, action)).to.eql(expectedState)
   })
@@ -34,26 +40,26 @@ describe('[ADMIN APP] Testing projects reducer', () => {
       payload: {
         entities: {
           projects: {
-            0: {id:0, name:"cdpp"},
-            1: {id:1, name:"ssalto"}
+            0: {id: 0, name: "cdpp"},
+            1: {id: 1, name: "ssalto"}
           }
         },
         result: [0, 1]
       }
     }
     const initState = {
-      isFetching : true,
+      isFetching: true,
       items: {},
       ids: Array(),
       lastUpdate: ''
     }
     const expectedState = {
-      isFetching : false,
+      isFetching: false,
       items: {
-        0: {id:0, name:"cdpp"},
-        1: {id:1, name:"ssalto"}
+        0: {id: 0, name: "cdpp"},
+        1: {id: 1, name: "ssalto"}
       },
-      ids: [0,1],
+      ids: [0, 1],
       lastUpdate: ''
     }
     expect(reducer(initState, action)).to.eql(expectedState)
@@ -65,13 +71,13 @@ describe('[ADMIN APP] Testing projects reducer', () => {
       error: "Oops there was an error!"
     }
     const initState = {
-      isFetching : true,
+      isFetching: true,
       items: {},
       ids: Array(),
       lastUpdate: ''
     }
     const expectedState = {
-      isFetching : false,
+      isFetching: false,
       items: {},
       ids: Array(),
       lastUpdate: ''
@@ -87,14 +93,14 @@ describe('[ADMIN APP] Testing projects reducer', () => {
     }
     const initState = {
       items: {
-        'idofthefirstproject': { name: 'cdpp', links: Array() },
+        'idofthefirstproject': {name: 'cdpp', links: Array()},
       },
       ids: ['idofthefirstproject']
     }
     const expectedState = {
       items: {
-        'idofthefirstproject': { name: 'cdpp', links: Array() },
-        'idofthesecondproject': { name: 'ssalto', links: Array() },
+        'idofthefirstproject': {name: 'cdpp', links: Array()},
+        'idofthesecondproject': {name: 'ssalto', links: Array()},
       },
       ids: ['idofthefirstproject', 'idofthesecondproject']
     }
@@ -108,14 +114,14 @@ describe('[ADMIN APP] Testing projects reducer', () => {
     }
     const initState = {
       items: {
-        'idofthefirstproject': { name: 'cdpp', links: Array() },
-        'idofthesecondproject': { name: 'ssalto', links: Array() },
+        'idofthefirstproject': {name: 'cdpp', links: Array()},
+        'idofthesecondproject': {name: 'ssalto', links: Array()},
       },
       ids: ['idofthefirstproject', 'idofthesecondproject']
     }
     const expectedState = {
       items: {
-        'idofthefirstproject': { name: 'cdpp', links: Array() },
+        'idofthefirstproject': {name: 'cdpp', links: Array()},
       },
       ids: ['idofthefirstproject']
     }

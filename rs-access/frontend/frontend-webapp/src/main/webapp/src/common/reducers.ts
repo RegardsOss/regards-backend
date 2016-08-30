@@ -8,8 +8,8 @@ import i18nReducers from "./i18n/I18nReducers"
 import accessRightsReducers from "./access-rights/AccessRightsReducers"
 import authentication from "./authentication/AuthenticateReducers"
 import { pickBy } from "lodash"
-import { reducer as endpointsReducer } from './endpoints'
-import * as fromEndpoints from './endpoints'
+import * as fromEndpoints from "./endpoints"
+import { reducer as endpointsReducer } from "./endpoints"
 
 // Keeping both notations as an example
 export default combineReducers({

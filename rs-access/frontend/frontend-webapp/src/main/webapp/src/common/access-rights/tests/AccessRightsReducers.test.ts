@@ -1,6 +1,6 @@
-import { expect } from 'chai'
-import { Action } from 'redux'
-import reducer from '../AccessRightsReducers'
+import { expect } from "chai"
+import { Action } from "redux"
+import reducer from "../AccessRightsReducers"
 
 describe('[COMMON] Testing access-rigths reducer', () => {
 
@@ -16,10 +16,10 @@ describe('[COMMON] Testing access-rigths reducer', () => {
       type: 'REQUEST_ACCESSRIGHTS'
     }
     const initState = {
-      isFetching : false
+      isFetching: false
     }
     const expectedState = {
-      isFetching : true
+      isFetching: true
     }
     expect(reducer(initState, action)).to.eql(expectedState)
   })
@@ -28,22 +28,22 @@ describe('[COMMON] Testing access-rigths reducer', () => {
     const action = {
       type: 'RECEIVE_ACCESSRIGHTS',
       payload: [
-        {id:"anOtherGetDependency",verb:"GET",endpoint:"/anOtherGetDependency",access:false},
-        {id:"aDeleteDependency",verb:"DELETE",endpoint:"/aDeleteDependency",access:true}
+        {id: "anOtherGetDependency", verb: "GET", endpoint: "/anOtherGetDependency", access: false},
+        {id: "aDeleteDependency", verb: "DELETE", endpoint: "/aDeleteDependency", access: true}
       ]
     }
     const initState = {
-      isFetching : true,
+      isFetching: true,
       items: [
-        {id:"aGetDependency",verb:"GET",endpoint:"/aGetDependency",access:true},
+        {id: "aGetDependency", verb: "GET", endpoint: "/aGetDependency", access: true},
       ]
     }
     const expectedState = {
-      isFetching : false,
+      isFetching: false,
       items: [
-        {id:"aGetDependency",verb:"GET",endpoint:"/aGetDependency",access:true},
-        {id:"anOtherGetDependency",verb:"GET",endpoint:"/anOtherGetDependency",access:false},
-        {id:"aDeleteDependency",verb:"DELETE",endpoint:"/aDeleteDependency",access:true}
+        {id: "aGetDependency", verb: "GET", endpoint: "/aGetDependency", access: true},
+        {id: "anOtherGetDependency", verb: "GET", endpoint: "/anOtherGetDependency", access: false},
+        {id: "aDeleteDependency", verb: "DELETE", endpoint: "/aDeleteDependency", access: true}
       ]
     }
     expect(reducer(initState, action)).to.eql(expectedState)
@@ -55,17 +55,17 @@ describe('[COMMON] Testing access-rigths reducer', () => {
       error: 'Oops there was an error!'
     }
     const initState = {
-      isFetching : true,
+      isFetching: true,
       items: [
-        {name:'toto', access:true},
-        {name:'titi', access:false}
+        {name: 'toto', access: true},
+        {name: 'titi', access: false}
       ]
     }
     const expectedState = {
-      isFetching : false,
+      isFetching: false,
       items: [
-        {name:'toto', access:true},
-        {name:'titi', access:false}
+        {name: 'toto', access: true},
+        {name: 'titi', access: false}
       ]
     }
     expect(reducer(initState, action)).to.eql(expectedState)

@@ -18,15 +18,15 @@ interface PluginProps {
  */
 class PluginComponent extends React.Component<PluginProps, any> {
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     const {plugin} = this.props
     // Check if plugin is loaded.
     // If the plugin is loaded the react component
     // associated is in the "loadedComponent" attribute of the plugin
     if (plugin && plugin.loadedComponent) {
-      return React.createElement (plugin.loadedComponent, null)
+      return React.createElement(plugin.loadedComponent, null)
     } else {
-      intializePlugin (plugin.paths, plugin.name, this.props.pluginInitialized)
+      intializePlugin(plugin.paths, plugin.name, this.props.pluginInitialized)
       return <div className="error"> Undefined plugin </div>
     }
   }
@@ -37,7 +37,7 @@ const mapStateToProps = (state: any) => ({
 })
 
 const mapDispatchToProps = (dispatch: any) => ({
-  pluginInitialized: (action: any) => dispatch (action)
+  pluginInitialized: (action: any) => dispatch(action)
 })
 
-export default connect<{}, {}, PluginProps> (mapStateToProps, mapDispatchToProps) (PluginComponent)
+export default connect<{}, {}, PluginProps>(mapStateToProps, mapDispatchToProps)(PluginComponent)

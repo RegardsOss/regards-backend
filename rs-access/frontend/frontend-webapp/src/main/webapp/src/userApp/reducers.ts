@@ -4,6 +4,6 @@
 import { combineReducers } from "redux"
 import TimeReducers from "./modules/websockets/reducers/TimeReducers"
 
-export default combineReducers ({
+export default combineReducers({
   ws: TimeReducers
 })

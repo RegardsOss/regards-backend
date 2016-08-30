@@ -1,5 +1,5 @@
 /** @module AdminProjectAdmins */
-const {CALL_API, getJSON} = require ('redux-api-middleware')
+const {CALL_API, getJSON} = require('redux-api-middleware')
 import Schemas from "../../../common/api/schemas"
 import { normalize } from "normalizr"
 import { ProjectAdmin } from "./types"
@@ -26,7 +26,7 @@ export const fetchProjectAdmins = () => ({
       PROJECT_ADMIN_REQUEST,
       {
         type: PROJECT_ADMIN_SUCESS,
-        payload: (action: any, state: any, res: any) => getJSON (res).then ((json: any) => normalize (json, Schemas.PROJECT_ADMIN_ARRAY))
+        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ADMIN_ARRAY))
       },
       PROJECT_ADMIN_FAILURE
     ],
@@ -53,7 +53,7 @@ export const fetchProjectAdminsBy = (endpoint: string) => ({
       PROJECT_ADMIN_REQUEST,
       {
         type: PROJECT_ADMIN_SUCESS,
-        payload: (action: any, state: any, res: any) => getJSON (res).then ((json: any) => normalize (json, Schemas.PROJECT_ADMIN_ARRAY))
+        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ADMIN_ARRAY))
       },
       PROJECT_ADMIN_FAILURE
     ],
@@ -71,7 +71,7 @@ export const DELETE_PROJECT_ADMIN = 'DELETE_PROJECT_ADMIN'
  *
  * @return {AsyncAction}
  */
-export function deleteProjectAdmin(id: string): any {
+export function deleteProjectAdmin (id: string): any {
   return {
     type: DELETE_PROJECT_ADMIN,
     id
@@ -87,7 +87,7 @@ export const UPDATE_PROJECT_ADMIN = 'UPDATE_PROJECT_ADMIN'
  *
  * @return {AsyncAction}
  */
-export function updateProjectAdmin(id: string, payload: any): any {
+export function updateProjectAdmin (id: string, payload: any): any {
   return {
     type: UPDATE_PROJECT_ADMIN,
     id,
@@ -102,7 +102,7 @@ export const CREATE_PROJECT_ADMIN = 'CREATE_PROJECT_ADMIN'
  * @param  {ProjectAdmin}
  * @return {CreateProjectAdminAction}
  */
-export function createProjectAdmin(id: any, payload: any): any {
+export function createProjectAdmin (id: any, payload: any): any {
   return {
     type: CREATE_PROJECT_ADMIN,
     id,

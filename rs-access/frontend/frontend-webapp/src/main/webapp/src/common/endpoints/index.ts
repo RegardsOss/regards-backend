@@ -1,6 +1,5 @@
-import * as actions from './actions'
-import reducer from './reducer'
-import { getEndpointsItems } from './reducer'
-import { fetchEndpoints } from './actions'
+import * as actions from "./actions"
+import { fetchEndpoints } from "./actions"
+import reducer, { getEndpointsItems } from "./reducer"
 
 export { actions, reducer, fetchEndpoints, getEndpointsItems }

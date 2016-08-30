@@ -1,4 +1,4 @@
-import { Schema, arrayOf } from "normalizr"
+import { Schema } from "normalizr"
 import { Account } from "../../models/users/types"
 
 const accountSchema = new Schema('accounts', {

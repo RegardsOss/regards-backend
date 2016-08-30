@@ -28,7 +28,7 @@ const defaultRightButtonIcon = <MoreVertIcon color={grey400}/>
  * @prop {Array<JSX.Element>} menuElements The list of JSX elements to populate the menu. If empty, no left button will be displayed
  */
 class UserList extends React.Component<UserListProps, any> {
-  render(): JSX.Element {
+  render (): JSX.Element {
     // Shortcut if no items
     if (this.props.items.length === 0) return null
 
@@ -48,7 +48,7 @@ class UserList extends React.Component<UserListProps, any> {
     )
 
     // Build the list
-    const items = map (this.props.items, (item, key) => {
+    const items = map(this.props.items, (item, key) => {
       return <ListItem
         key={key}
         disabled={true}

@@ -1,6 +1,6 @@
 /** @module UserManagement */
 import * as React from "react"
-import { ProjectAccount } from "../../../../common/models/users/types"
+import { ProjectAccount, Account } from "../../../../common/models/users/types"
 import { Link } from "react-router"
 import { ThemeContextType, ThemeContextInterface } from "../../../../common/theme/ThemeContainerInterface"
 import { TableRowColumn, TableRow } from "material-ui/Table"
@@ -10,7 +10,6 @@ import IconButton from "material-ui/IconButton"
 import IconMenu from "material-ui/IconMenu"
 import MenuItem from "material-ui/MenuItem"
 import { FormattedMessage } from "react-intl"
-import { Account } from "../../../../common/models/users/types"
 // Containers
 /**
  *

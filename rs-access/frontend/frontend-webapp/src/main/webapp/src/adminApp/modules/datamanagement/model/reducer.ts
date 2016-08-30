@@ -1,5 +1,4 @@
 import { ADD_MODEL } from "./actions"
-import { Model } from "./Model"
 
 const predefinedValues: any = {
   1: {

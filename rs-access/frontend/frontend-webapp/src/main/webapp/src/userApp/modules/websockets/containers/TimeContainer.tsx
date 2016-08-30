@@ -17,19 +17,19 @@ class TimeContainer extends React.Component<TimeProps, any> {
   // Websocket client
   client: any
 
-  componentWillMount(): any {
+  componentWillMount (): any {
     // Action to connect to websocket server
-    this.client = this.props.webSocketConnect ()
+    this.client = this.props.webSocketConnect()
     // Action to start the thread which send time by websocket
-    this.props.startTime ()
+    this.props.startTime()
   }
 
-  componentWillUnmount(): any {
+  componentWillUnmount (): any {
     // Action to disconnect from web socket server
-    this.props.webSocketDisconnect (this.client)
+    this.props.webSocketDisconnect(this.client)
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     // Render time
     if (this.props.started === true) {
       return (
@@ -41,13 +41,13 @@ class TimeContainer extends React.Component<TimeProps, any> {
 }
 
 const mapDispatchToProps = (dispatch: any) => ({
-  webSocketConnect: () => dispatch (connectTime ()),
-  webSocketDisconnect: (sock: any) => dispatch (disconnectTime (sock)),
-  startTime: () => dispatch (startTimeWebSocket ())
+  webSocketConnect: () => dispatch(connectTime()),
+  webSocketDisconnect: (sock: any) => dispatch(disconnectTime(sock)),
+  startTime: () => dispatch(startTimeWebSocket())
 })
 const mapStateToProps = (state: any) => ({
   time: state.userApp.ws.time,
   started: state.userApp.ws.started
 })
-const timeConnected = connect<{}, {}, TimeProps> (mapStateToProps, mapDispatchToProps) (TimeContainer)
+const timeConnected = connect<{}, {}, TimeProps>(mapStateToProps, mapDispatchToProps)(TimeContainer)
 export default timeConnected

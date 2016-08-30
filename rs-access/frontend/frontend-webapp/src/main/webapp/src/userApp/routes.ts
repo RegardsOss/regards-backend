@@ -10,8 +10,8 @@ export const userAppRoutes: PlainRoute = {
     websocketsRoutes
   ],
   getComponent(nextState: any, cb: any): void {
-    require.ensure ([], (require: any) => {
-      cb (null, UserApp)
+    require.ensure([], (require: any) => {
+      cb(null, UserApp)
     })
   }
 }

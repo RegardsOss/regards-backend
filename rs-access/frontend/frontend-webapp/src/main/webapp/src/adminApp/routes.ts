@@ -5,9 +5,7 @@ import {
   projectAccountEditRoute,
   projectAccountCreateRoute
 } from "./modules/userManagement/routes"
-import {
-  datamanagementRouter
-} from "./modules/datamanagement/routes"
+import { datamanagementRouter } from "./modules/datamanagement/routes"
 import AdminApp from "./AdminApp"
 
 

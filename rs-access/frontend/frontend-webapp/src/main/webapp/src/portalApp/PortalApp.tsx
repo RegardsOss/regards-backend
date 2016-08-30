@@ -26,20 +26,20 @@ interface PortalAppProps {
  */
 class PortalApp extends React.Component<PortalAppProps, any> {
 
-  componentWillMount(): void {
+  componentWillMount (): void {
     // Init application theme
     // initTheme and publicAuthenticate methods are set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
-    this.props.publicAuthenticate ()
+    this.props.publicAuthenticate()
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     // authentication and theme are set in this container props by react-redux coonect.
     // See method mapStateToProps
     const {authentication, theme} = this.props
 
     // Build theme
-    const muiTheme = ThemeHelper.getByName (theme)
+    const muiTheme = ThemeHelper.getByName(theme)
 
     // if (!authentication || authentication.isFetching === true || !authentication.user || !authentication.user.access_token){
     if (!authentication || !authentication.user) {
@@ -84,6 +84,6 @@ const mapStateToProps = (state: any) => ({
 })
 // Add functions dependending on store dispatch to container props.
 const mapDispatchToProps = (dispatch: any) => ({
-  publicAuthenticate: () => dispatch (fetchAuthenticate ("public", "public")),
+  publicAuthenticate: () => dispatch(fetchAuthenticate("public", "public")),
 })
-export default connect<{}, {}, PortalAppProps> (mapStateToProps, mapDispatchToProps) (PortalApp)
+export default connect<{}, {}, PortalAppProps>(mapStateToProps, mapDispatchToProps)(PortalApp)

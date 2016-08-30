@@ -1,6 +1,6 @@
-import { expect } from 'chai'
-import { Action } from 'redux'
-import reducer from '../AuthenticateReducers';
+import { expect } from "chai"
+import { Action } from "redux"
+import reducer from "../AuthenticateReducers"
 
 describe('[COMMON] Testing authenticate reducer', () => {
 
@@ -73,13 +73,13 @@ describe('[COMMON] Testing authenticate reducer', () => {
     }
     const initState = {
       isFetching: true,
-      user: { "toto": "toto" },
+      user: {"toto": "toto"},
       authenticateDate: '',
       error: ''
     }
     const expectedState = {
       isFetching: false,
-      user: { "toto": "toto" },
+      user: {"toto": "toto"},
       authenticateDate: '',
       error: 'Oops there was an error!'
     }

@@ -1,11 +1,11 @@
 var configureMockStore = require('redux-mock-store')
-var { apiMiddleware } = require('redux-api-middleware')
-import thunk from 'redux-thunk'
-import * as nock from 'nock'
-import { expect } from 'chai' // You can use any testing library
-import * as actions from '../AuthenticateActions'
-import { Action, AnyMeta, TypedMeta, isFSA, isError } from 'flux-standard-action'
-import { FsaErrorAction, FsaErrorDefault } from '../../api/types'
+var {apiMiddleware} = require('redux-api-middleware')
+import thunk from "redux-thunk"
+import * as nock from "nock"
+import { expect } from "chai"
+import * as actions from "../AuthenticateActions"
+import { Action, AnyMeta } from "flux-standard-action"
+import { FsaErrorAction, FsaErrorDefault } from "../../api/types" // You can use any testing library
 
 const middlewares = [thunk, apiMiddleware]
 const mockStore = configureMockStore(middlewares)
@@ -22,10 +22,10 @@ describe('[COMMON] Testing authentication actions', () => {
     const password = 'myPassword'
 
     nock(actions.AUTHENTICATE_API)
-      .post('')
-      .query({ grant_type: 'password', username, password })
-      .reply(500, 'Oops');
-    const store = mockStore({ authentication: [] });
+    .post('')
+    .query({grant_type: 'password', username, password})
+    .reply(500, 'Oops');
+    const store = mockStore({authentication: []});
 
     const requestAction: Action<any> & AnyMeta = {
       type: 'REQUEST_AUTHENTICATE',
@@ -43,9 +43,9 @@ describe('[COMMON] Testing authentication actions', () => {
     const expectedActions = [requestAction, failureAction]
 
     return store.dispatch(actions.fetchAuthenticate(username, password))
-      .then(() => { // return of async actions
-        expect(store.getActions()).to.eql(expectedActions)
-      })
+                .then(() => { // return of async actions
+                  expect(store.getActions()).to.eql(expectedActions)
+                })
   })
 
   // Test nominal
@@ -56,16 +56,16 @@ describe('[COMMON] Testing authentication actions', () => {
     Date.now = () => 12345
 
     nock(actions.AUTHENTICATE_API)
-      .post('')
-      .query({ grant_type: 'password', username, password })
-      .reply(200, {
-        "access_token": "9e2c4404-acd7-441c-9ee1-b97cbf0c51a5",
-        "token_type": "bearer",
-        "refresh_token": "a80a7a1b-7c98-43da-a7e6-04c7873ba1d7",
-        "expires_in": 35332,
-        "scope": "openid"
-      });
-    const store = mockStore({ authentication: [] });
+    .post('')
+    .query({grant_type: 'password', username, password})
+    .reply(200, {
+      "access_token": "9e2c4404-acd7-441c-9ee1-b97cbf0c51a5",
+      "token_type": "bearer",
+      "refresh_token": "a80a7a1b-7c98-43da-a7e6-04c7873ba1d7",
+      "expires_in": 35332,
+      "scope": "openid"
+    });
+    const store = mockStore({authentication: []});
 
     const requestAction: Action<any> & AnyMeta = {
       type: 'REQUEST_AUTHENTICATE',
@@ -89,9 +89,9 @@ describe('[COMMON] Testing authentication actions', () => {
     const expectedActions = [requestAction, successAction]
 
     return store.dispatch(actions.fetchAuthenticate(username, password))
-      .then(() => { // return of async actions
-        expect(store.getActions()).to.eql(expectedActions)
-      })
+                .then(() => { // return of async actions
+                  expect(store.getActions()).to.eql(expectedActions)
+                })
   })
 
   it('should create an action to logout', () => {

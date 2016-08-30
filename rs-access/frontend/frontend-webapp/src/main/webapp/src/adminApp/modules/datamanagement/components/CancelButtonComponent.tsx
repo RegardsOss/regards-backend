@@ -15,6 +15,7 @@ export default class CancelButtonComponent extends React.Component<CancelButtonP
   handleClickBtn = (event: any): void => {
     this.props.onTouchTap(event)
   }
+
   render (): JSX.Element {
     const styleLink = this.props.style ? this.props.style : {}
     const {url, label} = this.props

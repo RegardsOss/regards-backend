@@ -17,17 +17,17 @@ interface SelectLocaleTypes {
  */
 export class SelectLocaleContainer extends React.Component<SelectLocaleTypes, any> {
 
-  constructor() {
-    super ()
-    this.handleChange = this.handleChange.bind (this)
+  constructor () {
+    super()
+    this.handleChange = this.handleChange.bind(this)
   }
 
-  handleChange(event: any, index: any, value: any): any {
-    this.setState ({value})
-    this.props.setLocale (value)
+  handleChange (event: any, index: any, value: any): any {
+    this.setState({value})
+    this.props.setLocale(value)
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
 
     return (
       <I18nProvider messageDir="common/i18n/messages">
@@ -51,8 +51,8 @@ const mapStateToProps = (state: any) => {
 // Add functions dependending on store dispatch to container props.
 const mapDispatchToProps = (dispatch: any) => {
   return {
-    setLocale: (locale: string) => dispatch (updateLocale (locale))
+    setLocale: (locale: string) => dispatch(updateLocale(locale))
   }
 }
 
-export default connect<{}, {}, SelectLocaleTypes> (mapStateToProps, mapDispatchToProps) (SelectLocaleContainer)
+export default connect<{}, {}, SelectLocaleTypes>(mapStateToProps, mapDispatchToProps)(SelectLocaleContainer)

@@ -1,14 +1,12 @@
-import { expect } from 'chai'
-import { Action } from 'redux'
-
-import reducer from '../I18nReducers';
-import { SET_LOCALE, SET_LOCALE_MSG } from '../I18nActions'
+import { expect } from "chai"
+import reducer from "../I18nReducers"
+import { SET_LOCALE, SET_LOCALE_MSG } from "../I18nActions"
 
 describe('[COMMON] Testing i18n reducer', () => {
 
   it('should return the initial state', () => {
     expect(reducer(undefined, {})).to.eql({
-      locale : 'en',
+      locale: 'en',
       messages: []
     })
   })
@@ -19,23 +17,23 @@ describe('[COMMON] Testing i18n reducer', () => {
       locale: 'fr'
     }
     const initState = {
-      locale : 'en',
+      locale: 'en',
       messages: [{
         messagesDir: 'common/i18n/tests/messages/test1',
-        messages: { 'message1':'premier message' }
-      },{
+        messages: {'message1': 'premier message'}
+      }, {
         messagesDir: 'common/i18n/tests/messages/test2',
-        messages: { 'message2':'deuxieme message' }
+        messages: {'message2': 'deuxieme message'}
       }]
     }
     const expectedState = {
-      locale : 'fr',
+      locale: 'fr',
       messages: [{
         messagesDir: 'common/i18n/tests/messages/test1',
-        messages: { 'message1':'premier message' }
-      },{
+        messages: {'message1': 'premier message'}
+      }, {
         messagesDir: 'common/i18n/tests/messages/test2',
-        messages: { 'message2':'deuxieme message' }
+        messages: {'message2': 'deuxieme message'}
       }]
     }
     expect(reducer(initState, action)).to.eql(expectedState)
@@ -46,26 +44,26 @@ describe('[COMMON] Testing i18n reducer', () => {
     const action = {
       type: SET_LOCALE_MSG,
       messagesDir: 'common/i18n/tests/messages/test1',
-      messages: {'message1':'nouveau premier message'}
+      messages: {'message1': 'nouveau premier message'}
     }
     const initState = {
-      locale : 'fr',
+      locale: 'fr',
       messages: [{
         messagesDir: 'common/i18n/tests/messages/test1',
-        messages: { 'message1':'premier message' }
-      },{
+        messages: {'message1': 'premier message'}
+      }, {
         messagesDir: 'common/i18n/tests/messages/test2',
-        messages: { 'message2':'deuxieme message' }
+        messages: {'message2': 'deuxieme message'}
       }]
     }
     const expectedState = {
-      locale : 'fr',
+      locale: 'fr',
       messages: [{
         messagesDir: 'common/i18n/tests/messages/test1',
-        messages: { 'message1':'nouveau premier message' }
-      },{
+        messages: {'message1': 'nouveau premier message'}
+      }, {
         messagesDir: 'common/i18n/tests/messages/test2',
-        messages: { 'message2':'deuxieme message' }
+        messages: {'message2': 'deuxieme message'}
       }]
     }
     expect(reducer(initState, action)).to.eql(expectedState)
@@ -75,29 +73,29 @@ describe('[COMMON] Testing i18n reducer', () => {
     const action = {
       type: SET_LOCALE_MSG,
       messagesDir: 'common/i18n/tests/messages/test3',
-      messages: {'message3':'troisieme message'}
+      messages: {'message3': 'troisieme message'}
     }
     const initState = {
-      locale : 'fr',
+      locale: 'fr',
       messages: [{
         messagesDir: 'common/i18n/tests/messages/test1',
-        messages: { 'message1':'premier message' }
-      },{
+        messages: {'message1': 'premier message'}
+      }, {
         messagesDir: 'common/i18n/tests/messages/test2',
-        messages: { 'message2':'deuxieme message' }
+        messages: {'message2': 'deuxieme message'}
       }]
     }
     const expectedState = {
-      locale : 'fr',
+      locale: 'fr',
       messages: [{
         messagesDir: 'common/i18n/tests/messages/test1',
-        messages: { 'message1':'premier message' }
-      },{
+        messages: {'message1': 'premier message'}
+      }, {
         messagesDir: 'common/i18n/tests/messages/test2',
-        messages: { 'message2':'deuxieme message' }
-      },{
+        messages: {'message2': 'deuxieme message'}
+      }, {
         messagesDir: 'common/i18n/tests/messages/test3',
-        messages: { 'message3':'troisieme message' }
+        messages: {'message3': 'troisieme message'}
       }]
     }
     expect(reducer(initState, action)).to.eql(expectedState)

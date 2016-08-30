@@ -1,8 +1,7 @@
 import * as React from "react"
 import Dialog from "material-ui/Dialog"
 import FlatButton from "material-ui/FlatButton"
-import { FormattedMessage } from "react-intl"
-import { intlShape } from "react-intl"
+import { FormattedMessage, intlShape } from "react-intl"
 
 /**
  * Dialog with action buttons.

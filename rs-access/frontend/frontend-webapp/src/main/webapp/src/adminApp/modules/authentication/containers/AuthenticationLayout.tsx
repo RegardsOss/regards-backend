@@ -1,7 +1,5 @@
 import * as React from "react"
 import { ThemeContextType, ThemeContextInterface } from "../../../../common/theme/ThemeContainerInterface"
-import SelectTheme from "../../../../common/theme/containers/SelectTheme"
-import SelectLanguage from "../../../../common/i18n/containers/SelectLocaleContainer"
 import Authentication from "./AuthenticationContainer"
 export class AuthenticationLayout extends React.Component<any, any> {
 

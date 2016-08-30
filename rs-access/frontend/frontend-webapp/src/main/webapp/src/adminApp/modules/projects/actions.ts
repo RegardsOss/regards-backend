@@ -1,4 +1,4 @@
-const {CALL_API, getJSON} = require ('redux-api-middleware')
+const {CALL_API, getJSON} = require('redux-api-middleware')
 import Schemas from "../../../common/api/schemas/index"
 import { normalize } from "normalizr"
 import { Action } from "redux"
@@ -17,7 +17,7 @@ export const fetchProjects = () => ({
       PROJECTS_REQUEST,
       {
         type: PROJECTS_SUCCESS,
-        payload: (action: any, state: any, res: any) => getJSON (res).then ((json: any) => normalize (json, Schemas.PROJECT_ARRAY))
+        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ARRAY))
       },
       PROJECTS_FAILURE
     ],
@@ -41,7 +41,7 @@ export const addProject = (id: string, name: string): ProjectAction => ({
 })
 
 export const DELETE_PROJECT = 'DELETE_PROJECT'
-export function deleteProject(id: string): Object {
+export function deleteProject (id: string): Object {
   return {
     type: DELETE_PROJECT,
     id
@@ -49,7 +49,7 @@ export function deleteProject(id: string): Object {
 }
 
 export const DELETE_SELECTED_PROJECT = 'DELETE_SELECTED_PROJECT'
-export function deleteSelectedProject(): Object {
+export function deleteSelectedProject (): Object {
   return {
     type: DELETE_SELECTED_PROJECT
   }

@@ -15,7 +15,7 @@ interface NavigationProps {
 
 class NavigationContainer extends React.Component<NavigationProps, any> {
 
-  componentWillMount(): any {
+  componentWillMount (): any {
     // Plugins are set to the container props by react-redux connect.
     // See method mapStateToProps of this container
     const {plugins} = this.props
@@ -26,11 +26,11 @@ class NavigationContainer extends React.Component<NavigationProps, any> {
     if (!plugins || !plugins.items || plugins.items.length === 0) {
       // fetchPlugins method is set to the container props by react-redux connect.
       // See method mapDispatchToProps of this container
-      this.props.fetchPlugins ()
+      this.props.fetchPlugins()
     }
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     const {location, plugins, project} = this.props
     if (plugins.items) {
       return (
@@ -43,11 +43,11 @@ class NavigationContainer extends React.Component<NavigationProps, any> {
           </LinkComponent>
           <LinkComponent
             location={location}
-             key="time"
-             to={"/user/" + project + "/time"}>
+            key="time"
+            to={"/user/" + project + "/time"}>
             Temps
           </LinkComponent>
-          {plugins.items.map (plugin => {
+          {plugins.items.map(plugin => {
             if (plugin) {
               return (
                 <LinkComponent
@@ -80,7 +80,7 @@ const mapStateToProps = (state: any) => {
 }
 // Add functions dependending on store dispatch to container props.
 const mapDispatchToProps = (dispatch: any) => ({
-  fetchPlugins: () => dispatch (fetchPlugins ())
+  fetchPlugins: () => dispatch(fetchPlugins())
 })
-const navigation = connect<{}, {}, NavigationProps> (mapStateToProps, mapDispatchToProps) (NavigationContainer)
+const navigation = connect<{}, {}, NavigationProps>(mapStateToProps, mapDispatchToProps)(NavigationContainer)
 export default navigation

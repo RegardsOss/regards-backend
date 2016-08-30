@@ -4,6 +4,6 @@
 import { combineReducers } from "redux"
 import ProjectsReducers from "./modules/projects/reducers/ProjectsReducers"
 
-export default combineReducers ({
+export default combineReducers({
   projects: ProjectsReducers
 })

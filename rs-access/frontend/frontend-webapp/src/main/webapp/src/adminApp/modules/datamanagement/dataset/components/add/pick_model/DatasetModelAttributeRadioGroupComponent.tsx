@@ -1,7 +1,5 @@
 import * as React from "react"
 import { RadioButton, RadioButtonGroup } from "material-ui/RadioButton"
-import ActionFavorite from "material-ui/svg-icons/action/favorite"
-import ActionFavoriteBorder from "material-ui/svg-icons/action/favorite-border"
 import { FormattedMessage } from "react-intl"
 import { ModelAttribute } from "../../../../model/ModelAttribute"
 import TextInputComponent from "../../input/TextInputComponent"

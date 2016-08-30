@@ -32,7 +32,6 @@ const fetchProjectAccounts = (urlProjectAccounts: String) => ({
 })
 
 
-
 /**
  * Action creator to delete project administror by id
  *
@@ -40,7 +39,7 @@ const fetchProjectAccounts = (urlProjectAccounts: String) => ({
  *
  * @return {AsyncAction}
  */
-export function deleteUser(link: string): any {
+export function deleteUser (link: string): any {
   return {
     type: PROJECT_ACCOUNT_DELETE,
     link

@@ -1,4 +1,4 @@
-function setTheme(theme: string): Object {
+function setTheme (theme: string): Object {
   return {
     type: 'SET_THEME',
     theme: theme,

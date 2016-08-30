@@ -1,9 +1,9 @@
 import * as React from "react"
 import { Action } from "redux"
-const {CALL_API} = require ('redux-api-middleware')
+const {CALL_API} = require('redux-api-middleware')
 let scriptjs: any
 if (typeof document !== 'undefined')
-  scriptjs = require ('scriptjs')
+  scriptjs = require('scriptjs')
 
 export const PLUGINS_API = 'http://localhost:8080/api/access/plugins'
 export const REQUEST_PLUGINS = 'REQUEST_PLUGINS'
@@ -17,7 +17,7 @@ export const fetchPlugins = () => ({
       REQUEST_PLUGINS,
       {
         type: RECEIVE_PLUGINS,
-        meta: {receivedAt: Date.now ()}
+        meta: {receivedAt: Date.now()}
       },
       FAILED_PLUGINS
     ],
@@ -41,13 +41,13 @@ export const pluginInitialized = (name: string, plugin: React.ComponentClass<any
 
 export const intializePlugin = (paths: Array<string>, name: string, dispatchAction: (action: any) => void) => {
   // Listen for pluin initialization done
-  document.addEventListener ("plugin", (event: any) => {
-    dispatchAction (pluginInitialized (event.detail.name, event.detail.app))
+  document.addEventListener("plugin", (event: any) => {
+    dispatchAction(pluginInitialized(event.detail.name, event.detail.app))
   })
-  const pathsToLoad = paths.map (path => {
+  const pathsToLoad = paths.map(path => {
     return window.location.origin + "/plugins/" + path
   })
 
   if (typeof document !== 'undefined')
-    scriptjs (pathsToLoad, name)
+    scriptjs(pathsToLoad, name)
 }

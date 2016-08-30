@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Card, CardHeader, CardText, CardTitle } from "material-ui/Card"
+import { Card, CardText, CardTitle } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"

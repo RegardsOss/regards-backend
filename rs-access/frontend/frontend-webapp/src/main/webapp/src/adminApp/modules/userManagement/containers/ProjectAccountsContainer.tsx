@@ -40,7 +40,7 @@ class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any>
 
     const {projectAccounts, params} = this.props
     console.log("The state is now ", this.state)
-    console.log("SEB",  this.props.projectAccounts)
+    console.log("SEB", this.props.projectAccounts)
     return (
       <I18nProvider messageDir='adminApp/modules/userManagement/i18n'>
         <Card

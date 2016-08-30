@@ -30,7 +30,7 @@ export default {
     accent2Color: grey300,
     accent3Color: grey700,
     textColor: lightGreen700,
-    secondaryTextColor: fade (blueGrey800, 0.54),
+    secondaryTextColor: fade(blueGrey800, 0.54),
     alternateTextColor: brown50,
     errorColor: {
       color: red900

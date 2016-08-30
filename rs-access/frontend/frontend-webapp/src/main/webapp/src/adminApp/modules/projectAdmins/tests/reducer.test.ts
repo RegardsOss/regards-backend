@@ -1,12 +1,12 @@
-import { expect } from 'chai'
-import { Action } from 'redux'
-import reducer from '../reducer'
+import { expect } from "chai"
+import { Action } from "redux"
+import reducer from "../reducer"
 
 describe('[ADMIN APP] Testing users reducer', () => {
 
   it('should return the initial state', () => {
     expect(reducer(undefined, {})).to.eql({
-      isFetching : false,
+      isFetching: false,
       items: {},
       ids: [],
       lastUpdate: ''
@@ -18,10 +18,10 @@ describe('[ADMIN APP] Testing users reducer', () => {
       type: 'PROJECT_ADMIN_REQUEST'
     }
     const initState = {
-      isFetching : false
+      isFetching: false
     }
     const expectedState = {
-      isFetching : true
+      isFetching: true
     }
     expect(reducer(initState, action)).to.eql(expectedState)
   })
@@ -32,26 +32,26 @@ describe('[ADMIN APP] Testing users reducer', () => {
       payload: {
         entities: {
           projectAdmins: {
-            0: {id:0, name:"Toto"},
-            1: {id:1, name:"Titi"}
+            0: {id: 0, name: "Toto"},
+            1: {id: 1, name: "Titi"}
           }
         },
         result: [0, 1]
       }
     }
     const initState = {
-      isFetching : true,
+      isFetching: true,
       items: {},
       ids: Array(),
       lastUpdate: ''
     }
     const expectedState = {
-      isFetching : false,
+      isFetching: false,
       items: {
-        0: {id:0, name:"Toto"},
-        1: {id:1, name:"Titi"}
+        0: {id: 0, name: "Toto"},
+        1: {id: 1, name: "Titi"}
       },
-      ids: [0,1],
+      ids: [0, 1],
       lastUpdate: ''
     }
     expect(reducer(initState, action)).to.eql(expectedState)
@@ -63,13 +63,13 @@ describe('[ADMIN APP] Testing users reducer', () => {
       error: "Oops there was an error!"
     }
     const initState = {
-      isFetching : true,
+      isFetching: true,
       items: {},
       ids: Array(),
       lastUpdate: ''
     }
     const expectedState = {
-      isFetching : false,
+      isFetching: false,
       items: {},
       ids: Array(),
       lastUpdate: ''
@@ -88,7 +88,7 @@ describe('[ADMIN APP] Testing users reducer', () => {
     }
     const initState = {
       items: {
-        Toto: {name: 'Toto', projects: [0,1]},
+        Toto: {name: 'Toto', projects: [0, 1]},
         Titi: {name: 'Titi', projects: Array()}
       },
       ids: ['Toto', 'Titi']
@@ -109,7 +109,7 @@ describe('[ADMIN APP] Testing users reducer', () => {
       id: 'Titi',
       payload: {
         name: 'Titi',
-        projects: [0,1]
+        projects: [0, 1]
       }
     }
     const initState = {
@@ -121,7 +121,7 @@ describe('[ADMIN APP] Testing users reducer', () => {
     const expectedState = {
       items: {
         Toto: {name: 'Toto', projects: Array()},
-        Titi: {name: 'Titi', projects: [0,1]}
+        Titi: {name: 'Titi', projects: [0, 1]}
       },
       ids: ['Toto', 'Titi']
     }
@@ -134,13 +134,13 @@ describe('[ADMIN APP] Testing users reducer', () => {
       id: 'Titi',
       payload: {
         name: 'Titi',
-        projects: [0,1]
+        projects: [0, 1]
       }
     }
     const initStateForUpdate = {
       items: {
         Toto: {name: 'Toto', projects: Array()},
-        Titi: {name: 'nameToUpdate', projects: [0,1]}
+        Titi: {name: 'nameToUpdate', projects: [0, 1]}
       },
       ids: ['Toto', 'Titi']
     }
@@ -153,7 +153,7 @@ describe('[ADMIN APP] Testing users reducer', () => {
     const expectedState = {
       items: {
         Toto: {name: 'Toto', projects: Array()},
-        Titi: {name: 'Titi', projects: [0,1]}
+        Titi: {name: 'Titi', projects: [0, 1]}
       },
       ids: ['Toto', 'Titi']
     }
@@ -168,14 +168,14 @@ describe('[ADMIN APP] Testing users reducer', () => {
     }
     const initState = {
       items: {
-        Toto: {name: 'Toto', projects: [0,1]},
+        Toto: {name: 'Toto', projects: [0, 1]},
         Titi: {name: 'Titi', projects: Array()}
       },
       ids: ['Toto', 'Titi']
     }
     const expectedState = {
       items: {
-        Toto: {name: 'Toto', projects: [0,1]},
+        Toto: {name: 'Toto', projects: [0, 1]},
       },
       ids: ['Toto']
     }

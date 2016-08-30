@@ -8,7 +8,7 @@ interface LayoutProps {
 
 class Layout extends React.Component<LayoutProps, any> {
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     return (
       <div className="full-div">
         <div className="header">

@@ -17,8 +17,8 @@ const childRoutes: Array<PlainRoute> = [{
     portalAppRoutes
   ],
   getIndexRoute(nextState: any, cb: any): void {
-    require.ensure ([], (require: any) => {
-      cb (null, {
+    require.ensure([], (require: any) => {
+      cb(null, {
         component: PortalApp
       })
     })

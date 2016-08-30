@@ -1,4 +1,4 @@
-const { CALL_API } = require('redux-api-middleware')
+const {CALL_API} = require('redux-api-middleware')
 
 export const ENDPOINTS_API = 'http://localhost:8080/api/endpoints'
 export const ENDPOINTS_REQUEST = 'ENDPOINTS_REQUEST'
@@ -19,7 +19,7 @@ export const fetchEndpoints = () => ({
 })
 
 export const DELETE_ENDPOINT = 'DELETE_ENDPOINT'
-export function deleteEndpoint(id: string): Object {
+export function deleteEndpoint (id: string): Object {
   return {
     type: DELETE_ENDPOINT,
     id

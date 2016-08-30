@@ -1,5 +1,5 @@
 /** @module CommonTheme */
-import * as React from 'react'
+import * as React from "react"
 import { ThemeContextType } from "./ThemeContainerInterface"
 
 /**
@@ -13,11 +13,11 @@ class MuiThemeInjector extends React.Component<any, any> {
   }
   context: any
 
-  render(): JSX.Element {
-    const { muiTheme } = this.context
+  render (): JSX.Element {
+    const {muiTheme} = this.context
     const child = React.Children.only(this.props.children)
 
-    return React.cloneElement(child, { muiTheme: muiTheme })
+    return React.cloneElement(child, {muiTheme: muiTheme})
   }
 }
 

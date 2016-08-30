@@ -1,6 +1,6 @@
-import * as actions from './actions'
+import * as actions from "./actions"
 import { pickBy } from "lodash"
-import * as Immutable from 'immutable'
+import * as Immutable from "immutable"
 
 export default (state: any = {
   isFetching: false,

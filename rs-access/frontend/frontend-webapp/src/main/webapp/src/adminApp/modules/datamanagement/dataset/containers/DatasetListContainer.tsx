@@ -1,7 +1,5 @@
 import * as React from "react"
-import { Card, CardHeader } from "material-ui/Card"
 import I18nProvider from "../../../../../common/i18n/I18nProvider"
-import { FormattedMessage } from "react-intl"
 import { connect } from "react-redux"
 import * as Selectors from "../../../../reducer"
 import { Dataset } from "../Dataset"
@@ -29,8 +27,9 @@ export class DatasetListContainer extends React.Component<DatasetCreateProps, an
     const projectName = this.props.params.project
     return "/admin/" + projectName + "/datamanagement/dataset/create"
   }
+
   render (): JSX.Element {
-    const { datasets } = this.props
+    const {datasets} = this.props
     return (
       <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
         <DatasetListComponent

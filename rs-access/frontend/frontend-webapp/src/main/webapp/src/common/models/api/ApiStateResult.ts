@@ -1,4 +1,3 @@
-
 export interface ApiResultItems {
   entities: any,
   results: Array<string|number>

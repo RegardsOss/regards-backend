@@ -1,6 +1,4 @@
-import { Schema, arrayOf } from "normalizr"
-import Role from "./Role"
-import Account from "./Account"
+import { Schema } from "normalizr"
 import { ProjectAccount } from "../../models/users/types"
 
 const NAME = 'projectAccounts'

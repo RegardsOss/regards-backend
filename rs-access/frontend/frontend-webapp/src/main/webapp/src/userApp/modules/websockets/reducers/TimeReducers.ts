@@ -7,11 +7,11 @@ export default (state: any = {
 }, action: any) => {
   switch (action.type) {
     case START_TIME_SUCCESS:
-      return Object.assign ({}, state, {
+      return Object.assign({}, state, {
         started: true
       })
     case SET_TIME:
-      return Object.assign ({}, state, {
+      return Object.assign({}, state, {
         time: action.time
       })
     default:

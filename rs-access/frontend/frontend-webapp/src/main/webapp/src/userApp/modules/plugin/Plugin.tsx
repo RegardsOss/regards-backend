@@ -12,14 +12,14 @@ interface PluginProps {
 
 class PluginContainer extends React.Component<PluginProps, any> {
 
-  render(): JSX.Element {
-    console.log ("PLOP")
+  render (): JSX.Element {
+    console.log("PLOP")
     // this.props : parameters passed by react component
     // this.props.params : parameters passed by react router
     const {params, plugins} = this.props
 
     if (plugins) {
-      const plugin = plugins.find (plugin => {
+      const plugin = plugins.find(plugin => {
         return plugin.name === params.plugin
       })
       // Get plugin from store
@@ -34,5 +34,5 @@ const mapStateToProps = (state: any) => ({
   plugins: state.common.plugins.items
 })
 
-const pluginConnected = connect<{}, {}, PluginContainer> (mapStateToProps) (PluginContainer)
+const pluginConnected = connect<{}, {}, PluginContainer>(mapStateToProps)(PluginContainer)
 export default pluginConnected

@@ -15,17 +15,17 @@ export default class StepperCreateDatasetComponent extends React.Component<Stepp
 
   render (): JSX.Element {
     return (
-        <Stepper activeStep={this.getStepperIndex()}>
-          <Step>
-            <StepLabel><FormattedMessage id="datamanagement.dataset.add.1.stepper"/></StepLabel>
-          </Step>
-          <Step>
-            <StepLabel><FormattedMessage id="datamanagement.dataset.add.2.stepper"/></StepLabel>
-          </Step>
-          <Step>
-            <StepLabel><FormattedMessage id="datamanagement.dataset.add.3.stepper"/></StepLabel>
-          </Step>
-        </Stepper>
+      <Stepper activeStep={this.getStepperIndex()}>
+        <Step>
+          <StepLabel><FormattedMessage id="datamanagement.dataset.add.1.stepper"/></StepLabel>
+        </Step>
+        <Step>
+          <StepLabel><FormattedMessage id="datamanagement.dataset.add.2.stepper"/></StepLabel>
+        </Step>
+        <Step>
+          <StepLabel><FormattedMessage id="datamanagement.dataset.add.3.stepper"/></StepLabel>
+        </Step>
+      </Stepper>
     )
   }
 }

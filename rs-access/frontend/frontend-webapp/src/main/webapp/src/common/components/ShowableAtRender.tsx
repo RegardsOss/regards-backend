@@ -15,7 +15,7 @@ interface ShowableAtRenderState {
  */
 class ShowableAtRender extends React.Component<ShowableAtRenderProps, ShowableAtRenderState> {
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     if (this.props.show) {
       return <div>{this.props.children}</div>
     } else {

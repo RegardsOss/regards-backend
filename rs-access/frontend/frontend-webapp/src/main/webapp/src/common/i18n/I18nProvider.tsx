@@ -6,7 +6,7 @@ import * as fr from "react-intl/locale-data/fr"
 import { updateMessages } from "./I18nActions"
 import { LocaleMessagesStore } from "./I18nTypes"
 
-addLocaleData (fr)
+addLocaleData(fr)
 
 interface I18nProps {
   messageDir: string,
@@ -33,20 +33,20 @@ interface I18nProps {
  */
 export class I18nProvider extends React.Component<I18nProps, any> {
 
-  componentWillMount(): any {
+  componentWillMount (): any {
     // Get messages associated to this Prodiver via the messageDir
-    let localMessages = this.props.messages.find ((message) => message.messagesDir === this.props.messageDir)
+    let localMessages = this.props.messages.find((message) => message.messagesDir === this.props.messageDir)
 
     // init messages if not set
     if (!localMessages) {
-      this.props.updateMessages (this.props.messageDir, this.props.locale)
+      this.props.updateMessages(this.props.messageDir, this.props.locale)
     }
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
 
     // Get messages associated to this Prodiver via the messageDir
-    let localMessages = this.props.messages.find ((message) => message.messagesDir === this.props.messageDir)
+    let localMessages = this.props.messages.find((message) => message.messagesDir === this.props.messageDir)
     if (localMessages) {
       return (
         <IntlProvider
@@ -69,7 +69,7 @@ const mapStateToProps = (state: any) => {
 }
 
 const mapDispatchToProps = (dispatch: any) => ({
-  updateMessages: (messageDir: string, locale: string) => dispatch (updateMessages (messageDir, locale))
+  updateMessages: (messageDir: string, locale: string) => dispatch(updateMessages(messageDir, locale))
 })
 
-export default connect<{}, {}, I18nProps> (mapStateToProps, mapDispatchToProps) (I18nProvider)
+export default connect<{}, {}, I18nProps>(mapStateToProps, mapDispatchToProps)(I18nProvider)

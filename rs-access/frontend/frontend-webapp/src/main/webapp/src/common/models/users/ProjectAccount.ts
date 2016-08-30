@@ -1,5 +1,4 @@
-import { HateosLink } from '../hateos/types'
-import { Account } from './Account'
+import { HateosLink } from "../hateos/types"
 
 export interface ProjectAccount {
   projectAccountId: number,

@@ -1,15 +1,15 @@
-import { expect } from 'chai'
-import { Action } from 'redux'
-import reducer from '../PluginReducers';
-import { PluginsStore, PluginType } from '../PluginTypes'
-import { PluginInitializedAction } from '../PluginsActions'
-import * as React from 'react'
+import { expect } from "chai"
+import { Action } from "redux"
+import reducer from "../PluginReducers"
+import { PluginsStore, PluginType } from "../PluginTypes"
+import { PluginInitializedAction } from "../PluginsActions"
+import * as React from "react"
 
 describe('[COMMON] Testing plugin reducer', () => {
 
   it('should return the initial state', () => {
     expect(reducer(undefined, {})).to.eql({
-      isFetching : false,
+      isFetching: false,
       items: [],
       lastUpdate: ''
     })
@@ -19,13 +19,13 @@ describe('[COMMON] Testing plugin reducer', () => {
     const action: Action = {
       type: 'REQUEST_PLUGINS'
     }
-    const initState:PluginsStore = {
-      isFetching : false,
+    const initState: PluginsStore = {
+      isFetching: false,
       items: [],
       lastUpdate: ''
     }
-    const expectedState:PluginsStore = {
-      isFetching : true,
+    const expectedState: PluginsStore = {
+      isFetching: true,
       items: [],
       lastUpdate: ''
     }
@@ -33,7 +33,7 @@ describe('[COMMON] Testing plugin reducer', () => {
   })
 
   it('should handle fetch success', () => {
-    const plugin:PluginType = {name:'HelloWorldPlugin', loadedComponent: null, paths: []}
+    const plugin: PluginType = {name: 'HelloWorldPlugin', loadedComponent: null, paths: []}
     const action = {
       type: 'RECEIVE_PLUGINS',
       payload: [
@@ -43,15 +43,15 @@ describe('[COMMON] Testing plugin reducer', () => {
         receivedAt: 'Yesterday'
       }
     }
-    const initState:PluginsStore = {
-      isFetching : true,
+    const initState: PluginsStore = {
+      isFetching: true,
       items: [],
       lastUpdate: ''
     }
-    const expectedState:PluginsStore = {
-      isFetching : false,
+    const expectedState: PluginsStore = {
+      isFetching: false,
       items: [
-        {name:'HelloWorldPlugin', loadedComponent: null, paths: []}
+        {name: 'HelloWorldPlugin', loadedComponent: null, paths: []}
       ],
       lastUpdate: 'Yesterday'
     }
@@ -63,28 +63,29 @@ describe('[COMMON] Testing plugin reducer', () => {
       type: 'FAILED_PLUGINS',
       error: "Oops there was an error!"
     }
-    const initState:PluginsStore = {
-      isFetching : true,
+    const initState: PluginsStore = {
+      isFetching: true,
       items: [],
       lastUpdate: ''
     }
-    const expectedState:PluginsStore = {
-      isFetching : false,
+    const expectedState: PluginsStore = {
+      isFetching: false,
       items: [],
       lastUpdate: ''
     }
     expect(reducer(initState, action)).to.eql(expectedState)
   })
 
-  it('should handle plugin initialization', () =>  {
-    class FakeComponent extends React.Component<any, any> {}
-    const action:PluginInitializedAction = {
+  it('should handle plugin initialization', () => {
+    class FakeComponent extends React.Component<any, any> {
+    }
+    const action: PluginInitializedAction = {
       type: 'PLUGIN_INITIALIZED',
       name: 'HelloWorldPlugin',
       loadedComponent: FakeComponent,
       error: ''
     }
-    const initState:PluginsStore = {
+    const initState: PluginsStore = {
       isFetching: false,
       items: [
         {
@@ -95,7 +96,7 @@ describe('[COMMON] Testing plugin reducer', () => {
       ],
       lastUpdate: ''
     }
-    const expectedState:PluginsStore = {
+    const expectedState: PluginsStore = {
       isFetching: false,
       items: [
         {

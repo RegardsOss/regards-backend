@@ -1,6 +1,6 @@
-import { expect } from 'chai'
-import { Action } from 'redux'
-import { actions, reducer, fetchEndpoints } from '../index'
+import { expect } from "chai"
+import { Action } from "redux"
+import { actions, reducer } from "../index"
 // import { ProjectAction } from '../../../../src/adminApp/modules/projects/actions'
 // import { PROJECTS_REQUEST, PROJECTS_SUCCESS, ADD_PROJECT, PROJECTS_FAILURE, DELETE_PROJECT } from '../../../../src/adminApp/modules/projects/actions'
 

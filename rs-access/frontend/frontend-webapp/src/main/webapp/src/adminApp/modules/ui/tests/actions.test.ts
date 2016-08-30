@@ -1,5 +1,5 @@
-import { expect } from 'chai' // You can use any testing library
-import * as actions from '../actions';
+import { expect } from "chai"
+import * as actions from "../actions" // You can use any testing library
 
 describe('[ADMIN APP] Testing ui actions', () => {
 

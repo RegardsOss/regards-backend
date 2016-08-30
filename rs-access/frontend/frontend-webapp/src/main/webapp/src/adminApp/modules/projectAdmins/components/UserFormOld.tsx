@@ -39,14 +39,14 @@ const validate = (values: any) => {
 }
 
 const asyncValidate = (values: any/*, dispatch */) => {
-  return new Promise ((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     // simulate server latency
-    setTimeout (
+    setTimeout(
       () => {
-        if (['john', 'paul', 'george', 'ringo'].find ((value: string) => value === values.username)) {
-          reject ({username: 'That username is taken'})
+        if (['john', 'paul', 'george', 'ringo'].find((value: string) => value === values.username)) {
+          reject({username: 'That username is taken'})
         } else {
-          resolve ()
+          resolve()
         }
       },
       500
@@ -70,7 +70,7 @@ interface FormPropTypes {
  * @prop {Function} handleSubmit Callback to add or update an administrator
  */
 class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
-  render(): JSX.Element {
+  render (): JSX.Element {
     const {
       asyncValidating,
       fields: {id, projectId, username, password, passwordConfirm},
@@ -153,10 +153,10 @@ class AsynchronousBlurValidationForm extends Component<FormPropTypes, any> {
 //   asyncBlurFields: [ 'username' ],
 //   validate
 // }, mapStateToProps)(AsynchronousBlurValidationForm)
-export default reduxForm ({
+export default reduxForm({
   form: 'asynchronousBlurValidation',
   fields,
   asyncValidate,
   asyncBlurFields: ['username'],
   validate
-}) (AsynchronousBlurValidationForm)
+})(AsynchronousBlurValidationForm)

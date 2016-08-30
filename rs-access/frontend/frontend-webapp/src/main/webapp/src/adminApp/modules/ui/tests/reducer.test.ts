@@ -1,6 +1,5 @@
-import { expect } from 'chai'
-import { Action } from 'redux'
-import reducer from '../reducer'
+import { expect } from "chai"
+import reducer from "../reducer"
 
 describe('[ADMIN APP] Testing ui reducer', () => {
 
@@ -29,9 +28,7 @@ describe('[ADMIN APP] Testing ui reducer', () => {
       type: 'SELECT_PROJECT_ADMIN',
       id: 'toto'
     }
-    let initState = {
-
-    }
+    let initState = {}
     const expectedState = {
       selectedProjectAdminId: 'toto'
     }

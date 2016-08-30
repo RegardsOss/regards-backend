@@ -7,7 +7,7 @@ import { connect } from "react-redux"
  */
 class ApplicationErrorComponent extends React.Component<any, any> {
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     return (
       <div>
         Application unavailable
@@ -22,4 +22,4 @@ const mapStateToProps = (state: any) => {
     theme: state.theme
   }
 }
-export default connect (mapStateToProps) (ApplicationErrorComponent)
+export default connect(mapStateToProps)(ApplicationErrorComponent)

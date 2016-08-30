@@ -28,38 +28,38 @@ class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
   state: any = {
     dialogOpen: false
   }
-  componentWillReceiveProps(nextProps: any): any {
+
+  componentWillReceiveProps (nextProps: any): any {
     const oldProject = this.props.project
     const nextProject = nextProps.project
     if (nextProject && nextProject !== oldProject) {
-      const link = nextProject.links.find ((link: any) => link.rel === "users")
+      const link = nextProject.links.find((link: any) => link.rel === "users")
       if (link) {
         const href = link.href
-        this.props.fetchProjectAdminsBy (href)
+        this.props.fetchProjectAdminsBy(href)
       }
     }
   }
 
 
-
   handleDeleteClick = (event: Object) => {
-    this.props.deleteProjectAdmin (this.props.selectedProjectAdminId)
+    this.props.deleteProjectAdmin(this.props.selectedProjectAdminId)
   }
 
   handleDialogOpen = () => {
-    this.setState ({dialogOpen: true})
+    this.setState({dialogOpen: true})
   }
 
   handleDialogClose = () => {
-    this.setState ({dialogOpen: false})
+    this.setState({dialogOpen: false})
   }
 
   handleDialogSave = () => {
-    this.handleDialogClose ()
-    this.props.updateOrCreateProjectAdmin ('9999', {name: 'Fake Name'})
+    this.handleDialogClose()
+    this.props.updateOrCreateProjectAdmin('9999', {name: 'Fake Name'})
   }
 
-  render(): JSX.Element {
+  render (): JSX.Element {
     const usersListMenuElements = [
       <MenuItem key={1} primaryText="Edit" leftIcon={<Build />} onTouchTap={this.handleDialogOpen}/>,
       <MenuItem key={2} primaryText="Delete" leftIcon={<Delete />} onTouchTap={this.handleDeleteClick}/>
@@ -83,10 +83,10 @@ class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
 }
 
 const mapStateToProps = (state: any, ownProps: any) => {
-  const selectedProjectId = selectors.getSelectedProjectId (state)
-  const selectedProject = selectors.getProjectById (state, selectedProjectId)
-  const projectAdmins = selectors.getProjectAdmins (state) // TODO: By project: getProjectAdminsByProject(state, selectedProject)
-  const selectedProjectAdminId = selectors.getSelectedProjectAdminId (state)
+  const selectedProjectId = selectors.getSelectedProjectId(state)
+  const selectedProject = selectors.getProjectById(state, selectedProjectId)
+  const projectAdmins = selectors.getProjectAdmins(state) // TODO: By project: getProjectAdminsByProject(state, selectedProject)
+  const selectedProjectAdminId = selectors.getSelectedProjectAdminId(state)
   return {
     project: selectedProject,
     projectAdmins: projectAdmins.items,
@@ -94,8 +94,8 @@ const mapStateToProps = (state: any, ownProps: any) => {
   }
 }
 const mapDispatchToProps = (dispatch: any) => ({
-  fetchProjectAdminsBy: (href: any) => dispatch (actions.fetchProjectAdminsBy (href)),
-  updateOrCreateProjectAdmin: (id: string, payload: ProjectAdmin) => dispatch (actions.updateOrCreateProjectAdmin (id, payload)),
-  deleteProjectAdmin: (id: string) => dispatch (actions.deleteProjectAdmin (id))
+  fetchProjectAdminsBy: (href: any) => dispatch(actions.fetchProjectAdminsBy(href)),
+  updateOrCreateProjectAdmin: (id: string, payload: ProjectAdmin) => dispatch(actions.updateOrCreateProjectAdmin(id, payload)),
+  deleteProjectAdmin: (id: string) => dispatch(actions.deleteProjectAdmin(id))
 })
-export default connect<{}, {}, ProjectAdminsProps> (mapStateToProps, mapDispatchToProps) (ProjectAdminsContainer)
+export default connect<{}, {}, ProjectAdminsProps>(mapStateToProps, mapDispatchToProps)(ProjectAdminsContainer)

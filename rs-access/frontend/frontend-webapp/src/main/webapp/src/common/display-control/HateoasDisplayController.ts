@@ -1,4 +1,4 @@
-import { IDisplayController } from './types'
+import { IDisplayController } from "./types"
 
 /**
  * An Access Controller is a pure function which implements a logic for
