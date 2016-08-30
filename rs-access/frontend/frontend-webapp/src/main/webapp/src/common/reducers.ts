@@ -7,7 +7,6 @@ import pluginReducers from "./plugins/PluginReducers"
 import i18nReducers from "./i18n/I18nReducers"
 import accessRightsReducers from "./access-rights/AccessRightsReducers"
 import authentication from "./authentication/AuthenticateReducers"
-import layout from "./layout/reducer"
 import { pickBy } from "lodash"
 import { reducer as endpointsReducer } from './endpoints'
 import * as fromEndpoints from './endpoints'
@@ -19,7 +18,6 @@ export default combineReducers({
   plugins: pluginReducers,
   api: accessRightsReducers,
   authentication,
-  layout,
   endpoints: endpointsReducer
 })
 
