@@ -7,7 +7,7 @@
   "scripts": {
     "build": "webpack --progress --config webpack.dev.config.js",
     "buildp": "webpack --progress --config webpack.prod.config.js",
-    "copy-assets": "cp ./src/common/theme/custom/background.jpg dist/src/common/theme/custom/",
+    "copy-assets": "cp ./src/common/theme/custom/background.jpg dist/src/common/theme/custom/ && cp ./src/common/theme/custom/*.css dist/src/common/theme/custom/",
     "jsdoc": "jsdoc -c jsdoc.conf.json",
     "lint": "tslint -c tslint.json 'src/{,**/}*.tsx{0,1}' -e \"**test.tsx{0,1}\"",
     "postinstall": "typings install",
