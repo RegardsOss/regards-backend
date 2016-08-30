@@ -3,9 +3,8 @@ import { shallow } from "enzyme"
 import { expect } from "chai"
 import { SelectTheme } from "../../containers/SelectTheme"
 import ThemeHelper from "../../ThemeHelper"
-import { Card, CardText } from "material-ui/Card"
-import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
+import { IconMenu } from "material-ui/IconMenu"
 
 function setup () {
   const props = {
@@ -46,30 +45,12 @@ describe('[COMMON] Testing select theme container', () => {
     ThemeHelper.getThemes = () => ['titi', 'toto']
 
     const {enzymeWrapper} = setup()
-    // const expectedDOM =  (
-    //   <Card>
-    //     <CardText>
-    //       <SelectField
-    //         value='titi'
-    //         onChange={this.handleChange} ??
-    //         fullWidth={true} >
-    //         <MenuItem value='titi' key='titi' primaryText='titi' />
-    //         <MenuItem value='toto' key='toto' primaryText='toto' />
-    //       </SelectField>
-    //     </CardText>
-    //   </Card>
-    // )
-    const card = enzymeWrapper.find(Card)
-    expect(card).to.have.length(1)
-    const cardText = card.find(CardText)
-    expect(cardText).to.have.length(1)
-    const selectField = cardText.find(SelectField)
-    expect(selectField).to.have.length(1)
-    const selectFieldProps = selectField.props()
+    const iconMenu = enzymeWrapper.find(IconMenu)
+    expect(iconMenu).to.have.length(1)
+    const selectFieldProps = iconMenu.props()
     expect(selectFieldProps.value).to.equal('titi')
-    expect(selectFieldProps.fullWidth).to.equal(true)
     // expect(selectFieldProps.onChange).to.equal(SelectTheme.prototype.handleChange)
-    const menuItems = selectField.find(MenuItem)
+    const menuItems = iconMenu.find(MenuItem)
     expect(menuItems).to.have.length(2)
     // expect(menuItem0Props.value).to.equal('titi')
     // expect(menuItem0Props.key).to.equal('titi')
