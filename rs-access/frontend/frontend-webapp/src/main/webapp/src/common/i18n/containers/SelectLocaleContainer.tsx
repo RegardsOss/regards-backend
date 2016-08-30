@@ -7,7 +7,7 @@ import I18nProvider from "../I18nProvider"
 
 interface SelectLocaleTypes {
   locales: Array<string>,
-  curentLocale?: string,
+  currentLocale?: string,
   setLocale?: (locale: string) => void
 }
 
@@ -31,7 +31,11 @@ export class SelectLocaleContainer extends React.Component<SelectLocaleTypes, an
 
     return (
       <I18nProvider messageDir="common/i18n/messages">
-        <SelectLocalComponent locales={this.props.locales} curentLocale={this.props.curentLocale} setLocale={this.props.setLocale}/>
+        <SelectLocalComponent
+          locales={this.props.locales}
+          currentLocale={this.props.currentLocale}
+          setLocale={this.props.setLocale}
+        />
       </I18nProvider>
     )
   }
@@ -40,7 +44,7 @@ export class SelectLocaleContainer extends React.Component<SelectLocaleTypes, an
 // Add projects from store to the container props
 const mapStateToProps = (state: any) => {
   return {
-    curentLocale: state.common.i18n.locale
+    currentLocale: state.common.i18n.locale
   }
 }
 

@@ -1,14 +1,12 @@
 /** @module common */
 import * as React from "react"
 import { map } from "lodash"
-import { Card, CardText, CardTitle } from "material-ui/Card"
-import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
-import { FormattedMessage } from "react-intl"
+import DropDownMenu from "material-ui/DropDownMenu"
 
 interface SelectLocaleTypes {
   locales: Array<string>,
-  curentLocale: string,
+  currentLocale: string,
   setLocale: (locale: string) => void
 }
 
@@ -23,27 +21,18 @@ class SelectLocaleComponent extends React.Component<SelectLocaleTypes, any> {
   }
 
   handleChange (event: any, index: any, value: any): any {
-    this.setState({value})
     this.props.setLocale(value)
   }
 
   render (): JSX.Element {
-
-    const items = map(this.props.locales, (locale: string) => {
+    const {locales, currentLocale} = this.props
+    const items = map(locales, (locale: string) => {
       return <MenuItem value={locale} key={locale} primaryText={locale}/>
     })
     return (
-      <Card>
-        <CardTitle title={<FormattedMessage id="title"/>}/>
-        <CardText>
-          <SelectField
-            value={this.props.curentLocale}
-            onChange={this.handleChange}
-            fullWidth={true}>
-            {items}
-          </SelectField>
-        </CardText>
-      </Card>
+      <DropDownMenu value={currentLocale} onChange={this.handleChange}>
+        {items}
+      </DropDownMenu>
     )
   }
 }

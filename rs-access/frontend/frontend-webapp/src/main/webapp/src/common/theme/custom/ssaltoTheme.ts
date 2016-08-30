@@ -45,28 +45,6 @@ export default {
       backgroundImage: "url('/img/background.jpg')",
       display: "flex",
       alignItems: "center"
-    },
-    layout: {
-
-    },
-    datamanagement: {
-      home: {
-        items: {
-          classes: ["col-xs-50", "col-sm-33", "col-lg-16"],
-          styles: {
-            padding: "10px 0",
-            textAlign: "center"
-          }
-        },
-        container: {
-          classes: ["row"],
-          styles: {
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: "10px"
-          }
-        }
-      }
     }
   }
 }

@@ -1,16 +1,11 @@
 /** @module AdminApp */
 import * as React from "react"
-import { connect } from "react-redux"
-import { logout } from "../common/authentication/AuthenticateActions"
-import Layout from "../common/layout/containers/Layout"
+import SidebarContainer from "./modules/menu/containers/SidebarContainer"
 import MenuContainer from "./modules/menu/containers/MenuContainer"
-import AppBar from "material-ui/AppBar"
 import IconMenu from "material-ui/IconMenu"
 import MenuItem from "material-ui/MenuItem"
 import IconButton from "material-ui/IconButton"
 import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert"
-import SelectTheme from "../common/theme/containers/SelectTheme"
-import SelectLanguage from "../common/i18n/containers/SelectLocaleContainer"
 import { ThemeContextInterface, ThemeContextType } from "../common/theme/ThemeContainerInterface"
 
 interface MainAdminLayoutProps {
@@ -45,6 +40,7 @@ class MainAdminLayout extends React.Component<MainAdminLayoutProps, any> {
 
   static contextTypes: Object = ThemeContextType
   context: ThemeContextInterface
+
   constructor () {
     super()
     this.state = {instance: false}
@@ -53,30 +49,45 @@ class MainAdminLayout extends React.Component<MainAdminLayoutProps, any> {
 
   render (): JSX.Element {
     const {content} = this.props
+    const style = {
+      app: {
+        classes: this.context.muiTheme.adminApp.layout.app.classes.join(' '),
+        styles: this.context.muiTheme.adminApp.layout.app.styles,
+      },
+      bodyContainer: {
+        classes: this.context.muiTheme.adminApp.layout.bodyContainer.classes.join(' '),
+        styles: this.context.muiTheme.adminApp.layout.bodyContainer.styles,
+      },
+      contentContainer: {
+        classes: this.context.muiTheme.adminApp.layout.contentContainer.classes.join(' '),
+        styles: this.context.muiTheme.adminApp.layout.contentContainer.styles,
+      },
+    }
 
-    const layoutStyle = this.context.muiTheme.adminApp.layout
     return (
-      <Layout style={layoutStyle}>
-        <div key='sideBar'><MenuContainer /></div>
-        <div key='appBar'><AppBar title="Regards admin dashboard" iconElementRight={AdminAppBarIcon}/></div>
-        <div key='content'>{content}</div>
-        <div key='selectTheme'><SelectTheme /></div>
-        <div key='selectLanguage'><SelectLanguage locales={['en','fr']}/></div>
-      </Layout>
+      <div className={style.app.classes} style={style.app.styles}>
+        <MenuContainer/>
+        <div className={style.bodyContainer.classes} style={style.bodyContainer.styles}>
+          <SidebarContainer />
+          <div className={style.contentContainer.classes} style={style.contentContainer.styles}>
+            {content}
+          </div>
+        </div>
+      </div>
     )
   }
 }
 export default MainAdminLayout
 /*
-// Add theme from store to the component props
-const mapStateToProps = (state: any) => ({
-  theme: state.common.theme,
-  authentication: state.common.authentication
-})
-const mapDispatchToProps = (dispatch: any) => ({
-  onLogout: () => {
-    dispatch(logout())
-  }
-})
-export default connect<{}, {}, MainAdminLayoutProps>(mapStateToProps, mapDispatchToProps)(MainAdminLayout)
-*/
+ // Add theme from store to the component props
+ const mapStateToProps = (state: any) => ({
+ theme: state.common.theme,
+ authentication: state.common.authentication
+ })
+ const mapDispatchToProps = (dispatch: any) => ({
+ onLogout: () => {
+ dispatch(logout())
+ }
+ })
+ export default connect<{}, {}, MainAdminLayoutProps>(mapStateToProps, mapDispatchToProps)(MainAdminLayout)
+ */

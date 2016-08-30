@@ -8,6 +8,7 @@ export default merge({}, lightBaseTheme, {
       color: red900
     }
   },
+  toolbar: {},
   linkWithoutDecoration: {
     textDecoration: "blink",
     color: grey900
@@ -18,30 +19,6 @@ export default merge({}, lightBaseTheme, {
       display: "flex",
       alignItems: "center"
     },
-    layout: {
-      backgroundColor: "transparent",
-      background: "url('/img/background.jpg') top right no-repeat",
-      backgroundAttachment: "fixed"
-    },
-    datamanagement: {
-      home: {
-        items: {
-          classes: ["col-xs-50", "col-sm-33", "col-lg-16"],
-          styles: {
-            padding: "10px 0",
-            textAlign: "center"
-          }
-        },
-        container: {
-          classes: ["row"],
-          styles: {
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: "10px"
-          }
-        }
-      }
-    }
   }
 
 })

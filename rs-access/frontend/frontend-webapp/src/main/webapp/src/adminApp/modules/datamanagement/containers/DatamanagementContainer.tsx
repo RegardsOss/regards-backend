@@ -66,7 +66,7 @@ export default class DatasetCreateContainer extends React.Component<Datamanageme
   }
   renderItem = (element: any, elementStyles: any, elementClasses: string, linkStyle: any) => {
     return (
-      <div className={elementClasses}>
+      <div className={elementClasses} key={element.path}>
         <Card
           initiallyExpanded={true}
           style={elementStyles}

@@ -13,7 +13,7 @@ describe('[COMMON] Testing i18n Select Locale component', () => {
     var spy = sinon.spy(onLocaleChange);
     let props = {
       setLocale: spy,
-      curentLocale: 'ru',
+      currentLocale: 'ru',
       locales: ['fr','en','ru','es']
     }
 
