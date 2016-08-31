@@ -143,10 +143,10 @@ class DatamanagementComponent extends React.Component<DatamangementProps, any> {
           classes: this.context.muiTheme.adminApp.datamanagement.home.section2.container.classes.join(' '),
           styles: this.context.muiTheme.adminApp.datamanagement.home.section2.container.styles,
         },
-        action: {
-          classes: this.context.muiTheme.adminApp.datamanagement.home.action.classes.join(' '),
-          styles: this.context.muiTheme.adminApp.datamanagement.home.action.styles,
-        },
+      },
+      action: {
+        classes: this.context.muiTheme.adminApp.datamanagement.home.action.classes.join(' '),
+        styles: this.context.muiTheme.adminApp.datamanagement.home.action.styles,
       },
       links: this.context.muiTheme.linkWithoutDecoration
     }
@@ -218,8 +218,8 @@ class DatamanagementComponent extends React.Component<DatamangementProps, any> {
 
           {advancedSection}
           <div
-            className={style.section2.action.classes}
-            style={style.section2.action.styles}
+            className={style.action.classes}
+            style={style.action.styles}
           >
             <FlatButton
               label={labelToggleAdvanced}
@@ -234,7 +234,7 @@ class DatamanagementComponent extends React.Component<DatamangementProps, any> {
   }
 }
 
-export default DatamanagementComponent
+export default DatamanagementComponent;
 /*
  const mapStateToProps = (state: any, ownProps: any) => {
  }
