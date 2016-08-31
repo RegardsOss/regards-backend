@@ -1,6 +1,6 @@
 import * as React from "react"
 import { RadioButton, RadioButtonGroup } from "material-ui/RadioButton"
-import { FormattedMessage } from "react-intl"
+import { FormattedMessage, intlShape } from "react-intl"
 import { ModelAttribute } from "../../../../model/ModelAttribute"
 import TextInputComponent from "../../input/TextInputComponent"
 
@@ -10,6 +10,15 @@ interface ModelAttributeRadioGroupProps {
   staticInput: JSX.Element
 }
 class DatasetModelAttributeRadioGroupComponent extends React.Component<ModelAttributeRadioGroupProps, any> {
+  static contextTypes: Object = {
+    intl: intlShape,
+    muiTheme: React.PropTypes.object.isRequired
+  }
+  context: {
+    intl: any,
+    muiTheme: any
+  }
+
   state: any = {
     radioValue: "dynamic"
   }
@@ -52,19 +61,19 @@ class DatasetModelAttributeRadioGroupComponent extends React.Component<ModelAttr
           <RadioButton
             value="dynamic"
             label={
-              <FormattedMessage id="datamanagement.dataset.add.1.attribute.dynamic" />
+              this.context.intl.formatMessage({id: "datamanagement.dataset.add.1.attribute.dynamic"})
             }
           />
           <RadioButton
             value="static"
             label={
-              <FormattedMessage id="datamanagement.dataset.add.1.attribute.static" />
+              this.context.intl.formatMessage({id: "datamanagement.dataset.add.1.attribute.static"})
             }
           />
           <RadioButton
             value="computed"
             label={
-              <FormattedMessage id="datamanagement.dataset.add.1.attribute.computed" />
+              this.context.intl.formatMessage({id: "datamanagement.dataset.add.1.attribute.computed"})
             }
           />
         </RadioButtonGroup>

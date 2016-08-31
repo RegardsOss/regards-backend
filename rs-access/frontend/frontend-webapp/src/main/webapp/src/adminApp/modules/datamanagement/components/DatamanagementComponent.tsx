@@ -8,10 +8,9 @@ import CardActions from "material-ui/Card/CardActions"
 import AddIcon from "material-ui/svg-icons/content/add-circle"
 import ListIcon from "material-ui/svg-icons/content/filter-list"
 import IconButton from "material-ui/IconButton"
-import FlatButton from "material-ui/FlatButton"
 import KeyboardArrowUp from "material-ui/svg-icons/hardware/keyboard-arrow-up"
 import KeyboardArrowDown from "material-ui/svg-icons/hardware/keyboard-arrow-down"
-import { ThemeContextType } from "../../../../common/theme/ThemeContainerInterface"
+import RaisedButton from "material-ui/RaisedButton"
 
 interface DatamanagementProps {
   params: any,
@@ -33,12 +32,9 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
 
   handleToggleAdvanced = () => {
     const {showAdvanced} = this.state
-    console.log(this.state.showAdvanced)
     this.setState({
       showAdvanced: !showAdvanced
     })
-    console.log(this.state.showAdvanced)
-
   }
 
   getCollectionCreate = () => {
@@ -91,6 +87,9 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
           <CardText>
             {element.title}
           </CardText>
+          <CardText>
+            {element.description}
+          </CardText>
           <CardActions>
             <Link
               to={element.pathList}
@@ -119,7 +118,7 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
   render (): JSX.Element {
     const theme = this.props.theme
     const style = {
-      section1: {
+      section: {
         items: {
           classes: theme.adminApp.datamanagement.home.section1.items.classes.join(' '),
           styles: theme.adminApp.datamanagement.home.section1.items.styles,
@@ -130,62 +129,46 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
           styles: theme.adminApp.datamanagement.home.section1.container.styles,
         },
       },
-      section2: {
-        items: {
-          classes: theme.adminApp.datamanagement.home.section2.items.classes.join(' '),
-          styles: theme.adminApp.datamanagement.home.section2.items.styles,
-        },
-        container: {
-          classes: theme.adminApp.datamanagement.home.section2.container.classes.join(' '),
-          styles: theme.adminApp.datamanagement.home.section2.container.styles,
-        },
-        action: {
-          classes: theme.adminApp.datamanagement.home.action.classes.join(' '),
-          styles: theme.adminApp.datamanagement.home.action.styles,
-        },
+      action: {
+        classes: theme.adminApp.datamanagement.home.action.classes.join(' '),
+        styles: theme.adminApp.datamanagement.home.action.styles,
       },
       links: theme.linkWithoutDecoration
     }
     const elementsCommon = [
       {
-        title: (<FormattedMessage id="datamanagement.collection.list"/>),
+        title: (<FormattedMessage id="datamanagement.collection"/>),
+        description: (<FormattedMessage id="datamanagement.collection.info"/>),
         pathList: this.getCollectionList(),
         pathCreate: this.getCollectionCreate()
       },
       {
-        title: (<FormattedMessage id="datamanagement.dataset.list"/>),
+        title: (<FormattedMessage id="datamanagement.dataset"/>),
+        description: (<FormattedMessage id="datamanagement.dataset.info"/>),
         pathList: this.getDatasetList(),
         pathCreate: this.getDatasetCreate()
       }
     ]
-
-    const elementsAdvanced = [
-      {
-        title: (<FormattedMessage id="datamanagement.model.add"/>),
+    if (this.state.showAdvanced) {
+      elementsCommon.push({
+        title: (<FormattedMessage id="datamanagement.model"/>),
+        description: (<FormattedMessage id="datamanagement.model.info"/>),
         pathList: this.getModelList(),
         pathCreate: this.getModelCreate()
-      },
-      {
-        title: (<FormattedMessage id="datamanagement.datasource.add"/>),
+      })
+      elementsCommon.push({
+        title: (<FormattedMessage id="datamanagement.datasource"/>),
+        description: (<FormattedMessage id="datamanagement.datasource.info"/>),
         pathList: this.getDatasourceList(),
         pathCreate: this.getDatasourceCreate()
-      },
-      {
-        title: (<FormattedMessage id="datamanagement.connection.add"/>),
+      })
+      elementsCommon.push({
+        title: (<FormattedMessage id="datamanagement.connection"/>),
+        description: (<FormattedMessage id="datamanagement.connection.info"/>),
         pathList: this.getConnectionList(),
         pathCreate: this.getConnectionCreate()
-      }
-    ]
-    const advancedSection = this.state.showAdvanced ? (
-      <div
-        className={style.section2.container.classes}
-        style={style.section2.container.styles}
-      >
-        {map(elementsAdvanced, (element: any, id: string) => {
-          return this.renderItem(element, style.section2.items.styles, style.section2.items.classes, style.links)
-        })}
-      </div>
-    ) : null
+      })
+    }
     const labelToggleAdvanced = this.state.showAdvanced ?
       <FormattedMessage id="datamanagement.collection.action.hideAdvanced"/> :
       <FormattedMessage id="datamanagement.collection.action.showAdvanced"/>
@@ -195,29 +178,19 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
     return (
       <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
         <div>
-
-          <Card
-            initiallyExpanded={false}
-          >
-            <CardText>
-              <FormattedMessage id="datamanagement.info"/>
-            </CardText>
-          </Card>
           <div
-            className={style.section1.container.classes}
-            style={style.section1.container.styles}
+            className={style.section.container.classes}
+            style={style.section.container.styles}
           >
             {map(elementsCommon, (element: any, id: string) => {
-              return this.renderItem(element, style.section1.items.styles, style.section1.items.classes, style.links)
+              return this.renderItem(element, style.section.items.styles, style.section.items.classes, style.links)
             })}
           </div>
-
-          {advancedSection}
           <div
-            className={style.section2.action.classes}
-            style={style.section2.action.styles}
+            className={style.action.classes}
+            style={style.action.styles}
           >
-            <FlatButton
+            <RaisedButton
               label={labelToggleAdvanced}
               primary={true}
               icon={iconToggleAdvanced}
@@ -230,7 +203,7 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
   }
 }
 
-export default DatamanagementComponent
+export default DatamanagementComponent;
 /*
  const mapStateToProps = (state: any, ownProps: any) => {
  }

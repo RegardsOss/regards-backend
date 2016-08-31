@@ -43,7 +43,7 @@ class LoginComponent extends React.Component<LoginProps, any> {
    * @param  {type} event: KeyboardEvent
    * @return {type}
    */
-  handleKeyPress (event: KeyboardEvent): any {
+  handleKeyPress (event: React.KeyboardEvent): any {
     this.setState({"showError": true})
     if (event.key === 'Enter') {
       this.props.onLogin(this.state.username, this.state.password)
