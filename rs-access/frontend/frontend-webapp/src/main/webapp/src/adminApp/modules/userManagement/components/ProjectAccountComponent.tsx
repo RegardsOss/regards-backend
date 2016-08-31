@@ -45,7 +45,7 @@ class ProjectAccountComponent extends React.Component<ProjectAccountProps, any> 
     const {muiTheme} = this.context
     const style = muiTheme.linkWithoutDecoration
 
-    // Manage delete link only f the hateos delete link is provided
+    // Manage delete link only if the hateoas delete link is provided
     const deletelink = projectAccount.links.find((link) => {
       return link.rel === 'delete'
     })

@@ -1,4 +1,4 @@
-import { HateosLink } from "../hateos/types"
+import { HateoasLink } from "../hateoas/types"
 import { ResourceAccess } from "./ResourceAccess"
 
 
@@ -6,5 +6,5 @@ export interface Role {
   name: string,
   parentRole: Role,
   permissions: Array<ResourceAccess>
-  links: Array<HateosLink>
+  links: Array<HateoasLink>
 }

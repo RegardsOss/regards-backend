@@ -1,4 +1,4 @@
-import { HateosLink } from "../hateos/types"
+import { HateoasLink } from "../hateoas/types"
 
 export interface ProjectAccount {
   projectAccountId: number,
@@ -8,5 +8,5 @@ export interface ProjectAccount {
   role: string,
   project: string,
   account: number,
-  links: Array<HateosLink>
+  links: Array<HateoasLink>
 }

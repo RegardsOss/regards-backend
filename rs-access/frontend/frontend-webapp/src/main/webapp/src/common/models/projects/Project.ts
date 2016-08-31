@@ -1,6 +1,6 @@
-import { HateosLink } from "../hateos/types"
+import { HateoasLink } from "../hateoas/types"
 
 export interface Project {
   name: string,
-  links: Array<HateosLink>
+  links: Array<HateoasLink>
 }
