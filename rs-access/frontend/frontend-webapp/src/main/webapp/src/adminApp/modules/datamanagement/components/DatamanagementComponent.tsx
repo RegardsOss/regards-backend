@@ -234,6 +234,7 @@ class DatamanagementComponent extends React.Component<DatamangementProps, any> {
   }
 }
 
+export default DatamanagementComponent
 /*
  const mapStateToProps = (state: any, ownProps: any) => {
  }
