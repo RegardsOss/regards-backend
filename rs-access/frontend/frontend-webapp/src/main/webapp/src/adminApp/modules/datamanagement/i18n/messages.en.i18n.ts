@@ -1,16 +1,18 @@
 const messages = {
   "datamanagement.header": "Data Management",
-  "datamanagement.info": "Add your datasources. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
-  "datamanagement.action.list.tooltip": "List",
-  "datamanagement.action.add.tooltip": "Add",
+  "datamanagement.model.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
+  "datamanagement.collection.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
+  "datamanagement.dataset.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
+  "datamanagement.datasource.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
+  "datamanagement.connection.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
+  "datamanagement.action.list.tooltip": "Display the element's list",
+  "datamanagement.action.add.tooltip": "Create a new element",
 
   "datamanagement.collection.action.showAdvanced": "Advanced",
   "datamanagement.collection.action.hideAdvanced": "Reduce",
-  "datamanagement.collection.add": "Add collection",
-  "datamanagement.collection.list": "List collections",
+  "datamanagement.collection": "Collections",
 
-  "datamanagement.model.add": "Add model",
-  "datamanagement.model.list": "List models",
+  "datamanagement.model": "Models",
   "datamanagement.model.table.name": "Name",
   "datamanagement.model.table.type": "Type",
   "datamanagement.model.table.actions": "Actions",
@@ -31,7 +33,7 @@ const messages = {
   "datamanagement.dataset.header": "Ajouter un dataset",
   "datamanagement.dataset.table.name": "Nom",
   "datamanagement.dataset.table.actions": "Actions",
-  "datamanagement.dataset.list": "List datasets",
+  "datamanagement.dataset": "Datasets",
   "datamanagement.dataset.list.header": "List datasets",
   "datamanagement.dataset.list.action.add": "Add a dataset",
   "datamanagement.dataset.list.action.cancel": "Cancel",
@@ -53,11 +55,9 @@ const messages = {
   "datamanagement.dataset.add.2.stepper": "Configure datasource",
   "datamanagement.dataset.add.3.stepper": "Done",
 
-  "datamanagement.datasource.add": "Create a new  datasource",
-  "datamanagement.datasource.list": "List datasources",
+  "datamanagement.datasource": "Datasources",
 
-  "datamanagement.connection.add": "Create a new connection",
-  "datamanagement.connection.list": "List connections",
+  "datamanagement.connection": "Connections",
 
   "datamanagement.attribute.type.string": "String",
   "datamanagement.attribute.type.integer": "Integer",

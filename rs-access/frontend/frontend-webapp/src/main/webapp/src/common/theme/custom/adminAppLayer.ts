@@ -29,6 +29,7 @@ export default {
           backgroundColor: "transparent",
           background: "url('/img/background.jpg') top right no-repeat",
           backgroundAttachment: "fixed",
+          backgroundSize: "cover",
           minHeight: "100vh",
           paddingTop: "10px",
           paddingRight: "1px", // Quick fix for bootstrap grid .row
@@ -59,44 +60,25 @@ export default {
     datamanagement: {
       home: {
         section1: {
-          items: {
-            classes: ["col-xs-50", "col-sm-33", "col-lg-24"],
-            styles: {
-              padding: "10px 0",
-              textAlign: "center"
-            }
-          },
           container: {
             classes: ["row"],
-            styles: {
-              display: "flex",
-              justifyContent: "space-between",
-              marginTop: "10px"
-            }
-          }
-        },
-        section2: {
-          container: {
-            classes: ["row"],
-            styles: {
-              padding: "10px 0",
-              display: "flex",
-              justifyContent: "space-between"
-            }
+            styles: {}
           },
           items: {
-            classes: ["col-xs-50", "col-sm-33", "col-lg-24"],
+            classes: ["col-xs-50", "col-sm-40", "col-lg-33"],
             styles: {
               padding: "10px 0",
-              textAlign: "center"
+              textAlign: "center",
+              marginBottom: "30px"
             }
-          }
+          },
         },
         action: {
           classes: ["row"],
           styles: {
             display: "flex",
-            justifyContent: "center"
+            justifyContent: "center",
+            marginTop: "30px"
           }
         }
       }
