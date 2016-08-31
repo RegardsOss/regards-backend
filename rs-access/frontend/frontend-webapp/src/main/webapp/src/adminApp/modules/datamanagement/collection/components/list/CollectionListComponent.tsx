@@ -1,25 +1,23 @@
 import * as React from "react"
 import { Card, CardTitle, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
-import CancelButtonComponent from "../../components/CancelButtonComponent"
-import MainButtonComponent from "../../components/MainButtonComponent"
 import { TableRowColumn, Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
-import { Model } from "../Model"
 import Delete from "material-ui/svg-icons/action/delete"
 import { map } from "lodash"
 import FlatButton from "material-ui/FlatButton"
 import Edit from "material-ui/svg-icons/editor/mode-edit"
-import CardActionsComponent from "../../components/CardActionComponent"
+import { Collection } from "../../Collection"
+import CardActionsComponent from "../../../components/CardActionComponent"
 
 
-interface ModelListProps {
+interface CollectionListProps {
   getBackUrl: () => string
   getCreateUrl: () => string
-  models: Array<Model>
+  collections: Array<Collection>
 }
 /**
  */
-export default class ModelListComponent extends React.Component<ModelListProps, any> {
+class CollectionListComponent extends React.Component<CollectionListProps, any> {
 
 
   getCreateUrl = (): string => {
@@ -31,21 +29,12 @@ export default class ModelListComponent extends React.Component<ModelListProps, 
 
 
   render (): JSX.Element {
-    const {models} = this.props
-    const styleCardActions = {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "flex-end"
-    }
+    const {collections} = this.props
     return (
       <Card
         initiallyExpanded={true}>
         <CardTitle
-          title={
-            <FormattedMessage
-            id="datamanagement.model.list.header"
-            />
-          }
+          title={<FormattedMessage id="datamanagement.collection.list.header"/>}
         />
         <CardText>
           <Table
@@ -60,50 +49,43 @@ export default class ModelListComponent extends React.Component<ModelListProps, 
               <TableRow>
                 <TableHeaderColumn>
                   <FormattedMessage
-                    id="datamanagement.model.table.name"/>
+                    id="datamanagement.collection.table.name"
+                  />
                 </TableHeaderColumn>
                 <TableHeaderColumn>
                   <FormattedMessage
-                    id="datamanagement.model.table.actions"/>
-                </TableHeaderColumn>
-                <TableHeaderColumn>
+                    id="datamanagement.collection.table.actions"
+                  />
                 </TableHeaderColumn>
               </TableRow>
             </TableHeader>
             <TableBody displayRowCheckbox={false} preScanRows={false}>
-              {map(models, (model: Model, id: number) => (
+              {map(collections, (collection: Collection, id: number) => (
 
                 <TableRow
                   key={id}>
                   <TableRowColumn>
-                    {model.name}
+                    {collection.name}
                   </TableRowColumn>
                   <TableRowColumn>
-                    <FlatButton
-                      icon={<Edit />}
-                      disabled={true}/>
-                  </TableRowColumn>
-                  <TableRowColumn>
-                    <FlatButton
-                      icon={<Delete />}
-                      disabled={true}/>
+                    <FlatButton icon={<Delete />} disabled={true}/>
+                    <FlatButton icon={<Edit />} disabled={true}/>
                   </TableRowColumn>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-
           <CardActionsComponent
             secondaryButtonUrl={this.getBackUrl()}
             secondaryButtonLabel={
               <FormattedMessage
-                id="datamanagement.model.list.action.back"
+                id="datamanagement.collection.list.action.back"
               />
             }
             mainButtonUrl={this.getCreateUrl()}
             mainButtonLabel={
               <FormattedMessage
-                id="datamanagement.model.list.action.add"
+                id="datamanagement.collection.list.action.add"
               />
             }
           />
@@ -112,3 +94,6 @@ export default class ModelListComponent extends React.Component<ModelListProps, 
     )
   }
 }
+
+
+export default CollectionListComponent

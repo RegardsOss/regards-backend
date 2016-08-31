@@ -1,5 +1,7 @@
 import * as React from "react"
 import FlatButton from "material-ui/FlatButton"
+import RaisedButton from "material-ui/RaisedButton"
+
 import { Link } from "react-router"
 
 /**
@@ -30,7 +32,7 @@ export default class MainButtonComponent extends React.Component<MainButtonProps
     if (url) {
       return (
         <Link to={url} style={styleLink}>
-          <FlatButton
+          <RaisedButton
             label={label}
             primary={true}
           />
@@ -38,7 +40,7 @@ export default class MainButtonComponent extends React.Component<MainButtonProps
       )
     } else {
       return (
-        <FlatButton
+        <RaisedButton
           label={label}
           primary={true}
           onTouchTap={this.handleClickBtn}

@@ -1,12 +1,16 @@
 import * as React from "react"
-import { Card, CardHeader } from "material-ui/Card"
 import I18nProvider from "../../../../../common/i18n/I18nProvider"
-import { FormattedMessage } from "react-intl"
+import { Collection } from "../Collection"
+import CollectionListComponent from "../components/list/CollectionListComponent"
 // const URL_PROJECTS_USERS = "http://localhost:8080/api/users"
 
 
 interface DatasetCreateProps {
-  test?: any
+  // From router
+  params: any
+
+  // From mapStateToProps
+  collections: Array<Collection>
 }
 
 /**
@@ -15,22 +19,25 @@ interface DatasetCreateProps {
 export default class CollectionListContainer extends React.Component<DatasetCreateProps, any> {
 
 
-  constructor (props: any) {
-    super(props)
+  getBackUrl = () => {
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement"
+  }
+
+  getCreateUrl = () => {
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/connection/create"
   }
 
   render (): JSX.Element {
+    const {collections} = this.props
     return (
-      <I18nProvider messageDir='adminApp/modules/userManagement/i18n'>
-        <Card
-          initiallyExpanded={true}>
-          <CardHeader
-            title={<FormattedMessage id="userlist.header"/>}
-            actAsExpander={true}
-            showExpandableButton={false}
-          />
-          <h1>Dataset collection list</h1>
-        </Card>
+      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+        <CollectionListComponent
+          getBackUrl={this.getBackUrl}
+          getCreateUrl={this.getCreateUrl}
+          collections={collections}
+        />
       </I18nProvider>
     )
   }

@@ -1,14 +1,13 @@
 import * as React from "react"
 import { Card, CardTitle, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
-import CancelButtonComponent from "../../../components/CancelButtonComponent"
-import MainButtonComponent from "../../../components/MainButtonComponent"
 import { TableRowColumn, Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
 import { Dataset } from "../../Dataset"
 import Delete from "material-ui/svg-icons/action/delete"
 import { map } from "lodash"
 import FlatButton from "material-ui/FlatButton"
 import Edit from "material-ui/svg-icons/editor/mode-edit"
+import CardActionsComponent from "../../../components/CardActionComponent"
 
 
 interface DatasetListProps {
@@ -18,7 +17,7 @@ interface DatasetListProps {
 }
 /**
  */
-export default class DatasetListComponent extends React.Component<DatasetListProps, any> {
+class DatasetListComponent extends React.Component<DatasetListProps, any> {
 
 
   getCreateUrl = (): string => {
@@ -31,11 +30,6 @@ export default class DatasetListComponent extends React.Component<DatasetListPro
 
   render (): JSX.Element {
     const {datasets} = this.props
-    const styleCardActions = {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "flex-end"
-    }
     return (
       <Card
         initiallyExpanded={true}>
@@ -60,7 +54,7 @@ export default class DatasetListComponent extends React.Component<DatasetListPro
                 </TableHeaderColumn>
                 <TableHeaderColumn>
                   <FormattedMessage
-                    id="datamanagement.dataset.table.actions"
+                    id="datamanagement.connection.table.actions"
                   />
                 </TableHeaderColumn>
               </TableRow>
@@ -81,23 +75,24 @@ export default class DatasetListComponent extends React.Component<DatasetListPro
               ))}
             </TableBody>
           </Table>
-
-          <div style={styleCardActions}>
-            <CancelButtonComponent
-              label={<FormattedMessage
-                    id="datamanagement.dataset.list.action.cancel"
-                  />}
-              url={this.getBackUrl()}
-            />
-            <MainButtonComponent
-              label={<FormattedMessage
-                    id="datamanagement.dataset.list.action.add"
-                  />}
-              url={this.getCreateUrl()}
-            />
-          </div>
+          <CardActionsComponent
+            secondaryButtonUrl={this.getBackUrl()}
+            secondaryButtonLabel={
+              <FormattedMessage
+                id="datamanagement.dataset.list.action.back"
+              />
+            }
+            mainButtonUrl={this.getCreateUrl()}
+            mainButtonLabel={
+              <FormattedMessage
+                id="datamanagement.dataset.list.action.add"
+              />
+            }
+          />
         </CardText>
       </Card>
     )
   }
 }
+
+export default DatasetListComponent

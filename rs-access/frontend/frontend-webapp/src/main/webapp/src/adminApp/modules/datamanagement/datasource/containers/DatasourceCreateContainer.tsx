@@ -4,14 +4,14 @@ import I18nProvider from "../../../../../common/i18n/I18nProvider"
 
 /**
  */
-export default class ModelListContainer extends React.Component<any, any> {
+export default class DatasourceCreateContainer extends React.Component<any, any> {
 
 
   render (): JSX.Element {
     return (
       <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
         <div>
-          <h2>List datasource</h2>
+          <h2>Create datasource</h2>
         </div>
       </I18nProvider>
     )
