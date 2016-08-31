@@ -1,10 +1,11 @@
 const messages = {
-  "userlist.header": "Liste des utilisateurs",
+  "userlist.title": "Utilisateurs",
+  "userlist.subtitle": "Liste des utilisateurs du projet",
   "userlist.login": "Identifiant",
   "userlist.firstName": "Prénom",
   "userlist.lastName": "Nom",
   "userlist.email": "E-mail",
-  "userlist.status": "Status",
+  "userlist.status": "Statut",
   "userlist.action": "Actions",
   "dropdown.edit": "Editer",
   "dropdown.view": "Afficher",

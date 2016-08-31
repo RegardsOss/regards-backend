@@ -3,6 +3,7 @@ import ssaltoTheme from "./ssaltoTheme"
 import lightBaseTheme from "./lightBaseTheme"
 import darkBaseTheme from "./darkBaseTheme"
 import "./reset.css"
+import "./main.css"
 import "./bootstrap_grid_100.css"
 import "./background.jpg"
 
