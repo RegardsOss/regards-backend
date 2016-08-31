@@ -1,6 +1,11 @@
 const messages = {
   "datamanagement.header": "Data Management",
+  "datamanagement.info": "Add your datasources. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
+  "datamanagement.action.list.tooltip": "List",
+  "datamanagement.action.add.tooltip": "Add",
 
+  "datamanagement.collection.action.showAdvanced": "Advanced",
+  "datamanagement.collection.action.hideAdvanced": "Reduce",
   "datamanagement.collection.add": "Add collection",
   "datamanagement.collection.list": "List collections",
 
@@ -39,9 +44,9 @@ const messages = {
   "datamanagement.dataset.add.1.action.next": "Next",
   "datamanagement.dataset.add.1.infoDefaultModelAttributes": "You cna define ehre a default value for each attribute of the selected model. If you do not provide a default value here, you will need to specify while choosing the datasource a way to bind these data...",
   "datamanagement.dataset.add.1.attribute": "Attribute {name}",
-  "datamanagement.dataset.add.1.attribute.dynamic": "Dynamik attribut ",
-  "datamanagement.dataset.add.1.attribute.static": "Static attribut ",
-  "datamanagement.dataset.add.1.attribute.computed": "Computed attribut ",
+  "datamanagement.dataset.add.1.attribute.dynamic": "Dynamic attribute",
+  "datamanagement.dataset.add.1.attribute.static": "Static attribute",
+  "datamanagement.dataset.add.1.attribute.computed": "Computed attribute ",
   "datamanagement.dataset.add.1.input.dynamic": "Compute formula",
 
   "datamanagement.dataset.add.1.stepper": "Fill dataset attributes",

@@ -1,6 +1,11 @@
 const messages = {
   "datamanagement.header": "Gestion des données",
+  "datamanagement.info": "Add your datasources. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
+  "datamanagement.action.list.tooltip": "List",
+  "datamanagement.action.add.tooltip": "Add",
 
+  "datamanagement.collection.action.showAdvanced": "Advanced",
+  "datamanagement.collection.action.hideAdvanced": "Reduce",
   "datamanagement.collection.add": "Ajouter une collection",
   "datamanagement.collection.list": "Liste des collections",
 

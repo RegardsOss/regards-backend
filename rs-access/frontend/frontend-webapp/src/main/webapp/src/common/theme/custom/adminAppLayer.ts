@@ -16,6 +16,12 @@ export default {
     marginLeft: "40px"
   },
   adminApp: {
+    loginForm: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "100vh"
+    },
     layout: {
       app: {
         classes: [],
@@ -52,26 +58,48 @@ export default {
     },
     datamanagement: {
       home: {
-        items: {
-          classes: ["col-xs-50", "col-sm-33", "col-lg-16"],
-          styles: {
-            padding: "10px 0",
-            textAlign: "center"
+        section1: {
+          items: {
+            classes: ["col-xs-50", "col-sm-33", "col-lg-24"],
+            styles: {
+              padding: "10px 0",
+              textAlign: "center"
+            }
+          },
+          container: {
+            classes: ["row"],
+            styles: {
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: "10px"
+            }
           }
         },
-        container: {
+        section2: {
+          container: {
+            classes: ["row"],
+            styles: {
+              padding: "10px 0",
+              display: "flex",
+              justifyContent: "space-between"
+            }
+          },
+          items: {
+            classes: ["col-xs-50", "col-sm-33", "col-lg-24"],
+            styles: {
+              padding: "10px 0",
+              textAlign: "center"
+            }
+          }
+        },
+        action: {
           classes: ["row"],
           styles: {
             display: "flex",
-            justifyContent: "space-between",
-            marginTop: "10px"
+            justifyContent: "center"
           }
         }
       }
     }
   }
-
-
 }
-
-
