@@ -1,6 +1,9 @@
 import * as React from "react"
 import I18nProvider from "../../../../common/i18n/I18nProvider"
 import DatamanagementComponent from "../components/DatamanagementComponent"
+import ThemeInjector from "../../../../common/theme/ThemeInjector"
+import I18nInjector from "../../../../common/i18n/I18nInjector"
+import ComposedInjector from "../../../../common/injector/ComposedInjector"
 
 interface DatamanagementProps {
   // From Router
@@ -14,7 +17,9 @@ class DatamanagementContainer extends React.Component<DatamanagementProps, any> 
     const {params} = this.props
     return (
       <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
-        <DatamanagementComponent params={params}/>
+        <ComposedInjector >
+          <DatamanagementComponent theme={null} intl={null} params={params}/>
+        </ComposedInjector>
       </I18nProvider>
     )
   }

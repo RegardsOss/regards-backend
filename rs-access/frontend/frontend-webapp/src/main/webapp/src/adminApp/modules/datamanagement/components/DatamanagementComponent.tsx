@@ -11,23 +11,18 @@ import IconButton from "material-ui/IconButton"
 import FlatButton from "material-ui/FlatButton"
 import KeyboardArrowUp from "material-ui/svg-icons/hardware/keyboard-arrow-up"
 import KeyboardArrowDown from "material-ui/svg-icons/hardware/keyboard-arrow-down"
+import { ThemeContextType } from "../../../../common/theme/ThemeContainerInterface"
 
-interface DatamangementProps {
-  params: any
+interface DatamanagementProps {
+  params: any,
+  theme: any,
+  intl: any
 }
 
 /**
  * Show the list of users for the current project
  */
-class DatamanagementComponent extends React.Component<DatamangementProps, any> {
-  static contextTypes: Object = {
-    intl: intlShape,
-    muiTheme: React.PropTypes.object.isRequired
-  }
-  context: {
-    intl: any,
-    muiTheme: any
-  }
+class DatamanagementComponent extends React.Component<DatamanagementProps, any> {
 
   constructor (props: any) {
     super(props)
@@ -101,7 +96,7 @@ class DatamanagementComponent extends React.Component<DatamangementProps, any> {
               to={element.pathList}
               style={linkStyle}
             >
-              <IconButton tooltip={this.context.intl.formatMessage({id: "datamanagement.action.list.tooltip"})}>
+              <IconButton tooltip={this.props.intl.formatMessage({id: "datamanagement.action.list.tooltip"})}>
                 <ListIcon />
               </IconButton>
             </Link>
@@ -110,7 +105,7 @@ class DatamanagementComponent extends React.Component<DatamangementProps, any> {
               to={element.pathCreate}
               style={linkStyle}
             >
-              <IconButton tooltip={this.context.intl.formatMessage({id: "datamanagement.action.add.tooltip"})}>
+              <IconButton tooltip={this.props.intl.formatMessage({id: "datamanagement.action.add.tooltip"})}>
                 <AddIcon />
               </IconButton>
             </Link>
@@ -122,33 +117,34 @@ class DatamanagementComponent extends React.Component<DatamangementProps, any> {
 
 
   render (): JSX.Element {
+    const theme = this.props.theme
     const style = {
       section1: {
         items: {
-          classes: this.context.muiTheme.adminApp.datamanagement.home.section1.items.classes.join(' '),
-          styles: this.context.muiTheme.adminApp.datamanagement.home.section1.items.styles,
+          classes: theme.adminApp.datamanagement.home.section1.items.classes.join(' '),
+          styles: theme.adminApp.datamanagement.home.section1.items.styles,
 
         },
         container: {
-          classes: this.context.muiTheme.adminApp.datamanagement.home.section1.container.classes.join(' '),
-          styles: this.context.muiTheme.adminApp.datamanagement.home.section1.container.styles,
+          classes: theme.adminApp.datamanagement.home.section1.container.classes.join(' '),
+          styles: theme.adminApp.datamanagement.home.section1.container.styles,
         },
       },
       section2: {
         items: {
-          classes: this.context.muiTheme.adminApp.datamanagement.home.section2.items.classes.join(' '),
-          styles: this.context.muiTheme.adminApp.datamanagement.home.section2.items.styles,
+          classes: theme.adminApp.datamanagement.home.section2.items.classes.join(' '),
+          styles: theme.adminApp.datamanagement.home.section2.items.styles,
         },
         container: {
-          classes: this.context.muiTheme.adminApp.datamanagement.home.section2.container.classes.join(' '),
-          styles: this.context.muiTheme.adminApp.datamanagement.home.section2.container.styles,
+          classes: theme.adminApp.datamanagement.home.section2.container.classes.join(' '),
+          styles: theme.adminApp.datamanagement.home.section2.container.styles,
         },
         action: {
-          classes: this.context.muiTheme.adminApp.datamanagement.home.action.classes.join(' '),
-          styles: this.context.muiTheme.adminApp.datamanagement.home.action.styles,
+          classes: theme.adminApp.datamanagement.home.action.classes.join(' '),
+          styles: theme.adminApp.datamanagement.home.action.styles,
         },
       },
-      links: this.context.muiTheme.linkWithoutDecoration
+      links: theme.linkWithoutDecoration
     }
     const elementsCommon = [
       {

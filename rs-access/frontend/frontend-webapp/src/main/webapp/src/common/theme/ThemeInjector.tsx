@@ -6,19 +6,21 @@ import { ThemeContextType } from "./ThemeContainerInterface"
  * Retrieves the Material UI theme fom the context
  * and injects it as a prop to its child
  */
-class MuiThemeInjector extends React.Component<any, any> {
+class ThemeInjector extends React.Component<any, any> {
 
   static contextTypes: Object = {
     muiTheme: ThemeContextType.muiTheme
   }
   context: any
 
-  render (): JSX.Element {
-    const {muiTheme} = this.context
-    const child = React.Children.only(this.props.children)
+  mapContextToChildProps = () => ({
+    theme: this.context.muiTheme
+  })
 
-    return React.cloneElement(child, {muiTheme: muiTheme})
+  render(): JSX.Element {
+    const child = React.Children.only(this.props.children)
+    return React.cloneElement(child, this.mapContextToChildProps())
   }
 }
 
-export default MuiThemeInjector
+export default ThemeInjector

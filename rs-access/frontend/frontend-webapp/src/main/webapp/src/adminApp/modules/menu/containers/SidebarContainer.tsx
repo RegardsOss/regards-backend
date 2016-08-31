@@ -1,5 +1,6 @@
 import I18nProvider from "../../../../common/i18n/I18nProvider"
 import SidebarComponent from "../components/SidebarComponent"
+import ThemeInjector from "../../../../common/theme/ThemeInjector"
 
 class SidebarContainer extends React.Component<{}, {}> {
 
@@ -7,7 +8,9 @@ class SidebarContainer extends React.Component<{}, {}> {
 
     return (
       <I18nProvider messageDir='adminApp/modules/menu/i18n'>
-        <SidebarComponent />
+        <ThemeInjector>
+          <SidebarComponent theme={null} />
+        </ThemeInjector>
       </I18nProvider>
     )
   }

@@ -13,30 +13,30 @@ import CloudQueue from "material-ui/svg-icons/file/cloud-queue"
 import Widgets from "material-ui/svg-icons/device/widgets"
 import Brush from "material-ui/svg-icons/image/brush"
 import Reply from "material-ui/svg-icons/content/reply"
-import { intlShape, FormattedMessage } from "react-intl"
+import { FormattedMessage } from "react-intl"
 import { ThemeContextType } from "../../../../common/theme/ThemeContainerInterface"
 import { HateoasControlledSidebarElement } from "./SidebarElement"
 import SupervisorAccount from "material-ui/svg-icons/action/supervisor-account"
-/**
- * React Menu component. Display the admin application menu
- */
-class MenuComponent extends React.Component<any, any> {
 
-  static contextTypes: Object = {
-    intl: intlShape,
-    muiTheme: ThemeContextType.muiTheme
-  }
-  context: any
+interface SidebarProps {
+  theme: any
+}
+
+/**
+ * React sidebar component. Display the admin application menu
+ */
+class SidebarComponent extends React.Component<SidebarProps, any> {
 
   render (): JSX.Element {
+    const {theme} = this.props
 
     const style = {
       sidebarContainer: {
-        classes: this.context.muiTheme.adminApp.layout.sidebarContainer.classes.join(' '),
-        styles: this.context.muiTheme.adminApp.layout.sidebarContainer.styles,
+        classes: theme.adminApp.layout.sidebarContainer.classes.join(' '),
+        styles: theme.adminApp.layout.sidebarContainer.styles,
       },
       link: {
-        styles: this.context.muiTheme.linkWithoutDecoration
+        styles: theme.linkWithoutDecoration
       }
     }
     return (
@@ -117,4 +117,4 @@ class MenuComponent extends React.Component<any, any> {
   }
 }
 
-export default MenuComponent
+export default SidebarComponent
