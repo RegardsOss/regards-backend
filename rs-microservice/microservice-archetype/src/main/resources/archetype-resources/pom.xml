@@ -10,20 +10,6 @@
   <name>REGARDS Microservice - ${artifactId} </name>
   <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
   
-  <parent>
-    	<groupId>org.springframework.boot</groupId>
-    	<artifactId>spring-boot-starter-parent</artifactId>
-    	<version>1.3.5.RELEASE</version>
-  </parent>
-  
-  <dependencies>
-    <dependency>
-		<groupId>fr.cnes.regards.microservices</groupId>
-		<artifactId>microservice-core</artifactId>
-		<version>0.0.1</version>
-	</dependency>
-  </dependencies>
-  
   <modules>
   	<module>${moduleName}</module>
   	<module>boostrap-${artifactId}</module>
