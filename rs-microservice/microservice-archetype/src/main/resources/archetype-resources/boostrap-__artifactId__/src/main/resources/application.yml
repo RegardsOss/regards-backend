@@ -1,0 +1,31 @@
+#set( $semicolon = ':' )
+#set( $dollar = '$' )
+server:
+  adress: localhost
+  port: 0
+
+security:
+  client: acme
+  secret: acmesecret
+
+spring:
+  application:
+    name : ${artifactId}
+    
+swagger:
+  api:
+    name: ${artifactId}-api
+
+cloud:
+  config:
+    discovery:
+      enabled: false
+    server:
+      enabled: false
+      name: myconfigserver
+      
+eureka:
+  client:
+    enabled: true
+
+ 

@@ -2,7 +2,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
  
-  <groupId>fr.cnes.regards.microservices.${groupId}</groupId>
+  <groupId>fr.cnes.regards.microservices</groupId>
   <artifactId>${artifactId}</artifactId>
   <version>${version}</version>
   <packaging>pom</packaging>
@@ -16,12 +16,17 @@
     	<version>1.3.5.RELEASE</version>
   </parent>
   
+  <dependencies>
+    <dependency>
+		<groupId>fr.cnes.regards.microservices</groupId>
+		<artifactId>microservice-core</artifactId>
+		<version>0.0.1</version>
+	</dependency>
+  </dependencies>
+  
   <modules>
-  	<module>${artifactId}-signature</module>
-  	<module>${artifactId}-dao</module>
-  	<module>${artifactId}-domain</module>
-  	<module>${artifactId}-service</module>
-  	<module>${artifactId}-rest</module>
+  	<module>${moduleName}</module>
+  	<module>boostrap-${artifactId}</module>
   </modules>
  
 </project>
