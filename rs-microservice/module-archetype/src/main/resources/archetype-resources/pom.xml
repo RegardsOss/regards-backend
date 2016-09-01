@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+ 
+  <groupId>fr.cnes.regards.modules</groupId>
+  <artifactId>${artifactId}</artifactId>
+  <version>${version}</version>
+  <packaging>pom</packaging>
+ 
+  <name>REGARDS module - ${artifactId} </name>
+  <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+  
+  <parent>
+  	<groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>1.3.5.RELEASE</version>
+  </parent>
+  
+  <modules>
+  	<module>${artifactId}-dao</module>
+  	<module>${artifactId}-domain</module>
+  	<module>${artifactId}-rest</module>
+  	<module>${artifactId}-service</module>
+  	<module>${artifactId}-signature</module>
+  </modules>
+ 
+</project>
