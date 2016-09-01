@@ -1,25 +1,24 @@
 import * as React from "react"
 import { Card, CardTitle, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
-import CancelButtonComponent from "../../components/CancelButtonComponent"
-import MainButtonComponent from "../../components/MainButtonComponent"
+import CancelButtonComponent from "../../../components/CancelButtonComponent"
+import MainButtonComponent from "../../../components/MainButtonComponent"
 import { TableRowColumn, Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
-import { Model } from "../Model"
 import Delete from "material-ui/svg-icons/action/delete"
 import { map } from "lodash"
 import FlatButton from "material-ui/FlatButton"
 import Edit from "material-ui/svg-icons/editor/mode-edit"
-import CardActionsComponent from "../../components/CardActionComponent"
+import { Datasource } from "../../Datasource"
 
 
-interface ModelListProps {
+interface DatasourceListProps {
   getBackUrl: () => string
   getCreateUrl: () => string
-  models: Array<Model>
+  datasources: Array<Datasource>
 }
 /**
  */
-export default class ModelListComponent extends React.Component<ModelListProps, any> {
+class DatasourceListComponent extends React.Component<DatasourceListProps, any> {
 
 
   getCreateUrl = (): string => {
@@ -31,7 +30,7 @@ export default class ModelListComponent extends React.Component<ModelListProps, 
 
 
   render (): JSX.Element {
-    const {models} = this.props
+    const {datasources} = this.props
     const styleCardActions = {
       display: "flex",
       flexDirection: "row",
@@ -41,11 +40,7 @@ export default class ModelListComponent extends React.Component<ModelListProps, 
       <Card
         initiallyExpanded={true}>
         <CardTitle
-          title={
-            <FormattedMessage
-            id="datamanagement.model.list.header"
-            />
-          }
+          title={<FormattedMessage id="datamanagement.datasource.list.header"/>}
         />
         <CardText>
           <Table
@@ -60,55 +55,52 @@ export default class ModelListComponent extends React.Component<ModelListProps, 
               <TableRow>
                 <TableHeaderColumn>
                   <FormattedMessage
-                    id="datamanagement.model.table.name"/>
+                    id="datamanagement.datasource.table.name"
+                  />
                 </TableHeaderColumn>
                 <TableHeaderColumn>
                   <FormattedMessage
-                    id="datamanagement.model.table.actions"/>
-                </TableHeaderColumn>
-                <TableHeaderColumn>
+                    id="datamanagement.datasource.table.actions"
+                  />
                 </TableHeaderColumn>
               </TableRow>
             </TableHeader>
             <TableBody displayRowCheckbox={false} preScanRows={false}>
-              {map(models, (model: Model, id: number) => (
+              {map(datasources, (datasource: Datasource, id: number) => (
 
                 <TableRow
                   key={id}>
                   <TableRowColumn>
-                    {model.name}
+                    {datasource.name}
                   </TableRowColumn>
                   <TableRowColumn>
-                    <FlatButton
-                      icon={<Edit />}
-                      disabled={true}/>
-                  </TableRowColumn>
-                  <TableRowColumn>
-                    <FlatButton
-                      icon={<Delete />}
-                      disabled={true}/>
+                    <FlatButton icon={<Delete />} disabled={true}/>
+                    <FlatButton icon={<Edit />} disabled={true}/>
                   </TableRowColumn>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
 
-          <CardActionsComponent
-            secondaryButtonUrl={this.getBackUrl()}
-            secondaryButtonLabel={
-              <FormattedMessage
-                id="datamanagement.model.list.action.back"
-              />
-            }
-            mainButtonUrl={this.getCreateUrl()}
-            mainButtonLabel={
-              <FormattedMessage
-                id="datamanagement.model.list.action.add"
-              />
-            }
-          />
+          <div style={styleCardActions}>
+            <CancelButtonComponent
+              label={<FormattedMessage
+                    id="datamanagement.datasource.list.action.back"
+                  />}
+              url={this.getBackUrl()}
+            />
+            <MainButtonComponent
+              label={<FormattedMessage
+                    id="datamanagement.datasource.list.action.add"
+                  />}
+              url={this.getCreateUrl()}
+            />
+          </div>
         </CardText>
       </Card>
     )
   }
 }
+
+
+export default DatasourceListComponent

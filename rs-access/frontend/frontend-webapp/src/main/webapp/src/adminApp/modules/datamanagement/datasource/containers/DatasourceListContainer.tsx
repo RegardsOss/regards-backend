@@ -1,20 +1,22 @@
 import * as React from "react"
 import I18nProvider from "../../../../../common/i18n/I18nProvider"
-import { Connection } from "../Connection"
-import ConnectionListComponent from "../components/list/ConnectionListComponent"
+import { Datasource } from "../Datasource"
+import DatasourceListComponent from "../components/list/DatasourceListComponent"
 
-interface ConnectionCreateProps {
+
+interface DatasourceListProps {
   // From router
   params: any
 
   // From mapStateToProps
-  connections?: Array<Connection>
+  datasources?: Array<Datasource>
 }
 
 
 /**
  */
-export default class ConnectionListContainer extends React.Component<ConnectionCreateProps, any> {
+class DatasourceListContainer extends React.Component<DatasourceListProps, any> {
+
 
   getBackUrl = () => {
     const projectName = this.props.params.project
@@ -23,17 +25,17 @@ export default class ConnectionListContainer extends React.Component<ConnectionC
 
   getCreateUrl = () => {
     const projectName = this.props.params.project
-    return "/admin/" + projectName + "/datamanagement/connection/create"
+    return "/admin/" + projectName + "/datamanagement/datasource/create"
   }
 
   render (): JSX.Element {
-    const { connections } = this.props
+    const {datasources} = this.props
     return (
       <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
-        <ConnectionListComponent
+        <DatasourceListComponent
           getBackUrl={this.getBackUrl}
           getCreateUrl={this.getCreateUrl}
-          connections={connections}
+          datasources={datasources}
         />
       </I18nProvider>
     )
@@ -51,3 +53,4 @@ export default class ConnectionListContainer extends React.Component<ConnectionC
  })
  export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
  */
+export default DatasourceListContainer

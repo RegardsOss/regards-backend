@@ -170,8 +170,8 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
       })
     }
     const labelToggleAdvanced = this.state.showAdvanced ?
-      <FormattedMessage id="datamanagement.collection.action.hideAdvanced"/> :
-      <FormattedMessage id="datamanagement.collection.action.showAdvanced"/>
+      <FormattedMessage id="datamanagement.action.hideAdvanced"/> :
+      <FormattedMessage id="datamanagement.action.showAdvanced"/>
     const iconToggleAdvanced = this.state.showAdvanced ?
       <KeyboardArrowUp /> :
       <KeyboardArrowDown />

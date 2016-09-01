@@ -7,17 +7,23 @@ const messages = {
   "datamanagement.connection.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
   "datamanagement.action.list.tooltip": "Affiche la liste des éléments",
   "datamanagement.action.add.tooltip": "Créer une nouvelle définition d'élément",
+  "datamanagement.action.showAdvanced": "Avancé",
+  "datamanagement.action.hideAdvanced": "Réduire",
 
-  "datamanagement.collection.action.showAdvanced": "Avancé",
-  "datamanagement.collection.action.hideAdvanced": "Réduire",
   "datamanagement.collection": "Collections",
+  "datamanagement.collection.list.header": "Liste des collections",
+  "datamanagement.collection.table.name": "Nom",
+  "datamanagement.collection.table.actions": "Actions",
+  "datamanagement.collection.list.action.add": "Créer une nouvelle collection",
+  "datamanagement.collection.list.action.back": "Annuler",
 
   "datamanagement.model": "Modèles",
+  "datamanagement.model.list.header": "Liste des modèles",
   "datamanagement.model.table.name": "Nom",
   "datamanagement.model.table.type": "Type",
   "datamanagement.model.table.actions": "Actions",
-  "datamanagement.model.action.create": "Créer un nouveau modèle",
-  "datamanagement.model.action.back": "Précédent",
+  "datamanagement.model.list.action.add": "Créer un nouveau modèle",
+  "datamanagement.model.list.action.back": "Précédent",
   "datamanagement.model.add.header": "Création du modèle {label}",
   "datamanagement.model.add.input.name": "Libélle du modèle",
   "datamanagement.model.add.action.add_attribute": "Ajouter un attribut",
@@ -30,13 +36,12 @@ const messages = {
   "datamanagement.model.add.modal.action.create_and_reset": "Créer et reinitialiser le formulaire",
   "datamanagement.model.add.modal.action.create_and_close": "Créer and fermer",
 
-  "datamanagement.dataset.header": "Ajouter un dataset",
   "datamanagement.dataset.table.name": "Nom",
   "datamanagement.dataset.table.actions": "Actions",
   "datamanagement.dataset": "Jeux de données",
-  "datamanagement.dataset.list.header": "Liste des datasets",
-  "datamanagement.dataset.list.action.add": "Ajouter un dataset",
-  "datamanagement.dataset.list.action.cancel": "Annuler",
+  "datamanagement.dataset.list.header": "Liste des jeux de données",
+  "datamanagement.dataset.list.action.add": "Ajouter un jeu de données",
+  "datamanagement.dataset.list.action.back": "Annuler",
   "datamanagement.dataset.add": "Ajouter un dataset",
   "datamanagement.dataset.add.header": "Création d'un jeu de données",
   "datamanagement.dataset.add.1.label": "Nom du jeu de données",
@@ -55,9 +60,14 @@ const messages = {
   "datamanagement.dataset.add.2.stepper": "Configuration de la source de données",
   "datamanagement.dataset.add.3.stepper": "Fin",
 
-  "datamanagement.datasource": "Datasources",
+  "datamanagement.datasource": "Sources de données",
 
   "datamanagement.connection": "Connexions",
+  "datamanagement.connection.list.action.add": "Ajouter une connexion",
+  "datamanagement.connection.list.action.back": "Annuler",
+  "datamanagement.connection.table.actions": "Actions",
+  "datamanagement.connection.table.name": "Nom",
+  "datamanagement.connection.list.header": "Liste des connexions",
 
   "datamanagement.attribute.type.string": "Chaîne de caractère",
   "datamanagement.attribute.type.integer": "Entier",
@@ -70,6 +80,12 @@ const messages = {
   "datamanagement.attribute.type.string_array": "Tableau de chaîne de caractères",
   "datamanagement.attribute.type.date_array": "Tableau de date",
   "datamanagement.attribute.type.object": "Object",
+
+  "datamanagement.datasource.list.header": "Liste des sources de données",
+  "datamanagement.datasource.table.name": "Nom",
+  "datamanagement.datasource.table.actions": "Actions",
+  "datamanagement.datasource.list.action.add": "Créer une nouvelle source de données",
+  "datamanagement.datasource.list.action.back": "Précédent",
 
 }
 
