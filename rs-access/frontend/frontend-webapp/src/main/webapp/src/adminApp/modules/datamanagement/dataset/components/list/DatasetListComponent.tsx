@@ -7,7 +7,7 @@ import Delete from "material-ui/svg-icons/action/delete"
 import { map } from "lodash"
 import FlatButton from "material-ui/FlatButton"
 import Edit from "material-ui/svg-icons/editor/mode-edit"
-import CardActionsComponent from "../../../components/CardActionComponent"
+import CardActionsComponent from "../../../../../../common/components/CardActionsComponent"
 
 
 interface DatasetListProps {

@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl"
 import TextField from "material-ui/TextField"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
-import CardActionsComponent from "../../../components/CardActionComponent"
+import CardActionsComponent from "../../../../../../common/components/CardActionsComponent"
 
 interface ConnectionCreateProps {
   getCancelUrl: () => string

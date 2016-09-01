@@ -10,7 +10,7 @@ import { TableRowColumn, Table, TableBody, TableHeader, TableHeaderColumn, Table
 import { FormattedMessage } from "react-intl"
 import Edit from "material-ui/svg-icons/editor/mode-edit"
 import { JavaTypes } from "../../../JavaTypes"
-import CardActionsComponent from "../../../components/CardActionComponent"
+import CardActionsComponent from "../../../../../../common/components/CardActionsComponent"
 
 interface ModelCreateProps {
   getCancelUrl: () => string

@@ -1,8 +1,7 @@
 import * as React from "react"
 import { Card, CardTitle, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
-import CancelButtonComponent from "../../../components/CancelButtonComponent"
-import MainButtonComponent from "../../../components/MainButtonComponent"
+import CardActionsComponent from "../../../../../../common/components/CardActionsComponent"
 import { TableRowColumn, Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
 import Delete from "material-ui/svg-icons/action/delete"
 import { map } from "lodash"
@@ -82,20 +81,13 @@ class DatasourceListComponent extends React.Component<DatasourceListProps, any> 
             </TableBody>
           </Table>
 
-          <div style={styleCardActions}>
-            <CancelButtonComponent
-              label={<FormattedMessage
-                    id="datamanagement.datasource.list.action.back"
-                  />}
-              url={this.getBackUrl()}
-            />
-            <MainButtonComponent
-              label={<FormattedMessage
-                    id="datamanagement.datasource.list.action.add"
-                  />}
-              url={this.getCreateUrl()}
-            />
-          </div>
+          <CardActionsComponent
+            secondaryButtonLabel={<FormattedMessage id="datamanagement.datasource.list.action.back" />}
+            secondaryButtonUrl={this.getBackUrl()}
+            mainButtonLabel={<FormattedMessage id="datamanagement.datasource.list.action.add" />}
+            mainButtonUrl={this.getCreateUrl()}
+          />
+          
         </CardText>
       </Card>
     )

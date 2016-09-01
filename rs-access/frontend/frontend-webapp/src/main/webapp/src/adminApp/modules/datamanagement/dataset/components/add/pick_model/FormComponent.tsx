@@ -7,9 +7,8 @@ import MenuItem from "material-ui/MenuItem"
 import FlatButton from "material-ui/FlatButton"
 import { Model } from "../../../../model/Model"
 import { map } from "lodash"
-import MainButtonComponent from "../../../../components/MainButtonComponent"
-import CancelButtonComponent from "../../../../components/CancelButtonComponent"
 import PickModelModelAttributeDefaultValuesComponent from "./DatasetModelAttributeComponent"
+import CardActionsComponent from "../../../../../../../common/components/CardActionsComponent"
 
 interface FormProps {
   handleNextStep: () => void
@@ -111,18 +110,13 @@ class FormComponent extends React.Component<FormProps, any> {
 
           {defaultModelValuesComponent}
 
-          <div style={styleCardActions}>
-
-            <CancelButtonComponent
-              label={<FormattedMessage id="datamanagement.dataset.add.1.action.back" />}
-              onTouchTap={this.handleGetBack}
-            />
-            <MainButtonComponent
-              label={<FormattedMessage id="datamanagement.dataset.add.1.action.next" />}
-              onTouchTap={this.handleNextButton}
-              isVisible={isNextButtonVisible}
-            />
-          </div>
+          <CardActionsComponent
+            secondaryButtonLabel={<FormattedMessage id="datamanagement.dataset.add.1.action.back" />}
+            secondaryButtonTouchTap={this.handleGetBack}
+            mainButtonLabel={<FormattedMessage id="datamanagement.dataset.add.1.action.next" />}
+            mainButtonTouchTap={this.handleNextButton}
+            isMainButtonVisible={isNextButtonVisible}
+          />
         </CardText>
       </Card>
     )

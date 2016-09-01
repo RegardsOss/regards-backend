@@ -61,6 +61,8 @@ const messages = {
   "datamanagement.dataset.add.3.stepper": "Fin",
 
   "datamanagement.datasource": "Sources de données",
+  "datamanagement.datasource.add.1.action.back": "Précédent",
+  "datamanagement.datasource.add.1.action.next": "Suivant",
 
   "datamanagement.connection": "Connexions",
   "datamanagement.connection.list.action.add": "Ajouter une connexion",

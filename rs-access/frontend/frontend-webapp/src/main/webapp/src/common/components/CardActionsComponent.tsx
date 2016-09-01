@@ -1,7 +1,7 @@
 import * as React from "react"
-import CancelButtonComponent from "./CancelButtonComponent"
-import MainButtonComponent from "./MainButtonComponent"
-import ThemeInjector from "../../../../common/theme/ThemeInjector"
+import SecondaryActionButtonComponent from "./SecondaryActionButtonComponent"
+import MainActionButtonComponent from "./MainActionButtonComponent"
+import ThemeInjector from "../theme/ThemeInjector"
 
 
 interface CardActionsProps {
@@ -56,41 +56,31 @@ interface CardActionsViewProps {
 }
 class CardActionsView extends React.Component<CardActionsViewProps, any> {
 
+  render(): JSX.Element {
 
-  render (): JSX.Element {
-    const {
-      secondaryButtonUrl, secondaryButtonLabel, secondaryButtonTouchTap,
-      mainButtonLabel, mainButtonUrl, mainButtonTouchTap, isMainButtonVisible,
-      theme
-    } = this.props
-    // Todo : move to theme
     const styleCardActions = {
       display: "flex",
       flexDirection: "row",
       justifyContent: "flex-end"
     }
+
     return (
       <div style={styleCardActions}>
-        <CancelButtonComponent
-          label={secondaryButtonLabel}
-          url={secondaryButtonUrl}
-          onTouchTap={secondaryButtonTouchTap}
+        <SecondaryActionButtonComponent
+          label={this.props.secondaryButtonLabel}
+          url={this.props.secondaryButtonUrl}
+          onTouchTap={this.props.secondaryButtonTouchTap}
         />
-        {(() => {
-          if (isMainButtonVisible) {
-            return (
-              <MainButtonComponent
-                label={mainButtonLabel}
-                url={mainButtonUrl}
-                onTouchTap={mainButtonTouchTap}
-              />
-            )
-          }
-        })()}
+        <MainActionButtonComponent
+          label={this.props.mainButtonLabel}
+          url={this.props.mainButtonUrl}
+          onTouchTap={this.props.mainButtonTouchTap}
+          isVisible={this.props.isMainButtonVisible}
+        />
       </div>
     )
   }
+
+
 }
-
-
 export default CardActionsComponent

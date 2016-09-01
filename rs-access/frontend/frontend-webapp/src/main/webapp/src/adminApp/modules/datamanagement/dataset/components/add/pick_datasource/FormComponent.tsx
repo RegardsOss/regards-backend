@@ -4,9 +4,7 @@ import { FormattedMessage } from "react-intl"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
 import FlatButton from "material-ui/FlatButton"
-import CancelButtonComponent from "../../../../components/CancelButtonComponent"
-import MainButtonComponent from "../../../../components/MainButtonComponent"
-
+import CardActionsComponent from "../../../../../../../common/components/CardActionsComponent"
 
 interface FormProps {
   handleNextStep: () => void
@@ -52,18 +50,15 @@ class FormComponent extends React.Component<FormProps, any> {
             </SelectField>
             <FlatButton label="Add datasource" primary={true}/>
           </div>
-          <div style={styleCardActions}>
 
-            <CancelButtonComponent
-              label="Back"
-              onTouchTap={this.getBackUrl}
-            />
-            <MainButtonComponent
-              label="Next"
-              onTouchTap={this.handleNextButton}
-              isVisible={isNextButtonVisible}
-            />
-          </div>
+          <CardActionsComponent
+            secondaryButtonLabel={<FormattedMessage id="datamanagement.datasource.add.1.action.back" />}
+            secondaryButtonTouchTap={this.getBackUrl}
+            mainButtonLabel={<FormattedMessage id="datamanagement.datasource.add.1.action.next" />}
+            mainButtonTouchTap={this.handleNextButton}
+            isMainButtonVisible={isNextButtonVisible}
+          />
+
         </CardText>
       </Card>
     )

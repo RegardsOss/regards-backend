@@ -7,7 +7,7 @@ import { map } from "lodash"
 import FlatButton from "material-ui/FlatButton"
 import Edit from "material-ui/svg-icons/editor/mode-edit"
 import { Connection } from "../../Connection"
-import CardActionsComponent from "../../../components/CardActionComponent"
+import CardActionsComponent from "../../../../../../common/components/CardActionsComponent"
 
 
 interface ConnectionListProps {
