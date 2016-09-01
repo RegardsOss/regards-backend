@@ -17,7 +17,6 @@ export const adminAppRoutes: PlainRoute = {
     projectAccountsRoutes,
     projectAccountCreateRoute,
     datamanagementRouter
-
   ],
   getComponent(nextState: any, cb: any): void {
     require.ensure([], (require: any) => {

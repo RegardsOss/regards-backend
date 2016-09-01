@@ -68,6 +68,8 @@ const messages = {
   "datamanagement.connection.table.actions": "Actions",
   "datamanagement.connection.table.name": "Nom",
   "datamanagement.connection.list.header": "Liste des connexions",
+  "datamanagement.connection.add.action.test": "Tester cette connexion",
+  "datamanagement.connection.add.action.cancel": "Retour",
 
   "datamanagement.attribute.type.string": "Chaîne de caractère",
   "datamanagement.attribute.type.integer": "Entier",

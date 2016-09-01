@@ -2,15 +2,32 @@ import * as React from "react"
 import { Card, CardHeader, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
 import TextField from "material-ui/TextField"
-import FlatButton from "material-ui/FlatButton"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
+import CardActionsComponent from "../../../components/CardActionComponent"
 
-
+interface ConnectionCreateProps {
+  getCancelUrl: () => string
+  handleNextStep: (name: string) => void
+}
 /**
  */
-export default class CreateConnectionFormComponent extends React.Component<any, any> {
+class ConnectionCreateComponent extends React.Component<ConnectionCreateProps, any> {
 
+  constructor (props: ConnectionCreateProps) {
+    super(props)
+    this.state = {
+      label: "",
+      openCreateParameterModal: false
+    }
+  }
+
+  handleSaveButton = (event: React.FormEvent) => {
+    return this.props.handleNextStep(this.state.label)
+  }
+  handleCancelUrl = (): string => {
+    return this.props.getCancelUrl()
+  }
 
   render (): JSX.Element {
     return (
@@ -57,19 +74,25 @@ export default class CreateConnectionFormComponent extends React.Component<any, 
             floatingLabelText={<FormattedMessage id="Port"/>}
             fullWidth={true}
           />
-          <FlatButton label="Save this new connection" primary={true}/>
-          <FlatButton label="Cancel" primary={true}/>
 
+          <CardActionsComponent
+            secondaryButtonUrl={this.handleCancelUrl()}
+            secondaryButtonLabel={
+              <FormattedMessage
+                id="datamanagement.connection.add.action.cancel"
+              />
+            }
+
+            mainButtonTouchTap={this.handleSaveButton}
+            mainButtonLabel={
+              <FormattedMessage
+                id="datamanagement.connection.add.action.test"
+              />
+            }
+          />
         </CardText>
       </Card>
     )
   }
 }
-
-/*
- const mapStateToProps = (state: any, ownProps: any) => {
- }
- const mapDispatchToProps = (dispatch: any) => ({
- })
- export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
- */
+export default ConnectionCreateComponent
