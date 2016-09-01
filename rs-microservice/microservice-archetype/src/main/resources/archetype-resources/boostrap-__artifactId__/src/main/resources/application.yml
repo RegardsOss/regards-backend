@@ -2,7 +2,7 @@
 #set( $dollar = '$' )
 server:
   adress: localhost
-  port: 0
+  port: 3333
 
 security:
   client: acme
@@ -26,6 +26,6 @@ cloud:
       
 eureka:
   client:
-    enabled: true
+    enabled: false
 
  
