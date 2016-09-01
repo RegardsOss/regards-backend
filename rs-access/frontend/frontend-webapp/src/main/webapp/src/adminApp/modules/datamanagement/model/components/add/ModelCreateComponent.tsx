@@ -1,17 +1,16 @@
 import * as React from "react"
 import { Card, CardTitle, CardText } from "material-ui/Card"
-import CancelButtonComponent from "../../components/CancelButtonComponent"
-import MainButtonComponent from "../../components/MainButtonComponent"
 import { map, find } from "lodash"
 import FlatButton from "material-ui/FlatButton"
 import TextField from "material-ui/TextField"
-import { ModelAttribute } from "../ModelAttribute"
+import { ModelAttribute } from "../../ModelAttribute"
 import CreateAttributeModal from "./CreateAttributeModal"
 import Delete from "material-ui/svg-icons/action/delete"
 import { TableRowColumn, Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
 import { FormattedMessage } from "react-intl"
 import Edit from "material-ui/svg-icons/editor/mode-edit"
-import { JavaTypes } from "../../JavaTypes"
+import { JavaTypes } from "../../../JavaTypes"
+import CardActionsComponent from "../../../components/CardActionComponent"
 
 interface ModelCreateProps {
   getCancelUrl: () => string
@@ -156,11 +155,6 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
       flexDirection: "row",
       justifyContent: "center"
     }
-    const styleCardActions = {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "flex-end"
-    }
     return (
       <Card
         initiallyExpanded={true}>
@@ -195,17 +189,22 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
 
           {currentListAttributes}
 
-          <div style={styleCardActions}>
-            <CancelButtonComponent
-              label={<FormattedMessage id="datamanagement.model.add.action.cancel" />}
-              url={this.handleCancelUrl()}
-            />
-            <MainButtonComponent
-              label={<FormattedMessage id="datamanagement.model.add.action.save" />}
-              onTouchTap={this.handleSaveButton}
-              isVisible={isSaveButtonVisible}
-            />
-          </div>
+          <CardActionsComponent
+            secondaryButtonUrl={this.handleCancelUrl()}
+            secondaryButtonLabel={
+              <FormattedMessage
+                id="datamanagement.model.add.action.cancel"
+              />
+            }
+            isMainButtonVisible={isSaveButtonVisible}
+
+            mainButtonTouchTap={this.handleSaveButton}
+            mainButtonLabel={
+              <FormattedMessage
+                id="datamanagement.model.add.action.save"
+              />
+            }
+          />
         </CardText>
       </Card>
     )

@@ -4,7 +4,7 @@ import FlatButton from "material-ui/FlatButton"
 import TextField from "material-ui/TextField"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
-import { JavaTypes } from "../../JavaTypes"
+import { JavaTypes } from "../../../JavaTypes"
 import { FormattedMessage, intlShape } from "react-intl"
 
 interface CreateAttributeModalProps {

@@ -3,7 +3,7 @@ import I18nProvider from "../../../../../common/i18n/I18nProvider"
 import { connect } from "react-redux"
 import { ModelAttribute } from "../ModelAttribute"
 import { addModel } from "../actions"
-import ModelCreateComponent from "../components/ModelCreateComponent"
+import ModelCreateComponent from "../components/add/ModelCreateComponent"
 import { browserHistory } from "react-router"
 
 /**

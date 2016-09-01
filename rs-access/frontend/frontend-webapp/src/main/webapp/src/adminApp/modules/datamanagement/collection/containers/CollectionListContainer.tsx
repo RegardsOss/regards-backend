@@ -26,7 +26,7 @@ export default class CollectionListContainer extends React.Component<DatasetCrea
 
   getCreateUrl = () => {
     const projectName = this.props.params.project
-    return "/admin/" + projectName + "/datamanagement/connection/create"
+    return "/admin/" + projectName + "/datamanagement/collection/create"
   }
 
   render (): JSX.Element {

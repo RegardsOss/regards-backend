@@ -1,14 +1,13 @@
 import * as React from "react"
 import { Card, CardTitle, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
-import CancelButtonComponent from "../../../components/CancelButtonComponent"
-import MainButtonComponent from "../../../components/MainButtonComponent"
 import { TableRowColumn, Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
 import Delete from "material-ui/svg-icons/action/delete"
 import { map } from "lodash"
 import FlatButton from "material-ui/FlatButton"
 import Edit from "material-ui/svg-icons/editor/mode-edit"
 import { Connection } from "../../Connection"
+import CardActionsComponent from "../../../components/CardActionComponent"
 
 
 interface ConnectionListProps {
@@ -31,11 +30,6 @@ class ConnectionListComponent extends React.Component<ConnectionListProps, any> 
 
   render (): JSX.Element {
     const {connections} = this.props
-    const styleCardActions = {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "flex-end"
-    }
     return (
       <Card
         initiallyExpanded={true}>
@@ -82,20 +76,20 @@ class ConnectionListComponent extends React.Component<ConnectionListProps, any> 
             </TableBody>
           </Table>
 
-          <div style={styleCardActions}>
-            <CancelButtonComponent
-              label={<FormattedMessage
+          <CardActionsComponent
+            secondaryButtonUrl={this.getBackUrl()}
+            secondaryButtonLabel={
+              <FormattedMessage
                     id="datamanagement.connection.list.action.back"
-                  />}
-              url={this.getBackUrl()}
-            />
-            <MainButtonComponent
-              label={<FormattedMessage
+              />
+            }
+            mainButtonUrl={this.getCreateUrl()}
+            mainButtonLabel={
+              <FormattedMessage
                     id="datamanagement.connection.list.action.add"
-                  />}
-              url={this.getCreateUrl()}
-            />
-          </div>
+              />
+            }
+          />
         </CardText>
       </Card>
     )

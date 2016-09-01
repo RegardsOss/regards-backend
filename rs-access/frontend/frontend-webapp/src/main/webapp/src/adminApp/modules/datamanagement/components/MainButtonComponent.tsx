@@ -11,7 +11,7 @@ interface MainButtonProps {
   label: string | JSX.Element
   url?: string
   style?: any
-  onTouchTap?: (event: any) => void
+  onTouchTap?: (event: React.FormEvent) => void
   isVisible?: boolean
 }
 export default class MainButtonComponent extends React.Component<MainButtonProps, any> {

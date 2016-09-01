@@ -1,8 +1,6 @@
 import * as React from "react"
 import { Card, CardTitle, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
-import CancelButtonComponent from "../../components/CancelButtonComponent"
-import MainButtonComponent from "../../components/MainButtonComponent"
 import { TableRowColumn, Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
 import { Model } from "../Model"
 import Delete from "material-ui/svg-icons/action/delete"
@@ -32,11 +30,6 @@ export default class ModelListComponent extends React.Component<ModelListProps, 
 
   render (): JSX.Element {
     const {models} = this.props
-    const styleCardActions = {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "flex-end"
-    }
     return (
       <Card
         initiallyExpanded={true}>
