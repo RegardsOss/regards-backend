@@ -1,26 +1,38 @@
 import * as React from "react"
 import { connect } from "react-redux"
-import { Card, CardHeader } from "material-ui/Card"
-import { map } from "lodash"
-import { ProjectAccount } from "../../../../common/models/users/types"
-import ProjectAccountContainer from "./ProjectAccountContainer"
+import { Card, CardHeader, CardMedia, CardTitle, CardText } from "material-ui/Card"
+import { AppBar } from "material-ui/AppBar"
+import { map, values } from "lodash"
+import { ProjectAccount, Account } from "../../../../common/models/users/types"
+// import ProjectAccountRowContainer from "./ProjectAccountRowContainer"
+import ProjectAccountRowComponent from "../components/ProjectAccountRowComponent"
 import Actions from "../actions"
 import * as selectors from "../../../reducer"
-import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
+import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from "material-ui/Table"
 import I18nProvider from "../../../../common/i18n/I18nProvider"
 import { FormattedMessage } from "react-intl"
+import { browserHistory } from "react-router"
+import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert"
+import IconButton from "material-ui/IconButton"
+import IconMenu from "material-ui/IconMenu"
+import MenuItem from "material-ui/MenuItem"
+import { grey900 } from "material-ui/styles/colors"
+
+import Edit from "material-ui/svg-icons/editor/mode-edit"
+import Delete from "material-ui/svg-icons/action/delete"
+
 const URL_PROJECTS_ACCOUNTS = "http://localhost:8080/api/projectAccounts"
 
-
-interface ProjectAccountsProps {
+interface ProjectAccountsProps extends React.Props<ProjectAcountsContainer> {
   // From mapStateToProps
-  projectAccounts?: Array<ProjectAccount>,
+  projectAccounts?: Array<ProjectAccount>
+  accounts?: Array<Account>
   // From mapDispatchToProps
-  fetchProjectAccounts?: (urlProjectAccounts: string) => void,
-  deleteProjectAccount?: (linkDeleteProjectAccount: string) => void,
+  fetchProjectAccounts?: (urlProjectAccounts: string) => void
+  deleteProjectAccount?: (linkDeleteProjectAccount: string) => void
   // From router
-  router: any,
-  route: any,
+  router: any
+  route: any
   params: any
 }
 
@@ -29,70 +41,130 @@ interface ProjectAccountsProps {
  */
 class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any> {
 
-
   constructor (props: any) {
     super(props)
     // Fetch users for the current project when the container is created
     this.props.fetchProjectAccounts(URL_PROJECTS_ACCOUNTS)
   }
 
+  handleView = (selectedRows: number[] | string) => {
+    // console.log('XAB',this.props.accounts)
+    if(selectedRows instanceof String)
+      throw new Error('Only a single row should be selected in the table')
+    if(selectedRows instanceof Array && selectedRows.length !== 1)
+      throw new Error('Exactly one row is expected to be selected in the table')
+
+    const account = this.props.accounts[selectedRows[0]]
+    const url = "/admin/" + "cdpp" + "/users/" + account.accountId
+    browserHistory.push(url)
+  }
+
+  handleEdit = () => {
+    console.log("You clicked on edit button, Yay!")
+  }
+
+  handleDelete = () => {
+    console.log("You clicked on delete button, Yay!")
+  }
+
   render (): JSX.Element {
 
     const {projectAccounts, params} = this.props
-    console.log("The state is now ", this.state)
-    console.log("SEB", this.props.projectAccounts)
+
+    // // Manage delete link only if the hateoas delete link is provided
+    // const deletelink = projectAccount.links.find((link) => {
+    //   return link.rel === 'delete'
+    // })
+    // let itemDeleteLink: JSX.Element = null
+    // if (deletelink) {
+    //   itemDeleteLink =
+    //     <MenuItem onTouchTap={this.handleDelete} primaryText={<FormattedMessage id="dropdown.delete"/>}/>
+    // }
+
     return (
       <I18nProvider messageDir='adminApp/modules/userManagement/i18n'>
         <Card
           initiallyExpanded={true}>
-          <CardHeader
-            title={<FormattedMessage id="userlist.header"/>}
-            actAsExpander={true}
-            showExpandableButton={false}
+          <CardTitle
+            title={<FormattedMessage id="userlist.title"/>}
+            subtitle={<FormattedMessage id="userlist.subtitle"/>}
           />
-          <Table
-            selectable={false}
-            multiSelectable={false}
-          >
-            <TableHeader
-              enableSelectAll={false}
-              adjustForCheckbox={false}
-              displaySelectAll={false}
+          <CardText>
+            <Table
+              selectable={true}
+              onRowSelection={this.handleView}
             >
-              <TableRow>
-                <TableHeaderColumn><FormattedMessage id="userlist.login"/></TableHeaderColumn>
-                <TableHeaderColumn><FormattedMessage id="userlist.firstName"/></TableHeaderColumn>
-                <TableHeaderColumn><FormattedMessage id="userlist.lastName"/></TableHeaderColumn>
-                <TableHeaderColumn><FormattedMessage id="userlist.email"/></TableHeaderColumn>
-                <TableHeaderColumn><FormattedMessage id="userlist.status"/></TableHeaderColumn>
-                <TableHeaderColumn><FormattedMessage id="userlist.action"/></TableHeaderColumn>
-              </TableRow>
-            </TableHeader>
-            <TableBody displayRowCheckbox={false} preScanRows={false}>
+              <TableHeader
+                enableSelectAll={false}
+                adjustForCheckbox={false}
+                displaySelectAll={false}
+              >
+                <TableRow>
+                  <TableHeaderColumn><FormattedMessage id="userlist.login"/></TableHeaderColumn>
+                  <TableHeaderColumn><FormattedMessage id="userlist.firstName"/></TableHeaderColumn>
+                  <TableHeaderColumn><FormattedMessage id="userlist.lastName"/></TableHeaderColumn>
+                  <TableHeaderColumn><FormattedMessage id="userlist.email"/></TableHeaderColumn>
+                  <TableHeaderColumn><FormattedMessage id="userlist.status"/></TableHeaderColumn>
+                  <TableHeaderColumn><FormattedMessage id="userlist.action"/></TableHeaderColumn>
+                </TableRow>
+              </TableHeader>
+              <TableBody
+                displayRowCheckbox={false}
+                preScanRows={false}
+                showRowHover={true}
+              >
 
-              {map(projectAccounts, (projectAccount: ProjectAccount, id: string) => (
-                <ProjectAccountContainer
-                  projectAccount={projectAccount}
-                  projectName={params.project}
-                  key={projectAccount.projectAccountId}
-                />
+              {map(this.props.accounts, (account: Account, id: string) => (
+                <TableRow key={id} >
+                  <TableRowColumn>
+                      {account.login}
+                  </TableRowColumn>
+                  <TableRowColumn>
+                      {account.firstName}
+                  </TableRowColumn>
+                  <TableRowColumn>
+                      {account.lastName}
+                  </TableRowColumn>
+                  <TableRowColumn>
+                      {account.email}
+                  </TableRowColumn>
+                  <TableRowColumn>
+                      {account.status}
+                  </TableRowColumn>
+                  <TableRowColumn>
+                    <IconButton tooltip="Font Icon">
+                      <Edit onTouchTap={this.handleEdit} />
+                    </IconButton>
+                    <IconButton tooltip="Supprimer">
+                      <Delete onTouchTap={this.handleDelete} />
+                    </IconButton>
+                  </TableRowColumn>
+                </TableRow>
               ))}
 
-            </TableBody>
-          </Table>
+              </TableBody>
+            </Table>
+            </CardText>
         </Card>
       </I18nProvider>
     )
   }
 }
 
+// <MenuItem onTouchTap={this.handleEdit} primaryText={<FormattedMessage id="dropdown.edit"/>}/>
+// <MenuItem onTouchTap={this.handleView} primaryText={<FormattedMessage id="dropdown.view"/>}/>
 
-const mapStateToProps = (state: any, ownProps: any) => {
-  const projectAccounts = selectors.getProjectAccountsId(state)
-  return {
-    projectAccounts: projectAccounts
-  }
-}
+// {map(projectAccounts, (projectAccount: ProjectAccount, id: string) => (
+//   <ProjectAccountRowContainer
+//   projectAccount={projectAccount}
+//   projectName={params.project}
+//   key={id}
+//   />
+// ))}
+const mapStateToProps = (state: any, ownProps: any) => ({
+    projectAccounts: selectors.getProjectAccounts(state),
+    accounts: values(selectors.getAccounts(state))
+})
 const mapDispatchToProps = (dispatch: any) => ({
   fetchProjectAccounts: (urlProjectAccounts: string) => dispatch(Actions.fetchProjectAccounts(urlProjectAccounts))
 })

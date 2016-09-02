@@ -1,14 +1,14 @@
 import * as React from "react"
 import { connect } from "react-redux"
 import { ProjectAccount, Account } from "../../../../common/models/users/types"
-import ProjectAccountComponent from "../components/ProjectAccountComponent"
+import ProjectAccountRowComponent from "../components/ProjectAccountRowComponent"
 import * as selectors from "../../../reducer"
 import { browserHistory } from "react-router"
 import { find } from "lodash"
 import Actions from "../actions"
 import ProjectAccountDeleteComponent from "../components/ProjectAccountDeleteComponent"
 
-interface ProjectAccountProps {
+interface ProjectAccountRowProps extends React.Props<ProjectAccountRowContainer> {
   projectAccount: ProjectAccount,
   projectName: string,
   // From mapStateToProps
@@ -20,7 +20,7 @@ interface ProjectAccountProps {
 /**
  * Show the list of users for the current project
  */
-class ProjectAccountContainer extends React.Component<ProjectAccountProps, any> {
+class ProjectAccountRowContainer extends React.Component<ProjectAccountRowProps, any> {
 
   state: any = {
     openDeleteDialog: false
@@ -88,7 +88,7 @@ class ProjectAccountContainer extends React.Component<ProjectAccountProps, any> 
       />
     }
     return (
-      <ProjectAccountComponent
+      <ProjectAccountRowComponent
         account={account}
         projectAccount={projectAccount}
         handleView={this.handleView}
@@ -96,15 +96,14 @@ class ProjectAccountContainer extends React.Component<ProjectAccountProps, any> 
         handleDelete={this.handleDeleteUserDropdown}
         redirectOnSelectTo={this.generateUserProfileUrl(projectAccount)}
       >
-        {dialog}
-      </ProjectAccountComponent>
+
+      </ProjectAccountRowComponent>
     )
   }
 }
 
-
-const mapStateToProps = (state: any, ownProps: ProjectAccountProps) => {
-  const account = selectors.getAccountById(state, ownProps.projectAccount.account)
+const mapStateToProps = (state: any, ownProps: ProjectAccountRowProps) => {
+  const account = selectors.getAccountById(state, ownProps.projectAccount.account.accountId)
   return {
     account: account
   }
@@ -112,4 +111,4 @@ const mapStateToProps = (state: any, ownProps: ProjectAccountProps) => {
 const mapDispatchToProps = (dispatch: any) => ({
   deleteUser: (linkDeleteUser: string) => dispatch(Actions.deleteUser(linkDeleteUser))
 })
-export default connect<{}, {}, ProjectAccountProps>(mapStateToProps, mapDispatchToProps)(ProjectAccountContainer)
+export default connect<{}, {}, ProjectAccountRowProps>(mapStateToProps, mapDispatchToProps)(ProjectAccountRowContainer)

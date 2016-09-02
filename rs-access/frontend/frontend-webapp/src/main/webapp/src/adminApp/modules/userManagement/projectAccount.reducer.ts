@@ -10,7 +10,7 @@ export default (state: ApiStateResult<ProjectAccount> = {
 }, action: NormalizedAction) => {
   switch (action.type) {
     case PROJECT_ACCOUNT_REQUEST:
-      return Object.assign({}, state, {isFetching: true})
+      return Object.assign({}, state, { isFetching: true })
     case PROJECT_ACCOUNT_SUCCESS:
       return Object.assign({}, state, {
         isFetching: false,
@@ -18,14 +18,14 @@ export default (state: ApiStateResult<ProjectAccount> = {
         ids: []
       })
     case PROJECT_ACCOUNT_FAILURE:
-      return Object.assign({}, state, {isFetching: false})
+      return Object.assign({}, state, { isFetching: false })
     default:
       return state
   }
 }
 
 // Selectors
-export const getProjectAccountsId = (state: any) => state.items
+export const getProjectAccounts = (state: any) => state.items
 export const getProjectAccountById = (state: any, id: number) => state.items[id]
 
 // export const getRoles = (state: any) => state

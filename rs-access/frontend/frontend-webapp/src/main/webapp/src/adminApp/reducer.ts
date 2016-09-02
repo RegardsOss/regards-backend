@@ -73,18 +73,20 @@ export const getProjectAdminById = (state: any, id: string) =>
 export const getProjectAdminsByProject = (state: any, project: string) =>
   fromProjectAdmins.getProjectAdminsByProject(state.adminApp.projectAdmins, project)
 
-export const getProjectAccountsId = (state: any) =>
-  ProjectAccountsSelectors.getProjectAccountsId(state.adminApp.projectAccounts)
+export const getProjectAccounts = (state: any) =>
+  ProjectAccountsSelectors.getProjectAccounts(state.adminApp.projectAccounts)
 
 export const getProjectAccountById = (state: any, projectAccountId: number) =>
   ProjectAccountsSelectors.getProjectAccountById(state.adminApp.projectAccounts, projectAccountId)
+
+export const getAccounts = (state: any) =>
+  AccountsSelectors.getAccounts(state.adminApp.accounts)
 
 export const getAccountById = (state: any, accountId: number) =>
   AccountsSelectors.getAccountById(state.adminApp.accounts, accountId)
 
 export const getFormDatasetViewState = (state: any) =>
   DatasetFormSelectors.getFormDatasetViewState(state.adminApp.forms.createDataset)
-
 
 export const getModels = (state: any) =>
   ModelSelectors.getModel(state.adminApp.model)
