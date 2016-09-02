@@ -5,8 +5,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.hibernate.validator.constraints.URL;
-
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ModuleInfo {
@@ -21,6 +19,6 @@ public @interface ModuleInfo {
 
     String legalOwner();
 
-    URL documentation();
+    String documentation();
 
 }

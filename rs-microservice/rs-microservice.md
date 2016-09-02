@@ -105,9 +105,9 @@ To add a new module to your microservice you have to add a new maven module with
 
   ```xml
   <dependency>
-   <groupId>fr.cnes.regards.modules.myNewModule</groupId>
-   <artifactId>myNewModule-rest</artifactId>
-   <version>1.0-SNAPSHOT</version>
+    <groupId>fr.cnes.regards.modules.myNewModule</groupId>
+    <artifactId>myNewModule-rest</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </dependency>
   ```
 

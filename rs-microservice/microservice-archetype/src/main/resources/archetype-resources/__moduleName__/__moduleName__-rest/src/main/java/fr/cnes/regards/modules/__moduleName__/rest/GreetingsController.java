@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
+import fr.cnes.regards.microservices.core.information.ModuleInfo;
 import fr.cnes.regards.modules.${moduleName}.domain.Greeting;
 import fr.cnes.regards.modules.${moduleName}.service.GreetingsService;
 
