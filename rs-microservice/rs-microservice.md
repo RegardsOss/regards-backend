@@ -14,12 +14,12 @@ Requirements for development:
 
 ## Create a new microservice
 
-To create a new microservice you have to create a new maven project with the microservice-archetype. To do so :<br>
+To create a new microservice you have to create a new maven project with the microservice-archetype. To do so :
 
 1. Clone the git rs-microservice repository<br>
 
   ```bash
-  git clone <https://user@thor.si.c-s.fr/git/rs-microservice>
+  git clone https://user@thor.si.c-s.fr/git/rs-microservice
   ```
 
 2. Compile and install the maven project<br>
@@ -35,18 +35,18 @@ To create a new microservice you have to create a new maven project with the mic
   mvn archetype:generate
   ```
 
-  choosing the right archetype(local -> fr.cnes.regards.microservices:microservice-archetype) and answering the question or
+  choosing the right archetype(fr.cnes.regards.microservices:microservice-archetype) and answering the question or
 
   ```bash
   mvn archetype:generate
   -DarchetypeGroupId=fr.cnes.regards.microservices
-  -DarchetypeArtifactId=rs-microservices-archetype
+  -DarchetypeArtifactId=microservices-archetype
   -DarchetypeVersion=0.0.1
   -DgroupId=my.microservice
   -DartifactId=myMicroService
   -DmoduleName=myModule
   -DarchetypeRepository=/path/to/git/repo/
-  rs-microservice/archetype/target
+  rs-microservice/microservice-archetype/target
   ```
 
 By default the microservice archetype expose an exemple Rest Controller on <http://localhost:3333><br>
@@ -76,9 +76,44 @@ curl <http://localhost:3333/api/me/> -H "Authorization: Bearer token"
 
 **Swagger UI access :** <http://localhost:3333/swagger-ui.html>
 
-**NOTE** : To add new Rest resource follow exemple on file `myModule/src/main/java/fr/cnes/regards/modules/myModule/GreetingController.java`
+**NOTE** : To add new Rest resource follow exemple on file `myModule/myModule-rest/src/main/java/fr/cnes/regards/modules/myModule/GreetingsController.java`
 
-## Common features
+## Add a module
+
+To add a new module to your microservice you have to add a new maven module with the module-archetype. To do so :
+
+1. Go to myMicroService folder and run
+
+  ```bash
+  mvn archetype:generate
+  ```
+
+  choose the right archetype(fr.cnes.regards.modules:module-archetype) and precise information required or
+
+  ```bash
+  mvn archetype:generate
+  -DarchetypeGroupId=fr.cnes.regards.modules
+  -DarchetypeArtifactId=module-archetype
+  -DarchetypeVersion=0.0.1
+  -DgroupId=my.module
+  -DartifactId=myNewModule
+  -DarchetypeRepository=/path/to/git/repo/
+  rs-microservice/module-archetype/target
+  ```
+
+2. Add the following dependency to `bootstrap-myMicroservice/pom.xml` file:
+
+  ```xml
+  <dependency>
+   <groupId>fr.cnes.regards.modules.myNewModule</groupId>
+   <artifactId>myNewModule-rest</artifactId>
+   <version>1.0-SNAPSHOT</version>
+  </dependency>
+  ```
+
+3. Modify the requestMapping in `myNewModule/myNewModule-rest/src/main/java/fr/cnes/regards/modules/myNewModule/rest/GreetingsController.java`
+
+  ## Common features
 
 Each microservice offer the features :
 

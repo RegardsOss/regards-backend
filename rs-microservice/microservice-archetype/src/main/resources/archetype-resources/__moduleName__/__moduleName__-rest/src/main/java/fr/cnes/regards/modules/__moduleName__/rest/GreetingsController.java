@@ -21,6 +21,7 @@ import fr.cnes.regards.modules.${moduleName}.service.GreetingsService;
  *
  */
 @RestController
+@ModuleInfo(name="${moduleName}", version="${version}", author="REGARDS", legalOwner="CS", documentation="http://test")
 @RequestMapping("/api")
 public class GreetingsController {
 

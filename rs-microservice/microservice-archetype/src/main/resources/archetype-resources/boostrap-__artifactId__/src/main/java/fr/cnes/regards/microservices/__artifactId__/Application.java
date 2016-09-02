@@ -10,6 +10,7 @@ import springfox.documentation.builders.ApiInfoBuilder;
  * Main class to start Spring boot application for microservice ${artifactId}
  */
 @SpringBootApplication(scanBasePackages={"fr.cnes.regards.modules", "fr.cnes.regards.microservices.core"})
+@MicroserviceInfo(name="${artifactId}", version="${version}")
 public class Application {
 	
 	@Bean
