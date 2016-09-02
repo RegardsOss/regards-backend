@@ -5,7 +5,7 @@ import TextField from "material-ui/TextField"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
 import FlatButton from "material-ui/FlatButton"
-import { Model } from "../../../../model/Model"
+import { DatasetModel } from "../../../../datasetmodel/DatasetModel"
 import { map } from "lodash"
 import PickModelModelAttributeDefaultValuesComponent from "./DatasetModelAttributeComponent"
 import CardActionsComponent from "../../../../../../../common/components/CardActionsComponent"
@@ -15,7 +15,7 @@ interface FormProps {
   goToNewModel: () => void
   save: (label: string, modelType: number, attributesDefined: Array<any>) => void
   handleGetBack: () => void
-  models: Array<Model>
+  datasetModels: Array<DatasetModel>
 }
 /**
  */
@@ -63,18 +63,13 @@ class FormComponent extends React.Component<FormProps, any> {
   }
 
   render (): JSX.Element {
-    const {models} = this.props
+    const {datasetModels} = this.props
     const {modelType, label} = this.state
-    const styleCardActions = {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "flex-end"
-    }
     const isNextButtonVisible = modelType > 0 && label.length > 0
     const isModelListAttributeVisible = modelType > 0
     const defaultModelValuesComponent = isModelListAttributeVisible ? (
       <PickModelModelAttributeDefaultValuesComponent
-        model={models[modelType]}
+        model={datasetModels[modelType]}
         ref="defaultModelAttributeValues"
       ></PickModelModelAttributeDefaultValuesComponent>
     ) : null
@@ -98,8 +93,8 @@ class FormComponent extends React.Component<FormProps, any> {
             value={modelType}
             onChange={this.handleModelTypeChange}
           >
-            {map(models, (model: Model, id: string) => (
-              <MenuItem key={id} value={model.id} primaryText={model.name}/>
+            {map(datasetModels, (datasetModel: DatasetModel, id: string) => (
+              <MenuItem key={id} value={datasetModel.id} primaryText={datasetModel.name}/>
             ))}
           </SelectField>
           <FlatButton
@@ -131,14 +126,4 @@ export default FormComponent
  hintText="Attribut 3 de type date"
  fullWidth={true}
  />
- <SelectField
- floatingLabelText="Input type"
- value={3}
- fullWidth={true}
- >
- <MenuItem value={1} primaryText="Integer"/>
- <MenuItem value={2} primaryText="Float"/>
- <MenuItem value={3} primaryText="String"/>
- <MenuItem value={4} primaryText="Geometric"/>
- </SelectField>
  */

@@ -53,13 +53,21 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
     const projectName = this.props.params.project
     return "/admin/" + projectName + "/datamanagement/dataset"
   }
-  getModelList = () => {
+  getDatasetModelList = () => {
     const projectName = this.props.params.project
-    return "/admin/" + projectName + "/datamanagement/model"
+    return "/admin/" + projectName + "/datamanagement/datasetmodel"
   }
-  getModelCreate = () => {
+  getDatasetModelCreate = () => {
     const projectName = this.props.params.project
-    return "/admin/" + projectName + "/datamanagement/model/create"
+    return "/admin/" + projectName + "/datamanagement/datasetmodel/create"
+  }
+  getDatasourceModelList = () => {
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/datasourcemodel"
+  }
+  getDatasourceModelCreate = () => {
+    const projectName = this.props.params.project
+    return "/admin/" + projectName + "/datamanagement/datasourcemodel/create"
   }
   getDatasourceList = () => {
     const projectName = this.props.params.project
@@ -151,10 +159,16 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
     ]
     if (this.state.showAdvanced) {
       elementsCommon.push({
-        title: (<FormattedMessage id="datamanagement.model"/>),
-        description: (<FormattedMessage id="datamanagement.model.info"/>),
-        pathList: this.getModelList(),
-        pathCreate: this.getModelCreate()
+        title: (<FormattedMessage id="datamanagement.datasetmodel"/>),
+        description: (<FormattedMessage id="datamanagement.datasetmodel.info"/>),
+        pathList: this.getDatasetModelList(),
+        pathCreate: this.getDatasetModelCreate()
+      })
+      elementsCommon.push({
+        title: (<FormattedMessage id="datamanagement.datasourcemodel"/>),
+        description: (<FormattedMessage id="datamanagement.datasourcemodel.info"/>),
+        pathList: this.getDatasourceModelList(),
+        pathCreate: this.getDatasourceModelCreate()
       })
       elementsCommon.push({
         title: (<FormattedMessage id="datamanagement.datasource"/>),

@@ -1,8 +1,8 @@
 import * as React from "react"
 import TextInputComponent from "../../input/TextInputComponent"
 import { map } from "lodash"
-import { ModelAttribute } from "../../../../model/ModelAttribute"
-import { Model } from "../../../../model/Model"
+import { ModelAttribute } from "../../../../datasetmodel/ModelAttribute"
+import { DatasetModel } from "../../../../datasetmodel/DatasetModel"
 import { FormattedMessage } from "react-intl"
 import { DatasetDefaultModelAttribute } from "./../../../DatasetDefaultModelAttribute"
 import { JavaTypes } from "../../../../JavaTypes"
@@ -10,7 +10,7 @@ import IntegerInputComponent from "../../input/IntegerInputComponent"
 import DatasetModelAttributeRadioGroupComponent from "./DatasetModelAttributeRadioGroupComponent"
 
 interface ModelAttributeProps {
-  model: Model
+  model: DatasetModel
 }
 /**
  */
@@ -96,23 +96,3 @@ class ModelAttributeComponent extends React.Component<ModelAttributeProps, any> 
   }
 }
 export default ModelAttributeComponent
-
-
-/*
-
- <TimePicker
- format="24hr"
- hintText="Attribut 3 de type date"
- fullWidth={true}
- />
- <SelectField
- floatingLabelText="Input type"
- value={3}
- fullWidth={true}
- >
- <MenuItem value={1} primaryText="Integer"/>
- <MenuItem value={2} primaryText="Float"/>
- <MenuItem value={3} primaryText="String"/>
- <MenuItem value={4} primaryText="Geometric"/>
- </SelectField>
- */

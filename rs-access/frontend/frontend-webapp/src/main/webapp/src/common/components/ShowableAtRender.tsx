@@ -17,10 +17,13 @@ class ShowableAtRender extends React.Component<ShowableAtRenderProps, ShowableAt
 
   render (): JSX.Element {
     if (this.props.show) {
-      return <div>{this.props.children}</div>
-    } else {
-      return null
+      const children: any = this.props.children
+      if (React.Children.count(children) === 1) {
+        return React.Children.only(children)
+      }
+      return (<div>{children}</div>)
     }
+    return null
   }
 }
 

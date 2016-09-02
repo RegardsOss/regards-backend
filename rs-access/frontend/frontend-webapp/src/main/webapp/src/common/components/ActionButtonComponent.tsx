@@ -1,5 +1,4 @@
 import * as React from "react"
-import FlatButton from "material-ui/FlatButton"
 import RaisedButton from "material-ui/RaisedButton"
 import ShowableAtRender from "./ShowableAtRender"
 import { Link } from "react-router"
@@ -23,52 +22,57 @@ interface ActionButtonProps {
 }
 export default class ActionButtonComponent extends React.Component<ActionButtonProps, any> {
 
-  onTouchTap = (event: any): void => {
-    if(this.props.onTouchTap)
-      this.props.onTouchTap(event)
-  }
 
-  static defaultProps = {
+  static defaultProps: any = {
     label: "",
     button: RaisedButton,
     primary: true,
     secondary: false,
     style: {},
-    url: "",
-    onTouchTap: () => {},
     isVisible: true
   }
 
-  render (): JSX.Element {
+  /**
+   * Controls that props provided are correct
+   * @param props
+   */
+  componentWillReceiveProps (props: ActionButtonProps) {
+    if (props.url === undefined && props.onTouchTap === undefined) {
+      throw "No behavior specified. Please specify props.url or props.onTouchTap"
+    }
+    if (props.url && props.url.length > 0 && typeof props.onTouchTap === "function") {
+      throw "Too many behavior specified. Please specify either props.url or props.onTouchTap"
+    }
+  }
 
+  render (): JSX.Element {
     return (
       <ShowableAtRender show={this.props.isVisible}>
-      {(() => {
-        if (this.props.url) {
-          return (
-            <Link
-              to={this.props.url}
-              style={this.props.style}>
+        {(() => {
+          if (this.props.url) {
+            return (
+              <Link
+                to={this.props.url}
+                style={this.props.style}>
+                <this.props.button
+                  label={this.props.label}
+                  primary={this.props.primary ? true : this.props.secondary ? false : false}
+                  secondary={this.props.secondary ? true : this.props.primary ? false : false}
+                />
+              </Link>
+            )
+          } else {
+            return (
               <this.props.button
                 label={this.props.label}
-                primary={this.props.primary ? true : this.props.secondary ? false : false}
-                secondary={this.props.secondary ? true : this.props.primary ? false : false}
+                primary={this.props.primary}
+                secondary={this.props.secondary}
+                onTouchTap={this.props.onTouchTap}
               />
-            </Link>
-          )
-        } else {
-          return (
-            <this.props.button
-              label={this.props.label}
-              primary={this.props.primary}
-              secondary={this.props.secondary}
-              onTouchTap={this.onTouchTap}
-            />
-          )
-        }
-      })()}
+            )
+          }
+        })()}
       </ShowableAtRender>
     )
-
   }
 }

@@ -3,7 +3,7 @@ import { Card, CardTitle, CardText } from "material-ui/Card"
 import { map, find } from "lodash"
 import FlatButton from "material-ui/FlatButton"
 import TextField from "material-ui/TextField"
-import { ModelAttribute } from "../../ModelAttribute"
+import { ModelAttribute } from "../../../datasetmodel/ModelAttribute"
 import CreateAttributeModal from "./CreateAttributeModal"
 import Delete from "material-ui/svg-icons/action/delete"
 import { TableRowColumn, Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
@@ -26,8 +26,7 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
     super(props)
     this.state = {
       label: "",
-      attributes: [],
-      openCreateParameterModal: false
+      pluginId: 0
     }
   }
 
@@ -161,7 +160,7 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
         <CardTitle
           title={
             <FormattedMessage
-              id="datamanagement.model.add.header"
+              id="datamanagement.datasourcemodel.add.header"
               values={
                 {
                   label: <i>{labelAsTitle}</i>
@@ -175,13 +174,13 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
 
           <TextField
             type="text"
-            floatingLabelText={<FormattedMessage id="datamanagement.model.add.input.name" />}
+            floatingLabelText={<FormattedMessage id="datamanagement.datasourcemodel.add.input.name" />}
             fullWidth={true}
             onChange={this.handleModelLabelChange}
           />
           <div style={styleAddAttribute}>
             <FlatButton
-              label={<FormattedMessage id="datamanagement.model.add.action.add_attribute" />}
+              label={<FormattedMessage id="datamanagement.datasourcemodel.add.action.add_attribute" />}
               primary={true}
               onClick={this.handleOpenPopupCreateParameter}
             />
@@ -193,7 +192,7 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
             secondaryButtonUrl={this.handleCancelUrl()}
             secondaryButtonLabel={
               <FormattedMessage
-                id="datamanagement.model.add.action.cancel"
+                id="datamanagement.datasourcemodel.add.action.cancel"
               />
             }
             isMainButtonVisible={isSaveButtonVisible}
@@ -201,7 +200,7 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
             mainButtonTouchTap={this.handleSaveButton}
             mainButtonLabel={
               <FormattedMessage
-                id="datamanagement.model.add.action.save"
+                id="datamanagement.datasourcemodel.add.action.save"
               />
             }
           />

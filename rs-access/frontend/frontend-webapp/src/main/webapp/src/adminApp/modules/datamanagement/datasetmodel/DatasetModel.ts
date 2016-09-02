@@ -1,5 +1,5 @@
 import { ModelAttribute } from "./ModelAttribute"
-export interface Model {
+export interface DatasetModel {
   name: string
   id?: number
   attributes: Array<ModelAttribute>

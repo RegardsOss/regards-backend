@@ -2,7 +2,7 @@ import * as React from "react"
 import { Card, CardTitle, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
 import { TableRowColumn, Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
-import { Model } from "../Model"
+import { DatasourceModel } from "../DatasourceModel"
 import Delete from "material-ui/svg-icons/action/delete"
 import { map } from "lodash"
 import FlatButton from "material-ui/FlatButton"
@@ -10,14 +10,14 @@ import Edit from "material-ui/svg-icons/editor/mode-edit"
 import CardActionsComponent from "../../../../../common/components/CardActionsComponent"
 
 
-interface ModelListProps {
+interface DatasourceModelListProps {
   getBackUrl: () => string
   getCreateUrl: () => string
-  models: Array<Model>
+  datasourceModels: Array<DatasourceModel>
 }
 /**
  */
-export default class ModelListComponent extends React.Component<ModelListProps, any> {
+class DatasourceModelListComponent extends React.Component<DatasourceModelListProps, any> {
 
 
   getCreateUrl = (): string => {
@@ -29,14 +29,14 @@ export default class ModelListComponent extends React.Component<ModelListProps, 
 
 
   render (): JSX.Element {
-    const {models} = this.props
+    const {datasourceModels} = this.props
     return (
       <Card
         initiallyExpanded={true}>
         <CardTitle
           title={
             <FormattedMessage
-            id="datamanagement.model.list.header"
+            id="datamanagement.datasourcemodel.list.header"
             />
           }
         />
@@ -53,23 +53,23 @@ export default class ModelListComponent extends React.Component<ModelListProps, 
               <TableRow>
                 <TableHeaderColumn>
                   <FormattedMessage
-                    id="datamanagement.model.table.name"/>
+                    id="datamanagement.datasourcemodel.table.name"/>
                 </TableHeaderColumn>
                 <TableHeaderColumn>
                   <FormattedMessage
-                    id="datamanagement.model.table.actions"/>
+                    id="datamanagement.datasourcemodel.table.actions"/>
                 </TableHeaderColumn>
                 <TableHeaderColumn>
                 </TableHeaderColumn>
               </TableRow>
             </TableHeader>
             <TableBody displayRowCheckbox={false} preScanRows={false}>
-              {map(models, (model: Model, id: number) => (
+              {map(datasourceModels, (datasourceModel: DatasourceModel, id: number) => (
 
                 <TableRow
                   key={id}>
                   <TableRowColumn>
-                    {model.name}
+                    {datasourceModel.name}
                   </TableRowColumn>
                   <TableRowColumn>
                     <FlatButton
@@ -90,13 +90,13 @@ export default class ModelListComponent extends React.Component<ModelListProps, 
             secondaryButtonUrl={this.getBackUrl()}
             secondaryButtonLabel={
               <FormattedMessage
-                id="datamanagement.model.list.action.back"
+                id="datamanagement.datasourcemodel.list.action.back"
               />
             }
             mainButtonUrl={this.getCreateUrl()}
             mainButtonLabel={
               <FormattedMessage
-                id="datamanagement.model.list.action.add"
+                id="datamanagement.datasourcemodel.list.action.add"
               />
             }
           />
@@ -105,3 +105,5 @@ export default class ModelListComponent extends React.Component<ModelListProps, 
     )
   }
 }
+
+export default DatasourceModelListComponent
