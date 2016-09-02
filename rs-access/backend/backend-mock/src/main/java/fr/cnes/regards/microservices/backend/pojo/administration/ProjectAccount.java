@@ -4,7 +4,7 @@ import org.springframework.hateoas.ResourceSupport;
 
 import java.util.Date;
 
-public class ProjectUser extends ResourceSupport {
+public class ProjectAccount extends ResourceSupport {
 
     private Long projectAccountId;
 
@@ -20,7 +20,7 @@ public class ProjectUser extends ResourceSupport {
 
     private Account account;
 
-    public ProjectUser() {
+    public ProjectAccount() {
         super();
         this.lastConnection = new Date().getTime();
         this.lastUpdate = new Date().getTime();

@@ -23,7 +23,7 @@ public class Account extends ResourceSupport {
 
     private int status;
 
-    private List<ProjectUser> projectAccounts;
+    private List<ProjectAccount> projectAccounts;
 
     public Account(Long accountId, String firstName, String lastName, String email, String login, String password) {
         this.accountId = accountId;
@@ -92,11 +92,11 @@ public class Account extends ResourceSupport {
         this.status = status;
     }
 
-    public List<ProjectUser> getProjectAccounts() {
+    public List<ProjectAccount> getProjectAccounts() {
         return projectAccounts;
     }
 
-    public void setProjectAccounts(List<ProjectUser> projectAccounts) {
+    public void setProjectAccounts(List<ProjectAccount> projectAccounts) {
         this.projectAccounts = projectAccounts;
     }
 }

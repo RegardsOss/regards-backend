@@ -1,6 +1,6 @@
 package fr.cnes.regards.microservices.backend.pojo.datamanagement;
 
-import fr.cnes.regards.microservices.backend.pojo.administration.ProjectUser;
+import fr.cnes.regards.microservices.backend.pojo.administration.ProjectAccount;
 import org.springframework.hateoas.ResourceSupport;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public class Dataset extends ResourceSupport {
     private String licence;
     private List<String> quotations;
     private int score;
-    private List<ProjectUser> subscribers;
+    private List<ProjectAccount> subscribers;
 
     public Long getDatasetId() {
         return datasetId;
@@ -96,11 +96,11 @@ public class Dataset extends ResourceSupport {
         this.score = score;
     }
 
-    public List<ProjectUser> getSubscribers() {
+    public List<ProjectAccount> getSubscribers() {
         return subscribers;
     }
 
-    public void setSubscribers(List<ProjectUser> subscribers) {
+    public void setSubscribers(List<ProjectAccount> subscribers) {
         this.subscribers = subscribers;
     }
 }

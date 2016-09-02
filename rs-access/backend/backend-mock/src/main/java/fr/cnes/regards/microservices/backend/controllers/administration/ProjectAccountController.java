@@ -1,7 +1,7 @@
 package fr.cnes.regards.microservices.backend.controllers.administration;
 
 import fr.cnes.regards.microservices.backend.pojo.administration.Account;
-import fr.cnes.regards.microservices.backend.pojo.administration.ProjectUser;
+import fr.cnes.regards.microservices.backend.pojo.administration.ProjectAccount;
 import fr.cnes.regards.microservices.backend.pojo.administration.Role;
 import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
@@ -29,7 +29,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 public class ProjectAccountController {
 
     // Mock db
-    static List<ProjectUser> inMemoryPAList = null;
+    static List<ProjectAccount> inMemoryPAList = null;
     @Autowired
     MethodAutorizationService authService_;
 
@@ -43,14 +43,14 @@ public class ProjectAccountController {
     }
 
     @RequestMapping(value = "/projectAccounts", method = RequestMethod.GET)
-    public HttpEntity<List<ProjectUser>> getProjectAccounts() {
+    public HttpEntity<List<ProjectAccount>> getProjectAccounts() {
         return new ResponseEntity<>(getInMemoryProjectAccounts(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/projectAccounts/{account_id}", method = RequestMethod.GET)
-    public HttpEntity<ProjectUser> getProjectAccount(@PathVariable("account_id") Long accountId) {
-        ProjectUser pa = null;
-        for (ProjectUser projectAccount : getInMemoryProjectAccounts()) {
+    public HttpEntity<ProjectAccount> getProjectAccount(@PathVariable("account_id") Long accountId) {
+        ProjectAccount pa = null;
+        for (ProjectAccount projectAccount : getInMemoryProjectAccounts()) {
             if (projectAccount.getProjectAccountId() == accountId.longValue()) {
                 pa = projectAccount;
                 break;
@@ -65,32 +65,32 @@ public class ProjectAccountController {
         return new ResponseEntity<>("ProjectUser deleted", HttpStatus.OK);
     }
 
-    private List<ProjectUser> getInMemoryProjectAccounts() {
+    private List<ProjectAccount> getInMemoryProjectAccounts() {
         if (inMemoryPAList != null) {
             return inMemoryPAList;
         }
         inMemoryPAList = new ArrayList<>();
         AtomicLong counter = new AtomicLong();
 
-        ProjectUser projectAccount = new ProjectUser();
+
+    	
+        
+
+        ProjectAccount projectAccount = new ProjectAccount();
         projectAccount.setProjectAccountId(0L);
-
+        Account account = new Account(counter.incrementAndGet(), "Nicolas", "Dufourg", "Nicolas.Dufourg@cnes.fr", "ndufourg", "passw0rd");
         Role role = projectAccount.getRole();
-        role.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin("john.constantine.role")).withSelfRel());
-
-        Account account = new Account(counter.incrementAndGet(), "John", "Constantine", "john.constantine@...",
-                "jconstantine", "passw0rd");
+        role.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdmin("dominique.heulet.role")).withSelfRel());
         projectAccount.add(linkTo(methodOn(ProjectAccountController.class)
                 .deleteProjectAccount(projectAccount.getProjectAccountId())).withRel("delete"));
         projectAccount.add(linkTo(methodOn(ProjectAccountController.class)
                 .getProjectAccount(projectAccount.getProjectAccountId())).withSelfRel());
         projectAccount.setAccount(account);
-
         inMemoryPAList.add(projectAccount);
 
-        ProjectUser projectAccount2 = new ProjectUser();
+        ProjectAccount projectAccount2 = new ProjectAccount();
         projectAccount2.setProjectAccountId(1L);
-        Account account2 = new Account(counter.incrementAndGet(), "Foo", "Bar", "fbar@...", "fbar", "passw0rd");
+        Account account2 = new Account(counter.incrementAndGet(), "Benoit", "Lavraud", "Benoit.Lavraud@irap.omp.eu", "blavraud", "passw0rd");
         projectAccount2.add(linkTo(methodOn(ProjectAccountController.class)
                 .getProjectAccount(projectAccount2.getProjectAccountId())).withSelfRel());
         projectAccount2.add(linkTo(methodOn(ProjectAccountController.class)
@@ -98,14 +98,29 @@ public class ProjectAccountController {
         projectAccount2.setAccount(account2);
         inMemoryPAList.add(projectAccount2);
 
-        ProjectUser projectAccount3 = new ProjectUser();
+        ProjectAccount projectAccount3 = new ProjectAccount();
         projectAccount3.setProjectAccountId(2L);
-        Account account3 = new Account(counter.incrementAndGet(), "Instance", "admin", "admin@...", "admin",
-                "passw0rd");
+        Account account3 = new Account(counter.incrementAndGet(), "Vincent", "Génot", "vincent.genot@cesr.fr", "vgenot", "passw0rd");
         projectAccount3.add(linkTo(methodOn(ProjectAccountController.class)
-                .getProjectAccount(projectAccount3.getProjectAccountId())).withSelfRel());
+        		.getProjectAccount(projectAccount3.getProjectAccountId())).withSelfRel());
         projectAccount3.setAccount(account3);
         inMemoryPAList.add(projectAccount3);
+        
+        ProjectAccount projectAccount4 = new ProjectAccount();
+        projectAccount4.setProjectAccountId(3L);
+        Account account4 = new Account(counter.incrementAndGet(), "Ying", "Liu", "liu@phys.psu.edu", "ylui", "passw0rd");
+        projectAccount4.add(linkTo(methodOn(ProjectAccountController.class)
+        		.getProjectAccount(projectAccount4.getProjectAccountId())).withSelfRel());
+        projectAccount4.setAccount(account4);
+        inMemoryPAList.add(projectAccount4);
+        
+        ProjectAccount projectAccount5 = new ProjectAccount();
+        projectAccount5.setProjectAccountId(3L);
+        Account account5 = new Account(counter.incrementAndGet(), " Dominique", "Heulet", "dominique.heulet@cnes.fr", "admin", "passw0rd");
+        projectAccount5.add(linkTo(methodOn(ProjectAccountController.class)
+                .getProjectAccount(projectAccount5.getProjectAccountId())).withSelfRel());
+        projectAccount5.setAccount(account5);
+        inMemoryPAList.add(projectAccount5);
 
         return inMemoryPAList;
     }
