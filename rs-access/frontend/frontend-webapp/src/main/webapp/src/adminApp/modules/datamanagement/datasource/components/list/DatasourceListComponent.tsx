@@ -30,11 +30,6 @@ class DatasourceListComponent extends React.Component<DatasourceListProps, any> 
 
   render (): JSX.Element {
     const {datasources} = this.props
-    const styleCardActions = {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "flex-end"
-    }
     return (
       <Card
         initiallyExpanded={true}>
@@ -87,7 +82,7 @@ class DatasourceListComponent extends React.Component<DatasourceListProps, any> 
             mainButtonLabel={<FormattedMessage id="datamanagement.datasource.list.action.add" />}
             mainButtonUrl={this.getCreateUrl()}
           />
-          
+
         </CardText>
       </Card>
     )

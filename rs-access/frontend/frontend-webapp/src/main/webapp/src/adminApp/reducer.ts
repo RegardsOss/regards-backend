@@ -23,7 +23,9 @@ import {
   DatasourceModelReducer,
   DatasourceModelSelectors,
   ConnectionReducer,
-  ConnectionSelectors
+  ConnectionSelectors,
+  DatasourceReducer,
+  DatasourceSelectors
 } from "./modules/datamanagement/reducer"
 
 
@@ -42,6 +44,7 @@ export default combineReducers({
   datasourceModel: DatasourceModelReducer,
   dataset: DatasetReducer,
   connection: ConnectionReducer,
+  datasource: DatasourceReducer,
   forms,
 })
 
@@ -115,3 +118,9 @@ export const getConnections = (state: any) =>
 
 export const getConnectionById = (state: any, connectionId: number) =>
   ConnectionSelectors.getConnectionById(state.adminApp.connection, connectionId)
+
+export const getDatasources = (state: any) =>
+  DatasourceSelectors.getDatasource(state.adminApp.datasource)
+
+export const getDatasourceById = (state: any, datasourceId: number) =>
+  DatasourceSelectors.getDatasourceById(state.adminApp.datasource, datasourceId)

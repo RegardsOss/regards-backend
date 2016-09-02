@@ -9,6 +9,7 @@ import CardActionsComponent from "../../../../../../../common/components/CardAct
 interface FormProps {
   handleNextStep: () => void
   handleGetBack: () => void
+  goToNewDatasource: () => void
 }
 /**
  */
@@ -20,6 +21,10 @@ class FormComponent extends React.Component<FormProps, any> {
 
   handleNextButton = () => {
     return this.props.handleNextStep()
+  }
+
+  handleNewDatasource = () => {
+    this.props.goToNewDatasource()
   }
 
   render (): JSX.Element {
@@ -48,7 +53,11 @@ class FormComponent extends React.Component<FormProps, any> {
               <MenuItem value={4} primaryText="Weekends"/>
               <MenuItem value={5} primaryText="Weekly"/>
             </SelectField>
-            <FlatButton label="Add datasource" primary={true}/>
+            <FlatButton
+              label="Add datasource"
+              primary={true}
+              onTouchTap={this.handleNewDatasource}
+            />
           </div>
 
           <CardActionsComponent

@@ -3,18 +3,17 @@ import I18nProvider from "../../../../../common/i18n/I18nProvider"
 import * as Selectors from "../../../../reducer"
 import { connect } from "react-redux"
 import { DatasourceModel } from "../DatasourceModel"
-import ModelListComponent from "../../datasetmodel/components/DatasetModelListComponent"
 import DatasourceModelListComponent from "../components/DatasourceModelListComponent"
 /**
  */
-interface ModelListProps {
+interface DatasourceModelListProps {
   // From router
   params: any
   // From mapStateToProps
   datasourceModels?: Array<DatasourceModel>
 }
 
-export class DatasourceModelListContainer extends React.Component<ModelListProps, any> {
+class DatasourceModelListContainer extends React.Component<DatasourceModelListProps, any> {
 
   getBackUrl = () => {
     const projectName = this.props.params.project
@@ -22,7 +21,7 @@ export class DatasourceModelListContainer extends React.Component<ModelListProps
   }
   getCreateUrl = () => {
     const projectName = this.props.params.project
-    return "/admin/" + projectName + "/datamanagement/datasetmodel/create"
+    return "/admin/" + projectName + "/datamanagement/datasourcemodel/create"
   }
 
   render (): JSX.Element {
@@ -44,4 +43,4 @@ const mapStateToProps = (state: any, ownProps: any) => {
     datasourceModels
   }
 }
-export default connect<{}, {}, ModelListProps>(mapStateToProps, null)(DatasourceModelListContainer)
+export default connect<{}, {}, DatasourceModelListProps>(mapStateToProps, null)(DatasourceModelListContainer)

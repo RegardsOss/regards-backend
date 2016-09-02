@@ -6,7 +6,7 @@ const predefinedValues: any = {
     connectionId: 1,
     modelObjectId: 1,
     pluginDatasourceId: 1,
-    name
+    name: "Datasource #1"
   }
 }
 
@@ -25,5 +25,6 @@ export default (state: any = {
   }
 }
 
-export const getConnections = (state: any) => state.items
-export const getConnectionById = (state: any, id: string) => state.items[id]
+export const getDatasource = (state: any) => state.items
+export const getDatasourceById = (state: any, id: number) => state.items[id]
+

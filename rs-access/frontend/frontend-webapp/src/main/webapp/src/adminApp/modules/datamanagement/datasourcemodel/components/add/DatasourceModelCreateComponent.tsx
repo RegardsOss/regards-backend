@@ -4,7 +4,7 @@ import { map, find } from "lodash"
 import FlatButton from "material-ui/FlatButton"
 import TextField from "material-ui/TextField"
 import { ModelAttribute } from "../../../datasetmodel/ModelAttribute"
-import CreateAttributeModal from "./CreateAttributeModal"
+import CreateAttributeModal from "../../../datasetmodel/components/add/CreateAttributeModal.tsx"
 import Delete from "material-ui/svg-icons/action/delete"
 import { TableRowColumn, Table, TableBody, TableHeader, TableHeaderColumn, TableRow } from "material-ui/Table"
 import { FormattedMessage } from "react-intl"
@@ -26,7 +26,8 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
     super(props)
     this.state = {
       label: "",
-      pluginId: 0
+      attributes: [],
+      openCreateParameterModal: false
     }
   }
 
@@ -103,15 +104,15 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
           <TableRow>
             <TableHeaderColumn>
               <FormattedMessage
-                id="datamanagement.model.table.name"/>
+                id="datamanagement.datasourcemodel.table.name"/>
             </TableHeaderColumn>
             <TableHeaderColumn>
               <FormattedMessage
-                id="datamanagement.model.table.type"/>
+                id="datamanagement.datasourcemodel.table.type"/>
             </TableHeaderColumn>
             <TableHeaderColumn>
               <FormattedMessage
-                id="datamanagement.model.table.actions"/>
+                id="datamanagement.datasourcemodel.table.actions"/>
             </TableHeaderColumn>
             <TableHeaderColumn>
             </TableHeaderColumn>

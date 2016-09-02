@@ -26,7 +26,6 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
     super(props)
     this.state = {
       label: "",
-      pluginId: 0,
       attributes: [],
       openCreateParameterModal: false
     }

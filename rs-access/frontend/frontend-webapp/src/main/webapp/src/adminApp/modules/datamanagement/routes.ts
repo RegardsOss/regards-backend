@@ -10,8 +10,8 @@ import ConnectionCreateContainer from "./connection/containers/ConnectionCreateC
 import ConnectionListContainer from "./connection/containers/ConnectionListContainer"
 import DatasetModelCreateContainer from "./datasetmodel/containers/DatasetModelCreateContainer"
 import DatasetModelListContainer from "./datasetmodel/containers/DatasetModelListContainer"
-import { DatasourceModelListContainer } from "./datasourcemodel/containers/DatasourceModelListContainer"
-import { DatasourceModelCreateContainer } from "./datasourcemodel/containers/DatasourceModelCreateContainer"
+import DatasourceModelListContainer from "./datasourcemodel/containers/DatasourceModelListContainer"
+import DatasourceModelCreateContainer from "./datasourcemodel/containers/DatasourceModelCreateContainer"
 
 export const datasetListRoute: PlainRoute = {
   path: 'datamanagement/dataset',

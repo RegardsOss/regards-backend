@@ -8,6 +8,8 @@ import DatasourceModelReducer from "./datasourcemodel/reducer"
 import * as DatasourceModelSelectors from "./datasourcemodel/reducer"
 import ConnectionReducer from "./connection/reducers"
 import * as ConnectionSelectors from "./connection/reducers"
+import DatasourceReducer from "./datasource/reducers"
+import * as DatasourceSelectors from "./datasource/reducers"
 
 
 export {
@@ -20,6 +22,8 @@ export {
   DatasourceModelReducer,
   DatasourceModelSelectors,
   ConnectionReducer,
-  ConnectionSelectors
+  ConnectionSelectors,
+  DatasourceReducer,
+  DatasourceSelectors
 }
 

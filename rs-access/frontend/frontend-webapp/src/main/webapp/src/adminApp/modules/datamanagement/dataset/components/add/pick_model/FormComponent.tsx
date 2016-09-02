@@ -103,6 +103,8 @@ class FormComponent extends React.Component<FormProps, any> {
             onTouchTap={this.handleNewModel}
           />
 
+        </CardText>
+        <CardText>
           {defaultModelValuesComponent}
 
           <CardActionsComponent

@@ -2,7 +2,7 @@ import { ADD_DATASOURCE_MODEL } from "./actions"
 
 const predefinedValues: any = {
   1: {
-    name: "Modèle dataset exemple CDPP",
+    name: "Modèle datasource exemple CDPP",
     id: 1,
     attributes: [{
       name: "SIZE",
@@ -62,7 +62,6 @@ export default (state: any = {
     case ADD_DATASOURCE_MODEL:
       let newState = Object.assign({}, state)
       newState.items[action.entity.id] = action.entity
-      newState.ids.push(action.entity.id)
       return newState
     default:
       return state

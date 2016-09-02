@@ -12,7 +12,7 @@ interface ModelCreateProps {
   // From router
   params: any
   // From mapDispatchToProps
-  addDatasetModel?: (id: number, name: string, attributes: Array<ModelAttribute>) => void
+  addDatasetModel?: (name: string, attributes: Array<ModelAttribute>) => void
 }
 export class ModelCreateContainer extends React.Component<ModelCreateProps, any> {
 
@@ -28,8 +28,7 @@ export class ModelCreateContainer extends React.Component<ModelCreateProps, any>
   }
 
   handleNextStep = (name: string, attributes: Array<ModelAttribute>) => {
-    const id = Math.floor(Math.random() * 60) + 10
-    this.props.addDatasetModel(id, name, attributes)
+    this.props.addDatasetModel(name, attributes)
     browserHistory.push(this.getCancelUrl())
   }
 
@@ -45,6 +44,6 @@ export class ModelCreateContainer extends React.Component<ModelCreateProps, any>
   }
 }
 const mapDispatchToProps = (dispatch: any) => ({
-  addDatasetModel: (id: number, name: string, attributes: Array<ModelAttribute>) => dispatch(addDatasetModel(id, name, attributes)),
+  addDatasetModel: (name: string, attributes: Array<ModelAttribute>) => dispatch(addDatasetModel(name, attributes)),
 })
 export default connect<{}, {}, ModelCreateProps>(null, mapDispatchToProps)(ModelCreateContainer)

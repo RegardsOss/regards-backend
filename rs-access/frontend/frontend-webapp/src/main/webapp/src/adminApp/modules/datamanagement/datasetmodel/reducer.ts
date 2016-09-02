@@ -2,7 +2,7 @@ import { ADD_DATASET_MODEL } from "./actions"
 
 const predefinedValues: any = {
   1: {
-    name: "Modèle dataset exemple CDPP",
+    name: "Modèle dataset #1",
     id: 1,
     attributes: [{
       name: "SIZE",

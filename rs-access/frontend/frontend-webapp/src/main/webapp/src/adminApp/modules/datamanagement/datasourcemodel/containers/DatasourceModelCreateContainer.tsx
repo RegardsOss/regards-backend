@@ -3,7 +3,7 @@ import I18nProvider from "../../../../../common/i18n/I18nProvider"
 import { connect } from "react-redux"
 import { ModelAttribute } from "../../datasetmodel/ModelAttribute"
 import { addDatasourceModel } from "../actions"
-import ModelCreateComponent from "../components/add/ModelCreateComponent"
+import ModelCreateComponent from "../components/add/DatasourceModelCreateComponent"
 import { browserHistory } from "react-router"
 
 /**
@@ -12,10 +12,10 @@ interface ModelCreateProps {
   // From router
   params: any
   // From mapDispatchToProps
-  addModel?: (id: number, name: string, attributes: Array<ModelAttribute>) => void
+  addDatasourceModel?: (name: string, attributes: Array<ModelAttribute>) => void
 }
 
-export class DatasourceModelCreateContainer extends React.Component<ModelCreateProps, any> {
+class DatasourceModelCreateContainer extends React.Component<ModelCreateProps, any> {
 
   getCancelUrl = () => {
     const from = this.props.params.from
@@ -29,8 +29,7 @@ export class DatasourceModelCreateContainer extends React.Component<ModelCreateP
   }
 
   handleNextStep = (name: string, attributes: Array<ModelAttribute>) => {
-    const id = Math.floor(Math.random() * 60) + 10
-    this.props.addModel(id, name, attributes)
+    this.props.addDatasourceModel(name, attributes)
     browserHistory.push(this.getCancelUrl())
   }
 
@@ -46,6 +45,6 @@ export class DatasourceModelCreateContainer extends React.Component<ModelCreateP
   }
 }
 const mapDispatchToProps = (dispatch: any) => ({
-  addModel: (id: number, name: string, attributes: Array<ModelAttribute>) => dispatch(addDatasourceModel(id, name, attributes)),
+  addDatasourceModel: (name: string, attributes: Array<ModelAttribute>) => dispatch(addDatasourceModel(name, attributes)),
 })
 export default connect<{}, {}, ModelCreateProps>(null, mapDispatchToProps)(DatasourceModelCreateContainer)

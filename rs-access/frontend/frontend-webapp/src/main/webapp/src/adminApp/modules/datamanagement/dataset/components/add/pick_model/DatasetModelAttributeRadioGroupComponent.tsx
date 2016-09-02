@@ -41,39 +41,48 @@ class DatasetModelAttributeRadioGroupComponent extends React.Component<ModelAttr
     ) : null
     return (
       <div>
-        <p>
-          <FormattedMessage
-            id="datamanagement.dataset.add.1.attribute"
-            values={
-              {
+        <div className="row">
+          <div className="col-sm-100">
+            <FormattedMessage
+              id="datamanagement.dataset.add.1.attribute"
+              values={{
                 name: <i>{attribute.name}</i>
-              }
-            }
-          />
-        </p>
+              }}
+            />
 
-        <RadioButtonGroup
-          name={"rb-" + id}
-          valueSelected={radioValue}
-          onChange={this.handleRadioChange}
-        >
-          <RadioButton
-            value="static"
-            label={
+          </div>
+          <div className="col-sm-20">
+
+            <br />
+            <RadioButtonGroup
+              name={"rb-" + id}
+              valueSelected={radioValue}
+              onChange={this.handleRadioChange}
+            >
+              <RadioButton
+                value="static"
+                label={
               this.context.intl.formatMessage({id: "datamanagement.dataset.add.1.attribute.static"})
             }
-          />
-          <RadioButton
-            value="computed"
-            label={
+              />
+              <RadioButton
+                value="computed"
+                label={
               this.context.intl.formatMessage({id: "datamanagement.dataset.add.1.attribute.computed"})
             }
-          />
-        </RadioButtonGroup>
-        {staticField}
-        {computedField}
+              />
+            </RadioButtonGroup>
 
-      </div>)
+            <br />
+            <br />
+          </div>
+          <div className="col-sm-80">
+            {staticField}
+            {computedField}
+          </div>
+        </div>
+      </div>
+    )
   }
 }
 export default DatasetModelAttributeRadioGroupComponent

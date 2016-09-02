@@ -87,6 +87,12 @@ export class DatasetCreateContainer extends React.Component<DatasetCreateProps, 
     const urlTo = "/admin/" + this.props.params.project + "/datamanagement/datasetmodel/create/" + from
     browserHistory.push(urlTo)
   }
+  goToNewDatasource = () => {
+    const from = encodeURIComponent(this.props.location.pathname)
+    const urlTo = "/admin/" + this.props.params.project + "/datamanagement/datasource/create/" + from
+    browserHistory.push(urlTo)
+  }
+
   savePickModelForm = (label: string, modelType: number, attributesDefined: Array<DatasetDefaultModelAttribute>) => {
     this.props.setDatasetLabel(label)
     this.props.setDatasetModelType(modelType)
@@ -139,6 +145,7 @@ export class DatasetCreateContainer extends React.Component<DatasetCreateProps, 
                 return <PickDatasourceFormComponent
                   handleNextStep={this.handleNextStepPickDatasourceForm}
                   handleGetBack={() => {this.handleGetBack(STATES.SELECT_SOURCE)}}
+                  goToNewDatasource={this.goToNewDatasource}
                 >
                   {stepper}
                 </PickDatasourceFormComponent>

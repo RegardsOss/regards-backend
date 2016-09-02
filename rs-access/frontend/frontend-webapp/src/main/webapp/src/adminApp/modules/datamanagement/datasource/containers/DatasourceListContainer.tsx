@@ -2,6 +2,8 @@ import * as React from "react"
 import I18nProvider from "../../../../../common/i18n/I18nProvider"
 import { Datasource } from "../Datasource"
 import DatasourceListComponent from "../components/list/DatasourceListComponent"
+import * as Selectors from "../../../../reducer"
+import { connect } from "react-redux"
 
 
 interface DatasourceListProps {
@@ -30,6 +32,7 @@ class DatasourceListContainer extends React.Component<DatasourceListProps, any> 
 
   render (): JSX.Element {
     const {datasources} = this.props
+    console.log(datasources)
     return (
       <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
         <DatasourceListComponent
@@ -41,16 +44,10 @@ class DatasourceListContainer extends React.Component<DatasourceListProps, any> 
     )
   }
 }
-/*
- const mapStateToProps = (state: any, ownProps: any) => {
- const viewState = Selectors.getFormViewState(state)
- return {
- viewState: viewState
- }
- }
- const mapDispatchToProps = (dispatch: any) => ({
- setViewState: (newState: string) => dispatch(Actions.setViewState(newState))
- })
- export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
- */
-export default DatasourceListContainer
+const mapStateToProps = (state: any, ownProps: any) => {
+  const datasources = Selectors.getDatasources(state)
+  return {
+    datasources
+  }
+}
+export default connect<{}, {}, DatasourceListProps>(mapStateToProps, null)(DatasourceListContainer)
