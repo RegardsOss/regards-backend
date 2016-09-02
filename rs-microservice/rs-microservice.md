@@ -2,18 +2,15 @@
 
 ## Development context
 
-REGARDS Microservices are REST services exposed by a Jetty web server contained in a Spring boot application.<br>
-Each microservice is a Java 1.8 Maven project.
+REGARDS Microservices are REST services exposed by a Jetty web server contained in a Spring boot application and composed of modules. Each microservice is a Maven project aggregating Maven modules. There is two modules by default: one responsible for running the microservice and one responsible for business. In case a microservice needs to be composed by more than one business module, a module archetype is available.
+
+Each module is responsible for its implementation(Java 8 or higher, Spring or not, etc)
 
 Requirements for development:
 
 - git client 1.8
 - maven 3.x
 - JDK 1.8
-
-## Microservice architecture
-
-Each REGARDS Microservices respects the following architecture: a module responsible for running the microservice and one or more module responsible for business implementation.
 
 ## Create a new microservice
 
