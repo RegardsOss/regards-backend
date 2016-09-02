@@ -49,8 +49,9 @@ To create a new microservice you have to create a new maven project with the mic
   rs-microservice/microservice-archetype/target
   ```
 
-By default the microservice archetype expose an exemple Rest Controller on <http://localhost:3333><br>
-To change the microservice configuration modify the `src/main/resources/application.yml` file.
+By default the microservice archetype expose an exemple Rest Controller on <http://localhost:3333>
+
+To change the microservice configuration modify the `myMicroService/bootstrap-myMicroService/src/main/resources/application.yml` file.
 
 **To run the new microservice :**
 
@@ -64,14 +65,14 @@ mvn spring-boot:run
 ```bash
 curl -X "POST" acme:acmesecret@localhost:3333/oauth/token
  -d grant_type=password
- -d username=public -d password=public
+ -d username=[admin|user] -d password=[admin|user]
 ```
 
 **API exemple access :**<br>
 
 ```bash
-curl <http://localhost:3333/api/greeting/> -H "Authorization: Bearer token"
-curl <http://localhost:3333/api/me/> -H "Authorization: Bearer token"
+curl http://localhost:3333/api/greeting/ -H "Authorization: Bearer <user_acces_token>"
+curl http://localhost:3333/api/me/ -H "Authorization: Bearer <admin_acces_token>"
 ```
 
 **Swagger UI access :** <http://localhost:3333/swagger-ui.html>
@@ -105,9 +106,9 @@ To add a new module to your microservice you have to add a new maven module with
 
   ```xml
   <dependency>
-    <groupId>fr.cnes.regards.modules.myNewModule</groupId>
-    <artifactId>myNewModule-rest</artifactId>
-    <version>1.0-SNAPSHOT</version>
+  <groupId>fr.cnes.regards.modules.myNewModule</groupId>
+  <artifactId>myNewModule-rest</artifactId>
+  <version>1.0-SNAPSHOT</version>
   </dependency>
   ```
 
@@ -122,4 +123,4 @@ Each microservice offer the features :
 - Access to the Cloud Eureka Regsitry client to communicate with others microservices
 - Access to the Cloud Config Server to centralize configurations properties
 - Allow CORS requests
-- Swagger Interface : <http://adress:port/sawwer-ui.html>
+- Swagger Interface : <http://adress:port/swagger-ui.html>
