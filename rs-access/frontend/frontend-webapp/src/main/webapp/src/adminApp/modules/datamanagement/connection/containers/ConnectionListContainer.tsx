@@ -2,8 +2,10 @@ import * as React from "react"
 import I18nProvider from "../../../../../common/i18n/I18nProvider"
 import { Connection } from "../Connection"
 import ConnectionListComponent from "../components/list/ConnectionListComponent"
+import { connect } from "react-redux"
+import * as Selectors from "../../../../reducer"
 
-interface ConnectionCreateProps {
+interface ConnectionListProps {
   // From router
   params: any
 
@@ -14,7 +16,7 @@ interface ConnectionCreateProps {
 
 /**
  */
-export default class ConnectionListContainer extends React.Component<ConnectionCreateProps, any> {
+class ConnectionListContainer extends React.Component<ConnectionListProps, any> {
 
   getBackUrl = () => {
     const projectName = this.props.params.project
@@ -27,7 +29,7 @@ export default class ConnectionListContainer extends React.Component<ConnectionC
   }
 
   render (): JSX.Element {
-    const { connections } = this.props
+    const {connections} = this.props
     return (
       <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
         <ConnectionListComponent
@@ -39,15 +41,10 @@ export default class ConnectionListContainer extends React.Component<ConnectionC
     )
   }
 }
-/*
- const mapStateToProps = (state: any, ownProps: any) => {
- const viewState = Selectors.getFormViewState(state)
- return {
- viewState: viewState
- }
- }
- const mapDispatchToProps = (dispatch: any) => ({
- setViewState: (newState: string) => dispatch(Actions.setViewState(newState))
- })
- export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
- */
+const mapStateToProps = (state: any, ownProps: any) => {
+  const connections = Selectors.getConnections(state)
+  return {
+    connections
+  }
+}
+export default connect<{}, {}, ConnectionListProps>(mapStateToProps, null)(ConnectionListContainer)

@@ -18,8 +18,12 @@ import {
   DatasetFormSelectors,
   DatasetReducer,
   DatasetSelectors,
-  ModelReducer,
-  ModelSelectors
+  DatasetModelReducer,
+  DatasetModelSelectors,
+  DatasourceModelReducer,
+  DatasourceModelSelectors,
+  ConnectionReducer,
+  ConnectionSelectors
 } from "./modules/datamanagement/reducer"
 
 
@@ -34,8 +38,10 @@ export default combineReducers({
   roles: RoleReducer,
   accounts: AccountReducers,
   projectAccounts: ProjectAccountReducers,
-  model: ModelReducer,
+  datasetModel: DatasetModelReducer,
+  datasourceModel: DatasourceModelReducer,
   dataset: DatasetReducer,
+  connection: ConnectionReducer,
   forms,
 })
 
@@ -88,8 +94,24 @@ export const getAccountById = (state: any, accountId: number) =>
 export const getFormDatasetViewState = (state: any) =>
   DatasetFormSelectors.getFormDatasetViewState(state.adminApp.forms.createDataset)
 
-export const getModels = (state: any) =>
-  ModelSelectors.getModel(state.adminApp.model)
+export const getDatasetModels = (state: any) =>
+  DatasetModelSelectors.getDatasetModel(state.adminApp.datasetModel)
+
+export const getDatasetModelById = (state: any, datasetModelId: number) =>
+  DatasetModelSelectors.getDatasetModelById(state.adminApp.datasetModel, datasetModelId)
 
 export const getDatasets = (state: any) =>
   DatasetSelectors.getDatasets(state.adminApp.dataset)
+
+export const getDatasourceModels = (state: any) =>
+  DatasourceModelSelectors.getDatasourceModel(state.adminApp.datasourceModel)
+
+export const getDatasourceModelById = (state: any, datasourceModelId: number) =>
+  DatasourceModelSelectors.getDatasourceModelById(state.adminApp.datasourceModel, datasourceModelId)
+
+
+export const getConnections = (state: any) =>
+  ConnectionSelectors.getConnection(state.adminApp.connection)
+
+export const getConnectionById = (state: any, connectionId: number) =>
+  ConnectionSelectors.getConnectionById(state.adminApp.connection, connectionId)

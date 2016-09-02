@@ -2,8 +2,12 @@ import DatasetFormReducer from "./dataset/formReducers"
 import * as DatasetFormSelectors from "./dataset/formReducers"
 import DatasetReducer from "./dataset/reducers"
 import * as DatasetSelectors from "./dataset/reducers"
-import ModelReducer from "./model/reducer"
-import * as ModelSelectors from "./model/reducer"
+import DatasetModelReducer from "./datasetmodel/reducer"
+import * as DatasetModelSelectors from "./datasetmodel/reducer"
+import DatasourceModelReducer from "./datasourcemodel/reducer"
+import * as DatasourceModelSelectors from "./datasourcemodel/reducer"
+import ConnectionReducer from "./connection/reducers"
+import * as ConnectionSelectors from "./connection/reducers"
 
 
 export {
@@ -11,7 +15,11 @@ export {
   DatasetFormSelectors,
   DatasetReducer,
   DatasetSelectors,
-  ModelReducer,
-  ModelSelectors
+  DatasetModelReducer,
+  DatasetModelSelectors,
+  DatasourceModelReducer,
+  DatasourceModelSelectors,
+  ConnectionReducer,
+  ConnectionSelectors
 }
 

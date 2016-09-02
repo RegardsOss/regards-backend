@@ -55,11 +55,11 @@ export default class CreateAttributeModal extends React.Component<CreateAttribut
 
   render (): JSX.Element {
     const {label, type} = this.state
-    const title = this.context.intl.formatMessage({id: "datamanagement.model.add.modal.header"})
+    const title = this.context.intl.formatMessage({id: "datamanagement.datasetmodel.add.modal.header"})
 
     let actions = [
       <FlatButton
-        label={<FormattedMessage id="datamanagement.model.add.modal.action.close" />}
+        label={<FormattedMessage id="datamanagement.datasetmodel.add.modal.action.close" />}
         primary={true}
         onTouchTap={this.handleClose}
       />
@@ -67,12 +67,12 @@ export default class CreateAttributeModal extends React.Component<CreateAttribut
     // Display save buttons only if attribute is well defined
     if (label.length > 0 && type !== 0) {
       actions.push(<FlatButton
-        label={<FormattedMessage id="datamanagement.model.add.modal.action.create_and_close" />}
+        label={<FormattedMessage id="datamanagement.datasetmodel.add.modal.action.create_and_close" />}
         primary={true}
         onTouchTap={this.handleAddAndClose}
       />)
       actions.push(<FlatButton
-        label={<FormattedMessage id="datamanagement.model.add.modal.action.create_and_reset" />}
+        label={<FormattedMessage id="datamanagement.datasetmodel.add.modal.action.create_and_reset" />}
         primary={true}
         onTouchTap={this.handleAddAndReset}
       />)
@@ -100,13 +100,13 @@ export default class CreateAttributeModal extends React.Component<CreateAttribut
         >
           <TextField
             type="text"
-            floatingLabelText={<FormattedMessage id="datamanagement.model.add.modal.input.name" />}
+            floatingLabelText={<FormattedMessage id="datamanagement.datasetmodel.add.modal.input.name" />}
             value={label}
             fullWidth={true}
             onChange={this.handleAttributeLabelChange}
           />
           <SelectField
-            floatingLabelText={<FormattedMessage id="datamanagement.model.add.modal.input.type" />}
+            floatingLabelText={<FormattedMessage id="datamanagement.datasetmodel.add.modal.input.type" />}
             value={type}
             fullWidth={true}
             onChange={this.handleAttributeTypeChange}

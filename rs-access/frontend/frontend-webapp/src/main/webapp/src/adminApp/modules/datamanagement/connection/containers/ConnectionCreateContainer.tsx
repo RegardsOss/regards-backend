@@ -2,6 +2,8 @@ import * as React from "react"
 import I18nProvider from "../../../../../common/i18n/I18nProvider"
 import { browserHistory } from "react-router"
 import ConnectionCreateComponent from "../components/add/ConnectionCreateComponent"
+import { connect } from "react-redux"
+import { addConnection } from "../actions"
 
 
 /**
@@ -10,9 +12,9 @@ interface ConnectionCreateProps {
   // From router
   params: any
   // From mapDispatchToProps
-  addConnection?: (id: number, name: string) => void
+  addConnection?: (name: string, pluginName: string, requiredAttributes: {[index: string]: string}) => void
 }
-export default class ConnectionCreateContainer extends React.Component<ConnectionCreateProps, any> {
+class ConnectionCreateContainer extends React.Component<ConnectionCreateProps, any> {
 
   getCancelUrl = () => {
     const from = this.props.params.from
@@ -21,13 +23,13 @@ export default class ConnectionCreateContainer extends React.Component<Connectio
       return fromURI
     } else {
       const projectName = this.props.params.project
-      return "/admin/" + projectName + "/datamanagement/model"
+      return "/admin/" + projectName + "/datamanagement/connection"
     }
   }
 
-  handleNextStep = (name: string) => {
-    const id = Math.floor(Math.random() * 60) + 10
-    this.props.addConnection(id, name)
+  handleNextStep = (name: string, pluginName: string, requiredAttributes: {[index: string]: string}) => {
+    this.props.addConnection(name, pluginName, requiredAttributes)
+    console.log(name, pluginName, requiredAttributes)
     browserHistory.push(this.getCancelUrl())
   }
 
@@ -42,15 +44,8 @@ export default class ConnectionCreateContainer extends React.Component<Connectio
     )
   }
 }
-/*
- const mapStateToProps = (state: any, ownProps: any) => {
- const viewState = Selectors.getFormViewState(state)
- return {
- viewState: viewState
- }
- }
- const mapDispatchToProps = (dispatch: any) => ({
- setViewState: (newState: string) => dispatch(Actions.setViewState(newState))
- })
- export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
- */
+
+const mapDispatchToProps = (dispatch: any) => ({
+  addConnection: (name: string, pluginName: string, requiredAttributes: {[index: string]: string}) => dispatch(addConnection(name, pluginName, requiredAttributes))
+})
+export default connect<{}, {}, ConnectionCreateProps>(null, mapDispatchToProps)(ConnectionCreateContainer)

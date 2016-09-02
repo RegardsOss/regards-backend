@@ -8,7 +8,7 @@ import { connect } from "react-redux"
 import * as Selectors from "../../../../reducer"
 import * as Actions from "../formActions"
 import { browserHistory } from "react-router"
-import { Model } from "../../model/Model"
+import { DatasetModel } from "../../datasetmodel/DatasetModel"
 import { DatasetDefaultModelAttribute } from "../DatasetDefaultModelAttribute"
 
 
@@ -34,7 +34,7 @@ interface DatasetCreateProps {
   setDatasetModelType: (modelType: number) => void
   setDatasetDefaultModelAttributes: (attributesDefined: Array<DatasetDefaultModelAttribute>) => void
 
-  models?: Array<Model>
+  datasetModels?: Array<DatasetModel>
 }
 /**
  */
@@ -84,7 +84,7 @@ export class DatasetCreateContainer extends React.Component<DatasetCreateProps, 
 
   goToNewModel = () => {
     const from = encodeURIComponent(this.props.location.pathname)
-    const urlTo = "/admin/" + this.props.params.project + "/datamanagement/model/create/" + from
+    const urlTo = "/admin/" + this.props.params.project + "/datamanagement/datasetmodel/create/" + from
     browserHistory.push(urlTo)
   }
   savePickModelForm = (label: string, modelType: number, attributesDefined: Array<DatasetDefaultModelAttribute>) => {
@@ -114,7 +114,7 @@ export class DatasetCreateContainer extends React.Component<DatasetCreateProps, 
   }
 
   render (): JSX.Element {
-    const {viewState, models} = this.props
+    const {viewState, datasetModels} = this.props
     const stepper = (
       <StepperCreateDatasetComponent
         getStepperIndex={this.getStepperIndex}
@@ -131,7 +131,7 @@ export class DatasetCreateContainer extends React.Component<DatasetCreateProps, 
                   goToNewModel={this.goToNewModel}
                   save={this.savePickModelForm}
                   handleGetBack={() => {this.handleGetBack(STATES.SELECT_MODELE)}}
-                  models={models}
+                  datasetModels={datasetModels}
                 >
                   {stepper}
                 </PickModelFormComponent>
@@ -160,10 +160,10 @@ export class DatasetCreateContainer extends React.Component<DatasetCreateProps, 
 
 const mapStateToProps = (state: any, ownProps: any) => {
   const viewState = Selectors.getFormDatasetViewState(state)
-  const models = Selectors.getModels(state)
+  const datasetModels = Selectors.getDatasetModels(state)
   return {
     viewState,
-    models
+    datasetModels
   }
 }
 const mapDispatchToProps = (dispatch: any) => ({
