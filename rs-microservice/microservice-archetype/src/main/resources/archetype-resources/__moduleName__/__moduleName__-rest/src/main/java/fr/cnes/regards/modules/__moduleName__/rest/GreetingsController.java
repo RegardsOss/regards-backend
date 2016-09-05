@@ -33,7 +33,7 @@ public class GreetingsController {
     GreetingsService myService_;
 
     /**
-     * Method to iniate REST resources authorizations.
+     * Method to initiate REST resources authorizations.
      */
     @PostConstruct
     public void initAuthorisations() {
