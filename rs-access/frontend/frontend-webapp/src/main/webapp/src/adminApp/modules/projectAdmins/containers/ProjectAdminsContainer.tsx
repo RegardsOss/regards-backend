@@ -9,6 +9,7 @@ import Delete from "material-ui/svg-icons/action/delete"
 import UserDialog from "../components/UserDialog"
 import * as actions from "../actions"
 import * as selectors from "../../../reducer"
+import { FormattedMessage } from "react-intl"
 
 interface ProjectAdminsProps {
   // From mapStateToProps
@@ -56,19 +57,27 @@ class ProjectAdminsContainer extends React.Component<ProjectAdminsProps, any> {
 
   handleDialogSave = () => {
     this.handleDialogClose()
-    this.props.updateOrCreateProjectAdmin('9999', {name: 'Fake Name'})
+    this.props.updateOrCreateProjectAdmin('9999', {name: 'Test'})
   }
 
   render (): JSX.Element {
     const usersListMenuElements = [
-      <MenuItem key={1} primaryText="Edit" leftIcon={<Build />} onTouchTap={this.handleDialogOpen}/>,
-      <MenuItem key={2} primaryText="Delete" leftIcon={<Delete />} onTouchTap={this.handleDeleteClick}/>
+      <MenuItem
+        key={1}
+        primaryText={<FormattedMessage id='projects.admin.edit'/>}
+        leftIcon={<Build />}
+        onTouchTap={this.handleDialogOpen}/>,
+      <MenuItem
+        key={2}
+        primaryText={<FormattedMessage id='projects.admin.delete'/>}
+        leftIcon={<Delete />}
+        onTouchTap={this.handleDeleteClick}/>
     ]
 
     return (
       <div>
         <UserList
-          subheader='Project administrators'
+          subheader={<FormattedMessage id='projects.admins.label'/>}
           items={this.props.projectAdmins}
           menuElements={usersListMenuElements}
         />

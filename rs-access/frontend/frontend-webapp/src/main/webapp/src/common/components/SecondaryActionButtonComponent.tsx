@@ -11,11 +11,7 @@ interface SecondaryActionButtonProps {
   url?: string,
   style?: any
   onTouchTap?: (event: any) => void
-  /**
-   * Todo: Should we enable this?
-   * If yes, we just need to uncomment this line and it will work
-   */
-  // isVisible?: boolean
+  isVisible?: boolean
 }
 export default class SecondaryActionButtonComponent extends React.Component<SecondaryActionButtonProps, any> {
 

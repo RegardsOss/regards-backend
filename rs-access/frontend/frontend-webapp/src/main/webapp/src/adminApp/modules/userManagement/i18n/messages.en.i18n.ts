@@ -1,8 +1,9 @@
 const messages = {
-  "userlist.header": "Users list",
+  "userlist.title": "Users",
+  "userlist.subtitle": "List of all project's users",
   "userlist.login": "Login",
-  "userlist.firstName": "Firstname",
-  "userlist.lastName": "Lastname",
+  "userlist.firstName": "First Name",
+  "userlist.lastName": "Last Name",
   "userlist.email": "E-mail",
   "userlist.status": "Status",
   "userlist.action": "Actions",

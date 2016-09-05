@@ -1,10 +1,10 @@
 import * as ReactDOM from "react-dom"
-import { Router, browserHistory, PlainRoute } from "react-router"
-import { Provider } from "react-redux"
+import {Router, browserHistory, PlainRoute} from "react-router"
+import {Provider} from "react-redux"
 import configureStore from "./common/store/configureStore"
 import preloadedState from "./common/store/preloadedState"
-import { routes } from "./routes"
-import { test } from "@regards-oss/common"
+import {routes} from "./routes"
+import {test} from "@regards-oss/common"
 
 
 console.log(test())
@@ -18,7 +18,7 @@ ReactDOM.render(
 )
 
 // Log sitemap
-function getSiteMap (parentRoute: any, routes: Array<PlainRoute>): void {
+function getSiteMap(parentRoute: any, routes: Array<PlainRoute>): void {
   routes.map((route) => {
     if (route) {
       let path = ''

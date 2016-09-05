@@ -13,6 +13,8 @@ import AccountCircle from 'material-ui/svg-icons/action/account-circle'
 import Email from 'material-ui/svg-icons/communication/email'
 import Phone from 'material-ui/svg-icons/communication/phone'
 import Lock from 'material-ui/svg-icons/action/lock'
+import Edit from 'material-ui/svg-icons/editor/mode-edit'
+import Delete from 'material-ui/svg-icons/action/delete'
 // Switches
 import Checkbox from 'material-ui/Checkbox'
 import Toggle from 'material-ui/Toggle'
@@ -33,6 +35,10 @@ import ThemeInjector from "../../../../common/theme/ThemeInjector"
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from "material-ui/Table"
 import { browserHistory } from "react-router"
 import { map } from "lodash"
+
+import MainActionButtonComponent from "../../../../common/components/MainActionButtonComponent"
+import SecondaryActionButtonComponent from "../../../../common/components/SecondaryActionButtonComponent"
+
 const styles = {
   headline: {
     fontSize: 24,
@@ -65,6 +71,13 @@ class ProjectAccountReadComponent extends React.Component<ProjectAccountReadProp
   //     value: value,
   //   })
   // }
+  handleEdit = () => {
+    console.log('todo')
+  }
+
+  handleDelete = () => {
+    console.log('todo')
+  }
 
   handleBackClick = () => {
     browserHistory.goBack()
@@ -100,6 +113,15 @@ class ProjectAccountReadComponent extends React.Component<ProjectAccountReadProp
           label="Informations"
           value={0}
         >
+          <div style={{display:'flex', justifyContent:'flex-end', marginTop:10}}>
+            <MainActionButtonComponent
+              label={"Editer"}
+              onTouchTap={this.handleEdit} />
+            <SecondaryActionButtonComponent
+              label={"Supprimer"}
+              onTouchTap={this.handleDelete} />
+
+          </div>
           <List>
             <Subheader>Personnelles</Subheader>
             <ListItem

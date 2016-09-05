@@ -8,7 +8,7 @@ import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert"
 import { grey400 } from "material-ui/styles/colors"
 
 interface UserListProps {
-  subheader?: string
+  subheader?: string | JSX.Element
   items?: Array<any>,
   rightButtonIcon?: JSX.Element,
   menuElements?: Array<JSX.Element>,

@@ -3,6 +3,8 @@ import Dialog from "material-ui/Dialog"
 import FlatButton from "material-ui/FlatButton"
 import TextField from "material-ui/TextField"
 import AddBox from "material-ui/svg-icons/content/add-box"
+import { FormattedMessage } from "react-intl"
+import ActionButtonComponent from "../../../../common/components/ActionButtonComponent"
 
 /**
  * Dialog with action buttons. The actions are passed in as an array of React objects,
@@ -16,6 +18,7 @@ interface AddProjectProps {
   onSave: (value: string) => void
 }
 export default class AddProject extends React.Component<AddProjectProps, any> {
+
   state: any = {
     open: false,
     value: ''
@@ -43,12 +46,12 @@ export default class AddProject extends React.Component<AddProjectProps, any> {
   render (): JSX.Element {
     const actions = [
       <FlatButton
-        label="Cancel"
+        label={<FormattedMessage id='projects.cancel.button'/>}
         primary={true}
         onTouchTap={this.handleClose}
       />,
       <FlatButton
-        label="Submit"
+        label={<FormattedMessage id='projects.submit.button'/>}
         primary={true}
         keyboardFocused={true}
         onTouchTap={this.handleSave}
@@ -57,20 +60,19 @@ export default class AddProject extends React.Component<AddProjectProps, any> {
 
     return (
       <div>
-        <FlatButton
+        <ActionButtonComponent
           primary={true}
-          label="Add"
-          onTouchTap={this.handleOpen}
-          icon={<AddBox />}/>
+          label={<FormattedMessage id='projects.add.button.title'/>}
+          onTouchTap={this.handleOpen}/>
         <Dialog
-          title="Add a new project"
+          title={"Ajouter un projet"}
           actions={actions}
           modal={false}
           open={this.state.open}
           onRequestClose={this.handleClose}
         >
           <TextField
-            floatingLabelText="Project name"
+            floatingLabelText={<FormattedMessage id='projects.project.name.label'/>}
             onChange={this.handleChange}/>
         </Dialog>
       </div>

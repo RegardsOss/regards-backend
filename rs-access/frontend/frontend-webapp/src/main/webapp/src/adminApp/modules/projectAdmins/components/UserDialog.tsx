@@ -2,6 +2,7 @@ import * as React from "react"
 import Dialog from "material-ui/Dialog"
 import FlatButton from "material-ui/FlatButton"
 import UserForm from "./UserForm"
+import { FormattedMessage } from "react-intl"
 
 // TODO
 interface HandlesUser {
@@ -28,12 +29,12 @@ class UserDialog extends React.Component<Openable & Savable, any> {
   render (): JSX.Element {
     const actions = [
       <FlatButton
-        label="Cancel"
+        label={<FormattedMessage id="projects.cancel.button"/>}
         primary={true}
         onTouchTap={this.props.onClose}
       />,
       <FlatButton
-        label="Submit"
+        label={<FormattedMessage id="projects.submit.button"/>}
         primary={true}
         keyboardFocused={true}
         onTouchTap={this.props.onSave}
@@ -42,7 +43,7 @@ class UserDialog extends React.Component<Openable & Savable, any> {
 
     return (
       <Dialog
-        title="Edit a user"
+        title="Modifer un utilisateur"
         actions={actions}
         modal={false}
         open={this.props.open}

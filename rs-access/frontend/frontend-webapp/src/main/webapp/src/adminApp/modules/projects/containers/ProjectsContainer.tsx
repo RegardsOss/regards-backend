@@ -6,7 +6,7 @@ import { FormattedMessage } from "react-intl"
 import I18nProvider from "../../../../common/i18n/I18nProvider"
 import { ProjectAdminsContainer } from "../../projectAdmins/index"
 import ModuleComponent from "../../../../common/components/ModuleComponent"
-import { Card, CardTitle, CardText } from "material-ui/Card"
+import { Card, CardTitle, CardText, CardActions } from "material-ui/Card"
 import RaisedButton from "material-ui/RaisedButton"
 import SelectField from "material-ui/SelectField"
 import Delete from "material-ui/svg-icons/action/delete"
@@ -16,6 +16,8 @@ import { Project } from "../types/ProjectTypes"
 import * as actions from "../actions"
 import * as uiActions from "../../ui/actions"
 import * as selectors from "../../../reducer"
+import CardActionsComponent from "../../../../common/components/CardActionsComponent"
+import SecondaryActionButtonComponent from "../../../../common/components/SecondaryActionButtonComponent"
 
 interface ProjectsContainerTypes {
   // From mapStateToProps
@@ -37,6 +39,10 @@ interface ProjectsContainerTypes {
  */
 class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
 
+  state: any = {
+    open: false
+  }
+
   componentWillMount (): any {
     // onLoad method is set to the container props by react-redux connect.
     // See method mapDispatchToProps of this container
@@ -45,7 +51,7 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
 
   handleSave = () => {
     const id = '999'
-    const name = 'Fake Project'
+    const name = 'Projet test'
     this.props.addProject(id, name)
     this.props.selectProject(id)
   }
@@ -58,13 +64,20 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
     this.props.selectProject(payload)
   }
 
+  handleAdd = () => {
+    this.setState({open: true})
+  }
+
+  handleClose = () => {
+    this.setState({open: false})
+  }
+
   render (): JSX.Element {
     const cardTitle = (
       <div>
         <span style={{float:'left'}}>
-           <FormattedMessage id='projects.legend'/>
+           <FormattedMessage id='projects.title'/>
         </span>
-        <AddProject onSave={this.handleSave}/>
       </div>
     )
 
@@ -72,24 +85,29 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
       <I18nProvider messageDir='adminApp/modules/projects/i18n'>
         <ModuleComponent>
           <Card>
-            <CardTitle title={cardTitle}/>
+            <CardTitle
+              title={<FormattedMessage id='projects.title'/>}
+              subtitle={<FormattedMessage id='projects.subtitle'/>}
+            />
             <CardText>
               <SelectField
                 value={this.props.projectId}
                 onChange={this.handleChange}
-                floatingLabelText="Select a project">
+                floatingLabelText={<FormattedMessage id='projects.list.select'/>}>
                 {this.props.projects.map((project) => {
                   return <MenuItem key={project.id} value={project.id} primaryText={project.name}/>
                 })}
               </SelectField>
-              <RaisedButton
-                label="Delete"
-                labelPosition="before"
-                secondary={true}
-                icon={<Delete />}
-                onClick={this.handleDelete}/>
               <ProjectAdminsContainer />
             </CardText>
+            <CardActions>
+              <SecondaryActionButtonComponent
+                label={<FormattedMessage id="projects.delete.button.title"/>}
+                onTouchTap={this.handleDelete}
+                isVisible={false}
+              />
+              <AddProject onSave={this.handleSave}/>
+            </CardActions>
           </Card>
         </ModuleComponent>
       </I18nProvider>

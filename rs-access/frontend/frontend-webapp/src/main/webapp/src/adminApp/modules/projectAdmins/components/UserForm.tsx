@@ -8,14 +8,14 @@ class UserForm extends React.Component<any, any> {
     return (
       <form>
         <TextField
-          floatingLabelText="Name"
+          floatingLabelText="Nom"
         /><br />
         <TextField
-          floatingLabelText="Password"
+          floatingLabelText="Mot de passe"
           type="password"
         /><br />
         <TextField
-          floatingLabelText="Password (confirm)"
+          floatingLabelText="Mot de passe (confirmer)"
           type="password"
         />
       </form>
