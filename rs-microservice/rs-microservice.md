@@ -93,9 +93,9 @@ curl http://localhost:3333/api/me/ -H "Authorization: Bearer <admin_acces_token>
 
 Each microservice offer the features :
 
-- OAuth2 authentication : <http://adress:port/oauth/token>
+- OAuth2 authentication : <http://address:port/oauth/token>
 - REST Resources authorization access by user ROLES
 - Access to the Cloud Eureka Regsitry client to communicate with others microservices
 - Access to the Cloud Config Server to centralize configurations properties
 - Allow CORS requests
-- Swagger Interface : <http://adress:port/swagger-ui.html>
+- Swagger Interface : <http://address:port/swagger-ui.html>
