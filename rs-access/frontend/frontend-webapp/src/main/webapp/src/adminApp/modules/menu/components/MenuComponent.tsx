@@ -14,7 +14,7 @@ class MenuComponent extends React.Component<{}, {}> {
     const style = {
       headContainer: {
         classes: this.context.muiTheme.adminApp.layout.headContainer.classes.join(' '),
-        styles: this.context.muiTheme.adminApp.layout.headContainer.styles,
+        styles: Object.assign({}, this.context.muiTheme.adminApp.layout.headContainer.styles, {fontFamily: this.context.muiTheme.fontFamily}),
       },
       title: this.context.muiTheme.toolbarTitle,
     }
@@ -23,7 +23,7 @@ class MenuComponent extends React.Component<{}, {}> {
 
         <Toolbar className={style.headContainer.classes} style={style.headContainer.styles}>
           <ToolbarGroup firstChild={true}>
-            <ToolbarTitle text="Regards admin dashboard" style={style.title}/>
+            <ToolbarTitle text="REGARDS admin dashboard" style={style.title}/>
           </ToolbarGroup>
 
           <ToolbarGroup>

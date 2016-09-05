@@ -54,39 +54,41 @@ class ModelAttributeComponent extends React.Component<ModelAttributeProps, any> 
       <div>
         <p><FormattedMessage id="datamanagement.dataset.add.1.infoDefaultModelAttributes"/></p>
         {map(attributes, (attribute: ModelAttribute, id: string) => {
-            switch (attribute.type) {
-              case JavaTypes.STRING.value:
-                return (
-                  <DatasetModelAttributeRadioGroupComponent
-                    key={id}
-                    id={id}
-                    attribute={attribute}
-                    staticInput={
+            if (attribute.computed === false) {
+              switch (attribute.type) {
+                case JavaTypes.STRING.value:
+                  return (
+                    <DatasetModelAttributeRadioGroupComponent
+                      key={id}
+                      id={id}
+                      attribute={attribute}
+                      staticInput={
                       <TextInputComponent
                         ref={attribute.name}
                         label={attribute.name}
                       />
                     }
-                  />
-                )
-              case JavaTypes.INTEGER.value:
-                return (
+                    />
+                  )
+                case JavaTypes.INTEGER.value:
+                  return (
 
-                  <DatasetModelAttributeRadioGroupComponent
-                    key={id}
-                    id={id}
-                    attribute={attribute}
-                    staticInput={
+                    <DatasetModelAttributeRadioGroupComponent
+                      key={id}
+                      id={id}
+                      attribute={attribute}
+                      staticInput={
                       <IntegerInputComponent
                         key={id}
                         ref={attribute.name}
                         label={attribute.name}
                       />
                     }
-                  />
-                )
-              default:
-                throw 'Undefined java type ' + attribute.type
+                    />
+                  )
+                default:
+                  throw 'Undefined java type ' + attribute.type
+              }
             }
           }
         )}

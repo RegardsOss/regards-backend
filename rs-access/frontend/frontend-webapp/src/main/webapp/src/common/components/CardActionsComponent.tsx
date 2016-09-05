@@ -5,7 +5,7 @@ import ThemeInjector from "../theme/ThemeInjector"
 
 
 interface CardActionsProps {
-  secondaryButtonLabel: string | JSX.Element
+  secondaryButtonLabel?: string | JSX.Element
   secondaryButtonUrl?: string
   secondaryButtonTouchTap?: (event: React.FormEvent) => void
 
@@ -56,21 +56,22 @@ interface CardActionsViewProps {
 }
 class CardActionsView extends React.Component<CardActionsViewProps, any> {
 
-  render(): JSX.Element {
+  render (): JSX.Element {
 
     const styleCardActions = {
       display: "flex",
       flexDirection: "row",
       justifyContent: "flex-end"
     }
-
+    const secondaryButton = this.props.secondaryButtonUrl || this.props.secondaryButtonTouchTap ?
+      <SecondaryActionButtonComponent
+        label={this.props.secondaryButtonLabel}
+        url={this.props.secondaryButtonUrl}
+        onTouchTap={this.props.secondaryButtonTouchTap}
+      /> : null
     return (
       <div style={styleCardActions}>
-        <SecondaryActionButtonComponent
-          label={this.props.secondaryButtonLabel}
-          url={this.props.secondaryButtonUrl}
-          onTouchTap={this.props.secondaryButtonTouchTap}
-        />
+        {secondaryButton}
         <MainActionButtonComponent
           label={this.props.mainButtonLabel}
           url={this.props.mainButtonUrl}

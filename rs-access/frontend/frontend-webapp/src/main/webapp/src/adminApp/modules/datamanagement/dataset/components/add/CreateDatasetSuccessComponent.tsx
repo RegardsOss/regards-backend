@@ -1,7 +1,8 @@
 import * as React from "react"
 import { Card, CardHeader, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
-import FlatButton from "material-ui/FlatButton"
+import CardTitle from "material-ui/Card/CardTitle"
+import CardActionsComponent from "../../../../../../common/components/CardActionsComponent"
 
 interface CreateDatasetSuccessProps {
   handleNextStep: () => void
@@ -15,23 +16,27 @@ export default class CreateDatasetSuccessComponent extends React.Component<Creat
     this.props.handleNextStep()
   }
 
+//  view headline
 
   render (): JSX.Element {
     return (
       <Card
         initiallyExpanded={true}>
-        <CardHeader
-          title={<FormattedMessage id="datamanagement.dataset.add.header"/>}
-          actAsExpander={true}
-          showExpandableButton={false}
+        <CardTitle
+          title={
+            <FormattedMessage
+            id="datamanagement.dataset.add.header"
+            />
+          }
+          children={this.props.children}
         />
         <CardText>
-          <h3>Success !</h3>
+          <h3>Success ! Le jeu de données a bien été créé</h3>
 
-          <FlatButton
-            label="Go back to datamanager"
-            secondary={true}
-            onTouchTap={this.handleNextButton}
+
+          <CardActionsComponent
+            mainButtonTouchTap={this.props.handleNextStep}
+            mainButtonLabel={<FormattedMessage id="datamanagement.dataset.add.3.action.next" />}
           />
         </CardText>
       </Card>

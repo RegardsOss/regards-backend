@@ -15,6 +15,10 @@ interface FormProps {
  */
 class FormComponent extends React.Component<FormProps, any> {
 
+  state: any = {
+    datasourceId: null
+  }
+
   getBackUrl = () => {
     return this.props.handleGetBack()
   }
@@ -27,13 +31,20 @@ class FormComponent extends React.Component<FormProps, any> {
     this.props.goToNewDatasource()
   }
 
+  handleDatasourceChange = (event: React.FormEvent, index: number, value: any) => {
+    this.setState({
+      datasourceId: value
+    })
+  }
+
   render (): JSX.Element {
+    const { datasourceId } = this.state
     const styleCardActions = {
       display: "flex",
       flexDirection: "row",
       justifyContent: "flex-end"
     }
-    const isNextButtonVisible = false
+    const isNextButtonVisible = datasourceId >= 0
     return (
       <Card
         initiallyExpanded={true}>
@@ -44,26 +55,25 @@ class FormComponent extends React.Component<FormProps, any> {
         <CardText>
           <div>
             <SelectField
-              floatingLabelText="Type de source de données"
-              value={3}
+              floatingLabelText="Choix d'une source de données"
+              value={datasourceId}
+              onChange={this.handleDatasourceChange}
             >
-              <MenuItem value={1} primaryText="Oracle"/>
-              <MenuItem value={2} primaryText="Mysql"/>
-              <MenuItem value={3} primaryText="PostgreSQL"/>
-              <MenuItem value={4} primaryText="Weekends"/>
-              <MenuItem value={5} primaryText="Weekly"/>
+              <MenuItem value={1} primaryText="CDPP Datasource"/>
+              <MenuItem value={2} primaryText="PER2 Datasource"/>
+              <MenuItem value={3} primaryText="TV78 Datasource"/>
             </SelectField>
             <FlatButton
-              label="Add datasource"
+              label="Ajouter une nouvelle source de données"
               primary={true}
               onTouchTap={this.handleNewDatasource}
             />
           </div>
 
           <CardActionsComponent
-            secondaryButtonLabel={<FormattedMessage id="datamanagement.datasource.add.1.action.back" />}
+            secondaryButtonLabel={<FormattedMessage id="datamanagement.dataset.add.2.action.back" />}
             secondaryButtonTouchTap={this.getBackUrl}
-            mainButtonLabel={<FormattedMessage id="datamanagement.datasource.add.1.action.next" />}
+            mainButtonLabel={<FormattedMessage id="datamanagement.dataset.add.2.action.next" />}
             mainButtonTouchTap={this.handleNextButton}
             isMainButtonVisible={isNextButtonVisible}
           />

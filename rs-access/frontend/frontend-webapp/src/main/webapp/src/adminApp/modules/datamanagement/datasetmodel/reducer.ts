@@ -6,48 +6,63 @@ const predefinedValues: any = {
     id: 1,
     attributes: [{
       name: "SIZE",
+      computed: false,
       type: "integer"
     }, {
       name: "START_DATE",
+      computed: false,
       type: "integer"
     }, {
       name: "STOP_DATE",
+      computed: false,
       type: "integer"
     }, {
       name: "MIN_LONGITUDE",
+      computed: false,
       type: "integer"
     }, {
       name: "MAX_LONGITUDE",
+      computed: false,
       type: "integer"
     }, {
       name: "MIN_LATITUDE",
+      computed: false,
       type: "string"
     }, {
       name: "MIN_ALTITUDE",
+      computed: false,
       type: "string"
     }, {
       name: "MAX_ALTITUDE",
+      computed: false,
       type: "string"
     }, {
       name: "PROCESSING_LEVEL",
+      computed: false,
       type: "string"
     }, {
       name: "QUALITY",
+      computed: false,
       type: "string"
     }, {
       name: "OPERATIONAL_REQUIREMENTS",
+      computed: false,
       type: "string"
     }, {
       name: "ACCESS_REQUIREMENTS",
+      computed: false,
       type: "string"
     }, {
       name: "FILE_FORMAT",
+      computed: false,
       type: "string"
     }, {
       name: "INSTRUMENT_TYPE",
+      computed: false,
       type: "string"
     }, {
       name: "MEASUREMENT_TYPE",
+      computed: false,
       type: "string"
     }]
   }

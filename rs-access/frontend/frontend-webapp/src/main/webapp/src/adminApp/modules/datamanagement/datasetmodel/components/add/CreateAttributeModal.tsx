@@ -6,6 +6,7 @@ import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
 import { JavaTypes } from "../../../JavaTypes"
 import { FormattedMessage, intlShape } from "react-intl"
+import Checkbox from "material-ui/Checkbox"
 
 interface CreateAttributeModalProps {
   handleCreateNewParameter: (label: string, type: string) => void
@@ -104,6 +105,11 @@ export default class CreateAttributeModal extends React.Component<CreateAttribut
             value={label}
             fullWidth={true}
             onChange={this.handleAttributeLabelChange}
+          />
+
+          <Checkbox
+            label="Attribut calculé"
+            defaultChecked={false}
           />
           <SelectField
             floatingLabelText={<FormattedMessage id="datamanagement.datasetmodel.add.modal.input.type" />}

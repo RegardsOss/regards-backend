@@ -8,7 +8,7 @@ export default {
   },
   toolbar: {
     backgroundColor: indigo500,
-    titleFontSize: 25,
+    titleFontSize: 23,
     height: 50
   },
   toolbarTitle: {
@@ -37,7 +37,9 @@ export default {
       },
       headContainer: {
         classes: ["col-sm-98", "col-sm-offset-1"],
-        styles: {}
+        styles: {
+          // See toolbar
+        }
       },
       bodyContainer: {
         classes: ["row"],

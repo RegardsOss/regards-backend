@@ -1,8 +1,8 @@
 import * as React from "react"
-import { RadioButton, RadioButtonGroup } from "material-ui/RadioButton"
 import { FormattedMessage, intlShape } from "react-intl"
 import { ModelAttribute } from "../../../../datasetmodel/ModelAttribute"
-import TextInputComponent from "../../input/TextInputComponent"
+import { find } from "lodash"
+import { JavaTypes } from "../../../../JavaTypes"
 
 interface ModelAttributeRadioGroupProps {
   attribute: ModelAttribute
@@ -33,54 +33,19 @@ class DatasetModelAttributeRadioGroupComponent extends React.Component<ModelAttr
     const {attribute, id} = this.props
     const {radioValue} = this.state
     const staticField = radioValue === "static" ? this.props.staticInput : null
-    const computedField = radioValue === "computed" ? (
-      <TextInputComponent
-        label={<FormattedMessage
-            id="datamanagement.dataset.add.1.input.dynamic" />}
-      />
-    ) : null
+    const javaType: any = find(JavaTypes, {"value": attribute.type})
+    const typeAsString = this.context.intl.formatMessage({id: javaType.toString()})
+
     return (
       <div>
-        <div className="row">
-          <div className="col-sm-100">
-            <FormattedMessage
-              id="datamanagement.dataset.add.1.attribute"
-              values={{
-                name: <i>{attribute.name}</i>
+        <FormattedMessage
+          id="datamanagement.dataset.add.1.attribute"
+          values={{
+                name: <i>{attribute.name}</i>,
+                type: <i>{typeAsString}</i>
               }}
-            />
-
-          </div>
-          <div className="col-sm-20">
-
-            <br />
-            <RadioButtonGroup
-              name={"rb-" + id}
-              valueSelected={radioValue}
-              onChange={this.handleRadioChange}
-            >
-              <RadioButton
-                value="static"
-                label={
-              this.context.intl.formatMessage({id: "datamanagement.dataset.add.1.attribute.static"})
-            }
-              />
-              <RadioButton
-                value="computed"
-                label={
-              this.context.intl.formatMessage({id: "datamanagement.dataset.add.1.attribute.computed"})
-            }
-              />
-            </RadioButtonGroup>
-
-            <br />
-            <br />
-          </div>
-          <div className="col-sm-80">
-            {staticField}
-            {computedField}
-          </div>
-        </div>
+        />
+        {staticField}
       </div>
     )
   }
