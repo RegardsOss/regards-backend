@@ -10,6 +10,7 @@ interface FormProps {
   handleNextStep: () => void
   handleGetBack: () => void
   goToNewDatasource: () => void
+  save: (value: any) => void
 }
 /**
  */
@@ -35,6 +36,7 @@ class FormComponent extends React.Component<FormProps, any> {
     this.setState({
       datasourceId: value
     })
+    this.props.save(value)
   }
 
   render (): JSX.Element {

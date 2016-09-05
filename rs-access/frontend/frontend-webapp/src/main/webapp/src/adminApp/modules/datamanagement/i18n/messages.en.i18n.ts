@@ -1,10 +1,9 @@
 const messages = {
   "datamanagement.header": "Data Management",
-  "datamanagement.datasetmodel.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
+  "datamanagement.model.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
   "datamanagement.collection.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
   "datamanagement.dataset.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
   "datamanagement.datasource.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
-  "datamanagement.datasourcemodel.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
   "datamanagement.connection.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
   "datamanagement.action.list.tooltip": "Display the element's list",
   "datamanagement.action.add.tooltip": "Create a new element",

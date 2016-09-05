@@ -1,80 +1,155 @@
 import * as React from "react"
-import { Card, CardHeader, CardText } from "material-ui/Card"
+import { Card, CardText, CardTitle } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
 import FlatButton from "material-ui/FlatButton"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
 import TextField from "material-ui/TextField"
+import { Connection } from "../../../connection/Connection"
+import { map } from "lodash"
+import { DatasetModel } from "../../../datasetmodel/DatasetModel"
+import { PluginDatasource } from "../../PluginDatasource"
+import CardActionsComponent from "../../../../../../common/components/CardActionsComponent"
 
+interface CreateDatasourceProps {
+  cancelUrl: string
+  save: (name: string) => void
+  connections: any
+  modelObjects: any
+  pluginDatasources: any
+}
 /**
  */
-export default class CreateDatasourceFormComponent extends React.Component<any, any> {
+class CreateDatasourceFormComponent extends React.Component<CreateDatasourceProps, any> {
 
+
+  state: any = {
+    connectionId: -1,
+    modelObjectId: -1,
+    pluginDatasourceId: -1,
+    name: ""
+  }
+
+  handleConnectionChange = (event: React.FormEvent, index: number, value: any) => {
+    this.setState({
+      connectionId: value
+    })
+  }
+
+  handleModelChange = (event: React.FormEvent, index: number, value: any) => {
+    this.setState({
+      modelObjectId: value
+    })
+  }
+
+  handlePluginDatasourceChange = (event: React.FormEvent, index: number, value: any) => {
+    this.setState({
+      pluginDatasourceId: value
+    })
+  }
+
+  handleSaveButton = () => {
+    return this.props.save(this.state.name)
+  }
+
+
+  handleLabelChange = (event: React.FormEvent): any => {
+    const newName = (event.target as any).value
+    this.setState({
+      "name": newName
+    })
+  }
 
   render (): JSX.Element {
+    const {connectionId, modelObjectId, pluginDatasourceId, name} = this.state
+    const {connections, modelObjects, pluginDatasources, cancelUrl} = this.props
     return (
       <Card
         initiallyExpanded={true}>
-        <CardHeader
-          title={<FormattedMessage id="datamanagement.datasource.create.header"/>}
-          actAsExpander={true}
-          showExpandableButton={false}
+        <CardTitle
+          title={<FormattedMessage id="datamanagement.datasource.add.header"/>}
         />
         <CardText>
 
 
           <TextField
             type="text"
-            floatingLabelText={<FormattedMessage id="datamanagement.model.create.label"/>}
+            floatingLabelText={<FormattedMessage id="datamanagement.datasource.add.input.label"/>}
             fullWidth={true}
+            onChange={this.handleLabelChange}
+            value={name}
           />
+          <div className={"row"}>
+
+            <SelectField
+              floatingLabelText={<FormattedMessage id="datamanagement.datasource.add.input.connection"/>}
+              value={connectionId}
+              onChange={this.handleConnectionChange}
+            >
+              {map(connections, (connection: Connection, id: string) => (
+                <MenuItem
+                  value={connection.id}
+                  key={id}
+                  primaryText={connection.name}
+                />
+              ))}
+            </SelectField>
+
+            <FlatButton
+              label={<FormattedMessage id="datamanagement.datasource.add.action.new_connection"/>}
+              primary={true}
+            />
+
+          </div>
 
           <SelectField
-            floatingLabelText="Select connection"
-            value={3}
-            fullWidth={true}
+            floatingLabelText={<FormattedMessage id="datamanagement.datasource.add.input.model"/>}
+            value={modelObjectId}
+            onChange={this.handleModelChange}
           >
-            <MenuItem value={1} primaryText="Never"/>
-            <MenuItem value={2} primaryText="Every Night"/>
-            <MenuItem value={3} primaryText="Weeknights"/>
-            <MenuItem value={4} primaryText="Weekends"/>
-            <MenuItem value={5} primaryText="Weekly"/>
+            {map(modelObjects, (model: DatasetModel, id: string) => (
+              <MenuItem
+                value={model.id}
+                key={id}
+                primaryText={model.name}
+              />
+            ))}
           </SelectField>
 
-          <FlatButton label="New connection" primary={true}/>
-          <hr />
-
-
+          <FlatButton
+            label={<FormattedMessage id="datamanagement.datasource.add.action.new_model"/>}
+            primary={true}
+          />
           <SelectField
-            floatingLabelText="Select modele"
-            value={3}
-            fullWidth={true}
+            floatingLabelText={<FormattedMessage id="datamanagement.datasource.add.input.datasource_model"/>}
+            value={pluginDatasourceId}
+            onChange={this.handlePluginDatasourceChange}
           >
-            <MenuItem value={1} primaryText="Never"/>
-            <MenuItem value={2} primaryText="Every Night"/>
-            <MenuItem value={3} primaryText="Weeknights"/>
-            <MenuItem value={4} primaryText="Weekends"/>
-            <MenuItem value={5} primaryText="Weekly"/>
+            {map(pluginDatasources, (pluginDatasource: PluginDatasource, id: string) => (
+              <MenuItem
+                value={pluginDatasource.id}
+                key={id}
+                primaryText={pluginDatasource.name}
+              />
+            ))}
           </SelectField>
 
-          <FlatButton label="Create new model" primary={true}/>
-          <hr />
-          <SelectField
-            floatingLabelText="Select plugin"
-            value={3}
-            fullWidth={true}
-          >
-            <MenuItem value={1} primaryText="Plugin #1"/>
-            <MenuItem value={2} primaryText="Plugin #2"/>
-            <MenuItem value={3} primaryText="Plugin #3"/>
-            <MenuItem value={4} primaryText="Plugin #4"/>
-            <MenuItem value={5} primaryText="Plugin #5"/>
-          </SelectField>
 
-          <FlatButton label="Create new plugin" primary={true}/>
-          <br />
-          <FlatButton label="Cancel" primary={true}/>
-          <FlatButton label="Create" secondary={true}/>
+          <CardActionsComponent
+            secondaryButtonUrl={cancelUrl}
+            secondaryButtonLabel={
+              <FormattedMessage
+                id="datamanagement.datasource.add.action.cancel"
+              />
+            }
+
+            mainButtonTouchTap={this.handleSaveButton}
+            mainButtonLabel={
+              <FormattedMessage
+                id="datamanagement.datasource.add.action.add"
+              />
+            }
+          />
 
         </CardText>
       </Card>
@@ -82,10 +157,6 @@ export default class CreateDatasourceFormComponent extends React.Component<any, 
   }
 }
 
-/*
- const mapStateToProps = (state: any, ownProps: any) => {
- }
- const mapDispatchToProps = (dispatch: any) => ({
- })
- export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
- */
+export default CreateDatasourceFormComponent
+
+

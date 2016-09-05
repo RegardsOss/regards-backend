@@ -31,9 +31,7 @@ export default class CreateDatasetSuccessComponent extends React.Component<Creat
           children={this.props.children}
         />
         <CardText>
-          <h3>Success ! Le jeu de données a bien été créé</h3>
-
-
+          <h3>Succès ! Le jeu de données a bien été créé</h3>
           <CardActionsComponent
             mainButtonTouchTap={this.props.handleNextStep}
             mainButtonLabel={<FormattedMessage id="datamanagement.dataset.add.3.action.next" />}

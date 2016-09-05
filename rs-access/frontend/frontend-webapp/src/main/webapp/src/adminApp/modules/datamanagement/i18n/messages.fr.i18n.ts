@@ -1,10 +1,9 @@
 const messages = {
   "datamanagement.header": "Gestion des données",
-  "datamanagement.datasetmodel.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
+  "datamanagement.model.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
   "datamanagement.collection.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
   "datamanagement.dataset.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
   "datamanagement.datasource.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
-  "datamanagement.datasourcemodel.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
   "datamanagement.connection.info": "Ajoutez vos sources de données. Configure data mapping. Manage input and output filters, authorizations.  Import legacy database.",
   "datamanagement.action.list.tooltip": "Affiche la liste des éléments",
   "datamanagement.action.add.tooltip": "Créer une nouvelle définition d'élément",
@@ -34,8 +33,8 @@ const messages = {
   "datamanagement.datasetmodel.add.modal.input.name": "Nom du paramètre",
   "datamanagement.datasetmodel.add.modal.input.type": "Type",
   "datamanagement.datasetmodel.add.modal.action.close": "Fermer",
-  "datamanagement.datasetmodel.add.modal.action.create_and_reset": "Créer et reinitialiser le formulaire",
-  "datamanagement.datasetmodel.add.modal.action.create_and_close": "Créer and fermer",
+  "datamanagement.datasetmodel.add.modal.action.create_and_reset": "Créer et continuer",
+  "datamanagement.datasetmodel.add.modal.action.create_and_close": "Créer et fermer",
 
   "datamanagement.datasourcemodel": "Modèles de données",
   "datamanagement.datasourcemodel.list.header": "Liste des modèles de données",
@@ -53,8 +52,8 @@ const messages = {
   "datamanagement.datasourcemodel.add.modal.input.name": "Nom du paramètre",
   "datamanagement.datasourcemodel.add.modal.input.type": "Type",
   "datamanagement.datasourcemodel.add.modal.action.close": "Fermer",
-  "datamanagement.datasourcemodel.add.modal.action.create_and_reset": "Créer et reinitialiser le formulaire",
-  "datamanagement.datasourcemodel.add.modal.action.create_and_close": "Créer and fermer",
+  "datamanagement.datasourcemodel.add.modal.action.create_and_reset": "Créer et continuer",
+  "datamanagement.datasourcemodel.add.modal.action.create_and_close": "Créer et fermer",
 
   "datamanagement.dataset.table.name": "Nom",
   "datamanagement.dataset.table.actions": "Actions",
@@ -78,7 +77,7 @@ const messages = {
 
   "datamanagement.dataset.add.1.stepper": "Saisie des attributs du jeu de données",
   "datamanagement.dataset.add.2.stepper": "Configuration de la source de données",
-  "datamanagement.dataset.add.3.stepper": "Fin",
+  "datamanagement.dataset.add.3.stepper": "Récapitulatif",
 
   "datamanagement.datasource": "Sources de données",
 
@@ -115,7 +114,13 @@ const messages = {
   "datamanagement.datasource.table.actions": "Actions",
   "datamanagement.datasource.list.action.add": "Créer une nouvelle source de données",
   "datamanagement.datasource.list.action.back": "Précédent",
-
+  "datamanagement.datasource.add.input.label": "Libellé",
+  "datamanagement.datasource.add.header": "Ajouter une source de données",
+  "datamanagement.datasource.add.input.connection": "Choisir une connexion",
+  "datamanagement.datasource.add.input.model": "Choisir le modèle",
+  "datamanagement.datasource.add.action.new_connection": "Créer une nouvelle connection",
+  "datamanagement.datasource.add.action.new_model": "Créer une nouveau modèle",
+  "datamanagement.datasource.add.input.datasource_model": "Choisir un plugin datasource"
 }
 
 export default messages

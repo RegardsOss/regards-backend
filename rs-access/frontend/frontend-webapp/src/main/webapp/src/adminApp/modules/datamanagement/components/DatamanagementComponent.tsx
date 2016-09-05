@@ -6,7 +6,7 @@ import { Link } from "react-router"
 import { map } from "lodash"
 import CardActions from "material-ui/Card/CardActions"
 import AddIcon from "material-ui/svg-icons/content/add-circle"
-import ListIcon from "material-ui/svg-icons/content/filter-list"
+import ViewLinesIcon from "material-ui/svg-icons/action/view-headline"
 import IconButton from "material-ui/IconButton"
 import KeyboardArrowUp from "material-ui/svg-icons/hardware/keyboard-arrow-up"
 import KeyboardArrowDown from "material-ui/svg-icons/hardware/keyboard-arrow-down"
@@ -104,7 +104,7 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
               style={linkStyle}
             >
               <IconButton tooltip={this.props.intl.formatMessage({id: "datamanagement.action.list.tooltip"})}>
-                <ListIcon />
+                <ViewLinesIcon />
               </IconButton>
             </Link>
 
@@ -159,14 +159,8 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
     ]
     if (this.state.showAdvanced) {
       elementsCommon.push({
-        title: (<FormattedMessage id="datamanagement.datasetmodel"/>),
-        description: (<FormattedMessage id="datamanagement.datasetmodel.info"/>),
-        pathList: this.getDatasetModelList(),
-        pathCreate: this.getDatasetModelCreate()
-      })
-      elementsCommon.push({
         title: (<FormattedMessage id="datamanagement.datasourcemodel"/>),
-        description: (<FormattedMessage id="datamanagement.datasourcemodel.info"/>),
+        description: (<FormattedMessage id="datamanagement.model.info"/>),
         pathList: this.getDatasourceModelList(),
         pathCreate: this.getDatasourceModelCreate()
       })

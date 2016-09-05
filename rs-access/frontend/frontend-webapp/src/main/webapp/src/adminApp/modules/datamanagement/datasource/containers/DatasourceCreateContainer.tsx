@@ -1,31 +1,73 @@
 import * as React from "react"
 import I18nProvider from "../../../../../common/i18n/I18nProvider"
+import { connect } from "react-redux"
+import { addDatasource } from "../actions"
+import { browserHistory } from "react-router"
+import CreateDatasourceFormComponent from "../components/add/CreateDatasourceFormComponent"
+import * as Selectors from "../../../../reducer"
 
+interface DatasourceCreateProps {
+  // From router
+  params: any
+  // From mapDispatchToProps
+  addDatasource?: (name: string) => void
 
-/**
- */
-export default class DatasourceCreateContainer extends React.Component<any, any> {
+  // From mapStateToProps
+  connections: any
+  modelObjects: any
+  pluginDatasources: any
+}
+export class DatasourceCreateContainer extends React.Component<DatasourceCreateProps, any> {
 
+  getCancelUrl = () => {
+    const from = this.props.params.from
+    if (from) {
+      const fromURI = decodeURIComponent(from)
+      return fromURI
+    } else {
+      const projectName = this.props.params.project
+      return "/admin/" + projectName + "/datamanagement/datasetmodel"
+    }
+  }
+
+  handleNextStep = (name: string) => {
+    this.props.addDatasource(name)
+    browserHistory.push(this.getCancelUrl())
+  }
 
   render (): JSX.Element {
+    const {connections, modelObjects, pluginDatasources} = this.props
     return (
       <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
-        <div>
-          <h2>Create datasource</h2>
-        </div>
+        <CreateDatasourceFormComponent
+          cancelUrl={this.getCancelUrl()}
+          connections={connections}
+          modelObjects={modelObjects}
+          save={this.handleNextStep}
+          pluginDatasources={pluginDatasources}
+        />
       </I18nProvider>
     )
   }
 }
-/*
- const mapStateToProps = (state: any, ownProps: any) => {
- const viewState = Selectors.getFormViewState(state)
- return {
- viewState: viewState
- }
- }
- const mapDispatchToProps = (dispatch: any) => ({
- setViewState: (newState: string) => dispatch(Actions.setViewState(newState))
- })
- export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
- */
+
+const mapStateToProps = (state: any, ownProps: any) => {
+  const connections = Selectors.getDatasources(state)
+  const modelObjects = Selectors.getDatasourceModels(state) // Todo: change this logic into getModels(state, type)
+  const pluginDatasources = [{
+    name: "CIPAD PostgreSQL",
+    id: 1
+  }, {
+    name: "Tartanpion MongoDB",
+    id: 2
+  }]
+  return {
+    connections,
+    modelObjects,
+    pluginDatasources
+  }
+}
+const mapDispatchToProps = (dispatch: any) => ({
+  addDatasource: (name: string) => dispatch(addDatasource(null, null, null, name)),
+})
+export default connect<{}, {}, DatasourceCreateProps>(mapStateToProps, mapDispatchToProps)(DatasourceCreateContainer)

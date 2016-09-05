@@ -7,6 +7,7 @@ import CreateDatasetSuccessComponent from "../components/add/CreateDatasetSucces
 import { connect } from "react-redux"
 import * as Selectors from "../../../../reducer"
 import * as Actions from "../formActions"
+import * as DatasetActions from "../actions"
 import { browserHistory } from "react-router"
 import { DatasetModel } from "../../datasetmodel/DatasetModel"
 import { DatasetDefaultModelAttribute } from "../DatasetDefaultModelAttribute"
@@ -33,6 +34,8 @@ interface DatasetCreateProps {
   setDatasetLabel: (label: string) => void
   setDatasetModelType: (modelType: number) => void
   setDatasetDefaultModelAttributes: (attributesDefined: Array<DatasetDefaultModelAttribute>) => void
+  setDatasource: (datasourceId: any) => void
+  addDataset: (dataset: any) => void
 
   datasetModels?: Array<DatasetModel>
 }
@@ -44,11 +47,6 @@ export class DatasetCreateContainer extends React.Component<DatasetCreateProps, 
   }
   handleNextStepPickDatasourceForm = () => {
     this.setNextStep()
-  }
-  handleNextStepSuccess = () => {
-    const urlTo = "/admin/" + this.props.params.projectName + "/datamanagement/"
-    browserHistory.push(urlTo)
-    this.resetStepAndData()
   }
 
   resetStepAndData = () => {
@@ -98,6 +96,16 @@ export class DatasetCreateContainer extends React.Component<DatasetCreateProps, 
     this.props.setDatasetModelType(modelType)
     this.props.setDatasetDefaultModelAttributes(attributesDefined)
   }
+  savePickDatasourceForm = (datasourceId: any) => {
+    this.props.setDatasource(datasourceId)
+  }
+  saveDataset = () => {
+    // Todo: comment fait t'on pour récuperer les données déjà enregistrées dans le store ???
+    const urlTo = "/admin/" + this.props.params.projectName + "/datamanagement/"
+    browserHistory.push(urlTo)
+    this.props.addDataset("Dataset #1")
+    this.resetStepAndData()
+  }
   handleGetBack = (state: string) => {
     switch (state) {
       case STATES.SELECT_MODELE:
@@ -146,12 +154,13 @@ export class DatasetCreateContainer extends React.Component<DatasetCreateProps, 
                   handleNextStep={this.handleNextStepPickDatasourceForm}
                   handleGetBack={() => {this.handleGetBack(STATES.SELECT_SOURCE)}}
                   goToNewDatasource={this.goToNewDatasource}
+                  save={this.savePickDatasourceForm}
                 >
                   {stepper}
                 </PickDatasourceFormComponent>
               case STATES.DONE:
                 return <CreateDatasetSuccessComponent
-                  handleNextStep={this.handleNextStepSuccess}
+                  handleNextStep={this.saveDataset}
                 >
                   {stepper}
                 </CreateDatasetSuccessComponent>
@@ -178,7 +187,8 @@ const mapDispatchToProps = (dispatch: any) => ({
   setDatasetLabel: (label: string) => dispatch(Actions.setDatasetLabel(label)),
   setDatasetModelType: (modelType: number) => dispatch(Actions.setDatasetModelType(modelType)),
   setDatasetDefaultModelAttributes: (attributesDefined: Array<DatasetDefaultModelAttribute>) =>
-    dispatch(Actions.setDatasetDefaultModelAttributes(attributesDefined))
-
+    dispatch(Actions.setDatasetDefaultModelAttributes(attributesDefined)),
+  setDatasource: (datasourceId: any) => dispatch(Actions.setDatasource(datasourceId)),
+  addDataset: (name: string) => dispatch(DatasetActions.addDataset(name))
 })
 export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
