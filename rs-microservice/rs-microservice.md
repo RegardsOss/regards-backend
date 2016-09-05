@@ -35,7 +35,9 @@ To create a new microservice you have to create a new maven project with the mic
   mvn archetype:generate
   ```
 
-  choosing the right archetype(fr.cnes.regards.microservices:microservice-archetype) and answering the question or
+  choosing the right archetype(fr.cnes.regards.microservices:microservice-archetype).
+
+  Once you have run the `mvn archetype:generate` command. You will have many archetype proposed to you, under the format `number: [local|remote] -> archetype_group_id:archetype_artifact_id (archetype_description)` find the line `X: local -> fr.cnes.regards.microservices:microservice-archetype (Microservice creation archetype)` and enter `X` where X is the actual number of the microservice creation archetype.
 
   ```bash
   mvn archetype:generate \
@@ -50,9 +52,16 @@ To create a new microservice you have to create a new maven project with the mic
 
 **NOTE** : You better create the microservice in another folder than rs-microservice. Otherwise if you delete your microservice you will need to clean the `rs-microservice/pom.xml`.
 
-By default the microservice archetype expose an exemple Rest Controller on <http://localhost:3333>
+By default the microservice archetype expose an exemple REST Controller on <http://localhost:3333>
 
 To change the microservice configuration modify the `myMicroService/bootstrap-myMicroService/src/main/resources/application.yml` file.
+
+**To compile the new microservice :**
+
+```bash
+cd myMicroService
+mvn clean install
+```
 
 **To run the new microservice :**
 
@@ -64,9 +73,9 @@ mvn spring-boot:run
 **To authenticate :**
 
 ```bash
-curl -X "POST" acme:acmesecret@localhost:3333/oauth/token
- -d grant_type=password
- -d username=[admin|user] -d password=[admin|user]
+curl -X "POST" acme:acmesecret@localhost:3333/oauth/token \
+-d grant_type=password \
+-d username=[admin|user] -d password=[admin|user]
 ```
 
 **API exemple access :**<br>
@@ -78,7 +87,7 @@ curl http://localhost:3333/api/me/ -H "Authorization: Bearer <admin_acces_token>
 
 **Swagger UI access :** <http://localhost:3333/swagger-ui.html>
 
-**NOTE** : To add new Rest resource follow exemple on file `myModule/myModule-rest/src/main/java/fr/cnes/regards/modules/myModule/GreetingsController.java`
+**NOTE** : To add new REST resource follow exemple on file `myModule/myModule-rest/src/main/java/fr/cnes/regards/modules/myModule/GreetingsController.java`
 
 ## Common features
 
