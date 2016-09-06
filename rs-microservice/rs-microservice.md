@@ -73,7 +73,7 @@ mvn spring-boot:run
 **To authenticate :**
 
 ```bash
-curl -X "POST" acme:acmesecret@localhost:3333/oauth/token \
+curl -X "POST" http://acme:acmesecret@localhost:3333/oauth/token \
 -d grant_type=password \
 -d username=[admin|user] -d password=[admin|user]
 ```
@@ -91,7 +91,7 @@ curl http://localhost:3333/api/me/ -H "Authorization: Bearer <admin_acces_token>
 
 ## Common features
 
-Each microservice offer the features :
+Each microservice offers the features :
 
 - OAuth2 authentication : <http://address:port/oauth/token>
 - REST Resources authorization access by user ROLES
