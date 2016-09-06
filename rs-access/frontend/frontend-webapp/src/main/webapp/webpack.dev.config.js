@@ -41,7 +41,7 @@ config = merge(config, {
         NODE_ENV: JSON.stringify('development')
       }
     }),
-  ],
+  ]
 });
 
 module.exports = config

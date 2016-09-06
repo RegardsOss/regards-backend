@@ -1,7 +1,6 @@
 // Webpack configuration file
 const CommonConfig = require("./webpack.common.config")
 const webpack = require('webpack')
-const autoprefixer = require('autoprefixer')
 const merge = require('webpack-merge');
 
 var config = CommonConfig;

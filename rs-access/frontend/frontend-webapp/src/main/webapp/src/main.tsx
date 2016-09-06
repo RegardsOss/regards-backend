@@ -27,7 +27,6 @@ function getSiteMap(parentRoute: any, routes: Array<PlainRoute>): void {
       } else {
         path = parentRoute + '/' + route.path
       }
-      console.log(path)
       if (route.childRoutes) {
         getSiteMap(path, route.childRoutes)
       }

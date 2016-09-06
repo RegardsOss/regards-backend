@@ -70,7 +70,7 @@ module.exports = {
       {
         test: /\.jpg$/,
         exclude: [/node_modules/],
-        loader: "file-loader"
+        loader: "file-loader?name=/img/[name].[ext]"
       },
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,

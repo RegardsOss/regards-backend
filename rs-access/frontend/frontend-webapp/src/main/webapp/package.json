@@ -18,7 +18,7 @@
     "pretest": "tsc && (npm run lint --silent || true) && npm run copy-assets",
     "prestart": "npm prune",
     "sitemap": "node build/sitemap.js",
-    "start": "webpack-dev-server --progress --config webpack.dev.config.js",
+    "start": "NODE_ENV=development webpack-dev-server --progress --hot --config webpack.dev.config.js",
     "test": "npm run test:mocha --silent",
     "test:coverage": "NODE_ENV=test nyc npm run test:mocha",
     "test:mocha": "NODE_ENV=test mocha dist/src/**/*.test.js --require ./src/tests/ImportHelper.mock.js --require source-map-support/register --compilers js:babel-register --inline-diffs --recursive --reporter mochawesome --reporter-options reportDir='./coverage/mocha',reportName='Regards Frontend tests'",
@@ -32,7 +32,12 @@
     "presets": [
       "es2015",
       "react"
-    ]
+    ],
+    "env": {
+      "development": {
+        "plugins": ["react-hot-loader/babel"]
+      }
+    }
   },
   "nyc": {
     "include": [
@@ -100,6 +105,7 @@
     "nyc": "^7.1.0",
     "postcss-loader": "^0.9.1",
     "react-addons-test-utils": "^15.1.0",
+    "react-hot-loader": "^3.0.0-beta.3",
     "redux-devtools": "^3.3.1",
     "redux-devtools-dock-monitor": "^1.1.1",
     "redux-devtools-log-monitor": "^1.0.11",
