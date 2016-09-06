@@ -16,22 +16,6 @@ interface MainAdminLayoutProps {
   onLogout?: () => void
 }
 
-const AdminAppBarIcon = (
-  <div>
-    <IconMenu
-      iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
-      anchorOrigin={{horizontal: 'left', vertical: 'top'}}
-      targetOrigin={{horizontal: 'left', vertical: 'top'}}
-    >
-      <MenuItem primaryText="Refresh"/>
-      <MenuItem primaryText="Send feedback"/>
-      <MenuItem primaryText="Settings"/>
-      <MenuItem primaryText="Help"/>
-      <MenuItem primaryText="Sign out"/>
-    </IconMenu>
-  </div>
-)
-
 /**
  * React component to manage Administration application.
  * This component display admin layout or login form if the user is not connected
