@@ -20,6 +20,10 @@
   		<groupId>org.springframework.data</groupId>
         <artifactId>spring-data-jpa</artifactId>
     </dependency>
+    <dependency>
+  		<groupId>fr.cnes.regards.modules.${moduleName}</groupId>
+        <artifactId>${moduleName}-domain</artifactId>
+    </dependency>
   </dependencies>
 
 	<build>

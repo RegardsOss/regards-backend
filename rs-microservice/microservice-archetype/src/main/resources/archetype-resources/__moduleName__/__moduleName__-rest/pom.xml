@@ -25,7 +25,6 @@
 	<dependency>
 		<groupId>fr.cnes.regards.modules.${moduleName}</groupId>
 		<artifactId>${moduleName}-service</artifactId>
-		<version>${version}</version>
 	</dependency>
   </dependencies>
 

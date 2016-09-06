@@ -24,6 +24,36 @@
   	<module>${moduleName}-signature</module>
   </modules>
   
+  <dependencyManagement>
+  	<dependencies>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.${moduleName}</groupId>
+  			<artifactId>${moduleName}-dao</artifactId>
+  			<version>${version}</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.${moduleName}</groupId>
+  			<artifactId>${moduleName}-domain</artifactId>
+  			<version>${version}</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.${moduleName}</groupId>
+  			<artifactId>${moduleName}-rest</artifactId>
+  			<version>${version}</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.${moduleName}</groupId>
+  			<artifactId>${moduleName}-service</artifactId>
+  			<version>${version}</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.${moduleName}</groupId>
+  			<artifactId>${moduleName}-signature</artifactId>
+  			<version>${version}</version>
+  		</dependency>
+  	</dependencies>
+  </dependencyManagement>
+  
   <build>
 		<plugins>
 			<plugin>
