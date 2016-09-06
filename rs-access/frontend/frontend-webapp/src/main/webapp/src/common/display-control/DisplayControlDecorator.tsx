@@ -14,7 +14,7 @@ import * as selectors from "../../reducer"
  * connect the decorated component.
  *
  * @type {function}
- * @param {IAccessController} The controller in charge of supervising the display
+ * @param {IDisplayController} controller The controller in charge of supervising the display
  * @param {function} mapStateToProps method to connect the decorated component to the redux store
  * @param {function} mapDispatchToProps method to connect the decorated component to the dispatch
  * @return {React.Component<any, any>}
@@ -51,7 +51,7 @@ export default function applyDisplayControl (controller: IDisplayController, map
  * Shortcut method to decorate a component with Hateoas display control logic
  *
  * @type {function}
- * @param {IAccessController} The controller in charge of supervising the display
+ * @param {React.ComponentClass<any>} DecoratedComponent The controller in charge of supervising the display
  * @return {React.Component<any, any>}
  */
 export function applyHateoasDisplayControl (DecoratedComponent: React.ComponentClass<any>): any {

@@ -8,7 +8,7 @@ import ThemeHelper from "../common/theme/ThemeHelper"
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"
 import AuthenticationLayout from "./modules/authentication/containers/AuthenticationLayout"
 import MainAdminLayout from "./MainAdminLayout"
-interface AminAppProps {
+interface AdminAppProps {
   router: any,
   route: any,
   params: any,
@@ -24,7 +24,7 @@ interface AminAppProps {
  * React component to manage Administration application.
  * This component displays admin layout or login form if the user is not connected
  */
-class AdminApp extends React.Component<AminAppProps, any> {
+class AdminApp extends React.Component<AdminAppProps, any> {
   constructor () {
     super()
     this.state = {instance: false}
@@ -64,4 +64,4 @@ const mapStateToProps = (state: any) => ({
 const mapDispatchToProps = (dispatch: any) => ({
   onLogout: () => dispatch(logout())
 })
-export default connect<{}, {}, AminAppProps>(mapStateToProps, mapDispatchToProps)(AdminApp)
+export default connect<{}, {}, AdminAppProps>(mapStateToProps, mapDispatchToProps)(AdminApp)

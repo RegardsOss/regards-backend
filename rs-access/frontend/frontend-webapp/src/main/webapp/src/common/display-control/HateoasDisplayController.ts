@@ -14,8 +14,8 @@ import { IDisplayController } from "./types"
  *  "projects_users_url": "http://myOtherAwesomeUrl"
  * }
  *
- * @type {IAccessController}
- * @param {JSX.Element}
+ * @type {IDisplayController}
+ * @param {JSX.Element} component The component on which extract endpoints
  * @return {boolean}
  */
 const HateoasDisplayController: IDisplayController = (component: JSX.Element) => {

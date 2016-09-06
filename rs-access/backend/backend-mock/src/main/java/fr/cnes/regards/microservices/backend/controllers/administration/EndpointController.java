@@ -6,13 +6,12 @@ import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.hateoas.Link;
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
@@ -68,11 +67,11 @@ public class EndpointController {
                             break;
                         }
                     }
-                    if (apiAccess == true) {
+                    if (apiAccess) {
                         break;
                     }
                 }
-                if (apiAccess == true) {
+                if (apiAccess) {
                     System.out.println("Acces granted to : " + access.getId());
                     access.setAccess(true);
                 } else {
@@ -88,7 +87,7 @@ public class EndpointController {
         return pAccessRights;
     }
 
-    public HashMap<String, String> buildEndpoints() {
+    private HashMap<String, String> buildEndpoints() {
         // Note this is unfortunately hand-written. If you add a new entity, have to manually add a new link
         final List<Link> links = asList(
                 linkTo(methodOn(ProjectController.class).getProjects()).withRel("projects_url"),

@@ -36,7 +36,7 @@ export default class ActionButtonComponent extends React.Component<ActionButtonP
    * Controls that props provided are correct
    * @param props
    */
-  componentWillReceiveProps (props: ActionButtonProps) {
+  componentWillReceiveProps (props: ActionButtonProps): void {
     if (props.url === undefined && props.onTouchTap === undefined) {
       throw "No behavior specified. Please specify props.url or props.onTouchTap"
     }
@@ -46,6 +46,7 @@ export default class ActionButtonComponent extends React.Component<ActionButtonP
   }
 
   render (): JSX.Element {
+    let button = this.props.button
     return (
       <ShowableAtRender show={this.props.isVisible}>
         {(() => {
@@ -54,7 +55,7 @@ export default class ActionButtonComponent extends React.Component<ActionButtonP
               <Link
                 to={this.props.url}
                 style={this.props.style}>
-                <this.props.button
+                <button
                   label={this.props.label}
                   primary={this.props.primary ? true : this.props.secondary ? false : false}
                   secondary={this.props.secondary ? true : this.props.primary ? false : false}
@@ -63,7 +64,7 @@ export default class ActionButtonComponent extends React.Component<ActionButtonP
             )
           } else {
             return (
-              <this.props.button
+              <button
                 label={this.props.label}
                 primary={this.props.primary}
                 secondary={this.props.secondary}
