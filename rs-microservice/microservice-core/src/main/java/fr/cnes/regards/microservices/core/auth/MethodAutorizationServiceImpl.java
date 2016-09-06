@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,15 @@ public class MethodAutorizationServiceImpl implements MethodAutorizationService 
     @Override
     public void setAutorities(String resourceName, GrantedAuthority... authorities) {
         if ((resourceName != null) && (authorities != null)) {
-            grantedAuthoritiesByResource.put(resourceName, Arrays.asList(authorities));
+            if (grantedAuthoritiesByResource.containsKey(resourceName)) {
+                List<GrantedAuthority> newAuthorities = grantedAuthoritiesByResource.get(resourceName);
+                newAuthorities.addAll(Arrays.asList(authorities));
+                grantedAuthoritiesByResource.put(resourceName, newAuthorities);
+            }
+            else {
+                grantedAuthoritiesByResource.put(resourceName,
+                                                 Arrays.asList(authorities).stream().collect(Collectors.toList()));
+            }
         }
     }
 
