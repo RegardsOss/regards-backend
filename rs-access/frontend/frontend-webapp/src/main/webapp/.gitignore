@@ -1,6 +1,5 @@
 dist/
-node_modules/*
-!node_modules/@regards-oss
+node_modules
 typings/
 jsdoc/
 build/

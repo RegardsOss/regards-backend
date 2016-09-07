@@ -2,6 +2,20 @@
 
 This is the REGARDS Access frontend.
 
+## Install
+
+```
+npm link web_modules/some-pckg
+npm install
+npm run start
+```
+
+## Build
+
+```
+npm run build:production
+```
+
 ## Dependencies
 
 - node

@@ -16,5 +16,5 @@ export const Main = {
 }
 
 export function test (): number {
-  return 29
+  return 4545454
 }

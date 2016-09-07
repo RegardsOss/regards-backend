@@ -25,9 +25,12 @@
     "redux-thunk": "registry:dt/redux-thunk#2.1.0+20160703120921",
     "require-patch": "file:./localtypings/require-patch/require-patch.d.ts",
     "sinon": "registry:dt/sinon#1.16.0+20160517064723",
-    "sockjs-client": "registry:dt/sockjs-client#1.0.3+20160626224127"
+    "sockjs-client": "registry:dt/sockjs-client#1.0.3+20160626224127",
+    "@regardsOss/api": "file:./web_modules/api/index.d.ts"
   },
   "dependencies": {
+    "@regardsOss/models": "file:./web_modules/models/index.d.ts",
+    "@regardsOss/some-pckg": "file:./web_modules/some-pckg/index.d.ts",
     "lodash": "registry:npm/lodash#4.0.0+20160723033700"
   }
 }
