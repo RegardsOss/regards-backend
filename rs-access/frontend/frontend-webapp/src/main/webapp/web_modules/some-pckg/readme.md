@@ -4,12 +4,8 @@ This package shows how to use and create a standalone js package using Typescrip
 
 ## Install
 ```bash
-npm run build
-```
-
-## Live rebuild
-```bash
-npm run build:watch
+cd rs-access/......./webapp
+npm link web_modules/some-pckg
 ```
 
 ## Test

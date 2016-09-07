@@ -4,8 +4,7 @@ import {Provider} from "react-redux"
 import configureStore from "./common/store/configureStore"
 import preloadedState from "./common/store/preloadedState"
 import {routes} from "./routes"
-import {test} from "@regards-oss/common"
-
+import {test} from "@regards-oss/some-pckg"
 
 console.log(test())
 
