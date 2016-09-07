@@ -1,0 +1,12 @@
+fr/cnes/regards/modules/project/service/IGreetingsService.class
+fr/cnes/regards/modules/project/service/ProjectServiceStub.class
+fr/cnes/regards/modules/project/service/AlreadyExistingException.class
+fr/cnes/regards/modules/project/service/actions/ModifyProjectAction.class
+fr/cnes/regards/modules/project/service/actions/GreetingAction.class
+fr/cnes/regards/modules/project/service/actions/RetrieveProjectAction.class
+fr/cnes/regards/modules/project/service/GreetingsService.class
+fr/cnes/regards/modules/project/service/actions/RetrieveListProjectAction.class
+fr/cnes/regards/modules/project/service/actions/DeleteProjectAction.class
+fr/cnes/regards/modules/project/service/actions/CreateProjectAction.class
+fr/cnes/regards/modules/project/service/actions/ProjectAction.class
+fr/cnes/regards/modules/project/service/IProjectService.class

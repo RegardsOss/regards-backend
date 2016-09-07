@@ -1,0 +1,69 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+ 
+  <groupId>fr.cnes.regards.modules</groupId>
+  <artifactId>project</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+ 
+  <parent>
+  	<groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>1.4.0.RELEASE</version>
+  </parent>
+ 
+  <name>REGARDS module - project </name>
+  <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+  
+  <modules>
+  	<module>project-dao</module>
+  	<module>project-domain</module>
+  	<module>project-rest</module>
+  	<module>project-service</module>
+  	<module>project-signature</module>
+  </modules>
+  
+  <dependencyManagement>
+  	<dependencies>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.project</groupId>
+  			<artifactId>project-dao</artifactId>
+  			<version>1.0-SNAPSHOT</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.project</groupId>
+  			<artifactId>project-domain</artifactId>
+  			<version>1.0-SNAPSHOT</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.project</groupId>
+  			<artifactId>project-rest</artifactId>
+  			<version>1.0-SNAPSHOT</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.project</groupId>
+  			<artifactId>project-service</artifactId>
+  			<version>1.0-SNAPSHOT</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.project</groupId>
+  			<artifactId>project-signature</artifactId>
+  			<version>1.0-SNAPSHOT</version>
+  		</dependency>
+  	</dependencies>
+  </dependencyManagement>
+  
+  <build>
+		<plugins>
+			<plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-compiler-plugin</artifactId>
+		        <configuration>
+		          <source>1.8</source>
+		          <target>1.8</target>
+		        </configuration>
+		    </plugin>
+		</plugins>
+  </build>
+</project>

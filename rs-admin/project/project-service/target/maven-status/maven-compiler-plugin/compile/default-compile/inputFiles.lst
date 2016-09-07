@@ -1,0 +1,12 @@
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/actions/RetrieveProjectAction.java
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/actions/ProjectAction.java
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/GreetingsService.java
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/actions/CreateProjectAction.java
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/AlreadyExistingException.java
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/actions/ModifyProjectAction.java
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/actions/RetrieveListProjectAction.java
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/IGreetingsService.java
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/IProjectService.java
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/ProjectServiceStub.java
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/actions/DeleteProjectAction.java
+/home/svissier/workspace/rs-access/administration/project/project-service/src/main/java/fr/cnes/regards/modules/project/service/actions/GreetingAction.java
