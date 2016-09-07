@@ -1,22 +1,15 @@
 import * as React from "react"
 import { connect } from "react-redux"
-import { Card, CardHeader, CardMedia, CardTitle, CardText } from "material-ui/Card"
-import { AppBar } from "material-ui/AppBar"
+import { Card, CardTitle, CardText } from "material-ui/Card"
 import { map, values } from "lodash"
 import { ProjectAccount, Account } from "../../../../common/models/users/types"
-// import ProjectAccountRowContainer from "./ProjectAccountRowContainer"
-import ProjectAccountRowComponent from "../components/ProjectAccountRowComponent"
 import Actions from "../actions"
 import * as selectors from "../../../reducer"
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from "material-ui/Table"
 import I18nProvider from "../../../../common/i18n/I18nProvider"
 import { FormattedMessage } from "react-intl"
 import { browserHistory } from "react-router"
-import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert"
 import IconButton from "material-ui/IconButton"
-import IconMenu from "material-ui/IconMenu"
-import MenuItem from "material-ui/MenuItem"
-import { grey900 } from "material-ui/styles/colors"
 
 import Edit from "material-ui/svg-icons/editor/mode-edit"
 import Delete from "material-ui/svg-icons/action/delete"
@@ -48,7 +41,6 @@ class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any>
   }
 
   handleView = (selectedRows: number[] | string) => {
-    // console.log('XAB',this.props.accounts)
     if(selectedRows instanceof String)
       throw new Error('Only a single row should be selected in the table')
     if(selectedRows instanceof Array && selectedRows.length !== 1)
@@ -113,7 +105,6 @@ class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any>
                 preScanRows={false}
                 showRowHover={true}
               >
-
               {map(this.props.accounts, (account: Account, id: string) => (
                 <TableRow key={id} >
                   <TableRowColumn>

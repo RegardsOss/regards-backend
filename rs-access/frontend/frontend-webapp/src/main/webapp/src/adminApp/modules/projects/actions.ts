@@ -8,6 +8,10 @@ export const PROJECTS_REQUEST = 'PROJECTS_REQUEST'
 export const PROJECTS_SUCCESS = 'PROJECTS_SUCCESS'
 export const PROJECTS_FAILURE = 'PROJECTS_FAILURE'
 
+export const CREATE_PROJECT_REQUEST = 'CREATE_PROJECT_REQUEST'
+export const CREATE_PROJECT_SUCCESS = 'CREATE_PROJECT_SUCCESS'
+export const CREATE_PROJECT_FAILURE = 'CREATE_PROJECT_FAILURE'
+
 // Fetches all projects
 // Relies on the custom API middleware defined in redux-api-middleware
 // Normalize the json response
@@ -23,6 +27,21 @@ export const fetchProjects = () => ({
     ],
     endpoint: PROJECTS_API,
     method: 'GET'
+  }
+})
+
+export const createProject = () => ({
+  [CALL_API]: {
+    types: [
+      CREATE_PROJECT_REQUEST,
+      {
+        type: CREATE_PROJECT_SUCCESS,
+        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ARRAY))
+      },
+      CREATE_PROJECT_FAILURE
+    ],
+    endpoint: PROJECTS_API,
+    method: 'POST'
   }
 })
 

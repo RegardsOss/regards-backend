@@ -1,7 +1,7 @@
 import { expect } from "chai"
 import projectsReducers from "../../reducers/ProjectsReducers"
 import { REQUEST_PROJECTS, RECEIVE_PROJECTS } from "../../actions/ProjectsActions"
-import { ProjectsStore } from "../../types/ProjectTypes" // You can use any testing library
+import { ProjectsStore } from "../../../../../common/models/projects/types"
 
 // Ce fichier permet de tester les reducers liés aux projets
 describe('[PORTAL APP] Testing Projects reducers', () => {

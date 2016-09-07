@@ -1,6 +1,6 @@
 import { union } from "lodash"
 import { deleteEntityReducer } from "../../../common/reducers"
-import { PROJECTS_REQUEST, PROJECTS_SUCCESS, PROJECTS_FAILURE, ADD_PROJECT, DELETE_PROJECT } from "./actions"
+import { PROJECTS_REQUEST, PROJECTS_SUCCESS, PROJECTS_FAILURE, ADD_PROJECT, DELETE_PROJECT, CREATE_PROJECT_SUCCESS } from "./actions"
 
 export default (state: any = {
   isFetching: false,
@@ -8,9 +8,11 @@ export default (state: any = {
   ids: [],
   lastUpdate: ''
 }, action: any) => {
+  let newState = Object.assign({}, state)
   switch (action.type) {
     case PROJECTS_REQUEST:
-      return Object.assign({}, state, {isFetching: true})
+      newState.isFetching = true
+      return newState
     case PROJECTS_SUCCESS:
       return Object.assign({}, state, {
         isFetching: false,
@@ -20,12 +22,16 @@ export default (state: any = {
     case PROJECTS_FAILURE:
       return Object.assign({}, state, {isFetching: false})
     case ADD_PROJECT:
-      let newState = Object.assign({}, state)
       newState.items[action.id] = {
         name: action.name,
         links: []
       }
       newState.ids.push(action.id)
+      return newState
+    case CREATE_PROJECT_SUCCESS:
+      const id = action.payload.result[0]
+      const project = action.payload.entities.projects[id]
+      newState.items[id] = project
       return newState
     case DELETE_PROJECT:
       return deleteEntityReducer(state, action)

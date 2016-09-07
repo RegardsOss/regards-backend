@@ -4,6 +4,7 @@ import FlatButton from "material-ui/FlatButton"
 import TextField from "material-ui/TextField"
 import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
+import CardActionsComponent from "../../../../common/components/CardActionsComponent"
 
 class ProjectAccountCreateContainer extends React.Component<any, any> {
   static contextTypes: {
@@ -44,6 +45,7 @@ class ProjectAccountCreateContainer extends React.Component<any, any> {
             <MenuItem value={5} primaryText="Weekly"/>
           </SelectField>
         </CardText>
+        <CardActionsComponent mainButtonLabel={"Toto"} />
         <CardActions >
           <FlatButton label="Create user"/>
           <FlatButton label="Cancel"/>

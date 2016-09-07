@@ -2,9 +2,8 @@
 import * as React from "react"
 import { connect } from "react-redux"
 import { FormattedMessage } from "react-intl"
-import ProjectComponent from "../components/ProjectComponent"
 import { fetchProjects } from "../actions/ProjectsActions"
-import { ProjectsStore } from "../types/ProjectTypes"
+import { ProjectsStore } from "../../../../common/models/projects/Project"
 
 // Container props
 interface ProjectsProps {
@@ -41,7 +40,7 @@ export class ProjectsContainer extends React.Component<ProjectsProps, any> {
           <p><FormattedMessage id="portalapp.projects.list.title"/></p>
           <ul>
             {projects.items.map(project =>
-              <ProjectComponent key={project.name} project={project}/>
+              <span>project.name</span>
             )}
           </ul>
         </div>

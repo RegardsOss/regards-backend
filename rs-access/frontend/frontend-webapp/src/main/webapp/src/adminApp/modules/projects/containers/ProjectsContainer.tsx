@@ -4,20 +4,19 @@ import { connect } from "react-redux"
 import { map } from "lodash"
 import { FormattedMessage } from "react-intl"
 import I18nProvider from "../../../../common/i18n/I18nProvider"
-import { ProjectAdminsContainer } from "../../projectAdmins/index"
 import ModuleComponent from "../../../../common/components/ModuleComponent"
 import { Card, CardTitle, CardText, CardActions } from "material-ui/Card"
-import RaisedButton from "material-ui/RaisedButton"
-import SelectField from "material-ui/SelectField"
-import Delete from "material-ui/svg-icons/action/delete"
-import MenuItem from "material-ui/MenuItem"
 import AddProject from "../components/AddProject"
-import { Project } from "../types/ProjectTypes"
 import * as actions from "../actions"
-import * as uiActions from "../../ui/actions"
 import * as selectors from "../../../reducer"
-import CardActionsComponent from "../../../../common/components/CardActionsComponent"
 import SecondaryActionButtonComponent from "../../../../common/components/SecondaryActionButtonComponent"
+import { Table, TableHeader, TableHeaderColumn, TableBody, TableRow, TableRowColumn } from "material-ui/Table"
+import { Project } from "../../../../common/models/projects/Project"
+import Camera from "material-ui/svg-icons/image/camera"
+import Edit from "material-ui/svg-icons/editor/mode-edit"
+import Delete from "material-ui/svg-icons/action/delete"
+import IconButton from "material-ui/IconButton"
+import { browserHistory } from "react-router"
 
 interface ProjectsContainerTypes {
   // From mapStateToProps
@@ -25,9 +24,9 @@ interface ProjectsContainerTypes {
   projectId: string,
   // From mapDispatchToProps
   onLoad?: () => void,
-  selectProject?: (id: string) => void,
   deleteProject?: (id: string) => void,
-  addProject?: (id: string, name: string) => void
+  addProject?: (id: string, name: string) => void,
+  createProject?: () => void,
 }
 
 /**
@@ -50,18 +49,15 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
   }
 
   handleSave = () => {
-    const id = '999'
-    const name = 'Projet test'
-    this.props.addProject(id, name)
-    this.props.selectProject(id)
+    this.props.createProject()
+    // const id = '999'
+    // const name = 'Projet test'
+    // this.props.addProject(id, name)
   }
 
   handleDelete = () => {
-    this.props.deleteProject(this.props.projectId)
-  }
-
-  handleChange = (event: Object, key: number, payload: any) => {
-    this.props.selectProject(payload)
+    console.log("Todo")
+    // this.props.deleteProject(this.props.projectId)
   }
 
   handleAdd = () => {
@@ -72,15 +68,22 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
     this.setState({open: false})
   }
 
-  render (): JSX.Element {
-    const cardTitle = (
-      <div>
-        <span style={{float:'left'}}>
-           <FormattedMessage id='projects.title'/>
-        </span>
-      </div>
-    )
+  handleView = (selectedRows: number[] | string) => {
+    if(selectedRows instanceof String)
+      throw new Error('Only a single row should be selected in the table')
+    if(selectedRows instanceof Array && selectedRows.length !== 1)
+      throw new Error('Exactly one row is expected to be selected in the table')
 
+    const project = this.props.projects[selectedRows[0]]
+    const url = "/admin/" + "cdpp" + "/projects/" + project.projectId
+    browserHistory.push(url)
+  }
+
+  handleEdit = () => {
+    console.log("Todo")
+  }
+
+  render (): JSX.Element {
     return (
       <I18nProvider messageDir='adminApp/modules/projects/i18n'>
         <ModuleComponent>
@@ -90,15 +93,43 @@ class ProjectsContainer extends React.Component<ProjectsContainerTypes, any> {
               subtitle={<FormattedMessage id='projects.subtitle'/>}
             />
             <CardText>
-              <SelectField
-                value={this.props.projectId}
-                onChange={this.handleChange}
-                floatingLabelText={<FormattedMessage id='projects.list.select'/>}>
-                {this.props.projects.map((project) => {
-                  return <MenuItem key={project.id} value={project.id} primaryText={project.name}/>
-                })}
-              </SelectField>
-              <ProjectAdminsContainer />
+              <Table
+                selectable={true}
+                onRowSelection={this.handleView} >
+                <TableHeader
+                  enableSelectAll={false}
+                  adjustForCheckbox={false}
+                  displaySelectAll={false} >
+                  <TableRow>
+                    <TableHeaderColumn></TableHeaderColumn>
+                    <TableHeaderColumn>Nom</TableHeaderColumn>
+                    <TableHeaderColumn>Description</TableHeaderColumn>
+                    <TableHeaderColumn>Public</TableHeaderColumn>
+                    <TableHeaderColumn>Actions</TableHeaderColumn>
+                  </TableRow>
+                </TableHeader>
+                <TableBody
+                  displayRowCheckbox={false}
+                  preScanRows={false}
+                  showRowHover={true} >
+                  {map(this.props.projects, (p: Project, i: number) => (
+                    <TableRow key={i}>
+                      <TableRowColumn><Camera/></TableRowColumn>
+                      <TableRowColumn>{p.name}</TableRowColumn>
+                      <TableRowColumn>{p.description}</TableRowColumn>
+                      <TableRowColumn>{p.isPublic}</TableRowColumn>
+                      <TableRowColumn>
+                        <IconButton tooltip="Font Icon">
+                          <Edit onTouchTap={this.handleEdit} />
+                        </IconButton>
+                        <IconButton tooltip="Supprimer">
+                          <Delete onTouchTap={this.handleDelete} />
+                        </IconButton>
+                      </TableRowColumn>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardText>
             <CardActions>
               <SecondaryActionButtonComponent
@@ -121,9 +152,9 @@ const mapStateToProps = (state: any) => ({
 })
 const mapDispatchToProps = (dispatch: any) => ({
   onLoad: () => dispatch(actions.fetchProjects()),
-  selectProject: (id: string) => dispatch(uiActions.selectProject(id)),
   deleteProject: (id: string) => dispatch(actions.deleteProject(id)),
-  addProject: (id: string, name: string) => dispatch(actions.addProject(id, name))
+  addProject: (id: string, name: string) => dispatch(actions.addProject(id, name)),
+  createProject: () => dispatch(actions.createProject())
 })
 
 export default connect<{}, {}, ProjectsContainerTypes>(mapStateToProps, mapDispatchToProps)(ProjectsContainer)

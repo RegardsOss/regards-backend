@@ -49,13 +49,15 @@ public class ProjectController {
 
     @ResourceAccess
     @RequestMapping(value = "/projects", method = RequestMethod.POST)
-    public @ResponseBody HttpEntity<Project> addProject() {
-        List<Project> projects = getInMemory();
+    public @ResponseBody HttpEntity<List<Project>> addProject() {
+        List<Project> projects = new ArrayList<>();
         Project project = new Project("newProject");
         project.setProjectId(3L);
+        String[] cdppAdmins = {"Tom", "David"};
         project.add(linkTo(methodOn(ProjectController.class).getProject(3L)).withSelfRel());
+        project.add(linkTo(methodOn(ProjectAdminController.class).getProjectAdminsByNames(cdppAdmins)).withRel("users"));
         projects.add(project);
-        return new ResponseEntity<>(project, HttpStatus.OK);
+        return new ResponseEntity<>(projects, HttpStatus.OK);
     }
 
     @ResourceAccess

@@ -1,5 +1,5 @@
 import { PlainRoute } from "react-router"
-import { projectsRoutes } from "./modules/projects/routes"
+import { projectsRoutes, projectReadRoute } from "./modules/projects/routes"
 import {
   projectAccountsRoutes,
   projectAccountCreateRoute,
@@ -14,6 +14,7 @@ export const adminAppRoutes: PlainRoute = {
   path: "admin/:project",
   childRoutes: [
     projectsRoutes,
+    projectReadRoute,
     projectAccountsRoutes,
     projectAccountCreateRoute,
     projectAccountReadRoute,

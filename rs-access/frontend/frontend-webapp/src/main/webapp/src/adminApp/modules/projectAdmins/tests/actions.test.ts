@@ -1,4 +1,4 @@
-const configureStore = require('redux-mock-store');
+const configureStore: any = require('redux-mock-store')
 var {apiMiddleware} = require('redux-api-middleware')
 import thunk from "redux-thunk"
 import * as nock from "nock"
