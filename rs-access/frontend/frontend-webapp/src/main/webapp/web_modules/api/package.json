@@ -7,13 +7,12 @@
   "author": "CS-SI",
   "license": "ISC",
   "scripts": {
-    "preinstall": "npm link ../models/",
     "postinstall": "typings install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "flux-standard-action": "^0.6.1",
-    "@regardsoss/models": "0.0.1",
+    "@regardsoss/models": "../models/",
     "normalizr": "^2.2.1"
   }
 }
