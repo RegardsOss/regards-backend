@@ -18,9 +18,9 @@
     "pretest": "tsc && (npm run lint --silent || true) && npm run copy-assets",
     "prestart": "npm prune",
     "sitemap": "node build/sitemap.js",
-    "start": "webpack-dev-server --progress --config webpack.dev.config.js",
+    "start": "NODE_ENV=development webpack-dev-server --progress --hot --config webpack.dev.config.js",
     "test": "npm run test:mocha --silent",
-    "test:coverage": "nyc npm run test:mocha",
+    "test:coverage": "NODE_ENV=test nyc npm run test:mocha",
     "test:mocha": "NODE_ENV=test mocha dist/src/**/*.test.js --require ./src/tests/ImportHelper.mock.js --require source-map-support/register --compilers js:babel-register --inline-diffs --recursive --reporter mochawesome --reporter-options reportDir='./coverage/mocha',reportName='Regards Frontend tests'",
     "test:watch": "npm test -- --watch",
     "tsc:watch": "tsc -w",
@@ -32,7 +32,12 @@
     "presets": [
       "es2015",
       "react"
-    ]
+    ],
+    "env": {
+      "development": {
+        "plugins": ["react-hot-loader/babel"]
+      }
+    }
   },
   "nyc": {
     "include": [
@@ -74,7 +79,7 @@
     "scriptjs": "^2.5.8",
     "sockjs-client": "^1.1.1",
     "stompjs": "^2.3.3",
-    "@regards-oss/common": "0.0.1"
+    "@regards-oss/some-pckg": "0.0.1"
   },
   "devDependencies": {
     "autoprefixer": "^6.3.6",
@@ -100,6 +105,7 @@
     "nyc": "^7.1.0",
     "postcss-loader": "^0.9.1",
     "react-addons-test-utils": "^15.1.0",
+    "react-hot-loader": "^3.0.0-beta.3",
     "redux-devtools": "^3.3.1",
     "redux-devtools-dock-monitor": "^1.1.1",
     "redux-devtools-log-monitor": "^1.0.11",
@@ -115,7 +121,8 @@
     "typings": "^1.3.2",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.14.1"
+    "webpack-dev-server": "^1.14.1",
+    "webpack-merge": "^0.14.1"
   },
   "engines": {
     "node": ">=0.12.0"
