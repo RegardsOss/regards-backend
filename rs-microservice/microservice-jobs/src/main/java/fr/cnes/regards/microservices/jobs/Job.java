@@ -25,6 +25,12 @@ public abstract class Job implements IJob {
         this.result = new ArrayList<>();
     }
 
+    public Job(Owner owner, int priority) {
+        this();
+        this.owner = owner;
+        this.priority = priority;
+    }
+
     @Override
     public final int getPriority() {
         return this.priority;
@@ -38,6 +44,23 @@ public abstract class Job implements IJob {
     @Override
     public final StatusInfo getStatus() {
         return this.statusInfo;
+    }
+
+    public Path getWorkspace() {
+        return workspace;
+    }
+
+    @Override
+    public void setWorkspace(Path pWorkspace) {
+        workspace = pWorkspace;
+    }
+
+    public Owner getOwner() {
+        return owner;
+    }
+
+    public StatusInfo getStatusInfo() {
+        return statusInfo;
     }
 
 }

@@ -16,7 +16,7 @@ public class StatusInfo {
 
     private int percentCompleted;
 
-    private LocalDateTime StartDate;
+    private LocalDateTime startDate;
 
     private JobStatus status;
 
@@ -67,11 +67,11 @@ public class StatusInfo {
     }
 
     public LocalDateTime getStartDate() {
-        return StartDate;
+        return startDate;
     }
 
     public void setStartDate(LocalDateTime pStartDate) {
-        StartDate = pStartDate;
+        startDate = pStartDate;
     }
 
     public JobStatus getStatus() {
