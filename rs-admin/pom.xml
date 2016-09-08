@@ -13,6 +13,7 @@
   <modules>
   	<module>project</module>
   	<module>boostrap-administration</module>
+    <module>users</module>
   </modules>
  
 </project>
