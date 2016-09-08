@@ -14,5 +14,8 @@
     "flux-standard-action": "^0.6.1",
     "@regardsoss/models": "../models/",
     "normalizr": "^2.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^2.0.0-beta"
   }
 }

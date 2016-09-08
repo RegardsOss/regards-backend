@@ -10,6 +10,7 @@
     "postinstall": "typings install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
+  "devDependencies": {
+    "typescript": "^2.0.0-beta"
   }
 }
