@@ -5,8 +5,8 @@
   "main": "dist/src/main.js",
   "private": true,
   "scripts": {
-    "build:development": "webpack --progress --config webpack.dev.config.js",
-    "build:production": "webpack --progress --config webpack.prod.config.js",
+    "build:development": "npm run prebuild && webpack --progress --config webpack.dev.config.js",
+    "build:production": "npm run prebuild && webpack --progress --config webpack.prod.config.js",
     "copy-assets": "cp ./src/common/theme/custom/background.jpg dist/src/common/theme/custom/ && cp ./src/common/theme/custom/*.css dist/src/common/theme/custom/",
     "jsdoc": "jsdoc -c jsdoc.conf.json",
     "lint": "tslint -c tslint.json 'src/{,**/}*.ts' 'src/{,**/}*.tsx' -e \"**test.tsx{0,1}\"",
