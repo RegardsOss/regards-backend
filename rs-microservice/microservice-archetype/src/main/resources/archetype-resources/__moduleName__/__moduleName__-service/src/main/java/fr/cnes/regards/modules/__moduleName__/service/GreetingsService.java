@@ -10,7 +10,8 @@ public class GreetingsService implements IGreetingsService {
 
     @Override
     public Greeting getGreeting(String pName) {
-        return new GreetingAction(pName).execute();
+    	// return new GreetingAction(pName).execute();
+        return null;
     }
 
 }
