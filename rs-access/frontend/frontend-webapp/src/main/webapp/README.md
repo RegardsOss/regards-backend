@@ -5,10 +5,7 @@ This is the REGARDS Access frontend.
 ## Install
 
 ```
-cd web_modules/api && npm link ../models && cd ../..
-npm link web_modules/some-pckg
-npm link web_modules/api
-npm link web_modules/models
+npm run preinstall
 npm install
 npm run test
 ```
