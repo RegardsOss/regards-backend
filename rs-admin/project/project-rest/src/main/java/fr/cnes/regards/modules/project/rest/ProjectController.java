@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -99,7 +98,7 @@ public class ProjectController {
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_id}", produces = "application/json")
     @ResourceAccess
     public @ResponseBody HttpEntity<Void> modifyProject(@PathVariable("project_id") String projectId,
-            @RequestParam("project") Project projectUpdated) throws OperationNotSupportedException {
+            @RequestBody Project projectUpdated) throws OperationNotSupportedException {
         projectService.modifyProject(projectId, projectUpdated);
         return new ResponseEntity<>(HttpStatus.OK);
     }
