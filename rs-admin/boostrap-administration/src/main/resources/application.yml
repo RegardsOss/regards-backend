@@ -9,7 +9,9 @@ security:
 spring:
   application:
     name : administration
-    
+  hateoas:
+    use-hal-as-default-json-media-type : false
+  
 swagger:
   api:
     name: administration-api

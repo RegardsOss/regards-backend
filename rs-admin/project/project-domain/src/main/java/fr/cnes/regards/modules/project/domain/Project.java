@@ -2,29 +2,22 @@ package fr.cnes.regards.modules.project.domain;
 
 import org.springframework.hateoas.ResourceSupport;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class Project extends ResourceSupport {
 
-    private final long id = 1L;
+    private String name;
 
-    @JsonProperty
     private String description;
 
-    @JsonProperty
     private String icon;
 
-    @JsonProperty
     private boolean isPublic;
-
-    @JsonProperty
-    private String name;
 
     public Project() {
         super();
     }
 
     public Project(String desc, String icon, boolean isPublic, String name) {
+        this();
         this.description = desc;
         this.icon = icon;
         this.isPublic = isPublic;
@@ -61,6 +54,17 @@ public class Project extends ResourceSupport {
 
     public void setName(String pName) {
         name = pName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Project) {
+            Project p = (Project) o;
+            return p.name.equals(this.name) && this.description.equals(p.description) && this.icon.equals(p.icon)
+                    && (this.isPublic == p.isPublic);
+        }
+
+        return false;
     }
 
 }

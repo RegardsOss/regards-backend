@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.naming.OperationNotSupportedException;
 
 import org.springframework.stereotype.Service;
 
@@ -13,10 +14,7 @@ import fr.cnes.regards.modules.project.domain.Project;
 @Service
 public class ProjectServiceStub implements IProjectService {
 
-    private static List<Project> projects = new ArrayList<>(1);
-
-    // @Autowired
-    // private IJobHandler jobHandler;
+    private static List<Project> projects = new ArrayList<>();
 
     public ProjectServiceStub() {
         super();
@@ -29,12 +27,6 @@ public class ProjectServiceStub implements IProjectService {
 
     @Override
     public Project retrieveProject(String pProjectId) {
-        // StatusInfo jobInfo = this.jobHandler.create(new RetrieveProjectAction(pProjectId));
-        // JobId jobId = jobInfo.getJobId();
-        // IJob job = this.jobHandler.getJob(jobId);
-        // jobInfo = this.jobHandler.handle(job, pProjectId);
-        // job.getResults();
-        // return null;
         return projects.stream().filter(p -> p.getName().equals(pProjectId)).findFirst().get();
     }
 
@@ -45,8 +37,11 @@ public class ProjectServiceStub implements IProjectService {
     }
 
     @Override
-    public Project modifyProject(String projectId, Project pProject) {
+    public Project modifyProject(String projectId, Project pProject) throws OperationNotSupportedException {
         this.retrieveProject(projectId);
+        if (pProject.getName().equals(projectId)) {
+            throw new OperationNotSupportedException("projectId and updated project does not match");
+        }
         projects.stream().map(p -> p.equals(pProject) ? pProject : p).collect(Collectors.toList());
         return pProject;
     }

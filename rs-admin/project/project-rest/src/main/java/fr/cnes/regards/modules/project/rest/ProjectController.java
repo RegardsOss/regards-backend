@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.annotation.PostConstruct;
+import javax.naming.OperationNotSupportedException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -14,15 +15,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
@@ -69,7 +68,7 @@ public class ProjectController {
     public void dataAlreadyExisting() {
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @RequestMapping(value = "", method = RequestMethod.GET, produces = "application/json")
     @ResourceAccess
     public @ResponseBody HttpEntity<List<Project>> retrieveProjectList() {
         List<Project> projects = projectService.retrieveProjectList();
@@ -77,56 +76,51 @@ public class ProjectController {
         return new ResponseEntity<>(projects, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.POST, consumes = "application/json")
+    @RequestMapping(value = "", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResourceAccess
-    public @ResponseBody HttpEntity<Project> createProject(@RequestParam Project newProject)
+    public @ResponseBody HttpEntity<Project> createProject(@RequestBody Project newProject)
             throws AlreadyExistingException {
         Project project = projectService.createProject(newProject);
+
         addLinksToProject(project);
-        return new ResponseEntity<>(project, HttpStatus.OK);
+
+        return new ResponseEntity<>(project, HttpStatus.CREATED);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/{project_id}")
+    @RequestMapping(method = RequestMethod.GET, value = "/{project_id}", produces = "application/json")
     @ResourceAccess
     public @ResponseBody HttpEntity<Project> retrieveProject(@PathVariable("project_id") String projectId) {
         Project project = projectService.retrieveProject(projectId);
+
         addLinksToProject(project);
         return new ResponseEntity<>(project, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/{project_id}")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{project_id}", produces = "application/json")
     @ResourceAccess
-    public @ResponseBody HttpEntity<Project> modifyProject(@PathVariable("project_id") String projectId,
-            @RequestParam("project") Project projectUpdated) {
-        Project project = projectService.modifyProject(projectId, projectUpdated);
-        addLinksToProject(project);
-        return new ResponseEntity<>(project, HttpStatus.OK);
+    public @ResponseBody HttpEntity<Void> modifyProject(@PathVariable("project_id") String projectId,
+            @RequestParam("project") Project projectUpdated) throws OperationNotSupportedException {
+        projectService.modifyProject(projectId, projectUpdated);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{project_id}")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{project_id}", produces = "application/json")
     @ResourceAccess
-    public @ResponseBody HttpEntity<List<Project>> deleteProject(@PathVariable("project_id") String projectId) {
-        List<Project> projects = projectService.deleteProject(projectId);
-        addLinksToProjects(projects);
-        return new ResponseEntity<>(projects, HttpStatus.OK);
+    public @ResponseBody HttpEntity<Void> deleteProject(@PathVariable("project_id") String projectId) {
+        projectService.deleteProject(projectId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private void addLinksToProject(Project project) {
-        ObjectMapper jacksonMapper = new ObjectMapper();
-        try {
-            System.out.println(jacksonMapper.writeValueAsString(project));
+    public static void addLinksToProject(Project project) {
+        if (project.getLinks().isEmpty()) {
+            project.add(linkTo(methodOn(ProjectController.class).retrieveProject(project.getName())).withSelfRel());
+            // project.add(linkTo(methodOn(ProjectController.class).modifyProject(project.getName(), project))
+            // .withRel("update"));
+            project.add(linkTo(methodOn(ProjectController.class).deleteProject(project.getName())).withRel("delete"));
         }
-        catch (JsonProcessingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        project.add(linkTo(methodOn(ProjectController.class).retrieveProject(project.getName())).withSelfRel());
-        // project.add(linkTo(methodOn(ProjectController.class).modifyProject(project.getName(), project))
-        // .withRel("update"));
-        project.add(linkTo(methodOn(ProjectController.class).deleteProject(project.getName())).withRel("delete"));
     }
 
-    private void addLinksToProjects(List<Project> projects) {
+    public static void addLinksToProjects(List<Project> projects) {
         for (Project project : projects) {
             addLinksToProject(project);
         }

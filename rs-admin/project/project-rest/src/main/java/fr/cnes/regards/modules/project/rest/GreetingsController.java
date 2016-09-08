@@ -15,14 +15,13 @@ import fr.cnes.regards.microservices.core.information.ModuleInfo;
 import fr.cnes.regards.modules.project.domain.Greeting;
 import fr.cnes.regards.modules.project.service.GreetingsService;
 
-
 /**
- * 
+ *
  * myService Rest controller for the microservice
  *
  */
 @RestController
-@ModuleInfo(name="project", version="1.0-SNAPSHOT", author="REGARDS", legalOwner="CS", documentation="http://test")
+@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/api")
 public class GreetingsController {
 
