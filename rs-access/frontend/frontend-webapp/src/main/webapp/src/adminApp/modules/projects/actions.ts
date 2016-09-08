@@ -49,7 +49,7 @@ export const createProject = () => ({
   }
 })
 
-export const deleteProject = (id: number) => ({
+export const deleteProject = (id: string) => ({
   [CALL_API]: {
     types: [
       DELETE_PROJECT_REQUEST,

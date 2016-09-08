@@ -25,7 +25,6 @@ interface ProjectsContainerTypes {
   // From mapDispatchToProps
   onLoad?: () => void,
   deleteProject?: (id: string) => void,
-  addProject?: (id: string, name: string) => void,
   createProject?: () => void,
 }
 
@@ -153,7 +152,6 @@ const mapStateToProps = (state: any) => ({
 const mapDispatchToProps = (dispatch: any) => ({
   onLoad: () => dispatch(actions.fetchProjects()),
   deleteProject: (id: string) => dispatch(actions.deleteProject(id)),
-  addProject: (id: string, name: string) => dispatch(actions.addProject(id, name)),
   createProject: () => dispatch(actions.createProject())
 })
 
