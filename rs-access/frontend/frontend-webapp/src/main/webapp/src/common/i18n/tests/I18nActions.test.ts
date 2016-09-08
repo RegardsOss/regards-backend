@@ -1,11 +1,11 @@
-const configureMockStore = require('redux-mock-store')
+import configureStore from "redux-mock-store"
 const {apiMiddleware} = require('redux-api-middleware')
 import thunk from "redux-thunk"
 import { expect } from "chai"
 import { SET_LOCALE, SET_LOCALE_MSG, updateLocale } from "../I18nActions" // You can use any testing library
 
 const middlewares = [thunk, apiMiddleware]
-const mockStore = configureMockStore(middlewares)
+const mockStore = configureStore(middlewares)
 
 describe('[COMMON] Testing i18n actions', () => {
 

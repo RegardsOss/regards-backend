@@ -1,4 +1,4 @@
-var configureMockStore = require('redux-mock-store')
+import configureStore from "redux-mock-store"
 var {apiMiddleware} = require('redux-api-middleware')
 import thunk from "redux-thunk"
 import * as nock from "nock"
@@ -6,8 +6,9 @@ import { expect } from "chai"
 import * as actions from "../actions"
 import { Action, AnyMeta } from "flux-standard-action"
 import { FsaErrorAction, FsaErrorDefault } from "../../../../common/api/types" // You can use any testing library
+
 const middlewares = [thunk, apiMiddleware]
-const mockStore = configureMockStore(middlewares)
+const mockStore = configureStore(middlewares)
 
 describe('[ADMIN APP] Testing projects actions', () => {
 
@@ -15,100 +16,244 @@ describe('[ADMIN APP] Testing projects actions', () => {
     nock.cleanAll()
   })
 
-  // Test dégradé dans le cas ou le serveur renvoie un erreur
-  it('creates PROJECTS_FAILURE action when fetching projects returning error', () => {
-    nock(actions.PROJECTS_API)
-    .get('')
-    .reply(500, 'Oops');
-    const store = mockStore({projects: []});
+  describe('GET /projects calls', () => {
 
-    const requestAction: Action<any> & AnyMeta = {
-      type: 'PROJECTS_REQUEST',
-      payload: undefined,
-      meta: undefined
-    }
-    const failureAction: FsaErrorAction & AnyMeta = {
-      type: 'PROJECTS_FAILURE',
-      error: true,
-      meta: undefined,
-      payload: FsaErrorDefault
-    }
-    const expectedActions = [requestAction, failureAction]
+    it('should leverage a request action on fetch request', () => {
+      nock(actions.PROJECTS_API)
+      .get('')
+      .reply(200)
+      const store = mockStore({projects: []})
 
-    return store.dispatch(actions.fetchProjects())
-                .then(() => { // return of async actions
-                  expect(store.getActions()).to.eql(expectedActions)
-                })
-  })
-
-  // Test nominal
-  it('creates PROJECTS_REQUEST and PROJECTS_SUCCESS actions when fetching projects has been done', () => {
-    nock(actions.PROJECTS_API)
-    .get('')
-    .reply(200, [
-      {
-        name: 'cdpp',
-        id: '1',
-        links: [{rel: 'self', href: 'fakeHref'}]
-      },
-      {
-        name: 'ssalto',
-        id: '2',
-        links: [{rel: 'self', href: 'otherFakeHref'}]
+      const expectedAction: Action<any> & AnyMeta = {
+        type: 'PROJECTS_REQUEST',
+        payload: undefined,
+        meta: undefined
       }
-    ]);
-    const store = mockStore({projectAdmins: []});
 
-    const requestAction: Action<any> & AnyMeta = {
-      type: 'PROJECTS_REQUEST',
-      payload: undefined,
-      meta: undefined
-    }
-    const successAction: Action<any> & AnyMeta = {
-      type: 'PROJECTS_SUCCESS',
-      meta: undefined,
-      payload: {
-        entities: {
-          projects: {
-            cdpp: {
-              name: 'cdpp',
-              id: '1',
-              links: [{rel: 'self', href: 'fakeHref'}]
-            },
-            ssalto: {
-              name: 'ssalto',
-              id: '2',
-              links: [{rel: 'self', href: 'otherFakeHref'}]
-            }
-          }
+      store.dispatch(actions.fetchProjects())
+           .then(() => {
+             expect(store.getActions()).to.contain(expectedAction)
+           })
+    })
+
+    it('should leverage a success action on fetch success', () => {
+      nock(actions.PROJECTS_API)
+      .get('')
+      .reply(200, [
+        {
+          name: 'cdpp',
+          id: '1',
+          links: [{rel: 'self', href: 'fakeHref'}]
         },
-        result: ['cdpp', 'ssalto']
+        {
+          name: 'ssalto',
+          id: '2',
+          links: [{rel: 'self', href: 'otherFakeHref'}]
+        }
+      ])
+      const store = mockStore({projectAdmins: []})
+
+      const expectedAction: Action<any> & AnyMeta = {
+        type: actions.PROJECTS_SUCCESS,
+        meta: undefined,
+        payload: {
+          entities: {
+            projects: {
+              cdpp: {
+                name: 'cdpp',
+                id: '1',
+                links: [{rel: 'self', href: 'fakeHref'}]
+              },
+              ssalto: {
+                name: 'ssalto',
+                id: '2',
+                links: [{rel: 'self', href: 'otherFakeHref'}]
+              }
+            }
+          },
+          result: ['cdpp', 'ssalto']
+        }
       }
-    }
-    const expectedActions = [requestAction, successAction]
 
-    return store.dispatch(actions.fetchProjects())
-                .then(() => { // return of async actions
-                  console.log(JSON.stringify(store.getActions()))
-                  expect(store.getActions()).to.eql(expectedActions)
-                })
+      store.dispatch(actions.fetchProjects())
+           .then(() => {
+             expect(store.getActions()).to.contain(expectedAction)
+           })
+    })
+
+
+    it('should leverage a failure action on fetch failure', () => {
+      nock(actions.PROJECTS_API)
+      .get('')
+      .reply(500, 'Oops')
+      const store = mockStore({projects: []})
+
+      const expectedAction: FsaErrorAction & AnyMeta = {
+        type: actions.PROJECTS_FAILURE,
+        error: true,
+        meta: undefined,
+        payload: FsaErrorDefault
+      }
+
+      store.dispatch(actions.fetchProjects())
+           .then(() => {
+             expect(store.getActions()).to.contain(expectedAction)
+           })
+    })
   })
 
-  it('should create an action to delete a project', () => {
-    const expectedAction = {
-      type: 'DELETE_PROJECT',
-      id: 'cdpp'
-    }
-    expect(actions.deleteProject('cdpp')).to.eql(expectedAction)
+  describe('POST /projects calls', () => {
+
+    it('should leverage a request action on create request', () => {
+      nock(actions.PROJECTS_API)
+      .post('')
+      const store = mockStore({projects: []})
+
+      const expectedAction: Action<any> & AnyMeta = {
+        type: actions.CREATE_PROJECT_REQUEST,
+        payload: undefined,
+        meta: undefined
+      }
+
+      store.dispatch(actions.fetchProjects())
+           .then(() => {
+             expect(store.getActions()).to.contain(expectedAction)
+           })
+    })
+
+    it('should leverage a success action on create success', () => {
+      nock(actions.PROJECTS_API)
+      .post('')
+      .reply(200, [{
+          name: 'createdProject',
+          id: 3,
+          links: [{rel: 'self', href: 'fakeHref'}]
+        }]
+      )
+      const store = mockStore({projects: []})
+
+      const expectedAction: Action<any> & AnyMeta = {
+        type: actions.CREATE_PROJECT_SUCCESS,
+        meta: undefined,
+        payload: {
+          entities: {
+            projects: {
+              3: {
+                name: 'createdProject',
+                id: 3,
+                links: [{rel: 'self', href: 'fakeHref'}]
+              }
+            }
+          },
+          result: [3]
+        }
+      }
+
+      store.dispatch(actions.fetchProjects())
+           .then(() => {
+             expect(store.getActions()).to.contain(expectedAction)
+           })
+    })
+
+    it('should leverage a failure action on create failure', () => {
+      nock(actions.PROJECTS_API)
+      .post('')
+      .reply(500, 'Oops')
+      const store = mockStore({projects: []})
+
+      const expectedAction: FsaErrorAction & AnyMeta = {
+        type: actions.CREATE_PROJECT_FAILURE,
+        error: true,
+        meta: undefined,
+        payload: FsaErrorDefault
+      }
+
+      store.dispatch(actions.fetchProjects())
+           .then(() => {
+             expect(store.getActions()).to.contain(expectedAction)
+           })
+    })
+
   })
 
-  it('should create an action to create a project', () => {
-    const expectedAction = {
-      type: 'ADD_PROJECT',
-      id: 'toto',
-      name: 'Toto'
-    }
-    expect(actions.addProject('toto', 'Toto')).to.eql(expectedAction)
+  describe('DELETE /projects/{id} calls', () => {
+
+    it('should leverage a request action on delete request', () => {
+      nock(actions.PROJECTS_API)
+      .delete('/1')
+      const store = mockStore({projects: []})
+
+      const expectedAction: Action<any> & AnyMeta = {
+        type: actions.DELETE_PROJECT_REQUEST,
+        payload: undefined,
+        meta: undefined
+      }
+
+      store.dispatch(actions.fetchProjects())
+           .then(() => {
+             expect(store.getActions()).to.contain(expectedAction)
+           })
+    })
+
+    it('should leverage a success action on delete success', () => {
+      nock(actions.PROJECTS_API)
+      .delete('/1')
+      .reply(200, [{
+          name: 'createdProject',
+          id: 3,
+          links: [{rel: 'self', href: 'fakeHref'}]
+        }]
+      )
+      const store = mockStore({projects: {
+        3: {
+          name: 'createdProject',
+          id: 3,
+          links: [{rel: 'self', href: 'fakeHref'}]
+        }
+      }})
+
+      const expectedAction: Action<any> & AnyMeta = {
+        type: actions.DELETE_PROJECT_SUCCESS,
+        meta: undefined,
+        payload: {
+          entities: {
+            projects: {
+              3: {
+                name: 'createdProject',
+                id: 3,
+                links: [{rel: 'self', href: 'fakeHref'}]
+              }
+            }
+          },
+          result: [3]
+        }
+      }
+
+      store.dispatch(actions.fetchProjects())
+           .then(() => {
+             expect(store.getActions()).to.contain(expectedAction)
+           })
+    })
+
+    it('should leverage a failure action on delete failure', () => {
+      nock(actions.PROJECTS_API)
+      .post('/1')
+      .reply(500, 'Oops')
+      const store = mockStore({projects: {}})
+
+      const expectedAction: FsaErrorAction & AnyMeta = {
+        type: actions.DELETE_PROJECT_FAILURE,
+        error: true,
+        meta: undefined,
+        payload: FsaErrorDefault
+      }
+
+      store.dispatch(actions.fetchProjects())
+           .then(() => {
+             expect(store.getActions()).to.contain(expectedAction)
+           })
+    })
+
   })
 
 })

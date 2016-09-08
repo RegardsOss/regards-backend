@@ -33,7 +33,9 @@
     ],
     "env": {
       "development": {
-        "plugins": ["react-hot-loader/babel"]
+        "plugins": [
+          "react-hot-loader/babel"
+        ]
       }
     }
   },
@@ -106,7 +108,7 @@
     "redux-devtools": "^3.3.1",
     "redux-devtools-dock-monitor": "^1.1.1",
     "redux-devtools-log-monitor": "^1.0.11",
-    "redux-mock-store": "^1.1.2",
+    "redux-mock-store": "^1.2.0",
     "sinon": "^1.17.4",
     "source-map-loader": "^0.1.5",
     "source-map-support": "^0.4.2",

@@ -1,4 +1,4 @@
-var configureMockStore = require('redux-mock-store')
+import configureStore from "redux-mock-store"
 var {apiMiddleware} = require('redux-api-middleware')
 import thunk from "redux-thunk"
 import * as nock from "nock"
@@ -8,7 +8,7 @@ import { Action, AnyMeta } from "flux-standard-action"
 import { FsaErrorAction, FsaErrorDefault } from "../../api/types" // You can use any testing library
 
 const middlewares = [thunk, apiMiddleware]
-const mockStore = configureMockStore(middlewares)
+const mockStore = configureStore(middlewares)
 
 describe('[COMMON] Testing authentication actions', () => {
 

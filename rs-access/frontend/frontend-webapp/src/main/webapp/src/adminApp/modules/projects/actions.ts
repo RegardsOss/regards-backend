@@ -12,6 +12,10 @@ export const CREATE_PROJECT_REQUEST = 'CREATE_PROJECT_REQUEST'
 export const CREATE_PROJECT_SUCCESS = 'CREATE_PROJECT_SUCCESS'
 export const CREATE_PROJECT_FAILURE = 'CREATE_PROJECT_FAILURE'
 
+export const DELETE_PROJECT_REQUEST = 'DELETE_PROJECT_REQUEST'
+export const DELETE_PROJECT_SUCCESS = 'DELETE_PROJECT_SUCCESS'
+export const DELETE_PROJECT_FAILURE = 'DELETE_PROJECT_FAILURE'
+
 // Fetches all projects
 // Relies on the custom API middleware defined in redux-api-middleware
 // Normalize the json response
@@ -45,26 +49,24 @@ export const createProject = () => ({
   }
 })
 
+export const deleteProject = (id: number) => ({
+  [CALL_API]: {
+    types: [
+      DELETE_PROJECT_REQUEST,
+      {
+        type: DELETE_PROJECT_SUCCESS,
+        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ARRAY))
+      },
+      DELETE_PROJECT_FAILURE
+    ],
+    endpoint: PROJECTS_API + '/' + id,
+    method: 'DELETE'
+  }
+})
+
 export interface ProjectAction extends Action {
   id: string,
   name: string
-}
-
-// Add a project to the list
-export const ADD_PROJECT = 'ADD_PROJECT'
-
-export const addProject = (id: string, name: string): ProjectAction => ({
-  type: ADD_PROJECT,
-  id,
-  name
-})
-
-export const DELETE_PROJECT = 'DELETE_PROJECT'
-export function deleteProject (id: string): Object {
-  return {
-    type: DELETE_PROJECT,
-    id
-  }
 }
 
 export const DELETE_SELECTED_PROJECT = 'DELETE_SELECTED_PROJECT'

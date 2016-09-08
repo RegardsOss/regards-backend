@@ -1,4 +1,4 @@
-const configureStore: any = require('redux-mock-store')
+import configureStore from "redux-mock-store"
 var {apiMiddleware} = require('redux-api-middleware')
 import thunk from "redux-thunk"
 import * as nock from "nock"
@@ -6,9 +6,10 @@ import { expect } from "chai"
 import * as actions from "../../projectAdmins/actions"
 import { Action, AnyMeta } from "flux-standard-action"
 import { FsaErrorAction, FsaErrorDefault } from "../../../../common/api/types" // You can use any testing library
-const middlewares = [thunk, apiMiddleware]
 
+const middlewares = [thunk, apiMiddleware]
 const mockStore = configureStore(middlewares)
+
 describe('[ADMIN APP] Testing project admins actions', () => {
 
   afterEach(() => {

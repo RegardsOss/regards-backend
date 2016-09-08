@@ -1,4 +1,4 @@
-var configureMockStore = require('redux-mock-store')
+import configureStore from "redux-mock-store"
 var {apiMiddleware} = require('redux-api-middleware')
 import thunk from "redux-thunk"
 import * as nock from "nock"
@@ -10,7 +10,7 @@ import { FsaErrorAction, FsaErrorDefault } from "../../api/types"
 import * as React from "react" // You can use any testing library
 
 const middlewares = [thunk, apiMiddleware]
-const mockStore = configureMockStore(middlewares)
+const mockStore = configureStore(middlewares)
 
 describe('[COMMON] Testing plugins actions', () => {
 
