@@ -1,5 +1,5 @@
 import { Schema, arrayOf } from "normalizr"
-import { Role } from "@regardsOss/models"
+import { Role } from "@regardsoss/models"
 
 const NAME = "roles"
 const roleSchema = new Schema(NAME, {

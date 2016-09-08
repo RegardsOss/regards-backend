@@ -1,5 +1,5 @@
 import { Schema, arrayOf } from "normalizr"
-import { Project } from "@regardsOss/models"
+import { Project } from "@regardsoss/models"
 
 // Read more about Normalizr: https://github.com/paularmstrong/normalizr
 const projectSchema = new Schema('projects', {

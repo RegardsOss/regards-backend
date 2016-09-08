@@ -1,5 +1,5 @@
 import { Schema } from "normalizr"
-import { ProjectAccount } from "@regardsOss/models"
+import { ProjectAccount } from "@regardsoss/models"
 import AccountSchema from "./Account"
 
 const NAME = 'projectAccounts'

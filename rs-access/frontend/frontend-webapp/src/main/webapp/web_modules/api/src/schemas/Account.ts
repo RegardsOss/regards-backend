@@ -1,5 +1,5 @@
 import { Schema } from "normalizr"
-import { Account } from "@regardsOss/models"
+import { Account } from "@regardsoss/models"
 
 const accountSchema = new Schema('accounts', {
   idAttribute: (account: Account) => {
