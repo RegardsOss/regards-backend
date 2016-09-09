@@ -5,7 +5,7 @@ import * as nock from "nock"
 import { expect } from "chai"
 import * as actions from "../AuthenticateActions"
 import { Action, AnyMeta } from "flux-standard-action"
-import { FsaErrorAction, FsaErrorDefault } from "../../api/types" // You can use any testing library
+import { FluxStandardAction, defaultFluxStandardError } from "@regardsoss/api"
 
 const middlewares = [thunk, apiMiddleware]
 const mockStore = configureStore(middlewares)
@@ -24,21 +24,21 @@ describe('[COMMON] Testing authentication actions', () => {
     nock(actions.AUTHENTICATE_API)
     .post('')
     .query({grant_type: 'password', username, password})
-    .reply(500, 'Oops');
-    const store = mockStore({authentication: []});
+    .reply(500, 'Oops')
+    const store = mockStore({authentication: []})
 
     const requestAction: Action<any> & AnyMeta = {
       type: 'REQUEST_AUTHENTICATE',
       payload: undefined,
       meta: undefined
     }
-    const failureAction: FsaErrorAction & AnyMeta = {
+    const failureAction: FluxStandardAction & AnyMeta = {
       type: 'FAILED_AUTHENTICATE',
       error: true,
       meta: {
         "errorMessage": "authentication.error"
       },
-      payload: FsaErrorDefault
+      payload: defaultFluxStandardError
     }
     const expectedActions = [requestAction, failureAction]
 
@@ -64,8 +64,8 @@ describe('[COMMON] Testing authentication actions', () => {
       "refresh_token": "a80a7a1b-7c98-43da-a7e6-04c7873ba1d7",
       "expires_in": 35332,
       "scope": "openid"
-    });
-    const store = mockStore({authentication: []});
+    })
+    const store = mockStore({authentication: []})
 
     const requestAction: Action<any> & AnyMeta = {
       type: 'REQUEST_AUTHENTICATE',

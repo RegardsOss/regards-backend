@@ -1,6 +1,5 @@
 {
   "globalDependencies": {
-    "@regardsoss/api": "file:./web_modules/api/index.d.ts",
     "chai": "registry:dt/chai#3.4.0+20160601211834",
     "enzyme": "registry:dt/enzyme#2.4.1+20160709041153",
     "flux-standard-action": "registry:dt/flux-standard-action#0.5.0+20160316155526",
@@ -30,6 +29,7 @@
     "sockjs-client": "registry:dt/sockjs-client#1.0.3+20160626224127"
   },
   "dependencies": {
+    "@regardsoss/api": "file:./web_modules/api/index.d.ts",
     "@regardsoss/models": "file:./web_modules/models/index.d.ts",
     "@regardsoss/some-pckg": "file:./web_modules/some-pckg/index.d.ts",
     "lodash": "registry:npm/lodash#4.0.0+20160723033700"

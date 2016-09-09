@@ -6,7 +6,7 @@ import { expect } from "chai"
 import * as actions from "../PluginsActions"
 import { PluginType } from "../PluginTypes"
 import { Action, AnyMeta } from "flux-standard-action"
-import { FsaErrorAction, FsaErrorDefault } from "../../api/types"
+import { FluxStandardAction, defaultFluxStandardError } from "@regardsoss/api"
 import * as React from "react" // You can use any testing library
 
 const middlewares = [thunk, apiMiddleware]
@@ -31,11 +31,12 @@ describe('[COMMON] Testing plugins actions', () => {
       payload: undefined,
       meta: undefined
     }
-    const failureAction: FsaErrorAction & AnyMeta = {
+
+    const failureAction: FluxStandardAction & AnyMeta = {
       type: 'FAILED_PLUGINS',
       error: true,
       meta: undefined,
-      payload: FsaErrorDefault
+      payload: defaultFluxStandardError
     }
     const expectedActions = [requestAction, failureAction]
 
@@ -54,7 +55,7 @@ describe('[COMMON] Testing plugins actions', () => {
     nock(actions.PLUGINS_API)
     .get('')
     .reply(200, plugin);
-    const store = mockStore({plugins: []});
+    const store = mockStore({plugins: []})
 
     const requestAction: Action<any> & AnyMeta = {
       type: 'REQUEST_PLUGINS',

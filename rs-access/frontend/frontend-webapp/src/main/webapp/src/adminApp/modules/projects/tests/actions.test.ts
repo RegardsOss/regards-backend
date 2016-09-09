@@ -5,7 +5,7 @@ import * as nock from "nock"
 import { expect } from "chai"
 import * as actions from "../actions"
 import { Action, AnyMeta } from "flux-standard-action"
-import { FsaErrorAction, FsaErrorDefault } from "../../../../common/api/types" // You can use any testing library
+import { FluxStandardAction, defaultFluxStandardError } from "@regardsoss/api"
 
 const middlewares = [thunk, apiMiddleware]
 const mockStore = configureStore(middlewares)
@@ -88,11 +88,11 @@ describe('[ADMIN APP] Testing projects actions', () => {
       .reply(500, 'Oops')
       const store = mockStore({projects: []})
 
-      const expectedAction: FsaErrorAction & AnyMeta = {
+      const expectedAction: FluxStandardAction & AnyMeta = {
         type: actions.PROJECTS_FAILURE,
         error: true,
         meta: undefined,
-        payload: FsaErrorDefault
+        payload: defaultFluxStandardError
       }
 
       store.dispatch(actions.fetchProjects())
@@ -161,11 +161,11 @@ describe('[ADMIN APP] Testing projects actions', () => {
       .reply(500, 'Oops')
       const store = mockStore({projects: []})
 
-      const expectedAction: FsaErrorAction & AnyMeta = {
+      const expectedAction: FluxStandardAction & AnyMeta = {
         type: actions.CREATE_PROJECT_FAILURE,
         error: true,
         meta: undefined,
-        payload: FsaErrorDefault
+        payload: defaultFluxStandardError
       }
 
       store.dispatch(actions.fetchProjects())
@@ -241,11 +241,11 @@ describe('[ADMIN APP] Testing projects actions', () => {
       .reply(500, 'Oops')
       const store = mockStore({projects: {}})
 
-      const expectedAction: FsaErrorAction & AnyMeta = {
+      const expectedAction: FluxStandardAction & AnyMeta = {
         type: actions.DELETE_PROJECT_FAILURE,
         error: true,
         meta: undefined,
-        payload: FsaErrorDefault
+        payload: defaultFluxStandardError
       }
 
       store.dispatch(actions.fetchProjects())

@@ -5,8 +5,12 @@ This is the REGARDS Access frontend.
 ## Install
 
 ```
-npm run preinstall
-npm install
+if npm -v < 3.10.7 {
+    npm run preinstall
+    npm install
+} else {
+    npm install
+}
 npm run test
 ```
 
