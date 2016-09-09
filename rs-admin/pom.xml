@@ -12,8 +12,8 @@
   
   <modules>
   	<module>project</module>
+  	<module>users</module>
   	<module>bootstrap-administration</module>
-    <module>users</module>
   </modules>
  
 </project>

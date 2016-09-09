@@ -8,6 +8,12 @@ public class MetaData {
 
     private UserVisibility visibility_;
 
+    private ProjectUser projectUser_;
+
+    public MetaData() {
+        super();
+    }
+
     public String getKey() {
         return key_;
     }
@@ -30,6 +36,14 @@ public class MetaData {
 
     public void setVisibility(UserVisibility pVisibility) {
         visibility_ = pVisibility;
+    }
+
+    public ProjectUser getProjectUser() {
+        return projectUser_;
+    }
+
+    public void setProjectUser(ProjectUser pProjectUser) {
+        projectUser_ = pProjectUser;
     }
 
 }
