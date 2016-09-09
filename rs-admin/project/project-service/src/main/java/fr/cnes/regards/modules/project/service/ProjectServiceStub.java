@@ -27,6 +27,7 @@ public class ProjectServiceStub implements IProjectService {
 
     @Override
     public Project retrieveProject(String pProjectId) {
+        List<Project> projects = this.projects;
         return projects.stream().filter(p -> p.getName().equals(pProjectId)).findFirst().get();
     }
 
@@ -39,7 +40,7 @@ public class ProjectServiceStub implements IProjectService {
     @Override
     public Project modifyProject(String projectId, Project pProject) throws OperationNotSupportedException {
         this.retrieveProject(projectId);
-        if (pProject.getName().equals(projectId)) {
+        if (!pProject.getName().equals(projectId)) {
             throw new OperationNotSupportedException("projectId and updated project does not match");
         }
         projects.stream().map(p -> p.equals(pProject) ? pProject : p).collect(Collectors.toList());

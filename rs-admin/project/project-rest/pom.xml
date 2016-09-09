@@ -25,6 +25,10 @@
 		<groupId>fr.cnes.regards.modules.project</groupId>
 		<artifactId>project-service</artifactId>
 	</dependency>
+	<dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
   </dependencies>
 
 	<build>

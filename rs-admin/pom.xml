@@ -12,7 +12,7 @@
   
   <modules>
   	<module>project</module>
-  	<module>boostrap-administration</module>
+  	<module>bootstrap-administration</module>
     <module>users</module>
   </modules>
  

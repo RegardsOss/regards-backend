@@ -1,15 +1,22 @@
 package fr.cnes.regards.modules.project.domain;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.executable.ValidateOnExecution;
+
 import org.springframework.hateoas.ResourceSupport;
 
+@ValidateOnExecution
 public class Project extends ResourceSupport {
 
+    @NotNull
     private String name;
 
+    @NotNull
     private String description;
 
     private String icon;
 
+    @NotNull
     private boolean isPublic;
 
     public Project() {

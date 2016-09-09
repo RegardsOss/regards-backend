@@ -8,6 +8,7 @@ import java.util.NoSuchElementException;
 
 import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -67,6 +68,11 @@ public class ProjectController {
     public void dataAlreadyExisting() {
     }
 
+    @ExceptionHandler(OperationNotSupportedException.class)
+    @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED)
+    public void operationNotSupported() {
+    }
+
     @RequestMapping(value = "", method = RequestMethod.GET, produces = "application/json")
     @ResourceAccess
     public @ResponseBody HttpEntity<List<Project>> retrieveProjectList() {
@@ -77,7 +83,7 @@ public class ProjectController {
 
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResourceAccess
-    public @ResponseBody HttpEntity<Project> createProject(@RequestBody Project newProject)
+    public @ResponseBody HttpEntity<Project> createProject(@Valid @RequestBody Project newProject)
             throws AlreadyExistingException {
         Project project = projectService.createProject(newProject);
 
