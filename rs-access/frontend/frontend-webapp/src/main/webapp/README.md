@@ -5,9 +5,9 @@ This is the REGARDS Access frontend.
 ## Install
 
 ```
-npm link web_modules/some-pckg
+npm run preinstall
 npm install
-npm run start
+npm run test
 ```
 
 ## Build

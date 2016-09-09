@@ -124,7 +124,7 @@ const mapStateToProps = (state: any, ownProps: any) => ({
 })
 const mapDispatchToProps = (dispatch: any) => ({
   fetchProjects: () => dispatch(actions.fetchProjects()),
-  deleteProject: (id: number) => dispatch(actions.deleteProject(id)),
+  deleteProject: (id: string) => dispatch(actions.deleteProject(id)),
   createProject: () => dispatch(actions.createProject())
 })
 
