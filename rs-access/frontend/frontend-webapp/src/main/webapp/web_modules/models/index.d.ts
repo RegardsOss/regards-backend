@@ -1,3 +1,6 @@
+import {Project} from "./src/projects/types"
+
+export {Project}
 
 export interface HateoasLink {
   rel: string,
@@ -32,11 +35,6 @@ export interface ApiStateResult<T> {
   items: Array<T>,
   ids: Array<string>,
   lastUpdate: string
-}
-
-export interface Project {
-  name: string,
-  links: Array<HateoasLink>
 }
 
 export interface ProjectAccount {

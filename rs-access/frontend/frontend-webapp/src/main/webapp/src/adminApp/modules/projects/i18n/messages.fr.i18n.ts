@@ -10,7 +10,12 @@ const messages = {
   "projects.project.name.label": "Nom du projet",
   "projects.admins.label": "Administateurs projet",
   "projects.admin.edit": "Editer",
-  "projects.admin.delete": "Supprimer"
+  "projects.admin.delete": "Supprimer",
+  "projects.table.icon.label": "Icone",
+  "projects.table.name.label": "Nom",
+  "projects.table.description.label": "Description",
+  "projects.table.isPublic.label": "Public",
+  "projects.table.actions.label": "Actions",
 }
 
 export default messages

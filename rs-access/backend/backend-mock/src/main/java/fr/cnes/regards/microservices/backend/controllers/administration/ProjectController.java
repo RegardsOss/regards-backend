@@ -88,13 +88,13 @@ public class ProjectController {
 
     @ResourceAccess
     @RequestMapping(value = "/projects/{project_id}", method = RequestMethod.DELETE)
-    public @ResponseBody HttpEntity<List<Project>> deleteProject(@PathVariable("project_id") Long project_id) {
-        List<Project> projects = getInMemory()
+    @ResponseStatus(value = HttpStatus.OK)
+    public void deleteProject(@PathVariable("project_id") Long project_id) {
+        // Simulate deletion
+        getInMemory()
                 .stream()
                 .filter(p -> p.getProjectId() != project_id)
                 .collect(Collectors.toList());
-
-        return new ResponseEntity<>(projects, HttpStatus.OK);
     }
 
     private List<Project> getInMemory() {

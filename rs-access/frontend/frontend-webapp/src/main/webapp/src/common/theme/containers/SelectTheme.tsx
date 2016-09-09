@@ -5,7 +5,7 @@ import { setTheme } from "../actions/ThemeActions"
 import MenuItem from "material-ui/MenuItem"
 import ThemeHelper from "../ThemeHelper"
 import IconButton from "material-ui/IconButton"
-import MapsPlace from "material-ui/svg-icons/maps/place"
+import Palette from "material-ui/svg-icons/image/palette"
 import IconMenu from "material-ui/IconMenu"
 
 interface SelectThemeProps {
@@ -39,7 +39,7 @@ export class SelectTheme extends React.Component<SelectThemeProps, any> {
 
     return (
       <IconMenu
-        iconButtonElement={<IconButton><MapsPlace /></IconButton>}
+        iconButtonElement={<IconButton><Palette /></IconButton>}
         anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
         targetOrigin={{horizontal: 'middle', vertical: 'bottom'}}
         value={this.props.theme}

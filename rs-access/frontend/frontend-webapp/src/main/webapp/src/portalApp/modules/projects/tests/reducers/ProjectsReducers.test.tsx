@@ -11,15 +11,15 @@ describe('[PORTAL APP] Testing Projects reducers', () => {
       isFetching: false,
       items: [],
       lastUpdate: ''
-    });
-  });
+    })
+  })
 
   it('Should set projects fetching true in state', () => {
     const initstate: ProjectsStore = {
       isFetching: false,
       items: [],
       lastUpdate: ''
-    };
+    }
 
     const action = {
       type: REQUEST_PROJECTS
@@ -29,18 +29,18 @@ describe('[PORTAL APP] Testing Projects reducers', () => {
       isFetching: true,
       items: [],
       lastUpdate: ''
-    };
+    }
 
     const result = projectsReducers(initstate, action);
     expect(result).to.eql(expectedResult);
-  });
+  })
 
   it('Should add projects to state', () => {
     const initstate: ProjectsStore = {
       isFetching: true,
       items: [],
       lastUpdate: ''
-    };
+    }
 
     const action = {
       type: RECEIVE_PROJECTS,
@@ -62,8 +62,8 @@ describe('[PORTAL APP] Testing Projects reducers', () => {
       lastUpdate: ''
     };
 
-    const result = projectsReducers(initstate, action);
-    expectedResult.lastUpdate = result.lastUpdate;
-    expect(result).to.eql(expectedResult);
+    const result = projectsReducers(initstate, action)
+    expectedResult.lastUpdate = result.lastUpdate
+    expect(result).to.eql(expectedResult)
   });
 });

@@ -1,18 +1,20 @@
-import { union, pickBy } from "lodash"
+import { union, pickBy, omitBy } from "lodash"
+import * as Immutable from "immutable"
 import { deleteEntityReducer } from "../../../common/reducers"
 import {
   PROJECTS_REQUEST, PROJECTS_SUCCESS, PROJECTS_FAILURE,
   DELETE_PROJECT_REQUEST, DELETE_PROJECT_SUCCESS, DELETE_PROJECT_FAILURE,
   CREATE_PROJECT_SUCCESS, CREATE_PROJECT_REQUEST, CREATE_PROJECT_FAILURE
 } from "./actions"
+import { Project } from "@regardsoss/models"
+
 
 export default (state: any = {
   isFetching: false,
   items: {},
-  ids: [],
   lastUpdate: ''
 }, action: any) => {
-  let newState = Object.assign({}, state)
+  let newState = Immutable.fromJS(state).toJS()
   switch (action.type) {
     case PROJECTS_REQUEST:
     case CREATE_PROJECT_REQUEST:
@@ -27,17 +29,14 @@ export default (state: any = {
     case PROJECTS_SUCCESS:
       newState.isFetching = false
       newState.items = action.payload.entities.projects
-      newState.ids = union(state.ids, action.payload.result)
       return newState
     case CREATE_PROJECT_SUCCESS:
       const project = action.payload.entities.projects[action.payload.result[0]]
       newState.items[action.payload.result[0]] = project
-      newState.ids.push(action.payload.result[0])
       newState.isFetching = false
       return newState
     case DELETE_PROJECT_SUCCESS:
-      newState.items = pickBy(state.items, (value: string, key: string) => key != action.payload.result[0])
-      newState.ids = state.ids.filter((id: string) => id != action.payload.result[0])
+      newState.items = omitBy(newState.items, (project: Project) => project.projectId === action.payload.projectId)
       newState.isFetching = false
       return newState
     default:
@@ -45,9 +44,5 @@ export default (state: any = {
   }
 }
 
-// Selectors
-// WIP
-// export const getById = (state: any, id: string) =>
-//   state.items[id]
-export const getProjects = (state: any) => state
+export const getProjects = (state: any) => state.items
 export const getProjectById = (state: any, id: string) => state.items[id]

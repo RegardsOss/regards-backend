@@ -2,11 +2,18 @@ const {CALL_API, getJSON} = require('redux-api-middleware')
 import Schemas from "../../../common/api/schemas/index"
 import { normalize } from "normalizr"
 import { Action } from "redux"
+import * as selectors from "../../reducer"
+import { isEmpty } from "lodash"
 
 export const PROJECTS_API = 'http://localhost:8080/api/projects'
+
 export const PROJECTS_REQUEST = 'PROJECTS_REQUEST'
 export const PROJECTS_SUCCESS = 'PROJECTS_SUCCESS'
 export const PROJECTS_FAILURE = 'PROJECTS_FAILURE'
+
+export const PROJECT_REQUEST = 'PROJECT_REQUEST'
+export const PROJECT_SUCCESS = 'PROJECT_SUCCESS'
+export const PROJECT_FAILURE = 'PROJECT_FAILURE'
 
 export const CREATE_PROJECT_REQUEST = 'CREATE_PROJECT_REQUEST'
 export const CREATE_PROJECT_SUCCESS = 'CREATE_PROJECT_SUCCESS'
@@ -30,9 +37,25 @@ export const fetchProjects = () => ({
       PROJECTS_FAILURE
     ],
     endpoint: PROJECTS_API,
-    method: 'GET'
+    method: 'GET',
+    // bailout: (state: any) => !isEmpty(selectors.getProjects(state))
   }
 })
+
+// export const fetchProject = (id: string) => ({
+//   [CALL_API]: {
+//     types: [
+//       PROJECT_REQUEST,
+//       {
+//         type: PROJECT_SUCCESS,
+//         payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT))
+//       },
+//       PROJECT_FAILURE
+//     ],
+//     endpoint: PROJECTS_API + '/' + id,
+//     method: 'GET',
+//   }
+// })
 
 export const createProject = () => ({
   [CALL_API]: {
@@ -55,7 +78,7 @@ export const deleteProject = (id: number) => ({
       DELETE_PROJECT_REQUEST,
       {
         type: DELETE_PROJECT_SUCCESS,
-        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ARRAY))
+        payload: { projectId: id }
       },
       DELETE_PROJECT_FAILURE
     ],

@@ -16,7 +16,7 @@ import Delete from "material-ui/svg-icons/action/delete"
 
 const URL_PROJECTS_ACCOUNTS = "http://localhost:8080/api/projectAccounts"
 
-interface ProjectAccountsProps extends React.Props<ProjectAcountsContainer> {
+interface ProjectAccountsProps {
   // From mapStateToProps
   projectAccounts?: Array<ProjectAccount>
   accounts?: Array<Account>
@@ -142,16 +142,6 @@ class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any>
   }
 }
 
-// <MenuItem onTouchTap={this.handleEdit} primaryText={<FormattedMessage id="dropdown.edit"/>}/>
-// <MenuItem onTouchTap={this.handleView} primaryText={<FormattedMessage id="dropdown.view"/>}/>
-
-// {map(projectAccounts, (projectAccount: ProjectAccount, id: string) => (
-//   <ProjectAccountRowContainer
-//   projectAccount={projectAccount}
-//   projectName={params.project}
-//   key={id}
-//   />
-// ))}
 const mapStateToProps = (state: any, ownProps: any) => ({
     projectAccounts: selectors.getProjectAccounts(state),
     accounts: values(selectors.getAccounts(state))
