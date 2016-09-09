@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.jobs;
+package fr.cnes.regards.modules.jobs;
 
 import java.nio.file.Path;
 import java.util.List;

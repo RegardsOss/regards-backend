@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>fr.cnes.regards.microservices.${artifactId}</groupId> 
-  <artifactId>${artifactId}</artifactId>
+  <artifactId>bootstrap-${artifactId}</artifactId>
   <packaging>jar</packaging>
  
   <name>REGARDS microservices ${artifactId} - bootstrap </name>

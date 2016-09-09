@@ -11,6 +11,8 @@ security:
 spring:
   application:
     name : ${artifactId}
+  hateoas:
+    use-hal-as-default-json-media-type : false
     
 swagger:
   api:
