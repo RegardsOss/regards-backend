@@ -4,8 +4,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.cnes.regards.microservices.jobs.Job;
-import fr.cnes.regards.microservices.jobs.StatusInfo;
+import fr.cnes.regards.modules.jobs.Job;
+import fr.cnes.regards.modules.jobs.StatusInfo;
 import fr.cnes.regards.modules.project.domain.Project;
 
 public class CreateProjectAction extends Job implements ProjectAction {

@@ -54,6 +54,14 @@
   	</dependencies>
   </dependencyManagement>
   
+  <dependencies>
+  	<dependency>
+  		<groupId>fr.cnes.regards.modules</groupId>
+  		<artifactId>module-core</artifactId>
+  		<version>0.0.1</version>
+  	</dependency>
+  </dependencies>
+  
   <build>
 		<plugins>
 			<plugin>

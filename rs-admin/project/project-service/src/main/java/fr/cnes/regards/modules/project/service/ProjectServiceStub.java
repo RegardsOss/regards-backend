@@ -9,6 +9,7 @@ import javax.naming.OperationNotSupportedException;
 
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.project.domain.Project;
 
 @Service
@@ -27,7 +28,6 @@ public class ProjectServiceStub implements IProjectService {
 
     @Override
     public Project retrieveProject(String pProjectId) {
-        List<Project> projects = this.projects;
         return projects.stream().filter(p -> p.getName().equals(pProjectId)).findFirst().get();
     }
 

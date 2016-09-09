@@ -2,8 +2,8 @@ package fr.cnes.regards.modules.project.service.actions;
 
 import java.nio.file.Path;
 
-import fr.cnes.regards.microservices.jobs.Job;
-import fr.cnes.regards.microservices.jobs.StatusInfo;
+import fr.cnes.regards.modules.jobs.Job;
+import fr.cnes.regards.modules.jobs.StatusInfo;
 
 public class DeleteProjectAction extends Job implements ProjectAction {
 

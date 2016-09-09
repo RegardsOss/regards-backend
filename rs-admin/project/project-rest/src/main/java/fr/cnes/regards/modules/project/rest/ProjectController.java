@@ -27,8 +27,8 @@ import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import fr.cnes.regards.microservices.core.information.ModuleInfo;
+import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.project.service.AlreadyExistingException;
 import fr.cnes.regards.modules.project.service.IProjectService;
 
 @RestController

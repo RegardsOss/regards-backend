@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.naming.OperationNotSupportedException;
 
+import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.project.domain.Project;
 
 public interface IProjectService {

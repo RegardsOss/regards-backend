@@ -1,5 +1,5 @@
 package fr.cnes.regards.modules.users.domain;
 
-public enum AccoubntStatus {
+public enum AccountStatus {
     INACTIVE, ACCEPTED, ACTIVE, LOCKED, PENDING
 }
