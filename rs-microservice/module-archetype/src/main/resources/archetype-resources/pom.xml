@@ -23,7 +23,45 @@
   	<module>${artifactId}-service</module>
   	<module>${artifactId}-signature</module>
   </modules>
- 
+  
+ <dependencyManagement>
+  	<dependencies>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.${artifactId}</groupId>
+  			<artifactId>${artifactId}-dao</artifactId>
+  			<version>${version}</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.${artifactId}</groupId>
+  			<artifactId>${artifactId}-domain</artifactId>
+  			<version>${version}</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.${artifactId}</groupId>
+  			<artifactId>${artifactId}-rest</artifactId>
+  			<version>${version}</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.${artifactId}</groupId>
+  			<artifactId>${artifactId}-service</artifactId>
+  			<version>${version}</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>fr.cnes.regards.modules.${artifactId}</groupId>
+  			<artifactId>${artifactId}-signature</artifactId>
+  			<version>${version}</version>
+  		</dependency>
+  	</dependencies>
+  </dependencyManagement>
+  
+  <dependencies>
+  	<dependency>
+  		<groupId>fr.cnes.regards.modules</groupId>
+  		<artifactId>module-core</artifactId>
+  		<version>0.0.1</version>
+  	</dependency>
+  </dependencies>
+  
   <build>
  	    <plugins>
   			<plugin>

@@ -4,9 +4,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import fr.cnes.regards.microservices.jobs.IJob;
-import fr.cnes.regards.microservices.jobs.Output;
-import fr.cnes.regards.microservices.jobs.StatusInfo;
+import fr.cnes.regards.modules.jobs.Job;
+import fr.cnes.regards.modules.jobs.StatusInfo;
 import fr.cnes.regards.modules.${artifactId}.domain.Greeting;
 
 public class GreetingAction extends Job {

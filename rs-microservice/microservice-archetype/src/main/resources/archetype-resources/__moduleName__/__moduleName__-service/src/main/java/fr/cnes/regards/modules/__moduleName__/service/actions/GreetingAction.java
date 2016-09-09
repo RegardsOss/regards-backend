@@ -3,8 +3,8 @@ package fr.cnes.regards.modules.${moduleName}.service.actions;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicLong;
 
-import fr.cnes.regards.microservices.jobs.IJob;
-import fr.cnes.regards.microservices.jobs.StatusInfo;
+import fr.cnes.regards.modules.jobs.Job;
+import fr.cnes.regards.modules.jobs.StatusInfo;
 import fr.cnes.regards.modules.${moduleName}.domain.Greeting;
 
 public class GreetingAction extends Job {

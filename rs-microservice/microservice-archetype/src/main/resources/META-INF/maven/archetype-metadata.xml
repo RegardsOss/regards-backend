@@ -10,19 +10,19 @@
 	
 	<fileSets>
 		<fileSet filtered="true" packaged="false">
-			<directory>boostrap-__artifactId__</directory>
+			<directory>bootstrap-__artifactId__</directory>
 			<includes>
 				<include>pom.xml</include>
 			</includes>
 		</fileSet>
 		<fileSet filtered="true" packaged="false">
-			<directory>boostrap-__artifactId__/src/main/java/fr/cnes/regards/microservices/__artifactId__</directory>
+			<directory>bootstrap-__artifactId__/src/main/java/fr/cnes/regards/microservices/__artifactId__</directory>
 			<includes>
 				<include>Application.java</include>
 			</includes>
 		</fileSet>
 		<fileSet filtered="true" packaged="false">
-			<directory>boostrap-__artifactId__/src/main/resources</directory>
+			<directory>bootstrap-__artifactId__/src/main/resources</directory>
 			<includes>
 				<include>application.yml</include>
 				<include>banner.txt</include>

@@ -12,7 +12,7 @@
   
   <modules>
   	<module>${moduleName}</module>
-  	<module>boostrap-${artifactId}</module>
+  	<module>bootstrap-${artifactId}</module>
   </modules>
  
 </project>
