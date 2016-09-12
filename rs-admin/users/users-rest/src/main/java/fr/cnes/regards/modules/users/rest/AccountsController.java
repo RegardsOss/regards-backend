@@ -1,8 +1,10 @@
 package fr.cnes.regards.modules.users.rest;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.annotation.PostConstruct;
+import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,18 +12,21 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import fr.cnes.regards.microservices.core.information.ModuleInfo;
+import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.users.domain.Account;
 import fr.cnes.regards.modules.users.domain.AccountSetting;
 import fr.cnes.regards.modules.users.domain.CodeType;
@@ -50,6 +55,21 @@ public class AccountsController {
         authService.setAutorities("/accounts@GET", new RoleAuthority("USER"));
     }
 
+    @ExceptionHandler(NoSuchElementException.class)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
+    public void dataNotFound() {
+    }
+
+    @ExceptionHandler(AlreadyExistingException.class)
+    @ResponseStatus(value = HttpStatus.CONFLICT)
+    public void dataAlreadyExisting() {
+    }
+
+    @ExceptionHandler(OperationNotSupportedException.class)
+    @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED)
+    public void operationNotSupported() {
+    }
+
     @ResourceAccess
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<Account>> retrieveAccountList() {
@@ -59,7 +79,8 @@ public class AccountsController {
 
     @ResourceAccess
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Account> createAccount(@Valid @RequestBody Account pNewAccount) {
+    public @ResponseBody HttpEntity<Account> createAccount(@Valid @RequestBody Account pNewAccount)
+            throws AlreadyExistingException {
         Account created = this.accountService_.createAccount(pNewAccount);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
@@ -74,7 +95,7 @@ public class AccountsController {
     @ResourceAccess
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateAccount(@PathVariable("account_id") String accountId,
-            @Valid @RequestBody Account pUpdatedAccount) {
+            @Valid @RequestBody Account pUpdatedAccount) throws OperationNotSupportedException {
         this.accountService_.updateAccount(accountId, pUpdatedAccount);
         return new ResponseEntity<>(HttpStatus.OK);
     }

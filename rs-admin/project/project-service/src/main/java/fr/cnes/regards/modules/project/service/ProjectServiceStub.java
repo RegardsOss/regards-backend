@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.project.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -39,7 +40,9 @@ public class ProjectServiceStub implements IProjectService {
 
     @Override
     public Project modifyProject(String projectId, Project pProject) throws OperationNotSupportedException {
-        this.retrieveProject(projectId);
+        if (!existProject(projectId)) {
+            throw new NoSuchElementException(projectId);
+        }
         if (!pProject.getName().equals(projectId)) {
             throw new OperationNotSupportedException("projectId and updated project does not match");
         }

@@ -2,6 +2,9 @@ package fr.cnes.regards.modules.users.service;
 
 import java.util.List;
 
+import javax.naming.OperationNotSupportedException;
+
+import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.users.domain.Account;
 import fr.cnes.regards.modules.users.domain.AccountSetting;
 import fr.cnes.regards.modules.users.domain.CodeType;
@@ -10,11 +13,11 @@ public interface IAccountService {
 
     List<Account> retrieveAccountList();
 
-    Account createAccount(Account pNewAccount);
+    Account createAccount(Account pNewAccount) throws AlreadyExistingException;
 
     Account retrieveAccount(String pAccountId);
 
-    void updateAccount(String pAccountId, Account pUpdatedAccount);
+    void updateAccount(String pAccountId, Account pUpdatedAccount) throws OperationNotSupportedException;
 
     void removeAccount(String pAccountId);
 
