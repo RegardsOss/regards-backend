@@ -17,6 +17,13 @@ public class Theme {
 
     private ThemeType themeType_;
 
+    public Theme(List<ConfigParameter> configuration, Boolean isDefault, ThemeType themeType) {
+        super();
+        configuration_ = configuration;
+        isDefault_ = isDefault;
+        themeType_ = themeType;
+    }
+
     public Long getId() {
         return id_;
     }

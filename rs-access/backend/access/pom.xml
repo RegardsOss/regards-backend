@@ -12,7 +12,7 @@
   
   <modules>
   	<module>access</module>
-  	<module>boostrap-access</module>
+  	<module>bootstrap-access</module>
   </modules>
  
 </project>
