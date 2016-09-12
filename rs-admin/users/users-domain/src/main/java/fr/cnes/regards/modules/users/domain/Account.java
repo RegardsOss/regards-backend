@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.users.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.hateoas.ResourceSupport;
@@ -22,6 +23,17 @@ public class Account extends ResourceSupport {
 
     public Account() {
         super();
+        this.projectUsers_ = new ArrayList<>();
+        this.status_ = AccountStatus.PENDING;
+    }
+
+    public Account(String email, String firstName, String lastName, String login, String password) {
+        this();
+        this.email_ = email;
+        this.firstName_ = firstName;
+        this.lastName_ = lastName;
+        this.login_ = login;
+        this.password_ = password;
     }
 
     public String getEmail() {

@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservice.modules.project.rest;
+package fr.cnes.regards.microservice.modules.test.project.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -21,6 +21,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.ProjectServiceStub;
 
@@ -128,11 +129,9 @@ public class ProjectControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void eDeleteProject() {
-        Project deleted = this.serviceStub.retrieveProject("name");
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
-        HttpEntity<Project> request = new HttpEntity<>(deleted);
-        ResponseEntity<Void> response = restTemplate.exchange(this.apiProjectId, HttpMethod.DELETE, request, typeRef,
+        ResponseEntity<Void> response = restTemplate.exchange(this.apiProjectId, HttpMethod.DELETE, null, typeRef,
                                                               "name");
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }

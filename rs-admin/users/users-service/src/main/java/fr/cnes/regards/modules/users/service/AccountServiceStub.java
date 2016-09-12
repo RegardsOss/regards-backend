@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.users.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ import fr.cnes.regards.modules.users.domain.CodeType;
 @Service
 public class AccountServiceStub implements IAccountService {
 
-    private static List<Account> accounts;
+    private static List<Account> accounts = new ArrayList<>();
 
     @Override
     public List<Account> retrieveAccountList() {
@@ -34,7 +35,7 @@ public class AccountServiceStub implements IAccountService {
 
     @Override
     public Account retrieveAccount(String pAccountId) {
-        return accounts.stream().filter(p -> p.getEmail().equals(pAccountId)).findFirst().get();
+        return accounts.stream().filter(a -> a.getEmail().equals(pAccountId)).findFirst().get();
     }
 
     @Override
@@ -43,6 +44,7 @@ public class AccountServiceStub implements IAccountService {
             if (pUpdatedAccount.getEmail().equals(pAccountId)) {
                 accounts = accounts.stream().map(a -> a.getEmail().equals(pAccountId) ? pUpdatedAccount : a)
                         .collect(Collectors.toList());
+                return;
             }
             throw new OperationNotSupportedException("Account id specified differs from updated account id");
         }
@@ -84,7 +86,7 @@ public class AccountServiceStub implements IAccountService {
 
     }
 
-    private boolean existAccount(String pEmail) {
+    public boolean existAccount(String pEmail) {
         return accounts.stream().filter(p -> p.getEmail().equals(pEmail)).findFirst().isPresent();
     }
 }

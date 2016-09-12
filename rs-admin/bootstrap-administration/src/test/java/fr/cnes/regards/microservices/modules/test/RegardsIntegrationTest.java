@@ -7,7 +7,7 @@
  * END-VERSION-HISTORY
  */
 
-package fr.cnes.regards.microservice.modules.project.rest;
+package fr.cnes.regards.microservices.modules.test;
 
 import java.io.IOException;
 import java.util.Collections;

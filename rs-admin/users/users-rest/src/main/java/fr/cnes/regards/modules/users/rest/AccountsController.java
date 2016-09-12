@@ -51,6 +51,14 @@ public class AccountsController {
         // admin can do everything!
         authService.setAutorities("/accounts@GET", new RoleAuthority("ADMIN"));
         authService.setAutorities("/accounts@POST", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/accounts/{account_id}@GET", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/accounts/{account_id}@PUT", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/accounts/{account_id}@DELETE", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/accounts/code@GET", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/accounts/{account_id}/unlock/{unlock_code}@GET", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/accounts/{account_id}/password/{reset_code}@GET", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/accounts/settings@GET", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/accounts/settings@PUT", new RoleAuthority("ADMIN"));
         // users can just get!
         authService.setAutorities("/accounts@GET", new RoleAuthority("USER"));
     }
