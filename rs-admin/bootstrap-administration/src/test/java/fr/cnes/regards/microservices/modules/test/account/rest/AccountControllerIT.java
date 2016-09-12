@@ -110,8 +110,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         // make sure that Project with functional Identifier "msdfqmsdfqbndsjkqfmsdbqjkmfsdjkqfbkmfbjkmsdfqsdfmqbsdq"
         // doesn't exist
         assertFalse(this.serviceStub.existAccount("msdfqmsdfqbndsjkqfmsdbqjkmfsdjkqfbkmfbjkmsdfqsdfmqbsdq"));
-        ResponseEntity<Account> responseNotFound = restTemplate
-                .exchange(this.apiAccountId, HttpMethod.GET, null, typeRef,
+        ResponseEntity<Object> responseNotFound = restTemplate
+                .exchange(this.apiAccountId, HttpMethod.GET, null, Object.class,
                           "msdfqmsdfqbndsjkqfmsdbqjkmfsdjkqfbkmfbjkmsdfqsdfmqbsdq");
         assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
 

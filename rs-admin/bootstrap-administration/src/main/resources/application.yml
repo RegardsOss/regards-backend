@@ -11,6 +11,13 @@ spring:
     name : administration
   hateoas:
     use-hal-as-default-json-media-type : false
+  jackson:
+    deserialization:
+      READ_ENUMS_USING_TO_STRING : true
+    serialization:
+      WRITE_ENUMS_USING_TO_STRING : true
+
+
   
 swagger:
   api:
