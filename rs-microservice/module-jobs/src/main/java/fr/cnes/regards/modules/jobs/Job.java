@@ -15,7 +15,9 @@ public abstract class Job implements IJob {
 
     private final List<Output> result;
 
-    // private List<Parameter> parameters;
+    /**
+     * private List<Parameter> parameters;
+     */
 
     private Owner owner;
 

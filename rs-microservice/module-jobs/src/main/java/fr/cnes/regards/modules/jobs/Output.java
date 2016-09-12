@@ -4,16 +4,16 @@ import java.net.URI;
 
 public class Output {
 
-    private char MimeType;
+    private char mimeType;
 
     private URI data;
 
     public char getMimeType() {
-        return MimeType;
+        return mimeType;
     }
 
     public void setMimeType(char pMimeType) {
-        MimeType = pMimeType;
+        mimeType = pMimeType;
     }
 
     public URI getData() {
