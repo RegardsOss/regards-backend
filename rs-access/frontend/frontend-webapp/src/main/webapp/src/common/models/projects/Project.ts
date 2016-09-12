@@ -1,7 +1,7 @@
 import { HateoasLink } from "../hateoas/types"
 
 export interface Project {
-  projectId: number,
+  projectId: string,
   description: string
   isPublic: boolean
   icon: string

@@ -10,15 +10,6 @@ module.exports = {
   context: __dirname,
   // Javascript main entry
   entry: './src/main.tsx',
-  output: {
-    // Webpack compilation directory
-    path: __dirname + '/build',
-    // Webpack main bundle file name
-    filename: "bundle.js",
-    // Webpack chunks files namesc
-    chunkFilename: "[id].chunck.js",
-    publicPath: "/"
-  },
   node: {
     net: 'empty',
     tls: 'empty',
@@ -31,7 +22,7 @@ module.exports = {
     })
   ],
   resolve: {
-    // Automaticly get extensions files from javascript code with import or require.
+    // Automaticaly get extensions files from javascript code with import or require.
     // exemple require('main') look for main, main.js or main.sass with our configuration
     // extensions: ['', '.js', '.scss'],
     extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"],

@@ -61,6 +61,11 @@ interface CardActionsViewProps {
 }
 class CardActionsView extends React.Component<CardActionsViewProps, any> {
 
+  static defaultProps = {
+    isSecondaryButtonVisible: true,
+    isMainButtonVisible: true
+  }
+
   render (): JSX.Element {
 
     const styleCardActions = {

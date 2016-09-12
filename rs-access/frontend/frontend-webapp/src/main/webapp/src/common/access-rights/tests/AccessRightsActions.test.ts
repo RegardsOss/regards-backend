@@ -6,7 +6,7 @@ import { expect } from "chai"
 import * as actions from "../AccessRightsActions"
 import { DependencyAccessRight } from "../index"
 import { Action, AnyMeta } from "flux-standard-action"
-import { FsaErrorAction, FsaErrorDefault } from "../../api/types" // You can use any testing library
+import { FluxStandardAction, defaultFluxStandardError } from "@regardsoss/api"
 
 const middlewares = [thunk, apiMiddleware]
 const mockStore = configureStore(middlewares)
@@ -29,11 +29,11 @@ describe('[COMMON] Testing access rights actions', () => {
       payload: undefined,
       meta: undefined
     }
-    const failureAction: FsaErrorAction & AnyMeta = {
+    const failureAction: FluxStandardAction & AnyMeta = {
       type: 'FAILED_ACCESSRIGHTS',
       error: true,
       meta: undefined,
-      payload: FsaErrorDefault
+      payload: defaultFluxStandardError
     }
     const expectedActions = [requestAction, failureAction]
 

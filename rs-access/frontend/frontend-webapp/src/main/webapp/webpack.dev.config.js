@@ -8,6 +8,15 @@ var config = CommonConfig;
 config = merge(config, {
   // Enable sourcemaps for debugging webpack's output.
   devtool: "cheap-module-source-map",
+  output: {
+    // Webpack compilation directory
+    path: __dirname + '/build',
+    // Webpack main bundle file name
+    filename: "bundle.js",
+    // Webpack chunks files namesc
+    chunkFilename: "[id].chunck.js",
+    publicPath: "/"
+  },
   devServer: {
     stats: {
       children: false,
@@ -40,7 +49,7 @@ config = merge(config, {
       "process.env": {
         NODE_ENV: JSON.stringify('development')
       }
-    }),
+    })
   ]
 });
 

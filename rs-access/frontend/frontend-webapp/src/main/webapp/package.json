@@ -7,7 +7,7 @@
   "scripts": {
     "build:development": "npm run prebuild && webpack --progress --config webpack.dev.config.js",
     "build:production": "npm run prebuild && webpack --progress --config webpack.prod.config.js",
-    "copy-assets": "cp ./src/common/theme/custom/background.jpg dist/src/common/theme/custom/ && cp ./src/common/theme/custom/*.css dist/src/common/theme/custom/",
+    "copy-assets": "cp ./src/common/theme/custom/background.jpg build/src/common/theme/custom/ && cp ./src/common/theme/custom/*.css build/src/common/theme/custom/",
     "jsdoc": "jsdoc -c jsdoc.conf.json",
     "lint": "tslint -c tslint.json 'src/{,**/}*.ts' 'src/{,**/}*.tsx' -e \"**test.tsx{0,1}\"",
     "postinstall": "typings install",
@@ -15,12 +15,12 @@
     "preinstall": "cd web_modules/api && npm link ../models && cd ../.. && npm link web_modules/some-pckg && npm link web_modules/api && npm link web_modules/models",
     "prejsdoc": "tsc",
     "presitemap": "webpack --config webpack.sitemap.config.js --progress",
-    "pretest": "tsc && (npm run lint --silent || true) && npm run copy-assets",
+    "pretest": "(npm run lint --silent || true)",
     "sitemap": "node build/sitemap.js",
     "start": "NODE_ENV=development node  --max_old_space_size=4096 --optimize_for_size --max_executable_size=4096 --stack_size=4096 ./node_modules/.bin/webpack-dev-server --progress --hot --config webpack.dev.config.js",
     "test": "npm run test:mocha --silent",
     "test:coverage": "NODE_ENV=test nyc npm run test:mocha",
-    "test:mocha": "NODE_ENV=test mocha dist/src/**/*.test.js --require ./src/tests/ImportHelper.mock.js --require source-map-support/register --compilers js:babel-register --inline-diffs --recursive --reporter mochawesome --reporter-options reportDir='./coverage/mocha',reportName='Regards Frontend tests'",
+    "test:mocha": "mocha-webpack --webpack-config webpack.test.config.js \"src/**/*.test.\\?(ts|tsx)\" --inline-diffs --recursive --reporter mochawesome --reporter-options reportDir='./coverage/mocha',reportName='Regards Frontend tests'",
     "test:watch": "npm test -- --watch",
     "tsc:watch": "tsc -w",
     "typings": "typings install --global --save"
@@ -34,7 +34,14 @@
     ],
     "env": {
       "development": {
-        "plugins": ["react-hot-loader/babel"]
+        "plugins": [
+          "react-hot-loader/babel"
+        ]
+      },
+      "test": {
+        "plugins": [
+          "istanbul"
+        ]
       }
     }
   },
@@ -101,6 +108,8 @@
     "jsdoc": "^3.4.0",
     "json-loader": "^0.5.4",
     "mocha": "^2.5.3",
+    "mocha-loader": "^0.7.1",
+    "mocha-webpack": "^0.6.0",
     "mochawesome": "^1.5.1",
     "nock": "^8.0.0",
     "nyc": "^7.1.0",
@@ -123,9 +132,11 @@
     "url-loader": "^0.5.7",
     "webpack": "^1.13.1",
     "webpack-dev-server": "^1.14.1",
-    "webpack-merge": "^0.14.1"
+    "webpack-merge": "^0.14.1",
+    "webpack-node-externals": "^1.3.3"
   },
   "engines": {
-    "node": ">=0.12.0"
+    "node": ">=0.12.0",
+    "npm": "^3.10.7"
   }
 }

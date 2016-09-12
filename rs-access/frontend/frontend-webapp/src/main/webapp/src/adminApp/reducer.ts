@@ -4,8 +4,6 @@
 import { combineReducers } from "redux"
 import projects from "./modules/projects/reducer"
 import * as fromProjects from "./modules/projects/reducer"
-import projectAdmins from "./modules/projectAdmins/reducer"
-import * as fromProjectAdmins from "./modules/projectAdmins/reducer"
 import ui from "./modules/ui/reducer"
 import * as fromUi from "./modules/ui/reducer"
 import RoleReducer from "./modules/userManagement/role.reducer"
@@ -35,7 +33,6 @@ const forms = combineReducers({
 
 export default combineReducers({
   projects,
-  projectAdmins,
   ui,
   roles: RoleReducer,
   accounts: AccountReducers,
@@ -76,12 +73,6 @@ export const getSelectedProjectAdminId = (state: any) =>
 export const getProjectAdmins = (state: any) =>
   state.adminApp.projectAdmins
 
-export const getProjectAdminById = (state: any, id: string) =>
-  fromProjectAdmins.getProjectAdminById(state.adminApp.projectAdmins, id)
-
-export const getProjectAdminsByProject = (state: any, project: string) =>
-  fromProjectAdmins.getProjectAdminsByProject(state.adminApp.projectAdmins, project)
-
 export const getProjectAccounts = (state: any) =>
   ProjectAccountsSelectors.getProjectAccounts(state.adminApp.projectAccounts)
 
@@ -111,7 +102,6 @@ export const getDatasourceModels = (state: any) =>
 
 export const getDatasourceModelById = (state: any, datasourceModelId: number) =>
   DatasourceModelSelectors.getDatasourceModelById(state.adminApp.datasourceModel, datasourceModelId)
-
 
 export const getConnections = (state: any) =>
   ConnectionSelectors.getConnection(state.adminApp.connection)

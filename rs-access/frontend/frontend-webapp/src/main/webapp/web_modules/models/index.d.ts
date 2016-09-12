@@ -1,3 +1,11 @@
+export interface Project {
+  projectId: string
+  name: string
+  description: string
+  icon: string
+  isPublic: boolean
+  links: Array<HateoasLink>
+}
 
 export interface HateoasLink {
   rel: string,
@@ -32,11 +40,6 @@ export interface ApiStateResult<T> {
   items: Array<T>,
   ids: Array<string>,
   lastUpdate: string
-}
-
-export interface Project {
-  name: string,
-  links: Array<HateoasLink>
 }
 
 export interface ProjectAccount {

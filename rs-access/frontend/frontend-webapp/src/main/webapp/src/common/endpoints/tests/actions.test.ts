@@ -5,7 +5,7 @@ import * as nock from "nock"
 import { expect } from "chai"
 import * as actions from "../actions"
 import { Action, AnyMeta } from "flux-standard-action"
-import { FsaErrorAction, FsaErrorDefault } from "../../api/types" // You can use any testing library
+import { FluxStandardAction, defaultFluxStandardError } from "@regardsoss/api"
 const middlewares = [thunk, apiMiddleware]
 const mockStore = configureStore(middlewares)
 
@@ -19,25 +19,25 @@ describe('[COMMON] Testing endpoints actions', () => {
   it('creates ENDPOINT_FAILURE action when fetching endpoints returning error', () => {
     nock(actions.ENDPOINTS_API)
     .get('')
-    .reply(500, 'Oops');
+    .reply(500, 'Oops')
     const store = mockStore({
       endpoints: {
         isFetching: false,
         items: {},
         lastUpdate: ''
       }
-    });
+    })
 
     const requestAction: Action<any> & AnyMeta = {
       type: 'ENDPOINTS_REQUEST',
       payload: undefined,
       meta: undefined
     }
-    const failureAction: FsaErrorAction & AnyMeta = {
+    const failureAction: FluxStandardAction & AnyMeta = {
       type: 'ENDPOINTS_FAILURE',
       error: true,
       meta: undefined,
-      payload: FsaErrorDefault
+      payload: defaultFluxStandardError
     }
     const expectedActions = [requestAction, failureAction]
 
@@ -54,14 +54,14 @@ describe('[COMMON] Testing endpoints actions', () => {
     .reply(200, {
       "projects_users_url": "http://localhost:8080/api/users",
       "projects_url": "http://localhost:8080/api/projects"
-    });
+    })
     const store = mockStore({
       endpoints: {
         isFetching: false,
         items: {},
         lastUpdate: ''
       }
-    });
+    })
 
     const requestAction: Action<any> & AnyMeta = {
       type: 'ENDPOINTS_REQUEST',
