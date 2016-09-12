@@ -1,6 +1,11 @@
-import {Project} from "./src/projects/types"
-
-export {Project}
+export interface Project {
+  projectId: string
+  name: string
+  description: string
+  icon: string
+  isPublic: boolean
+  links: Array<HateoasLink>
+}
 
 export interface HateoasLink {
   rel: string,
