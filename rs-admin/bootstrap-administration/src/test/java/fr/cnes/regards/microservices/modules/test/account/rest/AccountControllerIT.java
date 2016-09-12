@@ -42,6 +42,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     private String apiAccountId;
 
+    private String apiAccountSetting;
+
     @Autowired
     private AccountServiceStub serviceStub;
 
@@ -58,6 +60,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         }
         this.apiAccounts = getApiEndpoint().concat("/accounts");
         this.apiAccountId = this.apiAccounts + "/{account_id}";
+        this.apiAccountSetting = this.apiAccounts + "/settings";
     }
 
     @Test
@@ -68,6 +71,15 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         ParameterizedTypeReference<List<Account>> typeRef = new ParameterizedTypeReference<List<Account>>() {
         };
         ResponseEntity<List<Account>> response = restTemplate.exchange(this.apiAccounts, HttpMethod.GET, null, typeRef);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    public void aGetSettings() {
+        ParameterizedTypeReference<List<String>> typeRef = new ParameterizedTypeReference<List<String>>() {
+        };
+        ResponseEntity<List<String>> response = restTemplate.exchange(this.apiAccountSetting, HttpMethod.GET, null,
+                                                                      typeRef);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -106,6 +118,24 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    public void dUpdateAccountSetting() {
+        ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
+        };
+        HttpEntity<String> request = new HttpEntity<>("manual");
+        ResponseEntity<Void> response = restTemplate.exchange(this.apiAccountSetting, HttpMethod.PUT, request, typeRef);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        request = new HttpEntity<>("auto-accept");
+        response = restTemplate.exchange(this.apiAccountSetting, HttpMethod.PUT, request, typeRef);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        HttpEntity<String> invalidValueRequest = new HttpEntity<>("sdfhnqùlkhsdfq");
+        ResponseEntity<Void> invalidValueResponse = restTemplate.exchange(this.apiAccountSetting, HttpMethod.PUT,
+                                                                          invalidValueRequest, typeRef);
+        assertEquals(HttpStatus.BAD_REQUEST, invalidValueResponse.getStatusCode());
+    }
+
+    @Test
     public void dUpdateAccount() {
         // make sure that Project with functional Identifier "name" is present.
         assertThat(this.serviceStub.existAccount("email"));
@@ -124,7 +154,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         HttpEntity<Account> requestOperationNotAllowed = new HttpEntity<>(notSameID);
         ResponseEntity<Void> responseOperationNotAllowed = restTemplate
                 .exchange(this.apiAccountId, HttpMethod.PUT, requestOperationNotAllowed, typeRef, "email");
-        assertEquals(HttpStatus.METHOD_NOT_ALLOWED, responseOperationNotAllowed.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, responseOperationNotAllowed.getStatusCode());
     }
 
     @Test
@@ -135,4 +165,5 @@ public class AccountControllerIT extends RegardsIntegrationTest {
                                                               "email");
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
+
 }

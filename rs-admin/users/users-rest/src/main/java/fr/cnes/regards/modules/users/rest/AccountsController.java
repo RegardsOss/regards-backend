@@ -27,6 +27,7 @@ import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import fr.cnes.regards.microservices.core.information.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.InvalidValueException;
 import fr.cnes.regards.modules.users.domain.Account;
 import fr.cnes.regards.modules.users.domain.CodeType;
 import fr.cnes.regards.modules.users.service.IAccountService;
@@ -73,12 +74,18 @@ public class AccountsController {
     }
 
     @ExceptionHandler(OperationNotSupportedException.class)
-    @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public void operationNotSupported() {
+    }
+
+    @ExceptionHandler(InvalidValueException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public void invalidValue() {
     }
 
     @ResourceAccess
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+
     public @ResponseBody HttpEntity<List<Account>> retrieveAccountList() {
         List<Account> accounts = this.accountService_.retrieveAccountList();
         return new ResponseEntity<>(accounts, HttpStatus.OK);
@@ -138,7 +145,7 @@ public class AccountsController {
     }
 
     @ResourceAccess
-    @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> changeAccountPassword(@RequestParam("account_id") String accountId,
             @RequestParam("reset_code") String resetCode, @RequestBody String pNewPassword) {
         this.accountService_.changeAccountPassword(accountId, resetCode, pNewPassword);
@@ -153,8 +160,9 @@ public class AccountsController {
     }
 
     @ResourceAccess
-    @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting) {
+    @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody HttpEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting)
+            throws InvalidValueException {
         this.accountService_.updateAccountSetting(pUpdatedAccountSetting);
         return new ResponseEntity<>(HttpStatus.OK);
     }

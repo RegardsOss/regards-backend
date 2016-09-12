@@ -5,6 +5,7 @@ import java.util.List;
 import javax.naming.OperationNotSupportedException;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.InvalidValueException;
 import fr.cnes.regards.modules.users.domain.Account;
 import fr.cnes.regards.modules.users.domain.CodeType;
 
@@ -28,6 +29,6 @@ public interface IAccountService {
 
     List<String> retrieveAccountSettings();
 
-    void updateAccountSetting(String pUpdatedAccountSetting);
+    void updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException;
 
 }

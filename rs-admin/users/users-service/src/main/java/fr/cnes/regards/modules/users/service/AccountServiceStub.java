@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.InvalidValueException;
 import fr.cnes.regards.modules.users.domain.Account;
 import fr.cnes.regards.modules.users.domain.CodeType;
 
@@ -86,8 +87,12 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public void updateAccountSetting(String pUpdatedAccountSetting) {
-        this.accountSetting = pUpdatedAccountSetting;
+    public void updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException {
+        if (pUpdatedAccountSetting.toLowerCase().equals("manual") || pUpdatedAccountSetting.equals("auto-accept")) {
+            this.accountSetting = pUpdatedAccountSetting.toLowerCase();
+            return;
+        }
+        throw new InvalidValueException("Only value accepted : manual or auto-accept");
     }
 
     public boolean existAccount(String pEmail) {
