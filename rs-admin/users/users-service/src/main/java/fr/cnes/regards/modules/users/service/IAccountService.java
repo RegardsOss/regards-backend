@@ -6,7 +6,6 @@ import javax.naming.OperationNotSupportedException;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.users.domain.Account;
-import fr.cnes.regards.modules.users.domain.AccountSetting;
 import fr.cnes.regards.modules.users.domain.CodeType;
 
 public interface IAccountService {
@@ -27,8 +26,8 @@ public interface IAccountService {
 
     void changeAccountPassword(String pAccountId, String pResetCode, String pNewPassword);
 
-    List<AccountSetting> retrieveAccountSettings();
+    List<String> retrieveAccountSettings();
 
-    void updateAccountSetting(AccountSetting pUpdatedAccountSetting);
+    void updateAccountSetting(String pUpdatedAccountSetting);
 
 }

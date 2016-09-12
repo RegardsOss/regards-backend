@@ -23,9 +23,12 @@ cloud:
     server:
       enabled: false
       name: myconfigserver
+
+regards:
+  instance:
+      account_acceptance : auto-accept
       
 eureka:
   client:
     enabled: false
 
- 

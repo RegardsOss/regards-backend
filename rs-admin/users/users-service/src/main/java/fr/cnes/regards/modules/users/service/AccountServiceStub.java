@@ -7,17 +7,20 @@ import java.util.stream.Collectors;
 
 import javax.naming.OperationNotSupportedException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.users.domain.Account;
-import fr.cnes.regards.modules.users.domain.AccountSetting;
 import fr.cnes.regards.modules.users.domain.CodeType;
 
 @Service
 public class AccountServiceStub implements IAccountService {
 
     private static List<Account> accounts = new ArrayList<>();
+
+    @Value("${regards.instance.account_acceptance}")
+    private String accountSetting;
 
     @Override
     public List<Account> retrieveAccountList() {
@@ -70,20 +73,21 @@ public class AccountServiceStub implements IAccountService {
 
     @Override
     public void changeAccountPassword(String pAccountId, String pResetCode, String pNewPassword) {
-        // TODO Auto-generated method stub
-
+        Account account = this.retrieveAccount(pAccountId);
+        // TODO: check resetCode
+        account.setPassword(pNewPassword);
     }
 
     @Override
-    public List<AccountSetting> retrieveAccountSettings() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<String> retrieveAccountSettings() {
+        List<String> accountSettings = new ArrayList<>();
+        accountSettings.add(this.accountSetting);
+        return accountSettings;
     }
 
     @Override
-    public void updateAccountSetting(AccountSetting pUpdatedAccountSetting) {
-        // TODO Auto-generated method stub
-
+    public void updateAccountSetting(String pUpdatedAccountSetting) {
+        this.accountSetting = pUpdatedAccountSetting;
     }
 
     public boolean existAccount(String pEmail) {

@@ -28,7 +28,6 @@ import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import fr.cnes.regards.microservices.core.information.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.users.domain.Account;
-import fr.cnes.regards.modules.users.domain.AccountSetting;
 import fr.cnes.regards.modules.users.domain.CodeType;
 import fr.cnes.regards.modules.users.service.IAccountService;
 
@@ -148,15 +147,14 @@ public class AccountsController {
 
     @ResourceAccess
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<List<AccountSetting>> retrieveAccountSettings() {
-        List<AccountSetting> accountSettings = this.accountService_.retrieveAccountSettings();
+    public @ResponseBody HttpEntity<List<String>> retrieveAccountSettings() {
+        List<String> accountSettings = this.accountService_.retrieveAccountSettings();
         return new ResponseEntity<>(accountSettings, HttpStatus.OK);
     }
 
     @ResourceAccess
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateAccountSetting(
-            @Valid @RequestBody AccountSetting pUpdatedAccountSetting) {
+    public @ResponseBody HttpEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting) {
         this.accountService_.updateAccountSetting(pUpdatedAccountSetting);
         return new ResponseEntity<>(HttpStatus.OK);
     }
