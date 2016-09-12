@@ -22,8 +22,8 @@
 		<artifactId>project-domain</artifactId>
 	</dependency>
 	<dependency>
-		<groupId>fr.cnes.regards.microservices</groupId>
-		<artifactId>microservice-jobs</artifactId>
+		<groupId>fr.cnes.regards.modules</groupId>
+		<artifactId>module-jobs</artifactId>
 		<version>0.0.1</version>
 	</dependency>
 	<!-- Spring dependencies -->
