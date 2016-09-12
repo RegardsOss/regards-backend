@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.${moduleName}.rest;
 
 import javax.annotation.PostConstruct;
@@ -15,10 +18,11 @@ import fr.cnes.regards.microservices.core.information.ModuleInfo;
 import fr.cnes.regards.modules.${moduleName}.domain.Greeting;
 import fr.cnes.regards.modules.${moduleName}.service.GreetingsService;
 
-
 /**
+ * REST module controller
  * 
- * myService Rest controller for the microservice
+ * TODO Description
+ * @author TODO
  *
  */
 @RestController

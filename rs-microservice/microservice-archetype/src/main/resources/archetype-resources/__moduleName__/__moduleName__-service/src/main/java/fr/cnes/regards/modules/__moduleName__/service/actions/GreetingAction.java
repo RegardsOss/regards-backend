@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.${moduleName}.service.actions;
 
 import java.nio.file.Path;
@@ -7,6 +10,12 @@ import fr.cnes.regards.modules.jobs.Job;
 import fr.cnes.regards.modules.jobs.StatusInfo;
 import fr.cnes.regards.modules.${moduleName}.domain.Greeting;
 
+/**
+ * 
+ * TODO Description
+ * @author TODO
+ *
+ */
 public class GreetingAction extends Job {
 
     private static final String template = "Hello, %s!";

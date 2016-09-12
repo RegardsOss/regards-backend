@@ -1,45 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- LICENSE_PLACEHOLDER -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>fr.cnes.regards.modules.${moduleName}</groupId> 
-  <artifactId>${moduleName}-signature</artifactId>
-  <packaging>jar</packaging>
- 
-  <name>REGARDS SIGNATURE - ${moduleName} </name>
-  <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-  
-  <parent>
+	<groupId>fr.cnes.regards.modules.${moduleName}</groupId>
+	<artifactId>${moduleName}-signature</artifactId>
+	<packaging>jar</packaging>
+
+	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>${moduleName}</artifactId>
 		<version>${version}</version>
-  </parent>
-  
-  <dependencies>
-  	<!-- Microservice internal dependencies -->
-  	<dependency>
-		<groupId>fr.cnes.regards.modules.${moduleName}</groupId>
-		<artifactId>${moduleName}-domain</artifactId>
-	</dependency>
-	<!--  Netflix Feign REST Client -->
-	<dependency>
-    	<groupId>com.netflix.feign</groupId>
-    	<artifactId>feign-core</artifactId>
-    	<version>8.18.0</version>
-	</dependency>
-  </dependencies>
+	</parent>
 
-	<build>
-		<plugins>
-			<plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-compiler-plugin</artifactId>
-		        <configuration>
-		          <source>1.8</source>
-		          <target>1.8</target>
-		        </configuration>
-		    </plugin>
-		</plugins>
-	</build>
- 
+	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.${moduleName}</groupId>
+			<artifactId>${moduleName}-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.netflix.feign</groupId>
+			<artifactId>feign-core</artifactId>
+		</dependency>
+	</dependencies>
 </project>

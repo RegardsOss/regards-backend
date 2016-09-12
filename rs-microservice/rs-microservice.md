@@ -95,7 +95,7 @@ Each microservice offers the features :
 
 - OAuth2 authentication : <http://address:port/oauth/token>
 - REST Resources authorization access by user ROLES
-- Access to the Cloud Eureka Regsitry client to communicate with others microservices
+- Access to the Cloud Eureka Registry client to communicate with others microservices
 - Access to the Cloud Config Server to centralize configurations properties
-- Allow CORS requests
+- Allows CORS requests
 - Swagger Interface : <http://address:port/swagger-ui.html>

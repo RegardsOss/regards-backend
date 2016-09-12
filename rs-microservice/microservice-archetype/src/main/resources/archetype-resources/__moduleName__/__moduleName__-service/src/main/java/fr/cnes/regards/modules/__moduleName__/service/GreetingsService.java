@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.${moduleName}.service;
 
 import org.springframework.stereotype.Service;
@@ -5,6 +8,13 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.modules.${moduleName}.domain.Greeting;
 import fr.cnes.regards.modules.${moduleName}.service.actions.GreetingAction;
 
+
+/**
+ * 
+ * TODO Description
+ * @author TODO
+ *
+ */
 @Service
 public class GreetingsService implements IGreetingsService {
 
