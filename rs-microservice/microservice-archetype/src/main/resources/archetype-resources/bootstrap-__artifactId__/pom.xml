@@ -17,11 +17,13 @@
 	</parent>
 
 	<dependencies>
+		<!-- Core dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules.${moduleName}</groupId>
-			<artifactId>${moduleName}-rest</artifactId>
-			<version>${version}</version>
+			<groupId>fr.cnes.regards.microservices</groupId>
+			<artifactId>microservice-core</artifactId>
+			<version>0.0.1</version>
 		</dependency>
+		<!-- Module dependencies -->
 	</dependencies>
 
 	<build>

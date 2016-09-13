@@ -1,13 +1,21 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.${artifactId}.service.actions;
 
 import java.nio.file.Path;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import fr.cnes.regards.modules.jobs.Job;
 import fr.cnes.regards.modules.jobs.StatusInfo;
 import fr.cnes.regards.modules.${artifactId}.domain.Greeting;
 
+/**
+ * 
+ * TODO Description
+ * @author TODO
+ *
+ */
 public class GreetingAction extends Job {
 
     private static final String template = "Hello, %s!";
@@ -62,5 +70,5 @@ public class GreetingAction extends Job {
         // TODO Auto-generated method stub
 
     }
-    
+
 }

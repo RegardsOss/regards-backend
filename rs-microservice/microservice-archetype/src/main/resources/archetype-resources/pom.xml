@@ -12,7 +12,6 @@
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
 	<modules>
-		<module>${moduleName}</module>
 		<module>bootstrap-${artifactId}</module>
 	</modules>
 

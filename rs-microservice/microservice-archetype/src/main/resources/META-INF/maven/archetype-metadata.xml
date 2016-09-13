@@ -4,113 +4,38 @@
 	xsi:schemaLocation="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.0.0 http://maven.apache.org/xsd/archetype-descriptor-1.0.0.xsd"
 	name="microservice-archetype">
 
-	<requiredProperties>
-		<requiredProperty key="moduleName">
-			<defaultValue>${artifactId}</defaultValue>
-		</requiredProperty>
-	</requiredProperties>
-
 	<fileSets>
-		<fileSet filtered="true" packaged="false" encoding="UTF-8">
+		<fileSet filtered="true" encoding="UTF-8">
 			<directory></directory>
 			<includes>
-				<include>.git*</include>
 				<include>pom.xml</include>
 				<include>README.md</include>
 			</includes>
 		</fileSet>
-		<fileSet filtered="true" packaged="false" encoding="UTF-8">
+		<fileSet encoding="UTF-8">
+			<directory></directory>
+			<includes>
+				<include>.git*</include>
+			</includes>
+		</fileSet>
+		<fileSet filtered="true" encoding="UTF-8">
 			<directory>bootstrap-__artifactId__</directory>
 			<includes>
 				<include>pom.xml</include>
 			</includes>
 		</fileSet>
-		<fileSet filtered="true" packaged="false">
+		<fileSet filtered="true" encoding="UTF-8">
 			<directory>bootstrap-__artifactId__/src/main/java/fr/cnes/regards/microservices/__artifactId__</directory>
 			<includes>
 				<include>Application.java</include>
 			</includes>
 		</fileSet>
-		<fileSet filtered="true" packaged="false">
+		<fileSet filtered="true" encoding="UTF-8">
 			<directory>bootstrap-__artifactId__/src/main/resources</directory>
 			<includes>
 				<include>application.yml</include>
 				<include>banner.txt</include>
 			</includes>
 		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__</directory>
-			<includes>
-				<include>pom.xml</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__/__moduleName__-signature/</directory>
-			<includes>
-				<include>pom.xml</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__/__moduleName__-signature/src/main/java/fr/cnes/regards/modules/__moduleName__/signature</directory>
-			<includes>
-				<include>**/*.java</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__/__moduleName__-dao/</directory>
-			<includes>
-				<include>pom.xml</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__/__moduleName__-dao/src/main/java/fr/cnes/regards/modules/__moduleName__/dao</directory>
-			<includes>
-				<include>**/*.java</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__/__moduleName__-domain/</directory>
-			<includes>
-				<include>pom.xml</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__/__moduleName__-domain/src/main/java/fr/cnes/regards/modules/__moduleName__/domain</directory>
-			<includes>
-				<include>**/*.java</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__/__moduleName__-rest/</directory>
-			<includes>
-				<include>pom.xml</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__/__moduleName__-rest/src/main/java/fr/cnes/regards/modules/__moduleName__/rest</directory>
-			<includes>
-				<include>**/*.java</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__/__moduleName__-rest/src/main/resources</directory>
-			<includes>
-				<include>**/*</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__/__moduleName__-service/</directory>
-			<includes>
-				<include>pom.xml</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="false">
-			<directory>__moduleName__/__moduleName__-service/src/main/java/fr/cnes/regards/modules/__moduleName__/service</directory>
-			<includes>
-				<include>pom.xml</include>
-				<include>**/*.java</include>
-			</includes>
-		</fileSet>
 	</fileSets>
-
 </archetype-descriptor>

@@ -1,20 +1,24 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.${artifactId}.domain;
 
+/**
+ *
+ * TODO Description
+ *
+ * @author TODO
+ *
+ */
 public class Greeting {
 
-	private final long id;
-	private final String content;
+    private final String content_;
 
-	public Greeting(long id, String content) {
-		this.id = id;
-		this.content = content;
-	}
+    public Greeting(String pName) {
+        this.content_ = "Hello " + pName;
+    }
 
-	public long getId() {
-		return id;
-	}
-
-	public String getContent() {
-		return content;
-	}
+    public String getContent() {
+        return content_;
+    }
 }
