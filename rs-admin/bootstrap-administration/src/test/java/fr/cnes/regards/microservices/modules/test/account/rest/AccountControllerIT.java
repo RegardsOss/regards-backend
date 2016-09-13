@@ -8,7 +8,9 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.users.domain.Account;
@@ -44,6 +47,10 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     private String apiAccountSetting;
 
+    private String apiUnlockAccount;
+
+    private String apiChangePassword;
+
     @Autowired
     private AccountServiceStub serviceStub;
 
@@ -53,6 +60,9 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     @Value("${root.admin.password:admin}")
     private String rootAdminPassword;
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Before
     public void init() {
         if (restTemplate == null) {
@@ -61,6 +71,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         this.apiAccounts = getApiEndpoint().concat("/accounts");
         this.apiAccountId = this.apiAccounts + "/{account_id}";
         this.apiAccountSetting = this.apiAccounts + "/settings";
+        this.apiUnlockAccount = this.apiAccountId + "/unlock/{unlock_code}";
+        this.apiChangePassword = this.apiAccountId + "/password/{reset_code}";
     }
 
     @Test
@@ -94,6 +106,12 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         ResponseEntity<Account> responseConflict = restTemplate.postForEntity(this.apiAccounts, newAccount,
                                                                               Account.class);
         assertEquals(HttpStatus.CONFLICT, responseConflict.getStatusCode());
+
+        Account containNulls = new Account();
+
+        thrown.expect(HttpMessageNotReadableException.class);
+        ResponseEntity<Account> responseNull = restTemplate.postForEntity(this.apiAccounts, containNulls,
+                                                                          Account.class);
     }
 
     @Test
@@ -158,7 +176,38 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void eDeleteProject() {
+    public void dUnlockAccount() {
+        // make sure that Project with functional Identifier "name" is present.
+        // assertFalse(!this.serviceStub.existAccount("email"));
+        //
+        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
+        // };
+        // ResponseEntity<Void> response = restTemplate.exchange(this.apiUnlockAccount, HttpMethod.GET, null, typeRef,
+        // "email", "unlockCode");
+        // assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    public void dChangeAccountPassword() {
+        // make sure that Project with functional Identifier "name" is present.
+        // assertFalse(!this.serviceStub.existAccount("email"));
+        //
+        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
+        // };
+        //
+        // HttpHeaders headers = new HttpHeaders();
+        // headers.add("content-type", "application/json");
+        //
+        // HttpEntity<String> request = new HttpEntity<>("newPassword", headers);
+        // ResponseEntity<Void> response = restTemplate.exchange(this.apiChangePassword, HttpMethod.PUT, request,
+        // typeRef,
+        // "email", "resetCode");
+        // assertEquals(HttpStatus.OK, response.getStatusCode());
+
+    }
+
+    @Test
+    public void eDeleteAccount() {
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
         ResponseEntity<Void> response = restTemplate.exchange(this.apiAccountId, HttpMethod.DELETE, null, typeRef,
