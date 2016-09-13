@@ -1,8 +1,5 @@
 package fr.cnes.regards.modules.users.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.validation.constraints.NotNull;
 
 import org.springframework.hateoas.ResourceSupport;
@@ -24,11 +21,8 @@ public class Account extends ResourceSupport {
 
     private AccountStatus status_;
 
-    private List<ProjectUser> projectUsers_;
-
     public Account() {
         super();
-        this.projectUsers_ = new ArrayList<>();
         this.status_ = AccountStatus.PENDING;
     }
 
@@ -96,14 +90,6 @@ public class Account extends ResourceSupport {
 
     public void setStatus(AccountStatus pStatus) {
         status_ = pStatus;
-    }
-
-    public List<ProjectUser> getProjectUsers() {
-        return projectUsers_;
-    }
-
-    public void setProjectUsers(List<ProjectUser> pProjectUsers) {
-        projectUsers_ = pProjectUsers;
     }
 
     public void unlock() {

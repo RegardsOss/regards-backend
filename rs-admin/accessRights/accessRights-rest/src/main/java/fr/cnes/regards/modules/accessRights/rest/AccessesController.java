@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.users.rest;
+package fr.cnes.regards.modules.accessRights.rest;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -25,10 +25,10 @@ import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import fr.cnes.regards.microservices.core.information.ModuleInfo;
+import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
+import fr.cnes.regards.modules.accessRights.service.IProjectUserService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.modules.users.domain.ProjectUser;
-import fr.cnes.regards.modules.users.service.IProjectUserService;
 
 @RestController
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")

@@ -1,10 +1,10 @@
-package fr.cnes.regards.modules.users.service;
+package fr.cnes.regards.modules.accessRights.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.users.domain.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 
 @Service
 public class ProjectUserServiceStub implements IProjectUserService {
