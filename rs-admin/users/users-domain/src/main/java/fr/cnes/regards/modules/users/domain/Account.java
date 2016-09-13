@@ -3,18 +3,23 @@ package fr.cnes.regards.modules.users.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import org.springframework.hateoas.ResourceSupport;
 
 public class Account extends ResourceSupport {
 
+    @NotNull
     private String email_;
 
     private String firstName_;
 
     private String lastName_;
 
+    @NotNull
     private String login_;
 
+    // TODO: validation du mot de passe
     private String password_;
 
     private AccountStatus status_;
@@ -25,6 +30,15 @@ public class Account extends ResourceSupport {
         super();
         this.projectUsers_ = new ArrayList<>();
         this.status_ = AccountStatus.PENDING;
+    }
+
+    public Account(String email, String firstName, String lastName, String password) {
+        this();
+        this.email_ = email;
+        this.firstName_ = firstName;
+        this.lastName_ = lastName;
+        this.login_ = email;
+        this.password_ = password;
     }
 
     public Account(String email, String firstName, String lastName, String login, String password) {
@@ -90,6 +104,12 @@ public class Account extends ResourceSupport {
 
     public void setProjectUsers(List<ProjectUser> pProjectUsers) {
         projectUsers_ = pProjectUsers;
+    }
+
+    public void unlock() {
+        if (this.status_.equals(AccountStatus.LOCKED)) {
+            this.status_ = AccountStatus.ACTIVE;
+        }
     }
 
 }

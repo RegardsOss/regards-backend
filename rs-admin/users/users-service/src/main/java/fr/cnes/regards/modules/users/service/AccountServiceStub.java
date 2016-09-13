@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.users.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.naming.OperationNotSupportedException;
@@ -62,13 +63,19 @@ public class AccountServiceStub implements IAccountService {
 
     @Override
     public void codeForAccount(String pEmail, CodeType pType) {
-        // TODO Auto-generated method stub
+        String code = generateCode(pType);
+        // TODO: sendEmail(pEmail,code);
+    }
 
+    private String generateCode(CodeType pType) {
+        return UUID.randomUUID().toString();
     }
 
     @Override
     public void unlockAccount(String pAccountId, String pUnlockCode) {
-        // TODO Auto-generated method stub
+        Account toUnlock = this.retrieveAccount(pAccountId);
+        // TODO: check unlockCode
+        toUnlock.unlock();
 
     }
 

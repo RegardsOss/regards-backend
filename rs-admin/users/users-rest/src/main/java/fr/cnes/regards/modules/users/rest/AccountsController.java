@@ -56,7 +56,7 @@ public class AccountsController {
         authService.setAutorities("/accounts/{account_id}@DELETE", new RoleAuthority("ADMIN"));
         authService.setAutorities("/accounts/code@GET", new RoleAuthority("ADMIN"));
         authService.setAutorities("/accounts/{account_id}/unlock/{unlock_code}@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accounts/{account_id}/password/{reset_code}@GET", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/accounts/{account_id}/password/{reset_code}@PUT", new RoleAuthority("ADMIN"));
         authService.setAutorities("/accounts/settings@GET", new RoleAuthority("ADMIN"));
         authService.setAutorities("/accounts/settings@PUT", new RoleAuthority("ADMIN"));
         // users can just get!
@@ -74,18 +74,17 @@ public class AccountsController {
     }
 
     @ExceptionHandler(OperationNotSupportedException.class)
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "operation not supported")
     public void operationNotSupported() {
     }
 
     @ExceptionHandler(InvalidValueException.class)
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "invalid Value")
     public void invalidValue() {
     }
 
     @ResourceAccess
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-
     public @ResponseBody HttpEntity<List<Account>> retrieveAccountList() {
         List<Account> accounts = this.accountService_.retrieveAccountList();
         return new ResponseEntity<>(accounts, HttpStatus.OK);
@@ -145,9 +144,9 @@ public class AccountsController {
     }
 
     @ResourceAccess
-    @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> changeAccountPassword(@RequestParam("account_id") String accountId,
-            @RequestParam("reset_code") String resetCode, @RequestBody String pNewPassword) {
+            @RequestParam("reset_code") String resetCode, @Valid @RequestBody String pNewPassword) {
         this.accountService_.changeAccountPassword(accountId, resetCode, pNewPassword);
         return new ResponseEntity<>(HttpStatus.OK);
     }
