@@ -51,6 +51,11 @@
   			<artifactId>accessRights-signature</artifactId>
   			<version>1.0-SNAPSHOT</version>
   		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.users</groupId>
+			<artifactId>users-service</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
   	</dependencies>
   </dependencyManagement>
   

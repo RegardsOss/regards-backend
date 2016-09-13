@@ -1,14 +1,19 @@
 package fr.cnes.regards.modules.accessRights.domain;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class ProjectUser {
 
     private String email_;
 
+    @JsonIgnore
     private LocalDateTime lastConnection_;
 
+    @JsonIgnore
     private LocalDateTime lastUpdate_;
 
     private UserStatus status_;
@@ -17,10 +22,13 @@ public class ProjectUser {
 
     public ProjectUser() {
         super();
+        this.lastUpdate_ = LocalDateTime.now();
+        this.metaDatas_ = new ArrayList<>();
+        this.status_ = UserStatus.WAITING_ACCES;
     }
 
     public ProjectUser(String pEmail) {
-        super();
+        this();
         email_ = pEmail;
     }
 
@@ -62,6 +70,14 @@ public class ProjectUser {
 
     public void setMetaDatas(List<MetaData> pMetaDatas) {
         metaDatas_ = pMetaDatas;
+    }
+
+    public ProjectUser accept() {
+        if (this.status_.equals(UserStatus.WAITING_ACCES)) {
+            this.status_ = UserStatus.ACCESS_GRANTED;
+            return this;
+        }
+        throw new IllegalStateException("This request has already been treated");
     }
 
 }

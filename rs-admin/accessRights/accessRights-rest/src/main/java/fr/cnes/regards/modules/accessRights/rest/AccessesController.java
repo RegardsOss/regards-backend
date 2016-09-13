@@ -78,6 +78,11 @@ public class AccessesController {
     public void invalidValue() {
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(value = HttpStatus.CONFLICT)
+    public void illegalState() {
+    }
+
     @ResourceAccess
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<ProjectUser>> retrieveAccessRequestList() {
@@ -94,24 +99,40 @@ public class AccessesController {
     }
 
     @ResourceAccess
-    @RequestMapping(value = "/{access_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<ProjectUser> retrieveAccessRequest(@PathVariable("access_id") String pAccessId) {
-        ProjectUser wanted = this.projectUserService_.retrieveAccessRequest(pAccessId);
-        return new ResponseEntity<>(wanted, HttpStatus.OK);
+    @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") String pAccessId)
+            throws OperationNotSupportedException {
+        this.projectUserService_.acceptAccessRequest(pAccessId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess
-    @RequestMapping(value = "/{access_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateAccessRequest(@PathVariable("access_id") String pAccessId,
-            @RequestBody ProjectUser pUpdatedAccessRequest) {
-        this.projectUserService_.updateAccessRequest(pAccessId, pUpdatedAccessRequest);
+    @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") String pAccessId)
+            throws OperationNotSupportedException {
+        this.projectUserService_.denyAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") String pAccessId) {
-        this.projectUserService_.retrieveAccessRequest(pAccessId);
+        this.projectUserService_.removeAccessRequest(pAccessId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResourceAccess
+    @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody HttpEntity<List<String>> getAccessSettingList() {
+        List<String> accessSettings = this.projectUserService_.getAccessSettingList();
+        return new ResponseEntity<>(accessSettings, HttpStatus.OK);
+    }
+
+    @ResourceAccess
+    @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody HttpEntity<Void> updateAccessSetting(@Valid @RequestBody String pUpdatedProjectUserSetting)
+            throws InvalidValueException {
+        this.projectUserService_.updateAccessSetting(pUpdatedProjectUserSetting);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

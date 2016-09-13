@@ -1,55 +1,59 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>fr.cnes.regards.modules.accessRights</groupId> 
-  <artifactId>accessRights-service</artifactId>
-  <packaging>jar</packaging>
- 
-  <name>REGARDS SERVICE - accessRights </name>
-  <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-  
-  <parent>
+	<groupId>fr.cnes.regards.modules.accessRights</groupId>
+	<artifactId>accessRights-service</artifactId>
+	<packaging>jar</packaging>
+
+	<name>REGARDS SERVICE - accessRights </name>
+	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+
+	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>accessRights</artifactId>
 		<version>1.0-SNAPSHOT</version>
-  </parent>
-    
-  <dependencies>
-    <!-- Microservice internal dependencies -->
-  	<dependency>
-		<groupId>fr.cnes.regards.modules.accessRights</groupId>
-		<artifactId>accessRights-domain</artifactId>
+	</parent>
+
+	<dependencies>
+		<!-- Microservice internal dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessRights</groupId>
+			<artifactId>accessRights-domain</artifactId>
 		</dependency>
-	<dependency>
-		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>module-jobs</artifactId>
-		<version>0.0.1</version>
-	</dependency>
-	<!-- Spring dependencies -->
-	<dependency>
-    	<groupId>org.springframework</groupId>
-    	<artifactId>spring-context</artifactId>
-	</dependency>
-	<!--  Netflix Feign REST Client -->
-	<dependency>
-    	<groupId>com.netflix.feign</groupId>
-    	<artifactId>feign-core</artifactId>
-    	<version>8.18.0</version>
-	</dependency>
-  </dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.users</groupId>
+			<artifactId>users-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>module-jobs</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		<!-- Spring dependencies -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		<!-- Netflix Feign REST Client -->
+		<dependency>
+			<groupId>com.netflix.feign</groupId>
+			<artifactId>feign-core</artifactId>
+			<version>8.18.0</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-compiler-plugin</artifactId>
-		        <configuration>
-		          <source>1.8</source>
-		          <target>1.8</target>
-		        </configuration>
-		    </plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
- 
+
 </project>

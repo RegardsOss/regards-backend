@@ -33,7 +33,9 @@ cloud:
 
 regards:
   instance:
-      account_acceptance : auto-accept
+    account_acceptance : auto-accept
+  project:
+    account_acceptance : auto-accept
       
 eureka:
   client:

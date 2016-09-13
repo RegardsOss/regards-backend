@@ -31,4 +31,10 @@ public interface IAccountService {
 
     void updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException;
 
+    /**
+     * @param pEmail
+     * @return
+     */
+    boolean existAccount(String pEmail);
+
 }
