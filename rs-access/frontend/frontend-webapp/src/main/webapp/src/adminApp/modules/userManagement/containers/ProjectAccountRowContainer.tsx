@@ -1,6 +1,6 @@
 import * as React from "react"
 import { connect } from "react-redux"
-import { ProjectAccount, Account } from "../../../../common/models/users/types"
+import { ProjectAccount, Account } from "@regardsoss/models"
 import ProjectAccountRowComponent from "../components/ProjectAccountRowComponent"
 import * as selectors from "../../../reducer"
 import { browserHistory } from "react-router"

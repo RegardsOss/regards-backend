@@ -3,7 +3,7 @@ import * as React from "react"
 import { connect } from "react-redux"
 import { FormattedMessage } from "react-intl"
 import { fetchProjects } from "../actions/ProjectsActions"
-import { ProjectsStore } from "../../../../common/models/projects/Project"
+import { ProjectsStore } from "@regardsoss/models"
 
 // Container props
 interface ProjectsProps {

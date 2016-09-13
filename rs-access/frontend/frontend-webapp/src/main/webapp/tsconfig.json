@@ -10,9 +10,7 @@
     },
     "exclude" : [
       "node_modules",
-      "web_modules/some-pckg/node_modules",
-      "web_modules/api/node_modules",
-      "web_modules/models/node_modules",
+      "web_modules/**",
       "localtypings"
     ]
 }

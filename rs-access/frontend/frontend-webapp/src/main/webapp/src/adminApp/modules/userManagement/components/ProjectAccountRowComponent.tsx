@@ -1,6 +1,6 @@
 /** @module UserManagement */
 import * as React from "react"
-import { ProjectAccount, Account } from "../../../../common/models/users/types"
+import { ProjectAccount, Account } from "@regardsoss/models"
 import { Link } from "react-router"
 import { ThemeContextType, ThemeContextInterface } from "../../../../common/theme/ThemeContainerInterface"
 import { TableRowColumn, TableRow } from "material-ui/Table"

@@ -1,6 +1,6 @@
 import { createStore, applyMiddleware, compose } from "redux"
 import thunk from "redux-thunk"
-import authorizationMiddleware from "../authentication/AuthorizationMiddleware"
+import { authorizationMiddleware } from "@regardsoss/authentification"
 import * as createLogger from "redux-logger"
 import rootReducer from "../../reducer"
 // Middlewares

@@ -1,5 +1,5 @@
 const {CALL_API, getJSON} = require('redux-api-middleware')
-import Schemas from "../../../common/api/schemas/index"
+import { PROJECT_ARRAY } from "@regardsoss/api"
 import { normalize } from "normalizr"
 import { Action } from "redux"
 import * as selectors from "../../reducer"
@@ -32,7 +32,7 @@ export const fetchProjects = () => ({
       PROJECTS_REQUEST,
       {
         type: PROJECTS_SUCCESS,
-        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ARRAY))
+        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, PROJECT_ARRAY))
       },
       PROJECTS_FAILURE
     ],
@@ -63,7 +63,7 @@ export const createProject = () => ({
       CREATE_PROJECT_REQUEST,
       {
         type: CREATE_PROJECT_SUCCESS,
-        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, Schemas.PROJECT_ARRAY))
+        payload: (action: any, state: any, res: any) => getJSON(res).then((json: any) => normalize(json, PROJECT_ARRAY))
       },
       CREATE_PROJECT_FAILURE
     ],

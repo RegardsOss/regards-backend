@@ -2,8 +2,8 @@ import * as React from "react"
 import { connect } from "react-redux"
 import I18nProvider from "../../../../common/i18n/I18nProvider"
 import LoginComponent from "../components/LoginComponent"
-import { fetchAuthenticate } from "../../../../common/authentication/AuthenticateActions"
-import { fetchEndpoints } from "../../../../common/endpoints"
+import { fetchAuthenticate } from "@regardsoss/authentification"
+import { EndpointActions } from "@regardsoss/endpoints"
 
 export interface AuthenticationProps {
   // From mapStateToProps
@@ -44,7 +44,7 @@ const mapStateToProps = (state: any) => ({
 })
 const mapDispatchToProps = (dispatch: any) => ({
   fetchAuthenticate: (userName: string, password: string) => dispatch(fetchAuthenticate(userName, password)),
-  fetchEndpoints: () => dispatch(fetchEndpoints())
+  fetchEndpoints: () => dispatch(EndpointActions.fetchEndpoints())
 })
 
 export default connect<{}, {}, AuthenticationProps>(mapStateToProps, mapDispatchToProps)(Authentication)

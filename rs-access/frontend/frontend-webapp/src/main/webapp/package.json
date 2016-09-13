@@ -10,9 +10,10 @@
     "copy-assets": "cp ./src/common/theme/custom/background.jpg build/src/common/theme/custom/ && cp ./src/common/theme/custom/*.css build/src/common/theme/custom/",
     "jsdoc": "jsdoc -c jsdoc.conf.json",
     "lint": "tslint -c tslint.json 'src/{,**/}*.ts' 'src/{,**/}*.tsx' -e \"**test.tsx{0,1}\"",
-    "postinstall": "typings install",
+    "postinstall": "rm -rf typings && typings install",
     "prebuild": "npm run preinstall && npm install && npm test",
-    "preinstall": "cd web_modules/api && npm link ../models && cd ../.. && npm link web_modules/some-pckg && npm link web_modules/api && npm link web_modules/models",
+    "bootstrap": "./scripts/bootstrap.sh",
+    "preinstall": "npm run bootstrap",
     "prejsdoc": "tsc",
     "presitemap": "webpack --config webpack.sitemap.config.js --progress",
     "pretest": "(npm run lint --silent || true)",
@@ -87,7 +88,12 @@
     "stompjs": "^2.3.3",
     "@regardsoss/api": "0.0.1",
     "@regardsoss/models": "0.0.1",
-    "@regardsoss/some-pckg": "0.0.1"
+    "@regardsoss/some-pckg": "0.0.1",
+    "@regardsoss/authentification": "0.0.1",
+    "@regardsoss/i18n": "0.0.1",
+    "@regardsoss/theme": "0.0.1",
+    "@regardsoss/injector": "0.0.1",
+    "@regardsoss/access-rights": "0.0.1"
   },
   "devDependencies": {
     "autoprefixer": "^6.3.6",

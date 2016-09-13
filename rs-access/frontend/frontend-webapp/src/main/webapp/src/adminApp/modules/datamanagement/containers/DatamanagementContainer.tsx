@@ -3,7 +3,7 @@ import I18nProvider from "../../../../common/i18n/I18nProvider"
 import DatamanagementComponent from "../components/DatamanagementComponent"
 import ThemeInjector from "../../../../common/theme/ThemeInjector"
 import I18nInjector from "../../../../common/i18n/I18nInjector"
-import ComposedInjector from "../../../../common/injector/ComposedInjector"
+import { ComposedInjector } from "@regardsoss/injector"
 
 interface DatamanagementProps {
   // From Router

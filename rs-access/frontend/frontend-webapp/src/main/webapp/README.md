@@ -5,12 +5,9 @@ This is the REGARDS Access frontend.
 ## Install
 
 ```
-if npm -v < 3.10.7 {
-    npm run preinstall
-    npm install
-} else {
-    npm install
-}
+chmod +x ./scripts/bootstrap.sh
+npm run boostrap
+npm install
 npm run test
 ```
 

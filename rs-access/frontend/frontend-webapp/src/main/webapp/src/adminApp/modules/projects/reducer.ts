@@ -8,7 +8,6 @@ import {
 } from "./actions"
 import { Project } from "@regardsoss/models"
 
-
 export default (state: any = {
   isFetching: false,
   items: {},

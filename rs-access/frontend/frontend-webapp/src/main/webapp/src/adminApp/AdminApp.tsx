@@ -1,9 +1,9 @@
 /** @module AdminApp */
 import * as React from "react"
 import { connect } from "react-redux"
-import { logout } from "../common/authentication/AuthenticateActions"
-import { AuthenticationType } from "../common/authentication/AuthenticationTypes"
-import { isAuthenticated } from "../common/authentication/AuthenticateUtils"
+import { logout } from "@regardsoss/authentification"
+import { isAuthenticated } from "@regardsoss/authentification"
+import { AuthenticationType } from "@regardsoss/models"
 import ThemeHelper from "../common/theme/ThemeHelper"
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"
 import AuthenticationLayout from "./modules/authentication/containers/AuthenticationLayout"

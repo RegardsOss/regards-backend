@@ -1,7 +1,7 @@
 import * as React from "react"
 import Paper from 'material-ui/Paper'
 import AppBar from 'material-ui/AppBar'
-import { Account } from "../../../../common/models/users/Account"
+import { Account } from "@regardsoss/models"
 // Icons
 import IconButton from 'material-ui/IconButton'
 import ArrowBack from 'material-ui/svg-icons/navigation/arrow-back'

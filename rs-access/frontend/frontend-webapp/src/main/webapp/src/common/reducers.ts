@@ -5,10 +5,10 @@ import { combineReducers } from "redux"
 import themeReducers from "./theme/reducers/ThemeReducers"
 import pluginReducers from "./plugins/PluginReducers"
 import i18nReducers from "./i18n/I18nReducers"
-import accessRightsReducers from "./access-rights/AccessRightsReducers"
-import authentication from "./authentication/AuthenticateReducers"
+import { accessRightsReducers } from "@regardsoss/access-rights"
+import { authentication } from "@regardsoss/authentification"
 import { pickBy } from "lodash"
-import * as fromEndpoints from "./endpoints/index"
+import { EndpointReducer , EndpointSelectors} from "@regardsoss/endpoints"
 
 // Keeping both notations as an example
 export default combineReducers({
@@ -17,7 +17,7 @@ export default combineReducers({
   plugins: pluginReducers,
   api: accessRightsReducers,
   authentication,
-  endpoints: fromEndpoints.reducer
+  endpoints: EndpointReducer
 })
 
 export const deleteEntityReducer = (state: any, removeAction: any) => (
@@ -29,4 +29,4 @@ export const deleteEntityReducer = (state: any, removeAction: any) => (
 
 // Selectors
 export const getEndpointsItems = (state: any) =>
-  fromEndpoints.getEndpointsItems(state.endpoints)
+  EndpointSelectors.getEndpointsItems(state.endpoints)

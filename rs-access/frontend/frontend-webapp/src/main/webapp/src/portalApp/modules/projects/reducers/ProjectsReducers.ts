@@ -1,5 +1,5 @@
 import { REQUEST_PROJECTS, RECEIVE_PROJECTS, FAILED_PROJECTS } from "../actions/ProjectsActions"
-import { ProjectsStore } from "../../../../common/models/projects/types"
+import { ProjectsStore } from "@regardsoss/models"
 
 export default (state: ProjectsStore = {
   isFetching: false,

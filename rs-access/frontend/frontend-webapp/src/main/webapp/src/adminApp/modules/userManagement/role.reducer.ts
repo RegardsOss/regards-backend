@@ -1,6 +1,6 @@
 import { PROJECT_ACCOUNT_REQUEST, PROJECT_ACCOUNT_SUCCESS, PROJECT_ACCOUNT_FAILURE } from "./actions"
-import { ApiStateResult } from "../../../common/models/api/types"
-import { Role } from "../../../common/models/users/types"
+import { ApiStateResult } from "@regardsoss/models"
+import { Role } from "@regardsoss/models"
 
 export default (state: ApiStateResult<Role> = {
   isFetching: false,

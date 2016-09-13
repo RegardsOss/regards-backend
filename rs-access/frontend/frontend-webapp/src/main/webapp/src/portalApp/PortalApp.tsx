@@ -5,7 +5,7 @@ import ApplicationErrorComponent from "../common/components/ApplicationErrorComp
 import InstanceComponent from "./modules/projects/components/InstanceComponent"
 import ProjectsContainer from "./modules/projects/containers/ProjectsContainer"
 import SelectLocaleComponent from "../common/i18n/containers/SelectLocaleContainer"
-import { fetchAuthenticate } from "../common/authentication/AuthenticateActions"
+import { fetchAuthenticate } from "@regardsoss/authentification"
 import I18nProvider from "../common/i18n/I18nProvider"
 import ThemeHelper from "../common/theme/ThemeHelper"
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"

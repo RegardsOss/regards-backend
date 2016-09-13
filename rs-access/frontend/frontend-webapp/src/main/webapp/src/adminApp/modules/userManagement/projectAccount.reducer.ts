@@ -1,6 +1,5 @@
 import { PROJECT_ACCOUNT_REQUEST, PROJECT_ACCOUNT_SUCCESS, PROJECT_ACCOUNT_FAILURE } from "./actions"
-import { ApiStateResult, NormalizedAction } from "../../../common/models/api/types"
-import { ProjectAccount } from "../../../common/models/users/types"
+import { ApiStateResult, NormalizedAction, ProjectAccount } from "@regardsoss/models"
 
 export default (state: ApiStateResult<ProjectAccount> = {
   isFetching: false,
