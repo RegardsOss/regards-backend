@@ -4,16 +4,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 public class ProjectUser {
 
     private String email_;
 
-    @JsonIgnore
     private LocalDateTime lastConnection_;
 
-    @JsonIgnore
     private LocalDateTime lastUpdate_;
 
     private UserStatus status_;
@@ -22,9 +18,9 @@ public class ProjectUser {
 
     public ProjectUser() {
         super();
-        this.lastUpdate_ = LocalDateTime.now();
         this.metaDatas_ = new ArrayList<>();
         this.status_ = UserStatus.WAITING_ACCES;
+        this.lastUpdate_ = LocalDateTime.now();
     }
 
     public ProjectUser(String pEmail) {
@@ -38,14 +34,15 @@ public class ProjectUser {
 
     public void setEmail(String pEmail) {
         email_ = pEmail;
+        this.lastUpdate_ = LocalDateTime.now();
     }
 
     public LocalDateTime getLastConnection() {
         return lastConnection_;
     }
 
-    public void setLastConnection(LocalDateTime pLastConnection) {
-        lastConnection_ = pLastConnection;
+    public void setLastConnection() {
+        this.lastConnection_ = LocalDateTime.now();
     }
 
     public LocalDateTime getLastUpdate() {
@@ -54,6 +51,7 @@ public class ProjectUser {
 
     public void setLastUpdate(LocalDateTime pLastUpdate) {
         lastUpdate_ = pLastUpdate;
+        this.lastUpdate_ = LocalDateTime.now();
     }
 
     public UserStatus getStatus() {
@@ -62,6 +60,7 @@ public class ProjectUser {
 
     public void setStatus(UserStatus pStatus) {
         status_ = pStatus;
+        this.lastUpdate_ = LocalDateTime.now();
     }
 
     public List<MetaData> getMetaDatas() {
@@ -70,11 +69,12 @@ public class ProjectUser {
 
     public void setMetaDatas(List<MetaData> pMetaDatas) {
         metaDatas_ = pMetaDatas;
+        this.lastUpdate_ = LocalDateTime.now();
     }
 
     public ProjectUser accept() {
         if (this.status_.equals(UserStatus.WAITING_ACCES)) {
-            this.status_ = UserStatus.ACCESS_GRANTED;
+            this.setStatus(UserStatus.ACCESS_GRANTED);
             return this;
         }
         throw new IllegalStateException("This request has already been treated");

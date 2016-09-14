@@ -34,7 +34,9 @@ public class ProjectServiceStub implements IProjectService {
 
     @Override
     public List<Project> deleteProject(String pProjectId) {
-        projects = projects.stream().filter(p -> !p.getName().equals(pProjectId)).collect(Collectors.toList());
+
+        Project deleted = retrieveProject(pProjectId);
+        deleted.setDeleted(true);
         return this.retrieveProjectList();
     }
 
@@ -42,6 +44,9 @@ public class ProjectServiceStub implements IProjectService {
     public Project modifyProject(String projectId, Project pProject) throws OperationNotSupportedException {
         if (!existProject(projectId)) {
             throw new NoSuchElementException(projectId);
+        }
+        if (!notDeletedProject(projectId)) {
+            throw new IllegalStateException("This project is deleted");
         }
         if (!pProject.getName().equals(projectId)) {
             throw new OperationNotSupportedException("projectId and updated project does not match");
@@ -66,6 +71,11 @@ public class ProjectServiceStub implements IProjectService {
 
     public boolean existProject(String pProjectId) {
         return projects.stream().filter(p -> p.getName().equals(pProjectId)).findFirst().isPresent();
+    }
+
+    public boolean notDeletedProject(String pProjectId) {
+        return projects.stream().filter(p -> !p.isDeleted()).filter(p -> p.getName().equals(pProjectId)).findFirst()
+                .isPresent();
     }
 
 }
