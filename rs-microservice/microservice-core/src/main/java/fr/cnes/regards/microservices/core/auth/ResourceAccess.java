@@ -15,14 +15,15 @@ public @interface ResourceAccess {
     /**
      * Set the name of the current resource.<br>
      * Resource name is associated to the HTTP verb to identify the resource access (i.e. the endpoint). This
-     * association must be unique by microservice.
+     * association must be unique by microservice. Default value ""
+     *
      *
      * @return resource name.
      */
-    String name();
+    String name() default "";
 
     /**
-     * Describe the current feature
+     * Describe the current feature should start with an action verb
      *
      * @return feature description
      */
