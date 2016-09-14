@@ -36,7 +36,7 @@ public class ConfigController {
         authService.setAutorities("/config/value@GET", new RoleAuthority("ADMIN"));
     }
 
-    @ResourceAccess
+    @ResourceAccess(name = "config", description = "FIXME")
     @RequestMapping(value = "/value", method = RequestMethod.GET)
     public String getConfigValue() {
         if (configServerEnabled) {

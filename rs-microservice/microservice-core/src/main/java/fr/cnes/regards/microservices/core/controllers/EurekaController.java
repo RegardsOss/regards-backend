@@ -76,7 +76,7 @@ public class EurekaController {
      *
      * @return
      */
-    @ResourceAccess
+    @ResourceAccess(name = "me", description = "FIXME")
     @RequestMapping(value = "me", method = RequestMethod.GET)
     public String me() {
         if (eurekaServerEnabled) {
@@ -92,7 +92,7 @@ public class EurekaController {
      *
      * @return
      */
-    @ResourceAccess
+    @ResourceAccess(name = "adress", description = "FIXME")
     @RequestMapping(value = "config/adress", method = RequestMethod.GET)
     public String configAddress() {
         if (eurekaServerEnabled && configServerEnabled) {
