@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.administration;
 
 import org.springframework.boot.SpringApplication;
@@ -7,12 +10,15 @@ import fr.cnes.regards.microservices.core.information.MicroserviceInfo;
 import springfox.documentation.builders.ApiInfoBuilder;
 
 /**
- * Main class to start Spring boot application for microservice administration
+ *
+ * Start microservice ${artifactId}
+ * @author TODO
+ *
  */
 @SpringBootApplication(scanBasePackages={"fr.cnes.regards.modules", "fr.cnes.regards.microservices.core"})
 @MicroserviceInfo(name="administration", version="1.0-SNAPSHOT")
 public class Application {
-	
+
 	@Bean
 	public ApiInfoBuilder apiInfoBuilder() {
         return new ApiInfoBuilder()
@@ -21,9 +27,9 @@ public class Application {
                 .license("Apache License Version 2.0")
                 .version("1.0-SNAPSHOT");
     }
-	
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
-    
+
 }

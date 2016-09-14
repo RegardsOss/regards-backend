@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.project.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;

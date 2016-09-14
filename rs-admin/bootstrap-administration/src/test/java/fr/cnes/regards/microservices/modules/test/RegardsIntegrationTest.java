@@ -1,12 +1,6 @@
-/* license_placeholder */
 /*
- * VERSION-HISTORY
- *
- * VERSION : 1.0-SNAPSHOT : FR : FR-REGARDS-1 : 28/04/2015 : Creation
- *
- * END-VERSION-HISTORY
+ * LICENSE_PLACEHOLDER
  */
-
 package fr.cnes.regards.microservices.modules.test;
 
 import java.io.IOException;
@@ -117,7 +111,7 @@ public abstract class RegardsIntegrationTest {
 
         // MultiValueMap is converted by FormHttpMessageConverter
         // with a media type : application/x-www-form-urlencoded (see Spring doc)
-        final MultiValueMap<String, String> bodyMap = new LinkedMultiValueMap<String, String>();
+        final MultiValueMap<String, String> bodyMap = new LinkedMultiValueMap<>();
         bodyMap.add("grant_type", "password");
         bodyMap.add("username", pUsername);
         bodyMap.add("password", pPassword);

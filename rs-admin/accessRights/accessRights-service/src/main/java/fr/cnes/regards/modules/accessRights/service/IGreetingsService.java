@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.accessRights.service;
 
 import fr.cnes.regards.modules.accessRights.domain.Greeting;
