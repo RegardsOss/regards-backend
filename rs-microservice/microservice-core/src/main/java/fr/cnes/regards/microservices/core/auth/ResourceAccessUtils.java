@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.core.auth;
 
 import org.springframework.web.bind.annotation.RequestMapping;
