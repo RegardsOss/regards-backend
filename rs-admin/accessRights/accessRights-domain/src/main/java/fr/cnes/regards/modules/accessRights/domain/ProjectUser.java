@@ -4,6 +4,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import fr.cnes.regards.modules.core.deserializer.LocalDateTimeDeserializer;
+import fr.cnes.regards.modules.core.serializer.LocalDateTimeSerializer;
+
 public class ProjectUser {
 
     private String email_;
@@ -20,6 +26,7 @@ public class ProjectUser {
         super();
         this.metaDatas_ = new ArrayList<>();
         this.status_ = UserStatus.WAITING_ACCES;
+        this.lastConnection_ = LocalDateTime.now();
         this.lastUpdate_ = LocalDateTime.now();
     }
 
@@ -37,18 +44,22 @@ public class ProjectUser {
         this.lastUpdate_ = LocalDateTime.now();
     }
 
-    public LocalDateTime getLastConnection() {
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    public LocalDateTime getLastCo() {
         return lastConnection_;
     }
 
-    public void setLastConnection() {
-        this.lastConnection_ = LocalDateTime.now();
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    public void setLastCo(LocalDateTime pLastConnection) {
+        this.lastConnection_ = pLastConnection;
     }
 
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     public LocalDateTime getLastUpdate() {
         return lastUpdate_;
     }
 
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     public void setLastUpdate(LocalDateTime pLastUpdate) {
         lastUpdate_ = pLastUpdate;
         this.lastUpdate_ = LocalDateTime.now();
@@ -75,6 +86,17 @@ public class ProjectUser {
     public ProjectUser accept() {
         if (this.status_.equals(UserStatus.WAITING_ACCES)) {
             this.setStatus(UserStatus.ACCESS_GRANTED);
+            return this;
+        }
+        throw new IllegalStateException("This request has already been treated");
+    }
+
+    /**
+     * @return
+     */
+    public ProjectUser deny() {
+        if (this.status_.equals(UserStatus.WAITING_ACCES)) {
+            this.setStatus(UserStatus.ACCES_DENIED);
             return this;
         }
         throw new IllegalStateException("This request has already been treated");

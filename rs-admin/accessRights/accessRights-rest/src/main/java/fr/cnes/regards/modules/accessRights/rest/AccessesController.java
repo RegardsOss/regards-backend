@@ -49,8 +49,8 @@ public class AccessesController {
         // admin can do everything!
         authService.setAutorities("/accesses@GET", new RoleAuthority("ADMIN"));
         authService.setAutorities("/accesses@POST", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accesses/{access_id}@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accesses/{access_id}@PUT", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/accesses/{access_id}/accept@PUT", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/accesses/{access_id}/deny@PUT", new RoleAuthority("ADMIN"));
         authService.setAutorities("/accesses/{access_id}@DELETE", new RoleAuthority("ADMIN"));
         authService.setAutorities("/accesses/settings@GET", new RoleAuthority("ADMIN"));
         authService.setAutorities("/accesses/settings@PUT", new RoleAuthority("ADMIN"));
@@ -83,14 +83,14 @@ public class AccessesController {
     public void illegalState() {
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "retrieve the list of access request", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<ProjectUser>> retrieveAccessRequestList() {
         List<ProjectUser> projectUsers = this.projectUserService_.retrieveAccessRequestList();
         return new ResponseEntity<>(projectUsers, HttpStatus.OK);
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "create a new access request", name = "")
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<ProjectUser> requestAccess(@Valid @RequestBody ProjectUser pAccessRequest)
             throws AlreadyExistingException {
@@ -98,7 +98,7 @@ public class AccessesController {
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "accept the access request", name = "")
     @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") String pAccessId)
             throws OperationNotSupportedException {
@@ -106,7 +106,7 @@ public class AccessesController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "deny the access request", name = "")
     @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") String pAccessId)
             throws OperationNotSupportedException {
@@ -114,21 +114,21 @@ public class AccessesController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "remove the access request", name = "")
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") String pAccessId) {
         this.projectUserService_.removeAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "retrieve the list of setting managing the access requests", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<String>> getAccessSettingList() {
         List<String> accessSettings = this.projectUserService_.getAccessSettingList();
         return new ResponseEntity<>(accessSettings, HttpStatus.OK);
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "update the setting managing the access requests", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateAccessSetting(@Valid @RequestBody String pUpdatedProjectUserSetting)
             throws InvalidValueException {
