@@ -9,7 +9,7 @@ import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
-public interface IProjectUserService {
+public interface IAccessRequestService {
 
     List<ProjectUser> retrieveAccessRequestList();
 
@@ -17,12 +17,21 @@ public interface IProjectUserService {
 
     List<String> getAccessSettingList();
 
-    void removeAccessRequest(String pAccessId);
-
-    void acceptAccessRequest(String pAccessId);
-
-    void denyAccessRequest(String pAccessId);
-
     void updateAccessSetting(String pUpdatedProjectUserSetting) throws InvalidValueException;
+
+    /**
+     * @param pAccessId
+     */
+    void removeAccessRequest(int pAccessId);
+
+    /**
+     * @param pAccessId
+     */
+    void acceptAccessRequest(int pAccessId);
+
+    /**
+     * @param pAccessId
+     */
+    void denyAccessRequest(int pAccessId);
 
 }

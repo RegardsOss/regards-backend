@@ -13,7 +13,6 @@
 
   <modules>
   	<module>project</module>
-  	<module>users</module>
   	<module>bootstrap-administration</module>
     <module>accessRights</module>
   </modules>

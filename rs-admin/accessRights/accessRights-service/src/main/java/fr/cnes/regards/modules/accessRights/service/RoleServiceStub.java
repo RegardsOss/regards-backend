@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
@@ -24,6 +25,9 @@ public class RoleServiceStub implements IRoleService {
 
     private static List<Role> roles = new ArrayList<>();
 
+    @Autowired
+    private AccountServiceStub accountService;
+
     @PostConstruct
     public void init() {
         List<ResourcesAccess> permissionList = new ArrayList<>();
@@ -33,8 +37,8 @@ public class RoleServiceStub implements IRoleService {
         permissionList.add(new ResourcesAccess("ResourceAccess 3", "Microservice 3", "Resource 3", HttpVerb.GET));
 
         List<ProjectUser> projectUsers = new ArrayList<>();
-        projectUsers.add(new ProjectUser("laurel@cnes.fr"));
-        projectUsers.add(new ProjectUser("hardy@cnes.fr"));
+        projectUsers.add(new ProjectUser(this.accountService.createAccount("laurel@cnes.fr")));
+        projectUsers.add(new ProjectUser(this.accountService.createAccount("hardy@cnes.fr")));
 
         roles.add(new Role(0, "Tête d'affiche", null, permissionList.subList(1, 2), projectUsers.subList(0, 1)));
         roles.add(new Role(1, "Second rôle", roles.get(0), permissionList.subList(0, 0), projectUsers.subList(0, 0)));

@@ -7,15 +7,19 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.hateoas.ResourceSupport;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import fr.cnes.regards.modules.core.deserializer.LocalDateTimeDeserializer;
 import fr.cnes.regards.modules.core.serializer.LocalDateTimeSerializer;
 
-public class ProjectUser {
+public class ProjectUser extends ResourceSupport {
 
-    private String email_;
+    private static int maxProjectUserId_ = 0;
+
+    private final int projectUserId_;
 
     private LocalDateTime lastConnection_;
 
@@ -25,26 +29,24 @@ public class ProjectUser {
 
     private List<MetaData> metaDatas_;
 
+    private Account account_;
+
     public ProjectUser() {
         super();
+        this.projectUserId_ = maxProjectUserId_;
+        maxProjectUserId_++;
         this.metaDatas_ = new ArrayList<>();
         this.status_ = UserStatus.WAITING_ACCES;
         this.lastConnection_ = LocalDateTime.now();
         this.lastUpdate_ = LocalDateTime.now();
     }
 
-    public ProjectUser(String pEmail) {
+    /**
+     * @param pAccountRequesting
+     */
+    public ProjectUser(Account pAccountRequesting) {
         this();
-        email_ = pEmail;
-    }
-
-    public String getEmail() {
-        return email_;
-    }
-
-    public void setEmail(String pEmail) {
-        email_ = pEmail;
-        this.lastUpdate_ = LocalDateTime.now();
+        this.account_ = pAccountRequesting;
     }
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -103,6 +105,18 @@ public class ProjectUser {
             return this;
         }
         throw new IllegalStateException("This request has already been treated");
+    }
+
+    public Account getAccount() {
+        return account_;
+    }
+
+    public void setAccount(Account pAccount) {
+        account_ = pAccount;
+    }
+
+    public int getProjectUserId() {
+        return projectUserId_;
     }
 
 }

@@ -32,4 +32,9 @@ public interface IRoleService {
 
     List<ProjectUser> retrieveRoleProjectUserList(String pRoleId);
 
+    /**
+     * @return
+     */
+    Role getDefaultRole();
+
 }

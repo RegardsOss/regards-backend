@@ -1,0 +1,126 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
+package fr.cnes.regards.modules.accessRights.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.naming.OperationNotSupportedException;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import fr.cnes.regards.modules.accessRights.domain.Account;
+import fr.cnes.regards.modules.accessRights.domain.CodeType;
+import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.InvalidValueException;
+
+@Service
+public class AccountServiceStub implements IAccountService {
+
+    private static List<Account> accounts = new ArrayList<>();
+
+    @Value("${regards.instance.account_acceptance}")
+    private String accountSetting;
+
+    @Override
+    public List<Account> retrieveAccountList() {
+        return accounts;
+    }
+
+    public Account createAccount(String pEmail) {
+        return new Account(pEmail);
+    }
+
+    @Override
+    public Account createAccount(Account pNewAccount) throws AlreadyExistingException {
+        if (existAccount(pNewAccount.getAccountId())) {
+            throw new AlreadyExistingException(pNewAccount.getAccountId() + "");
+        }
+        accounts.add(pNewAccount);
+        return pNewAccount;
+    }
+
+    @Override
+    public Account retrieveAccount(int pAccountId) {
+        return accounts.stream().filter(a -> a.getEmail().equals(pAccountId)).findFirst().get();
+    }
+
+    @Override
+    public void updateAccount(int pAccountId, Account pUpdatedAccount) throws OperationNotSupportedException {
+        if (existAccount(pAccountId)) {
+            if (pUpdatedAccount.getEmail().equals(pAccountId)) {
+                accounts = accounts.stream().map(a -> a.getEmail().equals(pAccountId) ? pUpdatedAccount : a)
+                        .collect(Collectors.toList());
+                return;
+            }
+            throw new OperationNotSupportedException("Account id specified differs from updated account id");
+        }
+        throw new NoSuchElementException(pAccountId + "");
+    }
+
+    @Override
+    public void removeAccount(int pAccountId) {
+        accounts = accounts.stream().filter(a -> a.getAccountId() != pAccountId).collect(Collectors.toList());
+    }
+
+    @Override
+    public void codeForAccount(String pAccountEmail, CodeType pType) {
+        String code = generateCode(pType);
+        // TODO: sendEmail(pEmail,code);
+    }
+
+    private String generateCode(CodeType pType) {
+        return UUID.randomUUID().toString();
+    }
+
+    @Override
+    public void unlockAccount(int pAccountId, String pUnlockCode) {
+        Account toUnlock = this.retrieveAccount(pAccountId);
+        // TODO: check unlockCode
+        toUnlock.unlock();
+
+    }
+
+    @Override
+    public void changeAccountPassword(int pAccountId, String pResetCode, String pNewPassword) {
+        Account account = this.retrieveAccount(pAccountId);
+        // TODO: check resetCode
+        account.setPassword(pNewPassword);
+    }
+
+    @Override
+    public List<String> retrieveAccountSettings() {
+        List<String> accountSettings = new ArrayList<>();
+        accountSettings.add(this.accountSetting);
+        return accountSettings;
+    }
+
+    @Override
+    public void updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException {
+        if (pUpdatedAccountSetting.toLowerCase().equals("manual") || pUpdatedAccountSetting.equals("auto-accept")) {
+            this.accountSetting = pUpdatedAccountSetting.toLowerCase();
+            return;
+        }
+        throw new InvalidValueException("Only value accepted : manual or auto-accept");
+    }
+
+    @Override
+    public boolean existAccount(int id) {
+        return accounts.stream().filter(p -> p.getAccountId() == id).findFirst().isPresent();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessRights.service.IAccountService#retrieveAccount(java.lang.String)
+     */
+    @Override
+    public Account retrieveAccount(String pEmail) {
+        return null;
+    }
+}
