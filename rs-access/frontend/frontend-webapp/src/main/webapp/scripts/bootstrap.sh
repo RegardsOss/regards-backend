@@ -1,13 +1,32 @@
+#!/usr/bin/env bash
+
+## To enable auto reload we need to create symlink between the modules and the app
+## Webpack compiles all these packages without that package depend on another package
+# and uses the main webapp/node_modules to provides dependencies to these modules (fallback of webpack)
+
+npm link web_modules/data/models
+
+npm link web_modules/data/api
+
+npm link web_modules/utils/endpoints
+
+npm link web_modules/utils/authentication
+
+npm link web_modules/utils/display-control
+
+npm link web_modules/data/store
+
+npm link web_modules/view/theme
+
+npm link web_modules/view/components
+
+npm link web_modules/utils/access-rights
+npm link web_modules/view/i18n
+npm link web_modules/view/injector
+npm link web_modules/utils/some-pckg
+npm link web_modules/utils/plugins
+
+npm link web_modules/modules/admin
+npm link web_modules/modules/admin-data-management
 
 
-## Compiles bottom to top
-npm link web_modules/models
-npm link web_modules/some-pckg
-cd web_modules/api && npm link @regardsoss/models && cd ../..
-npm link web_modules/api
-npm link web_modules/access-rights
-npm link web_modules/i18n
-npm link web_modules/injector
-npm link web_modules/endpoints
-cd web_modules/authentification && npm link @regardsoss/endpoints && cd ../.. && npm link web_modules/authentification
-npm link web_modules/theme

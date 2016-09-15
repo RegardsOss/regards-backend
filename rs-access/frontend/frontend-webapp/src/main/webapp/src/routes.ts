@@ -3,23 +3,26 @@
  * /user  -> UserApp
  * /admin -> AdminApp
  */
+import { adminRouter } from "@regardsoss/admin"
+/*
 import { userAppRoutes } from "./userApp/routes"
-import { adminAppRoutes } from "./adminApp/routes"
 import { portalAppRoutes } from "./portalApp/routes"
 import PortalApp from "./portalApp/PortalApp"
+*/
 import { PlainRoute } from "react-router"
 
 const childRoutes: Array<PlainRoute> = [{
   path: "/",
   childRoutes: [
-    adminAppRoutes,
+    adminRouter/*,
     userAppRoutes,
-    portalAppRoutes
+    portalAppRoutes*/
   ],
   getIndexRoute(nextState: any, cb: any): void {
     require.ensure([], (require: any) => {
       cb(null, {
-        component: PortalApp
+        // component: PortalApp
+        component: adminRouter
       })
     })
   }

@@ -1,14 +1,12 @@
 import * as ReactDOM from "react-dom"
 import {Router, browserHistory, PlainRoute} from "react-router"
 import {Provider} from "react-redux"
-import configureStore from "./common/store/configureStore"
-import preloadedState from "./common/store/preloadedState"
+import { configureStore, preloadedState } from "@regardsoss/store"
 import {routes} from "./routes"
 import {test} from "@regardsoss/some-pckg"
-
-
+import mainReducer from "./reducer.main"
 console.log(test())
-const store = configureStore(preloadedState)
+const store = configureStore(mainReducer, preloadedState)
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory} routes={routes}/>
