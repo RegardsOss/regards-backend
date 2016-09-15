@@ -18,6 +18,9 @@ import fr.cnes.regards.modules.accessRights.domain.UserStatus;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
+/*
+ * LICENSE_PLACEHOLDER
+ */
 @Service
 public class AccessRequestServiceStub implements IAccessRequestService {
 

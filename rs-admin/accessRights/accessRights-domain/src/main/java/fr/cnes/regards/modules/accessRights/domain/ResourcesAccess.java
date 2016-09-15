@@ -7,6 +7,8 @@ import org.springframework.hateoas.ResourceSupport;
 
 public class ResourcesAccess extends ResourceSupport {
 
+    private Integer resourcesAccessId_;
+
     private String description_;
 
     private String microservice_;
@@ -15,12 +17,26 @@ public class ResourcesAccess extends ResourceSupport {
 
     private HttpVerb verb_;
 
-    public ResourcesAccess(String pDescription, String pMicroservice, String pRessource, HttpVerb pVerb) {
+    public ResourcesAccess() {
+        verb_ = HttpVerb.GET;
+    }
+
+    public ResourcesAccess(Integer pResourcesAccessId, String pDescription, String pMicroservice, String pRessource,
+            HttpVerb pVerb) {
         super();
+        resourcesAccessId_ = pResourcesAccessId;
         description_ = pDescription;
         microservice_ = pMicroservice;
         ressource_ = pRessource;
         verb_ = pVerb;
+    }
+
+    public Integer getResourcesAccessId() {
+        return resourcesAccessId_;
+    }
+
+    public void setResourcesAccessId(Integer pResourcesAccessId) {
+        resourcesAccessId_ = pResourcesAccessId;
     }
 
     public String getDescription() {

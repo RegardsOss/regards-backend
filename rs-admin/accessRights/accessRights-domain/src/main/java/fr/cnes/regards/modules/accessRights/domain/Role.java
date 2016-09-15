@@ -3,10 +3,14 @@
  */
 package fr.cnes.regards.modules.accessRights.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.hateoas.ResourceSupport;
 
+/*
+ * LICENSE_PLACEHOLDER
+ */
 public class Role extends ResourceSupport {
 
     private Integer roleId_;
@@ -18,6 +22,13 @@ public class Role extends ResourceSupport {
     private List<ResourcesAccess> permissions_;
 
     private List<ProjectUser> projectUsers_;
+
+    public Role() {
+        super();
+        permissions_ = new ArrayList<>();
+        projectUsers_ = new ArrayList<>();
+
+    }
 
     public Role(Integer pRoleId, String pName, Role pParentRole, List<ResourcesAccess> pPermissions,
             List<ProjectUser> pProjectUsers) {

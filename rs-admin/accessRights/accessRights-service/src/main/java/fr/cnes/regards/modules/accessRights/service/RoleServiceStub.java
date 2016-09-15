@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessRights.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -14,7 +15,7 @@ import javax.naming.OperationNotSupportedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
+import fr.cnes.regards.modules.accessRights.dao.IDaoRole;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
@@ -23,94 +24,113 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 @Service
 public class RoleServiceStub implements IRoleService {
 
-    private static List<Role> roles = new ArrayList<>();
+    private static List<Role> roles_;
 
     @Autowired
-    private AccountServiceStub accountService;
+    private IDaoRole daoRole_;
 
+    @Override
     @PostConstruct
     public void init() {
-        List<ResourcesAccess> permissionList = new ArrayList<>();
-        permissionList.add(new ResourcesAccess("ResourceAccess 0", "Microservice 0", "Resource 0", HttpVerb.GET));
-        permissionList.add(new ResourcesAccess("ResourceAccess 1", "Microservice 1", "Resource 1", HttpVerb.PUT));
-        permissionList.add(new ResourcesAccess("ResourceAccess 2", "Microservice 2", "Resource 2", HttpVerb.DELETE));
-        permissionList.add(new ResourcesAccess("ResourceAccess 3", "Microservice 3", "Resource 3", HttpVerb.GET));
+        roles_ = daoRole_.getAll();
 
-        List<ProjectUser> projectUsers = new ArrayList<>();
-        projectUsers.add(new ProjectUser(this.accountService.createAccount("laurel@cnes.fr")));
-        projectUsers.add(new ProjectUser(this.accountService.createAccount("hardy@cnes.fr")));
-
-        roles.add(new Role(0, "Tête d'affiche", null, permissionList.subList(1, 2), projectUsers.subList(0, 1)));
-        roles.add(new Role(1, "Second rôle", roles.get(0), permissionList.subList(0, 0), projectUsers.subList(0, 0)));
-        roles.add(new Role(2, "Figurant", roles.get(0), permissionList.subList(0, 3), projectUsers.subList(1, 1)));
     }
 
     @Override
     public List<Role> retrieveRoleList() {
-        return roles;
+        return roles_;
     }
 
     @Override
     public Role createRole(Role pNewRole) throws AlreadyExistingException {
-        if (existRole(pNewRole.getName())) {
-            throw new AlreadyExistingException(pNewRole.getName());
+        if (existRole(pNewRole.getRoleId())) {
+            throw new AlreadyExistingException("" + pNewRole.getRoleId());
         }
-        roles.add(pNewRole);
+        roles_.add(pNewRole);
         return pNewRole;
     }
 
     @Override
-    public Role retrieveRole(String pRoleId) {
-        return roles.stream().filter(r -> r.getRoleId().equals(pRoleId)).findFirst().get();
+    public Role retrieveRole(Integer pRoleId) {
+        return roles_.stream().filter(r -> r.getRoleId().equals(pRoleId)).findFirst().get();
     }
 
     @Override
-    public void updateRole(String pRoleId, Role pUpdatedRole) throws OperationNotSupportedException {
+    public void updateRole(Integer pRoleId, Role pUpdatedRole)
+            throws NoSuchElementException, OperationNotSupportedException {
         if (!existRole(pRoleId)) {
-            throw new NoSuchElementException(pRoleId);
+            throw new NoSuchElementException("Role of given id (" + pRoleId + ") could not be found");
         }
         if (!pUpdatedRole.getRoleId().equals(pRoleId)) {
-            throw new IllegalArgumentException("Updated role does not match passed role id");
+            throw new OperationNotSupportedException("Updated role does not match passed role id");
         }
-        roles.stream().map(r -> r.getRoleId().equals(pRoleId) ? pUpdatedRole : r).collect(Collectors.toList());
+        roles_.stream().map(r -> r.getRoleId().equals(pRoleId) ? pUpdatedRole : r).collect(Collectors.toList());
     }
 
     @Override
-    public void removeRole(String pRoleId) {
-        roles = roles.stream().filter(r -> r.getRoleId().equals(pRoleId)).collect(Collectors.toList());
+    public void removeRole(Integer pRoleId) {
+        roles_ = roles_.stream().filter(r -> !r.getRoleId().equals(pRoleId)).collect(Collectors.toList());
     }
 
     @Override
-    public List<ResourcesAccess> retrieveRoleResourcesAccessList(String pRoleId) {
+    public List<ResourcesAccess> retrieveRoleResourcesAccessList(Integer pRoleId) {
         Role role = retrieveRole(pRoleId);
         List<ResourcesAccess> resourcesAccesses = role.getPermissions();
         return resourcesAccesses;
     }
 
     @Override
-    public void updateRoleResourcesAccess(String pRoleId, List<ResourcesAccess> pResourcesAccessList) {
+    public void updateRoleResourcesAccess(Integer pRoleId, List<ResourcesAccess> pResourcesAccessList)
+            throws NoSuchElementException {
         if (!existRole(pRoleId)) {
-            throw new NoSuchElementException(pRoleId);
+            throw new NoSuchElementException("Role of given id (" + pRoleId + ") could not be found");
         }
         Role role = retrieveRole(pRoleId);
-        role.setPermissions(pResourcesAccessList);
+
+        // Finder method
+        // Pass the id and the list to search, returns the element with passed id
+        Function<Integer, List<ResourcesAccess>> find = (id) -> {
+            return pResourcesAccessList.stream().filter(e -> e.getResourcesAccessId().equals(id))
+                    .collect(Collectors.toList());
+        };
+        Function<Integer, Boolean> contains = (id) -> {
+            return !find.apply(id).isEmpty();
+        };
+
+        List<ResourcesAccess> permissions = role.getPermissions();
+        // If an element with the same id is found in the pResourcesAccessList list, replace with it
+        // Else keep the old element
+        permissions.replaceAll(p -> contains.apply(p.getResourcesAccessId())
+                ? find.apply(p.getResourcesAccessId()).get(0) : p);
     }
 
     @Override
-    public void clearRoleResourcesAccess(String pRoleId) {
+    public void clearRoleResourcesAccess(Integer pRoleId) {
         Role role = retrieveRole(pRoleId);
         role.setPermissions(new ArrayList<>());
     }
 
     @Override
-    public List<ProjectUser> retrieveRoleProjectUserList(String pRoleId) {
+    public List<ProjectUser> retrieveRoleProjectUserList(Integer pRoleId) {
         Role role = retrieveRole(pRoleId);
         List<ProjectUser> projectUsers = role.getProjectUsers();
         return projectUsers;
     }
 
-    public boolean existRole(String pRoleId) {
-        return roles.stream().filter(r -> r.getRoleId().equals(pRoleId)).findFirst().isPresent();
+    @Override
+    public boolean existRole(Integer pRoleId) {
+        return roles_.stream().filter(r -> r.getRoleId().equals(pRoleId)).findFirst().isPresent();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessRights.service.IRoleService#getDefaultRole()
+     */
+    @Override
+    public Role getDefaultRole() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

@@ -44,7 +44,7 @@ public abstract class RegardsIntegrationTest {
 
     private static final String BASE_URL_TEMPLATE = "http://localhost:%s";
 
-    private static final String URL_SEPARATOR = "/";
+    protected static final String URL_SEPARATOR = "/";
 
     private static final String DEFAULT_CLIENT = "client";
 
