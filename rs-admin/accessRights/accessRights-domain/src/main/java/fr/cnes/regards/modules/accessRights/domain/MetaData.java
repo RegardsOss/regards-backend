@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.accessRights.domain;
 
 /*
@@ -10,8 +13,6 @@ public class MetaData {
     private String value_;
 
     private UserVisibility visibility_;
-
-    private ProjectUser projectUser_;
 
     public MetaData() {
         super();
@@ -39,14 +40,6 @@ public class MetaData {
 
     public void setVisibility(UserVisibility pVisibility) {
         visibility_ = pVisibility;
-    }
-
-    public ProjectUser getProjectUser() {
-        return projectUser_;
-    }
-
-    public void setProjectUser(ProjectUser pProjectUser) {
-        projectUser_ = pProjectUser;
     }
 
 }

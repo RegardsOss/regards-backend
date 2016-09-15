@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.project.domain;
 
 import javax.validation.constraints.NotNull;
@@ -9,15 +12,17 @@ import org.springframework.hateoas.ResourceSupport;
 public class Project extends ResourceSupport {
 
     @NotNull
-    private String name;
+    private String name_;
 
     @NotNull
-    private String description;
+    private String description_;
 
-    private String icon;
+    private String icon_;
 
     @NotNull
-    private boolean isPublic;
+    private boolean isPublic_;
+
+    private boolean isDeleted_;
 
     public Project() {
         super();
@@ -25,53 +30,61 @@ public class Project extends ResourceSupport {
 
     public Project(String desc, String icon, boolean isPublic, String name) {
         this();
-        this.description = desc;
-        this.icon = icon;
-        this.isPublic = isPublic;
-        this.name = name;
+        this.description_ = desc;
+        this.icon_ = icon;
+        this.isPublic_ = isPublic;
+        this.name_ = name;
     }
 
     public String getDescription() {
-        return description;
+        return description_;
     }
 
     public void setDescription(String pDescription) {
-        description = pDescription;
+        description_ = pDescription;
     }
 
     public String getIcon() {
-        return icon;
+        return icon_;
     }
 
     public void setIcon(String pIcon) {
-        icon = pIcon;
+        icon_ = pIcon;
     }
 
     public boolean isPublic() {
-        return isPublic;
+        return isPublic_;
     }
 
     public void setPublic(boolean pIsPublic) {
-        isPublic = pIsPublic;
+        isPublic_ = pIsPublic;
     }
 
     public String getName() {
-        return name;
+        return name_;
     }
 
     public void setName(String pName) {
-        name = pName;
+        name_ = pName;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o instanceof Project) {
             Project p = (Project) o;
-            return p.name.equals(this.name) && this.description.equals(p.description) && this.icon.equals(p.icon)
-                    && (this.isPublic == p.isPublic);
+            return p.name_.equals(this.name_) && this.description_.equals(p.description_) && this.icon_.equals(p.icon_)
+                    && (this.isPublic_ == p.isPublic_);
         }
 
         return false;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted_;
+    }
+
+    public void setDeleted(boolean pIsDeleted) {
+        isDeleted_ = pIsDeleted;
     }
 
 }

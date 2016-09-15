@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.users.service;
 
 import java.util.List;
@@ -30,5 +33,11 @@ public interface IAccountService {
     List<String> retrieveAccountSettings();
 
     void updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException;
+
+    /**
+     * @param pEmail
+     * @return
+     */
+    boolean existAccount(String pEmail);
 
 }

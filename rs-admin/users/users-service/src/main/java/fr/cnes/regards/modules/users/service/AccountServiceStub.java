@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.users.service;
 
 import java.util.ArrayList;
@@ -102,6 +105,7 @@ public class AccountServiceStub implements IAccountService {
         throw new InvalidValueException("Only value accepted : manual or auto-accept");
     }
 
+    @Override
     public boolean existAccount(String pEmail) {
         return accounts.stream().filter(p -> p.getEmail().equals(pEmail)).findFirst().isPresent();
     }

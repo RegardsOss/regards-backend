@@ -1,8 +1,9 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.accessRights.signature;
 
-
 import feign.RequestLine;
-
 import fr.cnes.regards.modules.accessRights.domain.Greeting;
 
 public interface IGreetingsSignature {

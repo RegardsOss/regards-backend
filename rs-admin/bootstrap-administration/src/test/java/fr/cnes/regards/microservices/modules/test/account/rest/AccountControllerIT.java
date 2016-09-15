@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.modules.test.account.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,6 +66,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    private String apiAccountCode;
+
     @Before
     public void init() {
         if (restTemplate == null) {
@@ -73,6 +78,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         this.apiAccountSetting = this.apiAccounts + "/settings";
         this.apiUnlockAccount = this.apiAccountId + "/unlock/{unlock_code}";
         this.apiChangePassword = this.apiAccountId + "/password/{reset_code}";
+        this.apiAccountCode = this.apiAccounts + "/code";
     }
 
     @Test
@@ -151,6 +157,16 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         ResponseEntity<Void> invalidValueResponse = restTemplate.exchange(this.apiAccountSetting, HttpMethod.PUT,
                                                                           invalidValueRequest, typeRef);
         assertEquals(HttpStatus.BAD_REQUEST, invalidValueResponse.getStatusCode());
+    }
+
+    @Test
+    public void dGetCode() {
+        ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
+        };
+
+        ResponseEntity<Void> response = restTemplate.exchange(this.apiAccountCode + "?email=email&type=UNLOCK",
+                                                              HttpMethod.GET, null, typeRef);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test

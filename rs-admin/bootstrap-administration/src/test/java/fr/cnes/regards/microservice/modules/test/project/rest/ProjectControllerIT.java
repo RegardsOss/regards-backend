@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservice.modules.test.project.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;

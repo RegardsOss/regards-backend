@@ -1,12 +1,13 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.accessRights.service.actions;
 
 import java.nio.file.Path;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import fr.cnes.regards.modules.jobs.Job;
 import fr.cnes.regards.modules.jobs.StatusInfo;
-import fr.cnes.regards.modules.accessRights.domain.Greeting;
 
 public class GreetingAction extends Job {
 
@@ -62,5 +63,5 @@ public class GreetingAction extends Job {
         // TODO Auto-generated method stub
 
     }
-    
+
 }

@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.project.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -74,7 +77,7 @@ public class ProjectController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET, produces = "application/json")
-    @ResourceAccess
+    @ResourceAccess(description = "retrieve the list of project of instance")
     public @ResponseBody HttpEntity<List<Project>> retrieveProjectList() {
         List<Project> projects = projectService.retrieveProjectList();
         addLinksToProjects(projects);
@@ -82,7 +85,7 @@ public class ProjectController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-    @ResourceAccess
+    @ResourceAccess(description = "create a new project")
     public @ResponseBody HttpEntity<Project> createProject(@Valid @RequestBody Project newProject)
             throws AlreadyExistingException {
         Project project = projectService.createProject(newProject);
@@ -93,7 +96,7 @@ public class ProjectController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{project_id}", produces = "application/json")
-    @ResourceAccess
+    @ResourceAccess(description = "retrieve the project project_id")
     public @ResponseBody HttpEntity<Project> retrieveProject(@PathVariable("project_id") String projectId) {
         Project project = projectService.retrieveProject(projectId);
 
@@ -102,7 +105,7 @@ public class ProjectController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_id}", produces = "application/json")
-    @ResourceAccess
+    @ResourceAccess(description = "update the project project_id")
     public @ResponseBody HttpEntity<Void> modifyProject(@PathVariable("project_id") String projectId,
             @RequestBody Project projectUpdated) throws OperationNotSupportedException {
         projectService.modifyProject(projectId, projectUpdated);
@@ -110,7 +113,7 @@ public class ProjectController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{project_id}", produces = "application/json")
-    @ResourceAccess
+    @ResourceAccess(description = "remove the project project_id")
     public @ResponseBody HttpEntity<Void> deleteProject(@PathVariable("project_id") String projectId) {
         projectService.deleteProject(projectId);
         return new ResponseEntity<>(HttpStatus.OK);
