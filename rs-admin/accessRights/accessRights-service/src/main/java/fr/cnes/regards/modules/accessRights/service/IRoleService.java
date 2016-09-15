@@ -9,24 +9,30 @@ import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
+/*
+ * LICENSE_PLACEHOLDER
+ */
 public interface IRoleService {
 
     List<Role> retrieveRoleList();
 
     Role createRole(Role pNewRole) throws AlreadyExistingException;
 
-    Role retrieveRole(String pRoleId);
+    Role retrieveRole(Integer pRoleId);
 
-    void updateRole(String pRoleId, Role pUpdatedRole) throws OperationNotSupportedException;
+    void updateRole(Integer pRoleId, Role pUpdatedRole) throws OperationNotSupportedException;
 
-    void removeRole(String pRoleId);
+    void removeRole(Integer pRoleId);
 
-    List<ResourcesAccess> retrieveRoleResourcesAccessList(String pRoleId);
+    List<ResourcesAccess> retrieveRoleResourcesAccessList(Integer pRoleId);
 
-    void updateRoleResourcesAccess(String pRoleId, List<ResourcesAccess> pResourcesAccessList);
+    void updateRoleResourcesAccess(Integer pRoleId, List<ResourcesAccess> pResourcesAccessList);
 
-    void clearRoleResourcesAccess(String pRoleId);
+    void clearRoleResourcesAccess(Integer pRoleId);
 
-    List<ProjectUser> retrieveRoleProjectUserList(String pRoleId);
+    List<ProjectUser> retrieveRoleProjectUserList(Integer pRoleId);
 
+    boolean existRole(Integer pRoleId);
+
+    void init();
 }

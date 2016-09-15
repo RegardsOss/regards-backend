@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 
+/*
+ * LICENSE_PLACEHOLDER
+ */
 @Service
 public class ProjectUserServiceStub implements IProjectUserService {
 

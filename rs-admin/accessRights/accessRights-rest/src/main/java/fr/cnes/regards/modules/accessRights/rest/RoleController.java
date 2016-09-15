@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.accessRights.rest;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
@@ -11,11 +12,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
@@ -27,17 +30,18 @@ import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 @RestController
 @ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/roles")
-public class RolesController {
+public class RoleController {
 
     @Autowired
     private MethodAutorizationService authService_;
 
     @Autowired
-    private IRoleService rolesService_;
+    private IRoleService roleService_;
 
     /**
      * Method to iniate REST resources authorizations.
@@ -48,7 +52,7 @@ public class RolesController {
         authService_.setAutorities("/roles@GET", new RoleAuthority("ADMIN"));
         authService_.setAutorities("/roles@POST", new RoleAuthority("ADMIN"));
         authService_.setAutorities("/roles/{role_id}@GET", new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/roles/{role_id}@OPUT", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/roles/{role_id}@PUT", new RoleAuthority("ADMIN"));
         authService_.setAutorities("/roles/{role_id}@DELETE", new RoleAuthority("ADMIN"));
         authService_.setAutorities("/roles/{role_id}/permissions@GET", new RoleAuthority("ADMIN"));
         authService_.setAutorities("/roles/{role_id}/permissions@PUT", new RoleAuthority("ADMIN"));
@@ -58,10 +62,30 @@ public class RolesController {
         authService_.setAutorities("/roles@GET", new RoleAuthority("ADMIN"));
     }
 
+    @ExceptionHandler(NoSuchElementException.class)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
+    public void dataNotFound() {
+    }
+
+    @ExceptionHandler(AlreadyExistingException.class)
+    @ResponseStatus(value = HttpStatus.CONFLICT)
+    public void dataAlreadyExisting() {
+    }
+
+    @ExceptionHandler(OperationNotSupportedException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "operation not supported")
+    public void operationNotSupported() {
+    }
+
+    @ExceptionHandler(InvalidValueException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "invalid Value")
+    public void invalidValue() {
+    }
+
     @ResourceAccess
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<Role>> retrieveRoleList() {
-        List<Role> roles = this.rolesService_.retrieveRoleList();
+        List<Role> roles = this.roleService_.retrieveRoleList();
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }
 
@@ -69,62 +93,62 @@ public class RolesController {
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Role> createRole(@Valid @RequestBody Role pNewRole)
             throws AlreadyExistingException {
-        Role created = this.rolesService_.createRole(pNewRole);
+        Role created = this.roleService_.createRole(pNewRole);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @ResourceAccess
     @RequestMapping(value = "/{role_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Role> retrieveRole(@PathVariable("role_id") String pRoleId) {
-        Role role = this.rolesService_.retrieveRole(pRoleId);
+    public @ResponseBody HttpEntity<Role> retrieveRole(@PathVariable("role_id") Integer pRoleId) {
+        Role role = this.roleService_.retrieveRole(pRoleId);
         return new ResponseEntity<>(role, HttpStatus.OK);
     }
 
     @ResourceAccess
     @RequestMapping(value = "/{role_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateRole(@PathVariable("role_id") String pRoleId,
+    public @ResponseBody HttpEntity<Void> updateRole(@PathVariable("role_id") Integer pRoleId,
             @Valid @RequestBody Role pUpdatedRole) throws OperationNotSupportedException {
-        this.rolesService_.updateRole(pRoleId, pUpdatedRole);
+        this.roleService_.updateRole(pRoleId, pUpdatedRole);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess
     @RequestMapping(value = "/{role_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> removeRole(@PathVariable("role_id") String pRoleId)
+    public @ResponseBody HttpEntity<Void> removeRole(@PathVariable("role_id") Integer pRoleId)
             throws OperationNotSupportedException {
-        this.rolesService_.removeRole(pRoleId);
+        this.roleService_.removeRole(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<ResourcesAccess>> retrieveRoleResourcesAccessList(
-            @PathVariable("role_id") String pRoleId) {
-        List<ResourcesAccess> resourcesAccesses = this.rolesService_.retrieveRoleResourcesAccessList(pRoleId);
+            @PathVariable("role_id") Integer pRoleId) {
+        List<ResourcesAccess> resourcesAccesses = this.roleService_.retrieveRoleResourcesAccessList(pRoleId);
         return new ResponseEntity<>(resourcesAccesses, HttpStatus.OK);
     }
 
     @ResourceAccess
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") String pRoleId,
+    public @ResponseBody HttpEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") Integer pRoleId,
             @Valid @RequestBody List<ResourcesAccess> pResourcesAccessList) throws OperationNotSupportedException {
-        this.rolesService_.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
+        this.roleService_.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") String pRoleId)
+    public @ResponseBody HttpEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") Integer pRoleId)
             throws OperationNotSupportedException {
-        this.rolesService_.clearRoleResourcesAccess(pRoleId);
+        this.roleService_.clearRoleResourcesAccess(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess
     @RequestMapping(value = "/{role_id}/users", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<ProjectUser>> retrieveRoleProjectUserList(
-            @PathVariable("role_id") String pRoleId) {
-        List<ProjectUser> projectUserList = this.rolesService_.retrieveRoleProjectUserList(pRoleId);
+            @PathVariable("role_id") Integer pRoleId) {
+        List<ProjectUser> projectUserList = this.roleService_.retrieveRoleProjectUserList(pRoleId);
         return new ResponseEntity<>(projectUserList, HttpStatus.OK);
     }
 
