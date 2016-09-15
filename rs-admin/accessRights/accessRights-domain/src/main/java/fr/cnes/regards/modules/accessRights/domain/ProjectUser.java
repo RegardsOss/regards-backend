@@ -29,6 +29,8 @@ public class ProjectUser extends ResourceSupport {
 
     private List<MetaData> metaDatas_;
 
+    private Role role_;
+
     private Account account_;
 
     public ProjectUser() {
@@ -117,6 +119,14 @@ public class ProjectUser extends ResourceSupport {
 
     public int getProjectUserId() {
         return projectUserId_;
+    }
+
+    public Role getRole() {
+        return role_;
+    }
+
+    public void setRole(Role pRole) {
+        role_ = pRole;
     }
 
 }
