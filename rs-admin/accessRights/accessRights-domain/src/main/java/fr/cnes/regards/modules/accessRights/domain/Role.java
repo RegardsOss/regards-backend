@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.accessRights.domain;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.hateoas.ResourceSupport;
@@ -23,21 +22,36 @@ public class Role extends ResourceSupport {
 
     private List<ProjectUser> projectUsers_;
 
+    private boolean isDefault;
+
+    private boolean isNative;
+
     public Role() {
         super();
-        permissions_ = new ArrayList<>();
-        projectUsers_ = new ArrayList<>();
-
+        isDefault = false;
+        isNative = false;
     }
 
     public Role(Integer pRoleId, String pName, Role pParentRole, List<ResourcesAccess> pPermissions,
             List<ProjectUser> pProjectUsers) {
-        super();
+        this();
         name_ = pName;
         parentRole_ = pParentRole;
         permissions_ = pPermissions;
         projectUsers_ = pProjectUsers;
         roleId_ = pRoleId;
+    }
+
+    public Role(Integer pRoleId, String pName, Role pParentRole, List<ResourcesAccess> pPermissions,
+            List<ProjectUser> pProjectUsers, boolean pIsDefault, boolean pIsNative) {
+        super();
+        roleId_ = pRoleId;
+        name_ = pName;
+        parentRole_ = pParentRole;
+        permissions_ = pPermissions;
+        projectUsers_ = pProjectUsers;
+        isDefault = pIsDefault;
+        isNative = pIsNative;
     }
 
     public String getName() {
@@ -60,8 +74,24 @@ public class Role extends ResourceSupport {
         return roleId_;
     }
 
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    public boolean isNative() {
+        return isNative;
+    }
+
+    public void setDefault(boolean pIsDefault) {
+        isDefault = pIsDefault;
+    }
+
     public void setName(String pName) {
         name_ = pName;
+    }
+
+    public void setNative(boolean pIsNative) {
+        isNative = pIsNative;
     }
 
     public void setParentRole(Role pParentRole) {

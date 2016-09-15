@@ -62,12 +62,12 @@ public class DaoRoleStub implements IDaoRole {
     public List<Role> initDefaultRoles() {
         List<Role> defaultRoles = new ArrayList<>();
 
-        rolePublic = new Role(0, "Public", null, null, projectUsers_.subList(8, 10));
-        roleRegisteredUser = new Role(1, "Registered User", rolePublic, null, projectUsers_.subList(5, 8));
-        roleAdmin = new Role(2, "Admin", roleRegisteredUser, null, projectUsers_.subList(3, 5));
-        roleProjectAdmin = new Role(3, "Project Admin", roleAdmin, null, projectUsers_.subList(1, 3));
+        rolePublic = new Role(0, "Public", null, null, projectUsers_.subList(8, 10), true, true);
+        roleRegisteredUser = new Role(1, "Registered User", rolePublic, null, projectUsers_.subList(5, 8), false, true);
+        roleAdmin = new Role(2, "Admin", roleRegisteredUser, null, projectUsers_.subList(3, 5), false, true);
+        roleProjectAdmin = new Role(3, "Project Admin", roleAdmin, null, projectUsers_.subList(1, 3), false, true);
         roleInstanceAdmin = new Role(4, "Instance Admin", roleProjectAdmin, permissionList_,
-                projectUsers_.subList(0, 1));
+                projectUsers_.subList(0, 1), false, true);
 
         defaultRoles.add(rolePublic);
         defaultRoles.add(roleRegisteredUser);

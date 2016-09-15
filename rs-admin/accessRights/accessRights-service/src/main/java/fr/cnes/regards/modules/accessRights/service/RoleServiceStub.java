@@ -124,4 +124,9 @@ public class RoleServiceStub implements IRoleService {
         return roles_.stream().filter(r -> r.getRoleId().equals(pRoleId)).findFirst().isPresent();
     }
 
+    @Override
+    public Role getDefaultRole() {
+        return daoRole_.getAll().stream().filter(r -> r.isDefault()).findFirst().get();
+    }
+
 }
