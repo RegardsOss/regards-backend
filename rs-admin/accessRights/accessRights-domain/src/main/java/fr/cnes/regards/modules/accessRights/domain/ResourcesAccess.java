@@ -5,9 +5,6 @@ package fr.cnes.regards.modules.accessRights.domain;
 
 import org.springframework.hateoas.ResourceSupport;
 
-/*
- * LICENSE_PLACEHOLDER
- */
 public class ResourcesAccess extends ResourceSupport {
 
     private Integer resourcesAccessId_;

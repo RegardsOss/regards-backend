@@ -12,9 +12,6 @@ import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
-/*
- * LICENSE_PLACEHOLDER
- */
 public interface IRoleService {
 
     List<Role> retrieveRoleList();

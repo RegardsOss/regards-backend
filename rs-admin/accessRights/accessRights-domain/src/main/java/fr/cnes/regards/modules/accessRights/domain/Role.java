@@ -7,9 +7,6 @@ import java.util.List;
 
 import org.springframework.hateoas.ResourceSupport;
 
-/*
- * LICENSE_PLACEHOLDER
- */
 public class Role extends ResourceSupport {
 
     private Integer roleId_;

@@ -21,9 +21,6 @@ import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
-/*
- * LICENSE_PLACEHOLDER
- */
 @Service
 public class RoleServiceStub implements IRoleService {
 
@@ -123,7 +120,12 @@ public class RoleServiceStub implements IRoleService {
     public boolean existRole(Integer pRoleId) {
         return roles_.stream().filter(r -> r.getRoleId().equals(pRoleId)).findFirst().isPresent();
     }
-
+    
+ 	/*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessRights.service.IRoleService#getDefaultRole()
+     */
     @Override
     public Role getDefaultRole() {
         return daoRole_.getAll().stream().filter(r -> r.isDefault()).findFirst().get();

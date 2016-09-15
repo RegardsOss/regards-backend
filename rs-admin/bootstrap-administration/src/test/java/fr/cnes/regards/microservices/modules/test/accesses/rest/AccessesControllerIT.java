@@ -24,8 +24,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
+import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.service.ProjectUserServiceStub;
+import fr.cnes.regards.modules.accessRights.service.AccessRequestServiceStub;
+import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AccessesControllerIT extends RegardsIntegrationTest {
@@ -39,7 +41,10 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     private String apiAccessId;
 
     @Autowired
-    private ProjectUserServiceStub serviceStub;
+    private AccessRequestServiceStub serviceStub;
+
+    @Autowired
+    private AccountServiceStub accountService;
 
     @Value("${root.admin.login:admin}")
     private String rootAdminLogin;
@@ -70,9 +75,11 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void bRequestAccess() {
+        Account newAccountRequesting;
         ProjectUser newAccessRequest;
         // to be accepted
-        newAccessRequest = new ProjectUser("email");
+        newAccountRequesting = this.accountService.createAccount("email");
+        newAccessRequest = new ProjectUser(newAccountRequesting);
 
         ResponseEntity<ProjectUser> response = restTemplate.postForEntity(this.apiAccesses, newAccessRequest,
                                                                           ProjectUser.class);
@@ -83,7 +90,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
         assertEquals(HttpStatus.CONFLICT, responseConflict.getStatusCode());
 
         // to be denied
-        newAccessRequest = new ProjectUser("email2");
+        newAccountRequesting = this.accountService.createAccount("email2");
+        newAccessRequest = new ProjectUser(newAccountRequesting);
 
         response = restTemplate.postForEntity(this.apiAccesses, newAccessRequest, ProjectUser.class);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -92,7 +100,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
         assertEquals(HttpStatus.CONFLICT, responseConflict.getStatusCode());
 
         // to be removed
-        newAccessRequest = new ProjectUser("email3");
+        newAccountRequesting = this.accountService.createAccount("email3");
+        newAccessRequest = new ProjectUser(newAccountRequesting);
 
         response = restTemplate.postForEntity(this.apiAccesses, newAccessRequest, ProjectUser.class);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -102,66 +111,58 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void dAcceptProjectUser() {
-        // make sure that ProjectUser with functional Identifier "name" is present.
-        assertFalse(!this.serviceStub.existAccessRequest("email"));
+    public void dAcceptAccessRequest() {
+        int accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getProjectUserId();
+        assertFalse(!this.serviceStub.existAccessRequest(accessRequestId));
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
         ResponseEntity<Void> response = restTemplate.exchange(this.apiAccessId + "/accept", HttpMethod.PUT, null,
-                                                              typeRef, "email");
+                                                              typeRef, accessRequestId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         // once it's accepted it's no longer a request so next time i try to accept it it cannot be found
-        response = restTemplate.exchange(this.apiAccessId + "/accept", HttpMethod.PUT, null, typeRef, "email");
+        response = restTemplate.exchange(this.apiAccessId + "/accept", HttpMethod.PUT, null, typeRef, accessRequestId);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
+        // something that does not exist
         response = restTemplate.exchange(this.apiAccessId + "/accept", HttpMethod.PUT, null, typeRef,
-                                         "emailljkùqflsdbnqlùfsdqùdfnlùqsdn");
+                                         Integer.MAX_VALUE);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
     }
 
     @Test
-    public void dDenyProjectUser() {
-        // make sure that ProjectUser with functional Identifier "name" is present.
-        assertFalse(!this.serviceStub.existAccessRequest("email2"));
+    public void dDenyAccessRequest() {
+        int accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getProjectUserId();
+        assertFalse(!this.serviceStub.existAccessRequest(accessRequestId));
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
         ResponseEntity<Void> response = restTemplate.exchange(this.apiAccessId + "/deny", HttpMethod.PUT, null, typeRef,
-                                                              "email2");
+                                                              accessRequestId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        response = restTemplate.exchange(this.apiAccessId + "/deny", HttpMethod.PUT, null, typeRef, "email2");
+        response = restTemplate.exchange(this.apiAccessId + "/deny", HttpMethod.PUT, null, typeRef, accessRequestId);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
-        response = restTemplate.exchange(this.apiAccessId + "/deny", HttpMethod.PUT, null, typeRef,
-                                         "emailljkùqflsdbnqlùfsdqùdfnlùqsdn");
+        response = restTemplate.exchange(this.apiAccessId + "/deny", HttpMethod.PUT, null, typeRef, Integer.MAX_VALUE);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
     }
 
     @Test
-    public void eDeleteProjectUser() {
+    public void eDeleteAccessRequest() {
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
-        // already accepted so NOT_FOUND
-        ResponseEntity<Void> response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef,
-                                                              "email");
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-
-        // already denied so NOT_FOUND
-        response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef, "email2");
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-
         // does not exist so NOT_FOUND
-        response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef,
-                                         "hsdfqhfhlùqsdfsdjqùljsdfqlùjùsdlqfj");
+        ResponseEntity<Void> response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef,
+                                                              Integer.MAX_VALUE);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
-        response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef, "email3");
+        int accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getProjectUserId();
+        response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef, accessRequestId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef, "email2");
+        response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef, accessRequestId);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }

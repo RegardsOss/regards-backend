@@ -29,7 +29,7 @@ import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import fr.cnes.regards.microservices.core.information.ModuleInfo;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.service.IProjectUserService;
+import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
  * LICENSE_PLACEHOLDER
  */
 @RestController
-@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/accesses")
 public class AccessesController {
 
@@ -45,7 +45,7 @@ public class AccessesController {
     private MethodAutorizationService authService;
 
     @Autowired
-    private IProjectUserService projectUserService_;
+    private IAccessRequestService projectUserService_;
 
     /**
      * Method to initiate REST resources authorizations.
@@ -106,7 +106,7 @@ public class AccessesController {
 
     @ResourceAccess(description = "accept the access request", name = "")
     @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") String pAccessId)
+    public @ResponseBody HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") int pAccessId)
             throws OperationNotSupportedException {
         this.projectUserService_.acceptAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -114,7 +114,7 @@ public class AccessesController {
 
     @ResourceAccess(description = "deny the access request", name = "")
     @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") String pAccessId)
+    public @ResponseBody HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") int pAccessId)
             throws OperationNotSupportedException {
         this.projectUserService_.denyAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -122,7 +122,7 @@ public class AccessesController {
 
     @ResourceAccess(description = "remove the access request", name = "")
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") String pAccessId) {
+    public @ResponseBody HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") int pAccessId) {
         this.projectUserService_.removeAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

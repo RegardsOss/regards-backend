@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.microservices.modules.test.account.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -22,14 +21,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
-import fr.cnes.regards.modules.users.domain.Account;
-import fr.cnes.regards.modules.users.service.AccountServiceStub;
+import fr.cnes.regards.modules.accessRights.domain.Account;
+import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
 
 /**
  * Just Test the REST API so status code. Correction is left to others.
@@ -104,7 +105,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     @Test
     public void bCreateAccount() {
         Account newAccount;
-        newAccount = new Account("email", "firstName", "lastName", "login", "password");
+        newAccount = new Account("email7", "firstName", "lastName", "login", "password");
 
         ResponseEntity<Account> response = restTemplate.postForEntity(this.apiAccounts, newAccount, Account.class);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -122,21 +123,18 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void cGetAccount() {
-        // make sure that Project with functional Identifier "name" is present.
-        assertFalse(!this.serviceStub.existAccount("email"));
+        List<Account> accounts = this.serviceStub.retrieveAccountList();
+        int accountId = this.serviceStub.retrieveAccountList().get(0).getAccountId();
+        assertFalse(!this.serviceStub.existAccount(accountId));
 
         ParameterizedTypeReference<Account> typeRef = new ParameterizedTypeReference<Account>() {
         };
-        ResponseEntity<Account> response = restTemplate.exchange(this.apiAccountId, HttpMethod.GET, null, typeRef,
-                                                                 "email");
+        ResponseEntity<Object> response = restTemplate.exchange(this.apiAccountId, HttpMethod.GET, null, Object.class,
+                                                                accountId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        // make sure that Project with functional Identifier "msdfqmsdfqbndsjkqfmsdbqjkmfsdjkqfbkmfbjkmsdfqsdfmqbsdq"
-        // doesn't exist
-        assertFalse(this.serviceStub.existAccount("msdfqmsdfqbndsjkqfmsdbqjkmfsdjkqfbkmfbjkmsdfqsdfmqbsdq"));
-        ResponseEntity<Object> responseNotFound = restTemplate
-                .exchange(this.apiAccountId, HttpMethod.GET, null, Object.class,
-                          "msdfqmsdfqbndsjkqfmsdbqjkmfsdjkqfbkmfbjkmsdfqsdfmqbsdq");
+        ResponseEntity<Object> responseNotFound = restTemplate.exchange(this.apiAccountId, HttpMethod.GET, null,
+                                                                        Object.class, Integer.MAX_VALUE);
         assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
 
     }
@@ -171,15 +169,15 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dUpdateAccount() {
-        // make sure that Project with functional Identifier "name" is present.
-        assertThat(this.serviceStub.existAccount("email"));
-        Account updated = this.serviceStub.retrieveAccount("email");
+        Account updated = this.serviceStub.retrieveAccount("email7");
+        int accountId = updated.getAccountId();
+
         updated.setFirstName("AnOtherFirstName");
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
         HttpEntity<Account> request = new HttpEntity<>(updated);
         ResponseEntity<Void> response = restTemplate.exchange(this.apiAccountId, HttpMethod.PUT, request, typeRef,
-                                                              "email");
+                                                              accountId);
         // if that's the same functional ID and the parameter is valid:
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -187,47 +185,43 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         Account notSameID = new Account("notSameEmail", "firstName", "lastName", "login", "password");
         HttpEntity<Account> requestOperationNotAllowed = new HttpEntity<>(notSameID);
         ResponseEntity<Void> responseOperationNotAllowed = restTemplate
-                .exchange(this.apiAccountId, HttpMethod.PUT, requestOperationNotAllowed, typeRef, "email");
+                .exchange(this.apiAccountId, HttpMethod.PUT, requestOperationNotAllowed, typeRef, accountId);
         assertEquals(HttpStatus.BAD_REQUEST, responseOperationNotAllowed.getStatusCode());
     }
 
     @Test
     public void dUnlockAccount() {
-        // make sure that Project with functional Identifier "name" is present.
-        // assertFalse(!this.serviceStub.existAccount("email"));
-        //
-        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
-        // };
-        // ResponseEntity<Void> response = restTemplate.exchange(this.apiUnlockAccount, HttpMethod.GET, null, typeRef,
-        // "email", "unlockCode");
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
+        int accountId = this.serviceStub.retrieveAccountList().get(0).getAccountId();
+        ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
+        };
+        ResponseEntity<Void> response = restTemplate.exchange(this.apiUnlockAccount, HttpMethod.GET, null, typeRef,
+                                                              accountId, "unlockCode");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     public void dChangeAccountPassword() {
-        // make sure that Project with functional Identifier "name" is present.
-        // assertFalse(!this.serviceStub.existAccount("email"));
-        //
-        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
-        // };
-        //
-        // HttpHeaders headers = new HttpHeaders();
-        // headers.add("content-type", "application/json");
-        //
-        // HttpEntity<String> request = new HttpEntity<>("newPassword", headers);
-        // ResponseEntity<Void> response = restTemplate.exchange(this.apiChangePassword, HttpMethod.PUT, request,
-        // typeRef,
-        // "email", "resetCode");
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
+        int accountId = this.serviceStub.retrieveAccountList().get(0).getAccountId();
+        ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
+        };
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> request = new HttpEntity<>("newPassword", headers);
+        ResponseEntity<Void> response = restTemplate.exchange(this.apiChangePassword, HttpMethod.PUT, request, typeRef,
+                                                              accountId, "resetCode");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
 
     }
 
     @Test
     public void eDeleteAccount() {
+        int accountId = this.serviceStub.retrieveAccountList().get(0).getAccountId();
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
         ResponseEntity<Void> response = restTemplate.exchange(this.apiAccountId, HttpMethod.DELETE, null, typeRef,
-                                                              "email");
+                                                              accountId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
