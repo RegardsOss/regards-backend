@@ -38,7 +38,7 @@ public class AccountServiceStub implements IAccountService {
 
     @Override
     public Account createAccount(Account pNewAccount) throws AlreadyExistingException {
-        if (existAccount(pNewAccount.getAccountId())) {
+        if (existAccount(pNewAccount)) {
             throw new AlreadyExistingException(pNewAccount.getAccountId() + "");
         }
         accounts.add(pNewAccount);
@@ -47,13 +47,13 @@ public class AccountServiceStub implements IAccountService {
 
     @Override
     public Account retrieveAccount(int pAccountId) {
-        return accounts.stream().filter(a -> a.getEmail().equals(pAccountId)).findFirst().get();
+        return accounts.stream().filter(a -> a.getAccountId() == pAccountId).findFirst().get();
     }
 
     @Override
     public void updateAccount(int pAccountId, Account pUpdatedAccount) throws OperationNotSupportedException {
         if (existAccount(pAccountId)) {
-            if (pUpdatedAccount.getEmail().equals(pAccountId)) {
+            if (pUpdatedAccount.getAccountId() == pAccountId) {
                 accounts = accounts.stream().map(a -> a.getEmail().equals(pAccountId) ? pUpdatedAccount : a)
                         .collect(Collectors.toList());
                 return;
@@ -114,6 +114,14 @@ public class AccountServiceStub implements IAccountService {
         return accounts.stream().filter(p -> p.getAccountId() == id).findFirst().isPresent();
     }
 
+    /**
+     * @param pNewAccount
+     * @return
+     */
+    private boolean existAccount(Account pNewAccount) {
+        return accounts.stream().filter(p -> p.equals(pNewAccount)).findFirst().isPresent();
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -121,6 +129,6 @@ public class AccountServiceStub implements IAccountService {
      */
     @Override
     public Account retrieveAccount(String pEmail) {
-        return null;
+        return accounts.stream().filter(p -> p.getEmail().equals(pEmail)).findFirst().get();
     }
 }

@@ -11,7 +11,11 @@ public class Account extends ResourceSupport {
 
     private static int maxAccountId_ = 0;
 
-    private final int accountId_;
+    private int accountId_;
+
+    public void setAccountId(int pAccountId) {
+        accountId_ = pAccountId;
+    }
 
     @NotNull
     private String email_;
@@ -112,6 +116,12 @@ public class Account extends ResourceSupport {
 
     public int getAccountId() {
         return accountId_;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return (o instanceof Account) && ((Account) o).email_.equals(this.email_);
+
     }
 
 }

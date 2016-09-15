@@ -103,7 +103,7 @@ public class AccountsController {
 
     @ResourceAccess(description = "retrieve the account account_id", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Account> retrieveAccount(@PathVariable("account_id") String accountId) {
+    public @ResponseBody HttpEntity<Account> retrieveAccount(@PathVariable("account_id") int accountId) {
         Account account = this.accountService_.retrieveAccount(accountId);
         return new ResponseEntity<>(account, HttpStatus.OK);
     }
@@ -132,16 +132,16 @@ public class AccountsController {
      */
     @ResourceAccess(description = "unlock the account account_id according to the code unlock_code", name = "")
     @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> unlockAccount(@RequestParam("account_id") int accountId,
-            @RequestParam("unlock_code") String unlockCode) {
+    public @ResponseBody HttpEntity<Void> unlockAccount(@PathVariable("account_id") int accountId,
+            @PathVariable("unlock_code") String unlockCode) {
         this.accountService_.unlockAccount(accountId, unlockCode);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code", name = "")
-    @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> changeAccountPassword(@RequestParam("account_id") int accountId,
-            @RequestParam("reset_code") String resetCode, @Valid @RequestBody String pNewPassword) {
+    @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody HttpEntity<Void> changeAccountPassword(@PathVariable("account_id") int accountId,
+            @PathVariable("reset_code") String resetCode, @Valid @RequestBody String pNewPassword) {
         this.accountService_.changeAccountPassword(accountId, resetCode, pNewPassword);
         return new ResponseEntity<>(HttpStatus.OK);
     }
