@@ -75,9 +75,11 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void bRequestAccess() {
-        Account newAccessRequest;
+        Account newAccountRequesting;
+        ProjectUser newAccessRequest;
         // to be accepted
-        newAccessRequest = this.accountService.createAccount("email");
+        newAccountRequesting = this.accountService.createAccount("email");
+        newAccessRequest = new ProjectUser(newAccountRequesting);
 
         ResponseEntity<ProjectUser> response = restTemplate.postForEntity(this.apiAccesses, newAccessRequest,
                                                                           ProjectUser.class);
@@ -88,7 +90,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
         assertEquals(HttpStatus.CONFLICT, responseConflict.getStatusCode());
 
         // to be denied
-        newAccessRequest = this.accountService.createAccount("email2");
+        newAccountRequesting = this.accountService.createAccount("email2");
+        newAccessRequest = new ProjectUser(newAccountRequesting);
 
         response = restTemplate.postForEntity(this.apiAccesses, newAccessRequest, ProjectUser.class);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -97,7 +100,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
         assertEquals(HttpStatus.CONFLICT, responseConflict.getStatusCode());
 
         // to be removed
-        newAccessRequest = this.accountService.createAccount("email3");
+        newAccountRequesting = this.accountService.createAccount("email3");
+        newAccessRequest = new ProjectUser(newAccountRequesting);
 
         response = restTemplate.postForEntity(this.apiAccesses, newAccessRequest, ProjectUser.class);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -107,7 +111,7 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void dAcceptProjectUser() {
+    public void dAcceptAccessRequest() {
         int accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getProjectUserId();
         assertFalse(!this.serviceStub.existAccessRequest(accessRequestId));
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
@@ -128,7 +132,7 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void dDenyProjectUser() {
+    public void dDenyAccessRequest() {
         int accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getProjectUserId();
         assertFalse(!this.serviceStub.existAccessRequest(accessRequestId));
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
@@ -146,7 +150,7 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void eDeleteProjectUser() {
+    public void eDeleteAccessRequest() {
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
         // does not exist so NOT_FOUND
