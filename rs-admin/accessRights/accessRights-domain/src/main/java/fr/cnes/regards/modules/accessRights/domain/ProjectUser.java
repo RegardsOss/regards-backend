@@ -3,6 +3,9 @@ package fr.cnes.regards.modules.accessRights.domain;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/*
+ * LICENSE_PLACEHOLDER
+ */
 public class ProjectUser {
 
     private String email_;

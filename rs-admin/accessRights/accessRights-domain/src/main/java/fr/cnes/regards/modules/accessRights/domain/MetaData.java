@@ -1,5 +1,8 @@
 package fr.cnes.regards.modules.accessRights.domain;
 
+/*
+ * LICENSE_PLACEHOLDER
+ */
 public class MetaData {
 
     private String key_;
