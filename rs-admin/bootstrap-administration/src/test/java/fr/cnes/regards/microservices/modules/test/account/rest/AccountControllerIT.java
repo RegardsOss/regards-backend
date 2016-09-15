@@ -105,7 +105,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     @Test
     public void bCreateAccount() {
         Account newAccount;
-        newAccount = new Account("email", "firstName", "lastName", "login", "password");
+        newAccount = new Account("email7", "firstName", "lastName", "login", "password");
 
         ResponseEntity<Account> response = restTemplate.postForEntity(this.apiAccounts, newAccount, Account.class);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -169,8 +169,9 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dUpdateAccount() {
-        int accountId = this.serviceStub.retrieveAccountList().get(0).getAccountId();
-        Account updated = this.serviceStub.retrieveAccount(accountId);
+        Account updated = this.serviceStub.retrieveAccount("email7");
+        int accountId = updated.getAccountId();
+
         updated.setFirstName("AnOtherFirstName");
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
