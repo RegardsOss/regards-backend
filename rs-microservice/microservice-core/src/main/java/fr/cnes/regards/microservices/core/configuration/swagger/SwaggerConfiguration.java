@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.core.configuration.swagger;
 
 import static springfox.documentation.builders.PathSelectors.regex;

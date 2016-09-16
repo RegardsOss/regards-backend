@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.core.configuration.cloud;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
