@@ -38,11 +38,13 @@ public class ProjectUser extends ResourceSupport {
     private UserStatus status_;
 
     @Valid
-    private List<MetaData> metaDatas_;
+    private List<MetaData> metaData_;
 
     @NotNull
     @Valid
     private Role role_;
+
+    private List<ResourcesAccess> permissions;
 
     @NotNull
     @Valid
@@ -52,7 +54,8 @@ public class ProjectUser extends ResourceSupport {
         super();
         this.projectUserId_ = maxProjectUserId_;
         maxProjectUserId_++;
-        this.metaDatas_ = new ArrayList<>();
+        this.permissions = new ArrayList<>();
+        this.metaData_ = new ArrayList<>();
         this.status_ = UserStatus.WAITING_ACCES;
         this.lastConnection_ = LocalDateTime.now();
         this.lastUpdate_ = LocalDateTime.now();
@@ -66,13 +69,26 @@ public class ProjectUser extends ResourceSupport {
         this.account_ = pAccountRequesting;
     }
 
+    public ProjectUser(int projectUserId_, LocalDateTime lastConnection_, LocalDateTime lastUpdate_, UserStatus status_,
+            List<MetaData> metaData_, Role role_, List<ResourcesAccess> permissions, Account account_) {
+        super();
+        this.projectUserId_ = projectUserId_;
+        this.lastConnection_ = lastConnection_;
+        this.lastUpdate_ = lastUpdate_;
+        this.status_ = status_;
+        this.metaData_ = metaData_;
+        this.role_ = role_;
+        this.permissions = permissions;
+        this.account_ = account_;
+    }
+
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    public LocalDateTime getLastCo() {
+    public LocalDateTime getLastConnection() {
         return lastConnection_;
     }
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public void setLastCo(LocalDateTime pLastConnection) {
+    public void setLastConnection(LocalDateTime pLastConnection) {
         this.lastConnection_ = pLastConnection;
     }
 
@@ -96,12 +112,12 @@ public class ProjectUser extends ResourceSupport {
         this.lastUpdate_ = LocalDateTime.now();
     }
 
-    public List<MetaData> getMetaDatas() {
-        return metaDatas_;
+    public List<MetaData> getMetaData() {
+        return metaData_;
     }
 
-    public void setMetaDatas(List<MetaData> pMetaDatas) {
-        metaDatas_ = pMetaDatas;
+    public void setMetaData(List<MetaData> pMetaData) {
+        metaData_ = pMetaData;
         this.lastUpdate_ = LocalDateTime.now();
     }
 
@@ -142,6 +158,19 @@ public class ProjectUser extends ResourceSupport {
 
     public void setRole(Role pRole) {
         role_ = pRole;
+    }
+
+    public List<ResourcesAccess> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<ResourcesAccess> pPermissions) {
+        permissions = pPermissions;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return (o instanceof ProjectUser) && (((ProjectUser) o).projectUserId_ == this.projectUserId_);
     }
 
 }
