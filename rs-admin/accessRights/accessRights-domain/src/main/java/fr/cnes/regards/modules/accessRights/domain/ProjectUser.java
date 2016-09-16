@@ -19,7 +19,7 @@ public class ProjectUser extends ResourceSupport {
 
     private static int maxProjectUserId_ = 0;
 
-    private final int projectUserId_;
+    private int projectUserId_;
 
     private LocalDateTime lastConnection_;
 
@@ -31,12 +31,15 @@ public class ProjectUser extends ResourceSupport {
 
     private Role role_;
 
+    private List<ResourcesAccess> permissions;
+
     private Account account_;
 
     public ProjectUser() {
         super();
         this.projectUserId_ = maxProjectUserId_;
         maxProjectUserId_++;
+        this.permissions = new ArrayList<>();
         this.metaDatas_ = new ArrayList<>();
         this.status_ = UserStatus.WAITING_ACCES;
         this.lastConnection_ = LocalDateTime.now();
@@ -52,12 +55,12 @@ public class ProjectUser extends ResourceSupport {
     }
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    public LocalDateTime getLastCo() {
+    public LocalDateTime getLastConnection() {
         return lastConnection_;
     }
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public void setLastCo(LocalDateTime pLastConnection) {
+    public void setLastConnection(LocalDateTime pLastConnection) {
         this.lastConnection_ = pLastConnection;
     }
 
@@ -121,7 +124,11 @@ public class ProjectUser extends ResourceSupport {
         return projectUserId_;
     }
 
-    public Role getRole() {
+	public void setProjectUserId(int projectUserId_) {
+		this.projectUserId_ = projectUserId_;
+	}
+
+	public Role getRole() {
         return role_;
     }
 
@@ -129,4 +136,17 @@ public class ProjectUser extends ResourceSupport {
         role_ = pRole;
     }
 
+    public List<ResourcesAccess> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<ResourcesAccess> pPermissions) {
+        permissions = pPermissions;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+    	return o instanceof ProjectUser && ((ProjectUser) o).projectUserId_ == this.projectUserId_;
+    }
+    
 }
