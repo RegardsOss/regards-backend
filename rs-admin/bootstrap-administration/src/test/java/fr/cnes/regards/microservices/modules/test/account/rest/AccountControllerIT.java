@@ -129,8 +129,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
         ParameterizedTypeReference<Account> typeRef = new ParameterizedTypeReference<Account>() {
         };
-        ResponseEntity<Object> response = restTemplate.exchange(this.apiAccountId, HttpMethod.GET, null, Object.class,
-                                                                accountId);
+        ResponseEntity<Account> response = restTemplate.exchange(this.apiAccountId, HttpMethod.GET, null, typeRef,
+                                                                 accountId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         ResponseEntity<Object> responseNotFound = restTemplate.exchange(this.apiAccountId, HttpMethod.GET, null,

@@ -36,6 +36,10 @@ public class DaoProjectUserStub implements IDaoProjectUser {
         projectUsers_.add(new ProjectUser(this.accountService.createAccount("registered_user_3@cnes.fr")));
         projectUsers_.add(new ProjectUser(this.accountService.createAccount("public_0@cnes.fr")));
         projectUsers_.add(new ProjectUser(this.accountService.createAccount("public_1@cnes.fr")));
+
+        getByEmail("admin_0@cnes.fr").accept();
+        getByEmail("project_admin_0@cnes.fr").accept();
+        getByEmail("registered_user_0@cnes.fr").accept();
     }
 
     @Override
