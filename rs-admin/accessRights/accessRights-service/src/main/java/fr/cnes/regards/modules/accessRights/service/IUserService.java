@@ -8,6 +8,7 @@ import java.util.List;
 import javax.naming.OperationNotSupportedException;
 
 import fr.cnes.regards.modules.accessRights.domain.Couple;
+import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
@@ -59,5 +60,11 @@ public interface IUserService {
      * @param pUserId
      */
     void removeUserAccessRights(int pUserId);
+
+	List<MetaData> retrieveUserMetaData(int pUserId);
+
+	void updateUserMetaData(int userId, List<MetaData> pUpdatedUserMetaData);
+
+	void removeUserMetaData(int userId);
 
 }

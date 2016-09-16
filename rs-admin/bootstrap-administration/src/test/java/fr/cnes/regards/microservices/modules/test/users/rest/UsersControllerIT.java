@@ -30,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
+import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
@@ -52,6 +53,8 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     private String apiUserPermissions;
 
+    private String apiUserMetaData;
+    
     @Autowired
     private UserServiceStub serviceStub;
 
@@ -69,6 +72,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
         this.apiUsers = getApiEndpoint().concat("/users");
         this.apiUserId = this.apiUsers + "/{user_id}";
         this.apiUserPermissions = this.apiUserId + "/permissions";
+        this.apiUserMetaData = this.apiUserId + "/metadata";
     }
 
     @Test
@@ -97,6 +101,18 @@ public class UsersControllerIT extends RegardsIntegrationTest {
         assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
 
     }
+    
+    @Test
+    public void cGetUserMetaData() {
+    	int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+
+        assertFalse(!this.serviceStub.existUser(userId));
+        ParameterizedTypeReference<List<MetaData>> typeRef = new ParameterizedTypeReference<List<MetaData>>() {
+        };
+        ResponseEntity<List<MetaData>> response = restTemplate.exchange(this.apiUserMetaData, HttpMethod.GET,
+                                                                               null, typeRef, userId);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
 
     @Test
     public void cGetUserPermissions() {
@@ -114,6 +130,23 @@ public class UsersControllerIT extends RegardsIntegrationTest {
                                                                         Object.class, Integer.MAX_VALUE);
         assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
 
+    }
+    
+    @Test
+    public void dUpdateUserMetaData() {
+        int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+
+        List<MetaData> newPermissionList = new ArrayList<>();
+        newPermissionList.add(new MetaData());
+        newPermissionList.add(new MetaData());
+
+        ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
+        };
+        HttpEntity<List<MetaData>> request = new HttpEntity<>(newPermissionList);
+        ResponseEntity<Void> response = restTemplate.exchange(this.apiUserMetaData, HttpMethod.PUT, request, typeRef,
+                                                              userId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
@@ -133,6 +166,17 @@ public class UsersControllerIT extends RegardsIntegrationTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
+    @Test
+    public void dDeleteUserMetaData() {
+        int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+        ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
+        };
+
+        ResponseEntity<Void> response = restTemplate.exchange(this.apiUserMetaData, HttpMethod.DELETE, null, typeRef,
+                                                              userId);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+    
     @Test
     public void dDeleteUserPermissions() {
         int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();

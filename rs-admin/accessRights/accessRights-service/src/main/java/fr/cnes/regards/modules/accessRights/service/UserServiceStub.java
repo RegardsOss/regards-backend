@@ -17,10 +17,12 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
+import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
+import fr.cnes.regards.modules.accessRights.domain.UserVisibility;
 
 /**
  * @author svissier
@@ -58,8 +60,10 @@ public class UserServiceStub implements IUserService {
     @Override
     public ProjectUser retrieveUser(int pUserId) {
     	List<ProjectUser> notWaitingAccess=projectUsers_.stream().filter(p->!p.getStatus().equals(UserStatus.WAITING_ACCES)).collect(Collectors.toList());
-        return notWaitingAccess.stream()
-                .filter(p -> p.getProjectUserId() == pUserId).findFirst().get();
+    	ProjectUser wanted=notWaitingAccess.stream().filter(p -> p.getProjectUserId() == pUserId).findFirst().get();
+    	List<MetaData> visible=wanted.getMetaData().stream().filter(m->!m.getVisibility().equals(UserVisibility.HIDDEN)).collect(Collectors.toList());
+    	ProjectUser sent=new ProjectUser(wanted.getProjectUserId(), wanted.getLastConnection(), wanted.getLastUpdate(), wanted.getStatus(), visible, wanted.getRole(), wanted.getPermissions(), wanted.getAccount());
+        return sent;
     }
 
     /*
@@ -153,5 +157,24 @@ public class UserServiceStub implements IUserService {
         ProjectUser user = this.retrieveUser(pUserId);
         user.setPermissions(new ArrayList<>());
     }
+
+	@Override
+	public List<MetaData> retrieveUserMetaData(int pUserId) {
+		ProjectUser user =this.retrieveUser(pUserId);
+		return user.getMetaData();
+	}
+
+	@Override
+	public void updateUserMetaData(int pUserId, List<MetaData> pUpdatedUserMetaData) {
+		ProjectUser user=this.retrieveUser(pUserId);
+		user.setMetaData(pUpdatedUserMetaData);
+	}
+
+	@Override
+	public void removeUserMetaData(int pUserId) {
+		ProjectUser user=this.retrieveUser(pUserId);
+		user.setMetaData(new ArrayList<>());
+		
+	}
 
 }

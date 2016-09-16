@@ -29,6 +29,7 @@ import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import fr.cnes.regards.microservices.core.information.ModuleInfo;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
+import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
@@ -65,6 +66,9 @@ public class UsersController {
         authService.setAutorities("/users/{user_id}@GET", new RoleAuthority("ADMIN"));
         authService.setAutorities("/users/{user_id}@PUT", new RoleAuthority("ADMIN"));
         authService.setAutorities("/users/{user_id}@DELETE", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/users/{user_id}/metadata@GET", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/users/{user_id}/metadata@PUT", new RoleAuthority("ADMIN"));
+        authService.setAutorities("/users/{user_id}/metadata@DELETE", new RoleAuthority("ADMIN"));
         authService.setAutorities("/users/{user_id}/permissions@GET", new RoleAuthority("ADMIN"));
         authService.setAutorities("/users/{user_id}/permissions@PUT", new RoleAuthority("ADMIN"));
         authService.setAutorities("/users/{user_id}/permissions@DELETE", new RoleAuthority("ADMIN"));
@@ -104,14 +108,14 @@ public class UsersController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "")
+    @ResourceAccess(description = "retrieve the project user and only display public metadata")
     @RequestMapping(value = "/{user_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<ProjectUser> retrieveProjectUser(@PathVariable("user_id") int userId) {
         ProjectUser user = this.userService_.retrieveUser(userId);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "")
+    @ResourceAccess(description = "update the project user")
     @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT, consumes= MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateProjectUser(@PathVariable("user_id") int userId,
             @Valid @RequestBody ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
@@ -119,21 +123,43 @@ public class UsersController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "")
+    @ResourceAccess(description = "remove the project user from the instance")
     @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> removeProjectUser(@PathVariable("user_id") int userId) {
         this.userService_.removeUser(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+    
+    @ResourceAccess(description = "retrieve the list of all metadata of the user")
+    @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody HttpEntity<List<MetaData>> retrieveProjectUserMetaData(
+            @PathVariable("user_id") int pUserId) {
+        return new ResponseEntity<>(this.userService_.retrieveUserMetaData(pUserId), HttpStatus.OK);
+    }
 
-    @ResourceAccess(description = "")
+    @ResourceAccess(description = "update the list of all metadata of the user")
+    @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody HttpEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") int userId,
+            @Valid @RequestBody List<MetaData> pUpdatedUserMetaData) throws OperationNotSupportedException {
+        this.userService_.updateUserMetaData(userId, pUpdatedUserMetaData);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResourceAccess(description = "remove all the metadata of the user")
+    @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody HttpEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") int userId) {
+        this.userService_.removeUserMetaData(userId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResourceAccess(description = "retrieve the list of specific access rights and the role of the project user")
     @RequestMapping(value = "/{user_id}/permissions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Couple<List<ResourcesAccess>, Role>> retrieveProjectUserAccessRights(
             @PathVariable("user_id") int pUserId) {
         return new ResponseEntity<>(this.userService_.retrieveUserAccessRights(pUserId), HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "")
+    @ResourceAccess(description = "update the list of specific user access rights")
     @RequestMapping(value = "/{user_id}/permissions", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateProjectUserAccessRights(@PathVariable("user_id") int userId,
             @Valid @RequestBody List<ResourcesAccess> pUpdatedUserAccessRights) throws OperationNotSupportedException {
@@ -141,7 +167,7 @@ public class UsersController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "")
+    @ResourceAccess(description = "remove all the specific access rights")
     @RequestMapping(value = "/{user_id}/permissions", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> removeProjectUserAccessRights(@PathVariable("user_id") int userId) {
         this.userService_.removeUserAccessRights(userId);
