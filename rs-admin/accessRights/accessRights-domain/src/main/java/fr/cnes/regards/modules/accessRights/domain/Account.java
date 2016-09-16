@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessRights.domain;
 
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.Email;
 import org.springframework.hateoas.ResourceSupport;
 
 public class Account extends ResourceSupport {
@@ -18,6 +19,7 @@ public class Account extends ResourceSupport {
     }
 
     @NotNull
+    @Email
     private String email_;
 
     private String firstName_;

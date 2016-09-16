@@ -7,6 +7,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
+
 import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -17,20 +22,30 @@ import fr.cnes.regards.modules.core.serializer.LocalDateTimeSerializer;
 
 public class ProjectUser extends ResourceSupport {
 
+    @Min(0)
     private static int maxProjectUserId_ = 0;
 
+    @Min(0)
     private final int projectUserId_;
 
+    @Past
     private LocalDateTime lastConnection_;
 
+    @Past
     private LocalDateTime lastUpdate_;
 
+    @NotNull
     private UserStatus status_;
 
+    @Valid
     private List<MetaData> metaDatas_;
 
+    @NotNull
+    @Valid
     private Role role_;
 
+    @NotNull
+    @Valid
     private Account account_;
 
     public ProjectUser() {

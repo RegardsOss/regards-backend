@@ -1,4 +1,7 @@
-package fr.cnes.regards.modules.accessRights.dao;
+/*
+ * LICENSE_PLACEHOLDER
+ */
+package fr.cnes.regards.modules.accessRights.dao.test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,12 +11,10 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
 
-/*
- * LICENSE_PLACEHOLDER
- */
 @Repository
 public class DaoProjectUserStub implements IDaoProjectUser {
 

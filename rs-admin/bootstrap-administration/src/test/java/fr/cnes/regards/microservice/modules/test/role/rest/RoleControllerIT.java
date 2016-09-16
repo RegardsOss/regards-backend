@@ -8,13 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runners.MethodSorters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -37,10 +33,7 @@ import fr.cnes.regards.modules.accessRights.service.IRoleService;
  * @author xbrochar
  *
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RoleControllerIT extends RegardsIntegrationTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoleControllerIT.class);
 
     private TestRestTemplate restTemplate;
 
@@ -75,7 +68,7 @@ public class RoleControllerIT extends RegardsIntegrationTest {
         apiRolesUsers = apiRolesId + URL_SEPARATOR + "users";
 
         // Reset the items before each test
-        roleService_.init();
+        // roleService_ = new Ro
     }
 
     @Test
@@ -120,7 +113,7 @@ public class RoleControllerIT extends RegardsIntegrationTest {
     public void updateRole() {
         Integer roleId = 0;
         assertThat(roleService_.existRole(roleId));
-        Role updated = this.roleService_.retrieveRole(roleId);
+        Role updated = roleService_.retrieveRole(roleId);
         updated.setName("newName");
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };

@@ -3,40 +3,43 @@
  */
 package fr.cnes.regards.modules.accessRights.domain;
 
+import javax.validation.constraints.NotNull;
+
 import org.springframework.hateoas.ResourceSupport;
 
 public class ResourcesAccess extends ResourceSupport {
 
-    private Integer resourcesAccessId_;
+    @NotNull
+    private final Integer resourcesAccessId_;
 
     private String description_;
 
+    @NotNull
     private String microservice_;
 
-    private String ressource_;
+    @NotNull
+    private String resource_;
 
+    @NotNull
     private HttpVerb verb_;
 
-    public ResourcesAccess() {
+    public ResourcesAccess(Integer pResourcesAccessId) {
+        resourcesAccessId_ = pResourcesAccessId;
         verb_ = HttpVerb.GET;
     }
 
-    public ResourcesAccess(Integer pResourcesAccessId, String pDescription, String pMicroservice, String pRessource,
+    public ResourcesAccess(Integer pResourcesAccessId, String pDescription, String pMicroservice, String pResource,
             HttpVerb pVerb) {
         super();
         resourcesAccessId_ = pResourcesAccessId;
         description_ = pDescription;
         microservice_ = pMicroservice;
-        ressource_ = pRessource;
+        resource_ = pResource;
         verb_ = pVerb;
     }
 
     public Integer getResourcesAccessId() {
         return resourcesAccessId_;
-    }
-
-    public void setResourcesAccessId(Integer pResourcesAccessId) {
-        resourcesAccessId_ = pResourcesAccessId;
     }
 
     public String getDescription() {
@@ -55,12 +58,12 @@ public class ResourcesAccess extends ResourceSupport {
         microservice_ = pMicroservice;
     }
 
-    public String getRessource() {
-        return ressource_;
+    public String getResource() {
+        return resource_;
     }
 
-    public void setRessource(String pRessource) {
-        ressource_ = pRessource;
+    public void setResource(String pResource) {
+        resource_ = pResource;
     }
 
     public HttpVerb getVerb() {
@@ -71,4 +74,11 @@ public class ResourcesAccess extends ResourceSupport {
         verb_ = pVerb;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        return (o instanceof ResourcesAccess) && ((ResourcesAccess) o).microservice_.equals(this.microservice_)
+                && ((ResourcesAccess) o).resource_.equals(this.resource_)
+                && ((ResourcesAccess) o).verb_.equals(this.verb_);
+
+    }
 }

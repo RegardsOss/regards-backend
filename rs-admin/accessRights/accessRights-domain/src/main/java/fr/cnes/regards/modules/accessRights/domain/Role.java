@@ -5,38 +5,49 @@ package fr.cnes.regards.modules.accessRights.domain;
 
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.hateoas.ResourceSupport;
 
 public class Role extends ResourceSupport {
 
-    private Integer roleId_;
+    @NotNull
+    private final Integer roleId_;
 
+    @NotBlank
     private String name_;
 
+    @NotNull
+    @Valid
+    // TODO: Create a specific constraint => only role PUBLIC can have no parent
     private Role parentRole_;
 
+    @Valid
     private List<ResourcesAccess> permissions_;
 
+    @Valid
     private List<ProjectUser> projectUsers_;
 
     private boolean isDefault;
 
-    private boolean isNative;
+    private final boolean isNative;
 
-    public Role() {
+    public Role(Integer pRoleId) {
         super();
+        roleId_ = pRoleId;
         isDefault = false;
         isNative = false;
     }
 
     public Role(Integer pRoleId, String pName, Role pParentRole, List<ResourcesAccess> pPermissions,
             List<ProjectUser> pProjectUsers) {
-        this();
+        this(pRoleId);
         name_ = pName;
         parentRole_ = pParentRole;
         permissions_ = pPermissions;
         projectUsers_ = pProjectUsers;
-        roleId_ = pRoleId;
     }
 
     public Role(Integer pRoleId, String pName, Role pParentRole, List<ResourcesAccess> pPermissions,
@@ -87,10 +98,6 @@ public class Role extends ResourceSupport {
         name_ = pName;
     }
 
-    public void setNative(boolean pIsNative) {
-        isNative = pIsNative;
-    }
-
     public void setParentRole(Role pParentRole) {
         parentRole_ = pParentRole;
     }
@@ -103,8 +110,9 @@ public class Role extends ResourceSupport {
         projectUsers_ = pProjectUsers;
     }
 
-    public void setRoleId(Integer pRoleId) {
-        roleId_ = pRoleId;
+    @Override
+    public boolean equals(Object pObj) {
+        return (pObj instanceof Role) && ((Role) pObj).roleId_.equals(this.roleId_);
     }
 
 }

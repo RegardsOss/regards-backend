@@ -34,7 +34,7 @@ public interface IRoleService {
 
     boolean existRole(Integer pRoleId);
 
-    Role getDefaultRole();
+    boolean existRole(Role pRole);
 
-    void init();
+    Role getDefaultRole();
 }

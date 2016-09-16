@@ -1,7 +1,5 @@
-/*
- * LICENSE_PLACEHOLDER
- */
-package fr.cnes.regards.modules.accessRights.service;
+
+package fr.cnes.regards.modules.accessRights.dao.test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,26 +11,53 @@ import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
+import fr.cnes.regards.modules.accessRights.dao.IDaoResourcesAccess;
 import fr.cnes.regards.modules.accessRights.dao.IDaoRole;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
-@Service
-public class RoleServiceStub implements IRoleService {
+@Repository
+public class DaoRoleStub implements IDaoRole {
 
-    private static List<Role> roles_;
+    private List<Role> roles_;
 
     @Autowired
-    private IDaoRole daoRole_;
+    private IDaoResourcesAccess daoResourcesAccess_;
 
-    @Override
+    @Autowired
+    private IDaoProjectUser daoProjectUser_;
+
     @PostConstruct
     public void init() {
-        roles_ = daoRole_.getAll();
+        List<ResourcesAccess> permissionList_ = daoResourcesAccess_.getAll();
+        List<ProjectUser> projectUsers_ = daoProjectUser_.getAll();
+
+        // Init default roles
+        Role rolePublic = new Role(0, "Public", null, null, projectUsers_.subList(8, 10), true, true);
+        Role roleRegisteredUser = new Role(1, "Registered User", rolePublic, null, projectUsers_.subList(5, 8), false,
+                true);
+        Role roleAdmin = new Role(2, "Admin", roleRegisteredUser, null, projectUsers_.subList(3, 5), false, true);
+        Role roleProjectAdmin = new Role(3, "Project Admin", roleAdmin, null, projectUsers_.subList(1, 3), false, true);
+        Role roleInstanceAdmin = new Role(4, "Instance Admin", roleProjectAdmin, permissionList_,
+                projectUsers_.subList(0, 1), false, true);
+        roles_.add(rolePublic);
+        roles_.add(roleRegisteredUser);
+        roles_.add(roleAdmin);
+        roles_.add(roleProjectAdmin);
+        roles_.add(roleInstanceAdmin);
+
+        // Init some custom roles
+        Role role0 = new Role(5, "Role 0", rolePublic, permissionList_.subList(1, 2), projectUsers_.subList(0, 1));
+        Role role1 = new Role(6, "Role 1", rolePublic, permissionList_.subList(0, 2), projectUsers_.subList(1, 2));
+        Role role2 = new Role(7, "Role 2", rolePublic, permissionList_.subList(1, 3), projectUsers_.subList(0, 2));
+        roles_.add(role0);
+        roles_.add(role1);
+        roles_.add(role2);
     }
 
     @Override
@@ -42,7 +67,7 @@ public class RoleServiceStub implements IRoleService {
 
     @Override
     public Role createRole(Role pNewRole) throws AlreadyExistingException {
-        if (existRole(pNewRole.getRoleId())) {
+        if (existRole(pNewRole)) {
             throw new AlreadyExistingException("" + pNewRole.getRoleId());
         }
         roles_.add(pNewRole);
@@ -120,15 +145,19 @@ public class RoleServiceStub implements IRoleService {
     public boolean existRole(Integer pRoleId) {
         return roles_.stream().filter(r -> r.getRoleId().equals(pRoleId)).findFirst().isPresent();
     }
-    
- 	/*
+
+    @Override
+    public boolean existRole(Role role) {
+        return roles_.contains(role);
+    }
+
+    /*
      * (non-Javadoc)
      *
      * @see fr.cnes.regards.modules.accessRights.service.IRoleService#getDefaultRole()
      */
     @Override
     public Role getDefaultRole() {
-        return daoRole_.getAll().stream().filter(r -> r.isDefault()).findFirst().get();
+        return retrieveRoleList().stream().filter(r -> r.isDefault()).findFirst().get();
     }
-
 }

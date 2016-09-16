@@ -1,4 +1,7 @@
-package fr.cnes.regards.modules.accessRights.dao;
+/*
+ * LICENSE_PLACEHOLDER
+ */
+package fr.cnes.regards.modules.accessRights.dao.test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,12 +10,10 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.modules.accessRights.dao.IDaoResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 
-/*
- * LICENSE_PLACEHOLDER
- */
 @Repository
 public class DaoResourcesAccessStub implements IDaoResourcesAccess {
 
