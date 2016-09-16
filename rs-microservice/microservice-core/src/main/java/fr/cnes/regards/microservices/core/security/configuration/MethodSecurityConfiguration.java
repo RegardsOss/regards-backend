@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.core.configuration.security;
+package fr.cnes.regards.microservices.core.security.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +10,8 @@ import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 
-import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
-import fr.cnes.regards.microservices.core.auth.ResourceAccessVoter;
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
+import fr.cnes.regards.microservices.core.security.endpoint.ResourceAccessVoter;
 
 /**
  * This class allow to add a security filter on method access.
@@ -25,12 +25,12 @@ import fr.cnes.regards.microservices.core.auth.ResourceAccessVoter;
 public class MethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
 
 	@Autowired
-	private MethodAutorizationService auth;
+	private MethodAutorizationService methodAuthService_;
 
 	@Override
 	protected AccessDecisionManager accessDecisionManager() {
 		List<AccessDecisionVoter<? extends Object>> decisionVoters = new ArrayList<>();
-		decisionVoters.add(new ResourceAccessVoter(auth));
+		decisionVoters.add(new ResourceAccessVoter(methodAuthService_));
 		return new AffirmativeBased(decisionVoters);
 	}
 }

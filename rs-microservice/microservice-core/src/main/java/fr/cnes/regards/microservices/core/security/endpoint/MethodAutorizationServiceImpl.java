@@ -1,4 +1,7 @@
-package fr.cnes.regards.microservices.core.auth;
+/*
+ * LICENSE_PLACEHOLDER
+ */
+package fr.cnes.regards.microservices.core.security.endpoint;
 
 import java.util.Arrays;
 import java.util.HashMap;

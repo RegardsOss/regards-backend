@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
-import fr.cnes.regards.microservices.core.auth.ResourceAccess;
-import fr.cnes.regards.microservices.core.auth.RoleAuthority;
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
+import fr.cnes.regards.microservices.core.security.endpoint.RoleAuthority;
+import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
 
 @RestController
 @RequestMapping("/config")
@@ -20,7 +20,7 @@ public class ConfigController {
      * Is the Config server enabled
      */
     @Value("${cloud.config.server.enabled}")
-    boolean configServerEnabled = false;
+    Boolean configServerEnabled = false;
 
     /**
      * Property to read from the config server

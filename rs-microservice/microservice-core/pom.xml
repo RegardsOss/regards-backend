@@ -6,42 +6,55 @@
 	<name>microservice-core</name>
 	<artifactId>microservice-core</artifactId>
 	<description>Microservice core</description>
-	
+
 	<parent>
-    	<groupId>fr.cnes.regards.microservices</groupId>
-    	<artifactId>rs-microservice</artifactId>
-    	<version>0.0.1</version>
-  	</parent>
-  	
-  	<dependencyManagement>
-    	<dependencies>
-	        <dependency>
-	           	<groupId>org.springframework.cloud</groupId>
-	           	<artifactId>spring-cloud-netflix</artifactId>
-	           	<version>1.1.2.RELEASE</version>
-	           	<type>pom</type>
-	           	<scope>import</scope>
-	        </dependency>
-	    	<dependency>
-	            <groupId>org.springframework.cloud</groupId>
-	            <artifactId>spring-cloud-config</artifactId>
-	            <version>1.1.1.RELEASE</version>
-	            <type>pom</type>
-	            <scope>import</scope>
-	        </dependency>
+		<groupId>fr.cnes.regards.microservices</groupId>
+		<artifactId>rs-microservice</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-netflix</artifactId>
+				<version>1.1.2.RELEASE</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-config</artifactId>
+				<version>1.1.1.RELEASE</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	
+
 	<dependencies>
+		<!-- Security feature -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
-		<!-- for OAuth 2.0 -->
 		<dependency>
-			<groupId>org.springframework.security.oauth</groupId>
-			<artifactId>spring-security-oauth2</artifactId>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>0.7.0</version>
 		</dependency>
+		<!-- logging -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
+		<!-- Tests -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- Spring boot config -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -56,48 +69,48 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jetty</artifactId>
 		</dependency>
-    	<dependency>
-        	<groupId>org.springframework.hateoas</groupId>
-        	<artifactId>spring-hateoas</artifactId>
-    	</dependency>
 		<dependency>
-    		<groupId>org.springframework</groupId>
-    		<artifactId>spring-websocket</artifactId>
+			<groupId>org.springframework.hateoas</groupId>
+			<artifactId>spring-hateoas</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>org.springframework</groupId>
-    		<artifactId>spring-messaging</artifactId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-websocket</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>io.springfox</groupId>
-    		<artifactId>springfox-swagger2</artifactId>
-    		<version>2.5.0</version>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-messaging</artifactId>
 		</dependency>
 		<dependency>
-   			<groupId>io.springfox</groupId>
-   			<artifactId>springfox-swagger-ui</artifactId>
-   			<version>2.5.0</version>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>2.5.0</version>
 		</dependency>
 		<dependency>
-        	<groupId>org.springframework.cloud</groupId>
-        	<artifactId>spring-cloud-starter-eureka</artifactId>
-    	</dependency>
-    	<dependency>
-        	<groupId>org.springframework.cloud</groupId>
-        	<artifactId>spring-cloud-starter-config</artifactId>
-    	</dependency>
-  	</dependencies>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>2.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-eureka</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+	</dependencies>
 
-  	<build>
+	<build>
 		<plugins>
 			<plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-compiler-plugin</artifactId>
-		        <configuration>
-		          <source>1.8</source>
-		          <target>1.8</target>
-		        </configuration>
-		    </plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
