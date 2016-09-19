@@ -3,14 +3,17 @@
  */
 package fr.cnes.regards.modules.accessRights.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.naming.OperationNotSupportedException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.accessRights.dao.IDaoRole;
+import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
@@ -20,66 +23,86 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 public class RoleService implements IRoleService {
 
     @Autowired
-    private IDaoRole daoRole_;
+    private IRoleRepository roleRepository_;
 
     @Override
     public List<Role> retrieveRoleList() {
-        return daoRole_.retrieveRoleList();
+        return roleRepository_.findAll();
     }
 
     @Override
     public Role createRole(Role pNewRole) throws AlreadyExistingException {
-        return daoRole_.createRole(pNewRole);
+        return roleRepository_.save(pNewRole);
     }
 
     @Override
-    public Role retrieveRole(Integer pRoleId) {
-        return daoRole_.retrieveRole(pRoleId);
+    public Role retrieveRole(Long pRoleId) {
+        return roleRepository_.findOne(pRoleId);
     }
 
     @Override
-    public void updateRole(Integer pRoleId, Role pUpdatedRole) throws OperationNotSupportedException {
-        daoRole_.updateRole(pRoleId, pUpdatedRole);
+    public void updateRole(Long pRoleId, Role pUpdatedRole) throws OperationNotSupportedException {
+        roleRepository_.save(pUpdatedRole);
     }
 
     @Override
-    public void removeRole(Integer pRoleId) {
-        daoRole_.removeRole(pRoleId);
+    public void removeRole(Long pRoleId) {
+        roleRepository_.delete(pRoleId);
     }
 
     @Override
-    public List<ResourcesAccess> retrieveRoleResourcesAccessList(Integer pRoleId) {
-        return daoRole_.retrieveRoleResourcesAccessList(pRoleId);
+    public List<ResourcesAccess> retrieveRoleResourcesAccessList(Long pRoleId) {
+        Role role = roleRepository_.findOne(pRoleId);
+        return role.getPermissions();
     }
 
     @Override
-    public void updateRoleResourcesAccess(Integer pRoleId, List<ResourcesAccess> pResourcesAccessList) {
-        daoRole_.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
+    public void updateRoleResourcesAccess(Long pRoleId, List<ResourcesAccess> pResourcesAccessList) {
+        Role role = roleRepository_.findOne(pRoleId);
+        List<ResourcesAccess> permissions = role.getPermissions();
+
+        // Finder method
+        // Pass the id and the list to search, returns the element with passed id
+        Function<Long, List<ResourcesAccess>> find = (id) -> {
+            return pResourcesAccessList.stream().filter(e -> e.getId().equals(id)).collect(Collectors.toList());
+        };
+        Function<Long, Boolean> contains = (id) -> {
+            return !find.apply(id).isEmpty();
+        };
+        // If an element with the same id is found in the pResourcesAccessList list, replace with it
+        // Else keep the old element
+        permissions.replaceAll(p -> contains.apply(p.getId()) ? find.apply(p.getId()).get(0) : p);
+
+        role.setPermissions(permissions); // TODO Useless right?
+        roleRepository_.save(role);
     }
 
     @Override
-    public void clearRoleResourcesAccess(Integer pRoleId) {
-        daoRole_.clearRoleResourcesAccess(pRoleId);
+    public void clearRoleResourcesAccess(Long pRoleId) {
+        Role role = roleRepository_.findOne(pRoleId);
+        role.setPermissions(new ArrayList<>());
+        roleRepository_.save(role);
     }
 
     @Override
-    public List<ProjectUser> retrieveRoleProjectUserList(Integer pRoleId) {
-        return daoRole_.retrieveRoleProjectUserList(pRoleId);
+    public List<ProjectUser> retrieveRoleProjectUserList(Long pRoleId) {
+        Role role = roleRepository_.findOne(pRoleId);
+        return role.getProjectUsers();
     }
 
     @Override
-    public boolean existRole(Integer pRoleId) {
-        return daoRole_.existRole(pRoleId);
-    }
-
-    @Override
-    public Role getDefaultRole() {
-        return daoRole_.getDefaultRole();
+    public boolean existRole(Long pRoleId) {
+        return roleRepository_.exists(pRoleId);
     }
 
     @Override
     public boolean existRole(Role pRole) {
-        return daoRole_.existRole(pRole);
+        return roleRepository_.exists(pRole.getId());
+    }
+
+    @Override
+    public Role getDefaultRole() {
+        return roleRepository_.findByIsDefault(true);
     }
 
 }

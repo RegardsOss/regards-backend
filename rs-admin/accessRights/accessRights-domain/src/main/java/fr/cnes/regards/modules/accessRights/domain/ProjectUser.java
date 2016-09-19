@@ -12,7 +12,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.Identifiable;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -20,13 +20,13 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.cnes.regards.modules.core.deserializer.LocalDateTimeDeserializer;
 import fr.cnes.regards.modules.core.serializer.LocalDateTimeSerializer;
 
-public class ProjectUser extends ResourceSupport {
+public class ProjectUser implements Identifiable<Long> {
 
     @Min(0)
-    private static int maxProjectUserId_ = 0;
+    private static Long maxProjectUserId_ = 0L;
 
     @Min(0)
-    private final int projectUserId_;
+    private final Long id_;
 
     @Past
     private LocalDateTime lastConnection_;
@@ -52,7 +52,7 @@ public class ProjectUser extends ResourceSupport {
 
     public ProjectUser() {
         super();
-        this.projectUserId_ = maxProjectUserId_;
+        this.id_ = maxProjectUserId_;
         maxProjectUserId_++;
         this.permissions = new ArrayList<>();
         this.metaData_ = new ArrayList<>();
@@ -69,10 +69,11 @@ public class ProjectUser extends ResourceSupport {
         this.account_ = pAccountRequesting;
     }
 
-    public ProjectUser(int projectUserId_, LocalDateTime lastConnection_, LocalDateTime lastUpdate_, UserStatus status_,
-            List<MetaData> metaData_, Role role_, List<ResourcesAccess> permissions, Account account_) {
+    public ProjectUser(Long projectUserId_, LocalDateTime lastConnection_, LocalDateTime lastUpdate_,
+            UserStatus status_, List<MetaData> metaData_, Role role_, List<ResourcesAccess> permissions,
+            Account account_) {
         super();
-        this.projectUserId_ = projectUserId_;
+        this.id_ = projectUserId_;
         this.lastConnection_ = lastConnection_;
         this.lastUpdate_ = lastUpdate_;
         this.status_ = status_;
@@ -80,6 +81,11 @@ public class ProjectUser extends ResourceSupport {
         this.role_ = role_;
         this.permissions = permissions;
         this.account_ = account_;
+    }
+
+    @Override
+    public Long getId() {
+        return id_;
     }
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -148,10 +154,6 @@ public class ProjectUser extends ResourceSupport {
         account_ = pAccount;
     }
 
-    public int getProjectUserId() {
-        return projectUserId_;
-    }
-
     public Role getRole() {
         return role_;
     }
@@ -170,7 +172,7 @@ public class ProjectUser extends ResourceSupport {
 
     @Override
     public boolean equals(Object o) {
-        return (o instanceof ProjectUser) && (((ProjectUser) o).projectUserId_ == this.projectUserId_);
+        return (o instanceof ProjectUser) && (((ProjectUser) o).getId() == id_);
     }
 
 }

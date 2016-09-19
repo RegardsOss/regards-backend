@@ -22,16 +22,16 @@ public interface IAccessRequestService {
     /**
      * @param pAccessId
      */
-    void removeAccessRequest(int pAccessId);
+    void removeAccessRequest(Long pAccessId);
 
     /**
      * @param pAccessId
      */
-    void acceptAccessRequest(int pAccessId);
+    void acceptAccessRequest(Long pAccessId);
 
     /**
      * @param pAccessId
      */
-    void denyAccessRequest(int pAccessId);
+    void denyAccessRequest(Long pAccessId);
 
 }

@@ -26,25 +26,25 @@ public interface IAccountService {
      * @param id
      * @return
      */
-    boolean existAccount(int id);
+    boolean existAccount(Long id);
 
     /**
      * @param pAccountId
      * @return
      */
-    Account retrieveAccount(int pAccountId);
+    Account retrieveAccount(Long pAccountId);
 
     /**
      * @param pAccountId
      * @param pUpdatedAccount
      * @throws OperationNotSupportedException
      */
-    void updateAccount(int pAccountId, Account pUpdatedAccount) throws OperationNotSupportedException;
+    void updateAccount(Long pAccountId, Account pUpdatedAccount) throws OperationNotSupportedException;
 
     /**
      * @param pAccountId
      */
-    void removeAccount(int pAccountId);
+    void removeAccount(Long pAccountId);
 
     /**
      * @param pAccountEmail
@@ -56,14 +56,14 @@ public interface IAccountService {
      * @param pAccountId
      * @param pUnlockCode
      */
-    void unlockAccount(int pAccountId, String pUnlockCode);
+    void unlockAccount(Long pAccountId, String pUnlockCode);
 
     /**
      * @param pAccountId
      * @param pResetCode
      * @param pNewPassword
      */
-    void changeAccountPassword(int pAccountId, String pResetCode, String pNewPassword);
+    void changeAccountPassword(Long pAccountId, String pResetCode, String pNewPassword);
 
     /**
      * @param pString

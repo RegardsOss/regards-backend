@@ -9,12 +9,12 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.Identifiable;
 
-public class Role extends ResourceSupport {
+public class Role implements Identifiable<Long> {
 
     @NotNull
-    private final Integer roleId_;
+    private final Long id_;
 
     @NotBlank
     private String name_;
@@ -34,14 +34,14 @@ public class Role extends ResourceSupport {
 
     private final boolean isNative;
 
-    public Role(Integer pRoleId) {
+    public Role(Long pRoleId) {
         super();
-        roleId_ = pRoleId;
+        id_ = pRoleId;
         isDefault = false;
         isNative = false;
     }
 
-    public Role(Integer pRoleId, String pName, Role pParentRole, List<ResourcesAccess> pPermissions,
+    public Role(Long pRoleId, String pName, Role pParentRole, List<ResourcesAccess> pPermissions,
             List<ProjectUser> pProjectUsers) {
         this(pRoleId);
         name_ = pName;
@@ -50,16 +50,21 @@ public class Role extends ResourceSupport {
         projectUsers_ = pProjectUsers;
     }
 
-    public Role(Integer pRoleId, String pName, Role pParentRole, List<ResourcesAccess> pPermissions,
+    public Role(Long pRoleId, String pName, Role pParentRole, List<ResourcesAccess> pPermissions,
             List<ProjectUser> pProjectUsers, boolean pIsDefault, boolean pIsNative) {
         super();
-        roleId_ = pRoleId;
+        id_ = pRoleId;
         name_ = pName;
         parentRole_ = pParentRole;
         permissions_ = pPermissions;
         projectUsers_ = pProjectUsers;
         isDefault = pIsDefault;
         isNative = pIsNative;
+    }
+
+    @Override
+    public Long getId() {
+        return id_;
     }
 
     public String getName() {
@@ -76,10 +81,6 @@ public class Role extends ResourceSupport {
 
     public List<ProjectUser> getProjectUsers() {
         return projectUsers_;
-    }
-
-    public Integer getRoleId() {
-        return roleId_;
     }
 
     public boolean isDefault() {
@@ -112,7 +113,7 @@ public class Role extends ResourceSupport {
 
     @Override
     public boolean equals(Object pObj) {
-        return (pObj instanceof Role) && ((Role) pObj).roleId_.equals(this.roleId_);
+        return (pObj instanceof Role) && ((Role) pObj).getId().equals(id_);
     }
 
 }

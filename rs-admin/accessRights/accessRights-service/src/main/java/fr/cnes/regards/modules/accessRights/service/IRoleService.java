@@ -18,21 +18,21 @@ public interface IRoleService {
 
     Role createRole(Role pNewRole) throws AlreadyExistingException;
 
-    Role retrieveRole(Integer pRoleId);
+    Role retrieveRole(Long pRoleId);
 
-    void updateRole(Integer pRoleId, Role pUpdatedRole) throws OperationNotSupportedException;
+    void updateRole(Long pRoleId, Role pUpdatedRole) throws OperationNotSupportedException;
 
-    void removeRole(Integer pRoleId);
+    void removeRole(Long pRoleId);
 
-    List<ResourcesAccess> retrieveRoleResourcesAccessList(Integer pRoleId);
+    List<ResourcesAccess> retrieveRoleResourcesAccessList(Long pRoleId);
 
-    void updateRoleResourcesAccess(Integer pRoleId, List<ResourcesAccess> pResourcesAccessList);
+    void updateRoleResourcesAccess(Long pRoleId, List<ResourcesAccess> pResourcesAccessList);
 
-    void clearRoleResourcesAccess(Integer pRoleId);
+    void clearRoleResourcesAccess(Long pRoleId);
 
-    List<ProjectUser> retrieveRoleProjectUserList(Integer pRoleId);
+    List<ProjectUser> retrieveRoleProjectUserList(Long pRoleId);
 
-    boolean existRole(Integer pRoleId);
+    boolean existRole(Long pRoleId);
 
     boolean existRole(Role pRole);
 

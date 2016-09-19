@@ -49,7 +49,8 @@ public class UserServiceStub implements IUserService {
      */
     @Override
     public List<ProjectUser> retrieveUserList() {
-        return projectUsers_.stream().filter(p->!p.getStatus().equals(UserStatus.WAITING_ACCES)).collect(Collectors.toList());
+        return projectUsers_.stream().filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES))
+                .collect(Collectors.toList());
     }
 
     /*
@@ -58,11 +59,14 @@ public class UserServiceStub implements IUserService {
      * @see fr.cnes.regards.modules.accessRights.service.IUserService#retrieveUser(int)
      */
     @Override
-    public ProjectUser retrieveUser(int pUserId) {
-    	List<ProjectUser> notWaitingAccess=projectUsers_.stream().filter(p->!p.getStatus().equals(UserStatus.WAITING_ACCES)).collect(Collectors.toList());
-    	ProjectUser wanted=notWaitingAccess.stream().filter(p -> p.getProjectUserId() == pUserId).findFirst().get();
-    	List<MetaData> visible=wanted.getMetaData().stream().filter(m->!m.getVisibility().equals(UserVisibility.HIDDEN)).collect(Collectors.toList());
-    	ProjectUser sent=new ProjectUser(wanted.getProjectUserId(), wanted.getLastConnection(), wanted.getLastUpdate(), wanted.getStatus(), visible, wanted.getRole(), wanted.getPermissions(), wanted.getAccount());
+    public ProjectUser retrieveUser(Long pUserId) {
+        List<ProjectUser> notWaitingAccess = projectUsers_.stream()
+                .filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES)).collect(Collectors.toList());
+        ProjectUser wanted = notWaitingAccess.stream().filter(p -> p.getId() == pUserId).findFirst().get();
+        List<MetaData> visible = wanted.getMetaData().stream()
+                .filter(m -> !m.getVisibility().equals(UserVisibility.HIDDEN)).collect(Collectors.toList());
+        ProjectUser sent = new ProjectUser(wanted.getId(), wanted.getLastConnection(), wanted.getLastUpdate(),
+                wanted.getStatus(), visible, wanted.getRole(), wanted.getPermissions(), wanted.getAccount());
         return sent;
     }
 
@@ -73,10 +77,10 @@ public class UserServiceStub implements IUserService {
      * fr.cnes.regards.modules.accessRights.domain.ProjectUser)
      */
     @Override
-    public void updateUser(int pUserId, ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
+    public void updateUser(Long pUserId, ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
         if (existUser(pUserId)) {
-            if (pUpdatedProjectUser.getProjectUserId() == pUserId) {
-                projectUsers_ = projectUsers_.stream().map(a -> a.getProjectUserId() == pUserId ? pUpdatedProjectUser : a)
+            if (pUpdatedProjectUser.getId() == pUserId) {
+                projectUsers_ = projectUsers_.stream().map(a -> a.getId() == pUserId ? pUpdatedProjectUser : a)
                         .collect(Collectors.toList());
                 return;
             }
@@ -89,9 +93,9 @@ public class UserServiceStub implements IUserService {
      * @param pUserId
      * @return
      */
-    public boolean existUser(int pUserId) {
+    public boolean existUser(Long pUserId) {
         return projectUsers_.stream().filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES))
-                .filter(p -> p.getProjectUserId() == pUserId).findFirst().isPresent();
+                .filter(p -> p.getId() == pUserId).findFirst().isPresent();
     }
 
     /*
@@ -100,8 +104,8 @@ public class UserServiceStub implements IUserService {
      * @see fr.cnes.regards.modules.accessRights.service.IUserService#removeUser(int)
      */
     @Override
-    public void removeUser(int pUserId) {
-        projectUsers_ = projectUsers_.stream().filter(p -> p.getProjectUserId() != pUserId).collect(Collectors.toList());
+    public void removeUser(Long pUserId) {
+        projectUsers_ = projectUsers_.stream().filter(p -> p.getId() != pUserId).collect(Collectors.toList());
     }
 
     /*
@@ -110,7 +114,7 @@ public class UserServiceStub implements IUserService {
      * @see fr.cnes.regards.modules.accessRights.service.IUserService#retrieveUserAccessRights(int)
      */
     @Override
-    public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(int pUserId) {
+    public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId) {
         ProjectUser user = this.retrieveUser(pUserId);
         Role userRole = user.getRole();
         return new Couple<>(user.getPermissions(), userRole);
@@ -123,7 +127,7 @@ public class UserServiceStub implements IUserService {
      * fr.cnes.regards.modules.accessRights.domain.ProjectUser)
      */
     @Override
-    public void updateUserAccessRights(int pUserId, List<ResourcesAccess> pUpdatedUserAccessRights) {
+    public void updateUserAccessRights(Long pUserId, List<ResourcesAccess> pUpdatedUserAccessRights) {
         if (!existUser(pUserId)) {
             throw new NoSuchElementException("ProjectUser of given id (" + pUserId + ") could not be found");
         }
@@ -131,19 +135,17 @@ public class UserServiceStub implements IUserService {
 
         // Finder method
         // Pass the id and the list to search, returns the element with passed id
-        Function<Integer, List<ResourcesAccess>> find = (id) -> {
-            return pUpdatedUserAccessRights.stream().filter(e -> e.getResourcesAccessId().equals(id))
-                    .collect(Collectors.toList());
+        Function<Long, List<ResourcesAccess>> find = (id) -> {
+            return pUpdatedUserAccessRights.stream().filter(e -> e.getId().equals(id)).collect(Collectors.toList());
         };
-        Function<Integer, Boolean> contains = (id) -> {
+        Function<Long, Boolean> contains = (id) -> {
             return !find.apply(id).isEmpty();
         };
 
         List<ResourcesAccess> permissions = user.getPermissions();
         // If an element with the same id is found in the pResourcesAccessList list, replace with it
         // Else keep the old element
-        permissions.replaceAll(p -> contains.apply(p.getResourcesAccessId())
-                ? find.apply(p.getResourcesAccessId()).get(0) : p);
+        permissions.replaceAll(p -> contains.apply(p.getId()) ? find.apply(p.getId()).get(0) : p);
 
     }
 
@@ -153,28 +155,28 @@ public class UserServiceStub implements IUserService {
      * @see fr.cnes.regards.modules.accessRights.service.IUserService#removeUserAccessRights(int)
      */
     @Override
-    public void removeUserAccessRights(int pUserId) {
+    public void removeUserAccessRights(Long pUserId) {
         ProjectUser user = this.retrieveUser(pUserId);
         user.setPermissions(new ArrayList<>());
     }
 
-	@Override
-	public List<MetaData> retrieveUserMetaData(int pUserId) {
-		ProjectUser user =this.retrieveUser(pUserId);
-		return user.getMetaData();
-	}
+    @Override
+    public List<MetaData> retrieveUserMetaData(Long pUserId) {
+        ProjectUser user = this.retrieveUser(pUserId);
+        return user.getMetaData();
+    }
 
-	@Override
-	public void updateUserMetaData(int pUserId, List<MetaData> pUpdatedUserMetaData) {
-		ProjectUser user=this.retrieveUser(pUserId);
-		user.setMetaData(pUpdatedUserMetaData);
-	}
+    @Override
+    public void updateUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData) {
+        ProjectUser user = this.retrieveUser(pUserId);
+        user.setMetaData(pUpdatedUserMetaData);
+    }
 
-	@Override
-	public void removeUserMetaData(int pUserId) {
-		ProjectUser user=this.retrieveUser(pUserId);
-		user.setMetaData(new ArrayList<>());
-		
-	}
+    @Override
+    public void removeUserMetaData(Long pUserId) {
+        ProjectUser user = this.retrieveUser(pUserId);
+        user.setMetaData(new ArrayList<>());
+
+    }
 
 }

@@ -25,6 +25,7 @@ import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import fr.cnes.regards.microservices.core.information.ModuleInfo;
+import fr.cnes.regards.modules.accessRights.domain.HateoasDTO;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
@@ -94,22 +95,24 @@ public class RoleController {
 
     @ResourceAccess(description = "Create a role", name = "")
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Role> createRole(@Valid @RequestBody Role pNewRole)
+    public @ResponseBody HttpEntity<HateoasDTO<Role>> createRole(@Valid @RequestBody Role pNewRole)
             throws AlreadyExistingException {
         Role created = this.roleService_.createRole(pNewRole);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        HateoasDTO<Role> resource = new HateoasDTO<>();
+        resource.setResource(created);
+        return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
     @ResourceAccess(description = "Retrieve a role by id", name = "")
     @RequestMapping(value = "/{role_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Role> retrieveRole(@PathVariable("role_id") Integer pRoleId) {
+    public @ResponseBody HttpEntity<Role> retrieveRole(@PathVariable("role_id") Long pRoleId) {
         Role role = this.roleService_.retrieveRole(pRoleId);
         return new ResponseEntity<>(role, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Update the role of role_id with passed body", name = "")
     @RequestMapping(value = "/{role_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateRole(@PathVariable("role_id") Integer pRoleId,
+    public @ResponseBody HttpEntity<Void> updateRole(@PathVariable("role_id") Long pRoleId,
             @Valid @RequestBody Role pUpdatedRole) throws OperationNotSupportedException {
         this.roleService_.updateRole(pRoleId, pUpdatedRole);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -117,7 +120,7 @@ public class RoleController {
 
     @ResourceAccess(description = "Remove the role of role_id", name = "")
     @RequestMapping(value = "/{role_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> removeRole(@PathVariable("role_id") Integer pRoleId)
+    public @ResponseBody HttpEntity<Void> removeRole(@PathVariable("role_id") Long pRoleId)
             throws OperationNotSupportedException {
         this.roleService_.removeRole(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -126,14 +129,14 @@ public class RoleController {
     @ResourceAccess(description = "Retrieve the list of permissions of the role with role_id", name = "")
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<ResourcesAccess>> retrieveRoleResourcesAccessList(
-            @PathVariable("role_id") Integer pRoleId) {
+            @PathVariable("role_id") Long pRoleId) {
         List<ResourcesAccess> resourcesAccesses = this.roleService_.retrieveRoleResourcesAccessList(pRoleId);
         return new ResponseEntity<>(resourcesAccesses, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Incrementally update the list of permissions of the role with role_id", name = "")
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") Integer pRoleId,
+    public @ResponseBody HttpEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") Long pRoleId,
             @Valid @RequestBody List<ResourcesAccess> pResourcesAccessList) throws OperationNotSupportedException {
         this.roleService_.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -141,7 +144,7 @@ public class RoleController {
 
     @ResourceAccess(description = "Clear the list of permissions of the", name = "")
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") Integer pRoleId)
+    public @ResponseBody HttpEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") Long pRoleId)
             throws OperationNotSupportedException {
         this.roleService_.clearRoleResourcesAccess(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -150,7 +153,7 @@ public class RoleController {
     @ResourceAccess(description = "Retrieve the list of project users of the role with role_id", name = "")
     @RequestMapping(value = "/{role_id}/users", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<ProjectUser>> retrieveRoleProjectUserList(
-            @PathVariable("role_id") Integer pRoleId) {
+            @PathVariable("role_id") Long pRoleId) {
         List<ProjectUser> projectUserList = this.roleService_.retrieveRoleProjectUserList(pRoleId);
         return new ResponseEntity<>(projectUserList, HttpStatus.OK);
     }

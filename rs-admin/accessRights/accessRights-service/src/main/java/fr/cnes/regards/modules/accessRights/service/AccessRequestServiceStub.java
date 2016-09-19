@@ -49,7 +49,7 @@ public class AccessRequestServiceStub implements IAccessRequestService {
      */
     @Override
     public ProjectUser requestAccess(ProjectUser pAccessRequest) throws AlreadyExistingException {
-        if (!this.accountService.existAccount(pAccessRequest.getAccount().getAccountId())) {
+        if (!this.accountService.existAccount(pAccessRequest.getAccount().getId())) {
             this.accountService.createAccount(pAccessRequest.getAccount());
         }
         if (existAccessRequest(pAccessRequest.getAccount())) {
@@ -89,15 +89,24 @@ public class AccessRequestServiceStub implements IAccessRequestService {
                 .filter(p -> p.getAccount().equals(pAccount)).findFirst().isPresent();
     }
 
-    public boolean existAccessRequest(int pAccessRequestId) {
+    public boolean existAccessRequest(Long pAccessRequestId) {
         return projectUsers_.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCES))
-                .filter(p -> p.getProjectUserId() == pAccessRequestId).findFirst().isPresent();
+                .filter(p -> p.getId() == pAccessRequestId).findFirst().isPresent();
     }
 
     @Override
-    public void removeAccessRequest(int pAccessId) {
+    public void removeAccessRequest(Long pAccessId) {
         if (existAccessRequest(pAccessId)) {
-            projectUsers_ = projectUsers_.stream().filter(p -> p.getProjectUserId() != pAccessId)
+            projectUsers_ = projectUsers_.stream().filter(p -> p.getId() != pAccessId).collect(Collectors.toList());
+            return;
+        }
+        throw new NoSuchElementException(pAccessId + "");
+    }
+
+    @Override
+    public void acceptAccessRequest(Long pAccessId) {
+        if (existAccessRequest(pAccessId)) {
+            projectUsers_ = projectUsers_.stream().map(p -> p.getId() == pAccessId ? p.accept() : p)
                     .collect(Collectors.toList());
             return;
         }
@@ -105,19 +114,9 @@ public class AccessRequestServiceStub implements IAccessRequestService {
     }
 
     @Override
-    public void acceptAccessRequest(int pAccessId) {
+    public void denyAccessRequest(Long pAccessId) {
         if (existAccessRequest(pAccessId)) {
-            projectUsers_ = projectUsers_.stream().map(p -> p.getProjectUserId() == pAccessId ? p.accept() : p)
-                    .collect(Collectors.toList());
-            return;
-        }
-        throw new NoSuchElementException(pAccessId + "");
-    }
-
-    @Override
-    public void denyAccessRequest(int pAccessId) {
-        if (existAccessRequest(pAccessId)) {
-            projectUsers_ = projectUsers_.stream().map(p -> p.getProjectUserId() == pAccessId ? p.deny() : p)
+            projectUsers_ = projectUsers_.stream().map(p -> p.getId() == pAccessId ? p.deny() : p)
                     .collect(Collectors.toList());
             return;
         }

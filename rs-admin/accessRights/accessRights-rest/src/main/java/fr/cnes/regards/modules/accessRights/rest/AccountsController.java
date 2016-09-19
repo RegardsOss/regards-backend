@@ -103,14 +103,14 @@ public class AccountsController {
 
     @ResourceAccess(description = "retrieve the account account_id", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Account> retrieveAccount(@PathVariable("account_id") int accountId) {
+    public @ResponseBody HttpEntity<Account> retrieveAccount(@PathVariable("account_id") Long accountId) {
         Account account = this.accountService_.retrieveAccount(accountId);
         return new ResponseEntity<>(account, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "update the account account_id according to the body specified", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateAccount(@PathVariable("account_id") int accountId,
+    public @ResponseBody HttpEntity<Void> updateAccount(@PathVariable("account_id") Long accountId,
             @Valid @RequestBody Account pUpdatedAccount) throws OperationNotSupportedException {
         this.accountService_.updateAccount(accountId, pUpdatedAccount);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -118,7 +118,7 @@ public class AccountsController {
 
     @ResourceAccess(description = "remove the account account_id", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> removeAccount(@PathVariable("account_id") int accountId) {
+    public @ResponseBody HttpEntity<Void> removeAccount(@PathVariable("account_id") Long accountId) {
         this.accountService_.removeAccount(accountId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -132,7 +132,7 @@ public class AccountsController {
      */
     @ResourceAccess(description = "unlock the account account_id according to the code unlock_code", name = "")
     @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> unlockAccount(@PathVariable("account_id") int accountId,
+    public @ResponseBody HttpEntity<Void> unlockAccount(@PathVariable("account_id") Long accountId,
             @PathVariable("unlock_code") String unlockCode) {
         this.accountService_.unlockAccount(accountId, unlockCode);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -140,7 +140,7 @@ public class AccountsController {
 
     @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code", name = "")
     @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> changeAccountPassword(@PathVariable("account_id") int accountId,
+    public @ResponseBody HttpEntity<Void> changeAccountPassword(@PathVariable("account_id") Long accountId,
             @PathVariable("reset_code") String resetCode, @Valid @RequestBody String pNewPassword) {
         this.accountService_.changeAccountPassword(accountId, resetCode, pNewPassword);
         return new ResponseEntity<>(HttpStatus.OK);

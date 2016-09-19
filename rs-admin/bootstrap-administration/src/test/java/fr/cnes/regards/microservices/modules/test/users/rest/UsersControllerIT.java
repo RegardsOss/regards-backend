@@ -6,7 +6,6 @@ package fr.cnes.regards.microservices.modules.test.users.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
     private String apiUserPermissions;
 
     private String apiUserMetaData;
-    
+
     @Autowired
     private UserServiceStub serviceStub;
 
@@ -87,7 +86,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
     @Test
     public void cGetUser() {
 
-        int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+        Long userId = this.serviceStub.retrieveUserList().get(0).getId();
 
         assertFalse(!this.serviceStub.existUser(userId));
         ParameterizedTypeReference<ProjectUser> typeRef = new ParameterizedTypeReference<ProjectUser>() {
@@ -101,29 +100,29 @@ public class UsersControllerIT extends RegardsIntegrationTest {
         assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
 
     }
-    
+
     @Test
     public void cGetUserMetaData() {
-    	int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+        Long userId = this.serviceStub.retrieveUserList().get(0).getId();
 
         assertFalse(!this.serviceStub.existUser(userId));
         ParameterizedTypeReference<List<MetaData>> typeRef = new ParameterizedTypeReference<List<MetaData>>() {
         };
-        ResponseEntity<List<MetaData>> response = restTemplate.exchange(this.apiUserMetaData, HttpMethod.GET,
-                                                                               null, typeRef, userId);
+        ResponseEntity<List<MetaData>> response = restTemplate.exchange(this.apiUserMetaData, HttpMethod.GET, null,
+                                                                        typeRef, userId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     public void cGetUserPermissions() {
 
-        int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+        Long userId = this.serviceStub.retrieveUserList().get(0).getId();
 
         assertFalse(!this.serviceStub.existUser(userId));
         ParameterizedTypeReference<Couple<List<ResourcesAccess>, Role>> typeRef = new ParameterizedTypeReference<Couple<List<ResourcesAccess>, Role>>() {
         };
-        ResponseEntity<Couple<List<ResourcesAccess>, Role>> response = restTemplate.exchange(this.apiUserPermissions, HttpMethod.GET,
-                                                                               null, typeRef, userId);
+        ResponseEntity<Couple<List<ResourcesAccess>, Role>> response = restTemplate
+                .exchange(this.apiUserPermissions, HttpMethod.GET, null, typeRef, userId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         ResponseEntity<Object> responseNotFound = restTemplate.exchange(this.apiUserPermissions, HttpMethod.GET, null,
@@ -131,10 +130,10 @@ public class UsersControllerIT extends RegardsIntegrationTest {
         assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
 
     }
-    
+
     @Test
     public void dUpdateUserMetaData() {
-        int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+        Long userId = this.serviceStub.retrieveUserList().get(0).getId();
 
         List<MetaData> newPermissionList = new ArrayList<>();
         newPermissionList.add(new MetaData());
@@ -151,11 +150,11 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dUpdateUserPermissions() {
-        int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+        Long userId = this.serviceStub.retrieveUserList().get(0).getId();
 
         List<ResourcesAccess> newPermissionList = new ArrayList<>();
-        newPermissionList.add(new ResourcesAccess(463, "new", "new", "new", HttpVerb.PUT));
-        newPermissionList.add(new ResourcesAccess(350, "neww", "neww", "neww", HttpVerb.DELETE));
+        newPermissionList.add(new ResourcesAccess(463L, "new", "new", "new", HttpVerb.PUT));
+        newPermissionList.add(new ResourcesAccess(350L, "neww", "neww", "neww", HttpVerb.DELETE));
 
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
@@ -168,7 +167,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dDeleteUserMetaData() {
-        int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+        Long userId = this.serviceStub.retrieveUserList().get(0).getId();
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
 
@@ -176,10 +175,10 @@ public class UsersControllerIT extends RegardsIntegrationTest {
                                                               userId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
-    
+
     @Test
     public void dDeleteUserPermissions() {
-        int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+        Long userId = this.serviceStub.retrieveUserList().get(0).getId();
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
 
@@ -190,9 +189,9 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dUpdateUser() {
-        int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+        Long userId = this.serviceStub.retrieveUserList().get(0).getId();
         ProjectUser updated = this.serviceStub.retrieveUser(userId);
-        assertThat(updated.getProjectUserId()==userId);
+        assertThat(updated.getId() == userId);
         updated.setLastConnection(LocalDateTime.now());
         ;
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
@@ -212,7 +211,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void eDeleteUser() {
-        int userId = this.serviceStub.retrieveUserList().get(0).getProjectUserId();
+        Long userId = this.serviceStub.retrieveUserList().get(0).getId();
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
         ResponseEntity<Void> response = restTemplate.exchange(this.apiUserId, HttpMethod.DELETE, null, typeRef, userId);

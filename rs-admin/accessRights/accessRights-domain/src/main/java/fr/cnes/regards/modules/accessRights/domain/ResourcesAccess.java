@@ -5,12 +5,12 @@ package fr.cnes.regards.modules.accessRights.domain;
 
 import javax.validation.constraints.NotNull;
 
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.Identifiable;
 
-public class ResourcesAccess extends ResourceSupport {
+public class ResourcesAccess implements Identifiable<Long> {
 
     @NotNull
-    private final Integer resourcesAccessId_;
+    private final Long id_;
 
     private String description_;
 
@@ -23,23 +23,23 @@ public class ResourcesAccess extends ResourceSupport {
     @NotNull
     private HttpVerb verb_;
 
-    public ResourcesAccess(Integer pResourcesAccessId) {
-        resourcesAccessId_ = pResourcesAccessId;
+    public ResourcesAccess(Long pResourcesAccessId) {
+        id_ = pResourcesAccessId;
         verb_ = HttpVerb.GET;
     }
 
-    public ResourcesAccess(Integer pResourcesAccessId, String pDescription, String pMicroservice, String pResource,
+    public ResourcesAccess(Long pResourcesAccessId, String pDescription, String pMicroservice, String pResource,
             HttpVerb pVerb) {
         super();
-        resourcesAccessId_ = pResourcesAccessId;
+        id_ = pResourcesAccessId;
         description_ = pDescription;
         microservice_ = pMicroservice;
         resource_ = pResource;
         verb_ = pVerb;
     }
 
-    public Integer getResourcesAccessId() {
-        return resourcesAccessId_;
+    public Long getId() {
+        return id_;
     }
 
     public String getDescription() {
@@ -81,4 +81,5 @@ public class ResourcesAccess extends ResourceSupport {
                 && ((ResourcesAccess) o).verb_.equals(this.verb_);
 
     }
+
 }

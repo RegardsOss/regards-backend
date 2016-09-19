@@ -13,7 +13,8 @@ import javax.naming.OperationNotSupportedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
@@ -22,7 +23,8 @@ import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
+@ContextConfiguration(classes = { RoleServiceTestConfiguration.class })
 public class RoleServiceTest {
 
     @Autowired
@@ -37,16 +39,16 @@ public class RoleServiceTest {
 
     @Test(expected = AlreadyExistingException.class)
     public void createRoleDuplicate() throws AlreadyExistingException {
-        Integer roleId = 0;
+        Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
-        Role duplicate = new Role(0);
+        Role duplicate = new Role(0L);
 
         roleService_.createRole(duplicate);
     }
 
     @Test
     public void createRole() throws AlreadyExistingException {
-        Integer roleId = 4834848;
+        Long roleId = 4834848L;
         Role expected = new Role(roleId);
         assertTrue(!roleService_.existRole(roleId));
 
@@ -57,7 +59,7 @@ public class RoleServiceTest {
 
     @Test(expected = NoSuchElementException.class)
     public void updateRoleNotExistent() throws NoSuchElementException, OperationNotSupportedException {
-        Integer roleId = 58354;
+        Long roleId = 58354L;
         assertTrue(!roleService_.existRole(roleId));
         Role notExistent = new Role(roleId);
 
@@ -66,8 +68,8 @@ public class RoleServiceTest {
 
     @Test(expected = OperationNotSupportedException.class)
     public void updateRoleWrongId() throws NoSuchElementException, OperationNotSupportedException {
-        Integer roleIdPassed = 58354;
-        Integer idOfPassedRole = 9999;
+        Long roleIdPassed = 58354L;
+        Long idOfPassedRole = 9999L;
         assertTrue(!roleIdPassed.equals(idOfPassedRole));
         Role passedRole = new Role(idOfPassedRole);
 
@@ -76,7 +78,7 @@ public class RoleServiceTest {
 
     @Test
     public void updateRole() throws NoSuchElementException, OperationNotSupportedException {
-        Integer passedRoleId = 0;
+        Long passedRoleId = 0L;
         assertTrue(roleService_.existRole(passedRoleId));
         Role previousRole = roleService_.retrieveRole(passedRoleId);
         Role passedRole = new Role(passedRoleId, "new name", null, null, null, true, false);
@@ -91,7 +93,7 @@ public class RoleServiceTest {
         Role updatedRole = roleService_.retrieveRole(passedRoleId);
 
         // Ensure they are now equal
-        assertTrue(updatedRole.getRoleId().equals(passedRole.getRoleId()));
+        assertTrue(updatedRole.getId().equals(passedRole.getId()));
         assertTrue(updatedRole.getName().equals(passedRole.getName()));
         assertTrue(updatedRole.getParentRole().equals(passedRole.getParentRole()));
         assertTrue(updatedRole.getPermissions().equals(passedRole.getPermissions()));
@@ -100,7 +102,7 @@ public class RoleServiceTest {
 
     @Test
     public void removeRole() {
-        Integer roleId = 0;
+        Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
 
         roleService_.removeRole(roleId);
@@ -110,7 +112,7 @@ public class RoleServiceTest {
 
     @Test(expected = NoSuchElementException.class)
     public void updateRoleResourcesAccessNotExistent() throws NoSuchElementException {
-        Integer roleId = 44255;
+        Long roleId = 44255L;
         assertTrue(!roleService_.existRole(roleId));
         List<ResourcesAccess> resourcesAccesses = new ArrayList<>();
         roleService_.updateRoleResourcesAccess(roleId, resourcesAccesses);
@@ -118,10 +120,10 @@ public class RoleServiceTest {
 
     @Test
     public void updateRoleResourcesAccessAddingResourcesAccess() throws NoSuchElementException {
-        Integer roleId = 0;
+        Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
         List<ResourcesAccess> resourcesAccesses = new ArrayList<>();
-        ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645, "", "", "", HttpVerb.PATCH);
+        ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", HttpVerb.PATCH);
         resourcesAccesses.add(addedResourcesAccess);
 
         roleService_.updateRoleResourcesAccess(roleId, resourcesAccesses);
@@ -131,7 +133,7 @@ public class RoleServiceTest {
 
     @Test
     public void updateRoleResourcesAccessUpdatingResourcesAccess() throws NoSuchElementException {
-        Integer roleId = 0;
+        Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
         Role role = roleService_.retrieveRole(roleId);
 
@@ -159,7 +161,7 @@ public class RoleServiceTest {
 
     @Test
     public void clearRoleResourcesAccess() {
-        Integer roleId = 0;
+        Long roleId = 0L;
         Role role = roleService_.retrieveRole(roleId);
         assertTrue(!role.getPermissions().isEmpty());
 
@@ -170,7 +172,7 @@ public class RoleServiceTest {
 
     @Test
     public void retrieveRoleProjectUserList() {
-        Integer roleId = 0;
+        Long roleId = 0L;
         Role role = roleService_.retrieveRole(roleId);
         List<ProjectUser> expected = role.getProjectUsers();
         assertNotNull(expected);

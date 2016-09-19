@@ -3,22 +3,25 @@
  */
 package fr.cnes.regards.modules.accessRights.domain;
 
-public class Greeting {
+import org.springframework.hateoas.Identifiable;
 
-    private final long id;
+public class Greeting implements Identifiable<Long> {
 
-    private final String content;
+    private final Long id_;
+
+    private final String content_;
 
     public Greeting(long id, String content) {
-        this.id = id;
-        this.content = content;
+        this.id_ = id;
+        this.content_ = content;
     }
 
-    public long getId() {
-        return id;
+    @Override
+    public Long getId() {
+        return id_;
     }
 
     public String getContent() {
-        return content;
+        return content_;
     }
 }

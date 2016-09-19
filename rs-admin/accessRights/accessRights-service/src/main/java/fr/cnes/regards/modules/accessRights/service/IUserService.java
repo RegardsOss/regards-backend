@@ -28,7 +28,7 @@ public interface IUserService {
      * @param pUserId
      * @return
      */
-    ProjectUser retrieveUser(int pUserId);
+    ProjectUser retrieveUser(Long pUserId);
 
     /**
      * @param pUserId
@@ -36,35 +36,35 @@ public interface IUserService {
      * @return
      * @throws OperationNotSupportedException
      */
-    void updateUser(int pUserId, ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException;
+    void updateUser(Long pUserId, ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException;
 
     /**
      * @param pUserId
      * @return
      */
-    void removeUser(int pUserId);
+    void removeUser(Long pUserId);
 
     /**
      * @param pUserId
      * @return
      */
-    Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(int pUserId);
+    Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId);
 
     /**
      * @param pUserId
      * @param pUpdatedProjectUser
      */
-    void updateUserAccessRights(int pUserId, List<ResourcesAccess> pUpdatedUserAccessRights);
+    void updateUserAccessRights(Long pUserId, List<ResourcesAccess> pUpdatedUserAccessRights);
 
     /**
      * @param pUserId
      */
-    void removeUserAccessRights(int pUserId);
+    void removeUserAccessRights(Long pUserId);
 
-	List<MetaData> retrieveUserMetaData(int pUserId);
+    List<MetaData> retrieveUserMetaData(Long pUserId);
 
-	void updateUserMetaData(int userId, List<MetaData> pUpdatedUserMetaData);
+    void updateUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData);
 
-	void removeUserMetaData(int userId);
+    void removeUserMetaData(Long pUserId);
 
 }

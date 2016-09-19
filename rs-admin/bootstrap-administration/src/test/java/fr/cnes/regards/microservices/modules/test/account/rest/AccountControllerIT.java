@@ -124,7 +124,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     @Test
     public void cGetAccount() {
         List<Account> accounts = this.serviceStub.retrieveAccountList();
-        int accountId = this.serviceStub.retrieveAccountList().get(0).getAccountId();
+        Long accountId = this.serviceStub.retrieveAccountList().get(0).getId();
         assertFalse(!this.serviceStub.existAccount(accountId));
 
         ParameterizedTypeReference<Account> typeRef = new ParameterizedTypeReference<Account>() {
@@ -170,7 +170,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     @Test
     public void dUpdateAccount() {
         Account updated = this.serviceStub.retrieveAccount("email7");
-        int accountId = updated.getAccountId();
+        Long accountId = updated.getId();
 
         updated.setFirstName("AnOtherFirstName");
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
@@ -191,7 +191,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dUnlockAccount() {
-        int accountId = this.serviceStub.retrieveAccountList().get(0).getAccountId();
+        Long accountId = this.serviceStub.retrieveAccountList().get(0).getId();
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
         ResponseEntity<Void> response = restTemplate.exchange(this.apiUnlockAccount, HttpMethod.GET, null, typeRef,
@@ -201,7 +201,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dChangeAccountPassword() {
-        int accountId = this.serviceStub.retrieveAccountList().get(0).getAccountId();
+        Long accountId = this.serviceStub.retrieveAccountList().get(0).getId();
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
 
@@ -217,7 +217,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void eDeleteAccount() {
-        int accountId = this.serviceStub.retrieveAccountList().get(0).getAccountId();
+        Long accountId = this.serviceStub.retrieveAccountList().get(0).getId();
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
         ResponseEntity<Void> response = restTemplate.exchange(this.apiAccountId, HttpMethod.DELETE, null, typeRef,

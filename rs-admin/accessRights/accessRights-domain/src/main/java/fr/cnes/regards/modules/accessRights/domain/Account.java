@@ -6,37 +6,42 @@ package fr.cnes.regards.modules.accessRights.domain;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
-import org.springframework.hateoas.ResourceSupport;
+import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.hateoas.Identifiable;
 
-public class Account extends ResourceSupport {
+public class Account implements Identifiable<Long> {
 
-    private static int maxAccountId_ = 0;
-
-    private int accountId_;
-
-    public void setAccountId(int pAccountId) {
-        accountId_ = pAccountId;
-    }
+    private static Long maxAccountId_ = 0L;
 
     @NotNull
+    private Long id_;
+
+    public void setAccountId(Long pAccountId) {
+        id_ = pAccountId;
+    }
+
     @Email
     private String email_;
 
+    @NotBlank
     private String firstName_;
 
+    @NotBlank
     private String lastName_;
 
-    @NotNull
+    @NotBlank
     private String login_;
 
+    @NotBlank
     // TODO: validation du mot de passe
     private String password_;
 
+    @NotNull
     private AccountStatus status_;
 
     public Account() {
         super();
-        this.accountId_ = maxAccountId_;
+        this.id_ = maxAccountId_;
         maxAccountId_++;
         this.status_ = AccountStatus.PENDING;
     }
@@ -116,14 +121,14 @@ public class Account extends ResourceSupport {
         }
     }
 
-    public int getAccountId() {
-        return accountId_;
+    @Override
+    public Long getId() {
+        return id_;
     }
 
     @Override
     public boolean equals(Object o) {
         return (o instanceof Account) && ((Account) o).email_.equals(this.email_);
-
     }
 
 }

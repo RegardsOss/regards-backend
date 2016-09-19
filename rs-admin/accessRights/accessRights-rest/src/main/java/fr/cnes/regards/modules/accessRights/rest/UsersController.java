@@ -110,14 +110,14 @@ public class UsersController {
 
     @ResourceAccess(description = "retrieve the project user and only display public metadata")
     @RequestMapping(value = "/{user_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<ProjectUser> retrieveProjectUser(@PathVariable("user_id") int userId) {
+    public @ResponseBody HttpEntity<ProjectUser> retrieveProjectUser(@PathVariable("user_id") Long userId) {
         ProjectUser user = this.userService_.retrieveUser(userId);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "update the project user")
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT, consumes= MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateProjectUser(@PathVariable("user_id") int userId,
+    @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody HttpEntity<Void> updateProjectUser(@PathVariable("user_id") Long userId,
             @Valid @RequestBody ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
         this.userService_.updateUser(userId, pUpdatedProjectUser);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -125,21 +125,20 @@ public class UsersController {
 
     @ResourceAccess(description = "remove the project user from the instance")
     @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> removeProjectUser(@PathVariable("user_id") int userId) {
+    public @ResponseBody HttpEntity<Void> removeProjectUser(@PathVariable("user_id") Long userId) {
         this.userService_.removeUser(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-    
+
     @ResourceAccess(description = "retrieve the list of all metadata of the user")
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<List<MetaData>> retrieveProjectUserMetaData(
-            @PathVariable("user_id") int pUserId) {
+    public @ResponseBody HttpEntity<List<MetaData>> retrieveProjectUserMetaData(@PathVariable("user_id") Long pUserId) {
         return new ResponseEntity<>(this.userService_.retrieveUserMetaData(pUserId), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "update the list of all metadata of the user")
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") int userId,
+    public @ResponseBody HttpEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") Long userId,
             @Valid @RequestBody List<MetaData> pUpdatedUserMetaData) throws OperationNotSupportedException {
         this.userService_.updateUserMetaData(userId, pUpdatedUserMetaData);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -147,7 +146,7 @@ public class UsersController {
 
     @ResourceAccess(description = "remove all the metadata of the user")
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") int userId) {
+    public @ResponseBody HttpEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") Long userId) {
         this.userService_.removeUserMetaData(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -155,13 +154,13 @@ public class UsersController {
     @ResourceAccess(description = "retrieve the list of specific access rights and the role of the project user")
     @RequestMapping(value = "/{user_id}/permissions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Couple<List<ResourcesAccess>, Role>> retrieveProjectUserAccessRights(
-            @PathVariable("user_id") int pUserId) {
+            @PathVariable("user_id") Long pUserId) {
         return new ResponseEntity<>(this.userService_.retrieveUserAccessRights(pUserId), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "update the list of specific user access rights")
     @RequestMapping(value = "/{user_id}/permissions", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateProjectUserAccessRights(@PathVariable("user_id") int userId,
+    public @ResponseBody HttpEntity<Void> updateProjectUserAccessRights(@PathVariable("user_id") Long userId,
             @Valid @RequestBody List<ResourcesAccess> pUpdatedUserAccessRights) throws OperationNotSupportedException {
         this.userService_.updateUserAccessRights(userId, pUpdatedUserAccessRights);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -169,7 +168,7 @@ public class UsersController {
 
     @ResourceAccess(description = "remove all the specific access rights")
     @RequestMapping(value = "/{user_id}/permissions", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> removeProjectUserAccessRights(@PathVariable("user_id") int userId) {
+    public @ResponseBody HttpEntity<Void> removeProjectUserAccessRights(@PathVariable("user_id") Long userId) {
         this.userService_.removeUserAccessRights(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

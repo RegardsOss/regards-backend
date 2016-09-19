@@ -106,7 +106,7 @@ public class AccessesController {
 
     @ResourceAccess(description = "accept the access request", name = "")
     @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") int pAccessId)
+    public @ResponseBody HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException {
         this.projectUserService_.acceptAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -114,7 +114,7 @@ public class AccessesController {
 
     @ResourceAccess(description = "deny the access request", name = "")
     @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") int pAccessId)
+    public @ResponseBody HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException {
         this.projectUserService_.denyAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -122,7 +122,7 @@ public class AccessesController {
 
     @ResourceAccess(description = "remove the access request", name = "")
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") int pAccessId) {
+    public @ResponseBody HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId) {
         this.projectUserService_.removeAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

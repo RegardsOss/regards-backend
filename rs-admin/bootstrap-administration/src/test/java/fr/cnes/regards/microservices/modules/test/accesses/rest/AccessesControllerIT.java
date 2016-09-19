@@ -112,7 +112,7 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dAcceptAccessRequest() {
-        int accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getProjectUserId();
+        Long accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getId();
         assertFalse(!this.serviceStub.existAccessRequest(accessRequestId));
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
@@ -133,7 +133,7 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dDenyAccessRequest() {
-        int accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getProjectUserId();
+        Long accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getId();
         assertFalse(!this.serviceStub.existAccessRequest(accessRequestId));
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         };
@@ -158,7 +158,7 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
                                                               Integer.MAX_VALUE);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
-        int accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getProjectUserId();
+        Long accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getId();
         response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef, accessRequestId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 

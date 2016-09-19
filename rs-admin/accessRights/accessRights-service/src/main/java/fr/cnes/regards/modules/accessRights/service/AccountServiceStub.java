@@ -39,21 +39,21 @@ public class AccountServiceStub implements IAccountService {
     @Override
     public Account createAccount(Account pNewAccount) throws AlreadyExistingException {
         if (existAccount(pNewAccount)) {
-            throw new AlreadyExistingException(pNewAccount.getAccountId() + "");
+            throw new AlreadyExistingException(pNewAccount.getId() + "");
         }
         accounts.add(pNewAccount);
         return pNewAccount;
     }
 
     @Override
-    public Account retrieveAccount(int pAccountId) {
-        return accounts.stream().filter(a -> a.getAccountId() == pAccountId).findFirst().get();
+    public Account retrieveAccount(Long pAccountId) {
+        return accounts.stream().filter(a -> a.getId() == pAccountId).findFirst().get();
     }
 
     @Override
-    public void updateAccount(int pAccountId, Account pUpdatedAccount) throws OperationNotSupportedException {
+    public void updateAccount(Long pAccountId, Account pUpdatedAccount) throws OperationNotSupportedException {
         if (existAccount(pAccountId)) {
-            if (pUpdatedAccount.getAccountId() == pAccountId) {
+            if (pUpdatedAccount.getId() == pAccountId) {
                 accounts = accounts.stream().map(a -> a.getEmail().equals(pAccountId) ? pUpdatedAccount : a)
                         .collect(Collectors.toList());
                 return;
@@ -64,8 +64,8 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public void removeAccount(int pAccountId) {
-        accounts = accounts.stream().filter(a -> a.getAccountId() != pAccountId).collect(Collectors.toList());
+    public void removeAccount(Long pAccountId) {
+        accounts = accounts.stream().filter(a -> a.getId() != pAccountId).collect(Collectors.toList());
     }
 
     @Override
@@ -79,7 +79,7 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public void unlockAccount(int pAccountId, String pUnlockCode) {
+    public void unlockAccount(Long pAccountId, String pUnlockCode) {
         Account toUnlock = this.retrieveAccount(pAccountId);
         // TODO: check unlockCode
         toUnlock.unlock();
@@ -87,7 +87,7 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public void changeAccountPassword(int pAccountId, String pResetCode, String pNewPassword) {
+    public void changeAccountPassword(Long pAccountId, String pResetCode, String pNewPassword) {
         Account account = this.retrieveAccount(pAccountId);
         // TODO: check resetCode
         account.setPassword(pNewPassword);
@@ -110,8 +110,8 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public boolean existAccount(int id) {
-        return accounts.stream().filter(p -> p.getAccountId() == id).findFirst().isPresent();
+    public boolean existAccount(Long id) {
+        return accounts.stream().filter(p -> p.getId() == id).findFirst().isPresent();
     }
 
     /**
