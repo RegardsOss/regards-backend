@@ -3,20 +3,27 @@
  */
 package fr.cnes.regards.microservices.core.security.endpoint;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
- * Service MethodAutorizationServiceImpl Allow to set/get the REST resource method access authorizations. An
- * authorization is a defined by a endpoint, a HTTP Verb and a list of authorized user ROLES
+ * Service MethodAutorizationServiceImpl<br/>
+ * Allow to set/get the REST resource method access authorizations.<br/>
+ * An authorization is defined by a endpoint, a HTTP Verb and a list of authorized user ROLES
  *
  * @author CS SI
  *
@@ -24,41 +31,88 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Service
 public class MethodAutorizationServiceImpl implements MethodAutorizationService {
 
-    Map<String, List<GrantedAuthority>> grantedAuthoritiesByResource;
+    private static final Logger LOG = LoggerFactory.getLogger(MethodAutorizationServiceImpl.class);
+
+    @Value("${regards.security.authorities:#{null}}")
+    private String[] authorities_;
+
+    Map<String, List<GrantedAuthority>> grantedAuthoritiesByResource_;
 
     public MethodAutorizationServiceImpl() {
-        grantedAuthoritiesByResource = new HashMap<>();
+        grantedAuthoritiesByResource_ = new HashMap<>();
+    }
+
+    @PostConstruct
+    public void init() {
+        if (authorities_ != null) {
+            LOG.debug("Initializing granted authorities from property file");
+            for (String auth : authorities_) {
+                String[] urlVerbRoles = auth.split("\\|");
+                if (urlVerbRoles.length > 1) {
+                    String[] urlVerb = urlVerbRoles[0].split("@");
+                    if (urlVerb.length == 2) {
+                        // Url path
+                        String url = urlVerb[0];
+                        // HTTP method
+                        String verb = urlVerb[1];
+                        RequestMethod httpVerb;
+                        try {
+                            httpVerb = RequestMethod.valueOf(verb);
+
+                            // Roles
+                            String[] roles = new String[urlVerbRoles.length - 1];
+                            for (int i = 1; i < urlVerbRoles.length; i++) {
+                                roles[i - 1] = urlVerbRoles[i];
+                            }
+
+                            setAuthorities(url, httpVerb, roles);
+                        }
+                        catch (IllegalArgumentException pIAE) {
+                            LOG.error("Cannot retrieve HTTP method from {}", verb);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
      * Add a resource authorization
      */
     @Override
-    public void setAutorities(String resourceName, GrantedAuthority... authorities) {
-        if ((resourceName != null) && (authorities != null)) {
-            if (grantedAuthoritiesByResource.containsKey(resourceName)) {
-                List<GrantedAuthority> newAuthorities = grantedAuthoritiesByResource.get(resourceName);
-                newAuthorities.addAll(Arrays.asList(authorities));
-                grantedAuthoritiesByResource.put(resourceName, newAuthorities);
+    public void setAuthorities(ResourceMapping pResourceMapping, GrantedAuthority... pAuthorities) {
+        if ((pResourceMapping != null) && (pAuthorities != null)) {
+            String resourceId = pResourceMapping.getResourceMappingId();
+            if (grantedAuthoritiesByResource_.containsKey(resourceId)) {
+                List<GrantedAuthority> newAuthorities = grantedAuthoritiesByResource_.get(resourceId);
+                newAuthorities.addAll(Arrays.asList(pAuthorities));
+                grantedAuthoritiesByResource_.put(resourceId, newAuthorities);
             }
             else {
-                grantedAuthoritiesByResource.put(resourceName,
-                                                 Arrays.asList(authorities).stream().collect(Collectors.toList()));
+                grantedAuthoritiesByResource_.put(resourceId, Arrays.asList(pAuthorities));
             }
         }
     }
 
-    /**
-     * Get a resource authorizations
-     */
     @Override
-    public Optional<List<GrantedAuthority>> getAuthorities(final RequestMapping access, RequestMapping classMapping) {
-        String resourceId = ResourceAccessUtils.getIdentifier(access, classMapping);
-        return Optional.ofNullable(grantedAuthoritiesByResource.get(resourceId));
+    public Optional<List<GrantedAuthority>> getAuthorities(final ResourceMapping pResourceMapping) {
+        return Optional.ofNullable(grantedAuthoritiesByResource_.get(pResourceMapping.getResourceMappingId()));
     }
 
     @Override
-    public List<GrantedAuthority> getAutoritiesById(String pId) {
-        return grantedAuthoritiesByResource.get(pId);
+    public void setAuthorities(String pUrlPath, RequestMethod pMethod, String... pRoleNames) {
+        // Validate
+        Assert.notNull(pUrlPath, "Path to resource cannot be null.");
+        Assert.notNull(pMethod, "HTTP method cannot be null.");
+        Assert.notNull(pRoleNames, "At least one role is required.");
+
+        // Build granted authorities
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        for (String role : pRoleNames) {
+            authorities.add(new RoleAuthority(role));
+        }
+
+        setAuthorities(new ResourceMapping(Optional.empty(), Optional.of(pUrlPath), pMethod),
+                       authorities.toArray(new GrantedAuthority[0]));
     }
 }

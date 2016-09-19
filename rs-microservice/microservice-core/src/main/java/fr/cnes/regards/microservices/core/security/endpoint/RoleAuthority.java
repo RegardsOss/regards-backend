@@ -17,20 +17,20 @@ public class RoleAuthority implements GrantedAuthority {
 
     private static final long serialVersionUID = 1L;
 
-    private String autority;
+    private String autority_;
 
-    public RoleAuthority(String authority) {
-        if (!authority.startsWith(ROLE_PREFIX)) {
-            this.autority = ROLE_PREFIX + authority;
+    public RoleAuthority(String pAuthority) {
+        if (!pAuthority.startsWith(ROLE_PREFIX)) {
+            this.autority_ = ROLE_PREFIX + pAuthority;
         }
         else {
-            this.autority = authority;
+            this.autority_ = pAuthority;
         }
     }
 
     @Override
     public String getAuthority() {
-        return autority;
+        return autority_;
     }
 
 }

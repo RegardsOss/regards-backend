@@ -37,7 +37,7 @@ public class JWTService {
     @Value("${jwt.secret}")
     private String secret_;
 
-    static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
 
     /**
      * Parse JWT to retrieve full user information
