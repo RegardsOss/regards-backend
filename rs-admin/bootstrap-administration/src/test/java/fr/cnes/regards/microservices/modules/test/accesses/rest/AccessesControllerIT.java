@@ -26,8 +26,8 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.service.AccessRequestServiceStub;
-import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
+import fr.cnes.regards.modules.accessRights.service.test.AccessRequestServiceStub;
+import fr.cnes.regards.modules.accessRights.service.test.AccountServiceStub;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AccessesControllerIT extends RegardsIntegrationTest {

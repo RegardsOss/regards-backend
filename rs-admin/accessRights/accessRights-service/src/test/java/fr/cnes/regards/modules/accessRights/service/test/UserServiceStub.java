@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessRights.service;
+package fr.cnes.regards.modules.accessRights.service.test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
 import fr.cnes.regards.modules.accessRights.domain.UserVisibility;
+import fr.cnes.regards.modules.accessRights.service.IUserService;
 
 /**
  * @author svissier

@@ -116,4 +116,9 @@ public class Role implements Identifiable<Long> {
         return (pObj instanceof Role) && ((Role) pObj).getId().equals(id_);
     }
 
+    @Override
+    public int hashCode() {
+        return (int) (long) id_;
+    }
+
 }

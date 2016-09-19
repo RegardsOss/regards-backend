@@ -16,6 +16,7 @@ import javax.naming.OperationNotSupportedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -71,39 +72,35 @@ public class RoleServiceTest {
 
     @Test(expected = OperationNotSupportedException.class)
     public void updateRoleWrongId() throws NoSuchElementException, OperationNotSupportedException {
-        Long roleIdPassed = 58354L;
-        Long idOfPassedRole = 9999L;
-        assertTrue(!roleIdPassed.equals(idOfPassedRole));
-        Role passedRole = new Role(idOfPassedRole);
+        Long roleId = 58354L;
+        Role role = new Role(9999L);
+        assertTrue(!roleId.equals(role.getId()));
 
-        roleService_.updateRole(roleIdPassed, passedRole);
+        roleService_.updateRole(roleId, role);
     }
 
     @Test
+    @DirtiesContext
     public void updateRole() throws NoSuchElementException, OperationNotSupportedException {
         Long passedRoleId = 0L;
         assertTrue(roleService_.existRole(passedRoleId));
         Role previousRole = roleService_.retrieveRole(passedRoleId);
-        Role passedRole = new Role(passedRoleId, "new name", null, null, null, true, false);
+        Role passedRole = new Role(passedRoleId, "new name", null, new ArrayList<>(), new ArrayList<>());
 
-        // Ensure new role attributes are different from the previous
-        assertTrue(!roleService_.retrieveRole(passedRoleId).getName().equals(previousRole.getName()));
-        assertTrue(!roleService_.retrieveRole(passedRoleId).getParentRole().equals(previousRole.getParentRole()));
-        assertTrue(!roleService_.retrieveRole(passedRoleId).getPermissions().equals(previousRole.getPermissions()));
-        assertTrue(!roleService_.retrieveRole(passedRoleId).getProjectUsers().equals(previousRole.getProjectUsers()));
+        // Ensure at least one is different from the previous
+        assertTrue(passedRole.getName() != previousRole.getName());
 
         roleService_.updateRole(passedRoleId, passedRole);
-        Role updatedRole = roleService_.retrieveRole(passedRoleId);
 
         // Ensure they are now equal
+        Role updatedRole = roleService_.retrieveRole(passedRoleId);
+        assertTrue(updatedRole.equals(passedRole));
         assertTrue(updatedRole.getId().equals(passedRole.getId()));
         assertTrue(updatedRole.getName().equals(passedRole.getName()));
-        assertTrue(updatedRole.getParentRole().equals(passedRole.getParentRole()));
-        assertTrue(updatedRole.getPermissions().equals(passedRole.getPermissions()));
-        assertTrue(updatedRole.getProjectUsers().equals(passedRole.getProjectUsers()));
     }
 
     @Test
+    @DirtiesContext
     public void removeRole() {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -122,6 +119,7 @@ public class RoleServiceTest {
     }
 
     @Test
+    @DirtiesContext
     public void updateRoleResourcesAccessAddingResourcesAccess() throws NoSuchElementException {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -135,6 +133,7 @@ public class RoleServiceTest {
     }
 
     @Test
+    @DirtiesContext
     public void updateRoleResourcesAccessUpdatingResourcesAccess() throws NoSuchElementException {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -163,6 +162,7 @@ public class RoleServiceTest {
     }
 
     @Test
+    @DirtiesContext
     public void clearRoleResourcesAccess() {
         Long roleId = 0L;
         Role role = roleService_.retrieveRole(roleId);
@@ -170,7 +170,7 @@ public class RoleServiceTest {
 
         roleService_.clearRoleResourcesAccess(roleId);
 
-        assertTrue(!role.getPermissions().isEmpty());
+        assertTrue(role.getPermissions().isEmpty());
     }
 
     @Test

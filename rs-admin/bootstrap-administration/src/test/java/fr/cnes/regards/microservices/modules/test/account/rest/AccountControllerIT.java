@@ -30,7 +30,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.Account;
-import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
+import fr.cnes.regards.modules.accessRights.service.test.AccountServiceStub;
 
 /**
  * Just Test the REST API so status code. Correction is left to others.

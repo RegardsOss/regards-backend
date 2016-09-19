@@ -5,8 +5,9 @@ package fr.cnes.regards.modules.accessRights.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.naming.OperationNotSupportedException;
 
@@ -32,6 +33,9 @@ public class RoleService implements IRoleService {
 
     @Override
     public Role createRole(Role pNewRole) throws AlreadyExistingException {
+        if (existRole(pNewRole)) {
+            throw new AlreadyExistingException(pNewRole.toString());
+        }
         return roleRepository_.save(pNewRole);
     }
 
@@ -41,7 +45,14 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void updateRole(Long pRoleId, Role pUpdatedRole) throws OperationNotSupportedException {
+    public void updateRole(Long pRoleId, Role pUpdatedRole)
+            throws NoSuchElementException, OperationNotSupportedException {
+        if (!pRoleId.equals(pUpdatedRole.getId())) {
+            throw new OperationNotSupportedException();
+        }
+        if (!existRole(pRoleId)) {
+            throw new NoSuchElementException();
+        }
         roleRepository_.save(pUpdatedRole);
     }
 
@@ -61,19 +72,23 @@ public class RoleService implements IRoleService {
         Role role = roleRepository_.findOne(pRoleId);
         List<ResourcesAccess> permissions = role.getPermissions();
 
-        // Finder method
-        // Pass the id and the list to search, returns the element with passed id
-        Function<Long, List<ResourcesAccess>> find = (id) -> {
-            return pResourcesAccessList.stream().filter(e -> e.getId().equals(id)).collect(Collectors.toList());
-        };
-        Function<Long, Boolean> contains = (id) -> {
-            return !find.apply(id).isEmpty();
-        };
+        // // Finder method
+        // // Pass the id and the list to search, returns the element with passed id
+        // BiFunction<Long, List<ResourcesAccess>, List<ResourcesAccess>> find = (id, list) -> {
+        // return list.stream().filter(e -> e.getId().equals(id)).collect(Collectors.toList());
+        // };
+        // BiFunction<Long, List<ResourcesAccess>, Boolean> contains = (id, list) -> {
+        // return !find.apply(id, list).isEmpty();
+        // };
         // If an element with the same id is found in the pResourcesAccessList list, replace with it
         // Else keep the old element
-        permissions.replaceAll(p -> contains.apply(p.getId()) ? find.apply(p.getId()).get(0) : p);
+        // permissions.replaceAll(p -> contains.apply(p.getId()) ? find.apply(p.getId()).get(0) : p);
 
-        role.setPermissions(permissions); // TODO Useless right?
+        // permissions.replaceAll(pResourcesAccessList);
+        permissions = Stream.concat(permissions.stream(), pResourcesAccessList.stream()).distinct()
+                .collect(Collectors.toList());
+
+        role.setPermissions(permissions);
         roleRepository_.save(role);
     }
 

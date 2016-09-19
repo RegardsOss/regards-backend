@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
+import fr.cnes.regards.modules.accessRights.service.test.AccountServiceStub;
 
 @Repository
 public class DaoProjectUserStub implements IDaoProjectUser {

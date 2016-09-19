@@ -8,6 +8,7 @@ import java.util.stream.StreamSupport;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
 import fr.cnes.regards.modules.accessRights.dao.IDaoResourcesAccess;
@@ -16,9 +17,10 @@ import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 
+@Repository
 public class RoleRepositoryStub implements IRoleRepository {
 
-    private List<Role> roles_;
+    private List<Role> roles_ = new ArrayList<>();
 
     @Autowired
     private IDaoResourcesAccess daoResourcesAccess_;
@@ -31,14 +33,15 @@ public class RoleRepositoryStub implements IRoleRepository {
         List<ResourcesAccess> permissionList_ = daoResourcesAccess_.getAll();
         List<ProjectUser> projectUsers_ = daoProjectUser_.getAll();
 
-        // Init default roles
-        Role rolePublic = new Role(0L, "Public", null, null, projectUsers_.subList(8, 10), true, true);
+        // Init default ro
+        Role rolePublic = new Role(0L, "Public", null, permissionList_, projectUsers_.subList(8, 10), true, true);
         Role roleRegisteredUser = new Role(1L, "Registered User", rolePublic, null, projectUsers_.subList(5, 8), false,
                 true);
-        Role roleAdmin = new Role(2L, "Admin", roleRegisteredUser, null, projectUsers_.subList(3, 5), false, true);
-        Role roleProjectAdmin = new Role(3L, "Project Admin", roleAdmin, null, projectUsers_.subList(1, 3), false,
-                true);
-        Role roleInstanceAdmin = new Role(4L, "Instance Admin", roleProjectAdmin, permissionList_,
+        Role roleAdmin = new Role(2L, "Admin", roleRegisteredUser, permissionList_.subList(0, 2),
+                projectUsers_.subList(3, 5), false, true);
+        Role roleProjectAdmin = new Role(3L, "Project Admin", roleAdmin, permissionList_.subList(2, 3),
+                projectUsers_.subList(1, 3), false, true);
+        Role roleInstanceAdmin = new Role(4L, "Instance Admin", roleProjectAdmin, new ArrayList<>(),
                 projectUsers_.subList(0, 1), false, true);
         roles_.add(rolePublic);
         roles_.add(roleRegisteredUser);
@@ -57,6 +60,8 @@ public class RoleRepositoryStub implements IRoleRepository {
 
     @Override
     public <S extends Role> S save(S pEntity) {
+        // roles_.add(pEntity);
+        roles_.removeIf(r -> r.equals(pEntity));
         roles_.add(pEntity);
         return pEntity;
     }
