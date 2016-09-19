@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 public class AccountsController {
 
     @Autowired
-    private MethodAutorizationService authService;
+    private MethodAutorizationService authService_;
 
     @Autowired
     private IAccountService accountService_;
@@ -52,18 +52,18 @@ public class AccountsController {
     @PostConstruct
     public void initAuthorisations() {
         // admin can do everything!
-        authService.setAutorities("/accounts@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accounts@POST", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accounts/{account_id}@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accounts/{account_id}@PUT", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accounts/{account_id}@DELETE", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accounts/code@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accounts/{account_id}/unlock/{unlock_code}@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accounts/{account_id}/password/{reset_code}@PUT", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accounts/settings@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accounts/settings@PUT", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/accounts@GET", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/accounts@POST", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/accounts/{account_id}@GET", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/accounts/{account_id}@PUT", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/accounts/{account_id}@DELETE", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/accounts/code@GET", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/accounts/{account_id}/unlock/{unlock_code}@GET", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/accounts/{account_id}/password/{reset_code}@PUT", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/accounts/settings@GET", new RoleAuthority("ADMIN"));
+        authService_.setAutorities("/accounts/settings@PUT", new RoleAuthority("ADMIN"));
         // users can just get!
-        authService.setAutorities("/accounts@GET", new RoleAuthority("USER"));
+        authService_.setAutorities("/accounts@GET", new RoleAuthority("USER"));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
@@ -89,7 +89,7 @@ public class AccountsController {
     @ResourceAccess(description = "retrieve the list of account in the instance", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<Account>> retrieveAccountList() {
-        List<Account> accounts = this.accountService_.retrieveAccountList();
+        List<Account> accounts = accountService_.retrieveAccountList();
         return new ResponseEntity<>(accounts, HttpStatus.OK);
     }
 
@@ -97,14 +97,14 @@ public class AccountsController {
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Account> createAccount(@Valid @RequestBody Account pNewAccount)
             throws AlreadyExistingException {
-        Account created = this.accountService_.createAccount(pNewAccount);
+        Account created = accountService_.createAccount(pNewAccount);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @ResourceAccess(description = "retrieve the account account_id", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Account> retrieveAccount(@PathVariable("account_id") int accountId) {
-        Account account = this.accountService_.retrieveAccount(accountId);
+        Account account = accountService_.retrieveAccount(accountId);
         return new ResponseEntity<>(account, HttpStatus.OK);
     }
 
@@ -112,14 +112,14 @@ public class AccountsController {
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateAccount(@PathVariable("account_id") int accountId,
             @Valid @RequestBody Account pUpdatedAccount) throws OperationNotSupportedException {
-        this.accountService_.updateAccount(accountId, pUpdatedAccount);
+        accountService_.updateAccount(accountId, pUpdatedAccount);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "remove the account account_id", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> removeAccount(@PathVariable("account_id") int accountId) {
-        this.accountService_.removeAccount(accountId);
+        accountService_.removeAccount(accountId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -129,20 +129,22 @@ public class AccountsController {
      * @param accountId
      * @param unlockCode
      * @return
+     * @throws InvalidValueException
      */
     @ResourceAccess(description = "unlock the account account_id according to the code unlock_code", name = "")
     @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> unlockAccount(@PathVariable("account_id") int accountId,
-            @PathVariable("unlock_code") String unlockCode) {
-        this.accountService_.unlockAccount(accountId, unlockCode);
+            @PathVariable("unlock_code") String unlockCode) throws InvalidValueException {
+        accountService_.unlockAccount(accountId, unlockCode);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code", name = "")
     @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> changeAccountPassword(@PathVariable("account_id") int accountId,
-            @PathVariable("reset_code") String resetCode, @Valid @RequestBody String pNewPassword) {
-        this.accountService_.changeAccountPassword(accountId, resetCode, pNewPassword);
+            @PathVariable("reset_code") String resetCode, @Valid @RequestBody String pNewPassword)
+            throws InvalidValueException {
+        accountService_.changeAccountPassword(accountId, resetCode, pNewPassword);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -150,14 +152,14 @@ public class AccountsController {
     @RequestMapping(value = "/code", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> codeForAccount(@RequestParam("email") String email,
             @RequestParam("type") CodeType type) {
-        this.accountService_.codeForAccount(email, type);
+        accountService_.codeForAccount(email, type);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "retrieve the list of setting managing the accounts", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<String>> retrieveAccountSettings() {
-        List<String> accountSettings = this.accountService_.retrieveAccountSettings();
+        List<String> accountSettings = accountService_.retrieveAccountSettings();
         return new ResponseEntity<>(accountSettings, HttpStatus.OK);
     }
 
@@ -165,7 +167,7 @@ public class AccountsController {
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting)
             throws InvalidValueException {
-        this.accountService_.updateAccountSetting(pUpdatedAccountSetting);
+        accountService_.updateAccountSetting(pUpdatedAccountSetting);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

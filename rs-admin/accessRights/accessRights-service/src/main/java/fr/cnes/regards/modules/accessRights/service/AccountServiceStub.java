@@ -71,6 +71,8 @@ public class AccountServiceStub implements IAccountService {
     @Override
     public void codeForAccount(String pAccountEmail, CodeType pType) {
         String code = generateCode(pType);
+        Account account = this.retrieveAccount(pAccountEmail);
+        account.setCode(code);
         // TODO: sendEmail(pEmail,code);
     }
 
@@ -79,31 +81,38 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public void unlockAccount(int pAccountId, String pUnlockCode) {
+    public void unlockAccount(int pAccountId, String pUnlockCode) throws InvalidValueException {
         Account toUnlock = this.retrieveAccount(pAccountId);
-        // TODO: check unlockCode
+        check(toUnlock, pUnlockCode);
         toUnlock.unlock();
 
     }
 
     @Override
-    public void changeAccountPassword(int pAccountId, String pResetCode, String pNewPassword) {
+    public void changeAccountPassword(int pAccountId, String pResetCode, String pNewPassword)
+            throws InvalidValueException {
         Account account = this.retrieveAccount(pAccountId);
-        // TODO: check resetCode
+        check(account, pResetCode);
         account.setPassword(pNewPassword);
+    }
+
+    private void check(Account account, String pCode) throws InvalidValueException {
+        if (!account.getCode().equals(pCode)) {
+            throw new InvalidValueException("this is not the right code");
+        }
     }
 
     @Override
     public List<String> retrieveAccountSettings() {
         List<String> accountSettings = new ArrayList<>();
-        accountSettings.add(this.accountSetting);
+        accountSettings.add(accountSetting);
         return accountSettings;
     }
 
     @Override
     public void updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException {
         if (pUpdatedAccountSetting.toLowerCase().equals("manual") || pUpdatedAccountSetting.equals("auto-accept")) {
-            this.accountSetting = pUpdatedAccountSetting.toLowerCase();
+            accountSetting = pUpdatedAccountSetting.toLowerCase();
             return;
         }
         throw new InvalidValueException("Only value accepted : manual or auto-accept");
@@ -125,7 +134,7 @@ public class AccountServiceStub implements IAccountService {
     /*
      * (non-Javadoc)
      *
-     * @see fr.cnes.regards.modules.accessRights.service.IAccountService#retrieveAccount(java.lang.String)
+     * @see fr.cnes.regards.modules.accessRights.service.IAccountService# retrieveAccount(java.lang.String)
      */
     @Override
     public Account retrieveAccount(String pEmail) {

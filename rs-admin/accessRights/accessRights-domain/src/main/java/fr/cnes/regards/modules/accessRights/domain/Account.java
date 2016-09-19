@@ -8,6 +8,8 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Email;
 import org.springframework.hateoas.ResourceSupport;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Account extends ResourceSupport {
 
     private static int maxAccountId_ = 0;
@@ -34,32 +36,35 @@ public class Account extends ResourceSupport {
 
     private AccountStatus status_;
 
+    @JsonIgnore
+    private String code_;
+
     public Account() {
         super();
-        this.accountId_ = maxAccountId_;
+        accountId_ = maxAccountId_;
         maxAccountId_++;
-        this.status_ = AccountStatus.PENDING;
+        status_ = AccountStatus.PENDING;
     }
 
     public Account(String email) {
         this();
-        this.email_ = email;
+        email_ = email;
     }
 
     public Account(String email, String firstName, String lastName, String password) {
         this(email);
-        this.firstName_ = firstName;
-        this.lastName_ = lastName;
-        this.login_ = email;
-        this.password_ = password;
+        firstName_ = firstName;
+        lastName_ = lastName;
+        login_ = email;
+        password_ = password;
     }
 
     public Account(String email, String firstName, String lastName, String login, String password) {
         this(email);
-        this.firstName_ = firstName;
-        this.lastName_ = lastName;
-        this.login_ = login;
-        this.password_ = password;
+        firstName_ = firstName;
+        lastName_ = lastName;
+        login_ = login;
+        password_ = password;
     }
 
     public String getEmail() {
@@ -111,8 +116,8 @@ public class Account extends ResourceSupport {
     }
 
     public void unlock() {
-        if (this.status_.equals(AccountStatus.LOCKED)) {
-            this.status_ = AccountStatus.ACTIVE;
+        if (status_.equals(AccountStatus.LOCKED)) {
+            status_ = AccountStatus.ACTIVE;
         }
     }
 
@@ -122,8 +127,16 @@ public class Account extends ResourceSupport {
 
     @Override
     public boolean equals(Object o) {
-        return (o instanceof Account) && ((Account) o).email_.equals(this.email_);
+        return (o instanceof Account) && ((Account) o).email_.equals(email_);
 
+    }
+
+    public String getCode() {
+        return code_;
+    }
+
+    public void setCode(String code) {
+        code_ = code;
     }
 
 }

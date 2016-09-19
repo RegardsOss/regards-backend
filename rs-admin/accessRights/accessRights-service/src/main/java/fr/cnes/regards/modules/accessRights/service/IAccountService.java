@@ -14,61 +14,63 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 public interface IAccountService {
 
-    List<Account> retrieveAccountList();
+	List<Account> retrieveAccountList();
 
-    Account createAccount(Account pNewAccount) throws AlreadyExistingException;
+	Account createAccount(Account pNewAccount) throws AlreadyExistingException;
 
-    List<String> retrieveAccountSettings();
+	List<String> retrieveAccountSettings();
 
-    void updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException;
+	void updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException;
 
-    /**
-     * @param id
-     * @return
-     */
-    boolean existAccount(int id);
+	/**
+	 * @param id
+	 * @return
+	 */
+	boolean existAccount(int id);
 
-    /**
-     * @param pAccountId
-     * @return
-     */
-    Account retrieveAccount(int pAccountId);
+	/**
+	 * @param pAccountId
+	 * @return
+	 */
+	Account retrieveAccount(int pAccountId);
 
-    /**
-     * @param pAccountId
-     * @param pUpdatedAccount
-     * @throws OperationNotSupportedException
-     */
-    void updateAccount(int pAccountId, Account pUpdatedAccount) throws OperationNotSupportedException;
+	/**
+	 * @param pAccountId
+	 * @param pUpdatedAccount
+	 * @throws OperationNotSupportedException
+	 */
+	void updateAccount(int pAccountId, Account pUpdatedAccount) throws OperationNotSupportedException;
 
-    /**
-     * @param pAccountId
-     */
-    void removeAccount(int pAccountId);
+	/**
+	 * @param pAccountId
+	 */
+	void removeAccount(int pAccountId);
 
-    /**
-     * @param pAccountEmail
-     * @param pType
-     */
-    void codeForAccount(String pAccountEmail, CodeType pType);
+	/**
+	 * @param pAccountEmail
+	 * @param pType
+	 */
+	void codeForAccount(String pAccountEmail, CodeType pType);
 
-    /**
-     * @param pAccountId
-     * @param pUnlockCode
-     */
-    void unlockAccount(int pAccountId, String pUnlockCode);
+	/**
+	 * @param pAccountId
+	 * @param pUnlockCode
+	 * @throws InvalidValueException
+	 */
+	void unlockAccount(int pAccountId, String pUnlockCode) throws InvalidValueException;
 
-    /**
-     * @param pAccountId
-     * @param pResetCode
-     * @param pNewPassword
-     */
-    void changeAccountPassword(int pAccountId, String pResetCode, String pNewPassword);
+	/**
+	 * @param pAccountId
+	 * @param pResetCode
+	 * @param pNewPassword
+	 * @throws InvalidValueException
+	 */
+	void changeAccountPassword(int pAccountId, String pResetCode, String pNewPassword) throws InvalidValueException;
 
-    /**
-     * @param pString
-     * @return
-     */
-    Account retrieveAccount(String pString);
+	/**
+	 * @param pString
+	 * @return
+	 */
+	Account retrieveAccount(String pString);
 
 }
