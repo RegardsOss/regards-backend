@@ -71,6 +71,8 @@ public class AccountServiceStub implements IAccountService {
     @Override
     public void codeForAccount(String pAccountEmail, CodeType pType) {
         String code = generateCode(pType);
+        Account account = this.retrieveAccount(pAccountEmail);
+        account.setCode(code);
         // TODO: sendEmail(pEmail,code);
     }
 
@@ -79,17 +81,18 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public void unlockAccount(Long pAccountId, String pUnlockCode) {
+    public void unlockAccount(Long pAccountId, String pUnlockCode) throws InvalidValueException {
         Account toUnlock = this.retrieveAccount(pAccountId);
-        // TODO: check unlockCode
+        check(toUnlock, pUnlockCode);
         toUnlock.unlock();
 
     }
 
     @Override
-    public void changeAccountPassword(Long pAccountId, String pResetCode, String pNewPassword) {
+    public void changeAccountPassword(Long pAccountId, String pResetCode, String pNewPassword)
+            throws InvalidValueException {
         Account account = this.retrieveAccount(pAccountId);
-        // TODO: check resetCode
+        check(account, pResetCode);
         account.setPassword(pNewPassword);
     }
 

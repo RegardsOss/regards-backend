@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.accessRights.service.test;
 
 import static org.junit.Assert.assertEquals;

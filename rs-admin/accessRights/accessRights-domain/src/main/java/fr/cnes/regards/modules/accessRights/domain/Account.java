@@ -9,6 +9,8 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.hateoas.Identifiable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Account implements Identifiable<Long> {
 
     private static Long maxAccountId_ = 0L;
@@ -20,6 +22,7 @@ public class Account implements Identifiable<Long> {
         id_ = pAccountId;
     }
 
+    @NotNull
     @Email
     private String email_;
 
@@ -39,32 +42,35 @@ public class Account implements Identifiable<Long> {
     @NotNull
     private AccountStatus status_;
 
+    @JsonIgnore
+    private String code_;
+
     public Account() {
         super();
-        this.id_ = maxAccountId_;
+        id_ = maxAccountId_;
         maxAccountId_++;
-        this.status_ = AccountStatus.PENDING;
+        status_ = AccountStatus.PENDING;
     }
 
     public Account(String email) {
         this();
-        this.email_ = email;
+        email_ = email;
     }
 
     public Account(String email, String firstName, String lastName, String password) {
         this(email);
-        this.firstName_ = firstName;
-        this.lastName_ = lastName;
-        this.login_ = email;
-        this.password_ = password;
+        firstName_ = firstName;
+        lastName_ = lastName;
+        login_ = email;
+        password_ = password;
     }
 
     public Account(String email, String firstName, String lastName, String login, String password) {
         this(email);
-        this.firstName_ = firstName;
-        this.lastName_ = lastName;
-        this.login_ = login;
-        this.password_ = password;
+        firstName_ = firstName;
+        lastName_ = lastName;
+        login_ = login;
+        password_ = password;
     }
 
     public String getEmail() {
@@ -116,8 +122,8 @@ public class Account implements Identifiable<Long> {
     }
 
     public void unlock() {
-        if (this.status_.equals(AccountStatus.LOCKED)) {
-            this.status_ = AccountStatus.ACTIVE;
+        if (status_.equals(AccountStatus.LOCKED)) {
+            status_ = AccountStatus.ACTIVE;
         }
     }
 
@@ -126,9 +132,17 @@ public class Account implements Identifiable<Long> {
         return id_;
     }
 
+    public String getCode() {
+        return code_;
+    }
+
+    public void setCode(String code) {
+        code_ = code;
+    }
+
     @Override
     public boolean equals(Object o) {
-        return (o instanceof Account) && ((Account) o).email_.equals(this.email_);
+        return (o instanceof Account) && ((Account) o).email_.equals(email_);
     }
 
 }
