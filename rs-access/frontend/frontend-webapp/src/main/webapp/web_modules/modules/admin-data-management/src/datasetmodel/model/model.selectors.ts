@@ -1,8 +1,9 @@
-import {BasicSelector} from "@regardsoss/store"
+import {BasicSelector} from "@regardsoss/store-utils"
 
 class ModelSelectors extends BasicSelector {
   constructor () {
-    super(["admin"])
+    super(["admin", "data-management", "model"])
+
   }
 
   getDatasetModels (state: any): any {

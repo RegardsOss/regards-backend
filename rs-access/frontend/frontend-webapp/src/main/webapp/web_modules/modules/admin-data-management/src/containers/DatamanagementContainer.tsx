@@ -14,7 +14,7 @@ class DatamanagementContainer extends React.Component<DatamanagementProps, any> 
   render (): JSX.Element {
     const {params} = this.props
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <ComposedInjector >
           <DatamanagementComponent theme={null} intl={null} params={params}/>
         </ComposedInjector>

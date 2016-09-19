@@ -3,7 +3,7 @@ import { I18nProvider } from "@regardsoss/i18n"
 import { browserHistory } from "react-router"
 import ConnectionCreateComponent from "../components/add/ConnectionCreateComponent"
 import { connect } from "react-redux"
-import { addConnection } from "../model/connection.actions"
+import { addConnection } from "../model/ConnectionActions"
 
 
 /**
@@ -35,7 +35,7 @@ class ConnectionCreateContainer extends React.Component<ConnectionCreateProps, a
 
   render (): JSX.Element {
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <ConnectionCreateComponent
           getCancelUrl={this.getCancelUrl}
           handleNextStep={this.handleNextStep}

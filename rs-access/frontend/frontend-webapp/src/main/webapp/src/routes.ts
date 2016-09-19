@@ -3,31 +3,41 @@
  * /user  -> UserApp
  * /admin -> AdminApp
  */
+import { portalContainer } from "@regardsoss/portal"
 import { adminRouter } from "@regardsoss/admin"
-/*
-import { userAppRoutes } from "./userApp/routes"
-import { portalAppRoutes } from "./portalApp/routes"
-import PortalApp from "./portalApp/PortalApp"
-*/
 import { PlainRoute } from "react-router"
 
-const childRoutes: Array<PlainRoute> = [{
+export const routes: PlainRoute = {
   path: "/",
   childRoutes: [
-    adminRouter/*,
-    userAppRoutes,
-    portalAppRoutes*/
+      adminRouter
   ],
   getIndexRoute(nextState: any, cb: any): void {
     require.ensure([], (require: any) => {
       cb(null, {
-        // component: PortalApp
-        component: adminRouter
+        component: portalContainer
       })
     })
   }
-}]
-
-export const routes: PlainRoute = {
-  childRoutes: childRoutes
 }
+
+
+// Log sitemap
+function getSiteMap(parentRoute: any, childRoutes: Array<PlainRoute>): void {
+  childRoutes.map((route) => {
+    if (route) {
+      let path = ''
+      if (parentRoute.slice(-1) === '/' || route.path[0] === '/') {
+        path = parentRoute + route.path
+      } else {
+        path = parentRoute + '/' + route.path
+      }
+      console.log(path)
+      if (route.childRoutes) {
+        getSiteMap(path, route.childRoutes)
+      }
+    }
+  })
+}
+// Log sitemap
+getSiteMap("", routes.childRoutes)

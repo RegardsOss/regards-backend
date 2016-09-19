@@ -1,11 +1,11 @@
-import {BasicSelector} from "@regardsoss/store"
+import {BasicSelector} from "@regardsoss/store-utils"
 
 // Selectors
 export const getDatasets = (state: any) => state.items
 
 class DatasetSelectors extends BasicSelector {
   constructor () {
-    super(["admin"])
+    super(["admin", "data-management", "dataset"])
   }
 
   getDatasets (state: any): any {
@@ -14,5 +14,5 @@ class DatasetSelectors extends BasicSelector {
 
 }
 
-
-export default new DatasetSelectors()
+const _instance = new DatasetSelectors()
+export default _instance

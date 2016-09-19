@@ -34,7 +34,7 @@ class DatasourceListContainer extends React.Component<DatasourceListProps, any> 
     const {datasources} = this.props
     console.log(datasources)
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <DatasourceListComponent
           getBackUrl={this.getBackUrl}
           getCreateUrl={this.getCreateUrl}

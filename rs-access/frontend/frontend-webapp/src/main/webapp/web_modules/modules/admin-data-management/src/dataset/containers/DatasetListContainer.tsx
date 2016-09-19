@@ -4,7 +4,6 @@ import { connect } from "react-redux"
 import DatasetSelectors from "../model/dataset.selectors"
 import { Dataset } from "@regardsoss/models"
 import DatasetListComponent from "../components/list/DatasetListComponent"
-const URL_PROJECTS_USERS = "http://localhost:8080/api/users"
 
 interface DatasetCreateProps {
   // From router
@@ -31,7 +30,7 @@ export class DatasetListContainer extends React.Component<DatasetCreateProps, an
   render (): JSX.Element {
     const {datasets} = this.props
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <DatasetListComponent
           getBackUrl={this.getBackUrl}
           getCreateUrl={this.getCreateUrl}

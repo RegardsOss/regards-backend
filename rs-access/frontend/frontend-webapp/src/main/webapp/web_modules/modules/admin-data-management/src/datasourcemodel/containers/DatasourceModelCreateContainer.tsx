@@ -34,7 +34,7 @@ class DatasourceModelCreateContainer extends React.Component<ModelCreateProps, a
 
   render (): JSX.Element {
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <ModelCreateComponent
           getCancelUrl={this.getCancelUrl}
           handleNextStep={this.handleNextStep}

@@ -29,7 +29,3 @@ export default (state: any = {
       return state
   }
 }
-
-
-// Selectors
-export const getFormDatasetViewState = (state: any) => state.viewState

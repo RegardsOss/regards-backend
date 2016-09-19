@@ -32,7 +32,7 @@ export default class CollectionListContainer extends React.Component<DatasetCrea
   render (): JSX.Element {
     const {collections} = this.props
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <CollectionListComponent
           getBackUrl={this.getBackUrl}
           getCreateUrl={this.getCreateUrl}

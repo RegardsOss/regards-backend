@@ -8,8 +8,6 @@ npm link web_modules/data/models
 
 npm link web_modules/data/api
 
-npm link web_modules/utils/endpoints
-
 npm link web_modules/utils/authentication
 
 npm link web_modules/utils/display-control
@@ -25,8 +23,10 @@ npm link web_modules/view/i18n
 npm link web_modules/view/injector
 npm link web_modules/utils/some-pckg
 npm link web_modules/utils/plugins
+npm link web_modules/utils/store-utils
 
 npm link web_modules/modules/admin
 npm link web_modules/modules/admin-data-management
 
 
+npm link web_modules/modules/portal

@@ -34,6 +34,7 @@ export function setDatasetModelType (modelType: number): Object {
 }
 
 export const SET_DATASET_DEFAULTMODELATTRIBUTES = 'dataset/SET_DATASET_DEFAULTMODELATTRIBUTES'
+
 export function setDatasetDefaultModelAttributes (defaultModelAttributes: Array<DatasetDefaultModelAttribute>): Object {
   return {
     type: SET_DATASET_DEFAULTMODELATTRIBUTES,

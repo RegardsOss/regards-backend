@@ -44,7 +44,7 @@ class IntegerInputComponent extends React.Component<IntegerInputProps, any> {
    */
   getValue = (): number => {
     const {value} = this.state
-    return parseInt(value)
+    return parseInt(value, 10)
   }
   isDefaultValue = (): boolean => {
     const {value} = this.state

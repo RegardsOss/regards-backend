@@ -27,7 +27,7 @@ export default class CollectionCreateContainer extends React.Component<DatasetCr
     const {params} = this.props
     console.log(params)
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <Card
           initiallyExpanded={true}>
           <CardHeader

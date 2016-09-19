@@ -3,5 +3,5 @@ import { dataManagementReducer } from "@regardsoss/admin-data-management"
 
 
 export const adminReducer = combineReducers({
-  dataManagementReducer
+  "data-management": dataManagementReducer
 })

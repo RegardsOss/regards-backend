@@ -26,7 +26,7 @@ class DatasourceModelListContainer extends React.Component<DatasourceModelListPr
   render (): JSX.Element {
     const {datasourceModels} = this.props
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <DatasourceModelListComponent
           getBackUrl={this.getBackUrl}
           getCreateUrl={this.getCreateUrl}

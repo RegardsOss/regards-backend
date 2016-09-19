@@ -131,7 +131,7 @@ export class DatasetCreateContainer extends React.Component<DatasetCreateProps, 
       />
     )
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <div>
           {(() => {
             switch (viewState) {

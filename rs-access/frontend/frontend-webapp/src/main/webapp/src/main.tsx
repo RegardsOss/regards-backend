@@ -1,34 +1,15 @@
 import * as ReactDOM from "react-dom"
-import {Router, browserHistory, PlainRoute} from "react-router"
-import {Provider} from "react-redux"
-import { configureStore, preloadedState } from "@regardsoss/store"
-import {routes} from "./routes"
-import {test} from "@regardsoss/some-pckg"
-import mainReducer from "./reducer.main"
-console.log(test())
-const store = configureStore(mainReducer, preloadedState)
+import { Router, browserHistory } from "react-router"
+import { Provider } from "react-redux"
+import { configureStore } from "@regardsoss/store"
+import rootReducer from "./RootReducer"
+import { routes } from "./routes"
+
+const store = configureStore(rootReducer)
+
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory} routes={routes}/>
   </Provider>,
   document.getElementById('app')
 )
-
-// Log sitemap
-function getSiteMap(parentRoute: any, routes: Array<PlainRoute>): void {
-  routes.map((route) => {
-    if (route) {
-      let path = ''
-      if (parentRoute.slice(-1) === '/' || route.path[0] === '/') {
-        path = parentRoute + route.path
-      } else {
-        path = parentRoute + '/' + route.path
-      }
-      if (route.childRoutes) {
-        getSiteMap(path, route.childRoutes)
-      }
-    }
-  })
-}
-// Log sitemap
-getSiteMap("", routes.childRoutes)

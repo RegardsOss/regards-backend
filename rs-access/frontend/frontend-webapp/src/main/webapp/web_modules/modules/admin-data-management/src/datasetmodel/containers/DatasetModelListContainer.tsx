@@ -26,7 +26,7 @@ export class ModelListContainer extends React.Component<ModelListProps, any> {
   render (): JSX.Element {
     const {datasetModels} = this.props
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <ModelListComponent
           getBackUrl={this.getBackUrl}
           getCreateUrl={this.getCreateUrl}

@@ -34,7 +34,7 @@ export class ModelCreateContainer extends React.Component<ModelCreateProps, any>
 
   render (): JSX.Element {
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <DatasetModelCreateComponent
           getCancelUrl={this.getCancelUrl}
           handleNextStep={this.handleNextStep}

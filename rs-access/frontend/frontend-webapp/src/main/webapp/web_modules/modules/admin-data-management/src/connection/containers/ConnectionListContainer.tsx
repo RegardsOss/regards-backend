@@ -3,7 +3,7 @@ import { I18nProvider } from "@regardsoss/i18n"
 import { Connection } from "@regardsoss/models"
 import ConnectionListComponent from "../components/list/ConnectionListComponent"
 import { connect } from "react-redux"
-import ConnectionSelectors from "../model/connection.selectors"
+import ConnectionSelectors from "../model/ConnectionSelectors"
 
 interface ConnectionListProps {
   // From router
@@ -31,20 +31,23 @@ class ConnectionListContainer extends React.Component<ConnectionListProps, any> 
   render (): JSX.Element {
     const {connections} = this.props
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <div>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <ConnectionListComponent
           getBackUrl={this.getBackUrl}
           getCreateUrl={this.getCreateUrl}
           connections={connections}
         />
       </I18nProvider>
+      </div>
     )
   }
 }
 const mapStateToProps = (state: any, ownProps: any) => {
-  const connections = ConnectionSelectors.getConnections(state)
-  return {
-    connections
-  }
+  // const connections = ConnectionSelectors.getConnections(state)
+  // return {
+  //   connections
+  // }
+  return {}
 }
 export default connect<{}, {}, ConnectionListProps>(mapStateToProps, null)(ConnectionListContainer)

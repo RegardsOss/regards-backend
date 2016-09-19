@@ -1,11 +1,11 @@
-import {BasicSelector} from "@regardsoss/store"
+import {BasicSelector} from "@regardsoss/store-utils"
 
 // Selectors
 export const getDatasets = (state: any) => state.items
 
 class DatasourceSelectors extends BasicSelector {
   constructor () {
-    super(["admin"])
+    super(["admin", "data-management", "datasource"])
   }
 
   getDatasources (state: any): any {
@@ -19,4 +19,11 @@ class DatasourceSelectors extends BasicSelector {
 
 
 
-export default new DatasourceSelectors()
+export default {
+  getDatasources (state: any): any {
+    return undefined
+  },
+  getDatasourceById (state: any, id: number): any {
+    return undefined
+  },
+}

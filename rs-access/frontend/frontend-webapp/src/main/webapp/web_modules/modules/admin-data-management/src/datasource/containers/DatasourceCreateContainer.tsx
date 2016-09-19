@@ -38,7 +38,7 @@ export class DatasourceCreateContainer extends React.Component<DatasourceCreateP
   render (): JSX.Element {
     const {connections, modelObjects, pluginDatasources} = this.props
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
+      <I18nProvider messageDir='modules/admin-data-management/src/i18n'>
         <CreateDatasourceFormComponent
           cancelUrl={this.getCancelUrl()}
           connections={connections}
