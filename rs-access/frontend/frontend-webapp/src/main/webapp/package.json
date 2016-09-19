@@ -18,7 +18,7 @@
     "sitemap": "node build/sitemap.js",
     "start": "NODE_ENV=development node  --max_old_space_size=4096 --optimize_for_size --max_executable_size=4096 --stack_size=4096 ./node_modules/.bin/webpack-dev-server --progress --hot --config webpack.dev.config.js",
     "test": "npm run test:mocha --silent",
-    "test:coverage": "nyc mocha-webpack --webpack-config webpack.coverage.config.js \"web_modules/**/*.test.\\?(ts|tsx)\" --recursive || true",
+    "test:coverage": "nyc mocha-webpack --webpack-config webpack.coverage.config.js \"(tests|web_modules)/**/*.test.\\?(ts|tsx)\" --recursive || true",
     "test:mocha": "mocha-webpack --webpack-config webpack.test.config.js \"web_modules/**/*.test.\\?(ts|tsx)\" --require source-map-support/register --inline-diffs --recursive --reporter mochawesome --reporter-options reportDir='./coverage/mocha',reportName='Regards Frontend tests'",
     "test:watch": "npm test -- --watch",
     "tsc:watch": "tsc -w",
@@ -32,38 +32,33 @@
       "es2015",
       "react"
     ],
+    "sourceMap": "inline",
     "env": {
       "development": {
         "plugins": [
           "react-hot-loader/babel"
-        ]
-      },
-      "test": {
-        "plugins": [
-          "istanbul"
         ]
       }
     }
   },
   "nyc": {
     "exclude": [
-      "coverage"
+      "coverage",
+      "**/*.d.ts"
     ],
     "require": [
       "babel-core/register",
       "source-map-support/register"
     ],
-    "extensions": [
+    "extension": [
       ".ts",
       ".tsx",
       ".js"
     ],
     "reporter": [
-      "json",
-      "html",
-      "text"
+      "json"
     ],
-    "sourceMap": false,
+    "sourceMap": true,
     "instrument": false
   },
   "dependencies": {
@@ -122,6 +117,7 @@
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.9.0",
     "istanbul": "^1.1.0-alpha.1",
+    "istanbul-instrumenter-loader": "^1.0.0",
     "jsdoc": "^3.4.0",
     "json-loader": "^0.5.4",
     "mocha": "^2.5.3",
@@ -137,6 +133,7 @@
     "redux-devtools-dock-monitor": "^1.1.1",
     "redux-devtools-log-monitor": "^1.0.11",
     "redux-mock-store": "^1.2.0",
+    "remap-istanbul": "^0.6.4",
     "sinon": "^1.17.4",
     "source-map-loader": "^0.1.5",
     "source-map-support": "^0.4.2",

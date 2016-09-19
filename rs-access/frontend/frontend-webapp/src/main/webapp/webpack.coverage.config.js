@@ -33,14 +33,14 @@ config = merge(config, {
       {
         test: /\.tsx{0,1}?$/,
         exclude: [/node_modules/, /json/],
-        loaders: ["babel-loader", "ts-loader"]
+        loaders: ['istanbul-instrumenter', "babel-loader",  "ts-loader"],
       }
     ]
   },
   plugins: [
     new webpack.DefinePlugin({
       "process.env": {
-        NODE_ENV: JSON.stringify('test')
+        NODE_ENV: JSON.stringify('coverage')
       }
     }),
   ],
