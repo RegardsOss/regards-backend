@@ -134,4 +134,10 @@ public class AccountServiceStub implements IAccountService {
     public Account retrieveAccount(String pEmail) {
         return accounts.stream().filter(p -> p.getEmail().equals(pEmail)).findFirst().get();
     }
+
+    private void check(Account account, String pCode) throws InvalidValueException {
+        if (!account.getCode().equals(pCode)) {
+            throw new InvalidValueException("this is not the right code");
+        }
+    }
 }
