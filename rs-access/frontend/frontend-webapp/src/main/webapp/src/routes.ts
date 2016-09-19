@@ -3,19 +3,21 @@
  * /user  -> UserApp
  * /admin -> AdminApp
  */
-import { portalContainer } from "@regardsoss/portal"
-import { adminRouter } from "@regardsoss/admin"
 import { PlainRoute } from "react-router"
 
 export const routes: PlainRoute = {
   path: "/",
-  childRoutes: [
-      adminRouter
-  ],
+  getChildRoutes(nextState: any, cb: any): any {
+    require.ensure([], (require: any) => {
+      const AdminPckg = require("@regardsoss/admin")
+      cb(null, [AdminPckg.adminRouter])
+    })
+  },
   getIndexRoute(nextState: any, cb: any): void {
     require.ensure([], (require: any) => {
+      const PortalPckg = require("@regardsoss/portal")
       cb(null, {
-        component: portalContainer
+        component: PortalPckg.portalContainer
       })
     })
   }
@@ -23,7 +25,7 @@ export const routes: PlainRoute = {
 
 
 // Log sitemap
-function getSiteMap(parentRoute: any, childRoutes: Array<PlainRoute>): void {
+function getSiteMap (parentRoute: any, childRoutes: Array<PlainRoute>): void {
   childRoutes.map((route) => {
     if (route) {
       let path = ''
@@ -40,4 +42,4 @@ function getSiteMap(parentRoute: any, childRoutes: Array<PlainRoute>): void {
   })
 }
 // Log sitemap
-getSiteMap("", routes.childRoutes)
+// getSiteMap("", routes.childRoutes)

@@ -33,7 +33,6 @@ class ProjectAdminApp extends React.Component<ProjectAdminAppProps, any> {
     const {theme, authentication, content} = this.props
     // Build theme
     const muiTheme = ThemeHelper.getByName(theme)
-
     // Authentication
     const authenticated = isAuthenticated(authentication)
     let hmi: any = []

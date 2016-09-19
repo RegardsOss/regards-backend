@@ -1,94 +1,88 @@
 import { PlainRoute } from "react-router"
-import DatamanagementContainer from "./containers/DatamanagementContainer"
-import ConnectionListContainer from "./connection/containers/ConnectionListContainer"
-/*
-import DatasetCreateContainer from "./dataset/containers/DatasetCreateContainer"
-import DatasetListContainer from "./dataset/containers/DatasetListContainer"
-import CollectionCreateContainer from "./collection/containers/CollectionCreateContainer"
-import CollectionListContainer from "./collection/containers/CollectionListContainer"
-import DatasourceCreateContainer from "./datasource/containers/DatasourceCreateContainer"
-import DatasourceListContainer from "./datasource/containers/DatasourceListContainer"
-import ConnectionCreateContainer from "./connection/containers/ConnectionCreateContainer"
-import DatasetModelCreateContainer from "./datasetmodel/containers/DatasetModelCreateContainer"
-import DatasetModelListContainer from "./datasetmodel/containers/DatasetModelListContainer"
-import DatasourceModelListContainer from "./datasourcemodel/containers/DatasourceModelListContainer"
-import DatasourceModelCreateContainer from "./datasourcemodel/containers/DatasourceModelCreateContainer"
- */
-// export const datasetListRoute: PlainRoute = {
-//   path: 'datamanagement/dataset',
-//   getComponents(nextState: any, cb: any): any {
-//     require.ensure([], (require: any) => {
-//       cb(null, {
-//         content: DatasetListContainer
-//       })
-//     })
-//   }
-// }
-//
-// export const datasetCreateRoute: PlainRoute = {
-//   path: 'datamanagement/dataset/create',
-//   getComponents(nextState: any, cb: any): any {
-//     require.ensure([], (require: any) => {
-//       cb(null, {
-//         content: DatasetCreateContainer
-//       })
-//     })
-//   }
-// }
 
-/*
-export const collectionListRoute: PlainRoute = {
-  path: 'datamanagement/collection',
+export const datasetListRoute: PlainRoute = {
+  path: 'datamanagement/dataset',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
+      const DatasetListContainer = require("./dataset/containers/DatasetListContainer")
       cb(null, {
-        content: CollectionListContainer
+        content: DatasetListContainer.default
       })
     })
   }
 }
+
+export const datasetCreateRoute: PlainRoute = {
+  path: 'datamanagement/dataset/create',
+  getComponents(nextState: any, cb: any): any {
+    const DatasetCreateContainer = require("./dataset/containers/DatasetCreateContainer")
+    require.ensure([], (require: any) => {
+      cb(null, {
+        content: DatasetCreateContainer.default
+      })
+    })
+  }
+}
+
+export const collectionListRoute: PlainRoute = {
+  path: 'datamanagement/collection',
+  getComponents(nextState: any, cb: any): any {
+    require.ensure([], (require: any) => {
+      const CollectionListContainer = require("./collection/containers/CollectionListContainer")
+      cb(null, {
+        content: CollectionListContainer.default
+      })
+    })
+  }
+}
+
 
 export const collectionCreateRoute: PlainRoute = {
   path: 'datamanagement/collection/create',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
+      const CollectionCreateContainer = require("./collection/containers/CollectionCreateContainer")
       cb(null, {
-        content: CollectionCreateContainer
+        content: CollectionCreateContainer.default
       })
     })
   }
 }
-*/
-//
-//
-// export const datasetModelCreateRoute: PlainRoute = {
-//   path: 'datamanagement/datasetmodel/create(/:from)',
-//   getComponents(nextState: any, cb: any): any {
-//     require.ensure([], (require: any) => {
-//       cb(null, {
-//         content: DatasetModelCreateContainer
-//       })
-//     })
-//   }
-// }
-//
-// export const datasetModelListRoute: PlainRoute = {
-//   path: 'datamanagement/datasetmodel',
-//   getComponents(nextState: any, cb: any): any {
-//     require.ensure([], (require: any) => {
-//       cb(null, {
-//         content: DatasetModelListContainer
-//       })
-//     })
-//   }
-// }
-/*
+
+export const datasetModelCreateRoute: PlainRoute = {
+  path: 'datamanagement/datasetmodel/create(/:from)',
+  getComponents(nextState: any, cb: any): any {
+    require.ensure([], (require: any) => {
+      const DatasetModelCreateContainer = require("./datasetmodel/containers/DatasetModelCreateContainer")
+      cb(null, {
+        content: DatasetModelCreateContainer.default
+      })
+    })
+  }
+}
+
+
+export const datasetModelListRoute: PlainRoute = {
+  path: 'datamanagement/datasetmodel',
+  getComponents(nextState: any, cb: any): any {
+    require.ensure([], (require: any) => {
+      const DatasetModelListContainer = require("./datasetmodel/containers/DatasetModelListContainer")
+      cb(null, {
+        content: DatasetModelListContainer.default
+      })
+    })
+  }
+}
+
+
+
 export const datasourceCreateRoute: PlainRoute = {
   path: 'datamanagement/datasource/create(/:from)',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
+      const DatasourceCreateContainer = require("./datasource/containers/DatasourceCreateContainer")
       cb(null, {
-        content: DatasourceCreateContainer
+        content: DatasourceCreateContainer.default
       })
     })
   }
@@ -98,19 +92,23 @@ export const datasourceListRoute: PlainRoute = {
   path: 'datamanagement/datasource',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
+      const DatasourceListContainer = require("./datasource/containers/DatasourceListContainer")
       cb(null, {
-        content: DatasourceListContainer
+        content: DatasourceListContainer.default
       })
     })
   }
 }
 
+
+
 export const datasourceModelCreateRoute: PlainRoute = {
   path: 'datamanagement/datasourcemodel/create(/:from)',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
+      const DatasourceModelCreateContainer = require("./datasourcemodel/containers/DatasourceModelCreateContainer")
       cb(null, {
-        content: DatasourceModelCreateContainer
+        content: DatasourceModelCreateContainer.default
       })
     })
   }
@@ -120,8 +118,9 @@ export const datasourceModelListRoute: PlainRoute = {
   path: 'datamanagement/datasourcemodel',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
+      const DatasourceModelListContainer = require("./datasourcemodel/containers/DatasourceModelListContainer")
       cb(null, {
-        content: DatasourceModelListContainer
+        content: DatasourceModelListContainer.default
       })
     })
   }
@@ -131,55 +130,58 @@ export const connectionCreateRoute: PlainRoute = {
   path: 'datamanagement/connection/create(/:from)',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
+      const ConnectionCreateContainer = require("./connection/containers/ConnectionCreateContainer")
       cb(null, {
-        content: ConnectionCreateContainer
+        content: ConnectionCreateContainer.default
       })
     })
   }
 }
 
-*/
-/*
+
+export const connectionListRoute: PlainRoute = {
+  path: 'datamanagement/connection',
+  getComponents(nextState: any, cb: any): any {
+    require.ensure([], (require: any) => {
+      const ConnectionListContainer = require("./connection/containers/ConnectionListContainer")
+      cb(null, {
+        content: ConnectionListContainer.default
+      })
+    })
+  }
+}
+
+export const dataManagementHomeRoute: PlainRoute = {
+  path: 'datamanagement',
+  getComponents(nextState: any, cb: any): any {
+    require.ensure([], (require: any) => {
+      const DatamanagementContainer = require("./containers/DatamanagementContainer")
+      cb(null, {
+        content: DatamanagementContainer.default
+      })
+    })
+  }
+}
+
 export const dataManagementRouter: PlainRoute = {
   path: '',
   childRoutes: [
-    datamanagementhome,
+    dataManagementHomeRoute,
+
     collectionCreateRoute,
     collectionListRoute,
-    // datasetListRoute,
-    // datasetCreateRoute,
-    // datasetModelCreateRoute,
-    // datasetModelListRoute,
-    datasourceCreateRoute,
-    datasourceListRoute,
+    datasetListRoute,
+    datasetCreateRoute,
+
+    // Todo: fusionner l'un des deux
+    datasetModelCreateRoute,
+    datasetModelListRoute,
     datasourceModelCreateRoute,
     datasourceModelListRoute,
+
+    datasourceCreateRoute,
+    datasourceListRoute,
     connectionCreateRoute,
     connectionListRoute
   ]
-}
-*/
-export const connectionListRoute: PlainRoute = {
-  path: 'connection',
-  getComponents(nextState: any, cb: any): any {
-    require.ensure([], (require: any) => {
-      cb(null, {
-        content: ConnectionListContainer
-      })
-    })
-  }
-}
-
-export const dataManagementRouter: PlainRoute = {
-  path: 'datamanagement',
-  childRoutes: [
-    connectionListRoute
-  ],
-  getIndexRoute(nextState: any, cb: any): any {
-    require.ensure([], (require: any) => {
-      cb(null, {
-        content: DatamanagementContainer
-      })
-    })
-  }
 }

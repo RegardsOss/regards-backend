@@ -1,7 +1,7 @@
 /** @module AdminApp */
 import * as React from "react"
 import { connect } from "react-redux"
-import { logout,  isAuthenticated } from "@regardsoss/authentication"
+import { logout, isAuthenticated } from "@regardsoss/authentication"
 import { AuthenticationType } from "@regardsoss/models"
 import { ThemeHelper } from "@regardsoss/theme"
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"

@@ -1,14 +1,15 @@
 import { PlainRoute } from "react-router"
-import { dataManagementRouter } from "@regardsoss/admin-data-management"
 import AdminApp from "./AdminApp"
 import ProjectAdminApp from "./ProjectAdminApp"
 
 
 export const projectAdminRouter: PlainRoute = {
-  path: ":project",
-  childRoutes: [
-    dataManagementRouter
-  ],
+  path: "admin/:project",
+  getChildRoutes(nextState: any, cb: any) {
+    const adminDataManagement = require("@regardsoss/admin-data-management")
+    // do asynchronous stuff to find the child routes
+    cb(null, [adminDataManagement.dataManagementRouter])
+  },
   getComponent(nextState: any, cb: any): void {
     require.ensure([], (require: any) => {
       cb(null, ProjectAdminApp)
@@ -17,15 +18,20 @@ export const projectAdminRouter: PlainRoute = {
 }
 
 
-
-export const adminRouter: PlainRoute = {
+export const instanceAdminRouter: PlainRoute = {
   path: "admin",
-  childRoutes: [
-    projectAdminRouter
-  ],
   getComponent(nextState: any, cb: any): void {
     require.ensure([], (require: any) => {
       cb(null, AdminApp)
     })
   }
+}
+
+
+export const adminRouter: PlainRoute = {
+  path: "",
+  childRoutes: [
+    instanceAdminRouter,
+    projectAdminRouter
+  ]
 }

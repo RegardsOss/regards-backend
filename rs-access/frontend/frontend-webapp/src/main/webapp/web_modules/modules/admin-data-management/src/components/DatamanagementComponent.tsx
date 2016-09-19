@@ -184,7 +184,6 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
       <KeyboardArrowUp /> :
       <KeyboardArrowDown />
     return (
-      <I18nProvider messageDir='adminApp/modules/datamanagement/i18n'>
         <div>
           <div
             className={style.section.container.classes}
@@ -206,16 +205,9 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
             />
           </div>
         </div>
-      </I18nProvider>
     )
   }
 }
 
 export default DatamanagementComponent
-/*
- const mapStateToProps = (state: any, ownProps: any) => {
- }
- const mapDispatchToProps = (dispatch: any) => ({
- })
- export default connect<{}, {}, DatasetCreateProps>(mapStateToProps, mapDispatchToProps)(DatasetCreateContainer)
- */
+
