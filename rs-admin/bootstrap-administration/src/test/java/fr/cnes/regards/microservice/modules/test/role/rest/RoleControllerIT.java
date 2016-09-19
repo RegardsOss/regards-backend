@@ -1,8 +1,8 @@
 package fr.cnes.regards.microservice.modules.test.role.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,7 +112,7 @@ public class RoleControllerIT extends RegardsIntegrationTest {
     @Test
     public void updateRole() {
         Long roleId = 0L;
-        assertThat(roleService_.existRole(roleId));
+        assertTrue(roleService_.existRole(roleId));
         Role updated = roleService_.retrieveRole(roleId);
         updated.setName("newName");
         ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
