@@ -34,7 +34,7 @@ public class PluginTypesController {
         authService_.setAutorities("/api/pluginstypes/{plugin_type}@GET", new RoleAuthority("PUBLIC"), new RoleAuthority("USER"), new RoleAuthority("ADMIN"));
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/pluginstypes/{plugin_type}", method = RequestMethod.GET)
     public @ResponseBody List<Plugin> getPlugins(@PathVariable("plugin_type") String type) {
         List<Plugin> plugins = new ArrayList<>();
