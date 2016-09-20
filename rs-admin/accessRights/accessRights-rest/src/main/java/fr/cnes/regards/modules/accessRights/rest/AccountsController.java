@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
-import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import fr.cnes.regards.microservices.core.information.ModuleInfo;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
@@ -40,8 +38,8 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RequestMapping("/accounts")
 public class AccountsController {
 
-    @Autowired
-    private MethodAutorizationService authService_;
+    // @Autowired
+    // private MethodAutorizationService authService_;
 
     @Autowired
     private IAccountService accountService_;
@@ -52,18 +50,18 @@ public class AccountsController {
     @PostConstruct
     public void initAuthorisations() {
         // admin can do everything!
-        authService_.setAutorities("/accounts@GET", new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/accounts@POST", new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/accounts/{account_id}@GET", new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/accounts/{account_id}@PUT", new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/accounts/{account_id}@DELETE", new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/accounts/code@GET", new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/accounts/{account_id}/unlock/{unlock_code}@GET", new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/accounts/{account_id}/password/{reset_code}@PUT", new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/accounts/settings@GET", new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/accounts/settings@PUT", new RoleAuthority("ADMIN"));
-        // users can just get!
-        authService_.setAutorities("/accounts@GET", new RoleAuthority("USER"));
+        // authService_.setAutorities("/accounts@GET", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/accounts@POST", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/accounts/{account_id}@GET", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/accounts/{account_id}@PUT", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/accounts/{account_id}@DELETE", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/accounts/code@GET", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/accounts/{account_id}/unlock/{unlock_code}@GET", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/accounts/{account_id}/password/{reset_code}@PUT", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/accounts/settings@GET", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/accounts/settings@PUT", new RoleAuthority("ADMIN"));
+        // // users can just get!
+        // authService_.setAutorities("/accounts@GET", new RoleAuthority("USER"));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
