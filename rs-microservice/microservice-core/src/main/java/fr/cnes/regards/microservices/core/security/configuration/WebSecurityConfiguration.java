@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import fr.cnes.regards.microservices.core.configuration.cloud.CorsFilter;
 import fr.cnes.regards.microservices.core.security.jwt.JWTAuthenticationFilter;
@@ -36,6 +37,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                              "/v2/**/*", "/swagger-ui.html")
                 .permitAll().anyRequest().authenticated().and()
                 .addFilterBefore(new CorsFilter(), ChannelProcessingFilter.class)
-                .addFilterAfter(new JWTAuthenticationFilter(authenticationManager()), ChannelProcessingFilter.class);
+                .addFilterBefore(new JWTAuthenticationFilter(authenticationManager()),
+                                 UsernamePasswordAuthenticationFilter.class);
+
     }
 }

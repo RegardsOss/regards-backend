@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTAuthentication;
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
@@ -22,7 +22,7 @@ import fr.cnes.regards.microservices.core.security.jwt.exception.MissingClaimExc
  * @author msordi
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { JwtTestConfiguration.class })
 public class JWTServiceTest {
 
@@ -54,8 +54,8 @@ public class JWTServiceTest {
         }
         catch (InvalidJwtException | MissingClaimException e) {
             String message = "JWT test error";
-            Assert.fail(message);
             LOG.debug(message, e);
+            Assert.fail(message);
         }
     }
 
