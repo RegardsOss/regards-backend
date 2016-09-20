@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
-import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import fr.cnes.regards.microservices.core.information.ModuleInfo;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
 import fr.cnes.regards.modules.accessRights.domain.MetaData;
@@ -50,8 +48,8 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RequestMapping("/users")
 public class UsersController {
 
-    @Autowired
-    private MethodAutorizationService authService;
+    // @Autowired
+    // private MethodAutorizationService authService;
 
     @Autowired
     private IUserService userService_;
@@ -62,19 +60,19 @@ public class UsersController {
     @PostConstruct
     public void initAuthorisations() {
         // admin can do everything!
-        authService.setAutorities("/users@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/users@POST", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/users/{user_id}@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/users/{user_id}@PUT", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/users/{user_id}@DELETE", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/users/{user_id}/metadata@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/users/{user_id}/metadata@PUT", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/users/{user_id}/metadata@DELETE", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/users/{user_id}/permissions@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/users/{user_id}/permissions@PUT", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/users/{user_id}/permissions@DELETE", new RoleAuthority("ADMIN"));
-        // users can just get!
-        authService.setAutorities("/users@GET", new RoleAuthority("USER"));
+        // authService.setAutorities("/users@GET", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/users@POST", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/users/{user_id}@GET", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/users/{user_id}@PUT", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/users/{user_id}@DELETE", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/users/{user_id}/metadata@GET", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/users/{user_id}/metadata@PUT", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/users/{user_id}/metadata@DELETE", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/users/{user_id}/permissions@GET", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/users/{user_id}/permissions@PUT", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/users/{user_id}/permissions@DELETE", new RoleAuthority("ADMIN"));
+        // // users can just get!
+        // authService.setAutorities("/users@GET", new RoleAuthority("USER"));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
@@ -105,14 +103,14 @@ public class UsersController {
     @ResourceAccess(description = "retrieve the list of users of the project")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<ProjectUser>> retrieveProjectUserList() {
-        List<ProjectUser> users = this.userService_.retrieveUserList();
+        List<ProjectUser> users = userService_.retrieveUserList();
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "retrieve the project user and only display public metadata")
     @RequestMapping(value = "/{user_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<ProjectUser> retrieveProjectUser(@PathVariable("user_id") Long userId) {
-        ProjectUser user = this.userService_.retrieveUser(userId);
+        ProjectUser user = userService_.retrieveUser(userId);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
@@ -120,35 +118,35 @@ public class UsersController {
     @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateProjectUser(@PathVariable("user_id") Long userId,
             @Valid @RequestBody ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
-        this.userService_.updateUser(userId, pUpdatedProjectUser);
+        userService_.updateUser(userId, pUpdatedProjectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "remove the project user from the instance")
     @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> removeProjectUser(@PathVariable("user_id") Long userId) {
-        this.userService_.removeUser(userId);
+        userService_.removeUser(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "retrieve the list of all metadata of the user")
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<MetaData>> retrieveProjectUserMetaData(@PathVariable("user_id") Long pUserId) {
-        return new ResponseEntity<>(this.userService_.retrieveUserMetaData(pUserId), HttpStatus.OK);
+        return new ResponseEntity<>(userService_.retrieveUserMetaData(pUserId), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "update the list of all metadata of the user")
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") Long userId,
             @Valid @RequestBody List<MetaData> pUpdatedUserMetaData) throws OperationNotSupportedException {
-        this.userService_.updateUserMetaData(userId, pUpdatedUserMetaData);
+        userService_.updateUserMetaData(userId, pUpdatedUserMetaData);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "remove all the metadata of the user")
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") Long userId) {
-        this.userService_.removeUserMetaData(userId);
+        userService_.removeUserMetaData(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -164,14 +162,14 @@ public class UsersController {
     @RequestMapping(value = "/{user_id}/permissions", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateProjectUserAccessRights(@PathVariable("user_id") Long userId,
             @Valid @RequestBody List<ResourcesAccess> pUpdatedUserAccessRights) throws OperationNotSupportedException {
-        this.userService_.updateUserAccessRights(userId, pUpdatedUserAccessRights);
+        userService_.updateUserAccessRights(userId, pUpdatedUserAccessRights);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "remove all the specific access rights")
     @RequestMapping(value = "/{user_id}/permissions", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> removeProjectUserAccessRights(@PathVariable("user_id") Long userId) {
-        this.userService_.removeUserAccessRights(userId);
+        userService_.removeUserAccessRights(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

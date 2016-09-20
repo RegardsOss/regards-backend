@@ -24,9 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
-import fr.cnes.regards.microservices.core.auth.RoleAuthority;
 import fr.cnes.regards.microservices.core.information.ModuleInfo;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
@@ -41,8 +39,8 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RequestMapping("/accesses")
 public class AccessesController {
 
-    @Autowired
-    private MethodAutorizationService authService;
+    // @Autowired
+    // private MethodAutorizationService authService;
 
     @Autowired
     private IAccessRequestService projectUserService_;
@@ -53,15 +51,15 @@ public class AccessesController {
     @PostConstruct
     public void initAuthorisations() {
         // admin can do everything!
-        authService.setAutorities("/accesses@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accesses@POST", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accesses/{access_id}/accept@PUT", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accesses/{access_id}/deny@PUT", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accesses/{access_id}@DELETE", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accesses/settings@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/accesses/settings@PUT", new RoleAuthority("ADMIN"));
-        // users can just get!
-        authService.setAutorities("/accesses@GET", new RoleAuthority("USER"));
+        // authService.setAutorities("/accesses@GET", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/accesses@POST", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/accesses/{access_id}/accept@PUT", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/accesses/{access_id}/deny@PUT", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/accesses/{access_id}@DELETE", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/accesses/settings@GET", new RoleAuthority("ADMIN"));
+        // authService.setAutorities("/accesses/settings@PUT", new RoleAuthority("ADMIN"));
+        // // users can just get!
+        // authService.setAutorities("/accesses@GET", new RoleAuthority("USER"));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
@@ -92,7 +90,7 @@ public class AccessesController {
     @ResourceAccess(description = "retrieve the list of access request", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<ProjectUser>> retrieveAccessRequestList() {
-        List<ProjectUser> projectUsers = this.projectUserService_.retrieveAccessRequestList();
+        List<ProjectUser> projectUsers = projectUserService_.retrieveAccessRequestList();
         return new ResponseEntity<>(projectUsers, HttpStatus.OK);
     }
 
@@ -100,7 +98,7 @@ public class AccessesController {
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<ProjectUser> requestAccess(@Valid @RequestBody ProjectUser pAccessRequest)
             throws AlreadyExistingException {
-        ProjectUser created = this.projectUserService_.requestAccess(pAccessRequest);
+        ProjectUser created = projectUserService_.requestAccess(pAccessRequest);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
@@ -108,7 +106,7 @@ public class AccessesController {
     @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException {
-        this.projectUserService_.acceptAccessRequest(pAccessId);
+        projectUserService_.acceptAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -116,21 +114,21 @@ public class AccessesController {
     @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException {
-        this.projectUserService_.denyAccessRequest(pAccessId);
+        projectUserService_.denyAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "remove the access request", name = "")
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId) {
-        this.projectUserService_.removeAccessRequest(pAccessId);
+        projectUserService_.removeAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "retrieve the list of setting managing the access requests", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<String>> getAccessSettingList() {
-        List<String> accessSettings = this.projectUserService_.getAccessSettingList();
+        List<String> accessSettings = projectUserService_.getAccessSettingList();
         return new ResponseEntity<>(accessSettings, HttpStatus.OK);
     }
 
@@ -138,7 +136,7 @@ public class AccessesController {
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateAccessSetting(@Valid @RequestBody String pUpdatedProjectUserSetting)
             throws InvalidValueException {
-        this.projectUserService_.updateAccessSetting(pUpdatedProjectUserSetting);
+        projectUserService_.updateAccessSetting(pUpdatedProjectUserSetting);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

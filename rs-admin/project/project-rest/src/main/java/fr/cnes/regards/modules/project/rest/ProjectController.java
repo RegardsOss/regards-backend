@@ -9,7 +9,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
@@ -26,10 +25,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
-import fr.cnes.regards.microservices.core.auth.ResourceAccess;
-import fr.cnes.regards.microservices.core.auth.RoleAuthority;
-import fr.cnes.regards.microservices.core.information.ModuleInfo;
+import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
+import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
@@ -40,26 +37,7 @@ import fr.cnes.regards.modules.project.service.IProjectService;
 public class ProjectController {
 
     @Autowired
-    private MethodAutorizationService authService;
-
-    @Autowired
     private IProjectService projectService;
-
-    /**
-     * Method to initiate REST resources authorizations.
-     */
-    @PostConstruct
-    public void initAuthorisations() {
-        // admin can do everything!
-        authService.setAutorities("/projects@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/projects@POST", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/projects/{project_id}@GET", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/projects/{project_id}@PUT", new RoleAuthority("ADMIN"));
-        authService.setAutorities("/projects/{project_id}@DELETE", new RoleAuthority("ADMIN"));
-        // users can just get!
-        authService.setAutorities("/projects@GET", new RoleAuthority("USER"));
-        authService.setAutorities("/projects/{project_id}@GET", new RoleAuthority("USER"));
-    }
 
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
