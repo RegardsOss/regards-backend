@@ -33,11 +33,13 @@ config = merge(config, {
       {
         test: /\.tsx{0,1}?$/,
         exclude: [/node_modules/, /json/],
-        loaders: ['istanbul-instrumenter', "babel-loader",  "ts-loader"],
+        loaders: ['istanbul-instrumenter', "babel-loader", "ts-loader"]
       }
     ]
   },
   plugins: [
+    // Allow to define React as a global variable for JSX.
+    new webpack.ProvidePlugin({"React": "react",}),
     new webpack.DefinePlugin({
       "process.env": {
         NODE_ENV: JSON.stringify('coverage')

@@ -1,0 +1,21 @@
+{
+  "exclude": [
+    "**/.tmp/**",
+    "**/*.d.ts"
+  ],
+  "require": [
+    "babel-core/register",
+    "source-map-support/register"
+  ],
+  "extension": [
+    ".ts",
+    ".tsx",
+    ".js"
+  ],
+  "reporter": [
+    "lcov"
+  ],
+  "sourceMap": false,
+  "instrument": false,
+  "all": false
+}

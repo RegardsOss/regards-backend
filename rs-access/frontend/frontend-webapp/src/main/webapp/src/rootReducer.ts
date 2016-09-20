@@ -2,11 +2,11 @@ import { combineReducers } from "redux"
 import { portalReducer } from "@regardsoss/portal"
 import { adminReducer } from "@regardsoss/admin"
 import { themeReducers } from "@regardsoss/theme"
-import { PluginReducer }from "@regardsoss/plugins"
+import { PluginReducer } from "@regardsoss/plugins"
 import { i18nReducers } from "@regardsoss/i18n"
 import { accessRightsReducers } from "@regardsoss/access-rights"
 import { authentication } from "@regardsoss/authentication"
-import { endpointReducer} from "@regardsoss/display-control"
+import { endpointReducer } from "@regardsoss/display-control"
 
 /**
  * Combile all reducers from common modules
@@ -29,6 +29,6 @@ export default combineReducers({
   common: commonReducer,
   admin: adminReducer
   /*
-  userApp,*/
+   userApp,*/
 })
 

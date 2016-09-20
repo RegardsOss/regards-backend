@@ -17,7 +17,7 @@
     "flux-standard-action": "registry:dt/flux-standard-action#0.5.0+20160316155526",
     "immutable": "registry:dt/immutable#3.8.1+20160608070634",
     "isomorphic-fetch": "registry:dt/isomorphic-fetch#0.0.0+20160830175641",
-    "material-ui": "registry:dt/material-ui#0.15.1+20160919070932",
+    "material-ui": "registry:dt/material-ui#0.15.1+20160919210656",
     "mocha": "registry:dt/mocha#2.2.5+20160720003353",
     "nock": "registry:dt/nock#0.54.0+20160907105249",
     "node": "registry:dt/node#6.0.0+20160919063032",

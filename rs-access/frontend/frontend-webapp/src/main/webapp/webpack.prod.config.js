@@ -32,5 +32,4 @@ config = merge(config, {
   ]
 });
 
-
 module.exports = config
