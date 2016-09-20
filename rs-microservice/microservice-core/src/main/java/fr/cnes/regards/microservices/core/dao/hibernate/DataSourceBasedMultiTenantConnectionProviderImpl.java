@@ -55,15 +55,6 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         return dataSources.get(tenantIdentifier);
     }
 
-    public DataSource getDataSource(String pTenant) {
-        if (pTenant != null) {
-            return selectDataSource(pTenant);
-        }
-        else {
-            return selectAnyDataSource();
-        }
-    }
-
     public void addDataSource(String pUrl, String pUser, String pPassword, String pTenant) {
 
         DataSourceBuilder factory = DataSourceBuilder.create(multitenancyProperties.getDatasource().getClassLoader())
