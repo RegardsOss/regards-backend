@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.core.exception;
 
 public class AlreadyExistingException extends Exception {
