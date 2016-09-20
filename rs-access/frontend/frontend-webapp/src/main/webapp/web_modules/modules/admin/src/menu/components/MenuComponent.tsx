@@ -11,7 +11,11 @@ class MenuComponent extends React.Component<{}, {}> {
     const style = {
       headContainer: {
         classes: this.context.muiTheme.adminApp.layout.headContainer.classes.join(' '),
-        styles: Object.assign({}, this.context.muiTheme.adminApp.layout.headContainer.styles, {fontFamily: this.context.muiTheme.fontFamily}),
+        styles: Object.assign(
+          {},
+          this.context.muiTheme.adminApp.layout.headContainer.styles,
+          {fontFamily: this.context.muiTheme.fontFamily}
+        ),
       },
       title: this.context.muiTheme.toolbarTitle,
     }

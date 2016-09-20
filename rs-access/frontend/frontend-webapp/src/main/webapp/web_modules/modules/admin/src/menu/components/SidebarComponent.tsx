@@ -14,7 +14,6 @@ import Widgets from "material-ui/svg-icons/device/widgets"
 import Brush from "material-ui/svg-icons/image/brush"
 import Reply from "material-ui/svg-icons/content/reply"
 import { FormattedMessage } from "react-intl"
-import { ThemeContextType } from "@regardsoss/theme"
 import { HateoasControlledSidebarElement } from "./SidebarElement"
 import SupervisorAccount from "material-ui/svg-icons/action/supervisor-account"
 

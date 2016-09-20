@@ -30,7 +30,7 @@ class DatasetModelAttributeRadioGroupComponent extends React.Component<ModelAttr
   }
 
   render (): JSX.Element {
-    const {attribute, id} = this.props
+    const {attribute} = this.props
     const {radioValue} = this.state
     const staticField = radioValue === "static" ? this.props.staticInput : null
     const javaType: any = find(JavaTypes, {"value": attribute.type})

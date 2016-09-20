@@ -14,18 +14,16 @@ export const preloadedState: any = {
     endpoints: {
       items: []
     }
-  },/*
-  userApp: {
-    ws: {
-      time: null,
-      started: false
-    }
-  },*/
+  }, /*
+   userApp: {
+   ws: {
+   time: null,
+   started: false
+   }
+   },*/
   portal: {
     projects: {}
   },
-  admin: {
-
-  }
+  admin: {}
 }
 

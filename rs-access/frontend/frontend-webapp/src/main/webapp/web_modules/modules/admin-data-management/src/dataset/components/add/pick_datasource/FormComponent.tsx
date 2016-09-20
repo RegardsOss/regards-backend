@@ -41,11 +41,6 @@ class FormComponent extends React.Component<FormProps, any> {
 
   render (): JSX.Element {
     const { datasourceId } = this.state
-    const styleCardActions = {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "flex-end"
-    }
     const isNextButtonVisible = datasourceId >= 0
     return (
       <Card

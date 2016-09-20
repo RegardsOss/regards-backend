@@ -2,7 +2,6 @@ import * as React from "react"
 import Dialog from "material-ui/Dialog"
 import FlatButton from "material-ui/FlatButton"
 import TextField from "material-ui/TextField"
-import AddBox from "material-ui/svg-icons/content/add-box"
 import { FormattedMessage } from "react-intl"
 import { ActionButtonComponent } from "@regardsoss/components"
 

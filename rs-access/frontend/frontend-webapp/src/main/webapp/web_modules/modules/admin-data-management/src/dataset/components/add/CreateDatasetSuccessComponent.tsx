@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Card, CardHeader, CardText } from "material-ui/Card"
+import { Card, CardText } from "material-ui/Card"
 import { FormattedMessage } from "react-intl"
 import CardTitle from "material-ui/Card/CardTitle"
 import { CardActionsComponent } from "@regardsoss/components"

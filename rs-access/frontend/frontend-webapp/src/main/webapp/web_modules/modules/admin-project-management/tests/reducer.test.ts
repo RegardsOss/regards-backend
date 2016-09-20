@@ -2,10 +2,15 @@ import { expect } from "chai"
 import { Action } from "redux"
 import reducer from "../src/reducer"
 import {
-  ProjectAction,
-  PROJECTS_REQUEST, PROJECTS_FAILURE, PROJECTS_SUCCESS,
-  CREATE_PROJECT_REQUEST, CREATE_PROJECT_FAILURE, CREATE_PROJECT_SUCCESS,
-  DELETE_PROJECT_REQUEST, DELETE_PROJECT_SUCCESS, DELETE_PROJECT_FAILURE
+  PROJECTS_REQUEST,
+  PROJECTS_FAILURE,
+  PROJECTS_SUCCESS,
+  CREATE_PROJECT_REQUEST,
+  CREATE_PROJECT_FAILURE,
+  CREATE_PROJECT_SUCCESS,
+  DELETE_PROJECT_REQUEST,
+  DELETE_PROJECT_SUCCESS,
+  DELETE_PROJECT_FAILURE
 } from "../src/actions"
 
 describe('[ADMIN APP] Testing projects reducer', () => {
@@ -167,7 +172,7 @@ describe('[ADMIN APP] Testing projects reducer', () => {
     it('should handle delete success', () => {
       const action = {
         type: DELETE_PROJECT_SUCCESS,
-        payload: { projectId: "3" }
+        payload: {projectId: "3"}
       }
       const initState = {
         isFetching: true,

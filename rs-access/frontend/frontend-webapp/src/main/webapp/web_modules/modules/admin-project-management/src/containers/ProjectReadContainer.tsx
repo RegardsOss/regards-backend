@@ -1,27 +1,20 @@
 import * as React from "react"
 import { connect } from "react-redux"
 import { injectTheme } from "@regardsoss/theme"
-import Paper from 'material-ui/Paper'
-import AppBar from 'material-ui/AppBar'
-import ArrowBack from 'material-ui/svg-icons/navigation/arrow-back'
+import Paper from "material-ui/Paper"
+import AppBar from "material-ui/AppBar"
+import ArrowBack from "material-ui/svg-icons/navigation/arrow-back"
 import { browserHistory } from "react-router"
 import Subheader from "material-ui/Subheader"
 import { List, ListItem } from "material-ui/List"
 import Divider from "material-ui/Divider"
 import { Project } from "@regardsoss/models"
-import IconButton from 'material-ui/IconButton'
-import Face from 'material-ui/svg-icons/action/face'
-import Info from 'material-ui/svg-icons/action/info'
-import InfoOutline from 'material-ui/svg-icons/action/info-outline'
-import Settings from 'material-ui/svg-icons/action/settings'
-import AccountCircle from 'material-ui/svg-icons/action/account-circle'
-import Email from 'material-ui/svg-icons/communication/email'
-import Lock from 'material-ui/svg-icons/action/lock'
-import SupervisorAccount from 'material-ui/svg-icons/action/supervisor-account'
-import {Tabs, Tab} from 'material-ui/Tabs'
-import ActionGrade from 'material-ui/svg-icons/action/grade'
-import TextField from 'material-ui/TextField'
-import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from "material-ui/Table"
+import IconButton from "material-ui/IconButton"
+import InfoOutline from "material-ui/svg-icons/action/info-outline"
+import Settings from "material-ui/svg-icons/action/settings"
+import Lock from "material-ui/svg-icons/action/lock"
+import SupervisorAccount from "material-ui/svg-icons/action/supervisor-account"
+import { Tabs, Tab } from "material-ui/Tabs"
 import { MainActionButtonComponent, SecondaryActionButtonComponent } from "@regardsoss/components"
 
 const styles = {
@@ -50,10 +43,10 @@ interface ProjectReadState {
 class ProjectReadContainer extends React.Component<ProjectReadProps, ProjectReadState> {
 
   state: any = {
-    project: {projectId:"dummy", name:"dummy", description:"dummy"}
+    project: {projectId: "dummy", name: "dummy", description: "dummy"}
   }
 
-  componentDidMount() {
+  componentDidMount (): void {
     this.setState({
       project: this.props.projects[this.props.params.project_id]
     })
@@ -88,10 +81,10 @@ class ProjectReadContainer extends React.Component<ProjectReadProps, ProjectRead
             <div style={{display:'flex', justifyContent:'flex-end', marginTop:10}}>
               <MainActionButtonComponent
                 label={"Editer"}
-                onTouchTap={this.handleEdit} />
+                onTouchTap={this.handleEdit}/>
               <SecondaryActionButtonComponent
                 label={"Supprimer"}
-                onTouchTap={this.handleDelete} />
+                onTouchTap={this.handleDelete}/>
 
             </div>
             <List>
@@ -106,10 +99,10 @@ class ProjectReadContainer extends React.Component<ProjectReadProps, ProjectRead
             <div style={{display:'flex', justifyContent:'flex-end', marginTop:10}}>
               <MainActionButtonComponent
                 label={"Editer"}
-                onTouchTap={this.handleEdit} />
+                onTouchTap={this.handleEdit}/>
               <SecondaryActionButtonComponent
                 label={"Supprimer"}
-                onTouchTap={this.handleDelete} />
+                onTouchTap={this.handleDelete}/>
 
             </div>
             <List>

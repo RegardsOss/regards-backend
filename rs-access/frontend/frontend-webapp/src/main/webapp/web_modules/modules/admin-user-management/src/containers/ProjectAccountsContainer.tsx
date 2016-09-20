@@ -9,7 +9,6 @@ import { I18nProvider } from "@regardsoss/i18n"
 import { FormattedMessage } from "react-intl"
 import { browserHistory } from "react-router"
 import IconButton from "material-ui/IconButton"
-
 import Edit from "material-ui/svg-icons/editor/mode-edit"
 import Delete from "material-ui/svg-icons/action/delete"
 
@@ -40,9 +39,9 @@ class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any>
   }
 
   handleView = (selectedRows: number[] | string) => {
-    if(selectedRows instanceof String)
+    if (selectedRows instanceof String)
       throw new Error('Only a single row should be selected in the table')
-    if(selectedRows instanceof Array && selectedRows.length !== 1)
+    if (selectedRows instanceof Array && selectedRows.length !== 1)
       throw new Error('Exactly one row is expected to be selected in the table')
 
     const account = this.props.accounts[selectedRows[0]]
@@ -104,37 +103,37 @@ class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any>
                 preScanRows={false}
                 showRowHover={true}
               >
-              {map(this.props.accounts, (account: Account, id: string) => (
-                <TableRow key={id} >
-                  <TableRowColumn>
+                {map(this.props.accounts, (account: Account, id: string) => (
+                  <TableRow key={id}>
+                    <TableRowColumn>
                       {account.login}
-                  </TableRowColumn>
-                  <TableRowColumn>
+                    </TableRowColumn>
+                    <TableRowColumn>
                       {account.firstName}
-                  </TableRowColumn>
-                  <TableRowColumn>
+                    </TableRowColumn>
+                    <TableRowColumn>
                       {account.lastName}
-                  </TableRowColumn>
-                  <TableRowColumn>
+                    </TableRowColumn>
+                    <TableRowColumn>
                       {account.email}
-                  </TableRowColumn>
-                  <TableRowColumn>
+                    </TableRowColumn>
+                    <TableRowColumn>
                       {account.status}
-                  </TableRowColumn>
-                  <TableRowColumn>
-                    <IconButton tooltip="Font Icon">
-                      <Edit onTouchTap={this.handleEdit} />
-                    </IconButton>
-                    <IconButton tooltip="Supprimer">
-                      <Delete onTouchTap={this.handleDelete} />
-                    </IconButton>
-                  </TableRowColumn>
-                </TableRow>
-              ))}
+                    </TableRowColumn>
+                    <TableRowColumn>
+                      <IconButton tooltip="Font Icon">
+                        <Edit onTouchTap={this.handleEdit}/>
+                      </IconButton>
+                      <IconButton tooltip="Supprimer">
+                        <Delete onTouchTap={this.handleDelete}/>
+                      </IconButton>
+                    </TableRowColumn>
+                  </TableRow>
+                ))}
 
               </TableBody>
             </Table>
-            </CardText>
+          </CardText>
         </Card>
       </I18nProvider>
     )
@@ -142,8 +141,8 @@ class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any>
 }
 
 const mapStateToProps = (state: any, ownProps: any) => ({
-    projectAccounts: null,
-    accounts: values(null)
+  projectAccounts: null,
+  accounts: values(null)
 })
 const mapDispatchToProps = (dispatch: any) => ({
   fetchProjectAccounts: (urlProjectAccounts: string) => dispatch(Actions.fetchProjectAccounts(urlProjectAccounts))

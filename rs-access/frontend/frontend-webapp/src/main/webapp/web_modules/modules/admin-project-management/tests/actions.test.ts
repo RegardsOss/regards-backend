@@ -1,11 +1,11 @@
 import configureStore from "redux-mock-store"
-var {apiMiddleware} = require('redux-api-middleware')
 import thunk from "redux-thunk"
 import * as nock from "nock"
 import { expect } from "chai"
 import * as actions from "../src/actions"
 import { Action, AnyMeta } from "flux-standard-action"
 import { FluxStandardAction, defaultFluxStandardError } from "@regardsoss/api"
+const {apiMiddleware} = require('redux-api-middleware')
 
 const middlewares = [thunk, apiMiddleware]
 const mockStore = configureStore(middlewares)
@@ -204,13 +204,15 @@ describe('[ADMIN APP] Testing projects actions', () => {
           links: [{rel: 'self', href: 'fakeHref'}]
         }]
       )
-      const store = mockStore({projects: {
-        3: {
-          name: 'createdProject',
-          id: 3,
-          links: [{rel: 'self', href: 'fakeHref'}]
+      const store = mockStore({
+        projects: {
+          3: {
+            name: 'createdProject',
+            id: 3,
+            links: [{rel: 'self', href: 'fakeHref'}]
+          }
         }
-      }})
+      })
 
       const expectedAction: Action<any> & AnyMeta = {
         type: actions.DELETE_PROJECT_SUCCESS,

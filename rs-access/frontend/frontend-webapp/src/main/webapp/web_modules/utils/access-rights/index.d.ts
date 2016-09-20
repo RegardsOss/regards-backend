@@ -1,7 +1,10 @@
-export * from "./src/AccessRightsTypes"
-
 declare module "@regardsoss/access-rights" {
-  export const DependencyAccessRight: any
+  export interface DependencyAccessRight {
+    id?: string
+    verb: string
+    endpoint: string
+    access?: boolean
+  }
   export const connectDependencies: any
   export const accessRightsReducers: any
 }

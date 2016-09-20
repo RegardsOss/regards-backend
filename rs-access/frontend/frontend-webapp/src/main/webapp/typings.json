@@ -12,6 +12,7 @@
     "@regardsoss/store": "file:./web_modules/data/store/index.d.ts",
     "@regardsoss/store-utils": "file:./web_modules/utils/store-utils/index.d.ts",
     "@regardsoss/theme": "file:./web_modules/view/theme/index.d.ts",
+    "@regardsoss/access-rights": "file:./web_modules/utils/access-rights/index.d.ts",
     "chai": "registry:dt/chai#3.4.0+20160601211834",
     "enzyme": "registry:dt/enzyme#2.4.1+20160919072335",
     "flux-standard-action": "registry:dt/flux-standard-action#0.5.0+20160316155526",
@@ -28,7 +29,7 @@
     "react-global": "registry:dt/react-global#0.14.0+20160316155526",
     "react-intl": "registry:dt/react-intl#2.0.0+20160412155000",
     "react-redux": "registry:dt/react-redux#4.4.0+20160908183346",
-    "react-router": "registry:dt/react-router#2.0.0+20160914113953",
+    "react-router": "registry:dt/react-router#2.0.0+20160919181133",
     "react-router/history": "registry:dt/react-router/history#2.0.0+20160830150755",
     "react-tap-event-plugin": "registry:dt/react-tap-event-plugin#0.0.0+20160602142434",
     "redux": "registry:dt/redux#3.5.2+20160703092728",
@@ -41,7 +42,6 @@
     "sockjs-client": "registry:dt/sockjs-client#1.0.3+20160626224127"
   },
   "dependencies": {
-    "@regardsoss/access-rights": "file:./web_modules/utils/access-rights/index.d.ts",
     "@regardsoss/api": "file:./web_modules/data/api/index.d.ts",
     "@regardsoss/models": "file:./web_modules/data/models/index.d.ts",
     "@regardsoss/some-pckg": "file:./web_modules/utils/some-pckg/index.d.ts",

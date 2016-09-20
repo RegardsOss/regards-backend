@@ -1,7 +1,6 @@
 import ProjectAcountsContainer from "./containers/ProjectAccountsContainer"
 import ProjectAccountEditContainer from "./containers/ProjectAccountEditContainer"
 import { PlainRoute } from "react-router"
-import ProjectAccountReadContainer from "./containers/ProjectAccountReadContainer"
 import { ThemedProjectAccountReadComponent } from "./components/ProjectAccountReadComponent"
 import ProjectAccountCreateContainer from "./containers/ProjectAccountCreateContainer"
 

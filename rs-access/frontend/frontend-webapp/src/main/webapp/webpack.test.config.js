@@ -28,13 +28,6 @@ config = merge(config, {
       /sinon/,
       /iconv-loader/,
       /enzyme/
-    ],
-    loaders: [
-      {
-        test: /\.jsx{0,1}?$/,
-        exclude: [/node_modules/, /json/],
-        loaders: ["babel-loader"]
-      }
     ]
   },
   plugins: [

@@ -5,7 +5,7 @@ import ProjectAdminApp from "./ProjectAdminApp"
 
 export const projectAdminRouter: PlainRoute = {
   path: "admin/:project",
-  getChildRoutes(nextState: any, cb: any) {
+  getChildRoutes(nextState: any, cb: any): void {
     const adminDataManagement = require("@regardsoss/admin-data-management")
     // do asynchronous stuff to find the child routes
     cb(null, [adminDataManagement.dataManagementRouter])

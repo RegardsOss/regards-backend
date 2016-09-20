@@ -36,15 +36,3 @@ export function logout (): Object {
     type: LOGOUT
   }
 }
-
-/**
- * This is an unused example of how to chain/call multiple
- * actions with a single agregating action creator
- export const BOOTSTRAP_APP = 'BOOTSTRAP_APP'
- export const bootstrapApp = () => {
-  return (dispatch: any, getState: any) => {
-    return dispatch(fetchAuthenticate('admin', 'admin'))
-    .then(() => dispatch(EndpointActions.fetchEndpoints()))
-  }
-}
- */

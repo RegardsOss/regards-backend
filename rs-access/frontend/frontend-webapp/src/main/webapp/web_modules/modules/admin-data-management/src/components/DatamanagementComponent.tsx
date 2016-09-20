@@ -1,6 +1,5 @@
 import * as React from "react"
 import { Card, CardText } from "material-ui/Card"
-import { I18nProvider } from "@regardsoss/i18n"
 import { FormattedMessage } from "react-intl"
 import { Link } from "react-router"
 import { map } from "lodash"
@@ -184,27 +183,27 @@ class DatamanagementComponent extends React.Component<DatamanagementProps, any> 
       <KeyboardArrowUp /> :
       <KeyboardArrowDown />
     return (
-        <div>
-          <div
-            className={style.section.container.classes}
-            style={style.section.container.styles}
-          >
-            {map(elementsCommon, (element: any, id: string) => {
-              return this.renderItem(element, style.section.items.styles, style.section.items.classes, style.links)
-            })}
-          </div>
-          <div
-            className={style.action.classes}
-            style={style.action.styles}
-          >
-            <RaisedButton
-              label={labelToggleAdvanced}
-              primary={true}
-              icon={iconToggleAdvanced}
-              onTouchTap={this.handleToggleAdvanced}
-            />
-          </div>
+      <div>
+        <div
+          className={style.section.container.classes}
+          style={style.section.container.styles}
+        >
+          {map(elementsCommon, (element: any, id: string) => {
+            return this.renderItem(element, style.section.items.styles, style.section.items.classes, style.links)
+          })}
         </div>
+        <div
+          className={style.action.classes}
+          style={style.action.styles}
+        >
+          <RaisedButton
+            label={labelToggleAdvanced}
+            primary={true}
+            icon={iconToggleAdvanced}
+            onTouchTap={this.handleToggleAdvanced}
+          />
+        </div>
+      </div>
     )
   }
 }

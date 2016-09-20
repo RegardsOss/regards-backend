@@ -10,7 +10,7 @@
   },
   "exclude": [
     "node_modules",
-    "web_modules/**",
+    "web_modules",
     "localtypings"
   ]
 }

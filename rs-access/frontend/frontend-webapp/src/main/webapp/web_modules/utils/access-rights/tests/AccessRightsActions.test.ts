@@ -4,7 +4,7 @@ import thunk from "redux-thunk"
 import * as nock from "nock"
 import { expect } from "chai"
 import * as actions from "../src/AccessRightsActions"
-import { DependencyAccessRight } from "../index"
+import { DependencyAccessRight } from "@regardsoss/access-rights"
 import { Action, AnyMeta } from "flux-standard-action"
 import { FluxStandardAction, defaultFluxStandardError } from "@regardsoss/api"
 
