@@ -31,21 +31,21 @@ public class ConnectionController {
         authService_.setAutorities("/api/connection/{connection_id}@DELETE", new RoleAuthority("PUBLIC"), new RoleAuthority("USER"), new RoleAuthority("ADMIN"));
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/connection", method = RequestMethod.GET)
     public @ResponseBody List<Object> getConnections() {
         return null;
     }
 
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/connection", method = RequestMethod.POST)
     public @ResponseBody List<Object> addConnection(@RequestBody List<Object> things) {
         return null;
     }
 
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/connection/{connection_id}", method = RequestMethod.GET)
     public @ResponseBody Object getConnection(@PathVariable("connection_id") String connectionId) {
         return null;
@@ -53,19 +53,19 @@ public class ConnectionController {
 
 
     // Todo: change this design otherwise we need to save a connection before testing it
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/connection/{connection_id}", method = RequestMethod.POST)
     public @ResponseBody Object testConnection(@PathVariable("connection_id") String connectionId) {
         return null;
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/connection/{connection_id}", method = RequestMethod.PUT)
     public @ResponseBody Object updateConnection(@PathVariable("connection_id") String connectionId) {
         return null;
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/connection/{connection_id}", method = RequestMethod.DELETE)
     public @ResponseBody Object removeConnection(@PathVariable("connection_id") String connectionId) {
         return null;

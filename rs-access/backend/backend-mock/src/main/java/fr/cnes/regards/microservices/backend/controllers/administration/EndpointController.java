@@ -1,24 +1,34 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.backend.controllers.administration;
+
+import static java.util.Arrays.asList;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.microservices.backend.controllers.datamanagement.ConnectionController;
 import fr.cnes.regards.microservices.backend.pojo.administration.AccessRights;
 import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.auth.ResourceAccess;
 import fr.cnes.regards.microservices.core.auth.RoleAuthority;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.hateoas.Link;
-import javax.annotation.PostConstruct;
-import java.util.HashMap;
-import java.util.List;
-
-import static java.util.Arrays.asList;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController
 @EnableResourceServer
@@ -35,7 +45,7 @@ public class EndpointController {
     public void initAuthorisations() {
         authService_.setAutorities("/api/endpoints@GET", new RoleAuthority("PUBLIC"), new RoleAuthority("ADMIN"));
         authService_.setAutorities("/api/access/rights@POST", new RoleAuthority("PUBLIC"), new RoleAuthority("USER"),
-                new RoleAuthority("ADMIN"));
+                                   new RoleAuthority("ADMIN"));
     }
 
     @RequestMapping(value = "/endpoints", method = RequestMethod.GET)
@@ -46,14 +56,16 @@ public class EndpointController {
     /**
      * Get the acces rights for the current logged in user for a list of depencendies (couple Verb + Endpoint)
      *
-     * @param pAccessRights : AccessRights to check
-     * @param pPrincipal    : Logged in user credentials
+     * @param pAccessRights
+     *            : AccessRights to check
+     * @param pPrincipal
+     *            : Logged in user credentials
      * @return List<AccessRights>
      */
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/access/rights", method = RequestMethod.POST)
     public @ResponseBody List<AccessRights> getAccessRights(@RequestBody List<AccessRights> pAccessRights,
-                                                            OAuth2Authentication pPrincipal) {
+            OAuth2Authentication pPrincipal) {
 
         for (AccessRights access : pAccessRights) {
             List<GrantedAuthority> auths = authService_
@@ -74,11 +86,13 @@ public class EndpointController {
                 if (apiAccess) {
                     System.out.println("Acces granted to : " + access.getId());
                     access.setAccess(true);
-                } else {
+                }
+                else {
                     System.out.println("Acces denied to : " + access.getId());
                     access.setAccess(false);
                 }
-            } else {
+            }
+            else {
                 System.out.println("Acces denied to : " + access.getId());
                 access.setAccess(false);
             }
@@ -89,11 +103,11 @@ public class EndpointController {
 
     private HashMap<String, String> buildEndpoints() {
         // Note this is unfortunately hand-written. If you add a new entity, have to manually add a new link
-        final List<Link> links = asList(
-                linkTo(methodOn(ProjectController.class).getProjects()).withRel("projects_url"),
-                linkTo(methodOn(ProjectAccountController.class).getProjectAccounts()).withRel("projects_users_url"),
-                linkTo(methodOn(ConnectionController.class).getConnections()).withRel("projects_connections_url")
-        );
+        final List<Link> links = asList(linkTo(methodOn(ProjectController.class).getProjects()).withRel("projects_url"),
+                                        linkTo(methodOn(ProjectAccountController.class).getProjectAccounts())
+                                                .withRel("projects_users_url"),
+                                        linkTo(methodOn(ConnectionController.class).getConnections())
+                                                .withRel("projects_connections_url"));
 
         final HashMap<String, String> map = new HashMap<>();
         for (Link link : links) {
