@@ -9,12 +9,17 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
+import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.microservices.core.dao.jpa.MultitenancyProperties;
+import fr.cnes.regards.microservices.core.dao.pojo.User;
 
 /**
  *
@@ -55,14 +60,28 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         return dataSources.get(tenantIdentifier);
     }
 
-    public void addDataSource(String pUrl, String pUser, String pPassword, String pTenant) {
+    public void addDataSource(DataSource pDataSource, String pTenant, String pHibernateDialiect) {
+        dataSources.put(pTenant, pDataSource);
+
+        MetadataSources metadata = new MetadataSources(
+                new StandardServiceRegistryBuilder().applySetting("hibernate.dialect", pHibernateDialiect)
+                        .applySetting("hibernate.connection.datasource", pDataSource).build());
+
+        metadata.addAnnotatedClass(User.class);
+
+        SchemaExport export = new SchemaExport((MetadataImplementor) metadata.buildMetadata());
+        export.execute(false, true, false, false);
+
+    }
+
+    public void addDataSource(String pUrl, String pUser, String pPassword, String pTenant, String pHibernateDialect) {
 
         DataSourceBuilder factory = DataSourceBuilder.create(multitenancyProperties.getDatasource().getClassLoader())
                 .driverClassName(multitenancyProperties.getDatasource().getDriverClassName()).username(pUser)
                 .password(pPassword).url(pUrl);
         DataSource datasource = factory.build();
 
-        dataSources.put(pTenant, datasource);
+        addDataSource(datasource, pTenant, pHibernateDialect);
     }
 
 }

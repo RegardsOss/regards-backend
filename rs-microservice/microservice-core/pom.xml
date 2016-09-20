@@ -46,6 +46,12 @@
 			<artifactId>javax.el-api</artifactId>
 			<version>2.2.4</version>
 		</dependency>
+		<dependency>
+			<groupId>hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>1.8.0.7</version>
+			<scope>test</scope>
+		</dependency>
 		<!-- Security feature -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
