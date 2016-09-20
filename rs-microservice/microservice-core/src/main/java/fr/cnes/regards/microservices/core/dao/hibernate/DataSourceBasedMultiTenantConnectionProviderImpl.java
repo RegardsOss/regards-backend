@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.Entity;
 import javax.sql.DataSource;
 
 import org.hibernate.boot.MetadataSources;
@@ -14,12 +15,16 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.microservices.core.dao.jpa.MultitenancyProperties;
-import fr.cnes.regards.microservices.core.dao.pojo.User;
 
 /**
  *
@@ -34,6 +39,10 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl {
 
     private static final long serialVersionUID = 8168907057647334460L;
+
+    private static final String PACKAGE_TO_SCAN = "fr.cnes.regards";
+
+    static final Logger LOG = LoggerFactory.getLogger(DataSourceBasedMultiTenantConnectionProviderImpl.class);
 
     private Map<String, DataSource> dataSources;
 
@@ -61,13 +70,26 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     }
 
     public void addDataSource(DataSource pDataSource, String pTenant, String pHibernateDialiect) {
+
+        // 1. Add datasource to datasource pool map
         dataSources.put(pTenant, pDataSource);
 
+        // 2. Update database schema if needed
         MetadataSources metadata = new MetadataSources(
                 new StandardServiceRegistryBuilder().applySetting("hibernate.dialect", pHibernateDialiect)
                         .applySetting("hibernate.connection.datasource", pDataSource).build());
 
-        metadata.addAnnotatedClass(User.class);
+        // 2.1 Add Entity for database mapping from classpath
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
+        scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
+        for (BeanDefinition def : scanner.findCandidateComponents(PACKAGE_TO_SCAN)) {
+            try {
+                metadata.addAnnotatedClass(Class.forName(def.getBeanClassName()));
+            }
+            catch (ClassNotFoundException e) {
+                LOG.error("Error adding entity to scan : " + def.getBeanClassName());
+            }
+        }
 
         SchemaExport export = new SchemaExport((MetadataImplementor) metadata.buildMetadata());
         export.execute(false, true, false, false);
