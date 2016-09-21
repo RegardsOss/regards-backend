@@ -11,7 +11,7 @@ import {
   DELETE_PROJECT_REQUEST,
   DELETE_PROJECT_SUCCESS,
   DELETE_PROJECT_FAILURE
-} from "../src/actions"
+} from "../src/model/actions"
 
 describe('[ADMIN APP] Testing projects reducer', () => {
 

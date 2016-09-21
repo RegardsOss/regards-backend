@@ -35,3 +35,13 @@ export const projectCreateRoute: PlainRoute = {
     })
   }
 }
+
+
+export const projectManagementRouter: PlainRoute = {
+  path: '',
+  childRoutes: [
+    projectsRoutes,
+    projectReadRoute,
+    projectCreateRoute
+  ]
+}

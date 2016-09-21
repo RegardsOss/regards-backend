@@ -1,8 +1,5 @@
 import {BasicSelector} from "@regardsoss/store-utils"
 
-// Selectors
-export const getDatasets = (state: any) => state.items
-
 class DatasetSelectors extends BasicSelector {
   constructor () {
     super(["admin", "data-management", "dataset"])
