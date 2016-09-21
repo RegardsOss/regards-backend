@@ -1,14 +1,12 @@
-import ProjectsContainer from "./containers/ProjectsContainer"
 import { PlainRoute } from "react-router"
-import ProjectReadContainer from "./containers/ProjectReadContainer"
-import ProjectCreateContainer from "./containers/ProjectCreateContainer"
 
 export const projectsRoutes: PlainRoute = {
   path: 'projects',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
+      const ProjectsContainer = require("./containers/ProjectsContainer")
       cb(null, {
-        content: ProjectsContainer
+        content: ProjectsContainer.default
       })
     })
   }
@@ -18,8 +16,9 @@ export const projectReadRoute: PlainRoute = {
   path: 'projects/:project_id',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
+      const ProjectReadContainer = require("./containers/ProjectReadContainer")
       cb(null, {
-        content: ProjectReadContainer
+        content: ProjectReadContainer.default
       })
     })
   }
@@ -29,8 +28,9 @@ export const projectCreateRoute: PlainRoute = {
   path: 'projects/create',
   getComponents(nextState: any, cb: any): any {
     require.ensure([], (require: any) => {
+      const ProjectCreateContainer = require("./containers/ProjectCreateContainer")
       cb(null, {
-        content: ProjectCreateContainer
+        content: ProjectCreateContainer.default
       })
     })
   }
