@@ -18,7 +18,7 @@
     "sitemap": "node build/sitemap.js",
     "start": "NODE_ENV=development node  --max_old_space_size=4096 --optimize_for_size --max_executable_size=4096 --stack_size=4096 ./node_modules/.bin/webpack-dev-server --progress --hot --config webpack.dev.config.js",
     "test": "npm run test:mocha --silent",
-    "test:coverage": "nyc mocha-webpack --webpack-config webpack.coverage.config.js \"**/@(tests|web_modules)/**/*.test.\\?(ts|tsx)\" --recursive  --require source-map-support/register --reporter mocha-sonar-reporter --reporter-options outputfile='./coverage/TEST-xunit.xml'",
+    "test:coverage": "nyc mocha-webpack --webpack-config webpack.coverage.config.js \"**/@(tests|web_modules)/**/*.test.\\?(ts|tsx)\" --recursive  --require source-map-support/register --reporter mocha-sonar-reporter",
     "test:mocha": "mocha-webpack --webpack-config webpack.test.config.js \"**/@(tests|web_modules)/**/*.test.\\?(ts|tsx)\" --recursive --require source-map-support/register --inline-diffs --reporter mochawesome --reporter-options reportDir='./coverage/mocha',reportName='Regards Frontend tests'",
     "test:watch": "mocha-webpack --webpack-config webpack.test.config.js \"**/@(tests|web_modules)/**/*.test.\\?(ts|tsx)\" --recursive --require source-map-support/register --inline-diffs --watch",
     "tsc:watch": "tsc -w",
@@ -140,5 +140,10 @@
     "sourceMap": false,
     "instrument": false,
     "all": false
+  },
+  "config": {
+    "mocha-sonar-reporter": {
+      "outputfile": "./coverage/TEST-xunit.xml"
+    }
   }
 }
