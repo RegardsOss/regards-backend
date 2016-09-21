@@ -61,7 +61,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      */
     @Autowired
     @Qualifier("dataSources")
-    private transient final Map<String, DataSource> dataSources_ = new HashMap<>();
+    private final transient Map<String, DataSource> dataSources_ = new HashMap<>();
 
     @Override
     protected DataSource selectAnyDataSource() {

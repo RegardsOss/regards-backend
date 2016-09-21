@@ -6,24 +6,24 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 public class ProjectConfiguration {
 
     @NestedConfigurationProperty
-    private DataSourceProperties datasource;
+    private DataSourceProperties datasource_;
 
-    private String name;
+    private String name_;
 
     public String getName() {
-        return name;
+        return name_;
     }
 
     public void setName(String pName) {
-        name = pName;
+        name_ = pName;
     }
 
     public DataSourceProperties getDatasource() {
-        return datasource;
+        return datasource_;
     }
 
     public void setDatasource(DataSourceProperties datasource) {
-        this.datasource = datasource;
+        this.datasource_ = datasource;
     }
 
 }

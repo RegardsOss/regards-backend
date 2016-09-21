@@ -8,53 +8,53 @@ public class CommonDaoConfiguration {
      * Does the DAO Component is activated ?
      */
     @NotNull
-    private Boolean enabled;
+    private Boolean enabled_;
 
     /**
      * Does the datasource has to be created in memory ?
      */
-    private Boolean embedded;
+    private Boolean embedded_;
 
     /**
      * Common driver class name to create datasources
      */
-    private String driverClassName;
+    private String driverClassName_;
 
     /**
      * Common hibernate dialect to create datasources
      */
-    private String dialect;
+    private String dialect_;
 
     public String getDriverClassName() {
-        return driverClassName;
+        return driverClassName_;
     }
 
     public void setDriverClassName(String pDriverClassName) {
-        driverClassName = pDriverClassName;
+        driverClassName_ = pDriverClassName;
     }
 
     public String getDialect() {
-        return dialect;
+        return dialect_;
     }
 
     public void setDialect(String pDialect) {
-        dialect = pDialect;
+        dialect_ = pDialect;
     }
 
     public Boolean getEnabled() {
-        return enabled;
+        return enabled_;
     }
 
     public void setEnabled(Boolean pEnabled) {
-        enabled = pEnabled;
+        enabled_ = pEnabled;
     }
 
     public Boolean getEmbedded() {
-        return embedded;
+        return embedded_;
     }
 
     public void setEmbedded(Boolean pEmbedded) {
-        embedded = pEmbedded;
+        embedded_ = pEmbedded;
     }
 
 }

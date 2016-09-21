@@ -13,21 +13,21 @@ import org.springframework.context.annotation.Primary;
 @Primary
 public class MicroserviceConfiguration {
 
-    private final List<ProjectConfiguration> projects = new ArrayList<ProjectConfiguration>();
+    private final List<ProjectConfiguration> projects_ = new ArrayList<ProjectConfiguration>();
 
     @NestedConfigurationProperty
-    private CommonDaoConfiguration dao;
+    private CommonDaoConfiguration dao_;
 
     public List<ProjectConfiguration> getProjects() {
-        return this.projects;
+        return this.projects_;
     }
 
     public CommonDaoConfiguration getDao() {
-        return dao;
+        return dao_;
     }
 
     public void setDao(CommonDaoConfiguration pDao) {
-        dao = pDao;
+        dao_ = pDao;
     }
 
 }
