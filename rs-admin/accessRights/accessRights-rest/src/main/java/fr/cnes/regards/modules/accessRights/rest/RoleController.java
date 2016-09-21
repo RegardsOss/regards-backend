@@ -89,9 +89,10 @@ public class RoleController {
 
     @ResourceAccess(description = "Retrieve the list of roles", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<List<Role>> retrieveRoleList() {
+    public @ResponseBody HttpEntity<HateoasDTO<List<Role>>> retrieveRoleList() {
         List<Role> roles = roleService_.retrieveRoleList();
-        return new ResponseEntity<>(roles, HttpStatus.OK);
+        HateoasDTO<List<Role>> resource = new HateoasDTO<>(roles);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Create a role", name = "")
@@ -99,8 +100,7 @@ public class RoleController {
     public @ResponseBody HttpEntity<HateoasDTO<Role>> createRole(@Valid @RequestBody Role pNewRole)
             throws AlreadyExistingException {
         Role created = roleService_.createRole(pNewRole);
-        HateoasDTO<Role> resource = new HateoasDTO<>();
-        resource.setResource(created);
+        HateoasDTO<Role> resource = new HateoasDTO<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
