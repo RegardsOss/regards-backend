@@ -4,7 +4,12 @@ import org.springframework.hateoas.ResourceSupport;
 
 public class HateoasDTO<T> extends ResourceSupport {
 
-    T resource_;
+    private T resource_;
+
+    public HateoasDTO(T pResource) {
+        super();
+        resource_ = pResource;
+    }
 
     public T getResource() {
         return resource_;
