@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservice.modules.test.role.rest;
+package fr.cnes.regards.microservices.administration;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
