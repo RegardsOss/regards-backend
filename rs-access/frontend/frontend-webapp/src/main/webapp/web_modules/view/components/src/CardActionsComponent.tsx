@@ -68,7 +68,7 @@ class CardActionsView extends React.Component<CardActionsViewProps, any> {
 
   render (): JSX.Element {
 
-    const styleCardActions = {
+    const styleCardActions: React.CSSProperties = {
       display: "flex",
       flexDirection: "row",
       justifyContent: "flex-end"

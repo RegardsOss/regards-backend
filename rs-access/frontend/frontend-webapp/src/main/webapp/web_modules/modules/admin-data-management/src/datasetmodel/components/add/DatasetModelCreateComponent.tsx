@@ -148,7 +148,7 @@ export default class ModelCreateComponent extends React.Component<ModelCreatePro
 
     const labelAsTitle = label ? "\"" + label + "\"" : ""
     const isSaveButtonVisible = attributes.length > 0 && label.length > 0
-    const styleAddAttribute = {
+    const styleAddAttribute: React.CSSProperties = {
       display: "flex",
       flexDirection: "row",
       justifyContent: "center"

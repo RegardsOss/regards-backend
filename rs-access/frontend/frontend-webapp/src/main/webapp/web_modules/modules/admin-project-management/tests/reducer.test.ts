@@ -1,6 +1,6 @@
 import { expect } from "chai"
 import { Action } from "redux"
-import reducer from "../src/reducer"
+import reducer from "../src/model/reducer"
 import {
   PROJECTS_REQUEST,
   PROJECTS_FAILURE,

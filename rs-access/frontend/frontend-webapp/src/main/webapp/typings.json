@@ -1,7 +1,9 @@
 {
   "globalDependencies": {
+    "@regardsoss/access-rights": "file:./web_modules/utils/access-rights/index.d.ts",
     "@regardsoss/admin": "file:./web_modules/modules/admin/index.d.ts",
     "@regardsoss/admin-data-management": "file:./web_modules/modules/admin-data-management/index.d.ts",
+    "@regardsoss/admin-project-management": "file:./web_modules/modules/admin-data-management/index.d.ts",
     "@regardsoss/authentication": "file:./web_modules/utils/authentication/index.d.ts",
     "@regardsoss/components": "file:./web_modules/view/components/index.d.ts",
     "@regardsoss/display-control": "file:./web_modules/utils/display-control/index.d.ts",
@@ -12,7 +14,6 @@
     "@regardsoss/store": "file:./web_modules/data/store/index.d.ts",
     "@regardsoss/store-utils": "file:./web_modules/utils/store-utils/index.d.ts",
     "@regardsoss/theme": "file:./web_modules/view/theme/index.d.ts",
-    "@regardsoss/access-rights": "file:./web_modules/utils/access-rights/index.d.ts",
     "chai": "registry:dt/chai#3.4.0+20160601211834",
     "enzyme": "registry:dt/enzyme#2.4.1+20160919072335",
     "flux-standard-action": "registry:dt/flux-standard-action#0.5.0+20160316155526",
@@ -23,7 +24,7 @@
     "nock": "registry:dt/nock#0.54.0+20160907105249",
     "node": "registry:dt/node#6.0.0+20160919063032",
     "normalizr": "registry:dt/normalizr#2.0.1+20160501130729",
-    "react": "registry:dt/react#0.14.0+20160829191040",
+    "react": "registry:dt/react#0.14.0+20160920055104",
     "react-addons-update": "registry:dt/react-addons-update#0.14.0+20160316155526",
     "react-dom": "registry:dt/react-dom#0.14.0+20160412154040",
     "react-global": "registry:dt/react-global#0.14.0+20160316155526",

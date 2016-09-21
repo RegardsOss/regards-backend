@@ -64,6 +64,7 @@
     "@regardsoss/store-utils": "0.0.1",
     "@regardsoss/admin": "0.0.1",
     "@regardsoss/admin-data-management": "0.0.1",
+    "@regardsoss/admin-project-management": "0.0.1",
     "@regardsoss/portal": "0.0.1"
   },
   "devDependencies": {

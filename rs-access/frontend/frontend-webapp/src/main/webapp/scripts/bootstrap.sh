@@ -27,6 +27,7 @@ npm link web_modules/utils/store-utils
 
 npm link web_modules/modules/admin
 npm link web_modules/modules/admin-data-management
+npm link web_modules/modules/admin-project-management
 
 
 npm link web_modules/modules/portal
