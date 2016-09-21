@@ -3,19 +3,25 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.test.web.servlet.ResultMatcher;
 
+import fr.cnes.regards.microservices.core.security.jwt.JWTService;
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
+import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
 
 /**
@@ -27,9 +33,10 @@ import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AccountControllerIT extends RegardsIntegrationTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccountControllerIT.class);
+    @Autowired
+    private JWTService jwtService_;
 
-    private TestRestTemplate restTemplate;
+    private String jwt_;
 
     private String apiAccounts;
 
@@ -40,6 +47,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     private String apiUnlockAccount;
 
     private String apiChangePassword;
+
+    private String errorMessage;
 
     @Autowired
     private AccountServiceStub serviceStub;
@@ -57,171 +66,135 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Before
     public void init() {
-        // if (restTemplate == null) {
-        // restTemplate = buildOauth2RestTemplate("acme", "acmesecret", "admin", "admin", "");
-        // }
-        // this.apiAccounts = getApiEndpoint().concat("/accounts");
-        // this.apiAccountId = this.apiAccounts + "/{account_id}";
-        // this.apiAccountSetting = this.apiAccounts + "/settings";
-        // this.apiUnlockAccount = this.apiAccountId + "/unlock/{unlock_code}";
-        // this.apiChangePassword = this.apiAccountId + "/password/{reset_code}";
-        // this.apiAccountCode = this.apiAccounts + "/code";
+        setLogger(LoggerFactory.getLogger(AccountControllerIT.class));
+        jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
+        errorMessage = "Cannot reach model attributes";
+        apiAccounts = "/accounts";
+        apiAccountId = apiAccounts + "/{account_id}";
+        apiAccountSetting = apiAccounts + "/settings";
+        apiUnlockAccount = apiAccountId + "/unlock/{unlock_code}";
+        apiChangePassword = apiAccountId + "/password/{reset_code}";
+        apiAccountCode = apiAccounts + "/code";
     }
 
-    //
     @Test
     public void aGetAllAccounts() {
-        //
-        // // we have to use exchange instead of getForEntity as long as we use List otherwise the response body is not
-        // // well casted.
-        // ParameterizedTypeReference<List<Account>> typeRef = new ParameterizedTypeReference<List<Account>>() {
-        // };
-        // ResponseEntity<List<Account>> response = restTemplate.exchange(this.apiAccounts, HttpMethod.GET, null,
-        // typeRef);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiAccounts, jwt_, expectations, errorMessage);
     }
 
-    //
     @Test
     public void aGetSettings() {
-        // ParameterizedTypeReference<List<String>> typeRef = new ParameterizedTypeReference<List<String>>() {
-        // };
-        // ResponseEntity<List<String>> response = restTemplate.exchange(this.apiAccountSetting, HttpMethod.GET, null,
-        // typeRef);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiAccountSetting, jwt_, expectations, errorMessage);
     }
 
-    //
     @Test
     public void bCreateAccount() {
-        // Account newAccount;
-        // newAccount = new Account("email7", "firstName", "lastName", "login", "password");
-        //
-        // ResponseEntity<Account> response = restTemplate.postForEntity(this.apiAccounts, newAccount, Account.class);
-        // assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        //
-        // ResponseEntity<Account> responseConflict = restTemplate.postForEntity(this.apiAccounts, newAccount,
-        // Account.class);
-        // assertEquals(HttpStatus.CONFLICT, responseConflict.getStatusCode());
-        //
-        // Account containNulls = new Account();
-        //
-        // thrown.expect(HttpMessageNotReadableException.class);
-        // ResponseEntity<Account> responseNull = restTemplate.postForEntity(this.apiAccounts, containNulls,
-        // Account.class);
+        Account newAccount;
+        newAccount = new Account("email7", "firstName", "lastName", "login", "password");
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isCreated());
+        performPost(apiAccounts, jwt_, newAccount, expectations, errorMessage);
+
+        expectations = new ArrayList<>(1);
+        expectations.add(status().isConflict());
+        performPost(apiAccounts, jwt_, newAccount, expectations, errorMessage);
+
+        Account containNulls = new Account();
+
+        expectations = new ArrayList<>(1);
+        expectations.add(status().isConflict());
+        performPost(apiAccounts, jwt_, containNulls, expectations, errorMessage);
     }
 
-    //
     @Test
     public void cGetAccount() {
-        // List<Account> accounts = this.serviceStub.retrieveAccountList();
-        // Long accountId = this.serviceStub.retrieveAccountList().get(0).getId();
-        // assertFalse(!this.serviceStub.existAccount(accountId));
-        //
-        // ParameterizedTypeReference<Account> typeRef = new ParameterizedTypeReference<Account>() {
-        // };
-        // ResponseEntity<Account> response = restTemplate.exchange(this.apiAccountId, HttpMethod.GET, null, typeRef,
-        // accountId);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
-        //
-        // ResponseEntity<Object> responseNotFound = restTemplate.exchange(this.apiAccountId, HttpMethod.GET, null,
-        // Object.class, Integer.MAX_VALUE);
-        // assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
+
+        Long accountId = serviceStub.retrieveAccountList().get(0).getId();
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiAccountId, jwt_, expectations, errorMessage, accountId);
+
+        expectations = new ArrayList<>(1);
+        expectations.add(status().isNotFound());
+        performGet(apiAccountId, jwt_, expectations, errorMessage, Integer.MAX_VALUE);
 
     }
 
-    //
     @Test
     public void dUpdateAccountSetting() {
-        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
-        // };
-        // HttpEntity<String> request = new HttpEntity<>("manual");
-        // ResponseEntity<Void> response = restTemplate.exchange(this.apiAccountSetting, HttpMethod.PUT, request,
-        // typeRef);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
-        //
-        // request = new HttpEntity<>("auto-accept");
-        // response = restTemplate.exchange(this.apiAccountSetting, HttpMethod.PUT, request, typeRef);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
-        //
-        // HttpEntity<String> invalidValueRequest = new HttpEntity<>("sdfhnqùlkhsdfq");
-        // ResponseEntity<Void> invalidValueResponse = restTemplate.exchange(this.apiAccountSetting, HttpMethod.PUT,
-        // invalidValueRequest, typeRef);
-        // assertEquals(HttpStatus.BAD_REQUEST, invalidValueResponse.getStatusCode());
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performPut(apiAccountSetting, jwt_, "manual", expectations, errorMessage);
+
+        expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performPut(apiAccountSetting, jwt_, "auto-accept", expectations, errorMessage);
+
+        expectations = new ArrayList<>(1);
+        expectations.add(status().isBadRequest());
+        performPut(apiAccountSetting, jwt_, "sdfqjkmfsdq", expectations, errorMessage);
     }
 
-    //
     @Test
     public void dGetCode() {
-        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
-        // };
-        //
-        // ResponseEntity<Void> response = restTemplate.exchange(this.apiAccountCode + "?email=email&type=UNLOCK",
-        // HttpMethod.GET, null, typeRef);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiAccountCode + "?email=email&type=UNLOCK", jwt_, expectations, errorMessage);
     }
 
-    //
     @Test
     public void dUpdateAccount() {
-        // Account updated = this.serviceStub.retrieveAccount("email7");
-        // Long accountId = updated.getId();
-        //
-        // updated.setFirstName("AnOtherFirstName");
-        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
-        // };
-        // HttpEntity<Account> request = new HttpEntity<>(updated);
-        // ResponseEntity<Void> response = restTemplate.exchange(this.apiAccountId, HttpMethod.PUT, request, typeRef,
-        // accountId);
-        // // if that's the same functional ID and the parameter is valid:
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
-        //
-        // // if that's not the same functional ID and the parameter is valid:
-        // Account notSameID = new Account("notSameEmail", "firstName", "lastName", "login", "password");
-        // HttpEntity<Account> requestOperationNotAllowed = new HttpEntity<>(notSameID);
-        // ResponseEntity<Void> responseOperationNotAllowed = restTemplate
-        // .exchange(this.apiAccountId, HttpMethod.PUT, requestOperationNotAllowed, typeRef, accountId);
-        // assertEquals(HttpStatus.BAD_REQUEST, responseOperationNotAllowed.getStatusCode());
+        Account updated = serviceStub.retrieveAccount("email7");
+        updated.setFirstName("AnOtherFirstName");
+        Long accountId = updated.getId();
+
+        // if that's the same functional ID and the parameter is valid:
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performPut(apiAccountId, jwt_, updated, expectations, errorMessage, accountId);
+
+        // if that's not the same functional ID and the parameter is valid:
+        Account notSameID = new Account("notSameEmail", "firstName", "lastName", "login", "password");
+
+        expectations = new ArrayList<>(1);
+        expectations.add(status().isBadRequest());
+        performPut(apiAccountId, jwt_, notSameID, expectations, errorMessage, accountId);
     }
 
-    //
     @Test
     public void dUnlockAccount() {
-        // Long accountId = this.serviceStub.retrieveAccountList().get(0).getId();
-        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
-        // };
-        // ResponseEntity<Void> response = restTemplate.exchange(this.apiUnlockAccount, HttpMethod.GET, null, typeRef,
-        // accountId, "unlockCode");
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
+        Long accountId = serviceStub.retrieveAccountList().get(0).getId();
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiUnlockAccount, jwt_, expectations, errorMessage, accountId, "unlockCode");
     }
 
-    //
     @Test
     public void dChangeAccountPassword() {
-        // Long accountId = this.serviceStub.retrieveAccountList().get(0).getId();
-        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
-        // };
-        //
-        // HttpHeaders headers = new HttpHeaders();
-        // headers.setContentType(MediaType.APPLICATION_JSON);
-        //
-        // HttpEntity<String> request = new HttpEntity<>("newPassword", headers);
-        // ResponseEntity<Void> response = restTemplate.exchange(this.apiChangePassword, HttpMethod.PUT, request,
-        // typeRef,
-        // accountId, "resetCode");
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
-        //
+        Long accountId = serviceStub.retrieveAccountList().get(0).getId();
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performPut(apiChangePassword, jwt_, "newPassword", expectations, errorMessage, accountId, "resetCode");
+
     }
 
-    //
     @Test
     public void eDeleteAccount() {
-        // Long accountId = this.serviceStub.retrieveAccountList().get(0).getId();
-        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
-        // };
-        // ResponseEntity<Void> response = restTemplate.exchange(this.apiAccountId, HttpMethod.DELETE, null, typeRef,
-        // accountId);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
+        Long accountId = serviceStub.retrieveAccountList().get(0).getId();
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performDelete(apiAccountId, jwt_, expectations, errorMessage, accountId);
+
     }
 
 }
