@@ -1,10 +1,13 @@
 package fr.cnes.regards.microservices.core.configuration.common;
 
+import javax.validation.constraints.NotNull;
+
 public class CommonDaoConfiguration {
 
     /**
      * Does the DAO Component is activated ?
      */
+    @NotNull
     private Boolean enabled;
 
     /**

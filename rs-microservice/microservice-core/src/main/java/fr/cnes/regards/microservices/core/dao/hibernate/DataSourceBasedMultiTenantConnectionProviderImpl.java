@@ -54,25 +54,23 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceBasedMultiTenantConnectionProviderImpl.class);
 
     @Autowired
-    private MicroserviceConfiguration configuration_;
+    private transient MicroserviceConfiguration configuration_;
 
     /**
      * Pool of datasources available for this connection provider
      */
     @Autowired
     @Qualifier("dataSources")
-    private final Map<String, DataSource> dataSources_ = new HashMap<>();
+    private transient final Map<String, DataSource> dataSources_ = new HashMap<>();
 
     @Override
     protected DataSource selectAnyDataSource() {
-        DataSource datasource = dataSources_.get(configuration_.getProjects().get(0).getName());
-        return datasource;
+        return dataSources_.get(configuration_.getProjects().get(0).getName());
     }
 
     @Override
     protected DataSource selectDataSource(String tenantIdentifier) {
-        DataSource datasource = dataSources_.get(tenantIdentifier);
-        return datasource;
+        return dataSources_.get(tenantIdentifier);
     }
 
     @PostConstruct
@@ -113,12 +111,12 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         export.execute(false, true, false, false);
     }
 
-    public void addDataSource(DataSource pDataSource, String pTenant, String pHibernateDialiect) {
+    public void addDataSource(DataSource pDataSource, String pTenant) {
         dataSources_.put(pTenant, pDataSource);
         updateDataSourceSchema(pDataSource);
     }
 
-    public void addDataSource(String pUrl, String pUser, String pPassword, String pTenant, String pHibernateDialect) {
+    public void addDataSource(String pUrl, String pUser, String pPassword, String pTenant) {
 
         String driverClassName = configuration_.getDao().getDriverClassName();
         if (configuration_.getDao().getEmbedded()) {
@@ -128,7 +126,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
                 .password(pPassword).url(pUrl);
         DataSource datasource = factory.build();
 
-        addDataSource(datasource, pTenant, pHibernateDialect);
+        addDataSource(datasource, pTenant);
     }
 
 }

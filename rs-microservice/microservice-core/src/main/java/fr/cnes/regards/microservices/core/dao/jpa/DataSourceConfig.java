@@ -61,22 +61,19 @@ public class DataSourceConfig {
     @Bean
     public DataSource defaultDataSource() {
 
-        DataSource datasource = null;
-
         ProjectConfiguration project = configuration_.getProjects().get(0);
 
         if (configuration_.getDao().getEmbedded()) {
             final EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-            datasource = builder.setType(EmbeddedDatabaseType.HSQL).setName(project.getName()).build();
+            return builder.setType(EmbeddedDatabaseType.HSQL).setName(project.getName()).build();
         }
         else {
             DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
                     .driverClassName(configuration_.getDao().getDriverClassName())
                     .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
                     .url(project.getDatasource().getUrl());
-            datasource = factory.build();
+            return factory.build();
         }
-        return datasource;
     }
 
 }
