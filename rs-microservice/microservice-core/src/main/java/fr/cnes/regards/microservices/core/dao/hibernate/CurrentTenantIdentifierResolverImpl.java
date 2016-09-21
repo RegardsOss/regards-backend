@@ -4,6 +4,7 @@
 package fr.cnes.regards.microservices.core.dao.hibernate;
 
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ import fr.cnes.regards.microservices.core.security.jwt.JWTAuthentication;
  * @since 1.0-SNAPSHOT.
  */
 @Component
+@ConditionalOnProperty("microservice.dao.enabled")
 public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentifierResolver {
 
     @Override

@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.spi.MetadataImplementor;
+import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -37,12 +39,17 @@ import fr.cnes.regards.microservices.core.configuration.common.ProjectConfigurat
  * @since 1.0-SNAPSHOT
  */
 @Component
+@ConditionalOnProperty("microservice.dao.enabled")
 public class DataSourceBasedMultiTenantConnectionProviderImpl
         extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl {
 
     private static final long serialVersionUID = 8168907057647334460L;
 
     private static final String PACKAGE_TO_SCAN = "fr.cnes.regards";
+
+    public static final String EMBEDDED_HSQLDB_HIBERNATE_DIALECT = "org.hibernate.dialect.HSQLDialect";
+
+    public static final String EMBEDDED_HSQL_DRIVER_CLASS = "org.hsqldb.jdbcDriver";
 
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceBasedMultiTenantConnectionProviderImpl.class);
 
@@ -82,9 +89,12 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
 
     private void updateDataSourceSchema(DataSource pDataSource) {
         // 1. Update database schema if needed
+        String dialect = configuration_.getDao().getDialect();
+        if (configuration_.getDao().getEmbedded()) {
+            dialect = EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
+        }
         MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder()
-                .applySetting("hibernate.dialect", configuration_.getDao().getDialect())
-                .applySetting("hibernate.connection.datasource", pDataSource).build());
+                .applySetting(Environment.DIALECT, dialect).applySetting(Environment.DATASOURCE, pDataSource).build());
 
         // 2 Add Entity for database mapping from classpath
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
@@ -110,10 +120,12 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
 
     public void addDataSource(String pUrl, String pUser, String pPassword, String pTenant, String pHibernateDialect) {
 
-        // multitenancyProperties_.getDatasource().getClassLoader()
-        DataSourceBuilder factory = DataSourceBuilder.create()
-                .driverClassName(configuration_.getDao().getDriverClassName()).username(pUser).password(pPassword)
-                .url(pUrl);
+        String driverClassName = configuration_.getDao().getDriverClassName();
+        if (configuration_.getDao().getEmbedded()) {
+            driverClassName = EMBEDDED_HSQL_DRIVER_CLASS;
+        }
+        DataSourceBuilder factory = DataSourceBuilder.create().driverClassName(driverClassName).username(pUser)
+                .password(pPassword).url(pUrl);
         DataSource datasource = factory.build();
 
         addDataSource(datasource, pTenant, pHibernateDialect);

@@ -39,22 +39,14 @@ eureka:
     
 microservice:
   dao:
-    dialect : org.hibernate.dialect.HSQLDialect
-    #dialect : org.hibernate.dialect.PostgreSQLDialect
-    driverClassName : org.hsqldb.jdbcDriver
-    #driverClassName : org.postgresql.Driver
-  projects:
-    - 
-      name: project1
+    enabled : false
+    embedded : false
+    dialect : org.hibernate.dialect.PostgreSQLDialect
+    driverClassName : org.postgresql.Driver
+#  projects:
+#    - 
+#      name: project1
 #      datasource:
-#        url: jdbc:postgresql://localhost:5432/postgres
-#        username: postgres
-#        password: postgres
-#        driver-class-name: org.postgresql.Driver
-    - 
-      name: project2
-#      datasource:
-#        url: jdbc:postgresql://localhost:5432/postgres
-#        username: postgres
-#        password: postgres
-#        driver-class-name: org.postgresql.Driver
+#        url: jdbc:postgresql://localhost:5432/project1
+#        username: user
+#        password: mdp
