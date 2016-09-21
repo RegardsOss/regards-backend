@@ -26,6 +26,7 @@ public class BorrowedRoleProjectUser implements Identifiable<Long>, IProjectUser
 
     public BorrowedRoleProjectUser(ProjectUser pDecorated, Role pBorrowedRole) {
         super();
+        // TODO: Check that pBorrowedRole is hierarchically inferior to pDecorated's role
         decorated_ = pDecorated;
         borrowedRole_ = pBorrowedRole;
     }
