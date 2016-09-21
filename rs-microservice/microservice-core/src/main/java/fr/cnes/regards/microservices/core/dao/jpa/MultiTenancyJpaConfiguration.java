@@ -61,17 +61,22 @@ public class MultiTenancyJpaConfiguration {
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(EntityManagerFactoryBuilder builder) {
         // Use the first dataSource configuration to init the entityManagerFactory
-        DataSource defaultDataSource = dataSources_.values().iterator().next();
+        if ((dataSources_ != null) && !dataSources_.isEmpty()) {
+            DataSource defaultDataSource = dataSources_.values().iterator().next();
 
-        Map<String, Object> hibernateProps = new LinkedHashMap<>();
-        hibernateProps.putAll(jpaProperties_.getHibernateProperties(defaultDataSource));
+            Map<String, Object> hibernateProps = new LinkedHashMap<>();
+            hibernateProps.putAll(jpaProperties_.getHibernateProperties(defaultDataSource));
 
-        hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
-        hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider_);
-        hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver_);
-        hibernateProps.put(Environment.DIALECT, configuration_.getDao().getDialect());
+            hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
+            hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider_);
+            hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver_);
+            hibernateProps.put(Environment.DIALECT, configuration_.getDao().getDialect());
 
-        return builder.dataSource(defaultDataSource).packages(PACKAGES_TO_SCAN).properties(hibernateProps).jta(false)
-                .build();
+            return builder.dataSource(defaultDataSource).packages(PACKAGES_TO_SCAN).properties(hibernateProps)
+                    .jta(false).build();
+        }
+        else {
+            return null;
+        }
     }
 }

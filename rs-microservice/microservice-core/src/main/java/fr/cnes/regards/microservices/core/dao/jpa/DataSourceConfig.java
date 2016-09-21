@@ -13,6 +13,8 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
 import fr.cnes.regards.microservices.core.configuration.common.ProjectConfiguration;
@@ -37,23 +39,39 @@ public class DataSourceConfig {
         Map<String, DataSource> datasources = new HashMap<>();
 
         for (ProjectConfiguration project : configuration_.getProjects()) {
-            DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
-                    .driverClassName(project.getDatasource().getDriverClassName())
-                    .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
-                    .url(project.getDatasource().getUrl());
-            datasources.put(project.getName(), factory.build());
+            if (project.getDatasource() != null) {
+                DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
+                        .driverClassName(project.getDatasource().getDriverClassName())
+                        .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
+                        .url(project.getDatasource().getUrl());
+                datasources.put(project.getName(), factory.build());
+            }
+            else {
+                final EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+                datasources.put(project.getName(),
+                                builder.setType(EmbeddedDatabaseType.HSQL).setName(project.getName()).build());
+            }
         }
+
         return datasources;
     }
 
     @Bean
     public DataSource defaultDataSource() {
+        DataSource datasource = null;
         ProjectConfiguration project = configuration_.getProjects().get(0);
-        DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
-                .driverClassName(project.getDatasource().getDriverClassName())
-                .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
-                .url(project.getDatasource().getUrl());
-        return factory.build();
+        if (project.getDatasource() != null) {
+            DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
+                    .driverClassName(project.getDatasource().getDriverClassName())
+                    .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
+                    .url(project.getDatasource().getUrl());
+            datasource = factory.build();
+        }
+        else {
+            final EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+            return builder.setType(EmbeddedDatabaseType.HSQL).setName(project.getName()).build();
+        }
+        return datasource;
     }
 
 }
