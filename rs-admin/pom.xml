@@ -10,6 +10,12 @@
 
   <name>REGARDS Microservice - administration</name>
   <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+  
+  <properties>
+    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    	<sonar.language>java</sonar.language>
+		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
+  </properties>
 
   <modules>
   	<module>project</module>
