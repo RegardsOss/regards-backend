@@ -3,13 +3,19 @@
  */
 package fr.cnes.regards.microservices.core.dao.jpa;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
+import fr.cnes.regards.microservices.core.configuration.common.ProjectConfiguration;
 
 /**
  *
@@ -19,20 +25,34 @@ import org.springframework.context.annotation.Configuration;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
+@EnableConfigurationProperties(MicroserviceConfiguration.class)
 public class DataSourceConfig {
 
     @Autowired
-    private MultitenancyProperties multitenancyProperties;
+    private MicroserviceConfiguration configuration_;
 
-    @Bean(name = { "dataSource" })
-    @ConfigurationProperties(prefix = "spring.multitenancy.datasource")
-    public DataSource dataSource() {
-        DataSourceBuilder factory = DataSourceBuilder
-                .create(this.multitenancyProperties.getDatasource().getClassLoader())
-                .driverClassName(this.multitenancyProperties.getDatasource().getDriverClassName())
-                .username(this.multitenancyProperties.getDatasource().getUsername())
-                .password(this.multitenancyProperties.getDatasource().getPassword())
-                .url(this.multitenancyProperties.getDatasource().getUrl());
+    @Bean(name = { "dataSources" })
+    public Map<String, DataSource> dataSources() {
+
+        Map<String, DataSource> datasources = new HashMap<>();
+
+        for (ProjectConfiguration project : configuration_.getProjects()) {
+            DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
+                    .driverClassName(project.getDatasource().getDriverClassName())
+                    .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
+                    .url(project.getDatasource().getUrl());
+            datasources.put(project.getName(), factory.build());
+        }
+        return datasources;
+    }
+
+    @Bean
+    public DataSource defaultDataSource() {
+        ProjectConfiguration project = configuration_.getProjects().get(0);
+        DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
+                .driverClassName(project.getDatasource().getDriverClassName())
+                .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
+                .url(project.getDatasource().getUrl());
         return factory.build();
     }
 

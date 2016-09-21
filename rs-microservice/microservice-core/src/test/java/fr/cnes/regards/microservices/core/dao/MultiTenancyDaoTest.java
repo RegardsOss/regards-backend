@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.microservices.core.dao;
 
-import javax.sql.DataSource;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -14,7 +12,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.microservices.core.dao.hibernate.DataSourceBasedMultiTenantConnectionProviderImpl;
 import fr.cnes.regards.microservices.core.dao.pojo.User;
 import fr.cnes.regards.microservices.core.dao.repository.UserRepository;
 import fr.cnes.regards.microservices.core.dao.util.CurrentTenantIdentifierResolverMock;
@@ -31,24 +28,13 @@ public class MultiTenancyDaoTest {
     @Autowired
     private CurrentTenantIdentifierResolverMock tenantResolver;
 
-    @Autowired
-    private DataSourceBasedMultiTenantConnectionProviderImpl connectionProvider;
-
-    @Autowired
-    private DataSource dataSource2;
-
     @Test
     public void contextLoads() {
         // Nothing to do. Only tests if the spring context is ok.
     }
 
-    // TODO : Auto create schema for the additional datasource ?
     @Test
     public void multitenancyAccessTest() {
-
-        connectionProvider.addDataSource(dataSource2, "test2", "org.hibernate.dialect.HSQLDialect");
-        // connectionProvider.addDataSource("jdbc:postgresql://localhost:5432/test1", "postgres", "postgres", "test2",
-        // "org.hibernate.dialect.PostgreSQLDialect");
 
         tenantResolver.setTenant("test1");
 
