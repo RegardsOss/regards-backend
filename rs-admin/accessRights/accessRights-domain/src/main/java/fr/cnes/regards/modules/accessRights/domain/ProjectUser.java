@@ -183,6 +183,7 @@ public class ProjectUser implements IProjectUser, Identifiable<Long> {
         return permissions;
     }
 
+    @Override
     public void setPermissions(List<ResourcesAccess> pPermissions) {
         permissions = pPermissions;
     }
