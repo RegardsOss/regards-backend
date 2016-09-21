@@ -18,10 +18,6 @@ public class Account implements Identifiable<Long> {
     @NotNull
     private Long id_;
 
-    public void setAccountId(Long pAccountId) {
-        id_ = pAccountId;
-    }
-
     @NotNull
     @Email
     private String email_;
@@ -127,9 +123,17 @@ public class Account implements Identifiable<Long> {
         }
     }
 
+    public void setAccountId(Long pAccountId) {
+        id_ = pAccountId;
+    }
+
     @Override
     public Long getId() {
         return id_;
+    }
+
+    public void setId(Long id) {
+        id_ = id;
     }
 
     public String getCode() {
