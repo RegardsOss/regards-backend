@@ -3,217 +3,137 @@
  */
 package fr.cnes.regards.microservices.modules.test;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import fr.cnes.regards.microservices.administration.Application;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 /**
+ * @author svissier
  *
- * Integration tests base class
- *
- * @author msordi
- * @since 1.0-SNAPSHOT
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = Application.class, webEnvironment = WebEnvironment.DEFINED_PORT)
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
+@AutoConfigureMockMvc
 public abstract class RegardsIntegrationTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegardsIntegrationTest.class);
+    private Logger logger;
 
-    private static final String BASE_URL_TEMPLATE = "http://localhost:%s";
+    @Autowired
+    private MockMvc mvc_;
 
-    protected static final String URL_SEPARATOR = "/";
+    private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
-    private static final String DEFAULT_CLIENT = "client";
+    @Autowired
+    void setConverters(HttpMessageConverter<?>[] converters) {
 
-    private static final String DEFAULT_CLIENT_SECRET = "secret";
+        mappingJackson2HttpMessageConverter = Arrays.asList(converters).stream()
+                .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter).findAny().get();
 
-    private static final String DEFAULT_SCOPE = "test";
-
-    @Value("${server.port:3333}")
-    private int port_;
-
-    /**
-     *
-     * Build OAuth2 token endpoint
-     *
-     * @return OAuth2 token endpoint
-     * @since 1.0-SNAPSHOT
-     */
-    private String getOAuth2TokenEndpoint() {
-        return String.format(BASE_URL_TEMPLATE, port_ + "/oauth/token");
+        Assert.assertNotNull("the JSON message converter must not be null", mappingJackson2HttpMessageConverter);
     }
 
-    /**
-     *
-     * @return API endpoint with a trailing slash
-     * @since 1.0-SNAPSHOT
-     */
-    protected String getApiEndpoint() {
-        return String.format(BASE_URL_TEMPLATE, port_ + URL_SEPARATOR);
+    public void setLogger(Logger logger) {
+        this.logger = logger;
     }
-    //
-    // /**
-    // * Build LEGACY endpoint for Restlet compatible modules
-    // *
-    // * @return LEGACY endpoint with a trailing slash
-    // * @since 1.0-SNAPSHOT
-    // */
-    // protected String getLegacyEndpoint() {
-    // return String.format(BASE_URL_TEMPLATE,
-    // port_ + URL_SEPARATOR + ResourceServerConfigurer.REST_LEGACY_API_MAPPING);
-    // }
 
-    /**
-     *
-     * Get an OAuth2 token form embedded OAuth2 server.
-     *
-     * @param pClient
-     *            client
-     * @param pClientSecret
-     *            client secret
-     * @param pUsername
-     *            username
-     * @param pPassword
-     *            password
-     * @param pScope
-     *            scope (i.e. project)
-     * @return a Bearer token
-     * @since 1.0-SNAPSHOT
-     */
-    // private String getBearerToken(String pClient, String pClientSecret, String pUsername, String pPassword,
-    // String pScope) {
-    //
-    // // Client use a basic authentication in Spring OAuth2
-    // final TestRestTemplate restTemplate = new TestRestTemplate(pClient, pClientSecret);
-    //
-    // // MultiValueMap is converted by FormHttpMessageConverter
-    // // with a media type : application/x-www-form-urlencoded (see Spring doc)
-    // final MultiValueMap<String, String> bodyMap = new LinkedMultiValueMap<>();
-    // bodyMap.add("grant_type", "password");
-    // bodyMap.add("username", pUsername);
-    // bodyMap.add("password", pPassword);
-    // bodyMap.add("scope", pScope);
-    //
-    // final ResponseEntity<OAuth2AccessToken> response = restTemplate.postForEntity(getOAuth2TokenEndpoint(), bodyMap,
-    // OAuth2AccessToken.class);
-    //
-    // if (!HttpStatus.OK.equals(response.getStatusCode())) {
-    // Assert.fail(String.format("Fail to get a token! (http code : %s)", response.getStatusCode()));
-    //
-    // }
-    //
-    // return response.getBody().getValue();
-    // }
-    //
-    // /**
-    // *
-    // * Build a <b>new</b> {@link RestTemplate} with OAuth2 authentication features enabled.
-    // *
-    // * @param pUsername
-    // * username
-    // * @param pPassword
-    // * password
-    // * @return a new rest template
-    // * @since 1.0-SNAPSHOT
-    // */
-    // protected TestRestTemplate buildOauth2RestTemplate(String pUsername, String pPassword) {
-    // return buildOauth2RestTemplate(null, null, pUsername, pPassword, null);
-    // }
-    //
-    // /**
-    // *
-    // * Build a <b>new</b> {@link RestTemplate} with OAuth2 authentication features enabled.
-    // *
-    // * @param pUsername
-    // * username
-    // * @param pPassword
-    // * password
-    // * @param pScope
-    // * scope or <code>null</code>
-    // * @return a new rest template
-    // * @since 1.0-SNAPSHOT
-    // */
-    // protected TestRestTemplate buildOauth2RestTemplate(String pUsername, String pPassword, String pScope) {
-    // return buildOauth2RestTemplate(null, null, pUsername, pPassword, pScope);
-    // }
-    //
-    // /**
-    // *
-    // * Build a <b>new</b> {@link RestTemplate} with OAuth2 authentication features enabled
-    // *
-    // * @param pClient
-    // * client or <code>null</code>
-    // * @param pClientSecret
-    // * client secret or <code>null</code>
-    // * @param pUsername
-    // * username
-    // * @param pPassword
-    // * password
-    // * @param pScope
-    // * scope or <code>null</code>
-    // * @return a new rest template
-    // * @since 1.0-SNAPSHOT
-    // */
-    // protected TestRestTemplate buildOauth2RestTemplate(String pClient, String pClientSecret, String pUsername,
-    // String pPassword, String pScope) {
-    //
-    // Assert.assertNotNull("Username must not be null", pUsername);
-    // Assert.assertNotNull("Password must not be null", pPassword);
-    //
-    // String client = pClient, clientSecret = pClientSecret, scope = pScope;
-    // if (client == null) {
-    // LOGGER.info(String.format("Setting default client \"%s\"", DEFAULT_CLIENT));
-    // client = DEFAULT_CLIENT;
-    // }
-    // if (clientSecret == null) {
-    // LOGGER.info(String.format("Setting default client secret \"%s\"", DEFAULT_CLIENT_SECRET));
-    // clientSecret = DEFAULT_CLIENT_SECRET;
-    // }
-    // if (scope == null) {
-    // LOGGER.info(String.format("Setting default scope \"%s\"", DEFAULT_SCOPE));
-    // scope = DEFAULT_SCOPE;
-    // }
-    //
-    // // Init template
-    // final TestRestTemplate restTemplate = new TestRestTemplate();
-    // // Get bearer
-    // final String bearerToken = getBearerToken(client, clientSecret, pUsername, pPassword, scope);
-    // // Set interceptor to inject bearer
-    // final List<ClientHttpRequestInterceptor> interceptors = Collections
-    // .<ClientHttpRequestInterceptor> singletonList(new OAuth2AuthorizationInterceptor(bearerToken));
-    // restTemplate.getRestTemplate().setInterceptors(interceptors);
-    //
-    // return restTemplate;
-    // }
-    //
-    // /**
-    // *
-    // *
-    // * Http interceptor to inject OAuth2 authentication in {@link RestTemplate}
-    // *
-    // * @author msordi
-    // * @since 1.0-SNAPSHOT
-    // */
-    // private static class OAuth2AuthorizationInterceptor implements ClientHttpRequestInterceptor {
-    //
-    // private final String bearerToken_;
-    //
-    // public OAuth2AuthorizationInterceptor(String pBearerToken) {
-    // this.bearerToken_ = pBearerToken;
-    // }
-    //
-    // @Override
-    // public ClientHttpResponse intercept(HttpRequest pRequest, byte[] pBody, ClientHttpRequestExecution pExecution)
-    // throws IOException {
-    // pRequest.getHeaders().add("Authorization", "Bearer " + bearerToken_);
-    // return pExecution.execute(pRequest, pBody);
-    // }
-    // }
+    public void performGet(String urlTemplate, String authentificationToken, List<ResultMatcher> matchers,
+            String errorMessage, Object... pUrlVariables) {
+        try {
+            ResultActions request = mvc_.perform(get(urlTemplate, pUrlVariables)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + authentificationToken));
+            for (ResultMatcher matcher : matchers) {
+                request = request.andExpect(matcher);
+            }
+        }
+        catch (Exception e) {
+            logger.error(errorMessage, e);
+            Assert.fail(errorMessage);
+        }
+    }
+
+    public void performPost(String urlTemplate, String authentificationToken, Object content,
+            List<ResultMatcher> matchers, String errorMessage, Object... pUrlVariables) {
+        try {
+            ResultActions request = mvc_.perform(post(urlTemplate, pUrlVariables).with(csrf()).content(json(content))
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + authentificationToken)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
+            for (ResultMatcher matcher : matchers) {
+                request = request.andExpect(matcher);
+            }
+        }
+        catch (IOException e) {
+            String message = "Cannot (de)serialize model";
+            logger.error(message, e);
+            Assert.fail(message);
+        }
+        catch (Exception e) {
+            logger.error(errorMessage, e);
+            Assert.fail(errorMessage);
+        }
+    }
+
+    public void performPut(String urlTemplate, String authentificationToken, Object content,
+            List<ResultMatcher> matchers, String errorMessage, Object... pUrlVariables) {
+        try {
+            ResultActions request = mvc_.perform(put(urlTemplate, pUrlVariables).with(csrf()).content(json(content))
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + authentificationToken)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
+            for (ResultMatcher matcher : matchers) {
+                request = request.andExpect(matcher);
+            }
+        }
+        catch (IOException e) {
+            String message = "Cannot (de)serialize model";
+            logger.error(message, e);
+            Assert.fail(message);
+        }
+        catch (Exception e) {
+            logger.error(errorMessage, e);
+            Assert.fail(errorMessage);
+        }
+    }
+
+    public void performDelete(String urlTemplate, String authentificationToken, List<ResultMatcher> matchers,
+            String errorMessage, Object... pUrlVariables) {
+        try {
+            ResultActions request = mvc_.perform(delete(urlTemplate, pUrlVariables).with(csrf())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + authentificationToken));
+            for (ResultMatcher matcher : matchers) {
+                request = request.andExpect(matcher);
+            }
+        }
+        catch (Exception e) {
+            logger.error(errorMessage, e);
+            Assert.fail(errorMessage);
+        }
+    }
+
+    private String json(Object o) throws IOException {
+        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
+        mappingJackson2HttpMessageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        return mockHttpOutputMessage.getBodyAsString();
+    }
 }
