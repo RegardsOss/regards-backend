@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -29,6 +30,7 @@ import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
 import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
+import fr.cnes.regards.modules.accessRights.domain.HateoasDTO;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
@@ -84,26 +86,33 @@ public class AccountsController {
     public void invalidValue() {
     }
 
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "data does not respect validation constrains")
+    public void validation() {
+
+    }
+
     @ResourceAccess(description = "retrieve the list of account in the instance", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<List<Account>> retrieveAccountList() {
+    public @ResponseBody HttpEntity<HateoasDTO<List<Account>>> retrieveAccountList() {
         List<Account> accounts = accountService_.retrieveAccountList();
-        return new ResponseEntity<>(accounts, HttpStatus.OK);
+
+        return new ResponseEntity<>(new HateoasDTO<>(accounts), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "create an new account", name = "")
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Account> createAccount(@Valid @RequestBody Account pNewAccount)
+    public @ResponseBody HttpEntity<HateoasDTO<Account>> createAccount(@Valid @RequestBody Account pNewAccount)
             throws AlreadyExistingException {
         Account created = accountService_.createAccount(pNewAccount);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        return new ResponseEntity<>(new HateoasDTO<>(created), HttpStatus.CREATED);
     }
 
     @ResourceAccess(description = "retrieve the account account_id", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Account> retrieveAccount(@PathVariable("account_id") Long accountId) {
+    public @ResponseBody HttpEntity<HateoasDTO<Account>> retrieveAccount(@PathVariable("account_id") Long accountId) {
         Account account = accountService_.retrieveAccount(accountId);
-        return new ResponseEntity<>(account, HttpStatus.OK);
+        return new ResponseEntity<>(new HateoasDTO<>(account), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "update the account account_id according to the body specified", name = "")
@@ -156,13 +165,13 @@ public class AccountsController {
 
     @ResourceAccess(description = "retrieve the list of setting managing the accounts", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<List<String>> retrieveAccountSettings() {
+    public @ResponseBody HttpEntity<HateoasDTO<List<String>>> retrieveAccountSettings() {
         List<String> accountSettings = accountService_.retrieveAccountSettings();
-        return new ResponseEntity<>(accountSettings, HttpStatus.OK);
+        return new ResponseEntity<>(new HateoasDTO<>(accountSettings), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "update the setting managing the account", name = "")
-    @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting)
             throws InvalidValueException {
         accountService_.updateAccountSetting(pUpdatedAccountSetting);

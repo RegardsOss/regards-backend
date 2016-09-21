@@ -94,20 +94,20 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     @Test
     public void bCreateAccount() {
         Account newAccount;
-        newAccount = new Account("email7", "firstName", "lastName", "login", "password");
+        newAccount = new Account("email@email.email", "firstName", "lastName", "login", "password");
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
         performPost(apiAccounts, jwt_, newAccount, expectations, errorMessage);
 
-        expectations = new ArrayList<>(1);
+        expectations.clear();
         expectations.add(status().isConflict());
         performPost(apiAccounts, jwt_, newAccount, expectations, errorMessage);
 
         Account containNulls = new Account();
 
-        expectations = new ArrayList<>(1);
-        expectations.add(status().isConflict());
+        expectations.clear();
+        expectations.add(status().isUnprocessableEntity());
         performPost(apiAccounts, jwt_, containNulls, expectations, errorMessage);
     }
 
@@ -120,7 +120,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         expectations.add(status().isOk());
         performGet(apiAccountId, jwt_, expectations, errorMessage, accountId);
 
-        expectations = new ArrayList<>(1);
+        expectations.clear();
         expectations.add(status().isNotFound());
         performGet(apiAccountId, jwt_, expectations, errorMessage, Integer.MAX_VALUE);
 
@@ -133,25 +133,26 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         expectations.add(status().isOk());
         performPut(apiAccountSetting, jwt_, "manual", expectations, errorMessage);
 
-        expectations = new ArrayList<>(1);
+        expectations.clear();
         expectations.add(status().isOk());
         performPut(apiAccountSetting, jwt_, "auto-accept", expectations, errorMessage);
 
-        expectations = new ArrayList<>(1);
+        expectations.clear();
         expectations.add(status().isBadRequest());
         performPut(apiAccountSetting, jwt_, "sdfqjkmfsdq", expectations, errorMessage);
     }
 
     @Test
-    public void dGetCode() {
+    public void cGetCode() {
+        String accountEmail = "email@email.email";
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiAccountCode + "?email=email&type=UNLOCK", jwt_, expectations, errorMessage);
+        performGet(apiAccountCode + "?email=" + accountEmail + "&type=UNLOCK", jwt_, expectations, errorMessage);
     }
 
     @Test
     public void dUpdateAccount() {
-        Account updated = serviceStub.retrieveAccount("email7");
+        Account updated = serviceStub.retrieveAccount("email@email.email");
         updated.setFirstName("AnOtherFirstName");
         Long accountId = updated.getId();
 
@@ -163,27 +164,30 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         // if that's not the same functional ID and the parameter is valid:
         Account notSameID = new Account("notSameEmail", "firstName", "lastName", "login", "password");
 
-        expectations = new ArrayList<>(1);
+        expectations.clear();
         expectations.add(status().isBadRequest());
         performPut(apiAccountId, jwt_, notSameID, expectations, errorMessage, accountId);
     }
 
     @Test
     public void dUnlockAccount() {
-        Long accountId = serviceStub.retrieveAccountList().get(0).getId();
+
+        Account account = serviceStub.retrieveAccount("email@email.email");
+        Long accountId = account.getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiUnlockAccount, jwt_, expectations, errorMessage, accountId, "unlockCode");
+        performGet(apiUnlockAccount, jwt_, expectations, errorMessage, accountId, account.getCode());
     }
 
     @Test
     public void dChangeAccountPassword() {
-        Long accountId = serviceStub.retrieveAccountList().get(0).getId();
+        Account account = serviceStub.retrieveAccount("email@email.email");
+        Long accountId = account.getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiChangePassword, jwt_, "newPassword", expectations, errorMessage, accountId, "resetCode");
+        performPut(apiChangePassword, jwt_, "newPassword", expectations, errorMessage, accountId, account.getCode());
 
     }
 
