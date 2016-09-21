@@ -2,7 +2,7 @@
  * LICENSE_PLACEHOLDER
  */
 
-package fr.cnes.regards.modules.access.service;
+package fr.cnes.regards.modules.access.dao;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -17,7 +17,7 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
  * @author cmertz
  *
  */
-public interface INavigationContextService {
+public interface INavigationContextDao {
 
     NavigationContext create(NavigationContext pNavigationContext) throws AlreadyExistingException;
 
@@ -29,5 +29,4 @@ public interface INavigationContextService {
     NavigationContext load(String pTinyUrl) throws NoSuchElementException;
 
     List<NavigationContext> list();
-
 }

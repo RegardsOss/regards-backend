@@ -1,6 +1,6 @@
 server:
   adress: localhost
-  port: 3333
+  port: 3339
 
 security:
   client: acme
@@ -9,6 +9,9 @@ security:
 spring:
   application:
     name : access
+    
+  profiles :
+    active : service-stub
     
 swagger:
   api:

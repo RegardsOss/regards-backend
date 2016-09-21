@@ -1,54 +1,66 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.access.domain;
 
 import java.util.List;
 
+/**
+ * 
+ * @author cmertz
+ *
+ */
 public class PluginInstance {
 
-    private Long id_;
+	private Long id_;
 
-    private String name_;
+	private String name_;
 
-    private Project project_;
+	private Project project_;
 
-    private List<ConfigParameter> parameters_;
+	private List<ConfigParameter> parameters_;
 
-    public PluginInstance(String name, Project project, List<ConfigParameter> parameters) {
-        super();
-        name_ = name;
-        project_ = project;
-        parameters_ = parameters;
-    }
+	public PluginInstance() {
+		super();
+	}
 
-    public Long getId() {
-        return id_;
-    }
+	public PluginInstance(String name, Project project, List<ConfigParameter> parameters) {
+		super();
+		name_ = name;
+		project_ = project;
+		parameters_ = parameters;
+	}
 
-    public void setId(Long id) {
-        id_ = id;
-    }
+	public Long getId() {
+		return id_;
+	}
 
-    public String getName() {
-        return name_;
-    }
+	public void setId(Long id) {
+		id_ = id;
+	}
 
-    public void setName(String name) {
-        name_ = name;
-    }
+	public String getName() {
+		return name_;
+	}
 
-    public Project getProject() {
-        return project_;
-    }
+	public void setName(String name) {
+		name_ = name;
+	}
 
-    public void setProject(Project project) {
-        project_ = project;
-    }
+	public Project getProject() {
+		return project_;
+	}
 
-    public List<ConfigParameter> getParameters() {
-        return parameters_;
-    }
+	public void setProject(Project project) {
+		project_ = project;
+	}
 
-    public void setParameters(List<ConfigParameter> parameters) {
-        parameters_ = parameters;
-    }
+	public List<ConfigParameter> getParameters() {
+		return parameters_;
+	}
+
+	public void setParameters(List<ConfigParameter> parameters) {
+		parameters_ = parameters;
+	}
 
 }

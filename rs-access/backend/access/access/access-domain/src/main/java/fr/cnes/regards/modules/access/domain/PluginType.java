@@ -1,11 +1,18 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.access.domain;
 
 /**
  *
- * @author christophe
+ * @author cmertz
  *
  */
 public enum PluginType {
 
     ADMIN, PORTAL, USER;
+	
+    public String toString() {
+        return this.name();
+    }
 }

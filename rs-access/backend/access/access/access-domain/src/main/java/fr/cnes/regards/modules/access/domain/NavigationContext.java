@@ -1,27 +1,49 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.access.domain;
 
 import java.util.List;
 
+/**
+ * 
+ * @author cmertz
+ *
+ */
 public class NavigationContext {
 
     private Long id_;
 
-    private String tinyUrl;
+    private String tinyUrl_;
 
     private Project project_;
 
     private List<ConfigParameter> queryParameters_;
 
-    private String url_;
+    private String route_;
 
     private Integer store_;
 
-    public NavigationContext(Project pProject, List<ConfigParameter> pQueryParameters, String pUrl, Integer pStore) {
+    public NavigationContext() {
         super();
-        project_ = pProject;
-        queryParameters_ = pQueryParameters;
-        url_ = pUrl;
-        store_ = pStore;
+    }
+
+    public NavigationContext(String pTinyUrl, Project pProject, List<ConfigParameter> pQueryParameters, String pRoute,
+            Integer pStore) {
+        super();
+        this.tinyUrl_ = pTinyUrl;
+        this.project_ = pProject;
+        this.queryParameters_ = pQueryParameters;
+        this.route_ = pRoute;
+        this.store_ = pStore;
+    }
+
+    public NavigationContext(Project pProject, List<ConfigParameter> pQueryParameters, String pRoute, Integer pStore) {
+        super();
+        this.project_ = pProject;
+        this.queryParameters_ = pQueryParameters;
+        this.route_ = pRoute;
+        this.store_ = pStore;
     }
 
     public Long getId() {
@@ -33,11 +55,11 @@ public class NavigationContext {
     }
 
     public String getTinyUrl() {
-        return tinyUrl;
+        return tinyUrl_;
     }
 
     public void setTinyUrl(String tinyUrl) {
-        this.tinyUrl = tinyUrl;
+        this.tinyUrl_ = tinyUrl;
     }
 
     public Project getProject() {
@@ -57,11 +79,11 @@ public class NavigationContext {
     }
 
     public String getRoute() {
-        return url_;
+        return route_;
     }
 
     public void setRoute(String route) {
-        url_ = route;
+        route_ = route;
     }
 
     public Integer getStore() {

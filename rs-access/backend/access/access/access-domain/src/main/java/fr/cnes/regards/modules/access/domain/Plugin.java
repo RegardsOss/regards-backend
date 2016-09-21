@@ -1,63 +1,75 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.access.domain;
 
+/**
+ * 
+ * @author cmertz
+ *
+ */
 public class Plugin {
 
-    private Long id_;
+	private Long id_;
 
-    private String name_;
+	private String name_;
 
-    private String description_;
+	private String description_;
 
-    private PluginType pluginType_;
+	private PluginType pluginType_;
 
-    private String mainJsfFile_;
+	private String mainJsfFile_;
 
-    public Plugin(String name, String description, PluginType pluginType, String mainJsfFile) {
-        super();
-        name_ = name;
-        description_ = description;
-        pluginType_ = pluginType;
-        mainJsfFile_ = mainJsfFile;
-    }
+	public Plugin() {
+		super();
+	}
 
-    public Long getId() {
-        return id_;
-    }
+	public Plugin(String name, String description, PluginType pluginType, String mainJsfFile) {
+		super();
+		name_ = name;
+		description_ = description;
+		pluginType_ = pluginType;
+		mainJsfFile_ = mainJsfFile;
+	}
 
-    public void setId(Long id) {
-        id_ = id;
-    }
+	public Long getId() {
+		return id_;
+	}
 
-    public String getName() {
-        return name_;
-    }
+	public void setId(Long id) {
+		id_ = id;
+	}
 
-    public void setName(String name) {
-        name_ = name;
-    }
+	public String getName() {
+		return name_;
+	}
 
-    public String getDescription() {
-        return description_;
-    }
+	public void setName(String name) {
+		name_ = name;
+	}
 
-    public void setDescription(String description) {
-        description_ = description;
-    }
+	public String getDescription() {
+		return description_;
+	}
 
-    public PluginType getPluginType() {
-        return pluginType_;
-    }
+	public void setDescription(String description) {
+		description_ = description;
+	}
 
-    public void setPluginType(PluginType pluginType) {
-        pluginType_ = pluginType;
-    }
+	public PluginType getPluginType() {
+		return pluginType_;
+	}
 
-    public String getMainJsfFile() {
-        return mainJsfFile_;
-    }
+	public void setPluginType(PluginType pluginType) {
+		pluginType_ = pluginType;
+	}
 
-    public void setMainJsfFile(String mainJsfFile) {
-        mainJsfFile_ = mainJsfFile;
-    }
+	public String getMainJsfFile() {
+		return mainJsfFile_;
+	}
+
+	public void setMainJsfFile(String mainJsfFile) {
+		mainJsfFile_ = mainJsfFile;
+	}
 
 }

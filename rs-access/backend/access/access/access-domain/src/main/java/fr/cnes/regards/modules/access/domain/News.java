@@ -1,10 +1,13 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.access.domain;
 
 import java.util.Date;
 
 /**
  *
- * @author christophe
+ * @author cmertz
  *
  */
 public class News {
@@ -39,7 +42,20 @@ public class News {
      */
     private NewsType newsType_;
 
-    public Long getId() {
+    public News() {
+		super();
+	}
+
+	public News(String title_, String content_, Date creationDate_, Project project_, NewsType newsType_) {
+		super();
+		this.title_ = title_;
+		this.content_ = content_;
+		this.creationDate_ = creationDate_;
+		this.project_ = project_;
+		this.newsType_ = newsType_;
+	}
+
+	public Long getId() {
         return id_;
     }
 

@@ -1,3 +1,7 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
+
 package fr.cnes.regards.modules.access.signature;
 
 import java.util.List;
@@ -6,6 +10,12 @@ import feign.Param;
 import feign.RequestLine;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 
+
+/**
+ * 
+ * @author cmertz
+ *
+ */
 public interface INavigationContextSignature {
 
     @RequestLine("GET /tiny/url/{pTinyUrl}")

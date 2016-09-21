@@ -1,7 +1,15 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.access.domain;
 
 import java.util.List;
 
+/**
+ * 
+ * @author cmertz
+ *
+ */
 public class ModuleConfiguration {
 
     private Long id_;
@@ -12,7 +20,11 @@ public class ModuleConfiguration {
 
     private Module module_;
 
-    public ModuleConfiguration(Project project, List<ConfigParameter> parameters, Module module) {
+    public ModuleConfiguration() {
+		super();
+	}
+
+	public ModuleConfiguration(Project project, List<ConfigParameter> parameters, Module module) {
         super();
         project_ = project;
         parameters_ = parameters;
