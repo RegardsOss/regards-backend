@@ -6,7 +6,7 @@ package fr.cnes.regards.microservices.${artifactId};
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import fr.cnes.regards.microservices.core.information.MicroserviceInfo;
+import fr.cnes.regards.microservices.core.annotation.MicroserviceInfo;
 import springfox.documentation.builders.ApiInfoBuilder;
 
 /**
