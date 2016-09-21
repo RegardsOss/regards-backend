@@ -35,7 +35,7 @@ public class ProjectAdminController {
         authService_.setAutorities("/api/project-admins@GET", new RoleAuthority("ADMIN"));
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/project-admin", method = RequestMethod.GET)
     public @ResponseBody HttpEntity<ProjectAdmin> getProjectAdmin(
             @RequestParam(value = "name", required = true) String name) {
@@ -44,7 +44,7 @@ public class ProjectAdminController {
         return new ResponseEntity<>(projectAdmin, HttpStatus.OK);
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/project-admins", method = RequestMethod.GET)
     public @ResponseBody HttpEntity<List<ProjectAdmin>> getProjectAdminsByNames(
             @RequestParam(value = "names", required = true) String[] names) {

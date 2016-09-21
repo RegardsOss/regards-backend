@@ -41,13 +41,13 @@ public class ProjectController {
         authService_.setAutorities("/api/projects/{project_id}@DELETE", new RoleAuthority("PUBLIC"), new RoleAuthority("ADMIN"));
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/projects", method = RequestMethod.GET)
     public @ResponseBody HttpEntity<List<Project>> getProjects() {
         return new ResponseEntity<>(getInMemory(), HttpStatus.OK);
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/projects", method = RequestMethod.POST)
     public @ResponseBody HttpEntity<List<Project>> addProject() {
         List<Project> projects = new ArrayList<>();
@@ -60,7 +60,7 @@ public class ProjectController {
         return new ResponseEntity<>(projects, HttpStatus.OK);
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/projects/{project_id}", method = RequestMethod.GET)
     public @ResponseBody HttpEntity<Project> getProject(@PathVariable("project_id") Long project_id) {
         Logger.getGlobal().info("project_id" + project_id);
@@ -73,7 +73,7 @@ public class ProjectController {
         return new ResponseEntity<>(project, HttpStatus.OK);
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/projects/{project_id}", method = RequestMethod.PUT)
     public @ResponseBody HttpEntity<Project> updateProject(@PathVariable("project_id") Long project_id) {
         Project project = getInMemory()
@@ -86,7 +86,7 @@ public class ProjectController {
         return new ResponseEntity<>(project, HttpStatus.OK);
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/projects/{project_id}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
     public void deleteProject(@PathVariable("project_id") Long project_id) {

@@ -33,14 +33,14 @@ public class PluginController {
         authService_.setAutorities("/api/plugins/{plugin_name}/config@GET", new RoleAuthority("ADMIN"));
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/plugins/", method = RequestMethod.GET)
     public @ResponseBody List<Plugin> getPlugins() {
         List<Plugin> plugins = new ArrayList<>();
         return plugins;
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/plugins/{plugin_name}", method = RequestMethod.GET)
     public @ResponseBody Plugin getPlugin(@PathVariable("plugin_name") String name) {
         List<PluginParameter> pluginParameters = new ArrayList<>();
@@ -52,7 +52,7 @@ public class PluginController {
         return plugin;
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/plugins/{plugin_name}/config", method = RequestMethod.GET)
     public @ResponseBody List<PluginParameter> getPluginConfig(@PathVariable("plugin_name") String name) {
         List<String> description = new ArrayList<>();

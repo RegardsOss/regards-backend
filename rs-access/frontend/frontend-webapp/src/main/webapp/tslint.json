@@ -75,7 +75,10 @@
       "check-whitespace"
     ],
     "radix": true,
-    "semicolon": [true, "never"],
+    "semicolon": [
+      true,
+      "never"
+    ],
     "switch-default": true,
     "no-shadowed-variable": true,
     "triple-equals": [

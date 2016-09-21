@@ -33,7 +33,7 @@ public class PluginJSController {
         authService_.setAutorities("/api/access/plugins@GET", new RoleAuthority("PUBLIC"), new RoleAuthority("USER"), new RoleAuthority("ADMIN"));
     }
 
-    @ResourceAccess
+    @ResourceAccess(description = "")
     @RequestMapping(value = "/access/plugins", method = RequestMethod.GET)
     public @ResponseBody List<PluginJS> getPlugins() {
         List<PluginJS> plugins = new ArrayList<>();

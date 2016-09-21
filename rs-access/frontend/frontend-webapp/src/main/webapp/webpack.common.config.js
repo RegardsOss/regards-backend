@@ -3,6 +3,7 @@ const path = require('path')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 
+console.log(__dirname)
 module.exports = {
   // Hide stats information from children during webpack compilation
   stats: {children: false},
@@ -37,13 +38,13 @@ module.exports = {
       // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
       {
         test: /\.tsx{0,1}?$/,
-        exclude: [/node_modules/, /json/],
+        exclude: [/node_modules/, /json/, /web_modules\/.*\/index\.d\.ts$/],
         loaders: ["babel-loader", "ts-loader"]
       },
       // Transpile ES6 Javascript into ES5 with babel loader and react
       {
         test: /\.js$/,
-        exclude: [/node_modules/, /json/],
+        exclude: [/node_modules/, /json/, /\/\..*/],
         loader: 'babel',
         query: {
           presets: ['es2015', 'react'],
