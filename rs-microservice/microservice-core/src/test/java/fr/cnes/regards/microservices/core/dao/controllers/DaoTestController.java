@@ -1,5 +1,11 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.core.dao.controllers;
 
+/**
+ * Test controller for JWT and DAO Integration tests
+ */
 import java.util.ArrayList;
 import java.util.List;
 

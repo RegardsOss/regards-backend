@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.core.dao;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.core.configuration.common;
 
 import javax.validation.constraints.NotNull;
