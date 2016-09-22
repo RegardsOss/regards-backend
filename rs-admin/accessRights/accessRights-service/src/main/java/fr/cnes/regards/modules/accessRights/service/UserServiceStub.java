@@ -115,7 +115,7 @@ public class UserServiceStub implements IUserService {
      */
     @Override
     public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId) {
-        ProjectUser user = this.retrieveUser(pUserId);
+        ProjectUser user = retrieveUser(pUserId);
         Role userRole = user.getRole();
         return new Couple<>(user.getPermissions(), userRole);
     }
@@ -131,7 +131,7 @@ public class UserServiceStub implements IUserService {
         if (!existUser(pUserId)) {
             throw new NoSuchElementException("ProjectUser of given id (" + pUserId + ") could not be found");
         }
-        ProjectUser user = this.retrieveUser(pUserId);
+        ProjectUser user = retrieveUser(pUserId);
 
         // Finder method
         // Pass the id and the list to search, returns the element with passed id
@@ -156,25 +156,25 @@ public class UserServiceStub implements IUserService {
      */
     @Override
     public void removeUserAccessRights(Long pUserId) {
-        ProjectUser user = this.retrieveUser(pUserId);
+        ProjectUser user = retrieveUser(pUserId);
         user.setPermissions(new ArrayList<>());
     }
 
     @Override
     public List<MetaData> retrieveUserMetaData(Long pUserId) {
-        ProjectUser user = this.retrieveUser(pUserId);
+        ProjectUser user = retrieveUser(pUserId);
         return user.getMetaData();
     }
 
     @Override
     public void updateUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData) {
-        ProjectUser user = this.retrieveUser(pUserId);
+        ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(pUpdatedUserMetaData);
     }
 
     @Override
     public void removeUserMetaData(Long pUserId) {
-        ProjectUser user = this.retrieveUser(pUserId);
+        ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(new ArrayList<>());
 
     }
