@@ -42,13 +42,13 @@ public class SwaggerConfiguration {
     private static final String SWAGGER_API_NAME = "default";
 
     @Value("${server.port}")
-    private String serverPort;
+    private String serverPort_;
 
     @Value("${server.adress}")
-    private String serverAdress;
+    private String serverAdress_;
 
     @Autowired
-    private ApiInfoBuilder apiInfoBuilder;
+    private ApiInfoBuilder apiInfoBuilder_;
 
     @Bean
     public Docket appApi() {
@@ -59,7 +59,7 @@ public class SwaggerConfiguration {
         List<SecurityContext> ctxs = new ArrayList<>();
         ctxs.add(securityContext());
 
-        ApiInfo infos = apiInfoBuilder.termsOfServiceUrl("http://" + serverAdress + ":" + serverPort).build();
+        ApiInfo infos = apiInfoBuilder_.termsOfServiceUrl("http://" + serverAdress_ + ":" + serverPort_).build();
 
         return new Docket(DocumentationType.SWAGGER_2).groupName(SWAGGER_API_NAME).apiInfo(infos).select()
                 .paths(apiPaths()).build().securitySchemes(schemes).securityContexts(ctxs);
@@ -71,7 +71,7 @@ public class SwaggerConfiguration {
 
     private OAuth securitySchema() {
         AuthorizationScope authorizationScope = new AuthorizationScope(AUTH_SCOPE_GLOBAL, AUTH_SCOPE_GLOBAL_DESC);
-        LoginEndpoint loginEndpoint = new LoginEndpoint("http://" + serverAdress + ":" + serverPort + "/oauth/token");
+        LoginEndpoint loginEndpoint = new LoginEndpoint("http://" + serverAdress_ + ":" + serverPort_ + "/oauth/token");
         GrantType grantType = new ImplicitGrant(loginEndpoint, "access_token");
         List<AuthorizationScope> authList = new ArrayList<>();
         authList.add(authorizationScope);

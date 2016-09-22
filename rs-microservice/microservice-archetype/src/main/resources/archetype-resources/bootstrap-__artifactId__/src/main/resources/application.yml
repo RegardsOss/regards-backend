@@ -17,6 +17,9 @@ spring:
     name : ${artifactId}
   hateoas:
     use-hal-as-default-json-media-type : false
+  jpa:
+    hibernate:
+      ddl-auto: update 
     
 swagger:
   api:
@@ -33,4 +36,17 @@ cloud:
 eureka:
   client:
     enabled: false
-
+    
+microservice:
+  dao:
+    enabled : false
+    embedded : false
+    dialect : org.hibernate.dialect.PostgreSQLDialect
+    driverClassName : org.postgresql.Driver
+#  projects:
+#    - 
+#      name: project1
+#      datasource:
+#        url: jdbc:postgresql://localhost:5432/project1
+#        username: user
+#        password: mdp

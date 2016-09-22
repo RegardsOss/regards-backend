@@ -4,7 +4,11 @@
 package fr.cnes.regards.microservices.core.dao.hibernate;
 
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import fr.cnes.regards.microservices.core.security.jwt.JWTAuthentication;
 
 /**
  *
@@ -15,24 +19,24 @@ import org.springframework.stereotype.Component;
  * @since 1.0-SNAPSHOT.
  */
 @Component
+@ConditionalOnProperty("microservice.dao.enabled")
 public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentifierResolver {
 
-    private final String DEFAULT_TENANT = "default";
-
-    private String tenant = DEFAULT_TENANT;
+    private static final String DEFAULT_TENANT = "default";
 
     @Override
     public String resolveCurrentTenantIdentifier() {
-        // TODO : Get tenant from request JWT Token
-        return this.tenant;
+        JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            return authentication.getProject();
+        }
+        else {
+            return DEFAULT_TENANT;
+        }
     }
 
     @Override
     public boolean validateExistingCurrentSessions() {
         return true;
-    }
-
-    public void setTenant(String pTenant) {
-        this.tenant = pTenant;
     }
 }

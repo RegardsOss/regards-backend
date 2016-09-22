@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.microservices.core.security.jwt;
 
+import java.io.Serializable;
+
 /**
  * This object store REGARDS security principal<br/>
  * After request authentication, this object can be retrieved calling {@link JWTAuthentication#getPrincipal()}
@@ -10,7 +12,12 @@ package fr.cnes.regards.microservices.core.security.jwt;
  * @author msordi
  *
  */
-public class UserDetails {
+public class UserDetails implements Serializable {
+
+    /**
+     * serialVersionUID field.
+     */
+    private static final long serialVersionUID = 4616778806989554358L;
 
     /**
      * User real name
