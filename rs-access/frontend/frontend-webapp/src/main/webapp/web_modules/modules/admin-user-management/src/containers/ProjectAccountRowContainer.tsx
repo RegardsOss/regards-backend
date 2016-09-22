@@ -4,7 +4,7 @@ import { ProjectAccount, Account } from "@regardsoss/models"
 import ProjectAccountRowComponent from "../components/ProjectAccountRowComponent"
 import { browserHistory } from "react-router"
 import { find } from "lodash"
-import Actions from "../actions"
+import Actions from "../model/projectAccount.actions"
 import ProjectAccountDeleteComponent from "../components/ProjectAccountDeleteComponent"
 
 interface ProjectAccountRowProps extends React.Props<ProjectAccountRowContainer> {
@@ -19,7 +19,7 @@ interface ProjectAccountRowProps extends React.Props<ProjectAccountRowContainer>
 /**
  * Show the list of users for the current project
  */
-class ProjectAccountRowContainer extends React.Component<ProjectAccountRowProps, any> {
+export class ProjectAccountRowContainer extends React.Component<ProjectAccountRowProps, any> {
 
   state: any = {
     openDeleteDialog: false

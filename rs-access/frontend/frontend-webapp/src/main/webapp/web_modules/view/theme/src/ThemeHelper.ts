@@ -24,7 +24,6 @@ class ThemeHelper {
    */
   static getByName (name: string): any {
     const theme = getMuiTheme(this.addAppLayer(this.getThemes()[name]))
-    console.log("LEO - theme = ", theme)
     return theme
   }
 

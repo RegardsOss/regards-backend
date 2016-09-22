@@ -6,7 +6,7 @@ import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowCol
 import Checkbox from "material-ui/Checkbox"
 import { map } from "lodash"
 
-class ProjectAccountEditContainer extends React.Component<any, any> {
+export class ProjectAccountEditContainer extends React.Component<any, any> {
   constructor () {
     super()
   }

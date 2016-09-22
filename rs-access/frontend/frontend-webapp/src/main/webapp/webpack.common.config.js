@@ -3,7 +3,6 @@ const path = require('path')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 
-console.log(__dirname)
 module.exports = {
   // Hide stats information from children during webpack compilation
   stats: {children: false},
@@ -26,7 +25,7 @@ module.exports = {
     // Automaticaly get extensions files from javascript code with import or require.
     // exemple require('main') look for main, main.js or main.sass with our configuration
     // extensions: ['', '.js', '.scss'],
-    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
+    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js", ".jsx"],
     // Root directories from wich requires are made
     root: [
       path.join(__dirname)
@@ -49,6 +48,11 @@ module.exports = {
         query: {
           presets: ['es2015', 'react'],
         }
+      },
+      {
+        test: /\.jsx$/,
+        exclude: [/node_modules/, /json/],
+        loader: 'babel'
       },
       {
         test: /\.css$/,
