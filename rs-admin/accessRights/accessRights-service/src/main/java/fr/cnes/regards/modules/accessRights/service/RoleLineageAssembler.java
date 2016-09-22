@@ -17,7 +17,7 @@ public class RoleLineageAssembler {
 
     private Role role_;
 
-    public RoleLineageAssembler on(Role pRole) {
+    public RoleLineageAssembler of(Role pRole) {
         role_ = pRole;
         return this;
     }

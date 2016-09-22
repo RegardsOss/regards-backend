@@ -61,10 +61,26 @@ public class RoleService implements IRoleService {
         roleRepository_.delete(pRoleId);
     }
 
+    /**
+     * Les droits d’accès d’un utilisateur sont la fusion des droits d’accès de son rôle, des rôles hiérarchiquement
+     * liés et de ses propres droits.
+     *
+     * @see SGDS-CP-12200-0010-CS p. 73
+     * @see REGARDS_DSL_ADM_ADM_260
+     */
     @Override
     public List<ResourcesAccess> retrieveRoleResourcesAccessList(Long pRoleId) {
+        List<Role> roleAndHisAncestors = new ArrayList<>();
+
         Role role = roleRepository_.findOne(pRoleId);
-        return role.getPermissions();
+        roleAndHisAncestors.add(role);
+
+        RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
+        roleAndHisAncestors.addAll(roleLineageAssembler.of(role).get());
+
+        List<ResourcesAccess> permissions = roleAndHisAncestors.stream().map(r -> r.getPermissions())
+                .flatMap(l -> l.stream()).collect(Collectors.toList());
+        return permissions;
     }
 
     @Override
@@ -127,7 +143,7 @@ public class RoleService implements IRoleService {
     public boolean isHierarchicallyInferior(Role pRole, Role pOther) {
 
         RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
-        List<Role> ancestors = roleLineageAssembler.on(pOther).get();
+        List<Role> ancestors = roleLineageAssembler.of(pOther).get();
 
         return ancestors.contains(pRole);
     }
