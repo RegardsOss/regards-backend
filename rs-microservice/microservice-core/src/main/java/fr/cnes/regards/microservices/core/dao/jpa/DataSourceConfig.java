@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
@@ -59,6 +60,7 @@ public class DataSourceConfig {
     }
 
     @Bean
+    @Primary
     public DataSource defaultDataSource() {
 
         ProjectConfiguration project = configuration_.getProjects().get(0);

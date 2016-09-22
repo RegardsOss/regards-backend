@@ -20,6 +20,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
@@ -34,10 +36,11 @@ import fr.cnes.regards.microservices.core.dao.hibernate.DataSourceBasedMultiTena
  */
 @Configuration
 @EnableConfigurationProperties(JpaProperties.class)
+@EnableJpaRepositories(basePackages = MultiTenancyJpaConfiguration.PACKAGES_TO_SCAN, entityManagerFactoryRef = "projectsEntityManagerFactory")
 @ConditionalOnProperty("microservice.dao.enabled")
 public class MultiTenancyJpaConfiguration {
 
-    private static final String PACKAGES_TO_SCAN = "fr.cnes.regards";
+    public static final String PACKAGES_TO_SCAN = "fr.cnes.regards";
 
     /**
      * Default datasource to connect
@@ -62,7 +65,8 @@ public class MultiTenancyJpaConfiguration {
     private CurrentTenantIdentifierResolver currentTenantIdentifierResolver_;
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(EntityManagerFactoryBuilder builder) {
+    @Primary
+    public LocalContainerEntityManagerFactoryBean projectsEntityManagerFactory(EntityManagerFactoryBuilder builder) {
         // Use the first dataSource configuration to init the entityManagerFactory
         DataSource defaultDataSource = dataSources_.values().iterator().next();
 

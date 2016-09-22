@@ -95,7 +95,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
                 .applySetting(Environment.DIALECT, dialect).applySetting(Environment.DATASOURCE, pDataSource).build());
 
         // 2 Add Entity for database mapping from classpath
-        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
         for (BeanDefinition def : scanner.findCandidateComponents(PACKAGE_TO_SCAN)) {
             try {
