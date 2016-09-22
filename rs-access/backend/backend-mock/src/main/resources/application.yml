@@ -17,19 +17,10 @@ swagger:
 cloud:
   config:
     discovery:
-      enabled: true
+      enabled: false
     server:
       enabled: false
       name: myconfigserver
-
-eureka:
-  instance:
-    instanceId: ${spring.application.name}:${spring.application.instance_id}:${random.value}
-  client:
-    enabled: false
-    registryFetchIntervalSeconds: 5
-    serviceUrl:
-      defaultZone: http://localhost:9999/eureka/
  
 regards:
   security:
