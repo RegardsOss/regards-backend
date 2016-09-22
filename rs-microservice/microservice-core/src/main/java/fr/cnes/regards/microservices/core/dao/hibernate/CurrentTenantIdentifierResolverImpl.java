@@ -22,10 +22,17 @@ import fr.cnes.regards.microservices.core.security.jwt.JWTAuthentication;
 @ConditionalOnProperty("microservice.dao.enabled")
 public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentifierResolver {
 
+    private static final String DEFAULT_TENANT = "default";
+
     @Override
     public String resolveCurrentTenantIdentifier() {
         JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        return authentication.getProject();
+        if (authentication != null) {
+            return authentication.getProject();
+        }
+        else {
+            return DEFAULT_TENANT;
+        }
     }
 
     @Override

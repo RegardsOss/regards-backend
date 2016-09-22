@@ -11,13 +11,16 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
 
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
-import fr.cnes.regards.microservices.core.dao.hibernate.CurrentTenantIdentifierResolverImpl;
+import fr.cnes.regards.microservices.core.dao.util.CurrentTenantIdentifierResolverMock;
 
-@ComponentScan(basePackages = "fr.cnes.regards.microservices.core.dao", excludeFilters = {
-        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = CurrentTenantIdentifierResolverImpl.class) })
+@ComponentScan(basePackages = { "fr.cnes.regards.microservices.core.dao",
+        "fr.cnes.regards.microservices.core.security" }, excludeFilters = {
+                @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
+                        CurrentTenantIdentifierResolverMock.class }) })
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
 @EnableConfigurationProperties(MicroserviceConfiguration.class)
 @PropertySource("classpath:dao.properties")
-public class MultiTenancyDaoTestConfiguration {
+@PropertySource("classpath:jwt.properties")
+public class MultiTenancyDaoITConfiguration {
 
 }
