@@ -3,32 +3,45 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import static org.junit.Assert.assertFalse;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.test.web.servlet.ResultMatcher;
 
+import fr.cnes.regards.microservices.core.security.jwt.JWTService;
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
+import fr.cnes.regards.modules.accessRights.domain.Account;
+import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.AccessRequestServiceStub;
 import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AccessesControllerIT extends RegardsIntegrationTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessesControllerIT.class);
+    @Autowired
+    private JWTService jwtService_;
 
-    private TestRestTemplate restTemplate;
+    private String jwt_;
 
     private String apiAccesses;
 
     private String apiAccessId;
+
+    private String apiAccessAccept;
+
+    private String apiAccessDeny;
+
+    private String errorMessage;
 
     @Autowired
     private AccessRequestServiceStub serviceStub;
@@ -36,131 +49,116 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     @Autowired
     private AccountServiceStub accountService;
 
-    @Value("${root.admin.login:admin}")
-    private String rootAdminLogin;
-
-    @Value("${root.admin.password:admin}")
-    private String rootAdminPassword;
-
     @Before
     public void init() {
-        // if (restTemplate == null) {
-        // restTemplate = buildOauth2RestTemplate("acme", "acmesecret", "admin", "admin", "");
-        // }
-        // this.apiAccesses = getApiEndpoint().concat("/accesses");
-        // this.apiAccessId = this.apiAccesses + "/{access_id}";
+        setLogger(LoggerFactory.getLogger(AccessesControllerIT.class));
+        jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
+        errorMessage = "Cannot reach model attributes";
+        apiAccesses = "/accesses";
+        apiAccessId = apiAccesses + "/{access_id}";
+        apiAccessAccept = apiAccessId + "/accept";
+        apiAccessDeny = apiAccessId + "/deny";
     }
 
-    //
     @Test
     public void aGetAllAccesses() throws IOException {
-        //
-        // // we have to use exchange instead of getForEntity as long as we use List otherwise the response body is not
-        // // well casted.
-        // ParameterizedTypeReference<List<ProjectUser>> typeRef = new ParameterizedTypeReference<List<ProjectUser>>() {
-        // };
-        // ResponseEntity<List<ProjectUser>> response = restTemplate.exchange(this.apiAccesses, HttpMethod.GET, null,
-        // typeRef);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiAccesses, jwt_, expectations, errorMessage);
     }
 
-    //
     @Test
     public void bRequestAccess() {
-        // Account newAccountRequesting;
-        // ProjectUser newAccessRequest;
-        // // to be accepted
-        // newAccountRequesting = this.accountService.createAccount("email");
-        // newAccessRequest = new ProjectUser(newAccountRequesting);
-        //
-        // ResponseEntity<ProjectUser> response = restTemplate.postForEntity(this.apiAccesses, newAccessRequest,
-        // ProjectUser.class);
-        // assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        //
-        // ResponseEntity<ProjectUser> responseConflict = restTemplate.postForEntity(this.apiAccesses, newAccessRequest,
-        // ProjectUser.class);
-        // assertEquals(HttpStatus.CONFLICT, responseConflict.getStatusCode());
-        //
-        // // to be denied
-        // newAccountRequesting = this.accountService.createAccount("email2");
-        // newAccessRequest = new ProjectUser(newAccountRequesting);
-        //
-        // response = restTemplate.postForEntity(this.apiAccesses, newAccessRequest, ProjectUser.class);
-        // assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        //
-        // responseConflict = restTemplate.postForEntity(this.apiAccesses, newAccessRequest, ProjectUser.class);
-        // assertEquals(HttpStatus.CONFLICT, responseConflict.getStatusCode());
-        //
-        // // to be removed
-        // newAccountRequesting = this.accountService.createAccount("email3");
-        // newAccessRequest = new ProjectUser(newAccountRequesting);
-        //
-        // response = restTemplate.postForEntity(this.apiAccesses, newAccessRequest, ProjectUser.class);
-        // assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        //
-        // responseConflict = restTemplate.postForEntity(this.apiAccesses, newAccessRequest, ProjectUser.class);
-        // assertEquals(HttpStatus.CONFLICT, responseConflict.getStatusCode());
+        Account newAccountRequesting;
+        ProjectUser newAccessRequest;
+        // to be accepted
+        newAccountRequesting = new Account("email@email.email", "firstName", "lastName", "password");
+        newAccessRequest = new ProjectUser(newAccountRequesting);
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isCreated());
+        performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
+
+        expectations.clear();
+        expectations.add(status().isConflict());
+        performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
+        // to be denied
+        newAccountRequesting = new Account("email2@email.email", "firstName", "lastName", "password");
+        newAccessRequest = new ProjectUser(newAccountRequesting);
+
+        expectations.clear();
+        expectations.add(status().isCreated());
+        performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
+
+        expectations.clear();
+        expectations.add(status().isConflict());
+        performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
+        // to be removed
+        newAccountRequesting = new Account("email3@email.email", "firstName", "lastName", "password");
+        newAccessRequest = new ProjectUser(newAccountRequesting);
+
+        expectations.clear();
+        expectations.add(status().isCreated());
+        performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
+
+        expectations.clear();
+        expectations.add(status().isConflict());
+        performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
     }
 
-    //
     @Test
     public void dAcceptAccessRequest() {
-        // Long accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getId();
-        // assertFalse(!this.serviceStub.existAccessRequest(accessRequestId));
-        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
-        // };
-        // ResponseEntity<Void> response = restTemplate.exchange(this.apiAccessId + "/accept", HttpMethod.PUT, null,
-        // typeRef, accessRequestId);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
-        //
-        // // once it's accepted it's no longer a request so next time i try to accept it it cannot be found
-        // response = restTemplate.exchange(this.apiAccessId + "/accept", HttpMethod.PUT, null, typeRef,
-        // accessRequestId);
-        // assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        //
-        // // something that does not exist
-        // response = restTemplate.exchange(this.apiAccessId + "/accept", HttpMethod.PUT, null, typeRef,
-        // Integer.MAX_VALUE);
-        // assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        //
+        Long accessRequestId = serviceStub.retrieveAccessRequestList().get(0).getId();
+        assertFalse(!serviceStub.existAccessRequest(accessRequestId));
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performPut(apiAccessAccept, jwt_, null, expectations, errorMessage, accessRequestId);
+
+        // once it's accepted it's no longer a request so next time i try to accept it it cannot be found
+        expectations.clear();
+        expectations.add(status().isNotFound());
+        performPut(apiAccessAccept, jwt_, null, expectations, errorMessage, accessRequestId);
+
+        // something that does not exist
+        expectations.clear();
+        expectations.add(status().isNotFound());
+        performPut(apiAccessAccept, jwt_, null, expectations, errorMessage, Long.MAX_VALUE);
     }
 
-    //
     @Test
     public void dDenyAccessRequest() {
-        // Long accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getId();
-        // assertFalse(!this.serviceStub.existAccessRequest(accessRequestId));
-        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
-        // };
-        // ResponseEntity<Void> response = restTemplate.exchange(this.apiAccessId + "/deny", HttpMethod.PUT, null,
-        // typeRef,
-        // accessRequestId);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
-        //
-        // response = restTemplate.exchange(this.apiAccessId + "/deny", HttpMethod.PUT, null, typeRef, accessRequestId);
-        // assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        //
-        // response = restTemplate.exchange(this.apiAccessId + "/deny", HttpMethod.PUT, null, typeRef,
-        // Integer.MAX_VALUE);
-        // assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        //
+        Long accessRequestId = serviceStub.retrieveAccessRequestList().get(0).getId();
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performPut(apiAccessDeny, jwt_, null, expectations, errorMessage, accessRequestId);
+
+        expectations.clear();
+        expectations.add(status().isNotFound());
+        performPut(apiAccessDeny, jwt_, null, expectations, errorMessage, accessRequestId);
+
+        expectations.clear();
+        expectations.add(status().isNotFound());
+        performPut(apiAccessDeny, jwt_, null, expectations, errorMessage, Long.MAX_VALUE);
     }
 
-    //
     @Test
     public void eDeleteAccessRequest() {
-        // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
-        // };
-        // // does not exist so NOT_FOUND
-        // ResponseEntity<Void> response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef,
-        // Integer.MAX_VALUE);
-        // assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        //
-        // Long accessRequestId = this.serviceStub.retrieveAccessRequestList().get(0).getId();
-        // response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef, accessRequestId);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
-        //
-        // response = restTemplate.exchange(this.apiAccessId, HttpMethod.DELETE, null, typeRef, accessRequestId);
-        // assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isNotFound());
+        performDelete(apiAccessId, jwt_, expectations, errorMessage, Long.MAX_VALUE);
+
+        Long accessRequestId = serviceStub.retrieveAccessRequestList().get(0).getId();
+
+        expectations.clear();
+        expectations.add(status().isOk());
+        performDelete(apiAccessId, jwt_, expectations, errorMessage, accessRequestId);
+
+        expectations.clear();
+        expectations.add(status().isNotFound());
+        performDelete(apiAccessId, jwt_, expectations, errorMessage, accessRequestId);
+
     }
 }
