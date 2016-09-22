@@ -13,26 +13,37 @@ import java.util.NoSuchElementException;
 
 import javax.naming.OperationNotSupportedException;
 
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
+import fr.cnes.regards.modules.accessRights.dao.DaoProjectUserStub;
+import fr.cnes.regards.modules.accessRights.dao.DaoResourcesAccessStub;
+import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
+import fr.cnes.regards.modules.accessRights.dao.IDaoResourcesAccess;
+import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
+import fr.cnes.regards.modules.accessRights.dao.RoleRepositoryStub;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
+import fr.cnes.regards.modules.accessRights.service.IAccountService;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
+import fr.cnes.regards.modules.accessRights.service.RoleService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { RoleServiceTestConfiguration.class })
 public class RoleServiceTest {
 
-    @Autowired
     private IRoleService roleService_;
+
+    @Before
+    public void init() throws AlreadyExistingException {
+        IAccountService accountService = new AccountServiceStub();
+        IDaoResourcesAccess daoResourcesAccess = new DaoResourcesAccessStub();
+        IDaoProjectUser daoProjectUser = new DaoProjectUserStub(accountService);
+        IRoleRepository roleRepository = new RoleRepositoryStub(daoResourcesAccess, daoProjectUser);
+        roleService_ = new RoleService(roleRepository);
+    }
 
     @Test
     public void retrieveRoleList() {
@@ -80,7 +91,6 @@ public class RoleServiceTest {
     }
 
     @Test
-    @DirtiesContext
     public void updateRole() throws NoSuchElementException, OperationNotSupportedException {
         Long passedRoleId = 0L;
         assertTrue(roleService_.existRole(passedRoleId));
@@ -100,7 +110,6 @@ public class RoleServiceTest {
     }
 
     @Test
-    @DirtiesContext
     public void removeRole() {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -119,7 +128,6 @@ public class RoleServiceTest {
     }
 
     @Test
-    @DirtiesContext
     public void updateRoleResourcesAccessAddingResourcesAccess() throws NoSuchElementException {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -133,7 +141,6 @@ public class RoleServiceTest {
     }
 
     @Test
-    @DirtiesContext
     public void updateRoleResourcesAccessUpdatingResourcesAccess() throws NoSuchElementException {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -162,7 +169,6 @@ public class RoleServiceTest {
     }
 
     @Test
-    @DirtiesContext
     public void clearRoleResourcesAccess() {
         Long roleId = 0L;
         Role role = roleService_.retrieveRole(roleId);

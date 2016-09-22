@@ -6,8 +6,6 @@ package fr.cnes.regards.modules.accessRights.dao;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -20,8 +18,7 @@ public class DaoResourcesAccessStub implements IDaoResourcesAccess {
 
     private static List<ResourcesAccess> resourcesAccesses_;
 
-    @PostConstruct
-    public void init() {
+    public DaoResourcesAccessStub() {
         resourcesAccesses_ = new ArrayList<ResourcesAccess>();
         resourcesAccesses_
                 .add(new ResourcesAccess(0L, "ResourceAccess 0", "Microservice 0", "Resource 0", HttpVerb.GET));

@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 
 import javax.naming.OperationNotSupportedException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
@@ -23,8 +22,12 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 @Service
 public class RoleService implements IRoleService {
 
-    @Autowired
-    private IRoleRepository roleRepository_;
+    private final IRoleRepository roleRepository_;
+
+    public RoleService(IRoleRepository pRoleRepository) {
+        super();
+        roleRepository_ = pRoleRepository;
+    }
 
     @Override
     public List<Role> retrieveRoleList() {

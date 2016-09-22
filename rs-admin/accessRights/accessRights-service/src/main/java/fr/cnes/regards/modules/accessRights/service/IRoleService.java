@@ -37,4 +37,5 @@ public interface IRoleService {
     boolean existRole(Role pRole);
 
     Role getDefaultRole();
+
 }

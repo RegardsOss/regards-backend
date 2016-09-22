@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -24,18 +21,18 @@ public class RoleRepositoryStub implements IRoleRepository {
 
     private List<Role> roles_ = new ArrayList<>();
 
-    @Autowired
-    private IDaoResourcesAccess daoResourcesAccess_;
+    private final IDaoResourcesAccess daoResourcesAccess_;
 
-    @Autowired
-    private IDaoProjectUser daoProjectUser_;
+    private final IDaoProjectUser daoProjectUser_;
 
-    @PostConstruct
-    public void init() {
+    public RoleRepositoryStub(IDaoResourcesAccess pDaoResourcesAccess, IDaoProjectUser pDaoProjectUser) {
+        daoResourcesAccess_ = pDaoResourcesAccess;
+        daoProjectUser_ = pDaoProjectUser;
+
         List<ResourcesAccess> permissionList_ = daoResourcesAccess_.getAll();
         List<ProjectUser> projectUsers_ = daoProjectUser_.getAll();
 
-        // Init default ro
+        // Init default roles
         Role rolePublic = new Role(0L, "Public", null, permissionList_, projectUsers_.subList(8, 10), true, true);
         Role roleRegisteredUser = new Role(1L, "Registered User", rolePublic, null, projectUsers_.subList(5, 8), false,
                 true);
