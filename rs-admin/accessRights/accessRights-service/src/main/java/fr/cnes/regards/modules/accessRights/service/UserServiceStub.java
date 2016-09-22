@@ -114,10 +114,19 @@ public class UserServiceStub implements IUserService {
      * @see fr.cnes.regards.modules.accessRights.service.IUserService#retrieveUserAccessRights(int)
      */
     @Override
-    public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId) {
-        ProjectUser user = retrieveUser(pUserId);
+    public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId, String pBorrowedRoleName) {
+        IProjectUser user = retrieveUser(pUserId);
         Role userRole = user.getRole();
-        return new Couple<>(user.getPermissions(), userRole);
+        Role returnedRole = userRole;
+
+        if (!pBorrowedRoleName.isEmpty()) {
+            Role borrowedRole = roleRepository_.findOneByName(pBorrowedRoleName);
+            if (roleService_.isHierarchicallyInferior(borrowedRole, returnedRole)) {
+                returnedRole = borrowedRole;
+            }
+        }
+
+        return new Couple<>(user.getPermissions(), returnedRole);
     }
 
     /*

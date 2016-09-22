@@ -21,4 +21,6 @@ public interface IRoleRepository extends CrudRepository<Role, Long> {
     List<Role> findAll(Iterable<Long> pIds);
 
     Role findByIsDefault(boolean pIsDefault);
+
+    Role findOneByName(String pBorrowedRoleName);
 }
