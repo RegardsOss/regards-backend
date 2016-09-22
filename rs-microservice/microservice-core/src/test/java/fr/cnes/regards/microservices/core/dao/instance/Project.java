@@ -6,10 +6,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import fr.cnes.regards.microservices.core.dao.annotation.NonStandardEntity;
+import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
 
 @Entity(name = "T_PROJECT")
-@NonStandardEntity
+@InstanceEntity
 public class Project {
 
     @Id

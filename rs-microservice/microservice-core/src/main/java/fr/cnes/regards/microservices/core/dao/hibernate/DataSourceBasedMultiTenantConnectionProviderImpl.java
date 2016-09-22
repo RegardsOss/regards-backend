@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
 import fr.cnes.regards.microservices.core.configuration.common.ProjectConfiguration;
-import fr.cnes.regards.microservices.core.dao.annotation.NonStandardEntity;
+import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
 
 /**
  *
@@ -98,7 +98,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         // 2 Add Entity for database mapping from classpath
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
-        scanner.addExcludeFilter(new AnnotationTypeFilter(NonStandardEntity.class));
+        scanner.addExcludeFilter(new AnnotationTypeFilter(InstanceEntity.class));
         for (BeanDefinition def : scanner.findCandidateComponents(PACKAGE_TO_SCAN)) {
             try {
                 metadata.addAnnotatedClass(Class.forName(def.getBeanClassName()));

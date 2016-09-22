@@ -5,9 +5,9 @@ package fr.cnes.regards.microservices.core.dao.instance;
 
 import org.springframework.data.repository.CrudRepository;
 
-import fr.cnes.regards.microservices.core.dao.annotation.NonStandardEntity;
+import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
 
-@NonStandardEntity
+@InstanceEntity
 public interface ProjectRepository extends CrudRepository<Project, Long> {
 
 }

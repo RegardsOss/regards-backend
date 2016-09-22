@@ -32,7 +32,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
-import fr.cnes.regards.microservices.core.dao.annotation.NonStandardEntity;
+import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
 import fr.cnes.regards.microservices.core.dao.hibernate.DataSourceBasedMultiTenantConnectionProviderImpl;
 
 /**
@@ -45,7 +45,7 @@ import fr.cnes.regards.microservices.core.dao.hibernate.DataSourceBasedMultiTena
 @Configuration
 @EnableConfigurationProperties(JpaProperties.class)
 @EnableJpaRepositories(includeFilters = {
-        @ComponentScan.Filter(value = NonStandardEntity.class, type = FilterType.ANNOTATION) }, basePackages = InstanceJpaConfiguration.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory")
+        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = InstanceJpaConfiguration.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory")
 @ConditionalOnProperty("microservice.dao.instance.enabled")
 public class InstanceJpaConfiguration {
 
@@ -75,7 +75,7 @@ public class InstanceJpaConfiguration {
 
         List<String> packages = new ArrayList<>();
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(NonStandardEntity.class));
+        scanner.addIncludeFilter(new AnnotationTypeFilter(InstanceEntity.class));
         for (BeanDefinition def : scanner.findCandidateComponents(PACKAGES_TO_SCAN)) {
             try {
                 packages.add(Class.forName(def.getBeanClassName()).getPackage().getName());
