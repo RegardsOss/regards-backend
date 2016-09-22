@@ -37,4 +37,6 @@ public interface IRoleService {
     boolean existRole(Role pRole);
 
     Role getDefaultRole();
+
+    boolean isHierarchicallyInferior(Role pBorrowedRole, Role pReturnedRole);
 }

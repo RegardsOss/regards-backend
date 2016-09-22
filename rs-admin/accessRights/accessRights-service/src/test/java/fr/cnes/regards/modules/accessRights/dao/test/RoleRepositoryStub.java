@@ -129,4 +129,9 @@ public class RoleRepositoryStub implements IRoleRepository {
         return roles_.stream().filter(r -> r.isDefault() == pIsDefault).findFirst().get();
     }
 
+    @Override
+    public Role findOneByName(String pBorrowedRoleName) {
+        return roles_.stream().filter(r -> r.getName().equals(pBorrowedRoleName)).findFirst().get();
+    }
+
 }

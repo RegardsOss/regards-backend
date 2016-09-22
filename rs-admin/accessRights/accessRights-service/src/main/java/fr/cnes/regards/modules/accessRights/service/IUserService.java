@@ -46,9 +46,10 @@ public interface IUserService {
 
     /**
      * @param pUserId
+     * @param pBorrowedRoleName
      * @return
      */
-    Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId);
+    Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId, String pBorrowedRoleName);
 
     /**
      * @param pUserId

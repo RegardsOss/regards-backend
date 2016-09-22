@@ -120,4 +120,16 @@ public class RoleService implements IRoleService {
         return roleRepository_.findByIsDefault(true);
     }
 
+    /**
+     * Return true if {@link pRole} is an ancestor of {@link pOther} through the {@link Role#getParentRole()} chain.
+     */
+    @Override
+    public boolean isHierarchicallyInferior(Role pRole, Role pOther) {
+
+        RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
+        List<Role> ancestors = roleLineageAssembler.on(pOther).get();
+
+        return ancestors.contains(pRole);
+    }
+
 }

@@ -81,4 +81,10 @@ public class RoleRepository implements IRoleRepository {
         return null;
     }
 
+    @Override
+    public Role findOneByName(String pBorrowedRoleName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }
