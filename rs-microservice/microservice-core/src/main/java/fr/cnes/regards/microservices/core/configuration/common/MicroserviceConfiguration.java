@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Primary;
 @Primary
 public class MicroserviceConfiguration {
 
-    private final List<ProjectConfiguration> projects_ = new ArrayList<ProjectConfiguration>();
+    private final List<ProjectConfiguration> projects_ = new ArrayList<>();
 
     @NestedConfigurationProperty
     private CommonDaoConfiguration dao_;
