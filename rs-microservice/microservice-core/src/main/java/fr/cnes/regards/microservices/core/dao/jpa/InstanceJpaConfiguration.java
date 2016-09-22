@@ -106,11 +106,11 @@ public class InstanceJpaConfiguration {
         }
         else {
             DataSourceBuilder factory = DataSourceBuilder
-                    .create(configuration_.getDao().getInstanceDataSource().getClassLoader())
+                    .create(configuration_.getDao().getInstance().getDatasource().getClassLoader())
                     .driverClassName(configuration_.getDao().getDriverClassName())
-                    .username(configuration_.getDao().getInstanceDataSource().getUsername())
-                    .password(configuration_.getDao().getInstanceDataSource().getPassword())
-                    .url(configuration_.getDao().getInstanceDataSource().getUrl());
+                    .username(configuration_.getDao().getInstance().getDatasource().getUsername())
+                    .password(configuration_.getDao().getInstance().getDatasource().getPassword())
+                    .url(configuration_.getDao().getInstance().getDatasource().getUrl());
             return factory.build();
         }
     }

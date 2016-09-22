@@ -5,9 +5,6 @@ package fr.cnes.regards.microservices.core.configuration.common;
 
 import javax.validation.constraints.NotNull;
 
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
-
 /**
  *
  * POJO for microservice common DAO configuration
@@ -24,11 +21,6 @@ public class CommonDaoConfiguration {
     private Boolean enabled_;
 
     /**
-     * Does the instance DAO Component is activated ?
-     */
-    private Boolean instanceEnabled_;
-
-    /**
      * Does the datasource has to be created in memory ?
      */
     private Boolean embedded_;
@@ -43,8 +35,10 @@ public class CommonDaoConfiguration {
      */
     private String dialect_;
 
-    @NestedConfigurationProperty
-    private DataSourceProperties instanceDataSource_;
+    /**
+     * Instance DAO Configuration
+     */
+    private InstanceConfiguration instance_;
 
     public String getDriverClassName() {
         return driverClassName_;
@@ -78,20 +72,12 @@ public class CommonDaoConfiguration {
         embedded_ = pEmbedded;
     }
 
-    public void setInstanceDataSource(DataSourceProperties datasource) {
-        this.instanceDataSource_ = datasource;
+    public InstanceConfiguration getInstance() {
+        return instance_;
     }
 
-    public DataSourceProperties getInstanceDataSource() {
-        return this.instanceDataSource_;
-    }
-
-    public Boolean getInstanceEnabled() {
-        return instanceEnabled_;
-    }
-
-    public void setInstanceEnabled(Boolean pInstanceEnabled) {
-        instanceEnabled_ = pInstanceEnabled;
+    public void setInstance(InstanceConfiguration pInstance) {
+        instance_ = pInstance;
     }
 
 }
