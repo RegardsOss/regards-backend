@@ -7,10 +7,10 @@
 	<artifactId>rs-microservice</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	
+
 	<properties>
-    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    	<sonar.language>java</sonar.language>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<sonar.language>java</sonar.language>
 		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
 	</properties>
 
@@ -19,7 +19,9 @@
 		<module>microservice-core</module>
 		<module>module-jobs</module>
 		<module>module-core</module>
+		<module>module-core-hateoas</module>
 		<module>module-archetype</module>
+		<module>microservice-core-test</module>
 	</modules>
 
 	<parent>
