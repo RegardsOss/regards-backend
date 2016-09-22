@@ -8,13 +8,26 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+/**
+ *
+ * POJO for microservice configuration
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @Configuration
 @ConfigurationProperties(prefix = "microservice")
 @Primary
 public class MicroserviceConfiguration {
 
+    /**
+     * Projects configurations
+     */
     private final List<ProjectConfiguration> projects_ = new ArrayList<>();
 
+    /**
+     * Common DAO Configuration
+     */
     @NestedConfigurationProperty
     private CommonDaoConfiguration dao_;
 

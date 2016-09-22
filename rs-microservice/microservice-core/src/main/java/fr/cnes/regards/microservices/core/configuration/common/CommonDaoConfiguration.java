@@ -2,6 +2,13 @@ package fr.cnes.regards.microservices.core.configuration.common;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ *
+ * POJO for microservice common DAO configuration
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 public class CommonDaoConfiguration {
 
     /**
