@@ -13,10 +13,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
-import fr.cnes.regards.microservices.core.auth.ResourceAccess;
-import fr.cnes.regards.microservices.core.auth.RoleAuthority;
-import fr.cnes.regards.microservices.core.information.ModuleInfo;
+import fr.cnes.modules.core.hateoas.HateoasDTO;
+import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
+import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
 import fr.cnes.regards.modules.${artifactId}.domain.Greeting;
 import fr.cnes.regards.modules.${artifactId}.service.GreetingsService;
 
@@ -33,31 +32,19 @@ import fr.cnes.regards.modules.${artifactId}.service.GreetingsService;
 public class GreetingsController {
 
     @Autowired
-    MethodAutorizationService authService_;
-
-    @Autowired
     GreetingsService myService_;
 
-    /**
-     * Method to initiate REST resources authorizations.
-     */
-    @PostConstruct
-    public void initAuthorisations() {
-        authService_.setAutorities("/api/me@GET", new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/api/greeting@GET", new RoleAuthority("USER"));
-    }
-
     @RequestMapping(value = "/greeting", method = RequestMethod.GET)
-    @ResourceAccess
-    public ResponseEntity<Greeting> greeting(@RequestParam(value = "name", defaultValue = "World") String pName) {
+    @ResourceAccess(description = "send 'greeting' as response")
+    public ResponseEntity<HateoasDTO<Greeting>> greeting(@RequestParam(value = "name", defaultValue = "World") String pName) {
         Greeting greeting = myService_.getGreeting(pName);
-        return new ResponseEntity<Greeting>(greeting, HttpStatus.OK);
+        return new ResponseEntity<>(new HateoasDTO<>(greeting), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/me", method = RequestMethod.GET)
-    @ResourceAccess
-    public ResponseEntity<Greeting> me(@RequestParam(value = "name", defaultValue = "me") String pName) {
+    @ResourceAccess(description = "send 'me' as response")
+    public ResponseEntity<HateoasDTO<Greeting>> me(@RequestParam(value = "name", defaultValue = "me") String pName) {
         Greeting greeting = myService_.getGreeting(pName);
-        return new ResponseEntity<Greeting>(greeting, HttpStatus.OK);
+        return new ResponseEntity<>(new HateoasDTO<>(greeting), HttpStatus.OK);
     }
 }
