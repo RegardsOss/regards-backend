@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -152,8 +153,9 @@ public class UsersController {
     @ResourceAccess(description = "retrieve the list of specific access rights and the role of the project user")
     @RequestMapping(value = "/{user_id}/permissions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Couple<List<ResourcesAccess>, Role>> retrieveProjectUserAccessRights(
-            @PathVariable("user_id") Long pUserId) {
-        return new ResponseEntity<>(userService_.retrieveUserAccessRights(pUserId), HttpStatus.OK);
+            @PathVariable("user_id") Long pUserId,
+            @RequestParam(value = "borrowedRoleName", required = false) String pBorrowedRoleName) {
+        return new ResponseEntity<>(userService_.retrieveUserAccessRights(pUserId, pBorrowedRoleName), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "update the list of specific user access rights")

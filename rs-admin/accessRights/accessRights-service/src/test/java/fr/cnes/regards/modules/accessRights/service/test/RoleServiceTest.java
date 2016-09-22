@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.accessRights.service.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -183,6 +184,28 @@ public class RoleServiceTest {
         List<ProjectUser> actual = roleService_.retrieveRoleProjectUserList(roleId);
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void retrieveRoleResourcesAccessList() {
+        Long roleId = 0L;
+
+        assertTrue(!roleService_.retrieveRoleResourcesAccessList(roleId).isEmpty());
+    }
+
+    @Test
+    public void isHierarchicallyInferior() {
+        Role registeredUser = roleService_.retrieveRole(1L);
+        Role projectAdmin = roleService_.retrieveRole(3L);
+
+        assertTrue(roleService_.isHierarchicallyInferior(registeredUser, projectAdmin));
+        assertFalse(roleService_.isHierarchicallyInferior(projectAdmin, registeredUser));
+
+        Role admin = roleService_.retrieveRole(2L);
+        Role customRoleFromAdmin = new Role(99L, "custom role", admin, new ArrayList<>(), new ArrayList<>());
+
+        assertFalse(roleService_.isHierarchicallyInferior(customRoleFromAdmin, registeredUser));
+        assertFalse(roleService_.isHierarchicallyInferior(customRoleFromAdmin, projectAdmin));
     }
 
 }

@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
+import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
+import fr.cnes.regards.modules.accessRights.domain.IProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
@@ -35,6 +37,12 @@ public class UserServiceStub implements IUserService {
 
     @Autowired
     private IDaoProjectUser projectUserDao_;
+
+    @Autowired
+    private IRoleService roleService_;
+
+    @Autowired
+    private IRoleRepository roleRepository_;
 
     @PostConstruct
     public void init() {
@@ -101,7 +109,7 @@ public class UserServiceStub implements IUserService {
     /*
      * (non-Javadoc)
      *
-     * @see fr.cnes.regards.modules.accessRights.service.IUserService#removeUser(int)
+     * @see fr.cnes.regards.modules.accessRights.service.IUserService#removeUser(Long)
      */
     @Override
     public void removeUser(Long pUserId) {
@@ -111,13 +119,22 @@ public class UserServiceStub implements IUserService {
     /*
      * (non-Javadoc)
      *
-     * @see fr.cnes.regards.modules.accessRights.service.IUserService#retrieveUserAccessRights(int)
+     * @see fr.cnes.regards.modules.accessRights.service.IUserService#retrieveUserAccessRights(Long)
      */
     @Override
-    public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId) {
-        ProjectUser user = this.retrieveUser(pUserId);
+    public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId, String pBorrowedRoleName) {
+        IProjectUser user = this.retrieveUser(pUserId);
         Role userRole = user.getRole();
-        return new Couple<>(user.getPermissions(), userRole);
+        Role returnedRole = userRole;
+
+        if (!pBorrowedRoleName.isEmpty()) {
+            Role borrowedRole = roleRepository_.findOneByName(pBorrowedRoleName);
+            if (roleService_.isHierarchicallyInferior(borrowedRole, returnedRole)) {
+                returnedRole = borrowedRole;
+            }
+        }
+
+        return new Couple<>(user.getPermissions(), returnedRole);
     }
 
     /*
