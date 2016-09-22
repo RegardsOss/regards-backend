@@ -1,30 +1,29 @@
 package fr.cnes.regards.microservices.backend.controllers.administration;
 
-import fr.cnes.regards.microservices.backend.pojo.administration.Account;
-import fr.cnes.regards.microservices.backend.pojo.administration.ProjectAccount;
-import fr.cnes.regards.microservices.backend.pojo.administration.Role;
-import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
-import fr.cnes.regards.microservices.core.auth.RoleAuthority;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import fr.cnes.regards.microservices.backend.pojo.administration.Account;
+import fr.cnes.regards.microservices.backend.pojo.administration.ProjectAccount;
+import fr.cnes.regards.microservices.backend.pojo.administration.Role;
+import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
 
 @RestController
-@EnableResourceServer
+@ModuleInfo(name = "project account controller", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/api")
 public class ProjectAccountController {
 
@@ -33,14 +32,14 @@ public class ProjectAccountController {
     @Autowired
     MethodAutorizationService authService_;
 
-    /**
-     * Method to initiate REST resources authorizations.
-     */
-    @PostConstruct
-    public void init() {
-        authService_.setAutorities("/api/users@GET", new RoleAuthority("ADMIN"));
-
-    }
+//    /**
+//     * Method to initiate REST resources authorizations.
+//     */
+//    @PostConstruct
+//    public void init() {
+//        authService_.setAutorities("/api/users@GET", new RoleAuthority("ADMIN"));
+//
+//    }
 
     @RequestMapping(value = "/projectAccounts", method = RequestMethod.GET)
     public HttpEntity<List<ProjectAccount>> getProjectAccounts() {

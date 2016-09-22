@@ -31,3 +31,33 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:9999/eureka/
  
+regards:
+  security:
+    authorities: /api/connection@GET|PUBLIC|USER|ADMIN
+      - /api/connection@POST|PUBLIC|USER|ADMIN
+      - /api/connection/{connection_id}@GET|PUBLIC|USER|ADMIN
+      - /api/connection/{connection_id}@GET|PUBLIC|USER|ADMIN
+      - /api/connection/{connection_id}@POST|PUBLIC|USER|ADMIN
+      - /api/connection/{connection_id}@PUT|PUBLIC|USER|ADMIN
+      - /api/connection/{connection_id}@DELETE|PUBLIC|USER|ADMIN
+      - /api/users@GET|ADMIN
+      - /api/endpoints@GET|PUBLIC|ADMIN
+      - /api/access/rights@POST|PUBLIC|USER|ADMIN
+      - /api/plugins@GET|ADMIN
+      - /api/plugins/{plugin_name}@GET|ADMIN
+      - /api/plugins/{plugin_name}/config@GET|ADMIN
+      - /api/access/plugins@GET|PUBLIC|USER|ADMIN
+      - /api/pluginstypes/{plugin_type}@GET|PUBLIC|USER|ADMIN
+      - /api/users@GET|ADMIN
+      - /api/users@GET
+      - /api/project-admin@GET|ADMIN
+      - /api/project-admins@GET|ADMIN
+      - /api/project@GET|PUBLIC|ADMIN
+      - /api/projects@GET|PUBLIC|ADMIN
+      - /api/projects@POST|PUBLIC|ADMIN
+      - /api/projects/{project_id}@GET|PUBLIC|ADMIN
+      - /api/projects/{project_id}@PUT|PUBLIC|ADMIN
+      - /api/projects/{project_id}@DELETE|PUBLIC|ADMIN
+      
+      
+      

@@ -1,6 +1,6 @@
 package fr.cnes.regards.microservices.backend.pojo.administration;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+
 import org.springframework.hateoas.ResourceSupport;
 
 import java.util.ArrayList;
@@ -18,7 +18,6 @@ public class Account extends ResourceSupport {
 
     private String login;
 
-    @JsonIgnore
     private String password;
 
     private int status;

@@ -1,37 +1,34 @@
 package fr.cnes.regards.microservices.backend.controllers.administration;
 
-import fr.cnes.regards.microservices.backend.pojo.administration.PluginJS;
-import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
-import fr.cnes.regards.microservices.core.auth.ResourceAccess;
-import fr.cnes.regards.microservices.core.auth.RoleAuthority;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
+import fr.cnes.regards.microservices.backend.pojo.administration.PluginJS;
+import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
+import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
 
 @RestController
-// Indicates that those resources are securised. Only the /oauth endpoint do not
-// need the authentication token
-@EnableResourceServer
+@ModuleInfo(name = "plugin JS controller", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/api")
 public class PluginJSController {
 
     @Autowired
     MethodAutorizationService authService_;
 
-    /**
-     * Method to iniate REST resources authorizations.
-     */
-    @PostConstruct
-    public void initAuthorisations() {
-        authService_.setAutorities("/api/access/plugins@GET", new RoleAuthority("PUBLIC"), new RoleAuthority("USER"), new RoleAuthority("ADMIN"));
-    }
+//    /**
+//     * Method to iniate REST resources authorizations.
+//     */
+//    @PostConstruct
+//    public void initAuthorisations() {
+//        authService_.setAutorities("/api/access/plugins@GET", new RoleAuthority("PUBLIC"), new RoleAuthority("USER"), new RoleAuthority("ADMIN"));
+//    }
 
     @ResourceAccess(description = "")
     @RequestMapping(value = "/access/plugins", method = RequestMethod.GET)

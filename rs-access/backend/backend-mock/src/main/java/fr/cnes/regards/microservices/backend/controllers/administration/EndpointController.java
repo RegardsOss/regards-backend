@@ -9,15 +9,12 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.util.HashMap;
 import java.util.List;
-
-import javax.annotation.PostConstruct;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,27 +23,28 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.microservices.backend.controllers.datamanagement.ConnectionController;
 import fr.cnes.regards.microservices.backend.pojo.administration.AccessRights;
-import fr.cnes.regards.microservices.core.auth.MethodAutorizationService;
-import fr.cnes.regards.microservices.core.auth.ResourceAccess;
-import fr.cnes.regards.microservices.core.auth.RoleAuthority;
+import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
+import fr.cnes.regards.microservices.core.security.endpoint.ResourceMapping;
+import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
 
 @RestController
-@EnableResourceServer
+@ModuleInfo(name = "endpoint controller", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/api")
 public class EndpointController {
 
     @Autowired
     MethodAutorizationService authService_;
 
-    /**
-     * Method to initiate REST resources authorizations.
-     */
-    @PostConstruct
-    public void initAuthorisations() {
-        authService_.setAutorities("/api/endpoints@GET", new RoleAuthority("PUBLIC"), new RoleAuthority("ADMIN"));
-        authService_.setAutorities("/api/access/rights@POST", new RoleAuthority("PUBLIC"), new RoleAuthority("USER"),
-                                   new RoleAuthority("ADMIN"));
-    }
+    // /**
+    // * Method to initiate REST resources authorizations.
+    // */
+    // @PostConstruct
+    // public void initAuthorisations() {
+    // authService_.setAutorities("/api/endpoints@GET", new RoleAuthority("PUBLIC"), new RoleAuthority("ADMIN"));
+    // authService_.setAutorities("/api/access/rights@POST", new RoleAuthority("PUBLIC"), new RoleAuthority("USER"),
+    // new RoleAuthority("ADMIN"));
+    // }
 
     @RequestMapping(value = "/endpoints", method = RequestMethod.GET)
     public @ResponseBody ResponseEntity<HashMap<String, String>> getEndpoints() {
@@ -54,7 +52,7 @@ public class EndpointController {
     }
 
     /**
-     * Get the acces rights for the current logged in user for a list of depencendies (couple Verb + Endpoint)
+     * Get the access rights for the current logged in user for a list of depencendies (couple Verb + Endpoint)
      *
      * @param pAccessRights
      *            : AccessRights to check
@@ -65,37 +63,35 @@ public class EndpointController {
     @ResourceAccess(description = "")
     @RequestMapping(value = "/access/rights", method = RequestMethod.POST)
     public @ResponseBody List<AccessRights> getAccessRights(@RequestBody List<AccessRights> pAccessRights,
-            OAuth2Authentication pPrincipal) {
+            ResourceMapping pPrincipal) {
 
         for (AccessRights access : pAccessRights) {
-            List<GrantedAuthority> auths = authService_
-                    .getAutoritiesById(access.getEndpoint() + "@" + access.getVerb());
-            if (auths != null) {
-                boolean apiAccess = false;
-                for (GrantedAuthority role : pPrincipal.getAuthorities()) {
-                    for (GrantedAuthority auth : auths) {
-                        if (auth.getAuthority().equals(role.getAuthority())) {
-                            apiAccess = true;
-                            break;
-                        }
-                    }
-                    if (apiAccess) {
-                        break;
-                    }
-                }
-                if (apiAccess) {
-                    System.out.println("Acces granted to : " + access.getId());
-                    access.setAccess(true);
-                }
-                else {
-                    System.out.println("Acces denied to : " + access.getId());
-                    access.setAccess(false);
-                }
+            Optional<List<GrantedAuthority>> auths = authService_.getAuthorities(pPrincipal);
+
+            boolean apiAccess = false;
+
+            if (auths != null && auths.isPresent()) {
+                ResourceAccess resourceId = pPrincipal.getResourceAccess();
+                
+                // TODO : CMZ à revoir
+                
+//                resourceId.name()
+//                for (GrantedAuthority role : pPrincipal.getResourceAccess(). getAuthorities()) {
+//                    for (GrantedAuthority auth : auths.get()) {
+//                        if (auth.getAuthority().equals(role.getAuthority())) {
+//                            apiAccess = true;
+//                            break;
+//                        }
+//                    }
+//                    if (apiAccess) {
+//                        break;
+//                    }
+//                }
             }
-            else {
-                System.out.println("Acces denied to : " + access.getId());
-                access.setAccess(false);
-            }
+
+            System.out.println(apiAccess ? "Acces granted to : " + access.getId()
+                    : "Acces denied to : " + access.getId());
+            access.setAccess(apiAccess);
 
         }
         return pAccessRights;

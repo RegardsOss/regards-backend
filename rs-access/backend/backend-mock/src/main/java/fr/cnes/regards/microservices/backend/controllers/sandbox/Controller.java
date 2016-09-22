@@ -1,25 +1,22 @@
 package fr.cnes.regards.microservices.backend.controllers.sandbox;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.RestController;
+
+import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
+
 @RestController
-// Indicates that those resources are securised. Only the /oauth endpoint do not
-// need the authentication token
-@EnableResourceServer
-@RequestMapping("/api")
+@ModuleInfo(name = "controller", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 public class Controller {
 
     @Autowired
     private SimpMessagingTemplate template;
 
     /**
-     * Method to send curent date to web socket clients
+     * Method to send current date to web socket clients
      */
     public void sendTime() {
         Date now = new Date();
