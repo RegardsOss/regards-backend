@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.dao.pojo;
+package fr.cnes.regards.microservices.core.dao.pojo.projects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

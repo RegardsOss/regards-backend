@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.dao.pojo.User;
-import fr.cnes.regards.microservices.core.dao.repository.UserRepository;
+import fr.cnes.regards.microservices.core.dao.pojo.projects.User;
+import fr.cnes.regards.microservices.core.dao.repository.projects.UserRepository;
 
 @RestController
 @RequestMapping("/test/dao")

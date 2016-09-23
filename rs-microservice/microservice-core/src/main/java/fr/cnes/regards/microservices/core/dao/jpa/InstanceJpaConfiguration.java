@@ -15,9 +15,9 @@ import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -29,7 +29,6 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
@@ -50,15 +49,27 @@ import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
 @ConditionalOnProperty("microservice.dao.instance.enabled")
 public class InstanceJpaConfiguration {
 
+    private static final Logger LOG = LoggerFactory.getLogger(InstanceJpaConfiguration.class);
+
+    /**
+     * Package to scan for DAO Entities and Repositories
+     */
     public static final String PACKAGES_TO_SCAN = "fr.cnes.regards";
 
-    private static final Logger LOG = LoggerFactory.getLogger(InstanceJpaConfiguration.class);
+    /**
+     * JPA Persistence unit name. Used to separate multiples databases
+     */
+    private static final String PERSITENCE_UNIT_NAME = "instance";
 
     @Autowired
     private MicroserviceConfiguration configuration_;
 
     @Autowired
     private JpaProperties jpaProperties_;
+
+    @Autowired
+    @Qualifier("instanceDataSource")
+    private DataSource instanceDataSource_;
 
     @Bean
     public JpaTransactionManager instanceJpaTransactionManager() {
@@ -72,10 +83,10 @@ public class InstanceJpaConfiguration {
     public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory(EntityManagerFactoryBuilder builder) {
 
         Map<String, Object> hibernateProps = new LinkedHashMap<>();
-        hibernateProps.putAll(jpaProperties_.getHibernateProperties(instanceDataSource()));
+        hibernateProps.putAll(jpaProperties_.getHibernateProperties(instanceDataSource_));
 
         if (configuration_.getDao().getEmbedded()) {
-            hibernateProps.put(Environment.DIALECT, DataSourceConfig.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
+            hibernateProps.put(Environment.DIALECT, DataSourcesConfiguration.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
         }
         else {
             hibernateProps.put(Environment.DIALECT, configuration_.getDao().getDialect());
@@ -84,12 +95,12 @@ public class InstanceJpaConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, null);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, null);
 
-        List<String> packages = new ArrayList<>();
+        List<Class<?>> packages = new ArrayList<>();
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(InstanceEntity.class));
         for (BeanDefinition def : scanner.findCandidateComponents(PACKAGES_TO_SCAN)) {
             try {
-                packages.add(Class.forName(def.getBeanClassName()).getPackage().getName());
+                packages.add(Class.forName(def.getBeanClassName()));
             }
             catch (ClassNotFoundException e) {
                 LOG.error("Error adding entity " + def.getBeanClassName() + " for hibernate database update");
@@ -98,34 +109,14 @@ public class InstanceJpaConfiguration {
         }
 
         if (packages.size() > 1) {
-            return builder.dataSource(instanceDataSource()).persistenceUnit("instance")
-                    .packages(new String[packages.size()]).properties(hibernateProps).jta(false).build();
+            return builder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
+                    .packages(new Class[packages.size()]).properties(hibernateProps).jta(false).build();
         }
         else {
-            return builder.dataSource(instanceDataSource()).persistenceUnit("instance").packages(packages.get(0))
-                    .properties(hibernateProps).jta(false).build();
+            return builder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
+                    .packages(packages.get(0)).properties(hibernateProps).jta(false).build();
         }
 
     }
 
-    @Bean
-    public DataSource instanceDataSource() {
-
-        if (configuration_.getDao().getEmbedded()) {
-            DriverManagerDataSource dataSource = new DriverManagerDataSource();
-            dataSource.setDriverClassName(DataSourceConfig.EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(DataSourceConfig.EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
-                    + "/instance/applicationdb");
-            return dataSource;
-        }
-        else {
-            DataSourceBuilder factory = DataSourceBuilder
-                    .create(configuration_.getDao().getInstance().getDatasource().getClassLoader())
-                    .driverClassName(configuration_.getDao().getDriverClassName())
-                    .username(configuration_.getDao().getInstance().getDatasource().getUsername())
-                    .password(configuration_.getDao().getInstance().getDatasource().getPassword())
-                    .url(configuration_.getDao().getInstance().getDatasource().getUrl());
-            return factory.build();
-        }
-    }
 }

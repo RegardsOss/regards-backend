@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
 import fr.cnes.regards.microservices.core.configuration.common.ProjectConfiguration;
 import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
-import fr.cnes.regards.microservices.core.dao.jpa.DataSourceConfig;
+import fr.cnes.regards.microservices.core.dao.jpa.DataSourcesConfiguration;
 
 /**
  *
@@ -88,7 +88,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         // 1. Update database schema if needed
         String dialect = configuration_.getDao().getDialect();
         if (configuration_.getDao().getEmbedded()) {
-            dialect = DataSourceConfig.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
+            dialect = DataSourcesConfiguration.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
         }
         MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder()
                 .applySetting(Environment.DIALECT, dialect).applySetting(Environment.DATASOURCE, pDataSource).build());
@@ -120,8 +120,8 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
 
         if (configuration_.getDao().getEmbedded()) {
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
-            dataSource.setDriverClassName(DataSourceConfig.EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(DataSourceConfig.EMBEDDED_HSQL_DRIVER_CLASS + ":/target/" + pTenant + "/applicationdb");
+            dataSource.setDriverClassName(DataSourcesConfiguration.EMBEDDED_HSQL_DRIVER_CLASS);
+            dataSource.setUrl(DataSourcesConfiguration.EMBEDDED_HSQL_DRIVER_CLASS + ":/target/" + pTenant + "/applicationdb");
             addDataSource(dataSource, pTenant);
         }
         else {

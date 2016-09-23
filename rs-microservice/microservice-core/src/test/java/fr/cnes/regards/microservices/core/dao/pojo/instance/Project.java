@@ -1,4 +1,4 @@
-package fr.cnes.regards.microservices.core.dao.instance;
+package fr.cnes.regards.microservices.core.dao.pojo.instance;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

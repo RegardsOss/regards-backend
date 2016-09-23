@@ -30,7 +30,7 @@ import fr.cnes.regards.microservices.core.configuration.common.ProjectConfigurat
 @Configuration
 @EnableConfigurationProperties(MicroserviceConfiguration.class)
 @ConditionalOnProperty("microservice.dao.enabled")
-public class DataSourceConfig {
+public class DataSourcesConfiguration {
 
     public static final String EMBEDDED_HSQLDB_HIBERNATE_DIALECT = "org.hibernate.dialect.HSQLDialect";
 
@@ -41,6 +41,13 @@ public class DataSourceConfig {
     @Autowired
     private MicroserviceConfiguration configuration_;
 
+    /**
+     *
+     * List of datasources for each configured project.
+     *
+     * @return
+     * @since 1.0-SNAPSHOT
+     */
     @Bean(name = { "dataSources" })
     public Map<String, DataSource> getDataSources() {
 
@@ -66,9 +73,16 @@ public class DataSourceConfig {
         return datasources;
     }
 
+    /**
+     *
+     * Default datasource for persitence unit projects.
+     *
+     * @return
+     * @since 1.0-SNAPSHOT
+     */
     @Bean
     @Primary
-    public DataSource defaultDataSource() {
+    public DataSource projectsDataSource() {
 
         ProjectConfiguration project = configuration_.getProjects().get(0);
 
@@ -84,6 +98,35 @@ public class DataSourceConfig {
                     .driverClassName(configuration_.getDao().getDriverClassName())
                     .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
                     .url(project.getDatasource().getUrl());
+            return factory.build();
+        }
+    }
+
+    /**
+     *
+     * Default datasource for persitence unit instance.
+     *
+     * @return
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    @ConditionalOnProperty("microservice.dao.instance.enabled")
+    public DataSource instanceDataSource() {
+
+        if (configuration_.getDao().getEmbedded()) {
+            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+            dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
+            dataSource
+                    .setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath() + "/instance/applicationdb");
+            return dataSource;
+        }
+        else {
+            DataSourceBuilder factory = DataSourceBuilder
+                    .create(configuration_.getDao().getInstance().getDatasource().getClassLoader())
+                    .driverClassName(configuration_.getDao().getDriverClassName())
+                    .username(configuration_.getDao().getInstance().getDatasource().getUsername())
+                    .password(configuration_.getDao().getInstance().getDatasource().getPassword())
+                    .url(configuration_.getDao().getInstance().getDatasource().getUrl());
             return factory.build();
         }
     }
