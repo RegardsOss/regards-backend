@@ -27,31 +27,31 @@ public class EurekaController {
      * Eureka client
      */
     @Autowired
-    private EurekaClient discoveryClient;
+    private EurekaClient discoveryClient_;
 
     /**
      * Is the Eureka server enabled
      */
     @Value("${eureka.client.enabled}")
-    boolean eurekaServerEnabled = false;
+    boolean eurekaServerEnabled_ = false;
 
     /**
      * Microservice application name
      */
     @Value("${spring.application.name}")
-    String appName;
+    String appName_;
 
     /**
      * Is the Config server enabled
      */
     @Value("${cloud.config.server.enabled}")
-    boolean configServerEnabled = false;
+    boolean configServerEnabled_ = false;
 
     /**
      * Config server application name
      */
     @Value("${cloud.config.server.name}")
-    String configServerName;
+    String configServerName_;
 
     @Autowired
     MethodAutorizationService authService_;
@@ -63,13 +63,13 @@ public class EurekaController {
 
     public String configServiceUrl() {
         // the name is the application name defined in the application.yml
-        InstanceInfo instance = discoveryClient.getNextServerFromEureka(configServerName, false);
+        InstanceInfo instance = discoveryClient_.getNextServerFromEureka(configServerName_, false);
         return instance.getHomePageUrl();
     }
 
     public String myserviceUrl() {
         // the name is the application name defined in the application.yml
-        InstanceInfo instance = discoveryClient.getNextServerFromEureka(appName, false);
+        InstanceInfo instance = discoveryClient_.getNextServerFromEureka(appName_, false);
         return instance.getHomePageUrl();
     }
 
@@ -81,7 +81,7 @@ public class EurekaController {
     @ResourceAccess(name = "me", description = "FIXME")
     @RequestMapping(value = "me", method = RequestMethod.GET)
     public String me() {
-        if (eurekaServerEnabled) {
+        if (eurekaServerEnabled_) {
             return "Myself : " + myserviceUrl();
         }
         else {
@@ -97,7 +97,7 @@ public class EurekaController {
     @ResourceAccess(name = "adress", description = "FIXME")
     @RequestMapping(value = "config/adress", method = RequestMethod.GET)
     public String configAddress() {
-        if (eurekaServerEnabled && configServerEnabled) {
+        if (eurekaServerEnabled_ && configServerEnabled_) {
             return "Config server : " + configServiceUrl();
         }
         else {

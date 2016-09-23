@@ -28,11 +28,11 @@ public class JWTService {
 
     private static SignatureAlgorithm ALGO = SignatureAlgorithm.HS512;
 
-    private static String CLAIM_PROJECT = "project";
+    private static final String CLAIM_PROJECT = "project";
 
-    private static String CLAIM_EMAIL = "email";
+    private static final String CLAIM_EMAIL = "email";
 
-    private static String CLAIM_ROLE = "role";
+    private static final String CLAIM_ROLE = "role";
 
     @Value("${jwt.secret}")
     private String secret_;

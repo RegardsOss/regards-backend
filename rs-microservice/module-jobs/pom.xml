@@ -6,7 +6,7 @@
 	<name>module-jobs</name>
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>module-jobs</artifactId>
-	<description>moddule Jobs manager</description>
+	<description>module Jobs manager</description>
 	
 	<parent>
     	<groupId>fr.cnes.regards.microservices</groupId>

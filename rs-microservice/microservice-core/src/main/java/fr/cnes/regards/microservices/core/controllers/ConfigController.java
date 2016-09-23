@@ -22,13 +22,13 @@ public class ConfigController {
      * Is the Config server enabled
      */
     @Value("${cloud.config.server.enabled}")
-    Boolean configServerEnabled = false;
+    Boolean configServerEnabled_ = false;
 
     /**
      * Property to read from the config server
      */
     @Value("${my.otherproperty}")
-    String name = "Default value";
+    String name_ = "Default value";
 
     @Autowired
     MethodAutorizationService authService_;
@@ -41,8 +41,8 @@ public class ConfigController {
     @ResourceAccess(name = "config", description = "FIXME")
     @RequestMapping(value = "/value", method = RequestMethod.GET)
     public String getConfigValue() {
-        if (configServerEnabled) {
-            return name;
+        if (configServerEnabled_) {
+            return name_;
         }
         else {
             return "Config server disabled !";
