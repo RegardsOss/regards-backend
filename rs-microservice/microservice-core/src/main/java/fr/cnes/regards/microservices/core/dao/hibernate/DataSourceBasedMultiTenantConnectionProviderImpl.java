@@ -4,6 +4,7 @@
 package fr.cnes.regards.microservices.core.dao.hibernate;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -16,21 +17,17 @@ import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
 import fr.cnes.regards.microservices.core.configuration.common.ProjectConfiguration;
 import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
+import fr.cnes.regards.microservices.core.dao.jpa.DaoUtils;
 import fr.cnes.regards.microservices.core.dao.jpa.DataSourcesConfiguration;
 
 /**
@@ -47,10 +44,6 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl {
 
     private static final long serialVersionUID = 8168907057647334460L;
-
-    private static final String PACKAGE_TO_SCAN = "fr.cnes.regards";
-
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourceBasedMultiTenantConnectionProviderImpl.class);
 
     @Autowired
     private transient MicroserviceConfiguration configuration_;
@@ -74,16 +67,20 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
 
     @PostConstruct
     public void initDataSources() {
-
         // Hibernate do not initialize schema for multitenants.
-        // Here whe manually update schema for all datasources
-
+        // Here whe manually update schema for all configured datasources
         for (ProjectConfiguration project : configuration_.getProjects()) {
             updateDataSourceSchema(selectDataSource(project.getName()));
         }
-
     }
 
+    /**
+     *
+     * Update datasource schema
+     *
+     * @param pDataSource
+     * @since 1.0-SNAPSHOT
+     */
     private void updateDataSourceSchema(DataSource pDataSource) {
         // 1. Update database schema if needed
         String dialect = configuration_.getDao().getDialect();
@@ -94,34 +91,46 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
                 .applySetting(Environment.DIALECT, dialect).applySetting(Environment.DATASOURCE, pDataSource).build());
 
         // 2 Add Entity for database mapping from classpath
-        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
-        scanner.addExcludeFilter(new AnnotationTypeFilter(InstanceEntity.class));
-        for (BeanDefinition def : scanner.findCandidateComponents(PACKAGE_TO_SCAN)) {
-            try {
-                metadata.addAnnotatedClass(Class.forName(def.getBeanClassName()));
-            }
-            catch (ClassNotFoundException e) {
-                LOG.error("Error adding entity " + def.getBeanClassName() + " for hibernate database update");
-                LOG.error(e.getMessage(), e);
-            }
-        }
+        List<Class<?>> classes = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, Entity.class,
+                                                             InstanceEntity.class);
+        classes.forEach(classe -> metadata.addAnnotatedClass(classe));
 
         SchemaExport export = new SchemaExport((MetadataImplementor) metadata.buildMetadata());
         export.execute(false, true, false, false);
     }
 
-    public void addDataSource(DataSource pDataSource, String pTenant) {
+    /**
+     *
+     * Add a datasource to the multitenant datasources pool
+     *
+     * @param pDataSource
+     *            : Datasource to add
+     * @param pTenant
+     *            : Project name
+     * @since 1.0-SNAPSHOT
+     */
+    private void addDataSource(DataSource pDataSource, String pTenant) {
         dataSources_.put(pTenant, pDataSource);
         updateDataSourceSchema(pDataSource);
     }
 
+    /**
+     *
+     * Create a new datasource into the multitenant datasources pool
+     *
+     * @param pUrl
+     * @param pUser
+     * @param pPassword
+     * @param pTenant
+     * @since 1.0-SNAPSHOT
+     */
     public void addDataSource(String pUrl, String pUser, String pPassword, String pTenant) {
 
         if (configuration_.getDao().getEmbedded()) {
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(DataSourcesConfiguration.EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(DataSourcesConfiguration.EMBEDDED_HSQL_DRIVER_CLASS + ":/target/" + pTenant + "/applicationdb");
+            dataSource.setUrl(DataSourcesConfiguration.EMBEDDED_HSQL_DRIVER_CLASS + ":/target/" + pTenant
+                    + "/applicationdb");
             addDataSource(dataSource, pTenant);
         }
         else {
