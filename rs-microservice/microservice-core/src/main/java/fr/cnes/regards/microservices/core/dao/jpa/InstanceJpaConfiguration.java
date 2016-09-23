@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -66,6 +68,7 @@ public class InstanceJpaConfiguration {
     }
 
     @Bean
+    @Primary
     public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory(EntityManagerFactoryBuilder builder) {
 
         Map<String, Object> hibernateProps = new LinkedHashMap<>();
@@ -77,6 +80,9 @@ public class InstanceJpaConfiguration {
         else {
             hibernateProps.put(Environment.DIALECT, configuration_.getDao().getDialect());
         }
+        hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.NONE);
+        hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, null);
+        hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, null);
 
         List<String> packages = new ArrayList<>();
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);

@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.CannotCreateTransactionException;
 
 import fr.cnes.regards.microservices.core.dao.instance.Project;
 import fr.cnes.regards.microservices.core.dao.instance.ProjectRepository;
@@ -53,14 +54,12 @@ public class MultiTenancyDaoTest {
     @Test
     public void multitenancyAccessTest() {
 
-        tenantResolver.setTenant("test1");
-
-        projectRepository_.deleteAll();
-        Project newProject = new Project();
-        newProject.setFirstName("PLOP");
-        Project pro = projectRepository_.save(newProject);
-
         List<Project> resultsP = new ArrayList<>();
+
+        Project newProject = new Project();
+        newProject.setFirstName("Project 1");
+        projectRepository_.save(newProject);
+
         Iterable<Project> listP = projectRepository_.findAll();
         listP.forEach(project -> resultsP.add(project));
         Assert.assertTrue("Error, there must be 1 elements in the database associated to the tenant test1 ("
@@ -70,7 +69,6 @@ public class MultiTenancyDaoTest {
 
         tenantResolver.setTenant("test1");
 
-        userRepository.deleteAll();
         User newUser = new User("Jean", "Pont");
         newUser = userRepository.save(newUser);
         LOG.info("id=" + newUser.getId());
@@ -91,6 +89,15 @@ public class MultiTenancyDaoTest {
         list.forEach(user -> results.add(user));
         Assert.assertTrue("Error, there must be no element in the database associated to the tenant test1 ("
                 + results.size() + ")", results.size() == 0);
+
+        tenantResolver.setTenant("invalid");
+        try {
+            list = userRepository.findAll();
+            Assert.fail("This repository is not valid for tenant");
+        }
+        catch (CannotCreateTransactionException e) {
+            // Nothing to do
+        }
 
     }
 
