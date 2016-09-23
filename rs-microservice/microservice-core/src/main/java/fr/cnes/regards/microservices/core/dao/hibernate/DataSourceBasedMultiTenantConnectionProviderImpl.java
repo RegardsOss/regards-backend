@@ -119,8 +119,11 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      * Create a new datasource into the multitenant datasources pool
      *
      * @param pUrl
+     *            : Only used if the dao is not configured in embedded mod
      * @param pUser
+     *            : Only used if the dao is not configured in embedded mod
      * @param pPassword
+     *            : Only used if the dao is not configured in embedded mod
      * @param pTenant
      * @since 1.0-SNAPSHOT
      */
