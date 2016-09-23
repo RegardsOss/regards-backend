@@ -9,10 +9,7 @@ package fr.cnes.regards.microservices.core.dao.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,10 +26,6 @@ import fr.cnes.regards.microservices.core.dao.repository.UserRepository;
 @RestController
 @RequestMapping("/test/dao")
 public class DaoTestController {
-
-    @Autowired
-    @Qualifier("projectsEntityManagerFactory")
-    EntityManager em;
 
     @Autowired
     private UserRepository userRepo_;

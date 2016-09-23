@@ -15,8 +15,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
 import fr.cnes.regards.microservices.core.configuration.common.ProjectConfiguration;
@@ -33,6 +32,12 @@ import fr.cnes.regards.microservices.core.configuration.common.ProjectConfigurat
 @ConditionalOnProperty("microservice.dao.enabled")
 public class DataSourceConfig {
 
+    public static final String EMBEDDED_HSQLDB_HIBERNATE_DIALECT = "org.hibernate.dialect.HSQLDialect";
+
+    public static final String EMBEDDED_HSQL_DRIVER_CLASS = "org.hsqldb.jdbcDriver";
+
+    public static final String EMBEDDED_HSQL_URL = "jdbc:hsqldb:file:";
+
     @Autowired
     private MicroserviceConfiguration configuration_;
 
@@ -43,9 +48,11 @@ public class DataSourceConfig {
 
         for (ProjectConfiguration project : configuration_.getProjects()) {
             if (configuration_.getDao().getEmbedded()) {
-                final EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-                datasources.put(project.getName(),
-                                builder.setType(EmbeddedDatabaseType.HSQL).setName(project.getName()).build());
+                DriverManagerDataSource dataSource = new DriverManagerDataSource();
+                dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
+                dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath() + "/"
+                        + project.getName() + "/applicationdb");
+                datasources.put(project.getName(), dataSource);
             }
             else {
                 DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
@@ -66,8 +73,11 @@ public class DataSourceConfig {
         ProjectConfiguration project = configuration_.getProjects().get(0);
 
         if (configuration_.getDao().getEmbedded()) {
-            final EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-            return builder.setType(EmbeddedDatabaseType.HSQL).setName(project.getName()).build();
+            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+            dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
+            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath() + project.getName()
+                    + "/applicationdb");
+            return dataSource;
         }
         else {
             DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())

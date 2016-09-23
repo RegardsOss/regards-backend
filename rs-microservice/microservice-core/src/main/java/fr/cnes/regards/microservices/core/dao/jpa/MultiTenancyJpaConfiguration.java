@@ -29,14 +29,13 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
 import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
-import fr.cnes.regards.microservices.core.dao.hibernate.DataSourceBasedMultiTenantConnectionProviderImpl;
 
 /**
  *
@@ -48,7 +47,7 @@ import fr.cnes.regards.microservices.core.dao.hibernate.DataSourceBasedMultiTena
 @Configuration
 @EnableConfigurationProperties(JpaProperties.class)
 @EnableJpaRepositories(excludeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = MultiTenancyJpaConfiguration.PACKAGES_TO_SCAN, entityManagerFactoryRef = "projectsEntityManagerFactory")
+        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = MultiTenancyJpaConfiguration.PACKAGES_TO_SCAN, entityManagerFactoryRef = "projectsEntityManagerFactory", transactionManagerRef = "projectsJpaTransactionManager")
 @ConditionalOnProperty("microservice.dao.enabled")
 public class MultiTenancyJpaConfiguration {
 
@@ -79,7 +78,13 @@ public class MultiTenancyJpaConfiguration {
     private CurrentTenantIdentifierResolver currentTenantIdentifierResolver_;
 
     @Bean
-    @Primary
+    public JpaTransactionManager projectsJpaTransactionManager() {
+        JpaTransactionManager jtm = new JpaTransactionManager();
+        jtm.setPersistenceUnitName("projects");
+        return jtm;
+    }
+
+    @Bean
     public LocalContainerEntityManagerFactoryBean projectsEntityManagerFactory(EntityManagerFactoryBuilder builder) {
         // Use the first dataSource configuration to init the entityManagerFactory
         DataSource defaultDataSource = dataSources_.values().iterator().next();
@@ -91,8 +96,7 @@ public class MultiTenancyJpaConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider_);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver_);
         if (configuration_.getDao().getEmbedded()) {
-            hibernateProps.put(Environment.DIALECT,
-                               DataSourceBasedMultiTenantConnectionProviderImpl.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
+            hibernateProps.put(Environment.DIALECT, DataSourceConfig.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
         }
         else {
             hibernateProps.put(Environment.DIALECT, configuration_.getDao().getDialect());
@@ -114,12 +118,12 @@ public class MultiTenancyJpaConfiguration {
         }
 
         if (packages.size() > 1) {
-            return builder.dataSource(defaultDataSource).packages(new String[packages.size()])
-                    .properties(hibernateProps).jta(false).build();
+            return builder.dataSource(defaultDataSource).persistenceUnit("projects")
+                    .packages(new String[packages.size()]).properties(hibernateProps).jta(false).build();
         }
         else {
-            return builder.dataSource(defaultDataSource).packages(packages.get(0)).properties(hibernateProps).jta(false)
-                    .build();
+            return builder.dataSource(defaultDataSource).persistenceUnit("projects").packages(packages.get(0))
+                    .properties(hibernateProps).jta(false).build();
         }
 
     }

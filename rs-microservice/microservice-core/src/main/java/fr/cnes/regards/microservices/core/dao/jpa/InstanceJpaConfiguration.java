@@ -27,13 +27,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
 import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
-import fr.cnes.regards.microservices.core.dao.hibernate.DataSourceBasedMultiTenantConnectionProviderImpl;
 
 /**
  *
@@ -45,7 +44,7 @@ import fr.cnes.regards.microservices.core.dao.hibernate.DataSourceBasedMultiTena
 @Configuration
 @EnableConfigurationProperties(JpaProperties.class)
 @EnableJpaRepositories(includeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = InstanceJpaConfiguration.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory")
+        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = InstanceJpaConfiguration.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory", transactionManagerRef = "instanceJpaTransactionManager")
 @ConditionalOnProperty("microservice.dao.instance.enabled")
 public class InstanceJpaConfiguration {
 
@@ -60,14 +59,20 @@ public class InstanceJpaConfiguration {
     private JpaProperties jpaProperties_;
 
     @Bean
+    public JpaTransactionManager instanceJpaTransactionManager() {
+        JpaTransactionManager jtm = new JpaTransactionManager();
+        jtm.setPersistenceUnitName("instance");
+        return jtm;
+    }
+
+    @Bean
     public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory(EntityManagerFactoryBuilder builder) {
 
         Map<String, Object> hibernateProps = new LinkedHashMap<>();
         hibernateProps.putAll(jpaProperties_.getHibernateProperties(instanceDataSource()));
 
         if (configuration_.getDao().getEmbedded()) {
-            hibernateProps.put(Environment.DIALECT,
-                               DataSourceBasedMultiTenantConnectionProviderImpl.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
+            hibernateProps.put(Environment.DIALECT, DataSourceConfig.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
         }
         else {
             hibernateProps.put(Environment.DIALECT, configuration_.getDao().getDialect());
@@ -87,12 +92,12 @@ public class InstanceJpaConfiguration {
         }
 
         if (packages.size() > 1) {
-            return builder.dataSource(instanceDataSource()).packages(new String[packages.size()])
-                    .properties(hibernateProps).jta(false).build();
+            return builder.dataSource(instanceDataSource()).persistenceUnit("instance")
+                    .packages(new String[packages.size()]).properties(hibernateProps).jta(false).build();
         }
         else {
-            return builder.dataSource(instanceDataSource()).packages(packages.get(0)).properties(hibernateProps)
-                    .jta(false).build();
+            return builder.dataSource(instanceDataSource()).persistenceUnit("instance").packages(packages.get(0))
+                    .properties(hibernateProps).jta(false).build();
         }
 
     }
@@ -101,8 +106,11 @@ public class InstanceJpaConfiguration {
     public DataSource instanceDataSource() {
 
         if (configuration_.getDao().getEmbedded()) {
-            final EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-            return builder.setType(EmbeddedDatabaseType.HSQL).setName("instance").build();
+            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+            dataSource.setDriverClassName(DataSourceConfig.EMBEDDED_HSQL_DRIVER_CLASS);
+            dataSource.setUrl(DataSourceConfig.EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+                    + "/instance/applicationdb");
+            return dataSource;
         }
         else {
             DataSourceBuilder factory = DataSourceBuilder
