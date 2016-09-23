@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.modules.core.hateoas.HateoasDTO;
 import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
@@ -62,9 +63,9 @@ public class NavigationContextController {
 
     @RequestMapping(value = "/url/{tinyUrl}", method = RequestMethod.GET, produces = "application/json")
     @ResourceAccess(description = "Get a navigation contexts")
-    public @ResponseBody HttpEntity<NavigationContext> load(@PathVariable("tinyUrl") String pTinyUrl) {
+    public @ResponseBody HttpEntity<HateoasDTO<NavigationContext>> load(@PathVariable("tinyUrl") String pTinyUrl) {
         NavigationContext navigationContext = service_.load(pTinyUrl);
-        return new ResponseEntity<>(navigationContext, HttpStatus.OK);
+        return new ResponseEntity<>(new HateoasDTO<>(navigationContext), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/url/{tinyUrl}", method = RequestMethod.PUT, produces = "application/json", consumes="application/json")

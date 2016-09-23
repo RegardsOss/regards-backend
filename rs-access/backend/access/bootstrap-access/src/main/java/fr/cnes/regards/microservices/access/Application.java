@@ -33,7 +33,7 @@ public class Application {
      * @param pArgs args
      */
     public static void main(String[] pArgs) {
-        SpringApplication.run(Application.class, pArgs);
+        SpringApplication.run(Application.class, pArgs);  // NOSONAR
     }
 
 }
