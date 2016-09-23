@@ -25,10 +25,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
 import fr.cnes.regards.microservices.core.configuration.common.ProjectConfiguration;
+import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
+import fr.cnes.regards.microservices.core.dao.jpa.DataSourcesConfiguration;
 
 /**
  *
@@ -46,10 +49,6 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     private static final long serialVersionUID = 8168907057647334460L;
 
     private static final String PACKAGE_TO_SCAN = "fr.cnes.regards";
-
-    public static final String EMBEDDED_HSQLDB_HIBERNATE_DIALECT = "org.hibernate.dialect.HSQLDialect";
-
-    public static final String EMBEDDED_HSQL_DRIVER_CLASS = "org.hsqldb.jdbcDriver";
 
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceBasedMultiTenantConnectionProviderImpl.class);
 
@@ -89,14 +88,15 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         // 1. Update database schema if needed
         String dialect = configuration_.getDao().getDialect();
         if (configuration_.getDao().getEmbedded()) {
-            dialect = EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
+            dialect = DataSourcesConfiguration.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
         }
         MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder()
                 .applySetting(Environment.DIALECT, dialect).applySetting(Environment.DATASOURCE, pDataSource).build());
 
         // 2 Add Entity for database mapping from classpath
-        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
+        scanner.addExcludeFilter(new AnnotationTypeFilter(InstanceEntity.class));
         for (BeanDefinition def : scanner.findCandidateComponents(PACKAGE_TO_SCAN)) {
             try {
                 metadata.addAnnotatedClass(Class.forName(def.getBeanClassName()));
@@ -118,15 +118,19 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
 
     public void addDataSource(String pUrl, String pUser, String pPassword, String pTenant) {
 
-        String driverClassName = configuration_.getDao().getDriverClassName();
         if (configuration_.getDao().getEmbedded()) {
-            driverClassName = EMBEDDED_HSQL_DRIVER_CLASS;
+            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+            dataSource.setDriverClassName(DataSourcesConfiguration.EMBEDDED_HSQL_DRIVER_CLASS);
+            dataSource.setUrl(DataSourcesConfiguration.EMBEDDED_HSQL_DRIVER_CLASS + ":/target/" + pTenant + "/applicationdb");
+            addDataSource(dataSource, pTenant);
         }
-        DataSourceBuilder factory = DataSourceBuilder.create().driverClassName(driverClassName).username(pUser)
-                .password(pPassword).url(pUrl);
-        DataSource datasource = factory.build();
-
-        addDataSource(datasource, pTenant);
+        else {
+            DataSourceBuilder factory = DataSourceBuilder.create()
+                    .driverClassName(configuration_.getDao().getDriverClassName()).username(pUser).password(pPassword)
+                    .url(pUrl);
+            DataSource datasource = factory.build();
+            addDataSource(datasource, pTenant);
+        }
     }
 
 }

@@ -7,13 +7,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.Entity;
 import javax.sql.DataSource;
 
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.cfg.Environment;
-import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
-import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -33,29 +31,22 @@ import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
 
 /**
  *
- * Configuration class to define hibernate/jpa multitenancy databases strategy
+ * Configuration class to define hibernate/jpa instance database strategy
  *
  * @author CS
  * @since 1.0-SNAPSHOT
  */
 @Configuration
 @EnableConfigurationProperties(JpaProperties.class)
-@EnableJpaRepositories(excludeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "projectsEntityManagerFactory", transactionManagerRef = "projectsJpaTransactionManager")
-@ConditionalOnProperty("microservice.dao.enabled")
-public class MultiTenancyJpaConfiguration {
+@EnableJpaRepositories(includeFilters = {
+        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory", transactionManagerRef = "instanceJpaTransactionManager")
+@ConditionalOnProperty("microservice.dao.instance.enabled")
+public class InstanceJpaConfiguration {
 
     /**
      * JPA Persistence unit name. Used to separate multiples databases
      */
-    private static final String PERSITENCE_UNIT_NAME = "projects";
-
-    /**
-     * Datasources pool
-     */
-    @Autowired
-    @Qualifier("dataSources")
-    private Map<String, DataSource> dataSources_;
+    private static final String PERSITENCE_UNIT_NAME = "instance";
 
     @Autowired
     private MicroserviceConfiguration configuration_;
@@ -64,52 +55,45 @@ public class MultiTenancyJpaConfiguration {
     private JpaProperties jpaProperties_;
 
     @Autowired
-    private MultiTenantConnectionProvider multiTenantConnectionProvider_;
-
-    /**
-     * Tenant resolver.
-     */
-    @Autowired
-    private CurrentTenantIdentifierResolver currentTenantIdentifierResolver_;
+    @Qualifier("instanceDataSource")
+    private DataSource instanceDataSource_;
 
     @Bean
-    public JpaTransactionManager projectsJpaTransactionManager() {
+    public JpaTransactionManager instanceJpaTransactionManager() {
         JpaTransactionManager jtm = new JpaTransactionManager();
         jtm.setPersistenceUnitName(PERSITENCE_UNIT_NAME);
         return jtm;
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean projectsEntityManagerFactory(EntityManagerFactoryBuilder builder) {
-        // Use the first dataSource configuration to init the entityManagerFactory
-        DataSource defaultDataSource = dataSources_.values().iterator().next();
+    @Primary
+    public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory(EntityManagerFactoryBuilder builder) {
 
         Map<String, Object> hibernateProps = new LinkedHashMap<>();
-        hibernateProps.putAll(jpaProperties_.getHibernateProperties(defaultDataSource));
+        hibernateProps.putAll(jpaProperties_.getHibernateProperties(instanceDataSource_));
 
-        hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
-        hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider_);
-        hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver_);
         if (configuration_.getDao().getEmbedded()) {
             hibernateProps.put(Environment.DIALECT, DataSourcesConfiguration.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
         }
         else {
             hibernateProps.put(Environment.DIALECT, configuration_.getDao().getDialect());
         }
+        hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.NONE);
+        hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, null);
+        hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, null);
 
-        // Find classpath for each Entity and not NonStandardEntity
-        List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, Entity.class,
-                                                              InstanceEntity.class);
+        List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, InstanceEntity.class, null);
 
         if (packages.size() > 1) {
-            return builder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
+            return builder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
                     .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false)
                     .build();
         }
         else {
-            return builder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME).packages(packages.get(0))
-                    .properties(hibernateProps).jta(false).build();
+            return builder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
+                    .packages(packages.get(0)).properties(hibernateProps).jta(false).build();
         }
 
     }
+
 }

@@ -26,6 +26,11 @@ public class CommonDaoConfiguration {
     private Boolean embedded_;
 
     /**
+     * Directory path for embedded database persistence
+     */
+    private String embeddedPath_;
+
+    /**
      * Common driver class name to create datasources
      */
     private String driverClassName_;
@@ -34,6 +39,11 @@ public class CommonDaoConfiguration {
      * Common hibernate dialect to create datasources
      */
     private String dialect_;
+
+    /**
+     * Instance DAO Configuration
+     */
+    private InstanceConfiguration instance_;
 
     public String getDriverClassName() {
         return driverClassName_;
@@ -65,6 +75,22 @@ public class CommonDaoConfiguration {
 
     public void setEmbedded(Boolean pEmbedded) {
         embedded_ = pEmbedded;
+    }
+
+    public InstanceConfiguration getInstance() {
+        return instance_;
+    }
+
+    public void setInstance(InstanceConfiguration pInstance) {
+        instance_ = pInstance;
+    }
+
+    public String getEmbeddedPath() {
+        return embeddedPath_;
+    }
+
+    public void setEmbeddedPath(String pEmbeddedPath) {
+        embeddedPath_ = pEmbeddedPath;
     }
 
 }

@@ -6,18 +6,24 @@ package fr.cnes.regards.microservices.core.dao;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.CannotCreateTransactionException;
 
-import fr.cnes.regards.microservices.core.dao.pojo.User;
-import fr.cnes.regards.microservices.core.dao.repository.UserRepository;
+import fr.cnes.regards.microservices.core.dao.pojo.instance.Project;
+import fr.cnes.regards.microservices.core.dao.pojo.projects.User;
+import fr.cnes.regards.microservices.core.dao.repository.instance.ProjectRepository;
+import fr.cnes.regards.microservices.core.dao.repository.projects.UserRepository;
 import fr.cnes.regards.microservices.core.dao.util.CurrentTenantIdentifierResolverMock;
 
 @RunWith(SpringRunner.class)
@@ -28,10 +34,17 @@ public class MultiTenancyDaoTest {
     static final Logger LOG = LoggerFactory.getLogger(MultiTenancyDaoTest.class);
 
     @Autowired
+    private ProjectRepository projectRepository_;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private CurrentTenantIdentifierResolverMock tenantResolver;
+
+    @Autowired
+    @Qualifier("instanceEntityManagerFactory")
+    EntityManager em;
 
     @Test
     public void contextLoads() {
@@ -41,39 +54,63 @@ public class MultiTenancyDaoTest {
     @Test
     public void multitenancyAccessTest() {
 
+        List<Project> resultsP = new ArrayList<>();
         List<User> results = new ArrayList<>();
 
+        // Delete all previous data if any
+        projectRepository_.deleteAll();
+
+        // Add a new Project
+        Project newProject = new Project();
+        newProject.setFirstName("Project 1");
+        projectRepository_.save(newProject);
+
+        // Check results
+        Iterable<Project> listP = projectRepository_.findAll();
+        listP.forEach(project -> resultsP.add(project));
+        Assert.assertTrue("Error, there must be 1 elements in the database associated to the tenant test1 ("
+                + resultsP.size() + ")", resultsP.size() == 1);
+
+        // Set tenant to project test1
         tenantResolver.setTenant("test1");
 
+        // Delete all previous data if any
         userRepository.deleteAll();
+
+        // Add new users
         User newUser = new User("Jean", "Pont");
         newUser = userRepository.save(newUser);
         LOG.info("id=" + newUser.getId());
-
         User newUser2 = new User("Alain", "Deloin");
         newUser2 = userRepository.save(newUser2);
         LOG.info("id=" + newUser2.getId());
 
+        // Check results
         Iterable<User> list = userRepository.findAll();
         list.forEach(user -> results.add(user));
-
         Assert.assertTrue("Error, there must be 2 elements in the database associated to the tenant test1",
                           results.size() == 2);
 
+        // Set tenant to project 2
         tenantResolver.setTenant("test2");
+
+        // Check that there is no users added on this project
         list = userRepository.findAll();
         results.clear();
         list.forEach(user -> results.add(user));
         Assert.assertTrue("Error, there must be no element in the database associated to the tenant test1 ("
                 + results.size() + ")", results.size() == 0);
 
-        tenantResolver.setTenant("test1");
-
-        list = userRepository.findAll();
-        results.clear();
-        list.forEach(user -> results.add(user));
-        Assert.assertTrue("Error, there must be 2 elements in the database associated to the tenant test1",
-                          results.size() == 2);
+        // Set tenant to an non existing project
+        tenantResolver.setTenant("invalid");
+        try {
+            // Check that an exception is thrown
+            list = userRepository.findAll();
+            Assert.fail("This repository is not valid for tenant");
+        }
+        catch (CannotCreateTransactionException e) {
+            // Nothing to do
+        }
 
     }
 

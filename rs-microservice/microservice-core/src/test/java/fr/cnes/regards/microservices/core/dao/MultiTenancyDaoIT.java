@@ -50,17 +50,21 @@ public class MultiTenancyDaoIT {
         String tokenTest1 = jwtService_.generateToken("test1", "seb", "seb", "ADMIN");
         String tokenTest2 = jwtService_.generateToken("invalid", "seb", "seb", "ADMIN");
         authService_.setAuthorities("/test/dao/users", RequestMethod.GET, "ADMIN");
-        authService_.setAuthorities("/test/dao/user", RequestMethod.POST, "ADMIN");
+        authService_.setAuthorities("/test/dao/projects", RequestMethod.POST, "ADMIN");
 
         try {
 
-            // Run with valid tenant
+            // Run with valid tenant with multi tenant DAO
             mockMvc.perform(get("/test/dao/users").header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenTest1))
                     .andExpect(MockMvcResultMatchers.status().isOk());
 
-            // Run with invalid tenant
+            // Run with invalid tenant with multi tenant DAO
             mockMvc.perform(get("/test/dao/users").header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenTest2))
                     .andExpect(MockMvcResultMatchers.status().isInternalServerError());
+
+            // Run with valid tenant with an instance DAO
+            mockMvc.perform(get("/test/dao/projects").header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenTest1))
+                    .andExpect(MockMvcResultMatchers.status().isOk());
 
         }
         catch (Exception e) {

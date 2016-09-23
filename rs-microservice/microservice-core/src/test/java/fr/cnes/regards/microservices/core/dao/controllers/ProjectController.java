@@ -20,26 +20,26 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.dao.pojo.projects.User;
-import fr.cnes.regards.microservices.core.dao.repository.projects.UserRepository;
+import fr.cnes.regards.microservices.core.dao.pojo.instance.Project;
+import fr.cnes.regards.microservices.core.dao.repository.instance.ProjectRepository;
 
 @RestController
 @RequestMapping("/test/dao")
-public class DaoTestController {
+public class ProjectController {
 
     @Autowired
-    private UserRepository userRepo_;
+    private ProjectRepository projectRepo_;
 
     @ExceptionHandler(CannotCreateTransactionException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public void exception() {
     }
 
-    @RequestMapping(value = "/users", method = RequestMethod.GET)
-    public HttpEntity<List<User>> getUsers() throws CannotCreateTransactionException {
-        List<User> users = new ArrayList<>();
-        userRepo_.findAll().forEach(user -> users.add(user));
-        return new ResponseEntity<>(users, HttpStatus.OK);
+    @RequestMapping(value = "/projects", method = RequestMethod.GET)
+    public HttpEntity<List<Project>> getUsers() throws CannotCreateTransactionException {
+        List<Project> projects = new ArrayList<>();
+        projectRepo_.findAll().forEach(project -> projects.add(project));
+        return new ResponseEntity<>(projects, HttpStatus.OK);
     }
 
 }
