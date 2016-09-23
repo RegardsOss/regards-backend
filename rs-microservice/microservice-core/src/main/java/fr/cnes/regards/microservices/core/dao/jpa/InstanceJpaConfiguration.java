@@ -61,7 +61,7 @@ public class InstanceJpaConfiguration {
     @Bean
     public JpaTransactionManager instanceJpaTransactionManager() {
         JpaTransactionManager jtm = new JpaTransactionManager();
-        jtm.setPersistenceUnitName("instance");
+        jtm.setPersistenceUnitName(PERSITENCE_UNIT_NAME);
         return jtm;
     }
 

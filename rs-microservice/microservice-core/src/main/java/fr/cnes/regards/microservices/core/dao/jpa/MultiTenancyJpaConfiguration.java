@@ -75,7 +75,7 @@ public class MultiTenancyJpaConfiguration {
     @Bean
     public JpaTransactionManager projectsJpaTransactionManager() {
         JpaTransactionManager jtm = new JpaTransactionManager();
-        jtm.setPersistenceUnitName("projects");
+        jtm.setPersistenceUnitName(PERSITENCE_UNIT_NAME);
         return jtm;
     }
 
