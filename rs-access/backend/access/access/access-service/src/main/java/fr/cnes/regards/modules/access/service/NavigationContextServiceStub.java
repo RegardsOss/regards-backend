@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
@@ -95,9 +97,6 @@ public class NavigationContextServiceStub implements INavigationContextService {
     @Override
     public void delete(String pTinyUrl) throws NoSuchElementException {
         NavigationContext navigationContext = this.load(pTinyUrl);
-        if (navigationContext == null) {
-            throw new NoSuchElementException(pTinyUrl);
-        }
         navigationContexts.remove(navigationContext);
     }
 
@@ -119,7 +118,9 @@ public class NavigationContextServiceStub implements INavigationContextService {
      */
     @Override
     public NavigationContext create(NavigationContext pNavigationContext) throws AlreadyExistingException {
+        pNavigationContext.setTinyUrl("coucou");
         navigationContexts.add(pNavigationContext);
+
         return pNavigationContext;
     }
 

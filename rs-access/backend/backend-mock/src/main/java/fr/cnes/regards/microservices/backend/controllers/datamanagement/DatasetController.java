@@ -44,7 +44,6 @@ public class DatasetController {
     @RequestMapping(value = "/datasets", method = RequestMethod.GET)
     public HttpEntity<List<Account>> getDatasets() {
         List<Account> accounts = new ArrayList<>();
-        AtomicLong counter = new AtomicLong();
 
         return new ResponseEntity<>(accounts, HttpStatus.OK);
     }

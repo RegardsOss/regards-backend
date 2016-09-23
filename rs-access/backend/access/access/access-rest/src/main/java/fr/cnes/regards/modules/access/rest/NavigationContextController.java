@@ -78,7 +78,7 @@ public class NavigationContextController {
 
     @RequestMapping(value = "/url/{tinyUrl}", method = RequestMethod.DELETE, produces = "application/json")
     @ResourceAccess(description = "Delete a navigation context")
-    public @ResponseBody HttpEntity<Void> delete(@PathVariable("tinyUrl") String pTinyUrl) {
+    public @ResponseBody HttpEntity<Void> delete(@PathVariable("tinyUrl") String pTinyUrl) throws  NoSuchElementException {
         service_.delete(pTinyUrl);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -93,8 +93,8 @@ public class NavigationContextController {
 
     @RequestMapping(value = "/urls", method = RequestMethod.POST, produces = "application/json", consumes="application/json")
     @ResourceAccess(description = "Navigation contexts list")
-    public @ResponseBody HttpEntity<NavigationContext> create() throws AlreadyExistingException {
-        NavigationContext navigationContexts = service_.create(null);
+    public @ResponseBody HttpEntity<NavigationContext> create(@RequestBody NavigationContext pNavigationContext) throws AlreadyExistingException {
+        NavigationContext navigationContexts = service_.create(pNavigationContext);
         // addLinksToProjects(projects);
         return new ResponseEntity<>(navigationContexts, HttpStatus.OK);
     }

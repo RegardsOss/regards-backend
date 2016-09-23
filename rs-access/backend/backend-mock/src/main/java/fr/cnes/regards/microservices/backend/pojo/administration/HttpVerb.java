@@ -13,13 +13,13 @@ public enum HttpVerb {
     PATCH(6),
     TRACE(7);
 
-    private int value;
+    private int value_;
 
-    HttpVerb(int value) {
-        value = value;
+    HttpVerb(int pValue) {
+        value_ = pValue;
     }
 
     public int getValue() {
-        return value;
+        return value_;
     }
 }

@@ -3,18 +3,40 @@
  */
 package fr.cnes.regards.modules.access.domain;
 
+
 /**
+ * 
  * @author cmertz
  *
+ * @param <K> the type of the key
+ * @param <V> the type of the value
  */
 public interface IPair<K, V> {
 
-	public K getKey();
+	/**
+	 * 
+	 * @return the key
+	 */
+    K getKey();
 
-	public V getValue();
+	/**
+	 * 
+	 * @return the value
+	 */
+    V getValue();
 
-	public K setKey(K pKey);
+	/**
+	 * 
+	 * @param pKey set the key
+	 * @return the key
+	 */
+    K setKey(K pKey);
 
-	public V setValue(V pValue);
+	/**
+	 * 
+	 * @param pValue set the value
+	 * @return the value
+	 */
+    V setValue(V pValue);
 
 }

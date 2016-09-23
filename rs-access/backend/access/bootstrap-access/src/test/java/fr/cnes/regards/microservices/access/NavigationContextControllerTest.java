@@ -239,7 +239,7 @@ public class NavigationContextControllerTest {
                     .andExpect(status().isOk());
         }
         catch (Exception e) {
-            String message = "Cannot put an existing url:" + this.A_TINY_URL;
+            String message = "Cannot post an existing url:" + this.A_TINY_URL;
             LOG.error(message, e);
             Assert.fail(message);
         }
@@ -269,8 +269,8 @@ public class NavigationContextControllerTest {
     public final void gDeleteAnUnknownUrl() {
 
         try {
-            this.mvc_.perform(delete("/tiny/url/" + this.AN_UNKNOWN_TINY_URL).with(csrf())
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)).andExpect(status().isOk());
+            this.mvc_.perform(delete("/tiny/url/" + "totutiti").with(csrf())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)).andExpect(status().is4xxClientError());
         }
         catch (Exception e) {
             String message = "Cannot delete the url:" + this.AN_UNKNOWN_TINY_URL;

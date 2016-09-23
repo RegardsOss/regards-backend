@@ -10,43 +10,61 @@ package fr.cnes.regards.modules.access.domain;
  */
 public class ConfigParameter implements IPair<String, String> {
 
-	private String name;
+	/**
+	 * 
+	 */
+    private String name_;
 
-	private String value;
+	/**
+	 * 
+	 */
+    private String value_;
 
-	public ConfigParameter() {
+	/**
+	 * 
+	 */
+    public ConfigParameter() {
 		super();
 	}
 
-	public ConfigParameter(String name, String value) {
-		this.name = name;
-		this.value = value;
+	/**
+	 * 
+	 * @param name
+	 * @param value
+	 */
+    public ConfigParameter(final String pName, final String pValue) {
+		this.name_ = pName;
+		this.value_ = pValue;
 	}
 
-	public String toString() {
-		return this.name + " - " + this.value;
-	}
 
-	@Override
-	public String getKey() {
-		return this.name;
-	}
-
-	@Override
-	public String getValue() {
-		return this.value;
-	}
-
-	@Override
-	public String setKey(String pKey) {
-		this.name = pKey;
-		return this.name;
+    /**
+     * @return name_ + "-" value_
+     */
+    public final String toString() {
+		return this.name_ + " - " + this.value_;
 	}
 
 	@Override
-	public String setValue(String pValue) {
-		this.value = pValue;
-		return this.value;
+    public final String getKey() {
+		return this.name_;
+	}
+
+	@Override
+    public final String getValue() {
+		return this.value_;
+	}
+
+	@Override
+    public final String setKey(String pKey) {
+		this.name_ = pKey;
+		return this.name_;
+	}
+
+	@Override
+    public final String setValue(String pValue) {
+		this.value_ = pValue;
+		return this.value_;
 	}
 
 }
