@@ -3,7 +3,7 @@ import { connect } from "react-redux"
 import { Card, CardTitle, CardText } from "material-ui/Card"
 import { map, values } from "lodash"
 import { ProjectAccount, Account } from "@regardsoss/models"
-import Actions from "../actions"
+import Actions from "../model/projectAccount.actions"
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from "material-ui/Table"
 import { I18nProvider } from "@regardsoss/i18n"
 import { FormattedMessage } from "react-intl"
@@ -22,15 +22,13 @@ interface ProjectAccountsProps {
   fetchProjectAccounts?: (urlProjectAccounts: string) => void
   deleteProjectAccount?: (linkDeleteProjectAccount: string) => void
   // From router
-  router: any
-  route: any
   params: any
 }
 
 /**
  * Show the list of users for the current project
  */
-class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any> {
+export class ProjectAccountsContainer extends React.Component<ProjectAccountsProps, any> {
 
   constructor (props: any) {
     super(props)
@@ -72,7 +70,7 @@ class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any>
     // }
 
     return (
-      <I18nProvider messageDir='adminApp/modules/userManagement/i18n'>
+      <I18nProvider messageDir='modules/admin-user-management/src/i18n'>
         <Card
           initiallyExpanded={true}>
           <CardTitle
@@ -141,10 +139,10 @@ class ProjectAcountsContainer extends React.Component<ProjectAccountsProps, any>
 }
 
 const mapStateToProps = (state: any, ownProps: any) => ({
-  projectAccounts: null,
+  projectAccounts: null as any,
   accounts: values(null)
 })
 const mapDispatchToProps = (dispatch: any) => ({
   fetchProjectAccounts: (urlProjectAccounts: string) => dispatch(Actions.fetchProjectAccounts(urlProjectAccounts))
 })
-export default connect<{}, {}, ProjectAccountsProps>(mapStateToProps, mapDispatchToProps)(ProjectAcountsContainer)
+export default connect<{}, {}, ProjectAccountsProps>(mapStateToProps, mapDispatchToProps)(ProjectAccountsContainer)

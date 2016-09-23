@@ -3,7 +3,7 @@
     "@regardsoss/access-rights": "file:./web_modules/utils/access-rights/index.d.ts",
     "@regardsoss/admin": "file:./web_modules/modules/admin/index.d.ts",
     "@regardsoss/admin-data-management": "file:./web_modules/modules/admin-data-management/index.d.ts",
-    "@regardsoss/admin-project-management": "file:./web_modules/modules/admin-data-management/index.d.ts",
+    "@regardsoss/admin-project-management": "file:./web_modules/modules/admin-project-management/index.d.ts",
     "@regardsoss/authentication": "file:./web_modules/utils/authentication/index.d.ts",
     "@regardsoss/components": "file:./web_modules/view/components/index.d.ts",
     "@regardsoss/display-control": "file:./web_modules/utils/display-control/index.d.ts",

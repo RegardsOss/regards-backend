@@ -6,7 +6,7 @@ import SelectField from "material-ui/SelectField"
 import MenuItem from "material-ui/MenuItem"
 import { CardActionsComponent } from "@regardsoss/components"
 
-class ProjectAccountCreateContainer extends React.Component<any, any> {
+export class ProjectAccountCreateContainer extends React.Component<any, any> {
   static contextTypes: {
     muiTheme: Object
   }

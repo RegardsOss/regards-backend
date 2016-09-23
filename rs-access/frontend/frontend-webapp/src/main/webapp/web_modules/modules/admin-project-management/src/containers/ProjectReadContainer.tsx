@@ -40,7 +40,7 @@ interface ProjectReadState {
   project: Project
 }
 
-class ProjectReadContainer extends React.Component<ProjectReadProps, ProjectReadState> {
+export class ProjectReadContainer extends React.Component<ProjectReadProps, ProjectReadState> {
 
   state: any = {
     project: {projectId: "dummy", name: "dummy", description: "dummy"}
@@ -144,7 +144,7 @@ class ProjectReadContainer extends React.Component<ProjectReadProps, ProjectRead
 }
 
 const mapStateToProps = (state: any, ownProps: any) => ({
-  projects: null
+  projects : null as any
 })
 
 let connected = connect<{}, {}, ProjectReadProps>(mapStateToProps)(ProjectReadContainer)

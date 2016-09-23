@@ -1,7 +1,7 @@
 import { PROJECT_ACCOUNT_REQUEST, PROJECT_ACCOUNT_SUCCESS, PROJECT_ACCOUNT_FAILURE } from "./actions"
-import { ApiStateResult, NormalizedAction,  ProjectAccount } from "@regardsoss/models"
+import { ApiStateResult, NormalizedAction, Account } from "@regardsoss/models"
 
-export default (state: ApiStateResult<ProjectAccount> = {
+export default (state: ApiStateResult<Account> = {
   isFetching: false,
   items: [],
   ids: [],
@@ -13,7 +13,7 @@ export default (state: ApiStateResult<ProjectAccount> = {
     case PROJECT_ACCOUNT_SUCCESS:
       return Object.assign({}, state, {
         isFetching: false,
-        items: action.payload.entities.projectAccounts,
+        items: action.payload.entities.accounts,
         ids: []
       })
     case PROJECT_ACCOUNT_FAILURE:
@@ -22,10 +22,3 @@ export default (state: ApiStateResult<ProjectAccount> = {
       return state
   }
 }
-
-// Selectors
-export const getProjectAccounts = (state: any) => state.items
-export const getProjectAccountById = (state: any, id: number) => state.items[id]
-
-// export const getRoles = (state: any) => state
-export const getRolesById = (state: any, id: string) => state.roles[id]

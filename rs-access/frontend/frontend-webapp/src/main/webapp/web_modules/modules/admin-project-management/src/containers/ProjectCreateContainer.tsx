@@ -18,7 +18,7 @@ interface ProjectCreateProps {
   theme: any
 }
 
-class ProjectCreateContainer extends React.Component<ProjectCreateProps, any> {
+export class ProjectCreateContainer extends React.Component<ProjectCreateProps, any> {
 
   handleCreate = () => {
     this.props.createProject()
@@ -29,7 +29,7 @@ class ProjectCreateContainer extends React.Component<ProjectCreateProps, any> {
   render (): JSX.Element {
 
     return (
-      <I18nProvider messageDir='adminApp/modules/projects/i18n'>
+      <I18nProvider messageDir='modules/admin-project-management/src/i18n'>
         <Card>
           <CardTitle
             title={"Create a new project"}

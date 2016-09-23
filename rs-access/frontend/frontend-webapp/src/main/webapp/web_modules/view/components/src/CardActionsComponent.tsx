@@ -1,4 +1,3 @@
-import * as React from "react"
 import SecondaryActionButtonComponent from "./SecondaryActionButtonComponent"
 import MainActionButtonComponent from "./MainActionButtonComponent"
 import { ThemeInjector } from "@regardsoss/theme"

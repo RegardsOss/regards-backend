@@ -5,25 +5,24 @@
   "main": "dist/src/main.js",
   "private": true,
   "scripts": {
-    "build:development": "npm run prebuild && webpack --progress --config webpack.dev.config.js",
-    "build:production": "npm run prebuild && webpack --progress --config webpack.prod.config.js",
-    "copy-assets": "cp ./src/common/theme/custom/background.jpg build/src/common/theme/custom/ && cp ./src/common/theme/custom/*.css build/src/common/theme/custom/",
-    "jsdoc": "jsdoc -c jsdoc.conf.json",
-    "lint": "tslint -c tslint.json 'src/{,**/}*.ts' 'src/{,**/}*.tsx' 'web_modules/{,**/}*.ts' 'web_modules/{,**/}*.tsx' -e '**test.tsx{0,1}' -e 'web_modules/**/node_modules/**' ",
+    "bootstrap": "./scripts/bootstrap.sh",
     "postinstall": "npm run typings:reset",
     "prebuild": "npm run bootstrap && npm install && npm run test:coverage",
-    "bootstrap": "./scripts/bootstrap.sh",
-    "presitemap": "webpack --config webpack.sitemap.config.js --progress",
+    "build:production": "npm run prebuild && webpack --progress --config webpack.prod.config.js",
+    "start": "node --max_old_space_size=4096 --optimize_for_size --max_executable_size=4096 --stack_size=4096 ./node_modules/.bin/webpack-dev-server --progress --hot --config webpack.dev.config.js",
     "pretest": "(npm run lint --silent || true)",
-    "sitemap": "node build/sitemap.js",
-    "start": "NODE_ENV=development node  --max_old_space_size=4096 --optimize_for_size --max_executable_size=4096 --stack_size=4096 ./node_modules/.bin/webpack-dev-server --progress --hot --config webpack.dev.config.js",
     "test": "npm run test:mocha --silent",
     "test:coverage": "nyc mocha-webpack --webpack-config webpack.coverage.config.js \"**/@(tests|web_modules)/**/*.test.\\?(ts|tsx)\" --recursive  --require source-map-support/register --reporter mocha-sonar-reporter || true",
-    "test:mocha": "mocha-webpack --webpack-config webpack.test.config.js \"**/@(tests|web_modules)/**/*.test.\\?(ts|tsx)\" --recursive --require source-map-support/register --inline-diffs --reporter mochawesome --reporter-options reportDir='./coverage/mocha',reportName='Regards Frontend tests'",
+    "test:mocha": "mocha-webpack --webpack-config webpack.test.config.js \"**/@(tests|web_modules)/**/*.test.\\?(ts|tsx)\" --recursive --require source-map-support/register --inline-diffs --reporter mochawesome --reporter-options reportDir='./reports/mocha',reportName='Regards Frontend tests'",
     "test:watch": "mocha-webpack --webpack-config webpack.test.config.js \"**/@(tests|web_modules)/**/*.test.\\?(ts|tsx)\" --recursive --require source-map-support/register --inline-diffs --watch",
-    "tsc:watch": "tsc -w",
     "typings:reset": "rm -rf typings && typings install",
-    "typings": "typings install --global --save"
+    "typings": "typings install --global --save",
+    "storybook:start": "start-storybook -p 6006",
+    "storybook:build": "build-storybook -o reports/storybook",
+    "jsdoc": "jsdoc -c jsdoc.conf.json",
+    "presitemap": "webpack --config webpack.sitemap.config.js --progress",
+    "sitemap": "node build/sitemap.js",
+    "lint": "tslint -c tslint.json 'src/{,**/}*.ts' 'src/{,**/}*.tsx' 'web_modules/{,**/}*.ts' 'web_modules/{,**/}*.tsx' -e '**test.tsx{0,1}' -e 'web_modules/**/node_modules/**' "
   },
   "author": "CS-SI",
   "license": "ISC",
@@ -68,6 +67,7 @@
     "@regardsoss/portal": "0.0.1"
   },
   "devDependencies": {
+    "@kadira/storybook": "^2.16.1",
     "autoprefixer": "^6.3.6",
     "babel-cli": "^6.11.4",
     "babel-core": "^6.9.0",
@@ -143,7 +143,7 @@
   },
   "config": {
     "mocha-sonar-reporter": {
-      "outputfile": "./coverage/TEST-xunit.xml"
+      "outputfile": "./reports/coverage/TEST-xunit.xml"
     }
   }
 }

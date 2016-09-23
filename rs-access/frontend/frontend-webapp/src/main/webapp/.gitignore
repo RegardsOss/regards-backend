@@ -1,10 +1,9 @@
 dist/
 node_modules
 typings/
-jsdoc/
 build/
 npm-debug.log*
-coverage/
+reports/
 .nyc_output/
 .tmp
 .typingsrc

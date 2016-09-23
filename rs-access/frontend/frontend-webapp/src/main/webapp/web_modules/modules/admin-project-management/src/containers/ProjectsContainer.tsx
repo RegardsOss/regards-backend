@@ -30,7 +30,7 @@ interface ProjectsProps {
  * @prop {Boolean} projectConfigurationIsShown ProjectConfigurationComponent display status
  *
  */
-class ProjectsContainer extends React.Component<ProjectsProps, any> {
+export class ProjectsContainer extends React.Component<ProjectsProps, any> {
 
   componentWillMount (): any {
     this.props.fetchProjects()
@@ -58,7 +58,7 @@ class ProjectsContainer extends React.Component<ProjectsProps, any> {
   render (): JSX.Element {
 
     return (
-      <I18nProvider messageDir='adminApp/modules/projects/i18n'>
+      <I18nProvider messageDir='modules/admin-project-management/src/i18n'>
         <Card>
           <CardTitle
             title={<FormattedMessage id='projects.title'/>}
@@ -119,7 +119,7 @@ class ProjectsContainer extends React.Component<ProjectsProps, any> {
 }
 
 const mapStateToProps = (state: any, ownProps: any) => ({
-  projects: null
+  projects: null as any
 })
 const mapDispatchToProps = (dispatch: any) => ({
   fetchProjects: () => dispatch(actions.fetchProjects()),
