@@ -17,18 +17,12 @@ import javax.naming.OperationNotSupportedException;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.cnes.regards.modules.accessRights.dao.DaoProjectUserStub;
-import fr.cnes.regards.modules.accessRights.dao.DaoResourcesAccessStub;
-import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
-import fr.cnes.regards.modules.accessRights.dao.IDaoResourcesAccess;
 import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.dao.RoleRepositoryStub;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
-import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
-import fr.cnes.regards.modules.accessRights.service.IAccountService;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.modules.accessRights.service.RoleService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
@@ -39,10 +33,7 @@ public class RoleServiceTest {
 
     @Before
     public void init() throws AlreadyExistingException {
-        IAccountService accountService = new AccountServiceStub();
-        IDaoResourcesAccess daoResourcesAccess = new DaoResourcesAccessStub();
-        IDaoProjectUser daoProjectUser = new DaoProjectUserStub(accountService);
-        IRoleRepository roleRepository = new RoleRepositoryStub(daoResourcesAccess, daoProjectUser);
+        IRoleRepository roleRepository = new RoleRepositoryStub();
         roleService_ = new RoleService(roleRepository);
     }
 

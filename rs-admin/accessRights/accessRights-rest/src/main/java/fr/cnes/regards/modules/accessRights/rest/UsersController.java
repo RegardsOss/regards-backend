@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.accessRights.rest;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
@@ -49,33 +48,9 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RequestMapping("/users")
 public class UsersController {
 
-    // @Autowired
-    // private MethodAutorizationService authService;
-
     @Autowired
     @Qualifier("userServiceStub")
     private IUserService userService_;
-
-    /**
-     * Method to initiate REST resources authorizations.
-     */
-    @PostConstruct
-    public void initAuthorisations() {
-        // admin can do everything!
-        // authService.setAutorities("/users@GET", new RoleAuthority("ADMIN"));
-        // authService.setAutorities("/users@POST", new RoleAuthority("ADMIN"));
-        // authService.setAutorities("/users/{user_id}@GET", new RoleAuthority("ADMIN"));
-        // authService.setAutorities("/users/{user_id}@PUT", new RoleAuthority("ADMIN"));
-        // authService.setAutorities("/users/{user_id}@DELETE", new RoleAuthority("ADMIN"));
-        // authService.setAutorities("/users/{user_id}/metadata@GET", new RoleAuthority("ADMIN"));
-        // authService.setAutorities("/users/{user_id}/metadata@PUT", new RoleAuthority("ADMIN"));
-        // authService.setAutorities("/users/{user_id}/metadata@DELETE", new RoleAuthority("ADMIN"));
-        // authService.setAutorities("/users/{user_id}/permissions@GET", new RoleAuthority("ADMIN"));
-        // authService.setAutorities("/users/{user_id}/permissions@PUT", new RoleAuthority("ADMIN"));
-        // authService.setAutorities("/users/{user_id}/permissions@DELETE", new RoleAuthority("ADMIN"));
-        // // users can just get!
-        // authService.setAutorities("/users@GET", new RoleAuthority("USER"));
-    }
 
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
@@ -117,9 +92,11 @@ public class UsersController {
     }
 
     @ResourceAccess(description = "update the project user")
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    // @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
+    // produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateProjectUser(@PathVariable("user_id") Long userId,
-            @Valid @RequestBody ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
+            @RequestBody ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
         userService_.updateUser(userId, pUpdatedProjectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -156,7 +133,8 @@ public class UsersController {
     @RequestMapping(value = "/{user_id}/permissions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Couple<List<ResourcesAccess>, Role>> retrieveProjectUserAccessRights(
             @PathVariable("user_id") Long pUserId,
-            @RequestParam(value = "borrowedRoleName", required = false) String pBorrowedRoleName) {
+            @RequestParam(value = "borrowedRoleName", required = false) String pBorrowedRoleName)
+            throws OperationNotSupportedException {
         return new ResponseEntity<>(userService_.retrieveUserAccessRights(pUserId, pBorrowedRoleName), HttpStatus.OK);
     }
 

@@ -48,8 +48,10 @@ public interface IUserService {
      * @param pUserId
      * @param pBorrowedRoleName
      * @return
+     * @throws OperationNotSupportedException
      */
-    Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId, String pBorrowedRoleName);
+    Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId, String pBorrowedRoleName)
+            throws OperationNotSupportedException;
 
     /**
      * @param pUserId

@@ -21,11 +21,11 @@ import fr.cnes.regards.modules.core.serializer.LocalDateTimeSerializer;
 
 public class ProjectUser implements IProjectUser, Identifiable<Long> {
 
-    @Min(0)
+    @Min(0L)
     private static Long maxProjectUserId_ = 0L;
 
-    @Min(0)
-    private final Long id_;
+    @Min(0L)
+    private Long id_;
 
     @PastOrNow
     private LocalDateTime lastConnection_;
@@ -48,7 +48,6 @@ public class ProjectUser implements IProjectUser, Identifiable<Long> {
 
     @NotNull
     @Valid
-    // TODO: Could be final, no?
     private Account account_;
 
     public ProjectUser() {
@@ -87,6 +86,10 @@ public class ProjectUser implements IProjectUser, Identifiable<Long> {
     @Override
     public Long getId() {
         return id_;
+    }
+
+    public void setId(Long pId) {
+        id_ = pId;
     }
 
     @Override

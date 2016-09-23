@@ -14,7 +14,7 @@ import org.springframework.hateoas.Identifiable;
 public class Role implements Identifiable<Long> {
 
     @NotNull
-    private final Long id_;
+    private Long id_;
 
     @NotBlank
     private String name_;
@@ -32,13 +32,21 @@ public class Role implements Identifiable<Long> {
 
     private boolean isDefault;
 
-    private final boolean isNative;
+    private boolean isNative;
 
-    public Role(Long pRoleId) {
+    public void setNative(boolean pIsNative) {
+        isNative = pIsNative;
+    }
+
+    public Role() {
         super();
-        id_ = pRoleId;
         isDefault = false;
         isNative = false;
+    }
+
+    public Role(Long pRoleId) {
+        this();
+        id_ = pRoleId;
     }
 
     public Role(Long pRoleId, String pName, Role pParentRole, List<ResourcesAccess> pPermissions,
@@ -65,6 +73,10 @@ public class Role implements Identifiable<Long> {
     @Override
     public Long getId() {
         return id_;
+    }
+
+    public void setId(Long pId) {
+        id_ = pId;
     }
 
     public String getName() {

@@ -3,16 +3,31 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.test.web.servlet.ResultMatcher;
 
+import fr.cnes.regards.microservices.core.security.jwt.JWTService;
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
+import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
+import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
+import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
+import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
+import fr.cnes.regards.modules.accessRights.service.RoleService;
 
 /**
  * Just Test the REST API so status code. Correction is left to others.
@@ -22,7 +37,10 @@ import fr.cnes.regards.modules.accessRights.service.IRoleService;
  */
 public class RoleControllerIT extends RegardsIntegrationTest {
 
-    private TestRestTemplate restTemplate;
+    @Autowired
+    private JWTService jwtService_;
+
+    private String jwt_;
 
     private String apiRoles;
 
@@ -33,6 +51,9 @@ public class RoleControllerIT extends RegardsIntegrationTest {
     private String apiRolesUsers;
 
     @Autowired
+    @Qualifier("roleRepositoryStub")
+    private IRoleRepository roleRepository_;
+
     private IRoleService roleService_;
 
     @Rule
@@ -45,21 +66,21 @@ public class RoleControllerIT extends RegardsIntegrationTest {
     private String rootAdminPassword;
 
     @Before
-    public void init() {
-        // if (restTemplate == null) {
-        // restTemplate = buildOauth2RestTemplate("acme", "acmesecret", "admin", "admin", "");
-        // }
-        // apiRoles = getApiEndpoint().concat("roles");
-        // apiRolesId = apiRoles + URL_SEPARATOR + "{role_id}";
-        // apiRolesPermissions = apiRolesId + URL_SEPARATOR + "permissions";
-        // apiRolesUsers = apiRolesId + URL_SEPARATOR + "users";
-
-        // Reset the items before each test
-        // roleService_ = new Ro
+    public void setup() {
+        setLogger(LoggerFactory.getLogger(ProjectControllerIT.class));
+        jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
+        roleService_ = new RoleService(roleRepository_);
+        apiRoles = "/roles";
+        apiRolesId = apiRoles + "/{role_id}";
+        apiRolesPermissions = apiRolesId + "/permissions";
+        apiRolesUsers = apiRolesId + "/users";
     }
 
     @Test
     public void retrieveRoleList() {
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiRoles, jwt_, expectations, "TODO Error message");
         // // we have to use exchange instead of getForEntity as long as we use List otherwise the response body is not
         // // well cast.
         // ParameterizedTypeReference<List<Role>> typeRef = new ParameterizedTypeReference<List<Role>>() {
@@ -70,8 +91,16 @@ public class RoleControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void createRole() {
-        // Role newRole = new Role(15464L, "new role", null, null, null);
-        //
+        Role newRole = new Role(15464L, "new role", null, null, null);
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isCreated());
+        performPost(apiRoles, jwt_, newRole, expectations, "TODO Error message");
+
+        expectations = new ArrayList<>(1);
+        expectations.add(status().isConflict());
+        performPost(apiRoles, jwt_, newRole, expectations, "TODO Error message");
+
         // ResponseEntity<Role> response = restTemplate.postForEntity(apiRoles, newRole, Role.class);
         // assertEquals(HttpStatus.CREATED, response.getStatusCode());
         //
@@ -81,17 +110,25 @@ public class RoleControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void retrieveRole() {
-        // Long roleId = 0L;
-        // assertFalse(!this.roleService_.existRole(roleId));
-        //
+        Long roleId = 0L;
+        assertTrue(roleService_.existRole(roleId));
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiRolesId, jwt_, expectations, "TODO Error message", roleId);
+
         // ParameterizedTypeReference<Role> typeRef = new ParameterizedTypeReference<Role>() {
         // };
         // ResponseEntity<Role> response = restTemplate.exchange(this.apiRolesId, HttpMethod.GET, null, typeRef,
         // roleId);
         // assertEquals(HttpStatus.OK, response.getStatusCode());
-        //
-        // Long wrongRoleId = 46453L;
-        // assertFalse(this.roleService_.existRole(wrongRoleId));
+
+        Long wrongRoleId = 46453L;
+        assertFalse(this.roleService_.existRole(wrongRoleId));
+        expectations = new ArrayList<>(1);
+        expectations.add(status().isNotFound());
+        performGet(apiRolesId, jwt_, expectations, "TODO Error message", wrongRoleId);
+
         // ResponseEntity<Object> responseNotFound = restTemplate.exchange(this.apiRolesId, HttpMethod.GET, null,
         // Object.class, wrongRoleId);
         // assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
@@ -99,10 +136,15 @@ public class RoleControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void updateRole() {
-        // Long roleId = 0L;
-        // assertTrue(roleService_.existRole(roleId));
-        // Role updated = roleService_.retrieveRole(roleId);
-        // updated.setName("newName");
+        Long roleId = 0L;
+        assertTrue(roleService_.existRole(roleId));
+        Role updated = roleService_.retrieveRole(roleId);
+        updated.setName("newName");
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performPut(apiRolesId, jwt_, updated, expectations, "TODO Error message", roleId);
+
         // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         // };
         // HttpEntity<Role> request = new HttpEntity<>(updated);
@@ -111,8 +153,12 @@ public class RoleControllerIT extends RegardsIntegrationTest {
         // assertEquals(HttpStatus.OK, response.getStatusCode());
         //
         // // if that's not the same functional ID and the parameter is valid:
-        // Long notSameID = 41554L;
-        // Role notUpdated = new Role(notSameID, null, null, null, null);
+        Long notSameID = 41554L;
+        Role notUpdated = new Role(notSameID, null, null, null, null);
+
+        expectations = new ArrayList<>(1);
+        expectations.add(status().isBadRequest());
+        performPut(apiRolesId, jwt_, notUpdated, expectations, "TODO Error message", roleId);
         // HttpEntity<Role> requestOperationNotAllowed = new HttpEntity<>(notUpdated);
         // ResponseEntity<Void> responseOperationNotAllowed = restTemplate
         // .exchange(apiRolesId, HttpMethod.PUT, requestOperationNotAllowed, typeRef, roleId);
@@ -121,7 +167,11 @@ public class RoleControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void removeRole() {
-        // Long roleId = 0L;
+        Long roleId = 0L;
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performDelete(apiRolesId, jwt_, expectations, "TODO Error message", roleId);
         // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         // };
         // ResponseEntity<Void> response = restTemplate.exchange(this.apiRolesId, HttpMethod.DELETE, null, typeRef,
@@ -131,7 +181,11 @@ public class RoleControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void retrieveRoleResourcesAccessList() {
-        // Long roleId = 0L;
+        Long roleId = 0L;
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiRolesPermissions, jwt_, expectations, "TODO Error message", roleId);
         // ParameterizedTypeReference<List<ResourcesAccess>> typeRef = new
         // ParameterizedTypeReference<List<ResourcesAccess>>() {
         // };
@@ -142,12 +196,16 @@ public class RoleControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void updateRoleResourcesAccess() {
-        // Long roleId = 0L;
-        //
-        // List<ResourcesAccess> newPermissionList = new ArrayList<>();
-        // newPermissionList.add(new ResourcesAccess(463L, "new", "new", "new", HttpVerb.PUT));
-        // newPermissionList.add(new ResourcesAccess(350L, "neww", "neww", "neww", HttpVerb.DELETE));
-        //
+        Long roleId = 0L;
+
+        List<ResourcesAccess> newPermissionList = new ArrayList<>();
+        newPermissionList.add(new ResourcesAccess(463L, "new", "new", "new", HttpVerb.PUT));
+        newPermissionList.add(new ResourcesAccess(350L, "neww", "neww", "neww", HttpVerb.DELETE));
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performPut(apiRolesPermissions, jwt_, newPermissionList, expectations, "TODO Error message", roleId);
+
         // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         // };
         // HttpEntity<List<ResourcesAccess>> request = new HttpEntity<>(newPermissionList);
@@ -158,8 +216,11 @@ public class RoleControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void clearRoleResourcesAccess() {
-        // Long roleId = 0L;
-        //
+        Long roleId = 0L;
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performDelete(apiRolesPermissions, jwt_, expectations, "TODO Error message", roleId);
         // ParameterizedTypeReference<Void> typeRef = new ParameterizedTypeReference<Void>() {
         // };
         // ResponseEntity<Void> response = restTemplate.exchange(this.apiRolesPermissions, HttpMethod.DELETE, null,
@@ -169,8 +230,11 @@ public class RoleControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void retrieveRoleProjectUserList() {
-        // Long roleId = 0L;
-        //
+        Long roleId = 0L;
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiRolesUsers, jwt_, expectations, "TODO Error message", roleId);
         // ParameterizedTypeReference<List<ProjectUser>> typeRef = new ParameterizedTypeReference<List<ProjectUser>>() {
         // };
         // ResponseEntity<List<ProjectUser>> response = restTemplate.exchange(apiRolesUsers, HttpMethod.GET, null,

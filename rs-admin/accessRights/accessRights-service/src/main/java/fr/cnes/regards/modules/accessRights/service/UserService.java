@@ -32,7 +32,6 @@ public class UserService implements IUserService {
     @Override
     public void updateUser(Long pUserId, ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -42,7 +41,8 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId, String pBorrowedRoleName) {
+    public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId, String pBorrowedRoleName)
+            throws OperationNotSupportedException {
         // TODO Auto-generated method stub
         return null;
     }

@@ -32,9 +32,9 @@ import fr.cnes.regards.modules.accessRights.domain.UserVisibility;
 @Service
 public class UserServiceStub implements IUserService {
 
-    private static List<ProjectUser> projectUsers_;
+    public static List<ProjectUser> projectUsers_;
 
-    private final IDaoProjectUser projectUserDao_;
+    private final IDaoProjectUser daoProjectUser_;
 
     private final IRoleService roleService_;
 
@@ -42,10 +42,10 @@ public class UserServiceStub implements IUserService {
 
     public UserServiceStub(@Qualifier("daoProjectUserStub") IDaoProjectUser pDaoProjectUser, IRoleService pRoleService,
             @Qualifier("roleRepositoryStub") IRoleRepository pRoleRepository) {
-        projectUserDao_ = pDaoProjectUser;
+        daoProjectUser_ = pDaoProjectUser;
         roleService_ = pRoleService;
         roleRepository_ = pRoleRepository;
-        projectUsers_ = projectUserDao_.getAll();
+        projectUsers_ = daoProjectUser_.getAll();
     }
 
     /*
@@ -120,15 +120,20 @@ public class UserServiceStub implements IUserService {
      * @see fr.cnes.regards.modules.accessRights.service.IUserService#retrieveUserAccessRights(int)
      */
     @Override
-    public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId, String pBorrowedRoleName) {
+    public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId, String pBorrowedRoleName)
+            throws OperationNotSupportedException {
         IProjectUser user = retrieveUser(pUserId);
         Role userRole = user.getRole();
         Role returnedRole = userRole;
 
-        if (!pBorrowedRoleName.isEmpty()) {
+        if (pBorrowedRoleName != null) {
             Role borrowedRole = roleRepository_.findOneByName(pBorrowedRoleName);
             if (roleService_.isHierarchicallyInferior(borrowedRole, returnedRole)) {
                 returnedRole = borrowedRole;
+            }
+            else {
+                throw new OperationNotSupportedException(
+                        "Borrowed role must be hierachically inferior to the project user's role");
             }
         }
 

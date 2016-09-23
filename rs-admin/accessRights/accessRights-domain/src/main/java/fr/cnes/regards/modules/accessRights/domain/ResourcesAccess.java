@@ -10,7 +10,7 @@ import org.springframework.hateoas.Identifiable;
 public class ResourcesAccess implements Identifiable<Long> {
 
     @NotNull
-    private final Long id_;
+    private Long id_;
 
     private String description_;
 
@@ -23,9 +23,14 @@ public class ResourcesAccess implements Identifiable<Long> {
     @NotNull
     private HttpVerb verb_;
 
-    public ResourcesAccess(Long pResourcesAccessId) {
-        id_ = pResourcesAccessId;
+    public ResourcesAccess() {
+        super();
         verb_ = HttpVerb.GET;
+    }
+
+    public ResourcesAccess(Long pResourcesAccessId) {
+        this();
+        id_ = pResourcesAccessId;
     }
 
     public ResourcesAccess(Long pResourcesAccessId, String pDescription, String pMicroservice, String pResource,
@@ -38,8 +43,13 @@ public class ResourcesAccess implements Identifiable<Long> {
         verb_ = pVerb;
     }
 
+    @Override
     public Long getId() {
         return id_;
+    }
+
+    public void setId(Long pId) {
+        id_ = pId;
     }
 
     public String getDescription() {

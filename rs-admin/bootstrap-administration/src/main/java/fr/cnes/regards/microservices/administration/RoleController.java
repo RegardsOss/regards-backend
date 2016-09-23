@@ -1,11 +1,12 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessRights.rest;
+package fr.cnes.regards.microservices.administration;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
@@ -38,8 +39,30 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RequestMapping("/roles")
 public class RoleController {
 
+    // @Autowired
+    // private MethodAutorizationService authService_;
+
     @Autowired
     private IRoleService roleService_;
+
+    /**
+     * Method to initate REST resources authorizations.
+     */
+    @PostConstruct
+    public void initAuthorisations() {
+        // admin can do everything!
+        // authService_.setAutorities("/roles@GET", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/roles@POST", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/roles/{role_id}@GET", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/roles/{role_id}@PUT", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/roles/{role_id}@DELETE", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/roles/{role_id}/permissions@GET", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/roles/{role_id}/permissions@PUT", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/roles/{role_id}/permissions@DELETE", new RoleAuthority("ADMIN"));
+        // authService_.setAutorities("/roles/{role_id}/users@GET", new RoleAuthority("ADMIN"));
+        // // users can just get!
+        // authService_.setAutorities("/roles@GET", new RoleAuthority("ADMIN"));
+    }
 
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")

@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
@@ -20,10 +21,13 @@ import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
+import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
+import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.modules.accessRights.service.IUserService;
 
 /**
@@ -44,6 +48,8 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     private String apiUserPermissions;
 
+    private String apiUserPermissionsBorrowedRole;
+
     private String apiUserMetaData;
 
     private String errorMessage;
@@ -52,6 +58,13 @@ public class UsersControllerIT extends RegardsIntegrationTest {
     @Qualifier("userServiceStub")
     private IUserService userService_;
 
+    @Autowired
+    @Qualifier("roleRepositoryStub")
+    private IRoleRepository roleRepository_;
+
+    @Autowired
+    private IRoleService roleService_;
+
     @Before
     public void setup() {
         setLogger(LoggerFactory.getLogger(UsersControllerIT.class));
@@ -59,6 +72,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
         apiUsers = "/users";
         apiUserId = apiUsers + "/{user_id}";
         apiUserPermissions = apiUserId + "/permissions";
+        apiUserPermissionsBorrowedRole = apiUserPermissions + "?borrowedRoleName=";
         apiUserMetaData = apiUserId + "/metadata";
         errorMessage = "Cannot reach model attributes";
     }
@@ -110,7 +124,31 @@ public class UsersControllerIT extends RegardsIntegrationTest {
         performGet(apiUserPermissions, jwt_, expectations, errorMessage, Long.MAX_VALUE);
     }
 
-    //
+    @Test
+    public void cGetUserPermissionsWithBorrowedRole() {
+        Long projectUserId = 1L;
+        ProjectUser projectUser = userService_.retrieveUser(projectUserId);
+        Role projectUserRole = projectUser.getRole();
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+
+        // Borrowing a hierarchically inferior role
+        String borrowedRoleName = "Registered User";
+        assertTrue(roleRepository_.findOneByName(borrowedRoleName) != null);
+        Role borrowedRole = roleRepository_.findOneByName(borrowedRoleName);
+        assertTrue(roleService_.isHierarchicallyInferior(borrowedRole, projectUserRole));
+        expectations.add(status().isOk());
+        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, jwt_, expectations, errorMessage, projectUserId);
+
+        // Borrowing a hierarchically superior role
+        borrowedRoleName = "Instance Admin";
+        assertTrue(roleRepository_.findOneByName(borrowedRoleName) != null);
+        borrowedRole = roleRepository_.findOneByName(borrowedRoleName);
+        assertTrue(!roleService_.isHierarchicallyInferior(borrowedRole, projectUserRole));
+        expectations.clear();
+        expectations.add(status().isBadRequest());
+        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, jwt_, expectations, errorMessage, projectUserId);
+    }
+
     @Test
     public void dUpdateUserMetaData() {
         Long userId = userService_.retrieveUserList().get(0).getId();
