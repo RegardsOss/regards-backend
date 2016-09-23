@@ -12,6 +12,7 @@ import javax.validation.Valid;
 import javax.validation.ValidationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -44,6 +45,7 @@ public class AccountsController {
     // private MethodAutorizationService authService_;
 
     @Autowired
+    @Qualifier("accountServiceStub")
     private IAccountService accountService_;
 
     /**

@@ -20,7 +20,7 @@ import fr.cnes.regards.modules.accessRights.service.IRoleService;
  * @author xbrochar
  *
  */
-public class RoleController extends RegardsIntegrationTest {
+public class RoleControllerIT extends RegardsIntegrationTest {
 
     private TestRestTemplate restTemplate;
 

@@ -9,14 +9,15 @@ import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
+import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
+import fr.cnes.regards.modules.accessRights.domain.IProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
@@ -33,13 +34,18 @@ public class UserServiceStub implements IUserService {
 
     private static List<ProjectUser> projectUsers_;
 
-    @Autowired
-    private IDaoProjectUser projectUserDao_;
+    private final IDaoProjectUser projectUserDao_;
 
-    @PostConstruct
-    public void init() {
+    private final IRoleService roleService_;
+
+    private final IRoleRepository roleRepository_;
+
+    public UserServiceStub(@Qualifier("daoProjectUserStub") IDaoProjectUser pDaoProjectUser, IRoleService pRoleService,
+            @Qualifier("roleRepositoryStub") IRoleRepository pRoleRepository) {
+        projectUserDao_ = pDaoProjectUser;
+        roleService_ = pRoleService;
+        roleRepository_ = pRoleRepository;
         projectUsers_ = projectUserDao_.getAll();
-
     }
 
     /*

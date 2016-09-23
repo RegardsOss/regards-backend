@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
@@ -23,7 +24,7 @@ import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
-import fr.cnes.regards.modules.accessRights.service.UserServiceStub;
+import fr.cnes.regards.modules.accessRights.service.IUserService;
 
 /**
  * @author svissier
@@ -48,10 +49,11 @@ public class UsersControllerIT extends RegardsIntegrationTest {
     private String errorMessage;
 
     @Autowired
-    private UserServiceStub serviceStub;
+    @Qualifier("userServiceStub")
+    private IUserService userService_;
 
     @Before
-    public void init() {
+    public void setup() {
         setLogger(LoggerFactory.getLogger(UsersControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
         apiUsers = "/users";
@@ -73,7 +75,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
     @Test
     public void cGetUser() {
 
-        Long userId = serviceStub.retrieveUserList().get(0).getId();
+        Long userId = userService_.retrieveUserList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -87,7 +89,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void cGetUserMetaData() {
-        Long userId = serviceStub.retrieveUserList().get(0).getId();
+        Long userId = userService_.retrieveUserList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -97,7 +99,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
     @Test
     public void cGetUserPermissions() {
 
-        Long userId = serviceStub.retrieveUserList().get(0).getId();
+        Long userId = userService_.retrieveUserList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -111,7 +113,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
     //
     @Test
     public void dUpdateUserMetaData() {
-        Long userId = serviceStub.retrieveUserList().get(0).getId();
+        Long userId = userService_.retrieveUserList().get(0).getId();
         List<MetaData> newPermissionList = new ArrayList<>();
         newPermissionList.add(new MetaData());
         newPermissionList.add(new MetaData());
@@ -123,7 +125,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dUpdateUserPermissions() {
-        Long userId = serviceStub.retrieveUserList().get(0).getId();
+        Long userId = userService_.retrieveUserList().get(0).getId();
 
         List<ResourcesAccess> newPermissionList = new ArrayList<>();
         newPermissionList.add(new ResourcesAccess(463L, "new", "new", "new", HttpVerb.PUT));
@@ -136,7 +138,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dDeleteUserMetaData() {
-        Long userId = serviceStub.retrieveUserList().get(0).getId();
+        Long userId = userService_.retrieveUserList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -145,7 +147,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dDeleteUserPermissions() {
-        Long userId = serviceStub.retrieveUserList().get(0).getId();
+        Long userId = userService_.retrieveUserList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -154,8 +156,8 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dUpdateUser() {
-        Long userId = serviceStub.retrieveUserList().get(0).getId();
-        ProjectUser updated = serviceStub.retrieveUser(userId);
+        Long userId = userService_.retrieveUserList().get(0).getId();
+        ProjectUser updated = userService_.retrieveUser(userId);
         updated.setLastConnection(LocalDateTime.now());
 
         // if that's the same functional ID and the parameter is valid:
@@ -173,7 +175,7 @@ public class UsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void eDeleteUser() {
-        Long userId = serviceStub.retrieveUserList().get(0).getId();
+        Long userId = userService_.retrieveUserList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());

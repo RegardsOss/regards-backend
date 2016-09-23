@@ -16,13 +16,14 @@ import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.Account;
-import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
+import fr.cnes.regards.modules.accessRights.service.IAccountService;
 
 /**
  * Just Test the REST API so status code. Correction is left to others.
@@ -51,7 +52,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     private String errorMessage;
 
     @Autowired
-    private AccountServiceStub serviceStub;
+    @Qualifier("accountServiceStub")
+    private IAccountService accountService_;
 
     @Value("${root.admin.login:admin}")
     private String rootAdminLogin;
@@ -114,7 +116,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     @Test
     public void cGetAccount() {
 
-        Long accountId = serviceStub.retrieveAccountList().get(0).getId();
+        Long accountId = accountService_.retrieveAccountList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -152,7 +154,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dUpdateAccount() {
-        Account updated = serviceStub.retrieveAccount("email@email.email");
+        Account updated = accountService_.retrieveAccount("email@email.email");
         updated.setFirstName("AnOtherFirstName");
         Long accountId = updated.getId();
 
@@ -172,7 +174,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     @Test
     public void dUnlockAccount() {
 
-        Account account = serviceStub.retrieveAccount("email@email.email");
+        Account account = accountService_.retrieveAccount("email@email.email");
         Long accountId = account.getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -182,7 +184,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dChangeAccountPassword() {
-        Account account = serviceStub.retrieveAccount("email@email.email");
+        Account account = accountService_.retrieveAccount("email@email.email");
         Long accountId = account.getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -193,7 +195,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void eDeleteAccount() {
-        Long accountId = serviceStub.retrieveAccountList().get(0).getId();
+        Long accountId = accountService_.retrieveAccountList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());

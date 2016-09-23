@@ -2,11 +2,13 @@ package fr.cnes.regards.modules.accessRights.dao;
 
 import java.util.List;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.accessRights.domain.Role;
 
 @Repository
+@Primary
 public class RoleRepository implements IRoleRepository {
 
     @Override

@@ -21,10 +21,6 @@ public class ProjectServiceStub implements IProjectService {
 
     private static List<Project> projects = new ArrayList<>();
 
-    public ProjectServiceStub() {
-        super();
-    }
-
     @PostConstruct
     public void init() {
         projects.add(new Project("desc", "icon", true, "name"));
@@ -72,10 +68,12 @@ public class ProjectServiceStub implements IProjectService {
         return pNewProject;
     }
 
+    @Override
     public boolean existProject(String pProjectId) {
         return projects.stream().filter(p -> p.getName().equals(pProjectId)).findFirst().isPresent();
     }
 
+    @Override
     public boolean notDeletedProject(String pProjectId) {
         return projects.stream().filter(p -> !p.isDeleted()).filter(p -> p.getName().equals(pProjectId)).findFirst()
                 .isPresent();

@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
@@ -23,7 +24,7 @@ import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.AccessRequestServiceStub;
-import fr.cnes.regards.modules.accessRights.service.AccountServiceStub;
+import fr.cnes.regards.modules.accessRights.service.IAccountService;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AccessesControllerIT extends RegardsIntegrationTest {
@@ -47,7 +48,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     private AccessRequestServiceStub serviceStub;
 
     @Autowired
-    private AccountServiceStub accountService;
+    @Qualifier("accountServiceStub")
+    private IAccountService accountService_;
 
     @Before
     public void init() {

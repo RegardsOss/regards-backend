@@ -34,9 +34,6 @@ import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
-/*
- * LICENSE_PLACEHOLDER
- */
 @RestController
 @ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/roles")
@@ -49,7 +46,7 @@ public class RoleController {
     private IRoleService roleService_;
 
     /**
-     * Method to iniate REST resources authorizations.
+     * Method to initate REST resources authorizations.
      */
     @PostConstruct
     public void initAuthorisations() {

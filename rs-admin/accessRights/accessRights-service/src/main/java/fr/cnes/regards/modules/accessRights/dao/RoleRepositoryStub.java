@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
@@ -16,7 +16,6 @@ import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 
 @Repository
-@Profile("test")
 public class RoleRepositoryStub implements IRoleRepository {
 
     private List<Role> roles_ = new ArrayList<>();
@@ -25,7 +24,8 @@ public class RoleRepositoryStub implements IRoleRepository {
 
     private final IDaoProjectUser daoProjectUser_;
 
-    public RoleRepositoryStub(IDaoResourcesAccess pDaoResourcesAccess, IDaoProjectUser pDaoProjectUser) {
+    public RoleRepositoryStub(@Qualifier("daoResourcesAccessStub") IDaoResourcesAccess pDaoResourcesAccess,
+            @Qualifier("daoProjectUserStub") IDaoProjectUser pDaoProjectUser) {
         daoResourcesAccess_ = pDaoResourcesAccess;
         daoProjectUser_ = pDaoProjectUser;
 
@@ -126,6 +126,11 @@ public class RoleRepositoryStub implements IRoleRepository {
     @Override
     public Role findByIsDefault(boolean pIsDefault) {
         return roles_.stream().filter(r -> r.isDefault() == pIsDefault).findFirst().get();
+    }
+
+    @Override
+    public Role findOneByName(String pBorrowedRoleName) {
+        return roles_.stream().filter(r -> r.getName().equals(pBorrowedRoleName)).findFirst().get();
     }
 
 }

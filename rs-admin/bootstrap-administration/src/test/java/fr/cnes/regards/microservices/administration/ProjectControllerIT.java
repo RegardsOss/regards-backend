@@ -15,12 +15,13 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.project.service.ProjectServiceStub;
+import fr.cnes.regards.modules.project.service.IProjectService;
 
 /**
  * Just Test the REST API so status code. Correction is left to others.
@@ -43,7 +44,8 @@ public class ProjectControllerIT extends RegardsIntegrationTest {
     private String errorMessage;
 
     @Autowired
-    private ProjectServiceStub serviceStub;
+    @Qualifier("projectServiceStub")
+    private IProjectService projectService_;
 
     @Before
     public void init() {
@@ -80,13 +82,13 @@ public class ProjectControllerIT extends RegardsIntegrationTest {
     @Test
     public void cGetProject() {
 
-        assertFalse(!serviceStub.existProject("name"));
+        assertFalse(!projectService_.existProject("name"));
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiProjectId, jwt_, expectations, errorMessage, "name");
 
-        assertFalse(serviceStub.existProject("msdfqmsdfqbndsjkqfmsdbqjkmfsdjkqfbkmfbjkmsdfqsdfmqbsdq"));
+        assertFalse(projectService_.existProject("msdfqmsdfqbndsjkqfmsdbqjkmfsdjkqfbkmfbjkmsdfqsdfmqbsdq"));
 
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
@@ -97,8 +99,8 @@ public class ProjectControllerIT extends RegardsIntegrationTest {
     @Test
     public void dUpdateProject() {
 
-        assertFalse(!serviceStub.existProject("name"));
-        Project updated = serviceStub.retrieveProject("name");
+        assertFalse(!projectService_.existProject("name"));
+        Project updated = projectService_.retrieveProject("name");
         updated.setDescription("AnOtherDescription");
 
         List<ResultMatcher> expectations = new ArrayList<>(1);

@@ -22,4 +22,8 @@ public interface IProjectService {
 
     Project createProject(Project pNewProject) throws AlreadyExistingException;
 
+    boolean existProject(String pProjectId);
+
+    boolean notDeletedProject(String pProjectId);
+
 }

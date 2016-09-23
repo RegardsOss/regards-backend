@@ -8,10 +8,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
@@ -23,14 +24,18 @@ public class AccessRequestServiceStub implements IAccessRequestService {
 
     private static List<ProjectUser> projectUsers_ = new ArrayList<>();
 
-    @Autowired
-    private IAccountService accountService;
+    private final IAccountService accountService_;
 
-    @Autowired
-    private IRoleService roleService;
+    private final IRoleService roleService_;
 
     @Value("${regards.project.account_acceptance}")
     private String accessSetting_;
+
+    public AccessRequestServiceStub(@Qualifier("accountServiceStub") IAccountService pAccountService,
+            @Qualifier("roleRepositoryStub") IRoleRepository pRoleRepository) {
+        accountService_ = pAccountService;
+        roleService_ = new RoleService(pRoleRepository);
+    }
 
     @Override
     public List<ProjectUser> retrieveAccessRequestList() {
@@ -46,15 +51,15 @@ public class AccessRequestServiceStub implements IAccessRequestService {
      */
     @Override
     public ProjectUser requestAccess(ProjectUser pAccessRequest) throws AlreadyExistingException {
-        if (!this.accountService.existAccount(pAccessRequest.getAccount().getId())) {
-            this.accountService.createAccount(pAccessRequest.getAccount());
+        if (!this.accountService_.existAccount(pAccessRequest.getAccount().getId())) {
+            this.accountService_.createAccount(pAccessRequest.getAccount());
         }
         if (existAccessRequest(pAccessRequest.getAccount())) {
             throw new AlreadyExistingException(
                     pAccessRequest.getAccount().getEmail() + " already has made an access request for this project");
         }
         if (pAccessRequest.getRole() == null) {
-            pAccessRequest.setRole(roleService.getDefaultRole());
+            pAccessRequest.setRole(roleService_.getDefaultRole());
         }
 
         projectUsers_.add(pAccessRequest);

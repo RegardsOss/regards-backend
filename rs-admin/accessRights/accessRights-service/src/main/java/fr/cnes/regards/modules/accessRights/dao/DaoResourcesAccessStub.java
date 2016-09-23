@@ -6,14 +6,12 @@ package fr.cnes.regards.modules.accessRights.dao;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 
 @Repository
-@Profile("test")
 public class DaoResourcesAccessStub implements IDaoResourcesAccess {
 
     private static List<ResourcesAccess> resourcesAccesses_;

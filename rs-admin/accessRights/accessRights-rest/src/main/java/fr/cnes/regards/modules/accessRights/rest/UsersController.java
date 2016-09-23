@@ -11,6 +11,7 @@ import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -52,6 +53,7 @@ public class UsersController {
     // private MethodAutorizationService authService;
 
     @Autowired
+    @Qualifier("userServiceStub")
     private IUserService userService_;
 
     /**
