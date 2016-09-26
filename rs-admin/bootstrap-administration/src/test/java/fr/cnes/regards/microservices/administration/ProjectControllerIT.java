@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
-import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
+import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
 
