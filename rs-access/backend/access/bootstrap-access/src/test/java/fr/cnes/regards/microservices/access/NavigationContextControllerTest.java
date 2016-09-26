@@ -269,8 +269,10 @@ public class NavigationContextControllerTest {
     public final void gDeleteAnUnknownUrl() {
 
         try {
-            this.mvc_.perform(delete("/tiny/url/" + "totutiti").with(csrf())
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)).andExpect(status().is4xxClientError());
+            this.mvc_
+                    .perform(delete("/tiny/url/" + "totutiti").with(csrf()).header(HttpHeaders.AUTHORIZATION,
+                                                                                   "Bearer " + jwt_))
+                    .andExpect(status().is4xxClientError());
         }
         catch (Exception e) {
             String message = "Cannot delete the url:" + this.AN_UNKNOWN_TINY_URL;

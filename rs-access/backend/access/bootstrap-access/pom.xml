@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- LICENSE_PLACEHOLDER -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.microservices.access</groupId> 
+	<groupId>fr.cnes.regards.microservices.access</groupId>
 	<artifactId>bootstrap-access</artifactId>
 	<packaging>jar</packaging>
- 
+
 	<name>REGARDS microservices access - bootstrap </name>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-  
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-    	<version>1.4.0.RELEASE</version>
+		<version>1.4.0.RELEASE</version>
 	</parent>
-  
+
 	<dependencies>
 		<!-- Core dependencies -->
 		<dependency>
@@ -34,9 +34,9 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
-		</dependency>		
+		</dependency>
 
-  		<!-- Microservice internal dependencies -->
+		<!-- Module dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.access</groupId>
 			<artifactId>access-rest</artifactId>
@@ -53,6 +53,18 @@
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

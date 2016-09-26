@@ -8,13 +8,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +31,7 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
  */
 @Profile("dev")
 @Service
+@Primary
 public class NavigationContextServiceStub implements INavigationContextService {
 
     private static List<NavigationContext> navigationContexts = new ArrayList<>();

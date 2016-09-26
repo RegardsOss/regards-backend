@@ -21,6 +21,7 @@ import fr.cnes.regards.microservices.backend.pojo.datamanagement.Dataset;
 import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.security.endpoint.RoleAuthority;
+import fr.cnes.regards.microservices.core.security.jwt.JWTService;
 
 @RestController
 @ModuleInfo(name = "dataset controller", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
@@ -29,17 +30,24 @@ public class DatasetController {
 
     // Mock db
     static List<Dataset> inMemoryDList = null;
+    
+    private String jwt_;
+    
+    @Autowired
+    private JWTService jwtService_;
 
     @Autowired
-    MethodAutorizationService authService_;
+    MethodAutorizationService methodAutorizationService;
 
-//    /**
-//     * Method to initiate REST resources authorizations.
-//     */
-//    @PostConstruct
-//    public void initAuthorisations() {
+    /**
+     * Method to initiate REST resources authorizations.
+     */
+    @PostConstruct
+    public void initAuthorisations() {
+        jwt_ = jwtService_.generateToken("PROJECT", "email", "CMZ", "ADMIN");
+        methodAutorizationService.setAuthorities("/api/datasets", RequestMethod.GET, "ADMIN");
 //        authService_.setAutorities("/api/users@GET", new RoleAuthority("ADMIN"));
-//    }
+    }
 
     @RequestMapping(value = "/datasets", method = RequestMethod.GET)
     public HttpEntity<List<Account>> getDatasets() {
