@@ -65,7 +65,7 @@ public class ProjectControllerIT extends RegardsIntegrationTest {
     @Test
     public void bCreateProject() {
         Project newProject;
-        newProject = new Project("description", "iconICON", Boolean.TRUE, "ilFautBienUnNomPourTester");
+        newProject = new Project(54242L, "description", "iconICON", Boolean.TRUE, "ilFautBienUnNomPourTester");
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
@@ -105,7 +105,7 @@ public class ProjectControllerIT extends RegardsIntegrationTest {
         expectations.add(status().isOk());
         performPut(apiProjectId, jwt_, updated, expectations, errorMessage, "name");
 
-        Project notSameID = new Project("desc", "icon", Boolean.TRUE, "AnotherName");
+        Project notSameID = new Project(454L, "desc", "icon", Boolean.TRUE, "AnotherName");
 
         expectations = new ArrayList<>(1);
         expectations.add(status().isMethodNotAllowed());

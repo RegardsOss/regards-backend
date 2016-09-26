@@ -23,7 +23,7 @@ public class ProjectServiceStub implements IProjectService {
 
     @PostConstruct
     public void init() {
-        projects.add(new Project("desc", "icon", true, "name"));
+        projects.add(new Project(0L, "desc", "icon", true, "name"));
     }
 
     @Override

@@ -6,10 +6,12 @@ package fr.cnes.regards.modules.project.domain;
 import javax.validation.constraints.NotNull;
 import javax.validation.executable.ValidateOnExecution;
 
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.Identifiable;
 
 @ValidateOnExecution
-public class Project extends ResourceSupport {
+public class Project implements Identifiable<Long> {
+
+    private Long id_;
 
     @NotNull
     private String name_;
@@ -28,12 +30,18 @@ public class Project extends ResourceSupport {
         super();
     }
 
-    public Project(String desc, String icon, boolean isPublic, String name) {
+    public Project(Long pId, String pDesc, String pIcon, boolean pIsPublic, String pName) {
         this();
-        this.description_ = desc;
-        this.icon_ = icon;
-        this.isPublic_ = isPublic;
-        this.name_ = name;
+        id_ = pId;
+        description_ = pDesc;
+        icon_ = pIcon;
+        isPublic_ = pIsPublic;
+        name_ = pName;
+    }
+
+    @Override
+    public Long getId() {
+        return id_;
     }
 
     public String getDescription() {

@@ -5,11 +5,13 @@ package fr.cnes.regards.modules.accessRights.rest;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,13 +25,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
 import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
-import fr.cnes.regards.modules.accessRights.domain.HateoasDTO;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
+import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
@@ -63,26 +64,30 @@ public class RoleController {
 
     @ResourceAccess(description = "Retrieve the list of roles", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<HateoasDTO<List<Role>>> retrieveRoleList() {
+    public @ResponseBody HttpEntity<List<Resource<Role>>> retrieveRoleList() {
+
         List<Role> roles = roleService_.retrieveRoleList();
-        HateoasDTO<List<Role>> resource = new HateoasDTO<>(roles);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        List<Resource<Role>> resources = roles.stream().map(r -> new Resource<>(r)).collect(Collectors.toList());
+        return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Create a role", name = "")
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<HateoasDTO<Role>> createRole(@Valid @RequestBody Role pNewRole)
+    public @ResponseBody HttpEntity<Resource<Role>> createRole(@Valid @RequestBody Role pNewRole)
             throws AlreadyExistingException {
+
         Role created = roleService_.createRole(pNewRole);
-        HateoasDTO<Role> resource = new HateoasDTO<>(created);
+        Resource<Role> resource = new Resource<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
     @ResourceAccess(description = "Retrieve a role by id", name = "")
     @RequestMapping(value = "/{role_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Role> retrieveRole(@PathVariable("role_id") Long pRoleId) {
+    public @ResponseBody HttpEntity<Resource<Role>> retrieveRole(@PathVariable("role_id") Long pRoleId) {
+
         Role role = roleService_.retrieveRole(pRoleId);
-        return new ResponseEntity<>(role, HttpStatus.OK);
+        Resource<Role> resource = new Resource<>(role);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Update the role of role_id with passed body", name = "")
@@ -103,16 +108,20 @@ public class RoleController {
 
     @ResourceAccess(description = "Retrieve the list of permissions of the role with role_id", name = "")
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<List<ResourcesAccess>> retrieveRoleResourcesAccessList(
+    public @ResponseBody HttpEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(
             @PathVariable("role_id") Long pRoleId) {
+
         List<ResourcesAccess> resourcesAccesses = roleService_.retrieveRoleResourcesAccessList(pRoleId);
-        return new ResponseEntity<>(resourcesAccesses, HttpStatus.OK);
+        List<Resource<ResourcesAccess>> resources = resourcesAccesses.stream().map(ra -> new Resource<>(ra))
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Incrementally update the list of permissions of the role with role_id", name = "")
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") Long pRoleId,
             @Valid @RequestBody List<ResourcesAccess> pResourcesAccessList) throws OperationNotSupportedException {
+
         roleService_.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -121,16 +130,20 @@ public class RoleController {
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") Long pRoleId)
             throws OperationNotSupportedException {
+
         roleService_.clearRoleResourcesAccess(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Retrieve the list of project users of the role with role_id", name = "")
     @RequestMapping(value = "/{role_id}/users", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<List<ProjectUser>> retrieveRoleProjectUserList(
+    public @ResponseBody HttpEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(
             @PathVariable("role_id") Long pRoleId) throws OperationNotSupportedException {
+
         List<ProjectUser> projectUserList = roleService_.retrieveRoleProjectUserList(pRoleId);
-        return new ResponseEntity<>(projectUserList, HttpStatus.OK);
+        List<Resource<ProjectUser>> resources = projectUserList.stream().map(pu -> new Resource<>(pu))
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
 }

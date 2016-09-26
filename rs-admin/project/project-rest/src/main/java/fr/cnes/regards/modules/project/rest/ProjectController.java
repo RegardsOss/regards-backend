@@ -8,11 +8,13 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,36 +58,40 @@ public class ProjectController {
 
     @RequestMapping(value = "", method = RequestMethod.GET, produces = "application/json")
     @ResourceAccess(description = "retrieve the list of project of instance")
-    public @ResponseBody HttpEntity<List<Project>> retrieveProjectList() {
+    public @ResponseBody HttpEntity<List<Resource<Project>>> retrieveProjectList() {
+
         List<Project> projects = projectService.retrieveProjectList();
-        addLinksToProjects(projects);
-        return new ResponseEntity<>(projects, HttpStatus.OK);
+        List<Resource<Project>> resources = projects.stream().map(p -> new Resource<>(p)).collect(Collectors.toList());
+        addLinksToProjects(resources);
+        return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResourceAccess(description = "create a new project")
-    public @ResponseBody HttpEntity<Project> createProject(@Valid @RequestBody Project newProject)
+    public @ResponseBody HttpEntity<Resource<Project>> createProject(@Valid @RequestBody Project newProject)
             throws AlreadyExistingException {
+
         Project project = projectService.createProject(newProject);
-
-        addLinksToProject(project);
-
-        return new ResponseEntity<>(project, HttpStatus.CREATED);
+        Resource<Project> resource = new Resource<Project>(project);
+        addLinksToProject(resource);
+        return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{project_id}", produces = "application/json")
     @ResourceAccess(description = "retrieve the project project_id")
-    public @ResponseBody HttpEntity<Project> retrieveProject(@PathVariable("project_id") String projectId) {
-        Project project = projectService.retrieveProject(projectId);
+    public @ResponseBody HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_id") String projectId) {
 
-        addLinksToProject(project);
-        return new ResponseEntity<>(project, HttpStatus.OK);
+        Project project = projectService.retrieveProject(projectId);
+        Resource<Project> resource = new Resource<Project>(project);
+        addLinksToProject(resource);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_id}", produces = "application/json")
     @ResourceAccess(description = "update the project project_id")
     public @ResponseBody HttpEntity<Void> modifyProject(@PathVariable("project_id") String projectId,
             @RequestBody Project projectUpdated) throws OperationNotSupportedException {
+
         projectService.modifyProject(projectId, projectUpdated);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -93,21 +99,24 @@ public class ProjectController {
     @RequestMapping(method = RequestMethod.DELETE, value = "/{project_id}", produces = "application/json")
     @ResourceAccess(description = "remove the project project_id")
     public @ResponseBody HttpEntity<Void> deleteProject(@PathVariable("project_id") String projectId) {
+
         projectService.deleteProject(projectId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    public static void addLinksToProject(Project project) {
+    public static void addLinksToProject(Resource<Project> project) {
         if (project.getLinks().isEmpty()) {
-            project.add(linkTo(methodOn(ProjectController.class).retrieveProject(project.getName())).withSelfRel());
+            project.add(linkTo(methodOn(ProjectController.class).retrieveProject(project.getContent().getName()))
+                    .withSelfRel());
             // project.add(linkTo(methodOn(ProjectController.class).modifyProject(project.getName(), project))
             // .withRel("update"));
-            project.add(linkTo(methodOn(ProjectController.class).deleteProject(project.getName())).withRel("delete"));
+            project.add(linkTo(methodOn(ProjectController.class).deleteProject(project.getContent().getName()))
+                    .withRel("delete"));
         }
     }
 
-    public static void addLinksToProjects(List<Project> projects) {
-        for (Project project : projects) {
+    public static void addLinksToProjects(List<Resource<Project>> projects) {
+        for (Resource<Project> project : projects) {
             addLinksToProject(project);
         }
     }

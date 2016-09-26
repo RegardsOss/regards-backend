@@ -5,11 +5,13 @@ package fr.cnes.regards.modules.accessRights.rest;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,10 +25,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
 import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
+import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
@@ -65,17 +67,20 @@ public class AccessesController {
 
     @ResourceAccess(description = "retrieve the list of access request", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<List<ProjectUser>> retrieveAccessRequestList() {
+    public @ResponseBody HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
         List<ProjectUser> projectUsers = accessRequestService_.retrieveAccessRequestList();
-        return new ResponseEntity<>(projectUsers, HttpStatus.OK);
+        List<Resource<ProjectUser>> resources = projectUsers.stream().map(p -> new Resource<>(p))
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "create a new access request", name = "")
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<ProjectUser> requestAccess(@Valid @RequestBody ProjectUser pAccessRequest)
+    public @ResponseBody HttpEntity<Resource<ProjectUser>> requestAccess(@Valid @RequestBody ProjectUser pAccessRequest)
             throws AlreadyExistingException {
         ProjectUser created = accessRequestService_.requestAccess(pAccessRequest);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        Resource<ProjectUser> resource = new Resource<>(created);
+        return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
     @ResourceAccess(description = "accept the access request", name = "")
@@ -103,9 +108,11 @@ public class AccessesController {
 
     @ResourceAccess(description = "retrieve the list of setting managing the access requests", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<List<String>> getAccessSettingList() {
+    public @ResponseBody HttpEntity<List<Resource<String>>> getAccessSettingList() {
         List<String> accessSettings = accessRequestService_.getAccessSettingList();
-        return new ResponseEntity<>(accessSettings, HttpStatus.OK);
+        List<Resource<String>> resources = accessSettings.stream().map(a -> new Resource<>(a))
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "update the setting managing the access requests", name = "")

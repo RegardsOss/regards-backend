@@ -5,12 +5,14 @@ package fr.cnes.regards.modules.accessRights.rest;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,12 +27,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
 import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
-import fr.cnes.regards.modules.accessRights.domain.HateoasDTO;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
+import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
@@ -70,31 +71,37 @@ public class AccountsController {
 
     @ResourceAccess(description = "retrieve the list of account in the instance", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<HateoasDTO<List<Account>>> retrieveAccountList() {
-        List<Account> accounts = accountService_.retrieveAccountList();
+    public @ResponseBody HttpEntity<List<Resource<Account>>> retrieveAccountList() {
 
-        return new ResponseEntity<>(new HateoasDTO<>(accounts), HttpStatus.OK);
+        List<Account> accounts = accountService_.retrieveAccountList();
+        List<Resource<Account>> resources = accounts.stream().map(a -> new Resource<>(a)).collect(Collectors.toList());
+        return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "create an new account", name = "")
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<HateoasDTO<Account>> createAccount(@Valid @RequestBody Account pNewAccount)
+    public @ResponseBody HttpEntity<Resource<Account>> createAccount(@Valid @RequestBody Account pNewAccount)
             throws AlreadyExistingException {
+
         Account created = accountService_.createAccount(pNewAccount);
-        return new ResponseEntity<>(new HateoasDTO<>(created), HttpStatus.CREATED);
+        Resource<Account> resource = new Resource<>(created);
+        return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
     @ResourceAccess(description = "retrieve the account account_id", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<HateoasDTO<Account>> retrieveAccount(@PathVariable("account_id") Long accountId) {
+    public @ResponseBody HttpEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") Long accountId) {
+
         Account account = accountService_.retrieveAccount(accountId);
-        return new ResponseEntity<>(new HateoasDTO<>(account), HttpStatus.OK);
+        Resource<Account> resource = new Resource<>(account);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "update the account account_id according to the body specified", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateAccount(@PathVariable("account_id") Long accountId,
             @Valid @RequestBody Account pUpdatedAccount) throws OperationNotSupportedException {
+
         accountService_.updateAccount(accountId, pUpdatedAccount);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -102,6 +109,7 @@ public class AccountsController {
     @ResourceAccess(description = "remove the account account_id", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> removeAccount(@PathVariable("account_id") Long accountId) {
+
         accountService_.removeAccount(accountId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -118,6 +126,7 @@ public class AccountsController {
     @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> unlockAccount(@PathVariable("account_id") Long accountId,
             @PathVariable("unlock_code") String unlockCode) throws InvalidValueException {
+
         accountService_.unlockAccount(accountId, unlockCode);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -127,6 +136,7 @@ public class AccountsController {
     public @ResponseBody HttpEntity<Void> changeAccountPassword(@PathVariable("account_id") Long accountId,
             @PathVariable("reset_code") String resetCode, @Valid @RequestBody String pNewPassword)
             throws InvalidValueException {
+
         accountService_.changeAccountPassword(accountId, resetCode, pNewPassword);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -135,21 +145,26 @@ public class AccountsController {
     @RequestMapping(value = "/code", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> codeForAccount(@RequestParam("email") String email,
             @RequestParam("type") CodeType type) {
+
         accountService_.codeForAccount(email, type);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "retrieve the list of setting managing the accounts", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<HateoasDTO<List<String>>> retrieveAccountSettings() {
+    public @ResponseBody HttpEntity<List<Resource<String>>> retrieveAccountSettings() {
+
         List<String> accountSettings = accountService_.retrieveAccountSettings();
-        return new ResponseEntity<>(new HateoasDTO<>(accountSettings), HttpStatus.OK);
+        List<Resource<String>> resources = accountSettings.stream().map(a -> new Resource<>(a))
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "update the setting managing the account", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting)
             throws InvalidValueException {
+
         accountService_.updateAccountSetting(pUpdatedAccountSetting);
         return new ResponseEntity<>(HttpStatus.OK);
     }
