@@ -44,6 +44,10 @@ public class Project implements Identifiable<Long> {
         return id_;
     }
 
+    public void setId(Long pId) {
+        id_ = pId;
+    }
+
     public String getDescription() {
         return description_;
     }
@@ -78,13 +82,7 @@ public class Project implements Identifiable<Long> {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Project) {
-            Project p = (Project) o;
-            return p.name_.equals(this.name_) && this.description_.equals(p.description_) && this.icon_.equals(p.icon_)
-                    && (this.isPublic_ == p.isPublic_);
-        }
-
-        return false;
+        return (o instanceof Project) && ((Project) o).getId().equals(id_);
     }
 
     public boolean isDeleted() {

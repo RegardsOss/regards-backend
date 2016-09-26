@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -87,7 +88,7 @@ public class ProjectController {
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/{project_id}", produces = "application/json")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{project_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "update the project project_id")
     public @ResponseBody HttpEntity<Void> modifyProject(@PathVariable("project_id") String projectId,
             @RequestBody Project projectUpdated) throws OperationNotSupportedException {

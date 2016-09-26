@@ -4,6 +4,7 @@
 package fr.cnes.regards.microservices.administration;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -97,7 +98,7 @@ public class ProjectControllerIT extends RegardsIntegrationTest {
     @Test
     public void dUpdateProject() {
 
-        assertFalse(!projectService_.existProject("name"));
+        assertTrue(projectService_.existProject("name"));
         Project updated = projectService_.retrieveProject("name");
         updated.setDescription("AnOtherDescription");
 
