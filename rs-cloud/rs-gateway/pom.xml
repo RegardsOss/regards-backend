@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>fr.cnes.regards.cloud</groupId>
-  <artifactId>rs-config</artifactId>
+  <artifactId>rs-gateway</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>REGARDS Cloud - Configuration server</name>
+  <name>REGARDS Cloud - Gateway</name>
   <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
   
   <properties>
