@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.security.endpoint;
+package fr.cnes.regards.security.utils.endpoint;
 
 import org.springframework.security.core.GrantedAuthority;
 
@@ -21,10 +21,10 @@ public class RoleAuthority implements GrantedAuthority {
 
     public RoleAuthority(String pAuthority) {
         if (!pAuthority.startsWith(ROLE_PREFIX)) {
-            this.autority_ = ROLE_PREFIX + pAuthority;
+            autority_ = ROLE_PREFIX + pAuthority;
         }
         else {
-            this.autority_ = pAuthority;
+            autority_ = pAuthority;
         }
     }
 

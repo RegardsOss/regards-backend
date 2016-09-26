@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.security.jwt;
+package fr.cnes.regards.security.utils.jwt;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +10,7 @@ import java.util.List;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
-import fr.cnes.regards.microservices.core.security.endpoint.RoleAuthority;
+import fr.cnes.regards.security.utils.endpoint.RoleAuthority;
 
 /**
  *
@@ -143,7 +143,8 @@ public class JWTAuthentication implements Authentication {
     }
 
     /**
-     * @param pProject the project to set
+     * @param pProject
+     *            the project to set
      */
     public void setProject(String pProject) {
         project_ = pProject;

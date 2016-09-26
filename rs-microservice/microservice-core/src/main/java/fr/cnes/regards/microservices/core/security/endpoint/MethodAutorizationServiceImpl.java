@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.security.utils.endpoint.RoleAuthority;
+
 /**
  * Service MethodAutorizationServiceImpl<br/>
  * Allow to set/get the REST resource method access authorizations.<br/>

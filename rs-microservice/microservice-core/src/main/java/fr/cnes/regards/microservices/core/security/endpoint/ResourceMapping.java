@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
 /**
  *
@@ -54,10 +54,10 @@ public class ResourceMapping {
      */
     public ResourceMapping(ResourceAccess pResourceAccess, Optional<String> pClassPath, Optional<String> pPath,
             RequestMethod pMethod) {
-        this.resourceAccess_ = pResourceAccess;
-        this.classPath_ = pClassPath;
-        this.path_ = pPath;
-        this.method_ = pMethod;
+        resourceAccess_ = pResourceAccess;
+        classPath_ = pClassPath;
+        path_ = pPath;
+        method_ = pMethod;
     }
 
     /**

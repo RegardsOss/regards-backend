@@ -20,7 +20,8 @@
 		<module>module-core</module>
 		<module>module-archetype</module>
 		<module>microservice-core-test</module>
-  </modules>
+		<module>security-utils</module>
+	</modules>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>

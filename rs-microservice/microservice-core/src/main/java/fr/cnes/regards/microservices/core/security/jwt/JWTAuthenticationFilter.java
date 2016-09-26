@@ -18,6 +18,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
+import fr.cnes.regards.security.utils.jwt.JWTAuthentication;
+
 /**
  * Stateless JWT filter set in the SPRING security chain to authenticate request issuer.
  *
