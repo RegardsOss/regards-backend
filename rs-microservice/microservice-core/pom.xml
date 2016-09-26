@@ -7,6 +7,7 @@
 	<name>microservice-core</name>
 	<artifactId>microservice-core</artifactId>
 	<description>Microservice core</description>
+	<version>1.1-SNAPSHOT</version>
 
 	<parent>
 		<groupId>fr.cnes.regards.microservices</groupId>

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.annotation;
+package fr.cnes.modules.core.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
