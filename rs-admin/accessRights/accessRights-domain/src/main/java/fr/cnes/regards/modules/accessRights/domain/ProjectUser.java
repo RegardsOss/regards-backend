@@ -66,18 +66,18 @@ public class ProjectUser implements IProjectUser, Identifiable<Long> {
         account_ = pAccountRequesting;
     }
 
-    public ProjectUser(Long projectUserId_, LocalDateTime lastConnection_, LocalDateTime lastUpdate_,
-            UserStatus status_, List<MetaData> metaData_, Role role_, List<ResourcesAccess> permissions,
-            Account account_) {
+    public ProjectUser(Long pProjectUserId, LocalDateTime pLastConnection, LocalDateTime pLastUpdate,
+            UserStatus pStatus, List<MetaData> pMetaData, Role pRole, List<ResourcesAccess> pPermissions,
+            Account pAccount) {
         super();
-        id_ = projectUserId_;
-        this.lastConnection_ = lastConnection_;
-        this.lastUpdate_ = lastUpdate_;
-        this.status_ = status_;
-        this.metaData_ = metaData_;
-        this.role_ = role_;
-        this.permissions = permissions;
-        this.account_ = account_;
+        id_ = pProjectUserId;
+        lastConnection_ = pLastConnection;
+        lastUpdate_ = pLastUpdate;
+        status_ = pStatus;
+        metaData_ = pMetaData;
+        role_ = pRole;
+        permissions = pPermissions;
+        account_ = pAccount;
     }
 
     @Override
