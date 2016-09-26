@@ -6,15 +6,12 @@ package fr.cnes.regards.microservices.core.dao;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -41,10 +38,6 @@ public class MultiTenancyDaoTest {
 
     @Autowired
     private CurrentTenantIdentifierResolverMock tenantResolver;
-
-    @Autowired
-    @Qualifier("instanceEntityManagerFactory")
-    EntityManager em;
 
     @Test
     public void contextLoads() {
@@ -100,6 +93,16 @@ public class MultiTenancyDaoTest {
         list.forEach(user -> results.add(user));
         Assert.assertTrue("Error, there must be no element in the database associated to the tenant test1 ("
                 + results.size() + ")", results.size() == 0);
+
+        newUser = userRepository.save(newUser);
+        LOG.info("id=" + newUser.getId());
+
+        // Check results
+        list = userRepository.findAll();
+        results.clear();
+        list.forEach(user -> results.add(user));
+        Assert.assertTrue("Error, there must be 1 elements in the database associated to the tenant test2",
+                          results.size() == 1);
 
         // Set tenant to an non existing project
         tenantResolver.setTenant("invalid");
