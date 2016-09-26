@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
@@ -44,7 +43,6 @@ public class ProjectControllerIT extends RegardsIntegrationTest {
     private String errorMessage;
 
     @Autowired
-    @Qualifier("projectServiceStub")
     private IProjectService projectService_;
 
     @Before

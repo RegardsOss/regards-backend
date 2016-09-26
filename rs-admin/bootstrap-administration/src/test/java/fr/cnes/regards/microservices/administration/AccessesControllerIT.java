@@ -16,14 +16,13 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
 import fr.cnes.regards.microservices.modules.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.service.AccessRequestServiceStub;
+import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -45,10 +44,9 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     private String errorMessage;
 
     @Autowired
-    private AccessRequestServiceStub serviceStub;
+    private IAccessRequestService accessRequestService_;
 
     @Autowired
-    @Qualifier("accountServiceStub")
     private IAccountService accountService_;
 
     @Before
@@ -111,8 +109,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dAcceptAccessRequest() {
-        Long accessRequestId = serviceStub.retrieveAccessRequestList().get(0).getId();
-        assertFalse(!serviceStub.existAccessRequest(accessRequestId));
+        Long accessRequestId = accessRequestService_.retrieveAccessRequestList().get(0).getId();
+        assertFalse(!accessRequestService_.existAccessRequest(accessRequestId));
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -131,7 +129,7 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void dDenyAccessRequest() {
-        Long accessRequestId = serviceStub.retrieveAccessRequestList().get(0).getId();
+        Long accessRequestId = accessRequestService_.retrieveAccessRequestList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -152,7 +150,7 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
         expectations.add(status().isNotFound());
         performDelete(apiAccessId, jwt_, expectations, errorMessage, Long.MAX_VALUE);
 
-        Long accessRequestId = serviceStub.retrieveAccessRequestList().get(0).getId();
+        Long accessRequestId = accessRequestService_.retrieveAccessRequestList().get(0).getId();
 
         expectations.clear();
         expectations.add(status().isOk());

@@ -19,8 +19,6 @@ public class Role implements Identifiable<Long> {
     @NotBlank
     private String name_;
 
-    @NotNull
-    @Valid
     // TODO: Create a specific constraint => only role PUBLIC can have no parent
     private Role parentRole_;
 

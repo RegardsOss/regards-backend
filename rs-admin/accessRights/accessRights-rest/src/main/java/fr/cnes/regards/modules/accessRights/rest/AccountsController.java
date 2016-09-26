@@ -6,13 +6,11 @@ package fr.cnes.regards.modules.accessRights.rest;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,32 +39,8 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RequestMapping("/accounts")
 public class AccountsController {
 
-    // @Autowired
-    // private MethodAutorizationService authService_;
-
     @Autowired
-    @Qualifier("accountServiceStub")
     private IAccountService accountService_;
-
-    /**
-     * Method to initiate REST resources authorizations.
-     */
-    @PostConstruct
-    public void initAuthorisations() {
-        // admin can do everything!
-        // authService_.setAutorities("/accounts@GET", new RoleAuthority("ADMIN"));
-        // authService_.setAutorities("/accounts@POST", new RoleAuthority("ADMIN"));
-        // authService_.setAutorities("/accounts/{account_id}@GET", new RoleAuthority("ADMIN"));
-        // authService_.setAutorities("/accounts/{account_id}@PUT", new RoleAuthority("ADMIN"));
-        // authService_.setAutorities("/accounts/{account_id}@DELETE", new RoleAuthority("ADMIN"));
-        // authService_.setAutorities("/accounts/code@GET", new RoleAuthority("ADMIN"));
-        // authService_.setAutorities("/accounts/{account_id}/unlock/{unlock_code}@GET", new RoleAuthority("ADMIN"));
-        // authService_.setAutorities("/accounts/{account_id}/password/{reset_code}@PUT", new RoleAuthority("ADMIN"));
-        // authService_.setAutorities("/accounts/settings@GET", new RoleAuthority("ADMIN"));
-        // authService_.setAutorities("/accounts/settings@PUT", new RoleAuthority("ADMIN"));
-        // // users can just get!
-        // authService_.setAutorities("/accounts@GET", new RoleAuthority("USER"));
-    }
 
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")

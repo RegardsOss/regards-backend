@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
@@ -35,7 +34,7 @@ import fr.cnes.regards.modules.accessRights.service.IUserService;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class UsersControllerIT extends RegardsIntegrationTest {
+public class ProjectUserControllerIT extends RegardsIntegrationTest {
 
     @Autowired
     private JWTService jwtService_;
@@ -55,19 +54,17 @@ public class UsersControllerIT extends RegardsIntegrationTest {
     private String errorMessage;
 
     @Autowired
-    @Qualifier("userServiceStub")
     private IUserService userService_;
 
     @Autowired
-    @Qualifier("roleRepositoryStub")
     private IRoleRepository roleRepository_;
 
     @Autowired
     private IRoleService roleService_;
 
     @Before
-    public void setup() {
-        setLogger(LoggerFactory.getLogger(UsersControllerIT.class));
+    public void init() {
+        setLogger(LoggerFactory.getLogger(ProjectUserControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
         apiUsers = "/users";
         apiUserId = apiUsers + "/{user_id}";

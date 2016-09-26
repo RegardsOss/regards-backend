@@ -56,4 +56,10 @@ public class AccessRequestService implements IAccessRequestService {
 
     }
 
+    @Override
+    public boolean existAccessRequest(Long pAccessRequestId) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
 }

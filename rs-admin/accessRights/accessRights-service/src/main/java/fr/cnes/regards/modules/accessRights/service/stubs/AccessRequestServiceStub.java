@@ -1,25 +1,32 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessRights.service;
+package fr.cnes.regards.modules.accessRights.service.stubs;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
+import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
+import fr.cnes.regards.modules.accessRights.service.IAccountService;
+import fr.cnes.regards.modules.accessRights.service.IRoleService;
+import fr.cnes.regards.modules.accessRights.service.RoleService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 @Service
+@Profile("test")
+@Primary
 public class AccessRequestServiceStub implements IAccessRequestService {
 
     private static List<ProjectUser> projectUsers_ = new ArrayList<>();
@@ -31,8 +38,7 @@ public class AccessRequestServiceStub implements IAccessRequestService {
     @Value("${regards.project.account_acceptance}")
     private String accessSetting_;
 
-    public AccessRequestServiceStub(@Qualifier("accountServiceStub") IAccountService pAccountService,
-            @Qualifier("roleRepositoryStub") IRoleRepository pRoleRepository) {
+    public AccessRequestServiceStub(IAccountService pAccountService, IRoleRepository pRoleRepository) {
         accountService_ = pAccountService;
         roleService_ = new RoleService(pRoleRepository);
     }
@@ -91,6 +97,7 @@ public class AccessRequestServiceStub implements IAccessRequestService {
                 .filter(p -> p.getAccount().equals(pAccount)).findFirst().isPresent();
     }
 
+    @Override
     public boolean existAccessRequest(Long pAccessRequestId) {
         return projectUsers_.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCES))
                 .filter(p -> p.getId() == pAccessRequestId).findFirst().isPresent();

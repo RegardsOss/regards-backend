@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessRights.service;
+package fr.cnes.regards.modules.accessRights.service.stubs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 
 import javax.naming.OperationNotSupportedException;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
@@ -24,12 +25,16 @@ import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
 import fr.cnes.regards.modules.accessRights.domain.UserVisibility;
+import fr.cnes.regards.modules.accessRights.service.IRoleService;
+import fr.cnes.regards.modules.accessRights.service.IUserService;
 
 /**
  * @author svissier
  *
  */
 @Service
+@Profile("test")
+@Primary
 public class UserServiceStub implements IUserService {
 
     public static List<ProjectUser> projectUsers_;
@@ -40,8 +45,8 @@ public class UserServiceStub implements IUserService {
 
     private final IRoleRepository roleRepository_;
 
-    public UserServiceStub(@Qualifier("daoProjectUserStub") IDaoProjectUser pDaoProjectUser, IRoleService pRoleService,
-            @Qualifier("roleRepositoryStub") IRoleRepository pRoleRepository) {
+    public UserServiceStub(IDaoProjectUser pDaoProjectUser, IRoleService pRoleService,
+            IRoleRepository pRoleRepository) {
         daoProjectUser_ = pDaoProjectUser;
         roleService_ = pRoleService;
         roleRepository_ = pRoleRepository;

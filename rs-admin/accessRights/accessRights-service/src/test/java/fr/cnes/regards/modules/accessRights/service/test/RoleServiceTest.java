@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
-import fr.cnes.regards.modules.accessRights.dao.RoleRepositoryStub;
+import fr.cnes.regards.modules.accessRights.dao.stubs.RoleRepositoryStub;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;

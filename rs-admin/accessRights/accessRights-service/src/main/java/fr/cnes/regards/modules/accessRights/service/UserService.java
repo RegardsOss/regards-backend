@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.naming.OperationNotSupportedException;
 
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessRights.domain.Couple;
@@ -14,7 +13,6 @@ import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 
 @Service
-@Primary
 public class UserService implements IUserService {
 
     @Override

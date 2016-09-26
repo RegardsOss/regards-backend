@@ -10,7 +10,6 @@ import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -46,10 +45,9 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RestController
 @ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/users")
-public class UsersController {
+public class ProjectUserController {
 
     @Autowired
-    @Qualifier("userServiceStub")
     private IUserService userService_;
 
     @ExceptionHandler(NoSuchElementException.class)
@@ -77,7 +75,7 @@ public class UsersController {
     public void illegalState() {
     }
 
-    @ResourceAccess(description = "retrieve the list of users of the project")
+    @ResourceAccess(description = "retrieve the list of users of the project", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody HttpEntity<List<ProjectUser>> retrieveProjectUserList() {
         List<ProjectUser> users = userService_.retrieveUserList();

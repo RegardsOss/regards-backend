@@ -16,7 +16,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.web.servlet.ResultMatcher;
 
@@ -52,7 +51,6 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     private String errorMessage;
 
     @Autowired
-    @Qualifier("accountServiceStub")
     private IAccountService accountService_;
 
     @Value("${root.admin.login:admin}")

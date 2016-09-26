@@ -34,4 +34,6 @@ public interface IAccessRequestService {
      */
     void denyAccessRequest(Long pAccessId);
 
+    boolean existAccessRequest(Long pAccessRequestId);
+
 }

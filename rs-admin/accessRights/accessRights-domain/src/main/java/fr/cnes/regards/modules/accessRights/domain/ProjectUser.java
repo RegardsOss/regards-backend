@@ -9,7 +9,6 @@ import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 import org.springframework.hateoas.Identifiable;
 
@@ -33,7 +32,6 @@ public class ProjectUser implements IProjectUser, Identifiable<Long> {
     @PastOrNow
     private LocalDateTime lastUpdate_;
 
-    @NotNull
     private UserStatus status_;
 
     @Valid
@@ -46,7 +44,6 @@ public class ProjectUser implements IProjectUser, Identifiable<Long> {
     @Valid
     private List<ResourcesAccess> permissions;
 
-    @NotNull
     @Valid
     private Account account_;
 

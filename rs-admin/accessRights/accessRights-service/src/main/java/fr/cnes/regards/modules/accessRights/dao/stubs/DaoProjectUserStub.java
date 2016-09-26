@@ -1,15 +1,17 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessRights.dao;
+package fr.cnes.regards.modules.accessRights.dao.stubs;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.Role;
@@ -18,14 +20,15 @@ import fr.cnes.regards.modules.accessRights.service.IAccountService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
 @Repository
+@Profile("test")
+@Primary
 public class DaoProjectUserStub implements IDaoProjectUser {
 
     private static List<ProjectUser> projectUsers_;
 
     private final IAccountService accountService_;
 
-    public DaoProjectUserStub(@Qualifier("accountServiceStub") IAccountService pAccountService)
-            throws AlreadyExistingException {
+    public DaoProjectUserStub(IAccountService pAccountService) throws AlreadyExistingException {
         accountService_ = pAccountService;
 
         projectUsers_ = new ArrayList<>();
