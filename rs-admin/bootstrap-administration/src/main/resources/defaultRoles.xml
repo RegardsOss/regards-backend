@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="public" name="PUBLIC"
+		class="fr.cnes.regards.modules.accessRights.domain.Role">
+		<property name="id" value="0"></property>
+		<property name="name" value="Public"></property>
+		<property name="native" value="true"></property>
+		<property name="default" value="true"></property>
+	</bean>
+
+	<bean id="registeredUser" name="REGISTERED_USER"
+		class="fr.cnes.regards.modules.accessRights.domain.Role">
+		<property name="id" value="1"></property>
+		<property name="name" value="Registered User"></property>
+		<property name="native" value="true"></property>
+		<property name="parentRole" ref="public"></property>
+	</bean>
+
+	<bean id="admin" name="ADMIN"
+		class="fr.cnes.regards.modules.accessRights.domain.Role">
+		<property name="id" value="1"></property>
+		<property name="name" value="Admin"></property>
+		<property name="native" value="true"></property>
+		<property name="parentRole" ref="admin"></property>
+	</bean>
+
+	<bean id="projectAdmin" name="PROJECT_ADMIN"
+		class="fr.cnes.regards.modules.accessRights.domain.Role">
+		<property name="id" value="2"></property>
+		<property name="name" value="Project Admin"></property>
+		<property name="native" value="true"></property>
+		<property name="parentRole" ref="projectAdmin"></property>
+	</bean>
+
+	<bean id="instanceAdmin" name="INSTANCE_ADMIN"
+		class="fr.cnes.regards.modules.accessRights.domain.Role">
+		<property name="id" value="3"></property>
+		<property name="name" value="Instance Admin"></property>
+		<property name="native" value="true"></property>
+		<property name="parentRole" ref="projectAdmin"></property>
+	</bean>
+	
+</beans>

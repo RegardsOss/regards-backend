@@ -9,6 +9,8 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.naming.OperationNotSupportedException;
 
 import org.springframework.stereotype.Service;
@@ -24,9 +26,23 @@ public class RoleService implements IRoleService {
 
     private final IRoleRepository roleRepository_;
 
+    @Resource
+    private List<Role> defaultRoles_;
+
     public RoleService(IRoleRepository pRoleRepository) {
         super();
         roleRepository_ = pRoleRepository;
+    }
+
+    @PostConstruct
+    public void init() throws AlreadyExistingException {
+        // Ensure the existence of default roles
+        // If not, add them from their bean definition in defaultRoles.xml
+        for (Role role : defaultRoles_) {
+            if (!existRole(role)) {
+                createRole(role);
+            }
+        }
     }
 
     @Override
