@@ -3,39 +3,36 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
-import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
 @Service
-public class ProjectServiceStub implements IProjectService {
+public class ProjectService implements IProjectService {
 
-    private static List<Project> projects = new ArrayList<>();
-
-    @PostConstruct
-    public void init() {
-        projects.add(new Project(0L, "desc", "icon", true, "name"));
-    }
+    @Autowired
+    private IProjectRepository projectRepository_;
 
     @Override
-    public Project retrieveProject(String pProjectId) {
-        return projects.stream().filter(p -> p.getName().equals(pProjectId)).findFirst().get();
+    public Project retrieveProject(String pProjectName) {
+        return projectRepository_.findOneByName(pProjectName);
     }
 
     @Override
     public List<Project> deleteProject(String pProjectId) {
-
         Project deleted = retrieveProject(pProjectId);
         deleted.setDeleted(true);
+        projectRepository_.delete(deleted);
         return this.retrieveProjectList();
     }
 
@@ -50,13 +47,12 @@ public class ProjectServiceStub implements IProjectService {
         if (!pProject.getName().equals(projectId)) {
             throw new OperationNotSupportedException("projectId and updated project does not match");
         }
-        projects.stream().map(p -> p.equals(pProject) ? pProject : p).collect(Collectors.toList());
-        return pProject;
+        return projectRepository_.save(pProject);
     }
 
     @Override
     public List<Project> retrieveProjectList() {
-        return projects;
+        return StreamSupport.stream(projectRepository_.findAll().spliterator(), false).collect(Collectors.toList());
     }
 
     @Override
@@ -64,19 +60,19 @@ public class ProjectServiceStub implements IProjectService {
         if (existProject(pNewProject.getName())) {
             throw new AlreadyExistingException(pNewProject.getName());
         }
-        projects.add(pNewProject);
-        return pNewProject;
+        return projectRepository_.save(pNewProject);
     }
 
     @Override
     public boolean existProject(String pProjectId) {
-        return projects.stream().filter(p -> p.getName().equals(pProjectId)).findFirst().isPresent();
+        return StreamSupport.stream(projectRepository_.findAll().spliterator(), false)
+                .filter(p -> p.getName().equals(pProjectId)).findFirst().isPresent();
     }
 
     @Override
     public boolean notDeletedProject(String pProjectId) {
-        return projects.stream().filter(p -> !p.isDeleted()).filter(p -> p.getName().equals(pProjectId)).findFirst()
-                .isPresent();
+        return StreamSupport.stream(projectRepository_.findAll().spliterator(), false).filter(p -> !p.isDeleted())
+                .filter(p -> p.getName().equals(pProjectId)).findFirst().isPresent();
     }
 
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.naming.OperationNotSupportedException;
 
@@ -15,7 +16,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.accessRights.dao.IDaoProjectUser;
+import fr.cnes.regards.modules.accessRights.dao.IProjectUserRepository;
 import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
 import fr.cnes.regards.modules.accessRights.domain.IProjectUser;
@@ -39,18 +40,19 @@ public class UserServiceStub implements IUserService {
 
     public static List<ProjectUser> projectUsers_;
 
-    private final IDaoProjectUser daoProjectUser_;
+    private final IProjectUserRepository daoProjectUser_;
 
     private final IRoleService roleService_;
 
     private final IRoleRepository roleRepository_;
 
-    public UserServiceStub(IDaoProjectUser pDaoProjectUser, IRoleService pRoleService,
+    public UserServiceStub(IProjectUserRepository pDaoProjectUser, IRoleService pRoleService,
             IRoleRepository pRoleRepository) {
         daoProjectUser_ = pDaoProjectUser;
         roleService_ = pRoleService;
         roleRepository_ = pRoleRepository;
-        projectUsers_ = daoProjectUser_.getAll();
+        projectUsers_ = StreamSupport.stream(daoProjectUser_.findAll().spliterator(), false)
+                .collect(Collectors.toList());
     }
 
     /*

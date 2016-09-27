@@ -34,6 +34,10 @@
     	<groupId>com.netflix.feign</groupId>
     	<artifactId>feign-core</artifactId>
 	</dependency>
+	<dependency>
+		<groupId>fr.cnes.regards.modules.project</groupId>
+		<artifactId>project-dao</artifactId>
+	</dependency>
   </dependencies>
 
 </project>

@@ -59,6 +59,10 @@
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-commons</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessRights</groupId>
+			<artifactId>accessRights-dao</artifactId>
+		</dependency>
 	</dependencies>
 
 

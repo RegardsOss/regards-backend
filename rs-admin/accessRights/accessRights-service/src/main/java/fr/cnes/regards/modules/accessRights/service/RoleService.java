@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -47,7 +48,8 @@ public class RoleService implements IRoleService {
 
     @Override
     public List<Role> retrieveRoleList() {
-        return roleRepository_.findAll();
+        Iterable<Role> roles = roleRepository_.findAll();
+        return StreamSupport.stream(roles.spliterator(), false).collect(Collectors.toList());
     }
 
     @Override

@@ -5,8 +5,6 @@ package fr.cnes.regards.modules.accessRights.dao.stubs;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
@@ -21,9 +19,7 @@ import fr.cnes.regards.modules.accessRights.domain.Role;
 @Repository
 @Profile("test")
 @Primary
-public class RoleRepositoryStub implements IRoleRepository {
-
-    private List<Role> roles_ = new ArrayList<>();
+public class RoleRepositoryStub extends RepositoryStub<Role> implements IRoleRepository {
 
     public RoleRepositoryStub() {
 
@@ -50,95 +46,29 @@ public class RoleRepositoryStub implements IRoleRepository {
                 projectUsers_.subList(1, 4), false, true);
         Role roleInstanceAdmin = new Role(4L, "Instance Admin", roleProjectAdmin, new ArrayList<>(),
                 projectUsers_.subList(0, 2), false, true);
-        roles_.add(rolePublic);
-        roles_.add(roleRegisteredUser);
-        roles_.add(roleAdmin);
-        roles_.add(roleProjectAdmin);
-        roles_.add(roleInstanceAdmin);
+        entities_.add(rolePublic);
+        entities_.add(roleRegisteredUser);
+        entities_.add(roleAdmin);
+        entities_.add(roleProjectAdmin);
+        entities_.add(roleInstanceAdmin);
 
         // Init some custom roles
         Role role0 = new Role(5L, "Role 0", rolePublic, permissionList_.subList(1, 2), projectUsers_.subList(0, 1));
         Role role1 = new Role(6L, "Role 1", rolePublic, permissionList_.subList(0, 2), projectUsers_.subList(1, 2));
         Role role2 = new Role(7L, "Role 2", rolePublic, permissionList_.subList(1, 3), projectUsers_.subList(0, 2));
-        roles_.add(role0);
-        roles_.add(role1);
-        roles_.add(role2);
-    }
-
-    @Override
-    public <S extends Role> S save(S pEntity) {
-        // roles_.add(pEntity);
-        roles_.removeIf(r -> r.equals(pEntity));
-        roles_.add(pEntity);
-        return pEntity;
-    }
-
-    @Override
-    public Role findOne(Long pId) {
-        return roles_.stream().filter(r -> r.getId().equals(pId)).findFirst().get();
-    }
-
-    @Override
-    public boolean exists(Long pId) {
-        return roles_.stream().filter(r -> r.getId().equals(pId)).findAny().isPresent();
-    }
-
-    @Override
-    public long count() {
-        return roles_.size();
-    }
-
-    @Override
-    public void delete(Long pId) {
-        roles_.removeIf(r -> r.getId().equals(pId));
-    }
-
-    @Override
-    public void delete(Role pEntity) {
-        roles_.remove(pEntity);
-    }
-
-    @Override
-    public void delete(Iterable<? extends Role> pEntities) {
-        for (Role entity : pEntities) {
-            delete(entity);
-        }
-    }
-
-    @Override
-    public void deleteAll() {
-        roles_ = new ArrayList<>();
-    }
-
-    @Override
-    public <S extends Role> List<S> save(Iterable<S> pEntities) {
-        List<S> savedEntities = new ArrayList<>();
-
-        for (S entity : pEntities) {
-            savedEntities.add(save(entity));
-        }
-
-        return savedEntities;
-    }
-
-    @Override
-    public List<Role> findAll() {
-        return roles_;
-    }
-
-    @Override
-    public List<Role> findAll(Iterable<Long> pIds) {
-        return StreamSupport.stream(pIds.spliterator(), false).map(id -> findOne(id)).collect(Collectors.toList());
+        entities_.add(role0);
+        entities_.add(role1);
+        entities_.add(role2);
     }
 
     @Override
     public Role findByIsDefault(boolean pIsDefault) {
-        return roles_.stream().filter(r -> r.isDefault() == pIsDefault).findFirst().get();
+        return entities_.stream().filter(r -> r.isDefault() == pIsDefault).findFirst().get();
     }
 
     @Override
     public Role findOneByName(String pBorrowedRoleName) {
-        return roles_.stream().filter(r -> r.getName().equals(pBorrowedRoleName)).findFirst().get();
+        return entities_.stream().filter(r -> r.getName().equals(pBorrowedRoleName)).findFirst().get();
     }
 
 }
