@@ -47,12 +47,12 @@ import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
 public class MultiTenancyJpaConfiguration {
 
     /**
-     * JPA Persistence unit name. Used to separate multiples databases
+     * JPA Persistence unit name. Used to separate multiples databases.
      */
     private static final String PERSITENCE_UNIT_NAME = "projects";
 
     /**
-     * Datasources pool
+     * Data sources pool
      */
     @Autowired
     @Qualifier("dataSources")
