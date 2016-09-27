@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.modules.core.validation;
+package fr.cnes.regards.modules.core.validation;
 
 import java.time.LocalDateTime;
 
