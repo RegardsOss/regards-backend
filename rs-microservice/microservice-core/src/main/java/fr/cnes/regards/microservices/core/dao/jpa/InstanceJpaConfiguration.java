@@ -85,15 +85,8 @@ public class InstanceJpaConfiguration {
 
         List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, InstanceEntity.class, null);
 
-        if (packages.size() > 1) {
-            return builder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
-                    .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false)
-                    .build();
-        }
-        else {
-            return builder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
-                    .packages(packages.get(0)).properties(hibernateProps).jta(false).build();
-        }
+        return builder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
+                .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
 
     }
 

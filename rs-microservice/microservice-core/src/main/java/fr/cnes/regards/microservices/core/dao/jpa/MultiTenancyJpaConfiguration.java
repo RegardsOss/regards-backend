@@ -102,15 +102,7 @@ public class MultiTenancyJpaConfiguration {
         List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, Entity.class,
                                                               InstanceEntity.class);
 
-        LocalContainerEntityManagerFactoryBean lcemf;
-        if (packages.size() > 1) {
-            return builder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
-                    .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false)
-                    .build();
-        }
-        else {
-            return builder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME).packages(packages.get(0))
-                    .properties(hibernateProps).jta(false).build();
-        }
+        return builder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
+                .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
     }
 }
