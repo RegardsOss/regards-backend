@@ -61,7 +61,7 @@ public class MultiTenancyDaoTest {
         // Check results
         Iterable<Project> listP = projectRepository_.findAll();
         listP.forEach(project -> resultsP.add(project));
-        Assert.assertTrue("Error, there must be 1 elements in the database associated to the tenant test1 ("
+        Assert.assertTrue("Error, there must be 1 elements in the database associated to the instance db("
                 + resultsP.size() + ")", resultsP.size() == 1);
 
         // Set tenant to project test1
@@ -81,8 +81,8 @@ public class MultiTenancyDaoTest {
         // Check results
         Iterable<User> list = userRepository.findAll();
         list.forEach(user -> results.add(user));
-        Assert.assertTrue("Error, there must be 2 elements in the database associated to the tenant test1",
-                          results.size() == 2);
+        Assert.assertTrue("Error, there must be 2 elements in the database associated to the tenant test1 not "
+                + results.size(), results.size() == 2);
 
         // Set tenant to project 2
         tenantResolver.setTenant("test2");
@@ -91,7 +91,7 @@ public class MultiTenancyDaoTest {
         list = userRepository.findAll();
         results.clear();
         list.forEach(user -> results.add(user));
-        Assert.assertTrue("Error, there must be no element in the database associated to the tenant test1 ("
+        Assert.assertTrue("Error, there must be no element in the database associated to the tenant test2 ("
                 + results.size() + ")", results.size() == 0);
 
         newUser = userRepository.save(newUser);
@@ -101,8 +101,8 @@ public class MultiTenancyDaoTest {
         list = userRepository.findAll();
         results.clear();
         list.forEach(user -> results.add(user));
-        Assert.assertTrue("Error, there must be 1 elements in the database associated to the tenant test2",
-                          results.size() == 1);
+        Assert.assertTrue("Error, there must be 1 elements in the database associated to the tenant test2 + not "
+                + results.size(), results.size() == 1);
 
         // Set tenant to an non existing project
         tenantResolver.setTenant("invalid");

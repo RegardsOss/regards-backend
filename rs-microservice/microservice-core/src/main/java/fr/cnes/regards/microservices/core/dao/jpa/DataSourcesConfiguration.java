@@ -38,6 +38,10 @@ public class DataSourcesConfiguration {
 
     public static final String EMBEDDED_HSQL_URL = "jdbc:hsqldb:file:";
 
+    public static final String EMBEDDED_URL_SEPARATOR = "/";
+
+    public static final String EMBEDDED_URL_BASE_NAME = "applicationdb";
+
     @Autowired
     private MicroserviceConfiguration configuration_;
 
@@ -57,8 +61,10 @@ public class DataSourcesConfiguration {
             if (configuration_.getDao().getEmbedded()) {
                 DriverManagerDataSource dataSource = new DriverManagerDataSource();
                 dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-                dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath() + "/"
-                        + project.getName() + "/applicationdb");
+                dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+                        + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + project.getName()
+                        + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
+                        + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
                 datasources.put(project.getName(), dataSource);
             }
             else {
@@ -89,8 +95,11 @@ public class DataSourcesConfiguration {
         if (configuration_.getDao().getEmbedded()) {
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath() + project.getName()
-                    + "/applicationdb");
+            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+                    + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + project.getName()
+                    + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
+                    + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
+
             return dataSource;
         }
         else {
@@ -116,8 +125,10 @@ public class DataSourcesConfiguration {
         if (configuration_.getDao().getEmbedded()) {
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource
-                    .setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath() + "/instance/applicationdb");
+            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+                    + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + "instance"
+                    + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
+                    + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
             return dataSource;
         }
         else {
