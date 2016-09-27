@@ -63,7 +63,7 @@ public class DaoUserTest {
      */
     public void addWithoutError(String pTenant) {
         tenantResolver.setTenant(pTenant);
-        User plop = userRepository.save(new User("doNotSave", "thisUser"));
+        User plop = userRepository.save(new User("valid", "thisUser"));
         LOG.info("New user created id=" + plop.getId());
     }
 
