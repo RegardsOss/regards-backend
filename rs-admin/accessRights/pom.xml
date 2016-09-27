@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- LICENSE_PLACEHOLDER -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>fr.cnes.regards.modules</groupId>
-  <artifactId>accessRights</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+	<groupId>fr.cnes.regards.modules</groupId>
+	<artifactId>accessRights</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-  <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
-  <parent>
-  	<groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>1.4.0.RELEASE</version>
-  </parent>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.4.0.RELEASE</version>
+	</parent>
 
-  <modules>
-  	<module>accessRights-dao</module>
-  	<module>accessRights-domain</module>
-  	<module>accessRights-rest</module>
-  	<module>accessRights-service</module>
-  	<module>accessRights-signature</module>
-  </modules>
+	<modules>
+		<module>accessRights-dao</module>
+		<module>accessRights-domain</module>
+		<module>accessRights-rest</module>
+		<module>accessRights-service</module>
+		<module>accessRights-signature</module>
+	</modules>
 
- <dependencyManagement>
-  	<dependencies>
-      <!-- Core dependencies -->
+	<dependencyManagement>
+		<dependencies>
+			<!-- Core dependencies -->
 			<dependency>
 				<groupId>fr.cnes.regards.microservices</groupId>
 				<artifactId>microservice-core</artifactId>
@@ -38,65 +38,65 @@
 				<artifactId>module-jobs</artifactId>
 				<version>1.0-SNAPSHOT</version>
 			</dependency>
-      <!-- Module layers -->
-  		<dependency>
-  			<groupId>fr.cnes.regards.modules.accessRights</groupId>
-  			<artifactId>accessRights-dao</artifactId>
-  			<version>1.0-SNAPSHOT</version>
-  		</dependency>
-  		<dependency>
-  			<groupId>fr.cnes.regards.modules.accessRights</groupId>
-  			<artifactId>accessRights-domain</artifactId>
-  			<version>1.0-SNAPSHOT</version>
-  		</dependency>
-  		<dependency>
-  			<groupId>fr.cnes.regards.modules.accessRights</groupId>
-  			<artifactId>accessRights-rest</artifactId>
-  			<version>1.0-SNAPSHOT</version>
-  		</dependency>
-  		<dependency>
-  			<groupId>fr.cnes.regards.modules.accessRights</groupId>
-  			<artifactId>accessRights-service</artifactId>
-  			<version>1.0-SNAPSHOT</version>
-  		</dependency>
-  		<dependency>
-  			<groupId>fr.cnes.regards.modules.accessRights</groupId>
-  			<artifactId>accessRights-signature</artifactId>
-  			<version>1.0-SNAPSHOT</version>
-  		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.users</groupId>
-			<artifactId>users-service</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-    <!-- COTS -->
+			<!-- Module layers -->
+			<dependency>
+				<groupId>fr.cnes.regards.modules.accessRights</groupId>
+				<artifactId>accessRights-dao</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.accessRights</groupId>
+				<artifactId>accessRights-domain</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.accessRights</groupId>
+				<artifactId>accessRights-rest</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.accessRights</groupId>
+				<artifactId>accessRights-service</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.accessRights</groupId>
+				<artifactId>accessRights-signature</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.users</groupId>
+				<artifactId>users-service</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>
+			<!-- COTS -->
 			<!-- Netflix Feign REST Client -->
 			<dependency>
 				<groupId>com.netflix.feign</groupId>
 				<artifactId>feign-core</artifactId>
 				<version>8.18.0</version>
 			</dependency>
-  	</dependencies>
-  </dependencyManagement>
+		</dependencies>
+	</dependencyManagement>
 
-  <dependencies>
-  	<dependency>
-  		<groupId>fr.cnes.regards.modules</groupId>
-  		<artifactId>module-core</artifactId>
-  		<version>1.1-SNAPSHOT</version>
-  	</dependency>
-  </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>module-core</artifactId>
+			<version>1.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
 
-  <build>
- 	    <plugins>
-  			<plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-compiler-plugin</artifactId>
-		        <configuration>
-		            <source>1.8</source>
-		            <target>1.8</target>
-		        </configuration>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
 			</plugin>
 		</plugins>
-  </build>
+	</build>
 </project>
