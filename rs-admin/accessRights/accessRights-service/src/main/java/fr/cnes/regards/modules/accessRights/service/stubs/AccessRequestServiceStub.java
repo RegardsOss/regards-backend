@@ -41,6 +41,21 @@ public class AccessRequestServiceStub implements IAccessRequestService {
     public AccessRequestServiceStub(IAccountService pAccountService, IRoleRepository pRoleRepository) {
         accountService_ = pAccountService;
         roleService_ = new RoleService(pRoleRepository);
+
+        Account account = new Account("email@email.email", "firstName", "lastName", "password");
+        ProjectUser projectUser = new ProjectUser(account);
+        projectUsers_.add(projectUser);
+
+        account = new Account("toto@toto.toto", "firstName", "lastName", "password");
+        projectUser = new ProjectUser(account);
+        projectUser.setStatus(UserStatus.ACCESS_GRANTED);
+        projectUsers_.add(projectUser);
+
+        account = new Account("titi@titi.titi", "firstName", "lastName", "password");
+        projectUser = new ProjectUser(account);
+        projectUser.setStatus(UserStatus.ACCES_DENIED);
+        projectUsers_.add(projectUser);
+
     }
 
     @Override

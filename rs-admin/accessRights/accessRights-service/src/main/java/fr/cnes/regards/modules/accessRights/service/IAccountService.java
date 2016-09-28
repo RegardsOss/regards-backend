@@ -16,8 +16,6 @@ public interface IAccountService {
 
     List<Account> retrieveAccountList();
 
-    Account createAccount(String pString) throws AlreadyExistingException;
-
     Account createAccount(Account pNewAccount) throws AlreadyExistingException;
 
     List<String> retrieveAccountSettings();

@@ -9,19 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.Account;
+import fr.cnes.regards.modules.accessRights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
 
 /**
@@ -30,7 +30,6 @@ import fr.cnes.regards.modules.accessRights.service.IAccountService;
  * @author svissier
  *
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Autowired
@@ -78,23 +77,25 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void aGetAllAccounts() {
+    public void getAllAccounts() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiAccounts, jwt_, expectations, errorMessage);
     }
 
     @Test
-    public void aGetSettings() {
+    public void getSettings() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiAccountSetting, jwt_, expectations, errorMessage);
     }
 
     @Test
-    public void bCreateAccount() {
+    @DirtiesContext
+    public void createAccount() {
         Account newAccount;
-        newAccount = new Account("email@email.email", "firstName", "lastName", "login", "password");
+        newAccount = new Account(1584L, "pEmail@email.email", "pFirstName", "pLastName", "pLogin", "pPassword",
+                AccountStatus.PENDING, "pCode");
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
@@ -112,7 +113,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void cGetAccount() {
+    public void getAccount() {
 
         Long accountId = accountService_.retrieveAccountList().get(0).getId();
 
@@ -127,7 +128,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void dUpdateAccountSetting() {
+    public void updateAccountSetting() {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -143,7 +144,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void cGetCode() {
+    public void getCode() {
         String accountEmail = "email@email.email";
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -151,7 +152,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void dUpdateAccount() {
+    public void updateAccount() {
         Account updated = accountService_.retrieveAccount("email@email.email");
         updated.setFirstName("AnOtherFirstName");
         Long accountId = updated.getId();
@@ -170,8 +171,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void dUnlockAccount() {
-
+    public void unlockAccount() {
         Account account = accountService_.retrieveAccount("email@email.email");
         Long accountId = account.getId();
 
@@ -181,7 +181,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void dChangeAccountPassword() {
+    public void changeAccountPassword() {
         Account account = accountService_.retrieveAccount("email@email.email");
         Long accountId = account.getId();
 
@@ -192,7 +192,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void eDeleteAccount() {
+    @DirtiesContext
+    public void deleteAccount() {
         Long accountId = accountService_.retrieveAccountList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);

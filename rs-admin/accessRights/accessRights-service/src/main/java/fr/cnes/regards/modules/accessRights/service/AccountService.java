@@ -24,12 +24,6 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Account createAccount(String pString) throws AlreadyExistingException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public Account createAccount(Account pNewAccount) throws AlreadyExistingException {
         // TODO Auto-generated method stub
         return null;

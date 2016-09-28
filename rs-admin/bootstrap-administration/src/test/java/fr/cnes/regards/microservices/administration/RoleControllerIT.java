@@ -75,13 +75,6 @@ public class RoleControllerIT extends RegardsIntegrationTest {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiRoles, jwt_, expectations, "TODO Error message");
-
-        // // we have to use exchange instead of getForEntity as long as we use List otherwise the response body is not
-        // // well cast.
-        // ParameterizedTypeReference<List<Role>> typeRef = new ParameterizedTypeReference<List<Role>>() {
-        // };
-        // ResponseEntity<List<Role>> response = restTemplate.exchange(apiRoles, HttpMethod.GET, null, typeRef);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test

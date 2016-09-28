@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.naming.OperationNotSupportedException;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessRights.domain.Account;
+import fr.cnes.regards.modules.accessRights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
@@ -29,17 +31,20 @@ public class AccountServiceStub implements IAccountService {
 
     private static List<Account> accounts = new ArrayList<>();
 
+    @PostConstruct
+    public void init() {
+        accounts.add(new Account(0L, "email@email.email", "firstName", "lastName", "flastname", "password",
+                AccountStatus.ACCEPTED, "code"));
+        accounts.add(new Account(1L, "toto@toto.toto", "Toto", "toto", "tttoto", "mdp", AccountStatus.PENDING,
+                "anotherCode"));
+    }
+
     @Value("${regards.instance.account_acceptance}")
     private String accountSetting;
 
     @Override
     public List<Account> retrieveAccountList() {
         return accounts;
-    }
-
-    @Override
-    public Account createAccount(String pEmail) {
-        return new Account(pEmail);
     }
 
     @Override

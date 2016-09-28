@@ -69,6 +69,19 @@ public class Account implements Identifiable<Long> {
         password_ = password;
     }
 
+    public Account(Long pId, String pEmail, String pFirstName, String pLastName, String pLogin, String pPassword,
+            AccountStatus pStatus, String pCode) {
+        super();
+        id_ = pId;
+        email_ = pEmail;
+        firstName_ = pFirstName;
+        lastName_ = pLastName;
+        login_ = pLogin;
+        password_ = pPassword;
+        status_ = pStatus;
+        code_ = pCode;
+    }
+
     public String getEmail() {
         return email_;
     }

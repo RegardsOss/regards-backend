@@ -11,11 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
@@ -25,7 +24,6 @@ import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Autowired
@@ -61,7 +59,7 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void aGetAllAccesses() throws IOException {
+    public void getAllAccesses() throws IOException {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -69,11 +67,12 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void bRequestAccess() {
+    @DirtiesContext
+    public void requestAccess() {
         Account newAccountRequesting;
         ProjectUser newAccessRequest;
         // to be accepted
-        newAccountRequesting = new Account("email@email.email", "firstName", "lastName", "password");
+        newAccountRequesting = new Account("fd5f4e5f84@new.new", "firstName", "lastName", "password");
         newAccessRequest = new ProjectUser(newAccountRequesting);
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -83,32 +82,34 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
         expectations.clear();
         expectations.add(status().isConflict());
         performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
-        // to be denied
-        newAccountRequesting = new Account("email2@email.email", "firstName", "lastName", "password");
-        newAccessRequest = new ProjectUser(newAccountRequesting);
 
-        expectations.clear();
-        expectations.add(status().isCreated());
-        performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
-
-        expectations.clear();
-        expectations.add(status().isConflict());
-        performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
-        // to be removed
-        newAccountRequesting = new Account("email3@email.email", "firstName", "lastName", "password");
-        newAccessRequest = new ProjectUser(newAccountRequesting);
-
-        expectations.clear();
-        expectations.add(status().isCreated());
-        performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
-
-        expectations.clear();
-        expectations.add(status().isConflict());
-        performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
+        // // to be denied
+        // newAccountRequesting = new Account("new2@email.email", "firstName", "lastName", "password");
+        // newAccessRequest = new ProjectUser(newAccountRequesting);
+        //
+        // expectations.clear();
+        // expectations.add(status().isCreated());
+        // performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
+        //
+        // expectations.clear();
+        // expectations.add(status().isConflict());
+        // performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
+        // // to be removed
+        // newAccountRequesting = new Account("new3@email.email", "firstName", "lastName", "password");
+        // newAccessRequest = new ProjectUser(newAccountRequesting);
+        //
+        // expectations.clear();
+        // expectations.add(status().isCreated());
+        // performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
+        //
+        // expectations.clear();
+        // expectations.add(status().isConflict());
+        // performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
     }
 
     @Test
-    public void dAcceptAccessRequest() {
+    @DirtiesContext
+    public void acceptAccessRequest() {
         Long accessRequestId = accessRequestService_.retrieveAccessRequestList().get(0).getId();
         assertFalse(!accessRequestService_.existAccessRequest(accessRequestId));
 
@@ -128,7 +129,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void dDenyAccessRequest() {
+    @DirtiesContext
+    public void denyAccessRequest() {
         Long accessRequestId = accessRequestService_.retrieveAccessRequestList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -145,7 +147,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
-    public void eDeleteAccessRequest() {
+    @DirtiesContext
+    public void deleteAccessRequest() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
         performDelete(apiAccessId, jwt_, expectations, errorMessage, Long.MAX_VALUE);
