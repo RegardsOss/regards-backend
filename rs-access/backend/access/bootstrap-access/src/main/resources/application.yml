@@ -1,0 +1,50 @@
+server:
+  adress: localhost
+  port: 3339
+
+security:
+  client: acme
+  secret: acmesecret
+
+spring:
+  application:
+    name : access
+    
+  profiles :
+    active : service-stub
+    
+swagger:
+  api:
+    name: access-api
+
+cloud:
+  config:
+    discovery:
+      enabled: false
+    server:
+      enabled: false
+      name: myconfigserver
+      
+eureka:
+  client:
+    enabled: false
+
+microservice:
+  dao:
+    enabled : false
+    embedded : false
+    instance :
+      enabled : false
+      datasource :
+        url: jdbc:postgresql://localhost:5432/project1
+        username: user
+        password: mdp
+    dialect : org.hibernate.dialect.PostgreSQLDialect
+    driverClassName : org.postgresql.Driver
+#  projects:
+#    -
+#      name: project1
+#      datasource:
+#        url: jdbc:postgresql://localhost:5432/project1
+#        username: user
+#        password: mdp
