@@ -1,11 +1,11 @@
 /** @module AdminApp */
 import * as React from "react"
 import { ThemeContextInterface, ThemeContextType } from "@regardsoss/theme"
+import MenuContainer from "./menu/containers/MenuContainer"
 
 interface MainAdminLayoutProps {
   theme?: string,
   content: any,
-  location: any,
 }
 
 /**
@@ -27,21 +27,22 @@ class PortalLayout extends React.Component<MainAdminLayoutProps, any> {
     const {content} = this.props
     const style = {
       app: {
-        classes: this.context.muiTheme.adminApp.layout.app.classes.join(' '),
-        styles: this.context.muiTheme.adminApp.layout.app.styles,
+        classes: this.context.muiTheme.portalApp.layout.app.classes.join(' '),
+        styles: this.context.muiTheme.portalApp.layout.app.styles,
       },
       bodyContainer: {
-        classes: this.context.muiTheme.adminApp.layout.bodyContainer.classes.join(' '),
-        styles: this.context.muiTheme.adminApp.layout.bodyContainer.styles,
+        classes: this.context.muiTheme.portalApp.layout.bodyContainer.classes.join(' '),
+        styles: this.context.muiTheme.portalApp.layout.bodyContainer.styles,
       },
       contentContainer: {
-        classes: this.context.muiTheme.adminApp.layout.contentContainer.classes.join(' '),
-        styles: this.context.muiTheme.adminApp.layout.contentContainer.styles,
+        classes: this.context.muiTheme.portalApp.layout.contentContainer.classes.join(' '),
+        styles: this.context.muiTheme.portalApp.layout.contentContainer.styles,
       },
     }
 
     return (
       <div className={style.app.classes} style={style.app.styles}>
+        <MenuContainer/>
         <div className={style.bodyContainer.classes} style={style.bodyContainer.styles}>
           <div className={style.contentContainer.classes} style={style.contentContainer.styles}>
             {content}

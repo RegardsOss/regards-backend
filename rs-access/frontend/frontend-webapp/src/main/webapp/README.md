@@ -2,20 +2,17 @@
 
 This is the REGARDS Access frontend.
 
-## Install
+## Quick setup
 
 ```
+cd path/to/folder/webapp/
 chmod +x ./scripts/bootstrap.sh
 npm run boostrap
 npm install
 npm run test
 ```
 
-## Build
-
-```
-npm run build:production
-```
+For more information visit: rs-docs/front/build.md
 
 ## Dependencies
 
@@ -23,14 +20,11 @@ npm run build:production
 - npm v3
 - webpack v1.13
 - babel
-
-## Architecture
-
-See rs-docs/front/architecture.md
-
-
-## Plugins
-
-
-All plugins in plugins/ directory have to be React components.
-See the maven project frontend-plugins to see plugin exemple HelloWorldPlugin
+- material-ui
+- react v15
+- redux
+- lodash
+- normalizr
+- mocha, nyc
+- enzyme, chai, sinon
+- Typescript, typings, tslint

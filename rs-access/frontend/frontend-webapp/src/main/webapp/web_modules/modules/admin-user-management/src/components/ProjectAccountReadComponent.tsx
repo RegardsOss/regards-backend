@@ -202,7 +202,7 @@ class ProjectAccountReadComponent extends React.Component<ProjectAccountReadProp
               <Subheader>Etat du compte</Subheader>
               <ListItem
                 primaryText="Compte verrouillé"
-                leftIcon={<Lock color={this.props.theme.textField.errorColor}/>}
+                leftIcon={<Lock color={this.props.theme.palette.errorColor}/>}
               />
             </List>
             <Divider />

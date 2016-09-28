@@ -1,4 +1,4 @@
-import { storiesOf, linkTo, action } from "@kadira/storybook";
+import { storiesOf, linkTo } from "@kadira/storybook";
 const styles = {
   main: {
     margin: 15,
@@ -43,7 +43,7 @@ class Welcome extends React.Component {
       <div style={styles.main}>
         <h1>Welcome to Regards OSS storybook</h1>
         <p>
-          This dev environment is aim to ease HMI tests.
+          This dev environment is aim to ease HMI feedback.
         </p>
       </div>
     );

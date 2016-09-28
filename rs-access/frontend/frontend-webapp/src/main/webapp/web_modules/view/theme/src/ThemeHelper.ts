@@ -2,6 +2,7 @@ import * as injectTapEventPlugin from "react-tap-event-plugin"
 import getMuiTheme from "material-ui/styles/getMuiTheme"
 import customThemes from "./custom/index"
 import adminAppLayer from "./custom/adminAppLayer"
+import portalAppLayer from "./custom/portalAppLayer"
 import { merge } from "lodash"
 // Custom themes
 
@@ -16,7 +17,10 @@ class ThemeHelper {
   }
 
   static addAppLayer = (theme: any): any => {
-    return merge({}, adminAppLayer, theme)
+    if (theme === undefined || theme.length === 0) {
+      console.error("This theme does not exist or is empty", theme)
+    }
+    return merge({}, adminAppLayer, portalAppLayer, theme)
   }
 
   /**

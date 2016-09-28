@@ -24,7 +24,7 @@ class UserApp extends React.Component<UserAppProps, any> {
   }
 
   render (): JSX.Element {
-    // Location ,params and content are set in this container props by react-router
+    // Location ,params and content are set in this containers props by react-router
     const {location, params, content, theme} = this.props
     const {project} = params
 

@@ -1,7 +1,5 @@
 import {BasicSelector} from "@regardsoss/store-utils"
 
-// Selectors
-export const getDatasets = (state: any) => state.items
 
 class DatasourceSelectors extends BasicSelector {
   constructor () {

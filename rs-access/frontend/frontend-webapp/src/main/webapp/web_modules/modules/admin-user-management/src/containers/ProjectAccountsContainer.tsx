@@ -32,7 +32,7 @@ export class ProjectAccountsContainer extends React.Component<ProjectAccountsPro
 
   constructor (props: any) {
     super(props)
-    // Fetch users for the current project when the container is created
+    // Fetch users for the current project when the containers is created
     this.props.fetchProjectAccounts(URL_PROJECTS_ACCOUNTS)
   }
 

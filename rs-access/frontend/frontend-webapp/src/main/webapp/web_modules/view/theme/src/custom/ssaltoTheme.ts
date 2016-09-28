@@ -32,9 +32,7 @@ export default {
     textColor: lightGreen700,
     secondaryTextColor: fade(blueGrey800, 0.54),
     alternateTextColor: brown50,
-    errorColor: {
-      color: red900
-    }
+    errorColor: red900
   },
   linkWithoutDecoration: {
     textDecoration: "blink"

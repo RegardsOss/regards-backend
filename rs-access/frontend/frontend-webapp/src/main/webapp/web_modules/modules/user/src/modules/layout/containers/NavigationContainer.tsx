@@ -16,16 +16,16 @@ interface NavigationProps {
 class NavigationContainer extends React.Component<NavigationProps, any> {
 
   componentWillMount (): any {
-    // Plugins are set to the container props by react-redux connect.
-    // See method mapStateToProps of this container
+    // Plugins are set to the containers props by react-redux connect.
+    // See method mapStateToProps of this containers
     const {plugins} = this.props
-    // initTheme method is set to the container props by react-redux connect.
-    // See method mapDispatchToProps of this container
+    // initTheme method is set to the containers props by react-redux connect.
+    // See method mapDispatchToProps of this containers
     // this.props.initTheme(themeToSet)
 
     if (!plugins || !plugins.items || plugins.items.length === 0) {
-      // fetchPlugins method is set to the container props by react-redux connect.
-      // See method mapDispatchToProps of this container
+      // fetchPlugins method is set to the containers props by react-redux connect.
+      // See method mapDispatchToProps of this containers
       this.props.fetchPlugins()
     }
   }
@@ -72,13 +72,13 @@ class NavigationContainer extends React.Component<NavigationProps, any> {
   }
 }
 
-// Add projects from store to the container props
+// Add projects from store to the containers props
 const mapStateToProps = (state: any) => {
   return {
     plugins: state.common.plugins
   }
 }
-// Add functions dependending on store dispatch to container props.
+// Add functions dependending on store dispatch to containers props.
 const mapDispatchToProps = (dispatch: any) => ({
   fetchPlugins: () => dispatch(fetchPlugins())
 })

@@ -4,9 +4,7 @@ import { merge } from "lodash"
 import { red900, grey900, blueGrey50 } from "material-ui/styles/colors"
 export default merge({}, lightBaseTheme, {
   palette: {
-    errorColor: {
-      color: red900
-    }
+    errorColor: red900
   },
   toolbar: {},
   linkWithoutDecoration: {

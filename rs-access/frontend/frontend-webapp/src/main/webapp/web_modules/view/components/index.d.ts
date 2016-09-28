@@ -6,6 +6,5 @@ declare module "@regardsoss/components" {
   export const ModuleComponent: any
   export const SecondaryActionButtonComponent: any
   export const ShowableAtRender: any
+  export const NewsItemComponent: any
 }
-
-

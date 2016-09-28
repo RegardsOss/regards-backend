@@ -1,11 +1,18 @@
-import "./Welcome"
-import "./modules/view/material-ui/all"
-import "./modules/view/theme/SelectTheme"
-import "./modules/view/components/CardActions"
-import "./modules/modules/admin-project-management/ProjectCreate"
-import "./modules/modules/admin-project-management/ProjectRead"
-import "./modules/modules/admin-project-management/ProjectList"
-import "./modules/modules/admin-user-management/ProjectAccounts"
-import "./modules/modules/admin-user-management/ProjectAccountEdit"
-import "./modules/modules/admin-user-management/ProjectAccountCreate"
+import "./Welcome";
+import "./view/material-ui/all";
+import "./view/theme/SelectTheme";
+import "./view/components/CardActions";
+import "./view/components/News";
 
+import "./modules/admin/AdminLayout";
+import "./modules/portal/PortalLayout";
+
+import "./modules/admin/Authentication";
+import "./modules/admin-project-management/ProjectCreate";
+import "./modules/admin-project-management/ProjectRead";
+import "./modules/admin-project-management/ProjectList";
+import "./modules/admin-user-management/ProjectAccounts";
+import "./modules/admin-user-management/ProjectAccountEdit";
+import "./modules/admin-user-management/ProjectAccountCreate";
+import "./modules/portal/PortalHome";
+import "./modules/portal/ProjectFeed";

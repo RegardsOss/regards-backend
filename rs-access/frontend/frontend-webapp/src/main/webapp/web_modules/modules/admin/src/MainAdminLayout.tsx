@@ -4,18 +4,20 @@ import { ThemeContextInterface, ThemeContextType } from "@regardsoss/theme"
 import SidebarContainer from "./menu/containers/SidebarContainer"
 import MenuContainer from "./menu/containers/MenuContainer"
 interface MainAdminLayoutProps {
+  content: any,
+  onLogout?: () => void
+
+  // Looks useless
+  location: any,
   theme?: string,
   authentication?: any,
-  content: any,
-  location: any,
-  onLogout?: () => void
 }
 
 /**
  * React component to manage Administration application.
  * This component display admin layout or login form if the user is not connected
  */
-class MainAdminLayout extends React.Component<MainAdminLayoutProps, any> {
+export class MainAdminLayout extends React.Component<MainAdminLayoutProps, any> {
 
   static contextTypes: Object = ThemeContextType
   context: ThemeContextInterface

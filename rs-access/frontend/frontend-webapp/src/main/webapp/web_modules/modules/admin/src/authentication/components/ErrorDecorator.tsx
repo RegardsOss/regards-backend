@@ -15,7 +15,9 @@ export default class ErrorDecoratorComponent extends React.Component<ErrorDecora
   context: ThemeContextInterface
 
   render (): JSX.Element {
-    const errorStyle = this.context.muiTheme.palette.errorColor
+    const errorStyle = {
+      color: this.context.muiTheme.palette.errorColor
+    }
     return (
       <span style={errorStyle}>
         { this.props.children }

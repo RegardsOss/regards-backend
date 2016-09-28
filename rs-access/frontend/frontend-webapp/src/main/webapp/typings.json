@@ -22,7 +22,7 @@
     "material-ui": "registry:dt/material-ui#0.15.1+20160919210656",
     "mocha": "registry:dt/mocha#2.2.5+20160720003353",
     "nock": "registry:dt/nock#0.54.0+20160907105249",
-    "node": "registry:dt/node#6.0.0+20160919063032",
+    "node": "registry:dt/node#6.0.0+20160925070332",
     "normalizr": "registry:dt/normalizr#2.0.1+20160501130729",
     "react": "registry:dt/react#0.14.0+20160920055104",
     "react-addons-update": "registry:dt/react-addons-update#0.14.0+20160316155526",

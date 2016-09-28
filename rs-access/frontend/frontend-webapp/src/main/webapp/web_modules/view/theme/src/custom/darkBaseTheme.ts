@@ -5,9 +5,7 @@ import { red900, white } from "material-ui/styles/colors"
 const backgroundColor = "#2a2a2a"
 export default merge({}, darkBaseTheme, {
   palette: {
-    errorColor: {
-      color: red900
-    }
+    errorColor: red900
   },
   toolbar: {
     backgroundColor: backgroundColor,

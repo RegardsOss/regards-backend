@@ -41,14 +41,14 @@ export class SelectLocaleContainer extends React.Component<SelectLocaleTypes, an
   }
 }
 
-// Add projects from store to the container props
+// Add projects from store to the containers props
 const mapStateToProps = (state: any) => {
   return {
     currentLocale: state.common.i18n.locale
   }
 }
 
-// Add functions dependending on store dispatch to container props.
+// Add functions dependending on store dispatch to containers props.
 const mapDispatchToProps = (dispatch: any) => {
   return {
     setLocale: (locale: string) => dispatch(updateLocale(locale))

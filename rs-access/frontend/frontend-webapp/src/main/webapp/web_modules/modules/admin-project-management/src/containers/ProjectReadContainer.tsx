@@ -47,9 +47,14 @@ export class ProjectReadContainer extends React.Component<ProjectReadProps, Proj
   }
 
   componentDidMount (): void {
-    this.setState({
-      project: this.props.projects[this.props.params.project_id]
-    })
+    const project =  this.props.projects[this.props.params.project_id];
+    if (project) {
+      this.setState({
+        project: project
+      })
+    } else {
+      throw new Error("Failed to find the corresponding project")
+    }
   }
 
   handleEdit = () => {
@@ -65,7 +70,6 @@ export class ProjectReadContainer extends React.Component<ProjectReadProps, Proj
   }
 
   render (): JSX.Element {
-
     return (
       <Paper>
         <AppBar
@@ -118,8 +122,8 @@ export class ProjectReadContainer extends React.Component<ProjectReadProps, Proj
               <List>
                 <Subheader>Etat du projet</Subheader>
                 <ListItem
-                  primaryText="Information sur l'état du projet"
-                  leftIcon={<Lock color={this.props.theme.textField.errorColor}/>}
+                  primaryText="Information sur l'étatxt du projet"
+                  leftIcon={<Lock color={this.props.theme.palette.errorColor}/>}
                 />
               </List>
               <Divider />

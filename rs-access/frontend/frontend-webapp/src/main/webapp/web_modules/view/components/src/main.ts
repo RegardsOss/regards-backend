@@ -5,7 +5,7 @@ import MainActionButtonComponent from "./MainActionButtonComponent"
 import ModuleComponent from "./ModuleComponent"
 import SecondaryActionButtonComponent from "./SecondaryActionButtonComponent"
 import ShowableAtRender from "./ShowableAtRender"
-
+import NewsItemComponent from "./NewsItemComponent"
 export {
   ActionButtonComponent,
   ApplicationErrorComponent,
@@ -13,5 +13,6 @@ export {
   MainActionButtonComponent,
   ModuleComponent,
   SecondaryActionButtonComponent,
-  ShowableAtRender
+  ShowableAtRender,
+  NewsItemComponent
 }
