@@ -123,7 +123,7 @@ public abstract class RegardsIntegrationTest {
         }
     }
 
-    private String json(Object o) throws IOException {
+    protected String json(Object o) throws IOException {
         if (o instanceof String) {
             return (String) o;
         }
