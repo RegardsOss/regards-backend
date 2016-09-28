@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.dao.instance;
+package fr.cnes.regards.microservices.core.dao.controllers;
 
 /**
  * Test controller for JWT and DAO Integration tests
@@ -9,10 +9,7 @@ package fr.cnes.regards.microservices.core.dao.instance;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +20,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.microservices.core.dao.pojo.instance.Project;
+import fr.cnes.regards.microservices.core.dao.repository.instance.ProjectRepository;
+
 @RestController
 @RequestMapping("/test/dao")
 public class ProjectController {
-
-    @Autowired
-    @Qualifier("instanceEntityManagerFactory")
-    EntityManager em;
 
     @Autowired
     private ProjectRepository projectRepo_;
