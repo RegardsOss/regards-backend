@@ -1,8 +1,11 @@
-server.port=${service.registry.port}
+server:
+  port: ${service.registry.port}
 
-eureka.client.register-with-eureka=false
-eureka.client.fetch-registry=false
-#eureka.client.enabled=false
+eureka:
+  client:
+    enabled: true
+    register-with-eureka: false
+    fetch-registry: false
 
 # TODO investigate warning:
 # EMERGENCY! EUREKA MAY BE INCORRECTLY CLAIMING INSTANCES ARE UP WHEN THEY'RE NOT. RENEWALS ARE LESSER THAN THRESHOLD AND HENCE THE INSTANCES ARE NOT BEING EXPIRED JUST TO BE SAFE.
