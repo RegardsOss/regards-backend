@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
  * @author cmertz
  *
  */
-@Profile("dev")
+@Profile("test")
 @Service
 @Primary
 public class NavigationContextServiceStub implements INavigationContextService {
@@ -37,7 +37,7 @@ public class NavigationContextServiceStub implements INavigationContextService {
     private static List<NavigationContext> navigationContexts = new ArrayList<>();
 
     @PostConstruct
-    public void init() {
+    public final void init() {
         List<ConfigParameter> themeParameters = Arrays.asList(new ConfigParameter("param 1 ", "value 1"),
                                                               new ConfigParameter("param 2 ", "value 2"));
         List<ConfigParameter> navCtxtParameters = Arrays
@@ -62,7 +62,7 @@ public class NavigationContextServiceStub implements INavigationContextService {
      * @see fr.cnes.regards.modules.access.service.INavigationContextService#get(java .lang.String)
      */
     @Override
-    public NavigationContext load(String pTinyUrl) throws NoSuchElementException {
+    public final NavigationContext load(String pTinyUrl) throws NoSuchElementException {
         NavigationContext navigationContext = navigationContexts.stream().filter(p -> p.getTinyUrl().equals(pTinyUrl))
                 .findFirst().get();
         if (navigationContext == null) {
@@ -77,7 +77,7 @@ public class NavigationContextServiceStub implements INavigationContextService {
      * @see fr.cnes.regards.modules.access.service.INavigationContextService#put(java .lang.String)
      */
     @Override
-    public void update(String pTinyUrl, NavigationContext pNavigationContext)
+    public final void update(String pTinyUrl, NavigationContext pNavigationContext)
             throws OperationNotSupportedException, NoSuchElementException {
         NavigationContext navigationContext = this.load(pTinyUrl);
         if (navigationContext == null) {
@@ -95,7 +95,7 @@ public class NavigationContextServiceStub implements INavigationContextService {
      * @see fr.cnes.regards.modules.access.service.INavigationContextService#delete( java.lang.String)
      */
     @Override
-    public void delete(String pTinyUrl) throws NoSuchElementException {
+    public final void delete(String pTinyUrl) throws NoSuchElementException {
         NavigationContext navigationContext = this.load(pTinyUrl);
         navigationContexts.remove(navigationContext);
     }
@@ -106,7 +106,7 @@ public class NavigationContextServiceStub implements INavigationContextService {
      * @see fr.cnes.regards.modules.access.service.INavigationContextService#list()
      */
     @Override
-    public List<NavigationContext> list() {
+    public final List<NavigationContext> list() {
         return navigationContexts;
     }
 
@@ -117,7 +117,7 @@ public class NavigationContextServiceStub implements INavigationContextService {
      * fr.cnes.regards.modules.access.domain. NavigationContext)
      */
     @Override
-    public NavigationContext create(NavigationContext pNavigationContext) throws AlreadyExistingException {
+    public final NavigationContext create(NavigationContext pNavigationContext) throws AlreadyExistingException {
         pNavigationContext.setTinyUrl("coucou");
         navigationContexts.add(pNavigationContext);
 
@@ -129,7 +129,7 @@ public class NavigationContextServiceStub implements INavigationContextService {
      * @param pTinyUrl
      * @return true if the tinyUrl exists, false otherwise
      */
-    public boolean exists(String pTinyUrl) {
+    public final boolean exists(String pTinyUrl) {
         return navigationContexts.stream().filter(p -> p.getTinyUrl().equals(pTinyUrl)).findFirst().isPresent();
     }
 

@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
+import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.access.domain.ConfigParameter;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 import fr.cnes.regards.modules.access.domain.Project;
@@ -48,14 +49,10 @@ import fr.cnes.regards.modules.access.domain.ThemeType;
  * @author cmertz
  *
  */
-@ActiveProfiles("dev")
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class NavigationContextControllerTest {
+public class NavigationContextControllerIT extends RegardsIntegrationTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NavigationContextControllerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NavigationContextControllerIT.class);
 
     private String jwt_;
 
@@ -101,36 +98,6 @@ public class NavigationContextControllerTest {
         methodAutorizationService.setAuthorities("/tiny/url/{tinyUrl}", RequestMethod.GET, "USER");
         methodAutorizationService.setAuthorities("/tiny/url/{tinyUrl}", RequestMethod.PUT, "USER");
         methodAutorizationService.setAuthorities("/tiny/url/{tinyUrl}", RequestMethod.DELETE, "USER");
-    }
-
-    private HttpMessageConverter mappingJackson2HttpMessageConverter_;
-
-    /**
-     * 
-     * @param converters
-     */
-    @Autowired
-    final void setConverters(HttpMessageConverter<?>[] converters) {
-
-        mappingJackson2HttpMessageConverter_ = Arrays.asList(converters).stream()
-                .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter).findAny().get();
-
-        Assert.assertNotNull("the JSON message converter must not be null", mappingJackson2HttpMessageConverter_);
-    }
-
-    /**
-     * Convert an object to a Json
-     * 
-     * @param pObj
-     *            an Object
-     * @throws IOException
-     *             IOException
-     * @return Json's object
-     */
-    private String json(Object pObj) throws IOException {
-        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        mappingJackson2HttpMessageConverter_.write(pObj, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
-        return mockHttpOutputMessage.getBodyAsString();
     }
 
     /**
