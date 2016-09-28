@@ -7,3 +7,7 @@ service:
 logging:
   level:
     regards: DEBUG
+    
+    
+jwt:
+  secret: 123456789
