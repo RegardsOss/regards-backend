@@ -66,10 +66,15 @@ public class MultiTenancyDaoTest {
 
         // Set tenant to project test1
         tenantResolver.setTenant("test1");
-
+        // Delete all previous data if any
+        userRepository.deleteAll();
+        // Set tenant to project 2
+        tenantResolver.setTenant("test2");
         // Delete all previous data if any
         userRepository.deleteAll();
 
+        // Set tenant to project test1
+        tenantResolver.setTenant("test1");
         // Add new users
         User newUser = new User("Jean", "Pont");
         newUser = userRepository.save(newUser);
