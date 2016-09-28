@@ -12,10 +12,17 @@
 		<sonar.language>java</sonar.language>
 		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
 	</properties>
+	
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.4.0.RELEASE</version>
+	</parent>
 
 	<modules>
 		<module>rs-config</module>
 		<module>rs-gateway</module>
-	</modules>
+    	<module>rs-registry</module>
+  </modules>
 
 </project>

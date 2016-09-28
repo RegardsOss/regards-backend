@@ -1,0 +1,7 @@
+# Use the config server
+spring:
+  application:
+    name: rs-gateway
+  cloud:
+    config:
+      uri: http://localhost:8888
