@@ -18,11 +18,11 @@
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
 	<modules>
+		<module>${artifactId}-client</module>
 		<module>${artifactId}-dao</module>
 		<module>${artifactId}-domain</module>
 		<module>${artifactId}-rest</module>
 		<module>${artifactId}-service</module>
-		<module>${artifactId}-signature</module>
 	</modules>
 
 	<dependencyManagement>

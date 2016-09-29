@@ -20,6 +20,7 @@
 		<module>module-core</module>
 		<module>module-archetype</module>
 		<module>microservice-core-test</module>
+		<module>client-core</module>
   </modules>
 
 	<parent>
