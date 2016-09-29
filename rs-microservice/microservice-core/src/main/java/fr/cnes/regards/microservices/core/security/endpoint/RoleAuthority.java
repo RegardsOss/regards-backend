@@ -33,4 +33,17 @@ public class RoleAuthority implements GrantedAuthority {
         return autority_;
     }
 
+    @Override
+    public boolean equals(Object pObj) {
+        if ((pObj != null) && (pObj instanceof RoleAuthority)) {
+            return autority_.equals(((RoleAuthority) pObj).getAuthority());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return autority_.hashCode();
+    }
+
 }

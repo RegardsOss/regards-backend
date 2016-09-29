@@ -38,9 +38,9 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResourceAccessVoter.class);
 
-    private final MethodAutorizationService methodAuthService_;
+    private final MethodAuthorizationService methodAuthService_;
 
-    public ResourceAccessVoter(MethodAutorizationService pMethodAuthService) {
+    public ResourceAccessVoter(MethodAuthorizationService pMethodAuthService) {
         this.methodAuthService_ = pMethodAuthService;
     }
 

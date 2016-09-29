@@ -6,9 +6,11 @@ package fr.cnes.regards.microservices.core.security.endpoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -29,16 +31,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
  *
  */
 @Service
-public class MethodAutorizationServiceImpl implements MethodAutorizationService {
+public class MethodAuthorizationServiceImpl implements MethodAuthorizationService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MethodAutorizationServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MethodAuthorizationServiceImpl.class);
 
     @Value("${regards.security.authorities:#{null}}")
     private String[] authorities_;
 
-    Map<String, List<GrantedAuthority>> grantedAuthoritiesByResource_;
+    Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource_;
 
-    public MethodAutorizationServiceImpl() {
+    public MethodAuthorizationServiceImpl() {
         grantedAuthoritiesByResource_ = new HashMap<>();
     }
 
@@ -83,14 +85,19 @@ public class MethodAutorizationServiceImpl implements MethodAutorizationService 
     public void setAuthorities(ResourceMapping pResourceMapping, GrantedAuthority... pAuthorities) {
         if ((pResourceMapping != null) && (pAuthorities != null)) {
             String resourceId = pResourceMapping.getResourceMappingId();
+            ArrayList<GrantedAuthority> newAuthorities;
             if (grantedAuthoritiesByResource_.containsKey(resourceId)) {
-                List<GrantedAuthority> newAuthorities = grantedAuthoritiesByResource_.get(resourceId);
-                newAuthorities.addAll(Arrays.asList(pAuthorities));
-                grantedAuthoritiesByResource_.put(resourceId, newAuthorities);
+                Set<GrantedAuthority> set = new LinkedHashSet<>(grantedAuthoritiesByResource_.get(resourceId));
+                for (GrantedAuthority grant : pAuthorities) {
+                    set.add(grant);
+                }
+                newAuthorities = new ArrayList<>(set);
             }
             else {
-                grantedAuthoritiesByResource_.put(resourceId, Arrays.asList(pAuthorities));
+                newAuthorities = new ArrayList<>();
+                newAuthorities.addAll(Arrays.asList(pAuthorities));
             }
+            grantedAuthoritiesByResource_.put(resourceId, newAuthorities);
         }
     }
 

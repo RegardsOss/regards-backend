@@ -46,10 +46,10 @@ public class XmlReportTest {
 
         try {
             // Write data
-            XmlHelper.write(Paths.get("."), filename, XmlRequirements.class, reqs);
+            XmlHelper.write(Paths.get("target"), filename, XmlRequirements.class, reqs);
 
             // Read data
-            XmlRequirements refReq = XmlHelper.read(Paths.get("."), filename, XmlRequirements.class);
+            XmlRequirements refReq = XmlHelper.read(Paths.get("target"), filename, XmlRequirements.class);
 
             Assert.assertNotNull(refReq.getRequirements());
             Assert.assertEquals(refReq.getRequirements().size(), 2);

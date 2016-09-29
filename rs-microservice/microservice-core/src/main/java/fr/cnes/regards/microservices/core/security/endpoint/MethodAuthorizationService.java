@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @author CS SI
  *
  */
-public interface MethodAutorizationService {
+public interface MethodAuthorizationService {
 
     /**
      * Get all granted role to access a particular resource access
