@@ -41,6 +41,7 @@ public class ConfigParameter implements IPair<String, String> {
     /**
      * @return name_ + "-" value_
      */
+    @Override
     public final String toString() {
 		return this.name_ + " - " + this.value_;
 	}

@@ -62,7 +62,7 @@ public class NavigationContextServiceStub implements INavigationContextService {
      * @see fr.cnes.regards.modules.access.service.INavigationContextService#get(java .lang.String)
      */
     @Override
-    public final NavigationContext load(String pTinyUrl) throws NoSuchElementException {
+    public final NavigationContext load(String pTinyUrl) {
         NavigationContext navigationContext = navigationContexts.stream().filter(p -> p.getTinyUrl().equals(pTinyUrl))
                 .findFirst().get();
         if (navigationContext == null) {
@@ -78,7 +78,7 @@ public class NavigationContextServiceStub implements INavigationContextService {
      */
     @Override
     public final void update(String pTinyUrl, NavigationContext pNavigationContext)
-            throws OperationNotSupportedException, NoSuchElementException {
+            throws OperationNotSupportedException {
         NavigationContext navigationContext = this.load(pTinyUrl);
         if (navigationContext == null) {
             throw new NoSuchElementException(pTinyUrl);
@@ -95,7 +95,7 @@ public class NavigationContextServiceStub implements INavigationContextService {
      * @see fr.cnes.regards.modules.access.service.INavigationContextService#delete( java.lang.String)
      */
     @Override
-    public final void delete(String pTinyUrl) throws NoSuchElementException {
+    public final void delete(String pTinyUrl) {
         NavigationContext navigationContext = this.load(pTinyUrl);
         navigationContexts.remove(navigationContext);
     }

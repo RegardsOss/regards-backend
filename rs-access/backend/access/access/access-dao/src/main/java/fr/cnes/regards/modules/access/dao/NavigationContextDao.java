@@ -17,7 +17,7 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
  * @author cmertz
  *
  */
-public class NavigationContextDao implements  INavigationContextDao{
+public class NavigationContextDao implements INavigationContextDao {
 
     @Override
     public NavigationContext create(NavigationContext pNavigationContext) throws AlreadyExistingException {
@@ -26,20 +26,19 @@ public class NavigationContextDao implements  INavigationContextDao{
     }
 
     @Override
-    public void update(String pTinyUrl, NavigationContext pNavigationContext)
-            throws OperationNotSupportedException, NoSuchElementException {
+    public void update(String pTinyUrl, NavigationContext pNavigationContext) throws OperationNotSupportedException {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
-    public void delete(String pTinyUrl) throws NoSuchElementException {
+    public void delete(String pTinyUrl) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
-    public NavigationContext load(String pTinyUrl) throws NoSuchElementException {
+    public NavigationContext load(String pTinyUrl) {
         // TODO Auto-generated method stub
         return null;
     }

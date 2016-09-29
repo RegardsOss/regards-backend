@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.access.domain.NavigationContext;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
 @Service
-public class NavigationContextService implements INavigationContextService{
+public class NavigationContextService implements INavigationContextService {
 
     @Override
     public NavigationContext create(NavigationContext pNavigationContext) throws AlreadyExistingException {
@@ -20,20 +20,19 @@ public class NavigationContextService implements INavigationContextService{
     }
 
     @Override
-    public void update(String pTinyUrl, NavigationContext pNavigationContext)
-            throws OperationNotSupportedException, NoSuchElementException {
+    public void update(String pTinyUrl, NavigationContext pNavigationContext) throws OperationNotSupportedException {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
-    public void delete(String pTinyUrl) throws NoSuchElementException {
+    public void delete(String pTinyUrl) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
-    public NavigationContext load(String pTinyUrl) throws NoSuchElementException {
+    public NavigationContext load(String pTinyUrl) {
         // TODO Auto-generated method stub
         return null;
     }
