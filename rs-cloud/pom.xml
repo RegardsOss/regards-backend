@@ -23,6 +23,7 @@
 		<module>rs-config</module>
 		<module>rs-gateway</module>
     	<module>rs-registry</module>
+    <module>rs-gatewaym</module>
   </modules>
 
 </project>

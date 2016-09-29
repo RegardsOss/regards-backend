@@ -9,3 +9,8 @@ zuul:
 
 access_token:
   validity_period: 3600
+  
+authentication:
+  client:
+    user: client
+    secret: secret

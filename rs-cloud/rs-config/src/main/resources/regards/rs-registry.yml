@@ -6,6 +6,9 @@ eureka:
     enabled: true
     register-with-eureka: false
     fetch-registry: false
+  server:
+    enableSelfPreservation: false
+
 
 # TODO investigate warning:
 # EMERGENCY! EUREKA MAY BE INCORRECTLY CLAIMING INSTANCES ARE UP WHEN THEY'RE NOT. RENEWALS ARE LESSER THAN THRESHOLD AND HENCE THE INSTANCES ARE NOT BEING EXPIRED JUST TO BE SAFE.

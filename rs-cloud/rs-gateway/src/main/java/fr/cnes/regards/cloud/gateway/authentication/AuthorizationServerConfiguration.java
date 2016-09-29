@@ -24,6 +24,8 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
+    private static final String GRANT_TYPE_PASSWORD = "password";
+
     @Value("${spring.application.name}")
     private String resourceId;
 
@@ -32,6 +34,12 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 
     @Value("${jwt.secret}")
     private String jwtSecret_;
+
+    @Value("${authentication.client.user}")
+    private String clientUser_;
+
+    @Value("${authentication.client.secret}")
+    private String clientSecret_;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -71,8 +79,8 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.inMemory().withClient("client").authorizedGrantTypes("password").resourceIds(resourceId)
-                .secret("secret");
+        clients.inMemory().withClient(clientUser_).authorizedGrantTypes(GRANT_TYPE_PASSWORD).resourceIds(resourceId)
+                .secret(clientSecret_);
     }
 
     @Bean
