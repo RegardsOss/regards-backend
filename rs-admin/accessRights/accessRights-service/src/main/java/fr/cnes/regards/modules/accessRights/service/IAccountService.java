@@ -26,7 +26,13 @@ public interface IAccountService {
      * @param id
      * @return
      */
-    boolean existAccount(Long id);
+    boolean existAccount(Long pId);
+
+    /**
+     * @param id
+     * @return
+     */
+    boolean existAccount(String pLogin);
 
     /**
      * @param pAccountId
@@ -68,9 +74,17 @@ public interface IAccountService {
     void changeAccountPassword(Long pAccountId, String pResetCode, String pNewPassword) throws InvalidValueException;
 
     /**
-     * @param pString
+     * @param pEmail
      * @return
      */
-    Account retrieveAccount(String pString);
+    Account retrieveAccountByEmail(String pEmail);
+
+    /**
+     * @param pLogin
+     * @return
+     */
+    Account retrieveAccountByLogin(String pLogin);
+
+    boolean validatePassword(String pLogin, String pPassword);
 
 }

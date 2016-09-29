@@ -82,7 +82,7 @@ public class AccountServiceStub implements IAccountService {
     @Override
     public void codeForAccount(String pAccountEmail, CodeType pType) {
         String code = generateCode(pType);
-        Account account = this.retrieveAccount(pAccountEmail);
+        Account account = this.retrieveAccountByEmail(pAccountEmail);
         account.setCode(code);
         // TODO: sendEmail(pEmail,code);
     }
@@ -136,13 +136,22 @@ public class AccountServiceStub implements IAccountService {
         return accounts.stream().filter(p -> p.equals(pNewAccount)).findFirst().isPresent();
     }
 
+    /**
+     * @param pLogin
+     * @return
+     */
+    @Override
+    public boolean existAccount(String pLogin) {
+        return accounts.stream().filter(p -> p.getLogin().equals(pLogin)).findFirst().isPresent();
+    }
+
     /*
      * (non-Javadoc)
      *
      * @see fr.cnes.regards.modules.accessRights.service.IAccountService#retrieveAccount(java.lang.String)
      */
     @Override
-    public Account retrieveAccount(String pEmail) {
+    public Account retrieveAccountByEmail(String pEmail) {
         return accounts.stream().filter(p -> p.getEmail().equals(pEmail)).findFirst().get();
     }
 
@@ -150,5 +159,16 @@ public class AccountServiceStub implements IAccountService {
         if (!account.getCode().equals(pCode)) {
             throw new InvalidValueException("this is not the right code");
         }
+    }
+
+    @Override
+    public boolean validatePassword(String pLogin, String pPassword) {
+        Account account = retrieveAccountByLogin(pLogin);
+        return account.getPassword().equals(pPassword);
+    }
+
+    @Override
+    public Account retrieveAccountByLogin(String pLogin) {
+        return accounts.stream().filter(p -> p.getLogin().equals(pLogin)).findFirst().get();
     }
 }

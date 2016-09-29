@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -37,15 +39,17 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     private String jwt_;
 
-    private String apiAccounts;
+    private String apiAccounts_;
 
-    private String apiAccountId;
+    private String apiAccountId_;
 
-    private String apiAccountSetting;
+    private String apiAccountSetting_;
 
-    private String apiUnlockAccount;
+    private String apiUnlockAccount_;
 
-    private String apiChangePassword;
+    private String apiChangePassword_;
+
+    private final String apiValidatePassword_ = "/accounts/{account_login}/validate?password={account_password}";
 
     private String errorMessage;
 
@@ -68,26 +72,26 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         setLogger(LoggerFactory.getLogger(AccountControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
         errorMessage = "Cannot reach model attributes";
-        apiAccounts = "/accounts";
-        apiAccountId = apiAccounts + "/{account_id}";
-        apiAccountSetting = apiAccounts + "/settings";
-        apiUnlockAccount = apiAccountId + "/unlock/{unlock_code}";
-        apiChangePassword = apiAccountId + "/password/{reset_code}";
-        apiAccountCode = apiAccounts + "/code";
+        apiAccounts_ = "/accounts";
+        apiAccountId_ = apiAccounts_ + "/{account_id}";
+        apiAccountSetting_ = apiAccounts_ + "/settings";
+        apiUnlockAccount_ = apiAccountId_ + "/unlock/{unlock_code}";
+        apiChangePassword_ = apiAccountId_ + "/password/{reset_code}";
+        apiAccountCode = apiAccounts_ + "/code";
     }
 
     @Test
     public void getAllAccounts() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiAccounts, jwt_, expectations, errorMessage);
+        performGet(apiAccounts_, jwt_, expectations, errorMessage);
     }
 
     @Test
     public void getSettings() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiAccountSetting, jwt_, expectations, errorMessage);
+        performGet(apiAccountSetting_, jwt_, expectations, errorMessage);
     }
 
     @Test
@@ -99,17 +103,17 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
-        performPost(apiAccounts, jwt_, newAccount, expectations, errorMessage);
+        performPost(apiAccounts_, jwt_, newAccount, expectations, errorMessage);
 
         expectations.clear();
         expectations.add(status().isConflict());
-        performPost(apiAccounts, jwt_, newAccount, expectations, errorMessage);
+        performPost(apiAccounts_, jwt_, newAccount, expectations, errorMessage);
 
         Account containNulls = new Account();
 
         expectations.clear();
         expectations.add(status().isUnprocessableEntity());
-        performPost(apiAccounts, jwt_, containNulls, expectations, errorMessage);
+        performPost(apiAccounts_, jwt_, containNulls, expectations, errorMessage);
     }
 
     @Test
@@ -119,11 +123,11 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiAccountId, jwt_, expectations, errorMessage, accountId);
+        performGet(apiAccountId_, jwt_, expectations, errorMessage, accountId);
 
         expectations.clear();
         expectations.add(status().isNotFound());
-        performGet(apiAccountId, jwt_, expectations, errorMessage, Integer.MAX_VALUE);
+        performGet(apiAccountId_, jwt_, expectations, errorMessage, Integer.MAX_VALUE);
 
     }
 
@@ -132,15 +136,15 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiAccountSetting, jwt_, "manual", expectations, errorMessage);
+        performPut(apiAccountSetting_, jwt_, "manual", expectations, errorMessage);
 
         expectations.clear();
         expectations.add(status().isOk());
-        performPut(apiAccountSetting, jwt_, "auto-accept", expectations, errorMessage);
+        performPut(apiAccountSetting_, jwt_, "auto-accept", expectations, errorMessage);
 
         expectations.clear();
         expectations.add(status().isBadRequest());
-        performPut(apiAccountSetting, jwt_, "sdfqjkmfsdq", expectations, errorMessage);
+        performPut(apiAccountSetting_, jwt_, "sdfqjkmfsdq", expectations, errorMessage);
     }
 
     @Test
@@ -162,14 +166,14 @@ public class AccountControllerIT extends RegardsIntegrationTest {
         // if that's the same functional ID and the parameter is valid:
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiAccountId, jwt_, updated, expectations, errorMessage, accountId);
+        performPut(apiAccountId_, jwt_, updated, expectations, errorMessage, accountId);
 
         // if that's not the same functional ID and the parameter is valid:
         Account notSameID = new Account("notSameEmail", "firstName", "lastName", "login", "password");
 
         expectations.clear();
         expectations.add(status().isBadRequest());
-        performPut(apiAccountId, jwt_, notSameID, expectations, errorMessage, accountId);
+        performPut(apiAccountId_, jwt_, notSameID, expectations, errorMessage, accountId);
     }
 
     @Test
@@ -179,7 +183,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiUnlockAccount, jwt_, expectations, errorMessage, accountId, account.getCode());
+        performGet(apiUnlockAccount_, jwt_, expectations, errorMessage, accountId, account.getCode());
     }
 
     @Test
@@ -189,7 +193,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiChangePassword, jwt_, "newPassword", expectations, errorMessage, accountId, account.getCode());
+        performPut(apiChangePassword_, jwt_, "newPassword", expectations, errorMessage, accountId, account.getCode());
 
     }
 
@@ -200,8 +204,31 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiAccountId, jwt_, expectations, errorMessage, accountId);
+        performDelete(apiAccountId_, jwt_, expectations, errorMessage, accountId);
 
+    }
+
+    @Test
+    public void validatePassword() {
+        Account account = accountService_.retrieveAccountList().get(0);
+        String login = account.getLogin();
+        String rightPassword = account.getPassword();
+        String wrongPassword = "wrongPassword";
+        assertNotEquals(rightPassword, wrongPassword);
+
+        List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiValidatePassword_, jwt_, expectations, errorMessage, login, rightPassword);
+
+        expectations.clear();
+        expectations.add(status().isOk());
+        performGet(apiValidatePassword_, jwt_, expectations, errorMessage, login, wrongPassword);
+
+        String wrongLogin = "wrongLogin";
+        assertFalse(accountService_.existAccount(wrongLogin));
+        expectations.clear();
+        expectations.add(status().isNotFound());
+        performGet(apiValidatePassword_, jwt_, expectations, errorMessage, wrongLogin, rightPassword);
     }
 
 }

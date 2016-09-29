@@ -85,7 +85,25 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Account retrieveAccount(String pString) {
+    public Account retrieveAccountByEmail(String pEmail) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean validatePassword(String pLogin, String pPassword) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean existAccount(String pLogin) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public Account retrieveAccountByLogin(String pLogin) {
         // TODO Auto-generated method stub
         return null;
     }

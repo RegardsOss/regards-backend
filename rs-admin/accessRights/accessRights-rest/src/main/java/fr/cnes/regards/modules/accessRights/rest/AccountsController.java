@@ -168,4 +168,13 @@ public class AccountsController {
         accountService_.updateAccountSetting(pUpdatedAccountSetting);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @ResourceAccess(description = "Validate the account password", name = "")
+    @RequestMapping(value = "/{account_login}/validate", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody HttpEntity<Boolean> validatePassword(@PathVariable("account_login") String pLogin,
+            @RequestParam("password") String pPassword) throws NoSuchElementException {
+
+        Boolean valid = accountService_.validatePassword(pLogin, pPassword);
+        return new ResponseEntity<>(valid, HttpStatus.OK);
+    }
 }
