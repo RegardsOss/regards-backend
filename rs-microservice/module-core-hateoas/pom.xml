@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>fr.cnes.regards.microservices</groupId>
+		<artifactId>rs-microservice</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	<groupId>fr.cnes.regards.modules</groupId>
+	<artifactId>module-core-hateoas</artifactId>
+	
+	
+	<description>part of the core requiring spring-hateoas</description>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.hateoas</groupId>
+			<artifactId>spring-hateoas</artifactId>
+		</dependency>
+	</dependencies>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<uniqueVersion>true</uniqueVersion>
+			<id>archiva-snapshots</id>
+			<name>Archiva Managed Snapshot Repository</name>
+			<url>http://172.26.46.158:8010/repository/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+</project>

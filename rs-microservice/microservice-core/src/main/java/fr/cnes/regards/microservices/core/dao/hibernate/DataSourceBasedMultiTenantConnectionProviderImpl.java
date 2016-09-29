@@ -16,7 +16,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
+import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -95,8 +95,8 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
                                                              InstanceEntity.class);
         classes.forEach(classe -> metadata.addAnnotatedClass(classe));
 
-        SchemaExport export = new SchemaExport((MetadataImplementor) metadata.buildMetadata());
-        export.execute(false, true, false, false);
+        SchemaUpdate export = new SchemaUpdate((MetadataImplementor) metadata.buildMetadata());
+        export.execute(false, true);
     }
 
     /**
@@ -132,8 +132,11 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         if (configuration_.getDao().getEmbedded()) {
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(DataSourcesConfiguration.EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(DataSourcesConfiguration.EMBEDDED_HSQL_DRIVER_CLASS + ":/target/" + pTenant
-                    + "/applicationdb");
+            dataSource.setUrl(DataSourcesConfiguration.EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+                    + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + pTenant
+                    + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
+                    + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
+
             addDataSource(dataSource, pTenant);
         }
         else {

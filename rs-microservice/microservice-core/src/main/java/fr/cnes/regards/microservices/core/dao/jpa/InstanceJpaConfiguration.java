@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -25,6 +24,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
 import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
@@ -37,9 +38,9 @@ import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableConfigurationProperties(JpaProperties.class)
 @EnableJpaRepositories(includeFilters = {
         @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory", transactionManagerRef = "instanceJpaTransactionManager")
+@EnableTransactionManagement
 @ConditionalOnProperty("microservice.dao.instance.enabled")
 public class InstanceJpaConfiguration {
 
@@ -59,9 +60,9 @@ public class InstanceJpaConfiguration {
     private DataSource instanceDataSource_;
 
     @Bean
-    public JpaTransactionManager instanceJpaTransactionManager() {
+    public PlatformTransactionManager instanceJpaTransactionManager(EntityManagerFactoryBuilder builder) {
         JpaTransactionManager jtm = new JpaTransactionManager();
-        jtm.setPersistenceUnitName(PERSITENCE_UNIT_NAME);
+        jtm.setEntityManagerFactory(instanceEntityManagerFactory(builder).getObject());
         return jtm;
     }
 
@@ -84,15 +85,8 @@ public class InstanceJpaConfiguration {
 
         List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, InstanceEntity.class, null);
 
-        if (packages.size() > 1) {
-            return builder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
-                    .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false)
-                    .build();
-        }
-        else {
-            return builder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
-                    .packages(packages.get(0)).properties(hibernateProps).jta(false).build();
-        }
+        return builder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
+                .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
 
     }
 
