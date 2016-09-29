@@ -83,28 +83,6 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
         expectations.add(status().isConflict());
         performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
 
-        // // to be denied
-        // newAccountRequesting = new Account("new2@email.email", "firstName", "lastName", "password");
-        // newAccessRequest = new ProjectUser(newAccountRequesting);
-        //
-        // expectations.clear();
-        // expectations.add(status().isCreated());
-        // performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
-        //
-        // expectations.clear();
-        // expectations.add(status().isConflict());
-        // performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
-        // // to be removed
-        // newAccountRequesting = new Account("new3@email.email", "firstName", "lastName", "password");
-        // newAccessRequest = new ProjectUser(newAccountRequesting);
-        //
-        // expectations.clear();
-        // expectations.add(status().isCreated());
-        // performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
-        //
-        // expectations.clear();
-        // expectations.add(status().isConflict());
-        // performPost(apiAccesses, jwt_, newAccessRequest, expectations, errorMessage);
     }
 
     @Test

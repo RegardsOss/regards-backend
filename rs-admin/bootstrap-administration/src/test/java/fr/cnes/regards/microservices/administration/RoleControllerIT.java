@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
@@ -37,6 +38,9 @@ public class RoleControllerIT extends RegardsIntegrationTest {
 
     @Autowired
     private JWTService jwtService_;
+
+    @Autowired
+    private MethodAuthorizationService authService_;
 
     private String jwt_;
 
@@ -64,6 +68,7 @@ public class RoleControllerIT extends RegardsIntegrationTest {
     public void init() {
         setLogger(LoggerFactory.getLogger(ProjectControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
+        // authService_.setAuthorities("////", RequestMethod.GET, "TOTO", "TITI", "");
         apiRoles = "/roles";
         apiRolesId = apiRoles + "/{role_id}";
         apiRolesPermissions = apiRolesId + "/permissions";

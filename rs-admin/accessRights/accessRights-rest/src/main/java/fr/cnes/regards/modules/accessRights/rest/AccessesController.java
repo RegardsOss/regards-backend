@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.modules.accessRights.client.IAccessesClient;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
@@ -35,7 +36,8 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RestController
 @ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/accesses")
-public class AccessesController {
+// @FeignClient("accesses")
+public class AccessesController implements IAccessesClient {
 
     @Autowired
     private IAccessRequestService accessRequestService_;
@@ -65,59 +67,73 @@ public class AccessesController {
     public void illegalState() {
     }
 
+    @Override
     @ResourceAccess(description = "retrieve the list of access request", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
+    @ResponseBody
+    public HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
         List<ProjectUser> projectUsers = accessRequestService_.retrieveAccessRequestList();
         List<Resource<ProjectUser>> resources = projectUsers.stream().map(p -> new Resource<>(p))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
+    @Override
     @ResourceAccess(description = "create a new access request", name = "")
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Resource<ProjectUser>> requestAccess(@Valid @RequestBody ProjectUser pAccessRequest)
+    @ResponseBody
+    public HttpEntity<Resource<ProjectUser>> requestAccess(@Valid @RequestBody ProjectUser pAccessRequest)
             throws AlreadyExistingException {
         ProjectUser created = accessRequestService_.requestAccess(pAccessRequest);
         Resource<ProjectUser> resource = new Resource<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
+    @Override
     @ResourceAccess(description = "accept the access request", name = "")
     @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId)
+    @ResponseBody
+    public HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException {
         accessRequestService_.acceptAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Override
     @ResourceAccess(description = "deny the access request", name = "")
     @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId)
+    @ResponseBody
+    public HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException {
         accessRequestService_.denyAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Override
     @ResourceAccess(description = "remove the access request", name = "")
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId) {
+    @ResponseBody
+    public HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId) {
         accessRequestService_.removeAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Override
     @ResourceAccess(description = "retrieve the list of setting managing the access requests", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<List<Resource<String>>> getAccessSettingList() {
+    @ResponseBody
+    public HttpEntity<List<Resource<String>>> getAccessSettingList() {
         List<String> accessSettings = accessRequestService_.getAccessSettingList();
         List<Resource<String>> resources = accessSettings.stream().map(a -> new Resource<>(a))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
+    @Override
     @ResourceAccess(description = "update the setting managing the access requests", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody HttpEntity<Void> updateAccessSetting(@Valid @RequestBody String pUpdatedProjectUserSetting)
+    @ResponseBody
+    public HttpEntity<Void> updateAccessSetting(@Valid @RequestBody String pUpdatedProjectUserSetting)
             throws InvalidValueException {
         accessRequestService_.updateAccessSetting(pUpdatedProjectUserSetting);
         return new ResponseEntity<>(HttpStatus.OK);
