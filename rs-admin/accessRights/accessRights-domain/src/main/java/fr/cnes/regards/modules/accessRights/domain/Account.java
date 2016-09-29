@@ -48,25 +48,25 @@ public class Account implements Identifiable<Long> {
         status_ = AccountStatus.PENDING;
     }
 
-    public Account(String email) {
+    public Account(String pEmail) {
         this();
-        email_ = email;
+        email_ = pEmail;
+        login_ = pEmail;
     }
 
-    public Account(String email, String firstName, String lastName, String password) {
-        this(email);
-        firstName_ = firstName;
-        lastName_ = lastName;
-        login_ = email;
-        password_ = password;
+    public Account(String pEmail, String pFirstName, String pLastName, String pPassword) {
+        this(pEmail);
+        firstName_ = pFirstName;
+        lastName_ = pLastName;
+        password_ = pPassword;
     }
 
-    public Account(String email, String firstName, String lastName, String login, String password) {
-        this(email);
-        firstName_ = firstName;
-        lastName_ = lastName;
-        login_ = login;
-        password_ = password;
+    public Account(String pEmail, String pFirstName, String pLastName, String pLogin, String pPassword) {
+        this(pEmail);
+        firstName_ = pFirstName;
+        lastName_ = pLastName;
+        login_ = pLogin;
+        password_ = pPassword;
     }
 
     public Account(Long pId, String pEmail, String pFirstName, String pLastName, String pLogin, String pPassword,
@@ -145,16 +145,16 @@ public class Account implements Identifiable<Long> {
         return id_;
     }
 
-    public void setId(Long id) {
-        id_ = id;
+    public void setId(Long pId) {
+        id_ = pId;
     }
 
     public String getCode() {
         return code_;
     }
 
-    public void setCode(String code) {
-        code_ = code;
+    public void setCode(String pCode) {
+        code_ = pCode;
     }
 
     @Override

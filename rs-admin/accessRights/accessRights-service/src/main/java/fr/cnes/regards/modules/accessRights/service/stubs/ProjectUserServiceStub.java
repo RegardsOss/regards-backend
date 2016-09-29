@@ -19,15 +19,14 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.modules.accessRights.dao.IProjectUserRepository;
 import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
-import fr.cnes.regards.modules.accessRights.domain.IProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
 import fr.cnes.regards.modules.accessRights.domain.UserVisibility;
+import fr.cnes.regards.modules.accessRights.service.IProjectUserService;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
-import fr.cnes.regards.modules.accessRights.service.IUserService;
 
 /**
  * @author svissier
@@ -36,29 +35,28 @@ import fr.cnes.regards.modules.accessRights.service.IUserService;
 @Service
 @Profile("test")
 @Primary
-public class UserServiceStub implements IUserService {
+public class ProjectUserServiceStub implements IProjectUserService {
 
     public static List<ProjectUser> projectUsers_;
 
-    private final IProjectUserRepository daoProjectUser_;
+    private final IProjectUserRepository projectUserRepository_;
 
     private final IRoleService roleService_;
 
     private final IRoleRepository roleRepository_;
 
-    public UserServiceStub(IProjectUserRepository pDaoProjectUser, IRoleService pRoleService,
+    public ProjectUserServiceStub(IProjectUserRepository pDaoProjectUser, IRoleService pRoleService,
             IRoleRepository pRoleRepository) {
-        daoProjectUser_ = pDaoProjectUser;
+        projectUserRepository_ = pDaoProjectUser;
         roleService_ = pRoleService;
         roleRepository_ = pRoleRepository;
-        projectUsers_ = StreamSupport.stream(daoProjectUser_.findAll().spliterator(), false)
+        projectUsers_ = StreamSupport.stream(projectUserRepository_.findAll().spliterator(), false)
                 .collect(Collectors.toList());
     }
 
     /*
      * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessRights.service.IUserService#retrieveUserList()
+     * fr.cnes.regards.modules.accessRights.service.IProjectUserServicee.IProjectUserService#retrieveUserList()
      */
     @Override
     public List<ProjectUser> retrieveUserList() {
@@ -67,9 +65,8 @@ public class UserServiceStub implements IUserService {
     }
 
     /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessRights.service.IUserService#retrieveUser(int)
+     * (non-Javadocfr.cnes.regards.modules.accessRights.service.IProjectUserService.service.IProjectUserService#
+     * retrieveUser(int)
      */
     @Override
     public ProjectUser retrieveUser(Long pUserId) {
@@ -83,11 +80,14 @@ public class UserServiceStub implements IUserService {
         return sent;
     }
 
+    @Override
+    public ProjectUser retrieveUser(String pLogin) {
+        return projectUserRepository_.findOneByLogin(pLogin);
+    }
+
     /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessRights.service.IUserService#updateUser(int,
-     * fr.cnes.regards.modules.accessRights.domain.ProjectUser)
+     * (non-fr.cnes.regards.modules.accessRights.service.IProjectUserServicesRights.service.IProjectUserService#
+     * updateUser(int, fr.cnes.regards.modules.accessRights.domain.ProjectUser)
      */
     @Override
     public void updateUser(Long pUserId, ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
@@ -106,15 +106,20 @@ public class UserServiceStub implements IUserService {
      * @param pUserId
      * @return
      */
+    @Override
     public boolean existUser(Long pUserId) {
         return projectUsers_.stream().filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES))
                 .filter(p -> p.getId() == pUserId).findFirst().isPresent();
     }
 
+    @Override
+    public boolean existUser(String pUserLogin) {
+        return projectUserRepository_.exists(pUserLogin);
+    }
+
     /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessRights.service.IUserService#removeUser(int)
+     * fr.cnes.regards.modules.accessRights.service.IProjectUserServices.accessRights.service.IProjectUserService#
+     * removeUser(int)
      */
     @Override
     public void removeUser(Long pUserId) {
@@ -127,10 +132,10 @@ public class UserServiceStub implements IUserService {
      * @see fr.cnes.regards.modules.accessRights.service.IUserService#retrieveUserAccessRights(int)
      */
     @Override
-    public Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId, String pBorrowedRoleName)
+    public Couple<List<ResourcesAccess>, Role> retrieveProjectUserAccessRights(String pLogin, String pBorrowedRoleName)
             throws OperationNotSupportedException {
-        IProjectUser user = retrieveUser(pUserId);
-        Role userRole = user.getRole();
+        ProjectUser projectUser = projectUserRepository_.findOneByLogin(pLogin);
+        Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
 
         if (pBorrowedRoleName != null) {
@@ -144,21 +149,15 @@ public class UserServiceStub implements IUserService {
             }
         }
 
-        return new Couple<>(user.getPermissions(), returnedRole);
+        return new Couple<>(projectUser.getPermissions(), returnedRole);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessRights.service.IUserService#updateUserAccessRights(int,
-     * fr.cnes.regards.modules.accessRights.domain.ProjectUser)
-     */
     @Override
-    public void updateUserAccessRights(Long pUserId, List<ResourcesAccess> pUpdatedUserAccessRights) {
-        if (!existUser(pUserId)) {
-            throw new NoSuchElementException("ProjectUser of given id (" + pUserId + ") could not be found");
+    public void updateUserAccessRights(String pLogin, List<ResourcesAccess> pUpdatedUserAccessRights) {
+        if (!existUser(pLogin)) {
+            throw new NoSuchElementException("ProjectUser of given login (" + pLogin + ") could not be found");
         }
-        ProjectUser user = retrieveUser(pUserId);
+        ProjectUser user = retrieveUser(pLogin);
 
         // Finder method
         // Pass the id and the list to search, returns the element with passed id
@@ -173,17 +172,11 @@ public class UserServiceStub implements IUserService {
         // If an element with the same id is found in the pResourcesAccessList list, replace with it
         // Else keep the old element
         permissions.replaceAll(p -> contains.apply(p.getId()) ? find.apply(p.getId()).get(0) : p);
-
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessRights.service.IUserService#removeUserAccessRights(int)
-     */
     @Override
-    public void removeUserAccessRights(Long pUserId) {
-        ProjectUser user = retrieveUser(pUserId);
+    public void removeUserAccessRights(String pLogin) {
+        ProjectUser user = retrieveUser(pLogin);
         user.setPermissions(new ArrayList<>());
     }
 

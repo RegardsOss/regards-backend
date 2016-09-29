@@ -17,7 +17,7 @@ import fr.cnes.regards.modules.accessRights.domain.Role;
  * @author svissier
  *
  */
-public interface IUserService {
+public interface IProjectUserService {
 
     /**
      * @return
@@ -29,6 +29,12 @@ public interface IUserService {
      * @return
      */
     ProjectUser retrieveUser(Long pUserId);
+
+    /**
+     * @param pUserLogin
+     * @return
+     */
+    ProjectUser retrieveUser(String pLogin);
 
     /**
      * @param pUserId
@@ -45,24 +51,24 @@ public interface IUserService {
     void removeUser(Long pUserId);
 
     /**
-     * @param pUserId
+     * @param pUserLogin
      * @param pBorrowedRoleName
      * @return
      * @throws OperationNotSupportedException
      */
-    Couple<List<ResourcesAccess>, Role> retrieveUserAccessRights(Long pUserId, String pBorrowedRoleName)
+    Couple<List<ResourcesAccess>, Role> retrieveProjectUserAccessRights(String pLogin, String pBorrowedRoleName)
             throws OperationNotSupportedException;
 
     /**
-     * @param pUserId
+     * @param pLogin
      * @param pUpdatedProjectUser
      */
-    void updateUserAccessRights(Long pUserId, List<ResourcesAccess> pUpdatedUserAccessRights);
+    void updateUserAccessRights(String pLogin, List<ResourcesAccess> pUpdatedUserAccessRights);
 
     /**
-     * @param pUserId
+     * @param pLogin
      */
-    void removeUserAccessRights(Long pUserId);
+    void removeUserAccessRights(String pLogin);
 
     List<MetaData> retrieveUserMetaData(Long pUserId);
 
@@ -70,4 +76,7 @@ public interface IUserService {
 
     void removeUserMetaData(Long pUserId);
 
+    boolean existUser(Long pId);
+
+    boolean existUser(String pLogin);
 }

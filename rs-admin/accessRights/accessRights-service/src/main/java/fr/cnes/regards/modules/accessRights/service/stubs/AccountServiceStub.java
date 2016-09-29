@@ -33,9 +33,9 @@ public class AccountServiceStub implements IAccountService {
 
     @PostConstruct
     public void init() {
-        accounts.add(new Account(0L, "email@email.email", "firstName", "lastName", "flastname", "password",
-                AccountStatus.ACCEPTED, "code"));
-        accounts.add(new Account(1L, "toto@toto.toto", "Toto", "toto", "tttoto", "mdp", AccountStatus.PENDING,
+        accounts.add(new Account(0L, "instance_admin@cnes.fr", "firstName", "lastName", "instance_admin@cnes.fr",
+                "password", AccountStatus.ACCEPTED, "code"));
+        accounts.add(new Account(1L, "toto@toto.toto", "Toto", "toto", "toto@toto.toto", "mdp", AccountStatus.PENDING,
                 "anotherCode"));
     }
 

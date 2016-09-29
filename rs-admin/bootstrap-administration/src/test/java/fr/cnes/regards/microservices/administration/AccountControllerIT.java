@@ -145,7 +145,9 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void getCode() {
-        String accountEmail = "email@email.email";
+        Account account = accountService_.retrieveAccountList().get(0);
+        String accountEmail = account.getEmail();
+
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiAccountCode + "?email=" + accountEmail + "&type=UNLOCK", jwt_, expectations, errorMessage);
@@ -153,7 +155,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void updateAccount() {
-        Account updated = accountService_.retrieveAccount("email@email.email");
+        Account updated = accountService_.retrieveAccountList().get(0);
         updated.setFirstName("AnOtherFirstName");
         Long accountId = updated.getId();
 
@@ -172,7 +174,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void unlockAccount() {
-        Account account = accountService_.retrieveAccount("email@email.email");
+        Account account = accountService_.retrieveAccountList().get(0);
         Long accountId = account.getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -182,7 +184,7 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     public void changeAccountPassword() {
-        Account account = accountService_.retrieveAccount("email@email.email");
+        Account account = accountService_.retrieveAccountList().get(0);
         Long accountId = account.getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);

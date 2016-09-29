@@ -9,5 +9,7 @@ import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 
 public interface IProjectUserRepository extends CrudRepository<ProjectUser, Long> {
 
-    ProjectUser findOneByEmail(String pEmail);
+    ProjectUser findOneByLogin(String pLogin);
+
+    boolean exists(String pLogin);
 }

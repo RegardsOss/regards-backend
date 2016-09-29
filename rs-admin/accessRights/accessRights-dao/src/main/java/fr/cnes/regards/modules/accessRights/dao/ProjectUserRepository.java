@@ -77,9 +77,15 @@ public class ProjectUserRepository implements IProjectUserRepository {
     }
 
     @Override
-    public ProjectUser findOneByEmail(String pEmail) {
+    public ProjectUser findOneByLogin(String pLogin) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public boolean exists(String pLogin) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }

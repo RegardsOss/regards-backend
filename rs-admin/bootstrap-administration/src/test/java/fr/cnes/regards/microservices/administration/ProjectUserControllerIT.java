@@ -11,11 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.microservices.core.security.jwt.JWTService;
@@ -26,14 +25,14 @@ import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.service.IAccountService;
+import fr.cnes.regards.modules.accessRights.service.IProjectUserService;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
-import fr.cnes.regards.modules.accessRights.service.IUserService;
 
 /**
  * @author svissier
  *
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ProjectUserControllerIT extends RegardsIntegrationTest {
 
     @Autowired
@@ -41,20 +40,25 @@ public class ProjectUserControllerIT extends RegardsIntegrationTest {
 
     private String jwt_;
 
-    private String apiUsers;
+    private String apiUsers_;
 
-    private String apiUserId;
+    private String apiUserId_;
 
-    private String apiUserPermissions;
+    private String apiUserLogin_;
 
-    private String apiUserPermissionsBorrowedRole;
+    private String apiUserPermissions_;
 
-    private String apiUserMetaData;
+    private String apiUserPermissionsBorrowedRole_;
 
-    private String errorMessage;
+    private String apiUserMetaData_;
+
+    private String errorMessage_;
 
     @Autowired
-    private IUserService userService_;
+    private IProjectUserService projectUserService_;
+
+    @Autowired
+    private IAccountService accountService_;
 
     @Autowired
     private IRoleRepository roleRepository_;
@@ -66,65 +70,66 @@ public class ProjectUserControllerIT extends RegardsIntegrationTest {
     public void init() {
         setLogger(LoggerFactory.getLogger(ProjectUserControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
-        apiUsers = "/users";
-        apiUserId = apiUsers + "/{user_id}";
-        apiUserPermissions = apiUserId + "/permissions";
-        apiUserPermissionsBorrowedRole = apiUserPermissions + "?borrowedRoleName=";
-        apiUserMetaData = apiUserId + "/metadata";
-        errorMessage = "Cannot reach model attributes";
+        apiUsers_ = "/users";
+        apiUserId_ = apiUsers_ + "/{user_id}";
+        apiUserLogin_ = apiUsers_ + "/{user_login}";
+        apiUserPermissions_ = apiUserLogin_ + "/permissions";
+        apiUserPermissionsBorrowedRole_ = apiUserPermissions_ + "?borrowedRoleName=";
+        apiUserMetaData_ = apiUserId_ + "/metadata";
+        errorMessage_ = "Cannot reach model attributes";
     }
 
     @Test
-    public void aGetAllUsers() {
+    public void getAllUsers() {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiUsers, jwt_, expectations, errorMessage);
+        performGet(apiUsers_, jwt_, expectations, errorMessage_);
 
     }
 
     @Test
-    public void cGetUser() {
+    public void getUser() {
 
-        Long userId = userService_.retrieveUserList().get(0).getId();
+        Long userId = projectUserService_.retrieveUserList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiUserId, jwt_, expectations, errorMessage, userId);
+        performGet(apiUserId_, jwt_, expectations, errorMessage_, userId);
 
         expectations.clear();
         expectations.add(status().isNotFound());
-        performGet(apiUserId, jwt_, expectations, errorMessage, Long.MAX_VALUE);
+        performGet(apiUserId_, jwt_, expectations, errorMessage_, Long.MAX_VALUE);
 
     }
 
     @Test
-    public void cGetUserMetaData() {
-        Long userId = userService_.retrieveUserList().get(0).getId();
+    public void getUserMetaData() {
+        Long userId = projectUserService_.retrieveUserList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiUserMetaData, jwt_, expectations, errorMessage, userId);
+        performGet(apiUserMetaData_, jwt_, expectations, errorMessage_, userId);
     }
 
     @Test
-    public void cGetUserPermissions() {
-
-        Long userId = userService_.retrieveUserList().get(0).getId();
+    public void getUserPermissions() {
+        String login = accountService_.retrieveAccountList().get(0).getLogin();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiUserPermissions, jwt_, expectations, errorMessage, userId);
+        performGet(apiUserPermissions_, jwt_, expectations, errorMessage_, login);
 
         expectations.clear();
         expectations.add(status().isNotFound());
-        performGet(apiUserPermissions, jwt_, expectations, errorMessage, Long.MAX_VALUE);
+        performGet(apiUserPermissions_, jwt_, expectations, errorMessage_, "wrongLogin");
     }
 
     @Test
-    public void cGetUserPermissionsWithBorrowedRole() {
-        Long projectUserId = 1L;
-        ProjectUser projectUser = userService_.retrieveUser(projectUserId);
+    public void getUserPermissionsWithBorrowedRole() {
+        ProjectUser projectUser = projectUserService_.retrieveUserList().get(0);
+        String projectUserLogin = projectUser.getAccount().getLogin();
+
         Role projectUserRole = projectUser.getRole();
         List<ResultMatcher> expectations = new ArrayList<>(1);
 
@@ -134,7 +139,8 @@ public class ProjectUserControllerIT extends RegardsIntegrationTest {
         Role borrowedRole = roleRepository_.findOneByName(borrowedRoleName);
         assertTrue(roleService_.isHierarchicallyInferior(borrowedRole, projectUserRole));
         expectations.add(status().isOk());
-        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, jwt_, expectations, errorMessage, projectUserId);
+        performGet(apiUserPermissionsBorrowedRole_ + borrowedRoleName, jwt_, expectations, errorMessage_,
+                   projectUserLogin);
 
         // Borrowing a hierarchically superior role
         borrowedRoleName = "Instance Admin";
@@ -143,24 +149,27 @@ public class ProjectUserControllerIT extends RegardsIntegrationTest {
         assertTrue(!roleService_.isHierarchicallyInferior(borrowedRole, projectUserRole));
         expectations.clear();
         expectations.add(status().isBadRequest());
-        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, jwt_, expectations, errorMessage, projectUserId);
+        performGet(apiUserPermissionsBorrowedRole_ + borrowedRoleName, jwt_, expectations, errorMessage_,
+                   projectUserLogin);
     }
 
     @Test
-    public void dUpdateUserMetaData() {
-        Long userId = userService_.retrieveUserList().get(0).getId();
+    @DirtiesContext
+    public void updateUserMetaData() {
+        Long userId = projectUserService_.retrieveUserList().get(0).getId();
         List<MetaData> newPermissionList = new ArrayList<>();
         newPermissionList.add(new MetaData());
         newPermissionList.add(new MetaData());
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiUserMetaData, jwt_, newPermissionList, expectations, errorMessage, userId);
+        performPut(apiUserMetaData_, jwt_, newPermissionList, expectations, errorMessage_, userId);
     }
 
     @Test
-    public void dUpdateUserPermissions() {
-        Long userId = userService_.retrieveUserList().get(0).getId();
+    @DirtiesContext
+    public void updateUserPermissions() {
+        String userLogin = accountService_.retrieveAccountList().get(0).getLogin();
 
         List<ResourcesAccess> newPermissionList = new ArrayList<>();
         newPermissionList.add(new ResourcesAccess(463L, "new", "new", "new", HttpVerb.PUT));
@@ -168,52 +177,56 @@ public class ProjectUserControllerIT extends RegardsIntegrationTest {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiUserPermissions, jwt_, newPermissionList, expectations, errorMessage, userId);
+        performPut(apiUserPermissions_, jwt_, newPermissionList, expectations, errorMessage_, userLogin);
     }
 
     @Test
-    public void dDeleteUserMetaData() {
-        Long userId = userService_.retrieveUserList().get(0).getId();
+    @DirtiesContext
+    public void deleteUserMetaData() {
+        Long userId = projectUserService_.retrieveUserList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiUserMetaData, jwt_, expectations, errorMessage, userId);
+        performDelete(apiUserMetaData_, jwt_, expectations, errorMessage_, userId);
     }
 
     @Test
-    public void dDeleteUserPermissions() {
-        Long userId = userService_.retrieveUserList().get(0).getId();
+    @DirtiesContext
+    public void deleteUserPermissions() {
+        String userLogin = accountService_.retrieveAccountList().get(0).getLogin();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiUserPermissions, jwt_, expectations, errorMessage, userId);
+        performDelete(apiUserPermissions_, jwt_, expectations, errorMessage_, userLogin);
     }
 
     @Test
-    public void dUpdateUser() {
-        Long userId = userService_.retrieveUserList().get(0).getId();
-        ProjectUser updated = userService_.retrieveUser(userId);
+    @DirtiesContext
+    public void updateUser() {
+        Long userId = projectUserService_.retrieveUserList().get(0).getId();
+        ProjectUser updated = projectUserService_.retrieveUser(userId);
         updated.setLastConnection(LocalDateTime.now());
 
         // if that's the same functional ID and the parameter is valid:
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiUserId, jwt_, updated, expectations, errorMessage, userId);
+        performPut(apiUserId_, jwt_, updated, expectations, errorMessage_, userId);
 
         // if that's not the same functional ID and the parameter is valid:
         ProjectUser notSameID = new ProjectUser();
 
         expectations.clear();
         expectations.add(status().isBadRequest());
-        performPut(apiUserId, jwt_, notSameID, expectations, errorMessage, userId);
+        performPut(apiUserId_, jwt_, notSameID, expectations, errorMessage_, userId);
     }
 
     @Test
-    public void eDeleteUser() {
-        Long userId = userService_.retrieveUserList().get(0).getId();
+    @DirtiesContext
+    public void deleteUser() {
+        Long userId = projectUserService_.retrieveUserList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiUserId, jwt_, expectations, errorMessage, userId);
+        performDelete(apiUserId_, jwt_, expectations, errorMessage_, userId);
     }
 }
