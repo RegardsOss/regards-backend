@@ -66,7 +66,7 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.${artifactId}</groupId>
-				<artifactId>${artifactId}-signature</artifactId>
+				<artifactId>${artifactId}-client</artifactId>
 				<version>${version}</version>
 			</dependency>
 			<!-- COTS -->
