@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.core.dao.jpa;
 
 import java.lang.annotation.Annotation;
