@@ -17,7 +17,6 @@ import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
-import fr.cnes.regards.modules.accessRights.signature.IAccessRightsSignature;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -87,7 +86,7 @@ public class SimpleAuthentication implements IAuthenticationProvider {
         String adminUrl = instance.getHomePageUrl();
 
         // Call to the admin service with a generated token to get user requested for the authentication
-        IAccessRightsSignature.getClient(adminUrl, token).retrieveProjectUserList();
+        // IAccessRightsSignature.getClient(adminUrl, token).retrieveProjectUserList();
 
         return UserStatus.ACCESS_GRANTED;
 
