@@ -29,16 +29,29 @@ public class XmlReportTest {
 
         XmlRequirement req1 = new XmlRequirement();
         req1.setRequirement("TOTO_REF");
-        req1.setPurpose("comment");
-        req1.setTestClass("testclass");
-        req1.setTestMethodName("testname");
+
+        XmlTest test1 = new XmlTest();
+        test1.setPurpose("comment");
+        test1.setTestClass("testclass");
+        test1.setTestMethodName("testname");
+        req1.addTest(test1);
         reqs.addRequirement(req1);
 
         XmlRequirement req2 = new XmlRequirement();
         req2.setRequirement("foo_REF");
-        req2.setPurpose("comment 2");
-        req2.setTestClass("testclass.2");
-        req2.setTestMethodName("testname2");
+
+        XmlTest test2 = new XmlTest();
+        test2.setPurpose("comment 2");
+        test2.setTestClass("testclass.2");
+        test2.setTestMethodName("testname2");
+        req2.addTest(test2);
+
+        XmlTest test3 = new XmlTest();
+        test3.setPurpose("comment 3");
+        test3.setTestClass("testclass.3");
+        test3.setTestMethodName("testname3");
+        req2.addTest(test3);
+
         reqs.addRequirement(req2);
 
         // File result = new File("requirements.xml");
@@ -55,16 +68,21 @@ public class XmlReportTest {
             Assert.assertEquals(refReq.getRequirements().size(), 2);
 
             for (XmlRequirement reqToTest : refReq.getRequirements()) {
+
+                Assert.assertNotNull(reqToTest.getTests());
+                Assert.assertNotEquals(reqToTest.getTests().size(), 0);
+                XmlTest test = reqToTest.getTests().get(0);
+
                 if (reqToTest.getRequirement().equals(req1.getRequirement())) {
-                    Assert.assertEquals(reqToTest.getPurpose(), req1.getPurpose());
-                    Assert.assertEquals(reqToTest.getTestClass(), req1.getTestClass());
-                    Assert.assertEquals(reqToTest.getTestMethodName(), req1.getTestMethodName());
+                    Assert.assertEquals(test.getPurpose(), test1.getPurpose());
+                    Assert.assertEquals(test.getTestClass(), test1.getTestClass());
+                    Assert.assertEquals(test.getTestMethodName(), test1.getTestMethodName());
 
                 }
                 if (reqToTest.getRequirement().equals(req2.getRequirement())) {
-                    Assert.assertEquals(reqToTest.getPurpose(), req2.getPurpose());
-                    Assert.assertEquals(reqToTest.getTestClass(), req2.getTestClass());
-                    Assert.assertEquals(reqToTest.getTestMethodName(), req2.getTestMethodName());
+                    Assert.assertEquals(test.getPurpose(), test2.getPurpose());
+                    Assert.assertEquals(test.getTestClass(), test2.getTestClass());
+                    Assert.assertEquals(test.getTestMethodName(), test2.getTestMethodName());
 
                 }
             }
