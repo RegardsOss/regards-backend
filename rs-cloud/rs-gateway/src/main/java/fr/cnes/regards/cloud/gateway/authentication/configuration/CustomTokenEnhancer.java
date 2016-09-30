@@ -3,17 +3,16 @@
  */
 package fr.cnes.regards.cloud.gateway.authentication.configuration;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 
-import fr.cnes.regards.cloud.gateway.authentication.providers.SimpleAuthentication;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
+import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
  *
@@ -26,16 +25,16 @@ import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
  */
 public class CustomTokenEnhancer implements TokenEnhancer {
 
+    @Autowired
+    private JWTService jwtService_;
+
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
         final ProjectUser user = (ProjectUser) authentication.getUserAuthentication().getPrincipal();
         Set<String> scopes = authentication.getOAuth2Request().getScope();
-        Map<String, Object> additionalInfo = new HashMap<>();
-
-        additionalInfo.put(SimpleAuthentication.CLAIM_PROJECT, scopes.stream().findFirst().get());
-        additionalInfo.put(SimpleAuthentication.CLAIM_EMAIL, user.getAccount().getEmail());
-        additionalInfo.put(SimpleAuthentication.CLAIM_ROLE, user.getRole().getName());
-        ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
+        ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(jwtService_
+                .generateClaims(scopes.stream().findFirst().get(), user.getAccount().getEmail(),
+                                user.getRole().getName()));
         return accessToken;
     }
 }

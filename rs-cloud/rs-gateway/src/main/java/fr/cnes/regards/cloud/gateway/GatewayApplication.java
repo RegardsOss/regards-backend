@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "fr.cnes.regards")
 @EnableDiscoveryClient
 @EnableZuulProxy
 public class GatewayApplication {

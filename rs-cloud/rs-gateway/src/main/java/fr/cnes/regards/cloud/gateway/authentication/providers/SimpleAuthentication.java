@@ -6,7 +6,6 @@ package fr.cnes.regards.cloud.gateway.authentication.providers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.netflix.appinfo.InstanceInfo;
@@ -17,8 +16,7 @@ import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
  *
@@ -34,25 +32,11 @@ public class SimpleAuthentication implements IAuthenticationProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleAuthentication.class);
 
-    @Value("${jwt.secret}")
-    private String secret_;
-
-    private static SignatureAlgorithm ALGO = SignatureAlgorithm.HS512;
-
-    public static final String CLAIM_PROJECT = "project";
-
-    public static final String CLAIM_EMAIL = "email";
-
-    public static final String CLAIM_ROLE = "role";
+    @Autowired
+    private JWTService jwtService_;
 
     @Autowired
     private EurekaClient discoveryClient_;
-
-    // TODO : Remove and user the the JwtService from security-utils package
-    private String generateToken(String pProject, String pEmail, String pName, String pRole) {
-        return Jwts.builder().setIssuer("regards").setSubject(pName).claim(CLAIM_PROJECT, pProject)
-                .claim(CLAIM_EMAIL, pEmail).claim(CLAIM_ROLE, pRole).signWith(ALGO, secret_).compact();
-    }
 
     /**
      *
@@ -79,7 +63,7 @@ public class SimpleAuthentication implements IAuthenticationProvider {
     public UserStatus authenticate(String pName, String pPassword, String pScope) {
         LOG.info("Trying to authenticate user " + pName + " with password=" + pPassword + " for project " + pScope);
 
-        String token = generateToken(pScope, "", pName, "ADMIN");
+        String token = jwtService_.generateToken(pScope, "", pName, "ADMIN");
 
         // 1. Get rs-admin microservice adress
         InstanceInfo instance = discoveryClient_.getNextServerFromEureka("rs-admin", false);
