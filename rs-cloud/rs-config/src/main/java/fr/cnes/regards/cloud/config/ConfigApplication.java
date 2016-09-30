@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.cloud.config;
 
 import org.springframework.boot.SpringApplication;

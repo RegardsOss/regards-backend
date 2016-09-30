@@ -1,4 +1,7 @@
-package fr.cnes.regards.cloud.gateway.authentication;
+/*
+ * LICENSE_PLACEHOLDER
+ */
+package fr.cnes.regards.cloud.gateway.authentication.configuration;
 
 import java.util.Arrays;
 
@@ -12,7 +15,6 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
@@ -20,6 +22,15 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
+/**
+ *
+ * Class AuthorizationServerConfiguration
+ *
+ * Spring Oauth2 Authorization server configuration. Configuration to authenticate users and get tokens.
+ *
+ * @author CS
+ * @since 1.0-SNPASHOT
+ */
 @Configuration
 @EnableAuthorizationServer
 public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
@@ -27,17 +38,29 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     private static final String GRANT_TYPE_PASSWORD = "password";
 
     @Value("${spring.application.name}")
-    private String resourceId;
+    private String resourceId_;
 
-    @Value("${access_token.validity_period:3600}")
-    int accessTokenValiditySeconds = 3600;
+    /**
+     * Validity time for token generated
+     */
+    @Value("${access_token.validity_period}")
+    private int accessTokenValiditySeconds_;
 
+    /**
+     * JWT Secret string to encrypt tokens
+     */
     @Value("${jwt.secret}")
     private String jwtSecret_;
 
+    /**
+     * Client login
+     */
     @Value("${authentication.client.user}")
     private String clientUser_;
 
+    /**
+     * Client secret
+     */
     @Value("${authentication.client.secret}")
     private String clientSecret_;
 
@@ -72,14 +95,8 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     }
 
     @Override
-    public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
-        oauthServer.tokenKeyAccess("isAnonymous() || hasAuthority('ROLE_TRUSTED_CLIENT')")
-                .checkTokenAccess("hasAuthority('ROLE_TRUSTED_CLIENT')");
-    }
-
-    @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.inMemory().withClient(clientUser_).authorizedGrantTypes(GRANT_TYPE_PASSWORD).resourceIds(resourceId)
+        clients.inMemory().withClient(clientUser_).authorizedGrantTypes(GRANT_TYPE_PASSWORD).resourceIds(resourceId_)
                 .secret(clientSecret_);
     }
 

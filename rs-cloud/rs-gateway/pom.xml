@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- LICENSE_PLACEHOLDER -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <name>REGARDS Gateway</name>
-  <artifactId>rs-gateway</artifactId>
-  <description>REGARDS Cloud - Gateway server</description>
-  <packaging>war</packaging>
-  
-  <parent>
-    <groupId>fr.cnes.regards.cloud</groupId>
-    <artifactId>rs-cloud</artifactId>
-    <version>1.0-SNAPSHOT</version>
-  </parent>
-  
-  <properties>
-   	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-   	<sonar.language>java</sonar.language>
-	<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
-  </properties>
-  
-  <dependencyManagement>
+	<name>REGARDS Gateway</name>
+	<artifactId>rs-gateway</artifactId>
+	<description>REGARDS Cloud - Gateway server</description>
+	<packaging>war</packaging>
+
+	<parent>
+		<groupId>fr.cnes.regards.cloud</groupId>
+		<artifactId>rs-cloud</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<sonar.language>java</sonar.language>
+		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
+	</properties>
+
+	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
@@ -32,58 +33,60 @@
 		</dependencies>
 	</dependencyManagement>
 
-  <dependencies>
-       <!-- Spring security dependencies -->
-       <!-- https://mvnrepository.com/artifact/org.springframework.security.oauth/spring-security-oauth2 -->
-	   <dependency>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<!-- Spring security dependencies -->
+		<dependency>
 			<groupId>org.springframework.security.oauth</groupId>
 			<artifactId>spring-security-oauth2</artifactId>
-	   </dependency>
-	   <dependency>
-    		<groupId>org.springframework.security</groupId>
-    		<artifactId>spring-security-jwt</artifactId>
-	   </dependency>
-
-       <!-- Regards admin accessRights signature -->
-       <dependency>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-jwt</artifactId>
+		</dependency>
+		<!-- Spring cloud dependencies -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-zuul</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-eureka</artifactId>
+		</dependency>
+		<!-- Regards dependencies -->
+		<dependency>
        		<groupId>fr.cnes.regards.modules.accessRights</groupId>
   			<artifactId>accessRights-signature</artifactId>
   			<version>1.0-SNAPSHOT</version>
   		</dependency>
-  	   <!-- Spring cloud dependencies -->
-       <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-config</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-zuul</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-eureka</artifactId>
-        </dependency>
-
-        <!-- Tests -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        
-        <dependency>
+		<!-- Tests -->
+		<dependency>
+			<groupId>fr.cnes.regards.microservices</groupId>
+			<artifactId>microservice-core-test</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt</artifactId>
 			<version>0.7.0</version>
 		</dependency>
-		
-    </dependencies>
 
-   <build>
+	</dependencies>
+
+	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

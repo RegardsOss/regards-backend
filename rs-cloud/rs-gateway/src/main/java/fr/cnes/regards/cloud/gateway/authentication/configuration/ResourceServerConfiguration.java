@@ -1,4 +1,7 @@
-package fr.cnes.regards.cloud.gateway.authentication;
+/*
+ * LICENSE_PLACEHOLDER
+ */
+package fr.cnes.regards.cloud.gateway.authentication.configuration;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,11 +20,21 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+/**
+ *
+ * Class ResourceServerConfiguration
+ *
+ * Configuration to protect access to gateway resources. Check for the incoming JWT Token before allowing access to
+ * resources
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @Configuration
 @EnableResourceServer
 public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 
-    @Value("${resource.id:spring-boot-application}")
+    @Value("${spring.application.name}")
     private String resourceId;
 
     @Value("${jwt.secret}")
