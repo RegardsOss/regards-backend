@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.administration;
+package fr.cnes.regards.microservices.administration.controller;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.project.service.IProjectService;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ProjectControllerIT extends RegardsIntegrationTest {
+public class ProjectsControllerIT extends RegardsIntegrationTest {
 
     @Autowired
     private JWTService jwtService_;
@@ -48,7 +48,7 @@ public class ProjectControllerIT extends RegardsIntegrationTest {
 
     @Before
     public void init() {
-        setLogger(LoggerFactory.getLogger(ProjectControllerIT.class));
+        setLogger(LoggerFactory.getLogger(ProjectsControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
         errorMessage = "Cannot reach model attributes";
         apiProjects = "/projects";

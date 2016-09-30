@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.administration;
+package fr.cnes.regards.microservices.administration.controller;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;

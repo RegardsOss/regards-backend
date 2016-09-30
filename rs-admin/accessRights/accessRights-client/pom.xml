@@ -17,6 +17,10 @@
 	</parent>
 
 	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.microservices</groupId>
+			<artifactId>microservice-core</artifactId>
+		</dependency>
 		<!-- Regards client core -->
 		<dependency>
 			<groupId>fr.cnes.regards.client</groupId>

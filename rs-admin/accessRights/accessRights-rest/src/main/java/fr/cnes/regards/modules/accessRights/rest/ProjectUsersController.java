@@ -14,19 +14,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.modules.accessRights.client.ProjectUsersClient;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
 import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
@@ -47,7 +45,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RestController
 @ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/users")
-public class ProjectUserController {
+public class ProjectUsersController implements ProjectUsersClient {
 
     @Autowired
     private IProjectUserService projectUserService_;
@@ -77,8 +75,7 @@ public class ProjectUserController {
     public void illegalState() {
     }
 
-    @ResourceAccess(description = "retrieve the list of users of the project", name = "")
-    @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public @ResponseBody HttpEntity<List<Resource<ProjectUser>>> retrieveProjectUserList() {
 
         List<ProjectUser> users = projectUserService_.retrieveUserList();
@@ -86,8 +83,7 @@ public class ProjectUserController {
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "retrieve the project user and only display public metadata")
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public @ResponseBody HttpEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long userId) {
 
         ProjectUser user = projectUserService_.retrieveUser(userId);
@@ -95,8 +91,7 @@ public class ProjectUserController {
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "update the project user")
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public @ResponseBody HttpEntity<Void> updateProjectUser(@PathVariable("user_id") Long userId,
             @RequestBody ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
 
@@ -104,16 +99,14 @@ public class ProjectUserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "remove the project user from the instance")
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public @ResponseBody HttpEntity<Void> removeProjectUser(@PathVariable("user_id") Long userId) {
 
         projectUserService_.removeUser(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "retrieve the list of all metadata of the user")
-    @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public @ResponseBody HttpEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(
             @PathVariable("user_id") Long pUserId) {
 
@@ -123,8 +116,7 @@ public class ProjectUserController {
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "update the list of all metadata of the user")
-    @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public @ResponseBody HttpEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") Long userId,
             @Valid @RequestBody List<MetaData> pUpdatedUserMetaData) throws OperationNotSupportedException {
 
@@ -132,16 +124,14 @@ public class ProjectUserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "remove all the metadata of the user")
-    @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public @ResponseBody HttpEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") Long userId) {
 
         projectUserService_.removeUserMetaData(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "retrieve the list of specific access rights and the role of the project user")
-    @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public @ResponseBody HttpEntity<Resource<Couple<List<ResourcesAccess>, Role>>> retrieveProjectUserAccessRights(
             @PathVariable("user_login") String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) String pBorrowedRoleName)
@@ -153,8 +143,7 @@ public class ProjectUserController {
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "update the list of specific user access rights")
-    @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public @ResponseBody HttpEntity<Void> updateProjectUserAccessRights(@PathVariable("user_login") String pUserLogin,
             @Valid @RequestBody List<ResourcesAccess> pUpdatedUserAccessRights) throws OperationNotSupportedException {
 
@@ -162,8 +151,7 @@ public class ProjectUserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "remove all the specific access rights")
-    @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public @ResponseBody HttpEntity<Void> removeProjectUserAccessRights(@PathVariable("user_login") String pUserLogin) {
 
         projectUserService_.removeUserAccessRights(pUserLogin);

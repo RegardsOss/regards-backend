@@ -1,37 +1,26 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessRights.client;
+package fr.cnes.regards.modules.accessRights.fallback;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.naming.OperationNotSupportedException;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.modules.accessRights.client.AccessesClient;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
-@RestController
-@ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
-@RequestMapping("/accesses")
-public class AccessesFallback implements IAccessesClient {
+public class AccessesFallback implements AccessesClient {
 
     @Override
     public HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
-        List<ProjectUser> projectUsers = new ArrayList<>();
-        List<Resource<ProjectUser>> resources = projectUsers.stream().map(p -> new Resource<>(p))
-                .collect(Collectors.toList());
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override

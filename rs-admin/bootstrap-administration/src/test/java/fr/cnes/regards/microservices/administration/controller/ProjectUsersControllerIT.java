@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.administration;
+package fr.cnes.regards.microservices.administration.controller;
 
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.accessRights.service.IRoleService;
  * @author svissier
  *
  */
-public class ProjectUserControllerIT extends RegardsIntegrationTest {
+public class ProjectUsersControllerIT extends RegardsIntegrationTest {
 
     @Autowired
     private JWTService jwtService_;
@@ -68,7 +68,7 @@ public class ProjectUserControllerIT extends RegardsIntegrationTest {
 
     @Before
     public void init() {
-        setLogger(LoggerFactory.getLogger(ProjectUserControllerIT.class));
+        setLogger(LoggerFactory.getLogger(ProjectUsersControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
         apiUsers_ = "/users";
         apiUserId_ = apiUsers_ + "/{user_id}";

@@ -17,27 +17,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.microservices.core.annotation.ModuleInfo;
-import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
+import fr.cnes.regards.modules.project.signature.ProjectsSignature;
 
 @RestController
 @ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/projects")
-public class ProjectController {
+public class ProjectsController implements ProjectsSignature {
 
     @Autowired
     private IProjectService projectService;
@@ -57,8 +55,7 @@ public class ProjectController {
     public void operationNotSupported() {
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET, produces = "application/json")
-    @ResourceAccess(description = "retrieve the list of project of instance")
+    @Override
     public @ResponseBody HttpEntity<List<Resource<Project>>> retrieveProjectList() {
 
         List<Project> projects = projectService.retrieveProjectList();
@@ -67,8 +64,7 @@ public class ProjectController {
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-    @ResourceAccess(description = "create a new project")
+    @Override
     public @ResponseBody HttpEntity<Resource<Project>> createProject(@Valid @RequestBody Project newProject)
             throws AlreadyExistingException {
 
@@ -78,8 +74,7 @@ public class ProjectController {
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/{project_id}", produces = "application/json")
-    @ResourceAccess(description = "retrieve the project project_id")
+    @Override
     public @ResponseBody HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_id") String projectId) {
 
         Project project = projectService.retrieveProject(projectId);
@@ -88,8 +83,7 @@ public class ProjectController {
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/{project_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "update the project project_id")
+    @Override
     public @ResponseBody HttpEntity<Void> modifyProject(@PathVariable("project_id") String projectId,
             @RequestBody Project projectUpdated) throws OperationNotSupportedException {
 
@@ -97,8 +91,7 @@ public class ProjectController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{project_id}", produces = "application/json")
-    @ResourceAccess(description = "remove the project project_id")
+    @Override
     public @ResponseBody HttpEntity<Void> deleteProject(@PathVariable("project_id") String projectId) {
 
         projectService.deleteProject(projectId);
@@ -107,11 +100,11 @@ public class ProjectController {
 
     public static void addLinksToProject(Resource<Project> project) {
         if (project.getLinks().isEmpty()) {
-            project.add(linkTo(methodOn(ProjectController.class).retrieveProject(project.getContent().getName()))
+            project.add(linkTo(methodOn(ProjectsController.class).retrieveProject(project.getContent().getName()))
                     .withSelfRel());
-            // project.add(linkTo(methodOn(ProjectController.class).modifyProject(project.getName(), project))
+            // project.add(linkTo(methodOn(ProjectsController.class).modifyProject(project.getName(), project))
             // .withRel("update"));
-            project.add(linkTo(methodOn(ProjectController.class).deleteProject(project.getContent().getName()))
+            project.add(linkTo(methodOn(ProjectsController.class).deleteProject(project.getContent().getName()))
                     .withRel("delete"));
         }
     }

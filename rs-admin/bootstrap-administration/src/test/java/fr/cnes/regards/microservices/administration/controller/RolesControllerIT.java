@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.administration;
+package fr.cnes.regards.microservices.administration.controller;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.accessRights.service.IRoleService;
  * @author xbrochar
  *
  */
-public class RoleControllerIT extends RegardsIntegrationTest {
+public class RolesControllerIT extends RegardsIntegrationTest {
 
     @Autowired
     private JWTService jwtService_;
@@ -66,7 +66,7 @@ public class RoleControllerIT extends RegardsIntegrationTest {
 
     @Before
     public void init() {
-        setLogger(LoggerFactory.getLogger(ProjectControllerIT.class));
+        setLogger(LoggerFactory.getLogger(ProjectsControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
         // authService_.setAuthorities("////", RequestMethod.GET, "TOTO", "TITI", "");
         apiRoles = "/roles";

@@ -22,7 +22,8 @@
   	<module>project-domain</module>
   	<module>project-rest</module>
   	<module>project-service</module>
-  	<module>project-signature</module>
+  	
+  	<module>project-client</module>
   </modules>
 
   <dependencyManagement>
@@ -62,7 +63,7 @@
   		</dependency>
   		<dependency>
   			<groupId>fr.cnes.regards.modules.project</groupId>
-  			<artifactId>project-signature</artifactId>
+  			<artifactId>project-client</artifactId>
   			<version>1.0-SNAPSHOT</version>
   		</dependency>
       <!-- COTS -->
