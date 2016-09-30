@@ -10,8 +10,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.microservices.core.security.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.microservices.core.security.jwt.exception.MissingClaimException;
+import fr.cnes.regards.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.security.utils.jwt.JWTService;
+import fr.cnes.regards.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.security.utils.jwt.exception.MissingClaimException;
 
 /**
  * REGARDS JWT provider to authenticate request issuer parsing JWT

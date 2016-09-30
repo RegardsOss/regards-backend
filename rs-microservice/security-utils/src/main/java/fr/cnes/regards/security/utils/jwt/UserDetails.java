@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.security.jwt;
+package fr.cnes.regards.security.utils.jwt;
 
 import java.io.Serializable;
 

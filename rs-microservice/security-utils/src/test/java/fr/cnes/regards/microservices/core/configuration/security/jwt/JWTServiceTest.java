@@ -12,11 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.microservices.core.security.jwt.JWTAuthentication;
-import fr.cnes.regards.microservices.core.security.jwt.JWTService;
-import fr.cnes.regards.microservices.core.security.jwt.UserDetails;
-import fr.cnes.regards.microservices.core.security.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.microservices.core.security.jwt.exception.MissingClaimException;
+import fr.cnes.regards.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.security.utils.jwt.JWTService;
+import fr.cnes.regards.security.utils.jwt.UserDetails;
+import fr.cnes.regards.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.security.utils.jwt.exception.MissingClaimException;
 
 /**
  * @author msordi

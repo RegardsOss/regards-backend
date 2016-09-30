@@ -1,15 +1,15 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.security.jwt;
+package fr.cnes.regards.security.utils.jwt;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.microservices.core.security.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.microservices.core.security.jwt.exception.MissingClaimException;
+import fr.cnes.regards.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.security.utils.jwt.exception.MissingClaimException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;

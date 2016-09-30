@@ -28,6 +28,7 @@
 		<module>module-archetype</module>
 		<module>microservice-core-test</module>
 		<module>client-core</module>
+		<module>security-utils</module>
   </modules>
 
 </project>

@@ -16,7 +16,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
 @ConditionalOnProperty(name = "eureka.client.enabled", havingValue = "true")
 @RestController
