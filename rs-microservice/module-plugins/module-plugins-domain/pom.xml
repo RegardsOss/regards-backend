@@ -10,7 +10,7 @@
 
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>plugins</artifactId>
+		<artifactId>module-plugins</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
