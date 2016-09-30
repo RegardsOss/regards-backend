@@ -57,13 +57,13 @@ public class JWTService {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secret_).parseClaimsJws(pAuthentication.getJwt());
             // OK, trusted JWT parsed and validated
 
+            UserDetails user = new UserDetails();
+
             String project = claims.getBody().get(CLAIM_PROJECT, String.class);
             if (project == null) {
                 throw new MissingClaimException(CLAIM_PROJECT);
             }
-            pAuthentication.setProject(project);
-
-            UserDetails user = new UserDetails();
+            user.setTenant(project);
 
             String email = claims.getBody().get(CLAIM_EMAIL, String.class);
             if (email == null) {

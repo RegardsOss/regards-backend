@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.modules.core.hateoas;
+package fr.cnes.regards.modules.core.hateoas;
 
 import org.springframework.hateoas.ResourceSupport;
 

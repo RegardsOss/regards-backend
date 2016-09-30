@@ -46,11 +46,10 @@ public class JWTServiceTest {
         try {
             JWTAuthentication jwtAuth = jwtService_.parseToken(new JWTAuthentication(jwt));
 
-            Assert.assertEquals(project, jwtAuth.getProject());
-
             UserDetails user = jwtAuth.getPrincipal();
             Assert.assertEquals(email, user.getEmail());
             Assert.assertEquals(name, user.getName());
+            Assert.assertEquals(project, user.getTenant());
         }
         catch (InvalidJwtException | MissingClaimException e) {
             String message = "JWT test error";

@@ -13,8 +13,8 @@ import org.springframework.context.annotation.PropertySource;
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
 import fr.cnes.regards.microservices.core.dao.util.CurrentTenantIdentifierResolverMock;
 
-@ComponentScan(basePackages = { "fr.cnes.regards.microservices.core.dao",
-        "fr.cnes.regards.microservices.core.security" }, excludeFilters = {
+@ComponentScan(basePackages = { "fr.cnes.regards.microservices.core.dao", "fr.cnes.regards.microservices.core.security",
+        "fr.cnes.regards.security" }, excludeFilters = {
                 @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
                         CurrentTenantIdentifierResolverMock.class }) })
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
