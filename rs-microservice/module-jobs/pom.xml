@@ -15,13 +15,4 @@
 		<version>1.0.1-SNAPSHOT</version>
 	</parent>
 
-	<distributionManagement>
-		<snapshotRepository>
-			<uniqueVersion>true</uniqueVersion>
-			<id>archiva-snapshots</id>
-			<name>Archiva Managed Snapshot Repository</name>
-			<url>http://172.26.46.158:8010/repository/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
-
 </project>
