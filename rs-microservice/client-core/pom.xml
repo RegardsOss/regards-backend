@@ -7,10 +7,23 @@
 	<groupId>fr.cnes.regards.client</groupId>
 	<artifactId>client-core</artifactId>
 	<description>Client core</description>
-	
+
 	<properties>
-  		<feign.version>8.18.0</feign.version>
+		<feign.version>8.18.0</feign.version>
+		<spring-cloud-netflix.version>1.1.5.RELEASE</spring-cloud-netflix.version>
 	</properties>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>Brixton.SR5</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<parent>
 		<groupId>fr.cnes.regards.microservices</groupId>
@@ -19,16 +32,14 @@
 	</parent>
 
 	<dependencies>
-		<!--  Netflix Feign REST Client -->
+		<!-- Netflix Feign REST Client -->
 		<dependency>
-	    	<groupId>com.netflix.feign</groupId>
-	    	<artifactId>feign-core</artifactId>
-	    	<version>${feign.version}</version>
+			<groupId>com.netflix.feign</groupId>
+			<artifactId>feign-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
 			<artifactId>feign-hystrix</artifactId>
-			<version>${feign.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
@@ -36,10 +47,13 @@
 			<version>${feign.version}</version>
 		</dependency>
 		<dependency>
-            <groupId>com.netflix.feign</groupId>
-            <artifactId>feign-slf4j</artifactId>
-            <version>${feign.version}</version>
-        </dependency>
+			<groupId>com.netflix.feign</groupId>
+			<artifactId>feign-slf4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-feign</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
