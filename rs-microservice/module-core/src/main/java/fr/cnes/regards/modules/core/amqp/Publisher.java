@@ -41,7 +41,8 @@ public class Publisher {
         Exchange exchange = new DirectExchange(tenant, true, false);
         rabbitAdmin_.declareExchange(exchange);
         String binding = pEvt.getClass().getName();
-        rabbitTemplate_.convertAndSend(binding, pEvt);
+        Class<?> classToken = pEvt.getClass();
+        rabbitTemplate_.convertAndSend(binding, new TenantWrapper<>(pEvt, tenant));
     }
 
 }

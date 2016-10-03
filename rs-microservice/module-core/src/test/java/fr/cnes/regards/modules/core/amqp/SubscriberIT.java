@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.core.amqp;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +39,7 @@ import fr.cnes.regards.security.utils.jwt.exception.MissingClaimException;
  *
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { AmqpTestsConfiguration.class })
+@ContextConfiguration(classes = { SubscriberTestsConfiguration.class })
 @SpringBootTest
 @DirtiesContext
 public class SubscriberIT {
@@ -55,17 +56,7 @@ public class SubscriberIT {
 
     private TestReceiver receiver_;
 
-    // @Bean
-    public TestReceiver receiver() {
-        return new TestReceiver();
-    }
-
-    // @Bean
-    public SimpleMessageListenerContainer testEventListener(ConnectionFactory pConnectionFactory,
-            TestReceiver receiver) {
-        receiver_ = receiver;
-        return subscriber_.subscribeTo(TestEvent.class, receiver, "receive", pConnectionFactory);
-    }
+    private SimpleMessageListenerContainer container_;
 
     @Autowired
     private JWTService jwtService_;
@@ -81,10 +72,9 @@ public class SubscriberIT {
         String jwt = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
         try {
             SecurityContextHolder.getContext().setAuthentication(jwtService_.parseToken(new JWTAuthentication(jwt)));
-            receiver_ = receiver();
-            SimpleMessageListenerContainer container = subscriber_.subscribeTo(TestEvent.class, receiver_, "receive",
-                                                                               connectionFactory_);
-            container.start();
+            receiver_ = new TestReceiver();
+            container_ = subscriber_.subscribeTo(TestEvent.class, receiver_, connectionFactory_);
+            container_.start();
         }
         catch (InvalidJwtException | MissingClaimException e) {
             // TODO Auto-generated catch block
@@ -113,6 +103,11 @@ public class SubscriberIT {
         received_ = receiver_.getMessage();
         assertEquals(sended, received_);
 
+    }
+
+    @After
+    public void destroy() {
+        container_.stop();
     }
 
 }
