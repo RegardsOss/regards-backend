@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.accessRights.signature.AccessesSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
 @RestController
 @ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
@@ -63,6 +64,7 @@ public class AccessesController implements AccessesSignature {
     }
 
     @Override
+    @ResourceAccess(description = "retrieve the list of access request", name = "")
     public HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
         List<ProjectUser> projectUsers = accessRequestService_.retrieveAccessRequestList();
         List<Resource<ProjectUser>> resources = projectUsers.stream().map(p -> new Resource<>(p))
@@ -71,6 +73,7 @@ public class AccessesController implements AccessesSignature {
     }
 
     @Override
+    @ResourceAccess(description = "create a new access request", name = "")
     public HttpEntity<Resource<ProjectUser>> requestAccess(@Valid @RequestBody ProjectUser pAccessRequest)
             throws AlreadyExistingException {
         ProjectUser created = accessRequestService_.requestAccess(pAccessRequest);
@@ -79,6 +82,7 @@ public class AccessesController implements AccessesSignature {
     }
 
     @Override
+    @ResourceAccess(description = "accept the access request", name = "")
     public HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException {
         accessRequestService_.acceptAccessRequest(pAccessId);
@@ -86,6 +90,7 @@ public class AccessesController implements AccessesSignature {
     }
 
     @Override
+    @ResourceAccess(description = "deny the access request", name = "")
     public HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException {
         accessRequestService_.denyAccessRequest(pAccessId);
@@ -93,12 +98,14 @@ public class AccessesController implements AccessesSignature {
     }
 
     @Override
+    @ResourceAccess(description = "remove the access request", name = "")
     public HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId) {
         accessRequestService_.removeAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
+    @ResourceAccess(description = "retrieve the list of setting managing the access requests", name = "")
     public HttpEntity<List<Resource<String>>> getAccessSettingList() {
         List<String> accessSettings = accessRequestService_.getAccessSettingList();
         List<Resource<String>> resources = accessSettings.stream().map(a -> new Resource<>(a))
@@ -107,6 +114,7 @@ public class AccessesController implements AccessesSignature {
     }
 
     @Override
+    @ResourceAccess(description = "update the setting managing the access requests", name = "")
     public HttpEntity<Void> updateAccessSetting(@Valid @RequestBody String pUpdatedProjectUserSetting)
             throws InvalidValueException {
         accessRequestService_.updateAccessSetting(pUpdatedProjectUserSetting);
