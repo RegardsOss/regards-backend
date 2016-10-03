@@ -16,7 +16,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
@@ -37,6 +39,9 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
 
     @Autowired
     private JWTService jwtService_;
+
+    @Autowired
+    private MethodAuthorizationService authService_;
 
     private String jwt_;
 
@@ -70,6 +75,17 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
     public void init() {
         setLogger(LoggerFactory.getLogger(ProjectUsersControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
+        authService_.setAuthorities("/users", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/users", RequestMethod.POST, "USER");
+        authService_.setAuthorities("/users/{user_id}", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/users/{user_id}", RequestMethod.PUT, "USER");
+        authService_.setAuthorities("/users/{user_id}", RequestMethod.DELETE, "USER");
+        authService_.setAuthorities("/users/{user_id}/metadata", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/users/{user_id}/metadata", RequestMethod.PUT, "USER");
+        authService_.setAuthorities("/users/{user_id}/metadata", RequestMethod.DELETE, "USER");
+        authService_.setAuthorities("/users/{user_login}/permissions", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/users/{user_login}/permissions", RequestMethod.PUT, "USER");
+        authService_.setAuthorities("/users/{user_login}/permissions", RequestMethod.DELETE, "USER");
         apiUsers_ = "/users";
         apiUserId_ = apiUsers_ + "/{user_id}";
         apiUserLogin_ = apiUsers_ + "/{user_login}";

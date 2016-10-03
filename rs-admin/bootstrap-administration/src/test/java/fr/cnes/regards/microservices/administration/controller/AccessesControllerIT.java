@@ -16,18 +16,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
-import fr.cnes.regards.security.utils.jwt.JWTService;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 
 public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Autowired
     private JWTService jwtService_;
+
+    @Autowired
+    private MethodAuthorizationService authService_;
 
     private String jwt_;
 
@@ -48,6 +52,14 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     public void init() {
         setLogger(LoggerFactory.getLogger(AccessesControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
+        authService_.setAuthorities("/accesses", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/accesses", RequestMethod.POST, "USER");
+        authService_.setAuthorities("/accesses/{access_id}", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/accesses/{access_id}/accept", RequestMethod.PUT, "USER");
+        authService_.setAuthorities("/accesses/{access_id}/deny", RequestMethod.PUT, "USER");
+        authService_.setAuthorities("/accesses/{access_id}", RequestMethod.DELETE, "USER");
+        authService_.setAuthorities("/accesses/settings", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/accesses/settings", RequestMethod.PUT, "USER");
         errorMessage = "Cannot reach model attributes";
         apiAccesses = "/accesses";
         apiAccessId = apiAccesses + "/{access_id}";

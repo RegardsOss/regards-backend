@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
@@ -68,7 +69,15 @@ public class RolesControllerIT extends RegardsIntegrationTest {
     public void init() {
         setLogger(LoggerFactory.getLogger(ProjectsControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
-        // authService_.setAuthorities("////", RequestMethod.GET, "TOTO", "TITI", "");
+        authService_.setAuthorities("/roles", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/roles", RequestMethod.POST, "USER");
+        authService_.setAuthorities("/roles/{role_id}", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/roles/{role_id}", RequestMethod.PUT, "USER");
+        authService_.setAuthorities("/roles/{role_id}", RequestMethod.DELETE, "USER");
+        authService_.setAuthorities("/roles/{role_id}/permissions", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/roles/{role_id}/permissions", RequestMethod.PUT, "USER");
+        authService_.setAuthorities("/roles/{role_id}/permissions", RequestMethod.DELETE, "USER");
+        authService_.setAuthorities("/roles/{role_id}/users", RequestMethod.GET, "USER");
         apiRoles = "/roles";
         apiRolesId = apiRoles + "/{role_id}";
         apiRolesPermissions = apiRolesId + "/permissions";

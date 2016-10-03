@@ -17,7 +17,9 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
@@ -35,6 +37,9 @@ public class ProjectsControllerIT extends RegardsIntegrationTest {
     @Autowired
     private JWTService jwtService_;
 
+    @Autowired
+    private MethodAuthorizationService authService_;
+
     private String jwt_;
 
     private String apiProjects;
@@ -50,6 +55,11 @@ public class ProjectsControllerIT extends RegardsIntegrationTest {
     public void init() {
         setLogger(LoggerFactory.getLogger(ProjectsControllerIT.class));
         jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
+        authService_.setAuthorities("/projects", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/projects", RequestMethod.POST, "USER");
+        authService_.setAuthorities("/projects/{project_id}", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/projects/{project_id}", RequestMethod.PUT, "USER");
+        authService_.setAuthorities("/projects/{project_id}", RequestMethod.DELETE, "USER");
         errorMessage = "Cannot reach model attributes";
         apiProjects = "/projects";
         apiProjectId = apiProjects + "/{project_id}";
