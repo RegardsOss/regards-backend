@@ -20,11 +20,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 
-import fr.cnes.regards.microservices.core.security.jwt.JWTService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
+import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
  * Just Test the REST API so status code. Correction is left to others.
