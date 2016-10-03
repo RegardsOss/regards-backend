@@ -22,11 +22,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
+import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
@@ -56,7 +56,8 @@ public class ProjectsController implements ProjectsSignature {
     }
 
     @Override
-    public @ResponseBody HttpEntity<List<Resource<Project>>> retrieveProjectList() {
+    @ResourceAccess(description = "retrieve the list of project of instance")
+    public HttpEntity<List<Resource<Project>>> retrieveProjectList() {
 
         List<Project> projects = projectService.retrieveProjectList();
         List<Resource<Project>> resources = projects.stream().map(p -> new Resource<>(p)).collect(Collectors.toList());
@@ -65,7 +66,8 @@ public class ProjectsController implements ProjectsSignature {
     }
 
     @Override
-    public @ResponseBody HttpEntity<Resource<Project>> createProject(@Valid @RequestBody Project newProject)
+    @ResourceAccess(description = "create a new project")
+    public HttpEntity<Resource<Project>> createProject(@Valid @RequestBody Project newProject)
             throws AlreadyExistingException {
 
         Project project = projectService.createProject(newProject);
@@ -75,7 +77,8 @@ public class ProjectsController implements ProjectsSignature {
     }
 
     @Override
-    public @ResponseBody HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_id") String projectId) {
+    @ResourceAccess(description = "retrieve the project project_id")
+    public HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_id") String projectId) {
 
         Project project = projectService.retrieveProject(projectId);
         Resource<Project> resource = new Resource<Project>(project);
@@ -84,7 +87,8 @@ public class ProjectsController implements ProjectsSignature {
     }
 
     @Override
-    public @ResponseBody HttpEntity<Void> modifyProject(@PathVariable("project_id") String projectId,
+    @ResourceAccess(description = "update the project project_id")
+    public HttpEntity<Void> modifyProject(@PathVariable("project_id") String projectId,
             @RequestBody Project projectUpdated) throws OperationNotSupportedException {
 
         projectService.modifyProject(projectId, projectUpdated);
@@ -92,7 +96,8 @@ public class ProjectsController implements ProjectsSignature {
     }
 
     @Override
-    public @ResponseBody HttpEntity<Void> deleteProject(@PathVariable("project_id") String projectId) {
+    @ResourceAccess(description = "remove the project project_id")
+    public HttpEntity<Void> deleteProject(@PathVariable("project_id") String projectId) {
 
         projectService.deleteProject(projectId);
         return new ResponseEntity<>(HttpStatus.OK);

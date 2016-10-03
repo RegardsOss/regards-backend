@@ -24,38 +24,31 @@ import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
 public interface AccessesSignature {
 
-    @ResourceAccess(description = "retrieve the list of access request", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList();
 
-    @ResourceAccess(description = "create a new access request", name = "")
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<ProjectUser>> requestAccess(@Valid @RequestBody ProjectUser pAccessRequest)
             throws AlreadyExistingException;
 
-    @ResourceAccess(description = "accept the access request", name = "")
     @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException;
 
-    @ResourceAccess(description = "deny the access request", name = "")
     @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId) throws OperationNotSupportedException;
 
-    @ResourceAccess(description = "remove the access request", name = "")
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId);
 
-    @ResourceAccess(description = "retrieve the list of setting managing the access requests", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<List<Resource<String>>> getAccessSettingList();
 
-    @ResourceAccess(description = "update the setting managing the access requests", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> updateAccessSetting(@Valid @RequestBody String pUpdatedProjectUserSetting)

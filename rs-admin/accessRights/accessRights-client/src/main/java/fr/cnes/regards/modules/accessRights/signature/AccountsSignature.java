@@ -27,29 +27,24 @@ import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
 public interface AccountsSignature {
 
-    @ResourceAccess(description = "retrieve the list of account in the instance", name = "")
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<List<Resource<Account>>> retrieveAccountList();
 
-    @ResourceAccess(description = "create an new account", name = "")
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<Account>> createAccount(@Valid @RequestBody Account pNewAccount)
             throws AlreadyExistingException;
 
-    @ResourceAccess(description = "retrieve the account account_id", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") Long accountId);
 
-    @ResourceAccess(description = "update the account account_id according to the body specified", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> updateAccount(@PathVariable("account_id") Long accountId,
             @Valid @RequestBody Account pUpdatedAccount) throws OperationNotSupportedException;
 
-    @ResourceAccess(description = "remove the account account_id", name = "")
     @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> removeAccount(@PathVariable("account_id") Long accountId);
@@ -62,36 +57,30 @@ public interface AccountsSignature {
      * @return
      * @throws InvalidValueException
      */
-    @ResourceAccess(description = "unlock the account account_id according to the code unlock_code", name = "")
     @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> unlockAccount(@PathVariable("account_id") Long accountId,
             @PathVariable("unlock_code") String unlockCode) throws InvalidValueException;
 
-    @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code", name = "")
     @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> changeAccountPassword(@PathVariable("account_id") Long accountId,
             @PathVariable("reset_code") String resetCode, @Valid @RequestBody String pNewPassword)
             throws InvalidValueException;
 
-    @ResourceAccess(description = "send a code of type type to the email specified", name = "")
     @RequestMapping(value = "/code", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> codeForAccount(@RequestParam("email") String email, @RequestParam("type") CodeType type);
 
-    @ResourceAccess(description = "retrieve the list of setting managing the accounts", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<List<Resource<String>>> retrieveAccountSettings();
 
-    @ResourceAccess(description = "update the setting managing the account", name = "")
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting)
             throws InvalidValueException;
 
-    @ResourceAccess(description = "Validate the account password", name = "")
     @RequestMapping(value = "/{account_login}/validate", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Boolean> validatePassword(@PathVariable("account_login") String pLogin,

@@ -14,11 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,7 +37,7 @@ import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 @RestController
 @ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/roles")
-public class RolesController implements RolesSignature {
+public class RoleController implements RolesSignature {
 
     @Autowired
     private IRoleService roleService_;
@@ -62,7 +64,9 @@ public class RolesController implements RolesSignature {
 
     @Override
     @ResourceAccess(description = "Retrieve the list of roles", name = "")
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public HttpEntity<List<Resource<Role>>> retrieveRoleList() {
+
         List<Role> roles = roleService_.retrieveRoleList();
         List<Resource<Role>> resources = roles.stream().map(r -> new Resource<>(r)).collect(Collectors.toList());
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -71,6 +75,7 @@ public class RolesController implements RolesSignature {
     @Override
     @ResourceAccess(description = "Create a role", name = "")
     public HttpEntity<Resource<Role>> createRole(@Valid @RequestBody Role pNewRole) throws AlreadyExistingException {
+
         Role created = roleService_.createRole(pNewRole);
         Resource<Role> resource = new Resource<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
@@ -79,6 +84,7 @@ public class RolesController implements RolesSignature {
     @Override
     @ResourceAccess(description = "Retrieve a role by id", name = "")
     public HttpEntity<Resource<Role>> retrieveRole(@PathVariable("role_id") Long pRoleId) {
+
         Role role = roleService_.retrieveRole(pRoleId);
         Resource<Role> resource = new Resource<>(role);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -103,6 +109,7 @@ public class RolesController implements RolesSignature {
     @ResourceAccess(description = "Retrieve the list of permissions of the role with role_id", name = "")
     public HttpEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(
             @PathVariable("role_id") Long pRoleId) {
+
         List<ResourcesAccess> resourcesAccesses = roleService_.retrieveRoleResourcesAccessList(pRoleId);
         List<Resource<ResourcesAccess>> resources = resourcesAccesses.stream().map(ra -> new Resource<>(ra))
                 .collect(Collectors.toList());
@@ -113,6 +120,7 @@ public class RolesController implements RolesSignature {
     @ResourceAccess(description = "Incrementally update the list of permissions of the role with role_id", name = "")
     public HttpEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") Long pRoleId,
             @Valid @RequestBody List<ResourcesAccess> pResourcesAccessList) throws OperationNotSupportedException {
+
         roleService_.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -121,6 +129,7 @@ public class RolesController implements RolesSignature {
     @ResourceAccess(description = "Clear the list of permissions of the", name = "")
     public HttpEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") Long pRoleId)
             throws OperationNotSupportedException {
+
         roleService_.clearRoleResourcesAccess(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -129,6 +138,7 @@ public class RolesController implements RolesSignature {
     @ResourceAccess(description = "Retrieve the list of project users of the role with role_id", name = "")
     public HttpEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(@PathVariable("role_id") Long pRoleId)
             throws OperationNotSupportedException {
+
         List<ProjectUser> projectUserList = roleService_.retrieveRoleProjectUserList(pRoleId);
         List<Resource<ProjectUser>> resources = projectUserList.stream().map(pu -> new Resource<>(pu))
                 .collect(Collectors.toList());

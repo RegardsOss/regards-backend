@@ -21,7 +21,7 @@ import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
-import fr.cnes.regards.modules.accessRights.service.IAccountService;
+import fr.cnes.regards.security.utils.jwt.JWTService;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 
 public class AccessesControllerIT extends RegardsIntegrationTest {
@@ -43,9 +43,6 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Autowired
     private IAccessRequestService accessRequestService_;
-
-    @Autowired
-    private IAccountService accountService_;
 
     @Before
     public void init() {

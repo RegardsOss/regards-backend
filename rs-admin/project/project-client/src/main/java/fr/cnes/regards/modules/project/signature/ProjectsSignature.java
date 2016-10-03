@@ -24,28 +24,23 @@ import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 public interface ProjectsSignature {
 
     @RequestMapping(value = "", method = RequestMethod.GET, produces = "application/json")
-    @ResourceAccess(description = "retrieve the list of project of instance")
     @ResponseBody
     HttpEntity<List<Resource<Project>>> retrieveProjectList();
 
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-    @ResourceAccess(description = "create a new project")
     @ResponseBody
     HttpEntity<Resource<Project>> createProject(@Valid @RequestBody Project newProject) throws AlreadyExistingException;
 
     @RequestMapping(method = RequestMethod.GET, value = "/{project_id}", produces = "application/json")
-    @ResourceAccess(description = "retrieve the project project_id")
     @ResponseBody
     HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_id") String projectId);
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "update the project project_id")
     @ResponseBody
     HttpEntity<Void> modifyProject(@PathVariable("project_id") String projectId, @RequestBody Project projectUpdated)
             throws OperationNotSupportedException;
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{project_id}", produces = "application/json")
-    @ResourceAccess(description = "remove the project project_id")
     @ResponseBody
     HttpEntity<Void> deleteProject(@PathVariable("project_id") String projectId);
 }

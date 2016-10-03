@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.accessRights.signature.AccountsSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
 @RestController
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
@@ -66,6 +67,7 @@ public class AccountsController implements AccountsSignature {
     }
 
     @Override
+    @ResourceAccess(description = "retrieve the list of account in the instance", name = "")
     public HttpEntity<List<Resource<Account>>> retrieveAccountList() {
         List<Account> accounts = accountService_.retrieveAccountList();
         List<Resource<Account>> resources = accounts.stream().map(a -> new Resource<>(a)).collect(Collectors.toList());
@@ -73,6 +75,7 @@ public class AccountsController implements AccountsSignature {
     }
 
     @Override
+    @ResourceAccess(description = "create an new account", name = "")
     public HttpEntity<Resource<Account>> createAccount(@Valid @RequestBody Account pNewAccount)
             throws AlreadyExistingException {
         Account created = accountService_.createAccount(pNewAccount);
@@ -81,6 +84,7 @@ public class AccountsController implements AccountsSignature {
     }
 
     @Override
+    @ResourceAccess(description = "retrieve the account account_id", name = "")
     public HttpEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") Long accountId) {
         Account account = accountService_.retrieveAccount(accountId);
         Resource<Account> resource = new Resource<>(account);
@@ -88,6 +92,7 @@ public class AccountsController implements AccountsSignature {
     }
 
     @Override
+    @ResourceAccess(description = "update the account account_id according to the body specified", name = "")
     public HttpEntity<Void> updateAccount(@PathVariable("account_id") Long accountId,
             @Valid @RequestBody Account pUpdatedAccount) throws OperationNotSupportedException {
         accountService_.updateAccount(accountId, pUpdatedAccount);
@@ -95,12 +100,14 @@ public class AccountsController implements AccountsSignature {
     }
 
     @Override
+    @ResourceAccess(description = "remove the account account_id", name = "")
     public HttpEntity<Void> removeAccount(@PathVariable("account_id") Long accountId) {
         accountService_.removeAccount(accountId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
+    @ResourceAccess(description = "unlock the account account_id according to the code unlock_code", name = "")
     public HttpEntity<Void> unlockAccount(@PathVariable("account_id") Long accountId,
             @PathVariable("unlock_code") String unlockCode) throws InvalidValueException {
         accountService_.unlockAccount(accountId, unlockCode);
@@ -108,6 +115,7 @@ public class AccountsController implements AccountsSignature {
     }
 
     @Override
+    @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code", name = "")
     public HttpEntity<Void> changeAccountPassword(@PathVariable("account_id") Long accountId,
             @PathVariable("reset_code") String resetCode, @Valid @RequestBody String pNewPassword)
             throws InvalidValueException {
@@ -116,12 +124,14 @@ public class AccountsController implements AccountsSignature {
     }
 
     @Override
+    @ResourceAccess(description = "send a code of type type to the email specified", name = "")
     public HttpEntity<Void> codeForAccount(@RequestParam("email") String email, @RequestParam("type") CodeType type) {
         accountService_.codeForAccount(email, type);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
+    @ResourceAccess(description = "retrieve the list of setting managing the accounts", name = "")
     public HttpEntity<List<Resource<String>>> retrieveAccountSettings() {
         List<String> accountSettings = accountService_.retrieveAccountSettings();
         List<Resource<String>> resources = accountSettings.stream().map(a -> new Resource<>(a))
@@ -130,6 +140,7 @@ public class AccountsController implements AccountsSignature {
     }
 
     @Override
+    @ResourceAccess(description = "update the setting managing the account", name = "")
     public HttpEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting)
             throws InvalidValueException {
         accountService_.updateAccountSetting(pUpdatedAccountSetting);
@@ -137,6 +148,7 @@ public class AccountsController implements AccountsSignature {
     }
 
     @Override
+    @ResourceAccess(description = "Validate the account password", name = "")
     public HttpEntity<Boolean> validatePassword(@PathVariable("account_login") String pLogin,
             @RequestParam("password") String pPassword) throws NoSuchElementException {
         Boolean valid = accountService_.validatePassword(pLogin, pPassword);
