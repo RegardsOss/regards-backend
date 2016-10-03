@@ -5,6 +5,7 @@ package fr.cnes.regards.microservices.administration;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportResource;
@@ -23,6 +24,7 @@ import springfox.documentation.builders.ApiInfoBuilder;
 @MicroserviceInfo(name = "administration", version = "1.0-SNAPSHOT")
 @ImportResource("classpath*:defaultRoles.xml")
 @EnableFeignClients
+@EnableDiscoveryClient
 public class Application {
 
     @Bean
