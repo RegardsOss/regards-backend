@@ -105,7 +105,7 @@ public class RolesControllerIT extends RegardsIntegrationTest {
         performGet(apiRolesId, jwt_, expectations, "TODO Error message", roleId);
 
         Long wrongRoleId = 46453L;
-        assertFalse(this.roleService_.existRole(wrongRoleId));
+        assertFalse(roleService_.existRole(wrongRoleId));
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
         performGet(apiRolesId, jwt_, expectations, "TODO Error message", wrongRoleId);
