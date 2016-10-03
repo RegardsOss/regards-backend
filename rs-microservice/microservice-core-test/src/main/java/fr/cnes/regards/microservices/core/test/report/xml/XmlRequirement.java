@@ -73,4 +73,17 @@ public class XmlRequirement {
         }
         tests_.add(pTest);
     }
+
+    /**
+     * Add all tests
+     *
+     * @param pTests
+     *            tests to add
+     */
+    public void addAllTests(List<XmlTest> pTests) {
+        if (tests_ == null) {
+            tests_ = new ArrayList<>();
+        }
+        tests_.addAll(pTests);
+    }
 }
