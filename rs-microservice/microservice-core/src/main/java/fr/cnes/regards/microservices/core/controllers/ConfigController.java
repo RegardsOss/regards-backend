@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
 @RestController
@@ -31,7 +31,7 @@ public class ConfigController {
     String name_ = "Default value";
 
     @Autowired
-    MethodAutorizationService authService_;
+    MethodAuthorizationService authService_;
 
     @PostConstruct
     public void initAuthorisations() {

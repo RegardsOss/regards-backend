@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.microservices</groupId>
 		<artifactId>rs-microservice</artifactId>
-		<version>1.2-SNAPSHOT</version>
+		<version>1.2.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencyManagement>
@@ -19,11 +19,6 @@
 			<dependency>
 				<groupId>fr.cnes.regards.utils</groupId>
 				<artifactId>security-utils</artifactId>
-				<version>1.2-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>module-jobs</artifactId>
 				<version>1.2-SNAPSHOT</version>
 			</dependency>
 		</dependencies>
@@ -34,10 +29,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.utils</groupId>
 			<artifactId>security-utils</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>module-jobs</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>

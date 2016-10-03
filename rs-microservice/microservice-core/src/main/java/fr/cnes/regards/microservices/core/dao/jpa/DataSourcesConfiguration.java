@@ -32,18 +32,38 @@ import fr.cnes.regards.microservices.core.configuration.common.ProjectConfigurat
 @ConditionalOnProperty("microservice.dao.enabled")
 public class DataSourcesConfiguration {
 
+    /**
+     * Hibernate dialect for embedded HSQL Database
+     */
     public static final String EMBEDDED_HSQLDB_HIBERNATE_DIALECT = "org.hibernate.dialect.HSQLDialect";
 
+    /**
+     * Hibernate driver class for embedded HSQL Database
+     */
     public static final String EMBEDDED_HSQL_DRIVER_CLASS = "org.hsqldb.jdbcDriver";
 
+    /**
+     * Url prefix for embedded HSQL Database. Persistence into file.
+     */
     public static final String EMBEDDED_HSQL_URL = "jdbc:hsqldb:file:";
+
+    /**
+     * Data source URL separator
+     */
+    public static final String EMBEDDED_URL_SEPARATOR = "/";
+
+    /**
+     * HSQL Embedded Data source base name. Property shutdown allow to close the embedded database when the last
+     * connection is close.
+     */
+    public static final String EMBEDDED_URL_BASE_NAME = "applicationdb;shutdown=true;";
 
     @Autowired
     private MicroserviceConfiguration configuration_;
 
     /**
      *
-     * List of datasources for each configured project.
+     * List of data sources for each configured project.
      *
      * @return
      * @since 1.0-SNAPSHOT
@@ -57,8 +77,10 @@ public class DataSourcesConfiguration {
             if (configuration_.getDao().getEmbedded()) {
                 DriverManagerDataSource dataSource = new DriverManagerDataSource();
                 dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-                dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath() + "/"
-                        + project.getName() + "/applicationdb");
+                dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+                        + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + project.getName()
+                        + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
+                        + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
                 datasources.put(project.getName(), dataSource);
             }
             else {
@@ -75,7 +97,7 @@ public class DataSourcesConfiguration {
 
     /**
      *
-     * Default datasource for persitence unit projects.
+     * Default data source for persistence unit projects.
      *
      * @return
      * @since 1.0-SNAPSHOT
@@ -89,8 +111,11 @@ public class DataSourcesConfiguration {
         if (configuration_.getDao().getEmbedded()) {
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath() + project.getName()
-                    + "/applicationdb");
+            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+                    + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + project.getName()
+                    + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
+                    + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
+
             return dataSource;
         }
         else {
@@ -104,7 +129,7 @@ public class DataSourcesConfiguration {
 
     /**
      *
-     * Default datasource for persitence unit instance.
+     * Default data source for persistence unit instance.
      *
      * @return
      * @since 1.0-SNAPSHOT
@@ -116,8 +141,10 @@ public class DataSourcesConfiguration {
         if (configuration_.getDao().getEmbedded()) {
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource
-                    .setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath() + "/instance/applicationdb");
+            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+                    + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + "instance"
+                    + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
+                    + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
             return dataSource;
         }
         else {

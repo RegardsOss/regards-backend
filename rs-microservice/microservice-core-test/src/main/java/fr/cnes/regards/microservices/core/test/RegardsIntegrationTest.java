@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -36,7 +37,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(classes = { RegardsIntegrationTestConfiguration.class })
 @AutoConfigureMockMvc
 public abstract class RegardsIntegrationTest {
 
@@ -121,7 +123,7 @@ public abstract class RegardsIntegrationTest {
         }
     }
 
-    private String json(Object o) throws IOException {
+    protected String json(Object o) throws IOException {
         if (o instanceof String) {
             return (String) o;
         }

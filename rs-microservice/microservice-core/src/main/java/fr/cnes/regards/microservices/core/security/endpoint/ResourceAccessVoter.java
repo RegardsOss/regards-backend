@@ -12,6 +12,7 @@ import java.util.Optional;
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.core.Authentication;
@@ -38,10 +39,10 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResourceAccessVoter.class);
 
-    private final MethodAutorizationService methodAuthService_;
+    private final MethodAuthorizationService methodAuthService_;
 
-    public ResourceAccessVoter(MethodAutorizationService pMethodAuthService) {
-        methodAuthService_ = pMethodAuthService;
+    public ResourceAccessVoter(MethodAuthorizationService pMethodAuthService) {
+        this.methodAuthService_ = pMethodAuthService;
     }
 
     @Override
@@ -109,7 +110,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
         ResourceMapping mapping = null;
 
         // Retrieve resource access annotation
-        ResourceAccess access = pMethod.getAnnotation(ResourceAccess.class);
+        ResourceAccess access = AnnotationUtils.findAnnotation(pMethod, ResourceAccess.class);
         if (access == null) {
             // Throw exception if resource is not annotated with resource access
             LOG.error("Missing annotation \"{}\" on method {}", ResourceAccess.class.getName(), pMethod.getName());
@@ -127,14 +128,14 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
         // Retrieve resource path and HTTP methods at method level
 
         // - Manage GET mapping
-        GetMapping get = pMethod.getAnnotation(GetMapping.class);
+        GetMapping get = AnnotationUtils.findAnnotation(pMethod, GetMapping.class);
         if (get != null) {
             return new ResourceMapping(access, classPath,
                     getSingleMethodPath(get.path(), get.value(), pMethod.getName(), className), RequestMethod.GET);
         }
 
         // - Manage REQUEST mapping
-        RequestMapping requestMapping = pMethod.getAnnotation(RequestMapping.class);
+        RequestMapping requestMapping = AnnotationUtils.findAnnotation(pMethod, RequestMapping.class);
         if (requestMapping != null) {
             return new ResourceMapping(access, classPath,
                     getSingleMethodPath(requestMapping.path(), requestMapping.value(), pMethod.getName(), className),
@@ -142,21 +143,21 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
         }
 
         // - Manage POST mapping
-        PostMapping post = pMethod.getAnnotation(PostMapping.class);
+        PostMapping post = AnnotationUtils.findAnnotation(pMethod, PostMapping.class);
         if (post != null) {
             return new ResourceMapping(access, classPath,
                     getSingleMethodPath(post.path(), post.value(), pMethod.getName(), className), RequestMethod.POST);
         }
 
         // - Manage PUT mapping
-        PutMapping put = pMethod.getAnnotation(PutMapping.class);
+        PutMapping put = AnnotationUtils.findAnnotation(pMethod, PutMapping.class);
         if (put != null) {
             return new ResourceMapping(access, classPath,
                     getSingleMethodPath(put.path(), put.value(), pMethod.getName(), className), RequestMethod.PUT);
         }
 
         // - Manage DELETE mapping
-        DeleteMapping delete = pMethod.getAnnotation(DeleteMapping.class);
+        DeleteMapping delete = AnnotationUtils.findAnnotation(pMethod, DeleteMapping.class);
         if (delete != null) {
             return new ResourceMapping(access, classPath,
                     getSingleMethodPath(delete.path(), delete.value(), pMethod.getName(), className),
@@ -164,7 +165,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
         }
 
         // - Manage PATCH mapping
-        PatchMapping patch = pMethod.getAnnotation(PatchMapping.class);
+        PatchMapping patch = AnnotationUtils.findAnnotation(pMethod, PatchMapping.class);
         if (patch != null) {
             return new ResourceMapping(access, classPath,
                     getSingleMethodPath(patch.path(), patch.value(), pMethod.getName(), className),
@@ -224,7 +225,8 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
         Optional<String> pathFromPaths = getSingleMethodPath(pPaths, pMethodName, pClassName);
         Optional<String> pathFromValues = getSingleMethodPath(pValues, pMethodName, pClassName);
-        if (pathFromPaths.isPresent() && pathFromValues.isPresent()) {
+        if (pathFromPaths.isPresent() && pathFromValues.isPresent()
+                && !pathFromPaths.get().equals(pathFromValues.get())) {
             // Only path or value must be set
             String errorMessage = MessageFormat.format("Conflict between path and value attributes in method ",
                                                        pMethodName);

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 
-import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
 @ConditionalOnProperty(name = "eureka.client.enabled", havingValue = "true")
@@ -54,7 +54,7 @@ public class EurekaController {
     String configServerName_;
 
     @Autowired
-    MethodAutorizationService authService_;
+    MethodAuthorizationService authService_;
 
     @PostConstruct
     public void initAuthorisations() {

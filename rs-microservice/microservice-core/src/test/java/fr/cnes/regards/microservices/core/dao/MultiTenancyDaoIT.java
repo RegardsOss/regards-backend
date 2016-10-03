@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 
 @RunWith(SpringRunner.class)
@@ -42,7 +42,7 @@ public class MultiTenancyDaoIT {
     private JWTService jwtService_;
 
     @Autowired
-    private MethodAutorizationService authService_;
+    private MethodAuthorizationService authService_;
 
     @Test
     public void testMvc() {

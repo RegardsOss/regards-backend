@@ -10,7 +10,7 @@ import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 
-import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.microservices.core.security.endpoint.ResourceAccessVoter;
 
 /**
@@ -25,7 +25,7 @@ import fr.cnes.regards.microservices.core.security.endpoint.ResourceAccessVoter;
 public class MethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
 
 	@Autowired
-	private MethodAutorizationService methodAuthService_;
+	private MethodAuthorizationService methodAuthService_;
 
 	@Override
 	protected AccessDecisionManager accessDecisionManager() {

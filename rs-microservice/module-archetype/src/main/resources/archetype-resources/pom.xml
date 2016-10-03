@@ -18,11 +18,11 @@
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
 	<modules>
+		<module>${artifactId}-client</module>
 		<module>${artifactId}-dao</module>
 		<module>${artifactId}-domain</module>
 		<module>${artifactId}-rest</module>
 		<module>${artifactId}-service</module>
-		<module>${artifactId}-signature</module>
 	</modules>
 
 	<dependencyManagement>
@@ -31,7 +31,7 @@
 			<dependency>
 				<groupId>fr.cnes.regards.microservices</groupId>
 				<artifactId>microservice-core</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>1.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
@@ -66,7 +66,7 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.${artifactId}</groupId>
-				<artifactId>${artifactId}-signature</artifactId>
+				<artifactId>${artifactId}-client</artifactId>
 				<version>${version}</version>
 			</dependency>
 			<!-- COTS -->
@@ -83,7 +83,7 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>module-core</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>1.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
