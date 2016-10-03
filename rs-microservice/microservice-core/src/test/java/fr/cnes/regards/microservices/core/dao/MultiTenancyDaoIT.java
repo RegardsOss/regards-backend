@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.microservices.core.security.jwt.JWTService;
+import fr.cnes.regards.security.utils.jwt.JWTService;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { MultiTenancyDaoITConfiguration.class })
