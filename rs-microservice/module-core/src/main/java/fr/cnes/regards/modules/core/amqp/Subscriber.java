@@ -17,7 +17,16 @@ import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import fr.cnes.regards.modules.core.amqp.provider.IProjectsProvider;
+import fr.cnes.regards.modules.core.amqp.utils.Handler;
+import fr.cnes.regards.modules.core.amqp.utils.TenantWrapper;
+import fr.cnes.regards.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.security.utils.jwt.JWTService;
+import fr.cnes.regards.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.security.utils.jwt.exception.MissingClaimException;
 
 /**
  * @author svissier
@@ -34,6 +43,9 @@ public class Subscriber {
 
     @Autowired
     private IProjectsProvider projectsProvider_;
+
+    @Autowired
+    private JWTService jwtService_;
 
     /**
      *
@@ -67,6 +79,31 @@ public class Subscriber {
             container.addQueues(queue);
         }
         return container;
+    }
+
+    private class TenantWrapperReceiver {
+
+        private final Handler handler_;
+
+        /**
+         *
+         */
+        public TenantWrapperReceiver(Handler pHandler) {
+            handler_ = pHandler;
+        }
+
+        /**
+         *
+         * @param pWrappedMessage
+         * @throws InvalidJwtException
+         * @throws MissingClaimException
+         */
+        public final void dewrap(TenantWrapper pWrappedMessage) throws InvalidJwtException, MissingClaimException {
+            String jwt = jwtService_.generateToken(pWrappedMessage.getTenant(), "", "", "ADMIN");
+            SecurityContextHolder.getContext().setAuthentication(jwtService_.parseToken(new JWTAuthentication(jwt)));
+            handler_.handle(pWrappedMessage.getContent());
+        }
+
     }
 
 }

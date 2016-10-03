@@ -1,10 +1,11 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.core.amqp;
+package fr.cnes.regards.modules.core.amqp.utils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.security.utils.jwt.JWTService;
@@ -15,24 +16,30 @@ import fr.cnes.regards.security.utils.jwt.exception.MissingClaimException;
  * @author svissier
  *
  */
+@Component
 public class TenantWrapperReceiver {
 
     @Autowired
     private JWTService jwtService_;
 
-    private final Handler handler_;
-
     /**
-     * @param pHandler
+     *
      */
-    public TenantWrapperReceiver(Handler<?> pHandler) {
-        handler_ = pHandler;
+    public TenantWrapperReceiver() {
     }
 
-    public void dewrap(TenantWrapper pWrappedMessage) throws InvalidJwtException, MissingClaimException {
+    /**
+     *
+     * @param pWrappedMessage
+     * @param pHandler
+     * @throws InvalidJwtException
+     * @throws MissingClaimException
+     */
+    public final void dewrap(TenantWrapper pWrappedMessage, Handler pHandler)
+            throws InvalidJwtException, MissingClaimException {
         String jwt = jwtService_.generateToken(pWrappedMessage.getTenant(), "", "", "ADMIN");
         SecurityContextHolder.getContext().setAuthentication(jwtService_.parseToken(new JWTAuthentication(jwt)));
-        handler_.handle(pWrappedMessage.getContent());
+        pHandler.handle(pWrappedMessage.getContent());
     }
 
 }

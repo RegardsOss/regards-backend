@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.core.amqp;
+package fr.cnes.regards.modules.core.amqp.provider;
 
 import java.util.List;
 

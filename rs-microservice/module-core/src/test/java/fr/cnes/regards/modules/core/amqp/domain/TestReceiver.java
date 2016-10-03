@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.core.amqp.domain;
 
-import fr.cnes.regards.modules.core.amqp.Handler;
+import fr.cnes.regards.modules.core.amqp.utils.Handler;
 
 /**
  * @author svissier

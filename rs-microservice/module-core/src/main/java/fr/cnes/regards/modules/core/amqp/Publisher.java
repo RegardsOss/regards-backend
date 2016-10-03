@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.modules.core.amqp.utils.TenantWrapper;
 import fr.cnes.regards.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.security.utils.jwt.UserDetails;
 
