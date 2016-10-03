@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.microservices.core.security.jwt.JWTAuthentication;
+import fr.cnes.regards.security.utils.jwt.JWTAuthentication;
 
 /**
  *

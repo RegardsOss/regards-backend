@@ -1,15 +1,18 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.security.jwt;
+package fr.cnes.regards.security.utils.jwt;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.microservices.core.security.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.microservices.core.security.jwt.exception.MissingClaimException;
+import fr.cnes.regards.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.security.utils.jwt.exception.MissingClaimException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -101,8 +104,26 @@ public class JWTService {
     // - expiration date
     // - data access groups
     public String generateToken(String pProject, String pEmail, String pName, String pRole) {
-        return Jwts.builder().setIssuer("regards").setSubject(pName).claim(CLAIM_PROJECT, pProject)
-                .claim(CLAIM_EMAIL, pEmail).claim(CLAIM_ROLE, pRole).signWith(ALGO, secret_).compact();
+        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(pProject, pEmail, pRole)).setSubject(pName)
+                .signWith(ALGO, secret_).compact();
+    }
+
+    /**
+     *
+     * Method to generate REGARDS JWT Tokens CLAIMS
+     *
+     * @param pProject
+     * @param pEmail
+     * @param pRole
+     * @return
+     * @since 1.0-SNAPSHOT
+     */
+    public Map<String, Object> generateClaims(String pProject, String pEmail, String pRole) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(CLAIM_PROJECT, pProject);
+        claims.put(CLAIM_EMAIL, pEmail);
+        claims.put(CLAIM_ROLE, pRole);
+        return claims;
     }
 
     /**
