@@ -20,7 +20,8 @@ import springfox.documentation.builders.ApiInfoBuilder;
  * @author TODO
  *
  */
-@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices.core" })
+@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices.core",
+        "fr.cnes.regards.security.utils" })
 @MicroserviceInfo(name = "administration", version = "1.0-SNAPSHOT")
 @ImportResource("classpath*:defaultRoles.xml")
 @EnableFeignClients
