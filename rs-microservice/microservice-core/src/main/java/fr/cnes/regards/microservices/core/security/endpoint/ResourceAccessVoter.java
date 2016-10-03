@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.configuration.MethodSecurityConfiguration;
-import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
 /**
  * REGARDS endpoint security voter to manage resource access dynamically at method level.

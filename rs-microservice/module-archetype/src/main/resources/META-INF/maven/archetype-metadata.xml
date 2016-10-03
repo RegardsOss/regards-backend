@@ -6,13 +6,13 @@
 
 	<fileSets>
 		<fileSet filtered="true" encoding="UTF-8">
-			<directory>__artifactId__-signature/</directory>
+			<directory>__artifactId__-client/</directory>
 			<includes>
 				<include>pom.xml</include>
 			</includes>
 		</fileSet>
 		<fileSet filtered="true" encoding="UTF-8">
-			<directory>__artifactId__-signature/src/main/java/fr/cnes/regards/modules/__artifactId__/signature</directory>
+			<directory>__artifactId__-client/src/main/java/fr/cnes/regards/modules/__artifactId__/client</directory>
 			<includes>
 				<include>**/*.java</include>
 			</includes>

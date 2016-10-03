@@ -7,20 +7,12 @@
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>module-jobs</artifactId>
 	<description>module Jobs manager</description>
+	<version>1.0-SNAPSHOT</version>
 
 	<parent>
 		<groupId>fr.cnes.regards.microservices</groupId>
 		<artifactId>rs-microservice</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.0.1-SNAPSHOT</version>
 	</parent>
-
-	<distributionManagement>
-		<snapshotRepository>
-			<uniqueVersion>true</uniqueVersion>
-			<id>archiva-snapshots</id>
-			<name>Archiva Managed Snapshot Repository</name>
-			<url>http://172.26.46.158:8010/repository/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
 
 </project>

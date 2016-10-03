@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.microservices</groupId>
 		<artifactId>rs-microservice</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.0.1-SNAPSHOT</version>
 	</parent>
 
 
@@ -25,10 +25,20 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.utils</groupId>
+				<artifactId>security-utils</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
+		<!-- Regards internal -->
+		<dependency>
+			<groupId>fr.cnes.regards.utils</groupId>
+			<artifactId>security-utils</artifactId>
+		</dependency>
 		<!-- JPA -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -54,15 +64,15 @@
 			<version>1.8.0.7</version>
 		</dependency>
 		<!-- Security feature -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt</artifactId>
-			<version>0.7.0</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.springframework.boot</groupId> -->
+<!-- 			<artifactId>spring-boot-starter-security</artifactId> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>io.jsonwebtoken</groupId> -->
+<!-- 			<artifactId>jjwt</artifactId> -->
+<!-- 			<version>0.7.0</version> -->
+<!-- 		</dependency> -->
 		<!-- logging -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -138,14 +148,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	
-	<distributionManagement>
-		<snapshotRepository>
-			<uniqueVersion>true</uniqueVersion>
-			<id>archiva-snapshots</id>
-			<name>Archiva Managed Snapshot Repository</name>
-			<url>http://172.26.46.158:8010/repository/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
 
 </project>

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.microservices.core.security.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
 @RestController
 @RequestMapping("/config")

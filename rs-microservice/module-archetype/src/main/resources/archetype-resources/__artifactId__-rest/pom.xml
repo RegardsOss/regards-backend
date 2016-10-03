@@ -20,10 +20,6 @@
 			<artifactId>microservice-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>module-core-hateoas</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.${artifactId}</groupId>
 			<artifactId>${artifactId}-service</artifactId>
 		</dependency>
