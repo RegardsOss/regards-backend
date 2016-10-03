@@ -1,50 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<!-- LICENSE_PLACEHOLDER -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <modelVersion>4.0.0</modelVersion>
+	<groupId>fr.cnes.regards.microservices</groupId>
+	<artifactId>access</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-  <name>rs-access</name>
-  <groupId>fr.cs.regards</groupId>
-  <artifactId>rs-access</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
-  <packaging>pom</packaging>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<sonar.language>java</sonar.language>
+		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
+	</properties>
 
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>1.3.5.RELEASE</version>
-  </parent>
-
-  <modules>
-    <module>frontend</module>
-  </modules>
-
-  <properties>
-    <regards.version>0.0.1-SNAPSHOT</regards.version>
-  </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>fr.cs.regards</groupId>
-        <artifactId>frontend-boot</artifactId>
-        <version>${regards.version}</version>
-        <type>war</type>
-      </dependency>
-      <dependency>
-        <groupId>fr.cs.regards</groupId>
-        <artifactId>HelloWorldPlugin</artifactId>
-        <version>${regards.version}</version>
-        <type>war</type>
-      </dependency>
-      <dependency>
-        <groupId>fr.cs.regards</groupId>
-        <artifactId>frontend-webapp</artifactId>
-        <version>${regards.version}</version>
-        <type>war</type>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+	<modules>
+		<module>access</module>
+		<module>bootstrap-access</module>
+	</modules>
 
 </project>
