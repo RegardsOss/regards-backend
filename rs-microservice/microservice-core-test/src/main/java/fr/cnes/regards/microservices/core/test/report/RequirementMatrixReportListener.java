@@ -81,8 +81,7 @@ public class RequirementMatrixReportListener extends RunListener {
             for (Requirement req : requirements.value()) {
                 handleRequirementTest(pDescription, req, purpose);
             }
-        }
-        else {
+        } else {
             // Try to get single requirement
             handleRequirementTest(pDescription, pDescription.getAnnotation(Requirement.class), purpose);
         }

@@ -66,8 +66,7 @@ public final class XmlHelper {
 
             // Marshall data
             jaxbMarshaller.marshal(pJaxbElement, targetFile);
-        }
-        catch (JAXBException e) {
+        } catch (JAXBException e) {
             String message = "Error while marshalling data";
             LOG.error("Error while marshalling data", e);
             throw new ReportException(message);
@@ -107,8 +106,7 @@ public final class XmlHelper {
             T results = (T) jaxbUnmarshaller.unmarshal(sourceFile);
 
             return results;
-        }
-        catch (JAXBException e) {
+        } catch (JAXBException e) {
             String message = "Error while marshalling data";
             LOG.error(message, e);
             throw new ReportException(message);

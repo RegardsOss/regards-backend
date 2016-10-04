@@ -79,8 +79,7 @@ public class XmlReportTest {
                     compareRequirement(req, reqToTest);
                 }
             }
-        }
-        catch (ReportException e) {
+        } catch (ReportException e) {
             Assert.fail();
         }
     }
@@ -93,8 +92,7 @@ public class XmlReportTest {
         if (pReq1.getRequirement().equals(pReq2.getRequirement())) {
             if ((pReq1.getTests().size() == 1) && (pReq2.getTests().size() == 1)) {
                 compareTest(pReq1.getTests().get(0), pReq2.getTests().get(0));
-            }
-            else {
+            } else {
                 LOG.debug("Only compare number of test in case of multiple tests");
                 Assert.assertEquals(pReq1.getTests().size(), pReq2.getTests().size());
             }
@@ -115,8 +113,7 @@ public class XmlReportTest {
         String filename = "requirements.xlsx";
         try {
             XlsxHelper.write(Paths.get("target"), filename, reqs_, "dam");
-        }
-        catch (ReportException e) {
+        } catch (ReportException e) {
             Assert.fail();
         }
     }

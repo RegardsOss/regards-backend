@@ -8,7 +8,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Configuration;
 
-@ConditionalOnProperty(name = "eureka.client.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true")
 @Configuration
 @EnableEurekaClient
 @EnableDiscoveryClient
