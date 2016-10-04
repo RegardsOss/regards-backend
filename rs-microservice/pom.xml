@@ -33,4 +33,5 @@
 		<module>report-maven-plugin</module>
 		<module>module-plugins</module>
 	</modules>
+	
 </project>
