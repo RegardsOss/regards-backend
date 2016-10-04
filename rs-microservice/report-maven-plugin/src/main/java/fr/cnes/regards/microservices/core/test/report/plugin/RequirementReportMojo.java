@@ -34,12 +34,21 @@ import fr.cnes.regards.microservices.core.test.report.xml.XmlRequirements;
 @Mojo(name = "gen")
 public class RequirementReportMojo extends AbstractMojo {
 
+    /**
+     * Prefix to detect all requirement reports
+     */
     @Parameter(property = "prefix", defaultValue = "RQMT-")
     private String prefix_;
 
+    /**
+     * Scan base directory
+     */
     @Parameter(property = "basedir", defaultValue = ".")
     private String basedir_;
 
+    /**
+     * Target aggregated file
+     */
     @Parameter(property = "target", defaultValue = "./target/requirements.xlsx")
     private String target_;
 
@@ -47,9 +56,9 @@ public class RequirementReportMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         getLog().info("Generating requirement report.");
-        XmlRequirements rqmts = aggregateReports(scanFileTree());
+        final XmlRequirements rqmts = aggregateReports(scanFileTree());
         try {
-            Path targetPath = Paths.get(target_);
+            final Path targetPath = Paths.get(target_);
             if (!targetPath.getParent().toFile().exists()) {
                 getLog().info("Creating target directory");
                 targetPath.getParent().toFile().mkdirs();
@@ -65,18 +74,19 @@ public class RequirementReportMojo extends AbstractMojo {
      *
      * @return list of requirement reports path
      * @throws MojoExecutionException
+     *             if file tree cannot be scanned
      */
     private List<Path> scanFileTree() throws MojoExecutionException {
         try (Stream<Path> paths = Files.walk(Paths.get(basedir_))) {
-            List<Path> targetPaths = paths.filter(path -> path.toFile().getName().startsWith(prefix_))
+            final List<Path> targetPaths = paths.filter(path -> path.toFile().getName().startsWith(prefix_))
                     .collect(Collectors.toList());
             for (Path target : targetPaths) {
                 getLog().info(target.toString());
             }
             return targetPaths;
         } catch (IOException e) {
-            String message = "Error scanning file tree";
-            getLog().error("Error scanning file tree", e);
+            final String message = "Error scanning file tree";
+            getLog().error(message, e);
             throw new MojoExecutionException(message);
         }
     }
@@ -88,15 +98,16 @@ public class RequirementReportMojo extends AbstractMojo {
      *            list of reports
      * @return aggregated report
      * @throws MojoExecutionException
+     *             if plugin cannot aggregate reports
      */
     private XmlRequirements aggregateReports(List<Path> pReports) throws MojoExecutionException {
         // Init aggregation map
-        Map<String, XmlRequirement> rqmtMap = new HashMap<>();
+        final Map<String, XmlRequirement> rqmtMap = new HashMap<>();
 
         if (pReports != null) {
             for (Path reportPath : pReports) {
                 try {
-                    XmlRequirements tmp = XmlHelper.read(reportPath, XmlRequirements.class);
+                    final XmlRequirements tmp = XmlHelper.read(reportPath, XmlRequirements.class);
                     if ((tmp != null) && (tmp.getRequirements() != null)) {
                         for (XmlRequirement rqmt : tmp.getRequirements()) {
                             aggregateTests(rqmtMap, rqmt);
@@ -109,7 +120,7 @@ public class RequirementReportMojo extends AbstractMojo {
         }
 
         // Compute result
-        XmlRequirements rqmts = new XmlRequirements();
+        final XmlRequirements rqmts = new XmlRequirements();
         for (XmlRequirement rqmt : rqmtMap.values()) {
             rqmts.addRequirement(rqmt);
         }
@@ -125,7 +136,7 @@ public class RequirementReportMojo extends AbstractMojo {
      *            requirement to aggregate
      */
     private void aggregateTests(Map<String, XmlRequirement> pRqmtMap, XmlRequirement pXmlRequirement) {
-        XmlRequirement rqmt = pRqmtMap.get(pXmlRequirement.getRequirement());
+        final XmlRequirement rqmt = pRqmtMap.get(pXmlRequirement.getRequirement());
         if (rqmt == null) {
             pRqmtMap.put(pXmlRequirement.getRequirement(), pXmlRequirement);
         } else {
