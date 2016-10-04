@@ -40,7 +40,8 @@ public class GatewayApplicationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    // @Test
+    @Purpose("Check that the gateway spring context is valid")
+    @Test
     public void contextLoads() {
         // The application can start with spring configuration
     }
@@ -49,9 +50,7 @@ public class GatewayApplicationTest {
     @Purpose("Test the Oauth2 authentication process. Test unauthorized for basic authentication fail.")
     @Test
     public void testAuthenticateBadicError() {
-
         try {
-
             String invalidBasicString = "invalid:invalid";
             invalidBasicString = Base64.getEncoder().encodeToString(invalidBasicString.getBytes());
 
@@ -63,7 +62,6 @@ public class GatewayApplicationTest {
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
                     .param("grant_type", "password").param("scope", "plop").param("username", "plop")
                     .param("password", "plop")).andExpect(MockMvcResultMatchers.status().isUnauthorized());
-
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -75,7 +73,6 @@ public class GatewayApplicationTest {
     @Purpose("Test the Oauth2 authentication process. Test unauthorized for user/password invalid.")
     @Test
     public void testAuthenticateCredantialsError() {
-
         try {
             String basicString = basicUserName_ + ":" + basicPassword_;
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
@@ -85,7 +82,6 @@ public class GatewayApplicationTest {
                     .param("grant_type", "password").param("scope", "plop").param("username", "plop")
                     .param("password", AuthenticationProviderStub.INVALID_PASSWORD))
                     .andExpect(MockMvcResultMatchers.status().is4xxClientError());
-
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -97,7 +93,6 @@ public class GatewayApplicationTest {
     @Purpose("Test the Oauth2 authentication process. Get a valid token.")
     @Test
     public void testAuthenticate() {
-
         try {
             String basicString = basicUserName_ + ":" + basicPassword_;
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
@@ -111,7 +106,6 @@ public class GatewayApplicationTest {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
-
     }
 
 }

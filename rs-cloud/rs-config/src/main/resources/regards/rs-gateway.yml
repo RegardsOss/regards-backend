@@ -6,6 +6,10 @@ zuul:
   prefix: /api/v1
   # Allow 'Authorization' header to pass through Zuul
   sensitiveHeaders: Cookie,Set-Cookie
+  routes:
+    my-service:
+      path: /**
+      serviceId: rs-admin
 
 access_token:
   validity_period: 3600
