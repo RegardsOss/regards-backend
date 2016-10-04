@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
+import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
+import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
 import fr.cnes.regards.security.utils.jwt.JWTService;
@@ -66,6 +68,8 @@ public class ProjectsControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_INST_130")
+    @Purpose("Check that the system allows to retrieve all projects for an instance.")
     public void aGetAllProjects() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -74,6 +78,8 @@ public class ProjectsControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_INST_100")
+    @Purpose("Check that the system allows to create a project on an instance and handle fail cases.")
     public void bCreateProject() {
         Project newProject;
         newProject = new Project(54242L, "description", "iconICON", Boolean.TRUE, "ilFautBienUnNomPourTester");
@@ -89,8 +95,9 @@ public class ProjectsControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_INST_100")
+    @Purpose("Check that the system allows to retrieve a project on an instance and handle fail cases.")
     public void cGetProject() {
-
         assertFalse(!projectService_.existProject("name"));
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -102,10 +109,11 @@ public class ProjectsControllerIT extends RegardsIntegrationTest {
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
         performGet(apiProjectId, jwt_, expectations, errorMessage, "mqsdfhnlùsdfqhnjlm");
-
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_INST_100")
+    @Purpose("Check that the system allows to update a project on an instance and handle fail cases.")
     public void dUpdateProject() {
 
         assertTrue(projectService_.existProject("name"));
@@ -125,10 +133,11 @@ public class ProjectsControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_INST_100")
+    @Purpose("Check that the system allows to delete a project on an instance.")
     public void eDeleteProject() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDelete(apiProjectId, jwt_, expectations, errorMessage, "name");
-
     }
 }

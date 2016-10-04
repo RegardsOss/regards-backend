@@ -17,6 +17,8 @@ import javax.naming.OperationNotSupportedException;
 import org.junit.Before;
 import org.junit.Test;
 
+import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
+import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.dao.stubs.RoleRepositoryStub;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
@@ -38,13 +40,25 @@ public class RoleServiceTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the allows to retrieve roles.")
     public void retrieveRoleList() {
         List<Role> roles = roleService_.retrieveRoleList();
 
         assertTrue(!roles.isEmpty());
     }
 
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the allows to retrieve a single role.")
+    public void retrieveRole() {
+        Role role = roleService_.retrieveRole(0L);
+        assertNotNull(role);
+    }
+
     @Test(expected = AlreadyExistingException.class)
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system fails when trying to create an already existing role.")
     public void createRoleDuplicate() throws AlreadyExistingException {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -54,6 +68,8 @@ public class RoleServiceTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to create a role in a regular case.")
     public void createRole() throws AlreadyExistingException {
         Long roleId = 4834848L;
         Role expected = new Role(roleId);
@@ -65,6 +81,8 @@ public class RoleServiceTest {
     }
 
     @Test(expected = NoSuchElementException.class)
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system fails when trying to update a role which does not exist.")
     public void updateRoleNotExistent() throws NoSuchElementException, OperationNotSupportedException {
         Long roleId = 58354L;
         assertTrue(!roleService_.existRole(roleId));
@@ -74,6 +92,8 @@ public class RoleServiceTest {
     }
 
     @Test(expected = OperationNotSupportedException.class)
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system fails when trying to update a role which id is different from the passed one.")
     public void updateRoleWrongId() throws NoSuchElementException, OperationNotSupportedException {
         Long roleId = 58354L;
         Role role = new Role(9999L);
@@ -83,6 +103,8 @@ public class RoleServiceTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to update a role in a regular case.")
     public void updateRole() throws NoSuchElementException, OperationNotSupportedException {
         Long passedRoleId = 0L;
         assertTrue(roleService_.existRole(passedRoleId));
@@ -102,6 +124,8 @@ public class RoleServiceTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to delete a role in a regular case.")
     public void removeRole() {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -112,6 +136,8 @@ public class RoleServiceTest {
     }
 
     @Test(expected = NoSuchElementException.class)
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system fails when trying to update permissions of a role which does not exist.")
     public void updateRoleResourcesAccessNotExistent() throws NoSuchElementException {
         Long roleId = 44255L;
         assertTrue(!roleService_.existRole(roleId));
@@ -120,6 +146,8 @@ public class RoleServiceTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to add resources accesses on a role.")
     public void updateRoleResourcesAccessAddingResourcesAccess() throws NoSuchElementException {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -133,6 +161,8 @@ public class RoleServiceTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to update resources accesses of a role.")
     public void updateRoleResourcesAccessUpdatingResourcesAccess() throws NoSuchElementException {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -161,6 +191,8 @@ public class RoleServiceTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to remove all resources accesses of a role.")
     public void clearRoleResourcesAccess() {
         Long roleId = 0L;
         Role role = roleService_.retrieveRole(roleId);
@@ -172,6 +204,8 @@ public class RoleServiceTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to retrieve all users of a role.")
     public void retrieveRoleProjectUserList() {
         Long roleId = 0L;
         Role role = roleService_.retrieveRole(roleId);
@@ -184,6 +218,8 @@ public class RoleServiceTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to retrieve all resources accesses of a role.")
     public void retrieveRoleResourcesAccessList() {
         Long roleId = 0L;
 
@@ -191,6 +227,8 @@ public class RoleServiceTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_260")
+    @Purpose("Check that the system is able to hierarchically compare two roles.")
     public void isHierarchicallyInferior() {
         Role registeredUser = roleService_.retrieveRole(1L);
         Role projectAdmin = roleService_.retrieveRole(3L);

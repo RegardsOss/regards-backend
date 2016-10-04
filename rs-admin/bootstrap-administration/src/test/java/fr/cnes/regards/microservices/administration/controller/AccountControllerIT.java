@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
+import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
+import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
@@ -97,6 +99,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_300")
+    @Purpose("Check that the system allows to retrieve all users for an instance.")
     public void getAllAccounts() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -104,6 +108,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("?")
+    @Purpose("?")
     public void getSettings() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -112,6 +118,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_300")
+    @Purpose("Check that the system allows to create a user for an instance and handle fail cases.")
     public void createAccount() {
         Account newAccount;
         newAccount = new Account(1584L, "pEmail@email.email", "pFirstName", "pLastName", "pLogin", "pPassword",
@@ -133,8 +141,9 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_300")
+    @Purpose("Check that the system allows to retrieve a specific user for an instance and handle fail cases.")
     public void getAccount() {
-
         Long accountId = accountService_.retrieveAccountList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -148,8 +157,9 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("?")
+    @Purpose("?")
     public void updateAccountSetting() {
-
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performPut(apiAccountSetting_, jwt_, "manual", expectations, errorMessage);
@@ -164,6 +174,11 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_450")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
+    @Requirement("REGARDS_DSL_ADM_ADM_470")
+    @Purpose("Check that the system allows to provide a reset/unlock code associated to an instance user.")
     public void getCode() {
         Account account = accountService_.retrieveAccountList().get(0);
         String accountEmail = account.getEmail();
@@ -174,6 +189,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_300")
+    @Purpose("Check that the system allows to update user for an instance and handle fail cases.")
     public void updateAccount() {
         Account updated = accountService_.retrieveAccountList().get(0);
         updated.setFirstName("AnOtherFirstName");
@@ -193,6 +210,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_450")
+    @Purpose("Check that the system allows to unlock an instance user's account.")
     public void unlockAccount() {
         Account account = accountService_.retrieveAccountList().get(0);
         Long accountId = account.getId();
@@ -203,6 +222,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_470")
+    @Purpose("Check that the system allows to reset an instance user's password.")
     public void changeAccountPassword() {
         Account account = accountService_.retrieveAccountList().get(0);
         Long accountId = account.getId();
@@ -215,6 +236,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_300")
+    @Purpose("Check that the system allows to delete an instance user.")
     public void deleteAccount() {
         Long accountId = accountService_.retrieveAccountList().get(0).getId();
 
@@ -225,6 +248,8 @@ public class AccountControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_SYS_SEC_100")
+    @Purpose("Check that the system allows validate an instance user's password.")
     public void validatePassword() {
         Account account = accountService_.retrieveAccountList().get(0);
         String login = account.getLogin();

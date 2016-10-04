@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
+import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
+import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
@@ -68,8 +70,9 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_310")
+    @Purpose("Check that the system allows to retrieve all users for a project.")
     public void getAllAccesses() throws IOException {
-
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiAccesses, jwt_, expectations, errorMessage);
@@ -77,6 +80,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_510")
+    @Purpose("Check that the system allows the user to request a registration.")
     public void requestAccess() {
         Account newAccountRequesting;
         ProjectUser newAccessRequest;
@@ -96,6 +101,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_520")
+    @Purpose("Check that the system allows to validate a registration request.")
     public void acceptAccessRequest() {
         Long accessRequestId = accessRequestService_.retrieveAccessRequestList().get(0).getId();
         assertFalse(!accessRequestService_.existAccessRequest(accessRequestId));
@@ -117,6 +124,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_520")
+    @Purpose("Check that the system allows to deny a registration request.")
     public void denyAccessRequest() {
         Long accessRequestId = accessRequestService_.retrieveAccessRequestList().get(0).getId();
 
@@ -135,6 +144,8 @@ public class AccessesControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_520")
+    @Purpose("Check that the system allows to delete a registration request.")
     public void deleteAccessRequest() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());

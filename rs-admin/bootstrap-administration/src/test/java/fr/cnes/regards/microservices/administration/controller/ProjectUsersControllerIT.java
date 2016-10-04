@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
+import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
+import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessRights.domain.MetaData;
@@ -96,8 +98,9 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_310")
+    @Purpose("Check that the system allows to retrieve all user on a project.")
     public void getAllUsers() {
-
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiUsers_, jwt_, expectations, errorMessage_);
@@ -105,8 +108,9 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_310")
+    @Purpose("Check that the system allows to retrieve a single user on a project.")
     public void getUser() {
-
         Long userId = projectUserService_.retrieveUserList().get(0).getId();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -120,6 +124,8 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_330")
+    @Purpose("Check that the system allows to retrieve a user's metadata.")
     public void getUserMetaData() {
         Long userId = projectUserService_.retrieveUserList().get(0).getId();
 
@@ -129,6 +135,8 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_230")
+    @Purpose("Check that the system allows to retrieve a user's permissions.")
     public void getUserPermissions() {
         String login = accountService_.retrieveAccountList().get(0).getLogin();
 
@@ -142,6 +150,8 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_270")
+    @Purpose("Check that the system allows a user to connect using a hierarchically inferior role to its own and handle fail cases.")
     public void getUserPermissionsWithBorrowedRole() {
         ProjectUser projectUser = projectUserService_.retrieveUserList().get(0);
         String projectUserLogin = projectUser.getAccount().getLogin();
@@ -171,6 +181,8 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_330")
+    @Purpose("Check that the system allows to update a user's metadata.")
     public void updateUserMetaData() {
         Long userId = projectUserService_.retrieveUserList().get(0).getId();
         List<MetaData> newPermissionList = new ArrayList<>();
@@ -184,6 +196,8 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_230")
+    @Purpose("Check that the system allows to update a user's permissions.")
     public void updateUserPermissions() {
         String userLogin = accountService_.retrieveAccountList().get(0).getLogin();
 
@@ -198,6 +212,8 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_330")
+    @Purpose("Check that the system allows to delete a user's metadata.")
     public void deleteUserMetaData() {
         Long userId = projectUserService_.retrieveUserList().get(0).getId();
 
@@ -208,6 +224,8 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_230")
+    @Purpose("Check that the system allows to delete a user's permissions.")
     public void deleteUserPermissions() {
         String userLogin = accountService_.retrieveAccountList().get(0).getLogin();
 
@@ -218,6 +236,8 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_310")
+    @Purpose("Check that the system allows to update a project user and handle fail cases.")
     public void updateUser() {
         Long userId = projectUserService_.retrieveUserList().get(0).getId();
         ProjectUser updated = projectUserService_.retrieveUser(userId);
@@ -238,6 +258,8 @@ public class ProjectUsersControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_310")
+    @Purpose("Check that the system allows to delete a project user.")
     public void deleteUser() {
         Long userId = projectUserService_.retrieveUserList().get(0).getId();
 

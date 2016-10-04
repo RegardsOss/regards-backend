@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
+import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
+import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
@@ -57,13 +59,13 @@ public class RolesControllerIT extends RegardsIntegrationTest {
     private IRoleService roleService_;
 
     @Rule
-    public ExpectedException thrown = ExpectedException.none();
+    public ExpectedException thrown_ = ExpectedException.none();
 
     @Value("${root.admin.login:admin}")
-    private String rootAdminLogin;
+    private String rootAdminLogin_;
 
     @Value("${root.admin.password:admin}")
-    private String rootAdminPassword;
+    private String rootAdminPassword_;
 
     @Before
     public void init() {
@@ -85,6 +87,8 @@ public class RolesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the allows to retrieve roles.")
     public void retrieveRoleList() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -92,6 +96,8 @@ public class RolesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to create a role and handle fail cases.")
     public void createRole() {
         Role newRole = new Role(15464L, "new role", null, null, null);
 
@@ -105,6 +111,8 @@ public class RolesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the allows to retrieve a single role and handle fail cases.")
     public void retrieveRole() {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -122,6 +130,8 @@ public class RolesControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to update a role and handle fail cases.")
     public void updateRole() {
         Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
@@ -142,6 +152,8 @@ public class RolesControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to delete a role.")
     public void removeRole() {
         Long roleId = 0L;
 
@@ -151,6 +163,8 @@ public class RolesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to retrieve all resources accesses of a role.")
     public void retrieveRoleResourcesAccessList() {
         Long roleId = 0L;
 
@@ -161,6 +175,8 @@ public class RolesControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to update resources accesses of a role.")
     public void updateRoleResourcesAccess() {
         Long roleId = 0L;
 
@@ -175,6 +191,8 @@ public class RolesControllerIT extends RegardsIntegrationTest {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to remove all resources accesses of a role.")
     public void clearRoleResourcesAccess() {
         Long roleId = 0L;
 
@@ -184,6 +202,8 @@ public class RolesControllerIT extends RegardsIntegrationTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to retrieve all users of a role.")
     public void retrieveRoleProjectUserList() {
         Long roleId = 0L;
 
