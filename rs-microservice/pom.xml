@@ -30,7 +30,6 @@
 		<module>module-archetype</module>
 		<module>microservice-core-test</module>
 		<module>client-core</module>
-		<module>report-maven-plugin</module>
 		<module>module-plugins</module>
 	</modules>
 
