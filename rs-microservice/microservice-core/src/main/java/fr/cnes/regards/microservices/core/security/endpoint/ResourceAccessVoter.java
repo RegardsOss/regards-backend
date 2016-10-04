@@ -84,16 +84,22 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
         }
         catch (ResourceMappingException e) {
             // If error occurs, deny access
+            LOG.error(e.getMessage(), e);
             return ACCESS_DENIED;
         }
 
         // Retrieve granted authorities
         Optional<List<GrantedAuthority>> options = methodAuthService_.getAuthorities(mapping);
         if (!options.isPresent()) {
+            LOG.error("Access denied to resource " + mi.getMethod().toGenericString() + " for user role");
             return ACCESS_DENIED;
         }
 
-        return checkAuthorities(options.get(), pAuthentication.getAuthorities());
+        int result = checkAuthorities(options.get(), pAuthentication.getAuthorities());
+        if (result == ACCESS_DENIED){
+            LOG.error("Access denied to resource " + mi.getMethod().toGenericString() + " for user role");
+        }
+        return result;
     }
 
     /**
@@ -120,7 +126,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
         // Retrieve base path at class level
         Optional<String> classPath = null;
         String className = pMethod.getDeclaringClass().getName();
-        RequestMapping classMapping = pMethod.getDeclaringClass().getAnnotation(RequestMapping.class);
+        RequestMapping classMapping = AnnotationUtils.findAnnotation(pMethod.getDeclaringClass(), RequestMapping.class);
         if (classMapping != null) {
             classPath = getSingleMethodPath(classMapping.path(), classMapping.value(), pMethod.getName(), className);
         }

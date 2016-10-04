@@ -9,6 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.security.utils.jwt.exception.InvalidJwtException;
@@ -37,10 +38,32 @@ public class JWTService {
 
     private static final String CLAIM_ROLE = "role";
 
+    private static Map<String, String> scopesTokensMap_ = new HashMap<>();
+
     @Value("${jwt.secret}")
     private String secret_;
 
     private static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
+
+    /**
+     *
+     * Inject an auto generated token into the curent SecurityContext
+     *
+     * @param pProject
+     * @param pRole
+     * @since 1.0-SNAPSHOT
+     */
+    public void injectToken(String pProject, String pRole) {
+        String token = null;
+        if (scopesTokensMap_.get(pProject) != null) {
+            token = scopesTokensMap_.get(pProject);
+        }
+        else {
+            token = generateToken(pProject, "", "", pRole);
+        }
+        JWTAuthentication auth = new JWTAuthentication(token);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
 
     /**
      * Parse JWT to retrieve full user information
