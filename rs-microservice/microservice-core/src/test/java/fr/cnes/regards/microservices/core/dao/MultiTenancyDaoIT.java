@@ -23,6 +23,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
+import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 
 @RunWith(SpringRunner.class)
@@ -44,6 +46,8 @@ public class MultiTenancyDaoIT {
     @Autowired
     private MethodAuthorizationService authService_;
 
+    @Requirement("REGARDS_DSL_SYS_ARC_050")
+    @Purpose("Integration test to check that the tenant is passing through the authentication token from rest request to database")
     @Test
     public void testMvc() {
 
@@ -66,7 +70,8 @@ public class MultiTenancyDaoIT {
             mockMvc.perform(get("/test/dao/projects").header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenTest1))
                     .andExpect(MockMvcResultMatchers.status().isOk());
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             Assert.fail(e.getStackTrace().toString());
         }
     }
