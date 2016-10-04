@@ -115,8 +115,7 @@ public class MultiTenancyDaoTest {
             // Check that an exception is thrown
             list = userRepository.findAll();
             Assert.fail("This repository is not valid for tenant");
-        }
-        catch (CannotCreateTransactionException e) {
+        } catch (CannotCreateTransactionException e) {
             // Nothing to do
         }
 

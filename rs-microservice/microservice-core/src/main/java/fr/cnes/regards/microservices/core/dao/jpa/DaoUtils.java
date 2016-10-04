@@ -74,8 +74,7 @@ public class DaoUtils {
         for (BeanDefinition def : scanner.findCandidateComponents(pPackageToScan)) {
             try {
                 packages.add(Class.forName(def.getBeanClassName()));
-            }
-            catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) {
                 LOG.error("Error adding entity " + def.getBeanClassName() + " for hibernate database update");
                 LOG.error(e.getMessage(), e);
             }

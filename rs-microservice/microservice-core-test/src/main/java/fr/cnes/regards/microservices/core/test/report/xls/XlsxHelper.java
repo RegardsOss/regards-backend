@@ -93,8 +93,7 @@ public final class XlsxHelper {
                             testRow.createCell(2)
                                     .setCellValue(createHelper.createRichTextString(test.getTestMethodName()));
                         }
-                    }
-                    else {
+                    } else {
                         // TODO
                     }
                 }
@@ -102,8 +101,7 @@ public final class XlsxHelper {
                 // Write file
                 wb.write(fileOut);
 
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 String message = "Error while writing XLSX file";
                 LOG.error(message, e);
                 throw new ReportException(message);

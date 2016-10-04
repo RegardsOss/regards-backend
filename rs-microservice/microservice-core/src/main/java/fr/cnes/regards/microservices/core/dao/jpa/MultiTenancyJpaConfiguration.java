@@ -93,8 +93,7 @@ public class MultiTenancyJpaConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver_);
         if (configuration_.getDao().getEmbedded()) {
             hibernateProps.put(Environment.DIALECT, DataSourcesConfiguration.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
-        }
-        else {
+        } else {
             hibernateProps.put(Environment.DIALECT, configuration_.getDao().getDialect());
         }
 

@@ -138,8 +138,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
                     + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
 
             addDataSource(dataSource, pTenant);
-        }
-        else {
+        } else {
             DataSourceBuilder factory = DataSourceBuilder.create()
                     .driverClassName(configuration_.getDao().getDriverClassName()).username(pUser).password(pPassword)
                     .url(pUrl);

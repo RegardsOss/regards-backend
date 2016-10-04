@@ -55,8 +55,7 @@ public class RequirementReportMojo extends AbstractMojo {
                 targetPath.getParent().toFile().mkdirs();
             }
             XlsxHelper.write(targetPath, rqmts, "sheet");
-        }
-        catch (ReportException e) {
+        } catch (ReportException e) {
             throw new MojoExecutionException(e.getMessage());
         }
     }
@@ -75,8 +74,7 @@ public class RequirementReportMojo extends AbstractMojo {
                 getLog().info(target.toString());
             }
             return targetPaths;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             String message = "Error scanning file tree";
             getLog().error("Error scanning file tree", e);
             throw new MojoExecutionException(message);
@@ -104,8 +102,7 @@ public class RequirementReportMojo extends AbstractMojo {
                             aggregateTests(rqmtMap, rqmt);
                         }
                     }
-                }
-                catch (ReportException e) {
+                } catch (ReportException e) {
                     throw new MojoExecutionException(e.getMessage());
                 }
             }
@@ -131,8 +128,7 @@ public class RequirementReportMojo extends AbstractMojo {
         XmlRequirement rqmt = pRqmtMap.get(pXmlRequirement.getRequirement());
         if (rqmt == null) {
             pRqmtMap.put(pXmlRequirement.getRequirement(), pXmlRequirement);
-        }
-        else {
+        } else {
             rqmt.addAllTests(pXmlRequirement.getTests());
         }
     }

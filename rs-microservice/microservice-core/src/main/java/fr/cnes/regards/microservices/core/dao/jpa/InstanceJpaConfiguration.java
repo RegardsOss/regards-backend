@@ -75,8 +75,7 @@ public class InstanceJpaConfiguration {
 
         if (configuration_.getDao().getEmbedded()) {
             hibernateProps.put(Environment.DIALECT, DataSourcesConfiguration.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
-        }
-        else {
+        } else {
             hibernateProps.put(Environment.DIALECT, configuration_.getDao().getDialect());
         }
         hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.NONE);
