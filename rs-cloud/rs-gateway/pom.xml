@@ -63,7 +63,7 @@
 		<!-- Regards dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessRights</groupId>
-			<artifactId>accessRights-signature</artifactId>
+			<artifactId>accessRights-client</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
