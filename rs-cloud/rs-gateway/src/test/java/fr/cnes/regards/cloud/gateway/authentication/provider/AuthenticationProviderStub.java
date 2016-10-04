@@ -25,9 +25,16 @@ import fr.cnes.regards.modules.accessRights.domain.UserStatus;
 @Primary
 public class AuthenticationProviderStub implements IAuthenticationProvider {
 
+    public final static String INVALID_PASSWORD = "invalid";
+
     @Override
     public UserStatus authenticate(String pName, String pPassword, String pScope) {
-        return UserStatus.ACCESS_GRANTED;
+        if (!pPassword.equals(INVALID_PASSWORD)) {
+            return UserStatus.ACCESS_GRANTED;
+        }
+        else {
+            return UserStatus.ACCESS_DENIED;
+        }
     }
 
     @Override

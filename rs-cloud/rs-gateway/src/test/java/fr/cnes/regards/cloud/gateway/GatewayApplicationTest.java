@@ -22,6 +22,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import fr.cnes.regards.cloud.gateway.authentication.provider.AuthenticationProviderStub;
+import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
+import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = GatewayApplication.class)
 @AutoConfigureMockMvc
@@ -41,12 +45,12 @@ public class GatewayApplicationTest {
         // The application can start with spring configuration
     }
 
+    @Requirement("REGARDS_DSL_SYS_SEC_100")
+    @Purpose("Test the Oauth2 authentication process. Test unauthorized for basic authentication fail.")
     @Test
-    public void testAuthenticate() {
+    public void testAuthenticateBadicError() {
 
         try {
-            String basicString = basicUserName_ + ":" + basicPassword_;
-            basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
             String invalidBasicString = "invalid:invalid";
             invalidBasicString = Base64.getEncoder().encodeToString(invalidBasicString.getBytes());
@@ -59,6 +63,44 @@ public class GatewayApplicationTest {
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
                     .param("grant_type", "password").param("scope", "plop").param("username", "plop")
                     .param("password", "plop")).andExpect(MockMvcResultMatchers.status().isUnauthorized());
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Requirement("REGARDS_DSL_SYS_SEC_100")
+    @Purpose("Test the Oauth2 authentication process. Test unauthorized for user/password invalid.")
+    @Test
+    public void testAuthenticateCredantialsError() {
+
+        try {
+            String basicString = basicUserName_ + ":" + basicPassword_;
+            basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
+
+            mockMvc.perform(post("/oauth/token").with(csrf()).header(HttpHeaders.AUTHORIZATION, "Basic " + basicString)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
+                    .param("grant_type", "password").param("scope", "plop").param("username", "plop")
+                    .param("password", AuthenticationProviderStub.INVALID_PASSWORD))
+                    .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Requirement("REGARDS_DSL_SYS_SEC_100")
+    @Purpose("Test the Oauth2 authentication process. Get a valid token.")
+    @Test
+    public void testAuthenticate() {
+
+        try {
+            String basicString = basicUserName_ + ":" + basicPassword_;
+            basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
             mockMvc.perform(post("/oauth/token").with(csrf()).header(HttpHeaders.AUTHORIZATION, "Basic " + basicString)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
