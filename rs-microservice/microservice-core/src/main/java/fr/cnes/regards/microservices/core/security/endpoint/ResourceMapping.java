@@ -26,14 +26,9 @@ public class ResourceMapping {
     private final ResourceAccess resourceAccess_;
 
     /**
-     * Base URL path (at class level)
+     * Full URL paths to the resource (class level + method level)
      */
-    private final Optional<String> classPath_;
-
-    /**
-     * URL paths to the resource
-     */
-    private final Optional<String> path_;
+    private final Optional<String> fullPath_;
 
     /**
      * HTTP method
@@ -52,11 +47,9 @@ public class ResourceMapping {
      * @param pMethod
      *            the called HTTP method
      */
-    public ResourceMapping(ResourceAccess pResourceAccess, Optional<String> pClassPath, Optional<String> pPath,
-            RequestMethod pMethod) {
+    public ResourceMapping(ResourceAccess pResourceAccess, Optional<String> pPath, RequestMethod pMethod) {
         resourceAccess_ = pResourceAccess;
-        classPath_ = pClassPath;
-        path_ = pPath;
+        fullPath_ = pPath;
         method_ = pMethod;
     }
 
@@ -70,8 +63,8 @@ public class ResourceMapping {
      * @param pMethod
      *            the called HTTP method
      */
-    public ResourceMapping(Optional<String> pClassPath, Optional<String> pPath, RequestMethod pMethod) {
-        this(null, pClassPath, pPath, pMethod);
+    public ResourceMapping(Optional<String> pPath, RequestMethod pMethod) {
+        this(null, pPath, pMethod);
     }
 
     /**
@@ -82,12 +75,8 @@ public class ResourceMapping {
     public String getResourceMappingId() {
         StringBuffer identifier = new StringBuffer();
 
-        if (classPath_.isPresent()) {
-            identifier.append(classPath_.get());
-        }
-
-        if (path_.isPresent()) {
-            identifier.append(path_.get());
+        if (fullPath_.isPresent()) {
+            identifier.append(fullPath_.get());
         }
 
         identifier.append(SEPARATOR);
@@ -104,17 +93,10 @@ public class ResourceMapping {
     }
 
     /**
-     * @return the classPath
-     */
-    public Optional<String> getClassPath() {
-        return classPath_;
-    }
-
-    /**
      * @return the path
      */
-    public Optional<String> getPath() {
-        return path_;
+    public Optional<String> getFullPath() {
+        return fullPath_;
     }
 
     /**
