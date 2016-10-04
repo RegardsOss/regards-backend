@@ -22,6 +22,8 @@ import fr.cnes.regards.microservices.core.dao.pojo.projects.User;
 import fr.cnes.regards.microservices.core.dao.repository.instance.ProjectRepository;
 import fr.cnes.regards.microservices.core.dao.repository.projects.UserRepository;
 import fr.cnes.regards.microservices.core.dao.util.CurrentTenantIdentifierResolverMock;
+import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
+import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { MultiTenancyDaoTestConfiguration.class })
@@ -39,11 +41,15 @@ public class MultiTenancyDaoTest {
     @Autowired
     private CurrentTenantIdentifierResolverMock tenantResolver;
 
+    @Requirement("REGARDS_DSL_SYS_ARC_050")
+    @Purpose("Unit test to check that the spring JPA multitenancy context is loaded successfully")
     @Test
     public void contextLoads() {
         // Nothing to do. Only tests if the spring context is ok.
     }
 
+    @Requirement("REGARDS_DSL_SYS_ARC_050")
+    @Purpose("Unit test to check JPA uses the good tenant through the tenant resolver")
     @Test
     public void multitenancyAccessTest() {
 
@@ -115,7 +121,8 @@ public class MultiTenancyDaoTest {
             // Check that an exception is thrown
             list = userRepository.findAll();
             Assert.fail("This repository is not valid for tenant");
-        } catch (CannotCreateTransactionException e) {
+        }
+        catch (CannotCreateTransactionException e) {
             // Nothing to do
         }
 
