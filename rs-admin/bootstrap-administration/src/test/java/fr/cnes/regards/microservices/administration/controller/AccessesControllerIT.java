@@ -19,13 +19,13 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
+import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 
-public class AccessesControllerIT extends RegardsIntegrationTest {
+public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
 
     @Autowired
     private JWTService jwtService_;
