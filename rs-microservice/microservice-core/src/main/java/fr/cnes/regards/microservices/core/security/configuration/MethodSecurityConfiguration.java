@@ -14,9 +14,8 @@ import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationS
 import fr.cnes.regards.microservices.core.security.endpoint.ResourceAccessVoter;
 
 /**
- * This class allow to add a security filter on method access.
- * Each time a method is called, the accessDecisionManager check if the connected user
- * can access the method via the ResourceAccessVoter class.
+ * This class allow to add a security filter on method access. Each time a method is called, the accessDecisionManager
+ * check if the connected user can access the method via the ResourceAccessVoter class.
  * 
  * @author CS SI
  *
@@ -24,13 +23,13 @@ import fr.cnes.regards.microservices.core.security.endpoint.ResourceAccessVoter;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class MethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
 
-	@Autowired
-	private MethodAuthorizationService methodAuthService_;
+    @Autowired
+    private MethodAuthorizationService methodAuthService_;
 
-	@Override
-	protected AccessDecisionManager accessDecisionManager() {
-		List<AccessDecisionVoter<? extends Object>> decisionVoters = new ArrayList<>();
-		decisionVoters.add(new ResourceAccessVoter(methodAuthService_));
-		return new AffirmativeBased(decisionVoters);
-	}
+    @Override
+    protected AccessDecisionManager accessDecisionManager() {
+        List<AccessDecisionVoter<? extends Object>> decisionVoters = new ArrayList<>();
+        decisionVoters.add(new ResourceAccessVoter(methodAuthService_));
+        return new AffirmativeBased(decisionVoters);
+    }
 }

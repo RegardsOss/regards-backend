@@ -13,9 +13,9 @@
 		<artifactId>${artifactId}</artifactId>
 		<version>${version}</version>
 	</parent>
-	
+
 	<properties>
-  		<feign.version>8.18.0</feign.version>
+		<feign.version>8.18.0</feign.version>
 	</properties>
 
 	<dependencies>

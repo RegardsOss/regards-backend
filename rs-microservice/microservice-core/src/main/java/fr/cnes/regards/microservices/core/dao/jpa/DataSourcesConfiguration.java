@@ -82,8 +82,7 @@ public class DataSourcesConfiguration {
                         + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
                         + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
                 datasources.put(project.getName(), dataSource);
-            }
-            else {
+            } else {
                 DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
                         .driverClassName(configuration_.getDao().getDriverClassName())
                         .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
@@ -117,8 +116,7 @@ public class DataSourcesConfiguration {
                     + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
 
             return dataSource;
-        }
-        else {
+        } else {
             DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
                     .driverClassName(configuration_.getDao().getDriverClassName())
                     .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
@@ -146,8 +144,7 @@ public class DataSourcesConfiguration {
                     + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
                     + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
             return dataSource;
-        }
-        else {
+        } else {
             DataSourceBuilder factory = DataSourceBuilder
                     .create(configuration_.getDao().getInstance().getDatasource().getClassLoader())
                     .driverClassName(configuration_.getDao().getDriverClassName())

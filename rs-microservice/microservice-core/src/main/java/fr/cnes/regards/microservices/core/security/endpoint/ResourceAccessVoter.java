@@ -81,19 +81,24 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
         ResourceMapping mapping;
         try {
             mapping = buildResourceMapping(mi.getMethod());
-        }
-        catch (ResourceMappingException e) {
+        } catch (ResourceMappingException e) {
             // If error occurs, deny access
+            LOG.error(e.getMessage(), e);
             return ACCESS_DENIED;
         }
 
         // Retrieve granted authorities
         Optional<List<GrantedAuthority>> options = methodAuthService_.getAuthorities(mapping);
         if (!options.isPresent()) {
+            LOG.error("Access denied to resource " + mi.getMethod().toGenericString() + " for user role");
             return ACCESS_DENIED;
         }
 
-        return checkAuthorities(options.get(), pAuthentication.getAuthorities());
+        int result = checkAuthorities(options.get(), pAuthentication.getAuthorities());
+        if (result == ACCESS_DENIED) {
+            LOG.error("Access denied to resource " + mi.getMethod().toGenericString() + " for user role");
+        }
+        return result;
     }
 
     /**
@@ -120,7 +125,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
         // Retrieve base path at class level
         Optional<String> classPath = null;
         String className = pMethod.getDeclaringClass().getName();
-        RequestMapping classMapping = pMethod.getDeclaringClass().getAnnotation(RequestMapping.class);
+        RequestMapping classMapping = AnnotationUtils.findAnnotation(pMethod.getDeclaringClass(), RequestMapping.class);
         if (classMapping != null) {
             classPath = getSingleMethodPath(classMapping.path(), classMapping.value(), pMethod.getName(), className);
         }
@@ -189,15 +194,13 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
             throws ResourceMappingException {
         if (pMethods.length == 1) {
             return pMethods[0];
-        }
-        else
+        } else
             if (pMethods.length == 0) {
                 String errorMessage = MessageFormat
                         .format("A single method is required in request mapping for method {0}", pMethodName);
                 LOG.error(errorMessage);
                 throw new ResourceMappingException(errorMessage);
-            }
-            else {
+            } else {
                 String errorMessage = MessageFormat
                         .format("Only single method is accepted in request mapping for method {0}", pMethodName);
                 LOG.error(errorMessage);
@@ -236,8 +239,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
         if (pathFromValues.isPresent()) {
             return pathFromValues;
-        }
-        else {
+        } else {
             return pathFromPaths;
         }
 
@@ -262,12 +264,10 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
         if (pPaths.length == 1) {
             path = Optional.of(pPaths[0]);
-        }
-        else
+        } else
             if (pPaths.length == 0) {
                 // Nothing to do
-            }
-            else {
+            } else {
                 // Only single path is accepted
                 String errorMessage = MessageFormat.format(
                                                            "Only single path is accepted in request mapping for method {0} or class {1}",

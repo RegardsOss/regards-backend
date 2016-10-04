@@ -21,6 +21,7 @@ public final class RegardsSpringRunner extends SpringJUnit4ClassRunner {
     /**
      * @param pClazz
      * @throws InitializationError
+     *             If runner can't be initialized
      */
     public RegardsSpringRunner(Class<?> pClazz) throws InitializationError {
         super(pClazz);

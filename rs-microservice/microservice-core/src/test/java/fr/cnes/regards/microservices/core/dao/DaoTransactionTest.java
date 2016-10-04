@@ -54,8 +54,7 @@ public class DaoTransactionTest {
             LOG.info("Adding users to first tenant with exception thrown ... ");
             service_.addWithError(testTenant);
             Assert.fail("There must be an exception thrown");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOG.error(e.getMessage());
             users.clear();
             users = service_.getUsers(testTenant);
@@ -81,8 +80,7 @@ public class DaoTransactionTest {
             LOG.info("Adding users to second tenant with exception thrown ... ");
             service_.addWithError(testTenant2);
             Assert.fail("There must be an exception thrown");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOG.error(e.getMessage());
             users.clear();
             users = service_.getUsers(testTenant2);

@@ -9,11 +9,11 @@ package fr.cnes.regards.microservices.core.test.report.exception;
  * @author msordi
  *
  */
-public class XMLHelperException extends Exception {
+public class ReportException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    public XMLHelperException(String pMessage) {
+    public ReportException(String pMessage) {
         super(pMessage);
     }
 }

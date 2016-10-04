@@ -66,8 +66,7 @@ public class MultiTenancyDaoIT {
             mockMvc.perform(get("/test/dao/projects").header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenTest1))
                     .andExpect(MockMvcResultMatchers.status().isOk());
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Assert.fail(e.getStackTrace().toString());
         }
     }
