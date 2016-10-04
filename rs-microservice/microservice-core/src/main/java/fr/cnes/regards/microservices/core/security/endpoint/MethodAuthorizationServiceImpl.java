@@ -119,7 +119,7 @@ public class MethodAuthorizationServiceImpl implements MethodAuthorizationServic
             authorities.add(new RoleAuthority(role));
         }
 
-        setAuthorities(new ResourceMapping(Optional.empty(), Optional.of(pUrlPath), pMethod),
+        setAuthorities(new ResourceMapping(Optional.of(pUrlPath), pMethod),
                        authorities.toArray(new GrantedAuthority[0]));
     }
 }
