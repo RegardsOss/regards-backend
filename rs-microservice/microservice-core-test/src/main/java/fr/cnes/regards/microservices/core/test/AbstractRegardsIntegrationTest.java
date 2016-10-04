@@ -42,50 +42,92 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ContextConfiguration(classes = { RegardsIntegrationTestConfiguration.class })
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public abstract class RegardsIntegrationTest {
+public abstract class AbstractRegardsIntegrationTest {
 
-    private Logger logger;
+    /**
+     * Authentication scheme
+     */
+    private static final String SCHEME = "Bearer ";
 
+    /**
+     * Test logger
+     */
+    private Logger logger_;
+
+    /**
+     * MVC mock
+     */
     @Autowired
     private MockMvc mvc_;
 
-    public void setLogger(Logger logger) {
-        this.logger = logger;
+    /**
+     *
+     * @param pLogger
+     *            test logger
+     */
+    public void setLogger(Logger pLogger) {
+        this.logger_ = pLogger;
     }
 
-    public void performGet(String urlTemplate, String authentificationToken, List<ResultMatcher> matchers,
-            String errorMessage, Object... pUrlVariables) {
+    /**
+     * Call a get endpoint
+     *
+     * @param pUrlTemplate
+     *            url template
+     * @param pAuthentificationToken
+     *            authentication token
+     * @param pMatchers
+     *            result matchers
+     * @param pErrorMessage
+     *            message if test fails
+     * @param pUrlVariables
+     *            url variables
+     */
+    public void performGet(String pUrlTemplate, String pAuthentificationToken, List<ResultMatcher> pMatchers,
+            String pErrorMessage, Object... pUrlVariables) {
         try {
-            ResultActions request = mvc_.perform(get(urlTemplate, pUrlVariables)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + authentificationToken));
-            for (ResultMatcher matcher : matchers) {
+            ResultActions request = mvc_.perform(get(pUrlTemplate, pUrlVariables)
+                    .header(HttpHeaders.AUTHORIZATION, SCHEME + pAuthentificationToken));
+            for (ResultMatcher matcher : pMatchers) {
                 request = request.andExpect(matcher);
             }
-        }
-        catch (Exception e) {
-            logger.error(errorMessage, e);
-            Assert.fail(errorMessage);
+        } catch (Exception e) {
+            logger_.error(pErrorMessage, e);
+            Assert.fail(pErrorMessage);
         }
     }
 
-    public void performPost(String urlTemplate, String authentificationToken, Object content,
-            List<ResultMatcher> matchers, String errorMessage, Object... pUrlVariables) {
+    /**
+     *
+     * @param pUrlTemplate
+     *            url template
+     * @param pAuthentificationToken
+     *            authentication token
+     * @param pContent
+     *            post content
+     * @param pMatchers
+     *            result matchers
+     * @param pErrorMessage
+     *            message if test fails
+     * @param pUrlVariables
+     *            url variables
+     */
+    public void performPost(String pUrlTemplate, String pAuthentificationToken, Object pContent,
+            List<ResultMatcher> pMatchers, String pErrorMessage, Object... pUrlVariables) {
         try {
-            ResultActions request = mvc_.perform(post(urlTemplate, pUrlVariables).with(csrf()).content(json(content))
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + authentificationToken)
+            ResultActions request = mvc_.perform(post(pUrlTemplate, pUrlVariables).with(csrf()).content(json(pContent))
+                    .header(HttpHeaders.AUTHORIZATION, SCHEME + pAuthentificationToken)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
-            for (ResultMatcher matcher : matchers) {
+            for (ResultMatcher matcher : pMatchers) {
                 request = request.andExpect(matcher);
             }
-        }
-        catch (IOException e) {
-            String message = "Cannot (de)serialize model";
-            logger.error(message, e);
+        } catch (IOException e) {
+            final String message = "Cannot (de)serialize model";
+            logger_.error(message, e);
             Assert.fail(message);
-        }
-        catch (Exception e) {
-            logger.error(errorMessage, e);
-            Assert.fail(errorMessage);
+        } catch (Exception e) {
+            logger_.error(pErrorMessage, e);
+            Assert.fail(pErrorMessage);
         }
     }
 
@@ -93,19 +135,17 @@ public abstract class RegardsIntegrationTest {
             List<ResultMatcher> matchers, String errorMessage, Object... pUrlVariables) {
         try {
             ResultActions request = mvc_.perform(put(urlTemplate, pUrlVariables).with(csrf()).content(json(content))
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + authentificationToken)
+                    .header(HttpHeaders.AUTHORIZATION, SCHEME + authentificationToken)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
             for (ResultMatcher matcher : matchers) {
                 request = request.andExpect(matcher);
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             String message = "Cannot (de)serialize model";
-            logger.error(message, e);
+            logger_.error(message, e);
             Assert.fail(message);
-        }
-        catch (Exception e) {
-            logger.error(errorMessage, e);
+        } catch (Exception e) {
+            logger_.error(errorMessage, e);
             Assert.fail(errorMessage);
         }
     }
@@ -114,13 +154,12 @@ public abstract class RegardsIntegrationTest {
             String errorMessage, Object... pUrlVariables) {
         try {
             ResultActions request = mvc_.perform(delete(urlTemplate, pUrlVariables).with(csrf())
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + authentificationToken));
+                    .header(HttpHeaders.AUTHORIZATION, SCHEME + authentificationToken));
             for (ResultMatcher matcher : matchers) {
                 request = request.andExpect(matcher);
             }
-        }
-        catch (Exception e) {
-            logger.error(errorMessage, e);
+        } catch (Exception e) {
+            logger_.error(errorMessage, e);
             Assert.fail(errorMessage);
         }
     }
