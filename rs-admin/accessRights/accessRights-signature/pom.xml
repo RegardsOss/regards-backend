@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.modules.accessRights</groupId>
-	<artifactId>accessRights-client</artifactId>
+	<artifactId>accessRights-signature</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -31,7 +31,7 @@
 		<!-- Microservice internal dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessRights</groupId>
-			<artifactId>accessRights-signature</artifactId>
+			<artifactId>accessRights-domain</artifactId>
 		</dependency>
 	</dependencies>
 

@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
+import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
 import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -34,7 +34,7 @@ import fr.cnes.regards.security.utils.jwt.JWTService;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ProjectsControllerIT extends RegardsIntegrationTest {
+public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
 
     @Autowired
     private JWTService jwtService_;

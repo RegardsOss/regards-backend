@@ -23,8 +23,8 @@ import fr.cnes.regards.modules.accessRights.domain.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
-import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
+@RequestMapping("/users")
 public interface ProjectUsersSignature {
 
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

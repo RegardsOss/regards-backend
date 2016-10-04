@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
+@RequestMapping("/accesses")
 public interface AccessesSignature {
 
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
