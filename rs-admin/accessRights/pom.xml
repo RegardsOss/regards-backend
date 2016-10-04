@@ -23,6 +23,7 @@
 		<module>accessRights-rest</module>
 		<module>accessRights-service</module>
 		<module>accessRights-client</module>
+		<module>accessRights-signature</module>
 	</modules>
 
 	<dependencyManagement>
@@ -62,6 +63,11 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessRights</groupId>
 				<artifactId>accessRights-client</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.accessRights</groupId>
+				<artifactId>accessRights-signature</artifactId>
 				<version>1.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>

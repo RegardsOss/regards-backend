@@ -21,8 +21,8 @@ import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
+@RequestMapping("/roles/")
 public interface RolesSignature {
 
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

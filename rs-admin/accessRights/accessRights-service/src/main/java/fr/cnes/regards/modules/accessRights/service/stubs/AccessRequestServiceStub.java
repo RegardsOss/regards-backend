@@ -53,7 +53,7 @@ public class AccessRequestServiceStub implements IAccessRequestService {
 
         account = new Account("titi@titi.titi", "firstName", "lastName", "password");
         projectUser = new ProjectUser(account);
-        projectUser.setStatus(UserStatus.ACCES_DENIED);
+        projectUser.setStatus(UserStatus.ACCESS_DENIED);
         projectUsers_.add(projectUser);
 
     }

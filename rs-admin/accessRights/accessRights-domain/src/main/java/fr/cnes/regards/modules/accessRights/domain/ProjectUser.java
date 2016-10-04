@@ -151,7 +151,7 @@ public class ProjectUser implements IProjectUser, Identifiable<Long> {
     @Override
     public ProjectUser deny() {
         if (status_.equals(UserStatus.WAITING_ACCES)) {
-            setStatus(UserStatus.ACCES_DENIED);
+            setStatus(UserStatus.ACCESS_DENIED);
             return this;
         }
         throw new IllegalStateException("This request has already been treated");
