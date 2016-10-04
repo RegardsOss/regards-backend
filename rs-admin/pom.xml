@@ -28,6 +28,7 @@
 		<module>project</module>
 		<module>bootstrap-administration</module>
 		<module>accessRights</module>
+		<module>emails</module>
 	</modules>
 
 	<distributionManagement>
