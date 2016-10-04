@@ -18,7 +18,12 @@ import springfox.documentation.builders.ApiInfoBuilder;
  * @author TODO
  *
  */
+<<<<<<< HEAD
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards" })
+=======
+@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices.core",
+        "fr.cnes.regards.security.utils" })
+>>>>>>> branch 'master' of https://sbinda@thor.si.c-s.fr/git/rs-admin
 @MicroserviceInfo(name = "administration", version = "1.0-SNAPSHOT")
 @ImportResource("classpath*:defaultRoles.xml")
 public class Application {
