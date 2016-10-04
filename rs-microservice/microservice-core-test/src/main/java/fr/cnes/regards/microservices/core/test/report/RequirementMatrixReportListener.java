@@ -17,6 +17,7 @@ import fr.cnes.regards.microservices.core.test.report.annotation.Requirements;
 import fr.cnes.regards.microservices.core.test.report.xml.XmlHelper;
 import fr.cnes.regards.microservices.core.test.report.xml.XmlRequirement;
 import fr.cnes.regards.microservices.core.test.report.xml.XmlRequirements;
+import fr.cnes.regards.microservices.core.test.report.xml.XmlTest;
 
 /**
  * JUnit listener to help writing requirement matrix report
@@ -78,12 +79,12 @@ public class RequirementMatrixReportListener extends RunListener {
         Requirements requirements = pDescription.getAnnotation(Requirements.class);
         if (requirements != null) {
             for (Requirement req : requirements.value()) {
-                handleRequirement(pDescription, req, purpose);
+                handleRequirementTest(pDescription, req, purpose);
             }
         }
         else {
             // Try to get single requirement
-            handleRequirement(pDescription, pDescription.getAnnotation(Requirement.class), purpose);
+            handleRequirementTest(pDescription, pDescription.getAnnotation(Requirement.class), purpose);
         }
     }
 
@@ -98,19 +99,23 @@ public class RequirementMatrixReportListener extends RunListener {
      * @param pPurpose
      *            Test purpose
      */
-    private void handleRequirement(Description pDescription, Requirement pRequirement, Purpose pPurpose) {
+    private void handleRequirementTest(Description pDescription, Requirement pRequirement, Purpose pPurpose) {
         if (pRequirement == null) {
             // Nothing to do if requirement not set
             return;
         }
 
         XmlRequirement xmlReq = new XmlRequirement();
-        xmlReq.setTestClass(pDescription.getTestClass().getCanonicalName());
-        xmlReq.setTestMethodName(pDescription.getMethodName());
-        if (pPurpose != null) {
-            xmlReq.setPurpose(pPurpose.value());
-        }
         xmlReq.setRequirement(pRequirement.value());
+
+        XmlTest xmlTest = new XmlTest();
+        xmlTest.setTestClass(pDescription.getTestClass().getCanonicalName());
+        xmlTest.setTestMethodName(pDescription.getMethodName());
+        if (pPurpose != null) {
+            xmlTest.setPurpose(pPurpose.value());
+        }
+        xmlReq.addTest(xmlTest);
+
         xmlRequirements_.addRequirement(xmlReq);
     }
 
