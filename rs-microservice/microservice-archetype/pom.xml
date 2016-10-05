@@ -10,12 +10,6 @@
 		and treat it as it -->
 	<packaging>maven-archetype</packaging>
 
-	<parent>
-		<groupId>fr.cnes.regards.microservices</groupId>
-		<artifactId>rs-microservice</artifactId>
-		<version>1.0.1-SNAPSHOT</version>
-	</parent>
-
 	<build>
 		<plugins>
 			<plugin>

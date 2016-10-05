@@ -3,38 +3,37 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>fr.cnes.regards.microservices</groupId>
-		<artifactId>rs-microservice</artifactId>
-		<version>1.0.1-SNAPSHOT</version>
-	</parent>
+	
 	<artifactId>report-maven-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
 	<description>Maven plugin to aggregate all requirement reports</description>
+
+	<parent>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regads-parent</artifactId>
+		<version>0.0.0-SNAPSHOT</version>
+		<relativePath></relativePath>
+	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-plugin-api</artifactId>
-			<version>3.0</version>
 		</dependency>
 		<!-- Dependencies to annotations -->
 		<dependency>
 			<groupId>org.apache.maven.plugin-tools</groupId>
 			<artifactId>maven-plugin-annotations</artifactId>
-			<version>3.4</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- Build excel reports -->
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
-			<version>3.15</version>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.microservices</groupId>
 			<artifactId>microservice-core-test</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
@@ -43,18 +42,10 @@
 			<plugin>
 				<groupId>fr.cnes.regards.microservices</groupId>
 				<artifactId>report-maven-plugin</artifactId>
-				<version>1.0-SNAPSHOT</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-plugin-plugin</artifactId>
-				<version>3.5</version>
-				<executions>
-					<execution>
-						<id>default-descriptor</id>
-						<phase>process-classes</phase>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
