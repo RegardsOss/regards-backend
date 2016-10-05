@@ -74,9 +74,9 @@ public class RequirementMatrixReportListener extends RunListener {
         }
 
         // Get common report purpose
-        Purpose purpose = pDescription.getAnnotation(Purpose.class);
+        final Purpose purpose = pDescription.getAnnotation(Purpose.class);
 
-        Requirements requirements = pDescription.getAnnotation(Requirements.class);
+        final Requirements requirements = pDescription.getAnnotation(Requirements.class);
         if (requirements != null) {
             for (Requirement req : requirements.value()) {
                 handleRequirementTest(pDescription, req, purpose);
@@ -104,10 +104,10 @@ public class RequirementMatrixReportListener extends RunListener {
             return;
         }
 
-        XmlRequirement xmlReq = new XmlRequirement();
+        final XmlRequirement xmlReq = new XmlRequirement();
         xmlReq.setRequirement(pRequirement.value());
 
-        XmlTest xmlTest = new XmlTest();
+        final XmlTest xmlTest = new XmlTest();
         xmlTest.setTestClass(pDescription.getTestClass().getCanonicalName());
         xmlTest.setTestMethodName(pDescription.getMethodName());
         if (pPurpose != null) {

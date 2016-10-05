@@ -18,6 +18,9 @@ import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
  */
 public class ResourceMapping {
 
+    /**
+     * Resource separator for endpoint identifier construction : <b>resource@verb</b>
+     */
     private static final String SEPARATOR = "@";
 
     /**
@@ -40,31 +43,27 @@ public class ResourceMapping {
      *
      * @param pResourceAccess
      *            the resource access annotation
-     * @param pClassPath
-     *            the class level URL path
-     * @param pPath
+     * @param pFullPath
      *            the URL path to access resource
      * @param pMethod
      *            the called HTTP method
      */
-    public ResourceMapping(ResourceAccess pResourceAccess, Optional<String> pPath, RequestMethod pMethod) {
+    public ResourceMapping(ResourceAccess pResourceAccess, Optional<String> pFullPath, RequestMethod pMethod) {
         resourceAccess_ = pResourceAccess;
-        fullPath_ = pPath;
+        fullPath_ = pFullPath;
         method_ = pMethod;
     }
 
     /**
      * Constructor
      *
-     * @param pClassPath
-     *            the class level URL path
-     * @param pPath
+     * @param pFullPath
      *            the URL path to access resource
      * @param pMethod
      *            the called HTTP method
      */
-    public ResourceMapping(Optional<String> pPath, RequestMethod pMethod) {
-        this(null, pPath, pMethod);
+    public ResourceMapping(Optional<String> pFullPath, RequestMethod pMethod) {
+        this(null, pFullPath, pMethod);
     }
 
     /**
@@ -73,7 +72,7 @@ public class ResourceMapping {
      * @return a unique identifier for the resource access
      */
     public String getResourceMappingId() {
-        StringBuffer identifier = new StringBuffer();
+        final StringBuffer identifier = new StringBuffer();
 
         if (fullPath_.isPresent()) {
             identifier.append(fullPath_.get());
