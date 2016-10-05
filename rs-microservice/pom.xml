@@ -23,6 +23,7 @@
 
 	<modules>
 		<module>security-utils</module>
+		<module>plugin-utils</module>
 		<module>microservice-archetype</module>
 		<module>microservice-core</module>
 		<module>module-jobs</module>

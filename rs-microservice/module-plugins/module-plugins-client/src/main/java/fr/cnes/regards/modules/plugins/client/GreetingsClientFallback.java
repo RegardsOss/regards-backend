@@ -6,21 +6,21 @@ package fr.cnes.regards.modules.plugins.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.modules.plugins.domain.Greeting;
+//import fr.cnes.regards.modules.plugins.domain.Greeting;
 
 public class GreetingsClientFallback implements IGreetingsClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(GreetingsClientFallback.class);
 
-    @Override
-    public Greeting greeting(String pName) {
-        LOG.error("Error greeting");
-        return new Greeting(pName);
-    }
-    
-    public Greeting me(String pName) {
-        LOG.error("Error me");
-        return new Greeting(pName);
-    }
+//    @Override
+//    public Greeting greeting(String pName) {
+//        LOG.error("Error greeting");
+//        return new Greeting(pName);
+//    }
+//    
+//    public Greeting me(String pName) {
+//        LOG.error("Error me");
+//        return new Greeting(pName);
+//    }
 
 }
