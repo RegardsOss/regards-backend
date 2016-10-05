@@ -81,7 +81,8 @@ public class RequirementMatrixReportListener extends RunListener {
             for (Requirement req : requirements.value()) {
                 handleRequirementTest(pDescription, req, purpose);
             }
-        } else {
+        }
+        else {
             // Try to get single requirement
             handleRequirementTest(pDescription, pDescription.getAnnotation(Requirement.class), purpose);
         }
@@ -120,8 +121,10 @@ public class RequirementMatrixReportListener extends RunListener {
 
     @Override
     public void testRunFinished(Result pResult) throws Exception {
-        LOG.debug("" + xmlRequirements_.getRequirements().size());
-        XmlHelper.write(Paths.get(MVN_OUTPUT_DIRECTORY, REPORT_DIR), filename_, XmlRequirements.class,
-                        xmlRequirements_);
+        if (xmlRequirements_.getRequirements() != null) {
+            LOG.debug("" + xmlRequirements_.getRequirements().size());
+            XmlHelper.write(Paths.get(MVN_OUTPUT_DIRECTORY, REPORT_DIR), filename_, XmlRequirements.class,
+                            xmlRequirements_);
+        }
     }
 }
