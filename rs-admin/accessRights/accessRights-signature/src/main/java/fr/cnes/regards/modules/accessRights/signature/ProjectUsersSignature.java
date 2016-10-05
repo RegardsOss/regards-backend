@@ -52,23 +52,23 @@ public interface ProjectUsersSignature {
     HttpEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") Long userId,
             @Valid @RequestBody List<MetaData> pUpdatedUserMetaData) throws OperationNotSupportedException;
 
-    @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/users/{user_id}/metadata", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") Long userId);
 
-    @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/users/{user_login}/permissions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<Couple<List<ResourcesAccess>, Role>>> retrieveProjectUserAccessRights(
             @PathVariable("user_login") String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) String pBorrowedRoleName)
             throws OperationNotSupportedException;
 
-    @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/users/{user_login}/permissions", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> updateProjectUserAccessRights(@PathVariable("user_login") String pUserLogin,
             @Valid @RequestBody List<ResourcesAccess> pUpdatedUserAccessRights) throws OperationNotSupportedException;
 
-    @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/users/{user_login}/permissions", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> removeProjectUserAccessRights(@PathVariable("user_login") String pUserLogin);
 }

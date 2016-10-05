@@ -18,12 +18,12 @@
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
 	<modules>
+		<module>project-client</module>
 		<module>project-dao</module>
 		<module>project-domain</module>
 		<module>project-rest</module>
 		<module>project-service</module>
-
-		<module>project-client</module>
+		<module>project-signature</module>
 	</modules>
 
 	<dependencyManagement>

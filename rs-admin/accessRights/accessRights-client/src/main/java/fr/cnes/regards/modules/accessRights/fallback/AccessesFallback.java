@@ -7,6 +7,8 @@ import java.util.List;
 
 import javax.naming.OperationNotSupportedException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 
@@ -17,45 +19,49 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 public class AccessesFallback implements AccessesClient {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AccessesFallback.class);
+
+    private static final String fallBackErrorMessage_ = "RS-ADMIN /accesses request error. Fallback.";
+
     @Override
     public HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
-        // TODO Auto-generated method stub
+        LOG.error(fallBackErrorMessage_);
         return null;
     }
 
     @Override
     public HttpEntity<Resource<ProjectUser>> requestAccess(ProjectUser pAccessRequest) throws AlreadyExistingException {
-        // TODO Auto-generated method stub
+        LOG.error(fallBackErrorMessage_);
         return null;
     }
 
     @Override
     public HttpEntity<Void> acceptAccessRequest(Long pAccessId) throws OperationNotSupportedException {
-        // TODO Auto-generated method stub
+        LOG.error(fallBackErrorMessage_);
         return null;
     }
 
     @Override
     public HttpEntity<Void> denyAccessRequest(Long pAccessId) throws OperationNotSupportedException {
-        // TODO Auto-generated method stub
+        LOG.error(fallBackErrorMessage_);
         return null;
     }
 
     @Override
     public HttpEntity<Void> removeAccessRequest(Long pAccessId) {
-        // TODO Auto-generated method stub
+        LOG.error(fallBackErrorMessage_);
         return null;
     }
 
     @Override
     public HttpEntity<List<Resource<String>>> getAccessSettingList() {
-        // TODO Auto-generated method stub
+        LOG.error(fallBackErrorMessage_);
         return null;
     }
 
     @Override
     public HttpEntity<Void> updateAccessSetting(String pUpdatedProjectUserSetting) throws InvalidValueException {
-        // TODO Auto-generated method stub
+        LOG.error(fallBackErrorMessage_);
         return null;
     }
 

@@ -6,7 +6,7 @@ import feign.Headers;
 import fr.cnes.regards.modules.project.fallback.ProjectsFallback;
 import fr.cnes.regards.modules.project.signature.ProjectsSignature;
 
-@FeignClient(name = "projects", fallback = ProjectsFallback.class)
+@FeignClient(name = "rs-admin", fallback = ProjectsFallback.class)
 @Headers({ "Accept: application/json", "Content-Type: application/json" })
 public interface ProjectsClient extends ProjectsSignature {
 
