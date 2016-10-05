@@ -11,6 +11,7 @@
 		<relativePath></relativePath>
 	</parent>
 
+	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>microservice-core-test</artifactId>
 	<name>microservice-core-test</name>
 	<url>http://maven.apache.org</url>
