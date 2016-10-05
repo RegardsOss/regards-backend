@@ -93,7 +93,7 @@ public class AccountService implements IAccountService {
     @Override
     public boolean validatePassword(String pLogin, String pPassword) {
         // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     @Override
