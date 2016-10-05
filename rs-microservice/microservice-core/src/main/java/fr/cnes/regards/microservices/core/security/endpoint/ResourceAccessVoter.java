@@ -12,7 +12,10 @@ import java.util.Optional;
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.annotation.AnnotationConfigurationException;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.hateoas.core.MappingDiscoverer;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.core.Authentication;
@@ -111,9 +114,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
      * @return {@link ResourceMapping}
      * @throws ResourceMappingException
      */
-    private ResourceMapping buildResourceMapping(Method pMethod) throws ResourceMappingException {
-        ResourceMapping mapping = null;
-
+    public static ResourceMapping buildResourceMapping(Method pMethod) throws ResourceMappingException {
         // Retrieve resource access annotation
         ResourceAccess access = AnnotationUtils.findAnnotation(pMethod, ResourceAccess.class);
         if (access == null) {
@@ -122,62 +123,21 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
             throw new ResourceMappingException("No resource access annotation");
         }
 
-        // Retrieve base path at class level
-        Optional<String> classPath = null;
-        String className = pMethod.getDeclaringClass().getName();
-        RequestMapping classMapping = AnnotationUtils.findAnnotation(pMethod.getDeclaringClass(), RequestMapping.class);
-        if (classMapping != null) {
-            classPath = getSingleMethodPath(classMapping.path(), classMapping.value(), pMethod.getName(), className);
+        // Retrieve resource access annotation
+        RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(pMethod, RequestMapping.class);
+        if ((requestMapping.value() != null) && (requestMapping.path() != null)
+                && !requestMapping.value()[0].equals(requestMapping.path()[0])) {
+            throw new AnnotationConfigurationException("Provided value and mapping are different!");
         }
 
-        // Retrieve resource path and HTTP methods at method level
+        // Retrieve the assembled path (at class and method level) from RequestMapping annotations
+        // (and inherited ones : GetMapping, PutMapping...)
+        MappingDiscoverer discoverer = new AnnotatedElementMappingDiscoverer(RequestMapping.class);
+        String path = discoverer.getMapping(pMethod);
 
-        // - Manage GET mapping
-        GetMapping get = AnnotationUtils.findAnnotation(pMethod, GetMapping.class);
-        if (get != null) {
-            return new ResourceMapping(access, classPath,
-                    getSingleMethodPath(get.path(), get.value(), pMethod.getName(), className), RequestMethod.GET);
-        }
+        return new ResourceMapping(access, Optional.of(path),
+                getSingleMethod(requestMapping.method(), pMethod.getName()));
 
-        // - Manage REQUEST mapping
-        RequestMapping requestMapping = AnnotationUtils.findAnnotation(pMethod, RequestMapping.class);
-        if (requestMapping != null) {
-            return new ResourceMapping(access, classPath,
-                    getSingleMethodPath(requestMapping.path(), requestMapping.value(), pMethod.getName(), className),
-                    getSingleMethod(requestMapping.method(), pMethod.getName()));
-        }
-
-        // - Manage POST mapping
-        PostMapping post = AnnotationUtils.findAnnotation(pMethod, PostMapping.class);
-        if (post != null) {
-            return new ResourceMapping(access, classPath,
-                    getSingleMethodPath(post.path(), post.value(), pMethod.getName(), className), RequestMethod.POST);
-        }
-
-        // - Manage PUT mapping
-        PutMapping put = AnnotationUtils.findAnnotation(pMethod, PutMapping.class);
-        if (put != null) {
-            return new ResourceMapping(access, classPath,
-                    getSingleMethodPath(put.path(), put.value(), pMethod.getName(), className), RequestMethod.PUT);
-        }
-
-        // - Manage DELETE mapping
-        DeleteMapping delete = AnnotationUtils.findAnnotation(pMethod, DeleteMapping.class);
-        if (delete != null) {
-            return new ResourceMapping(access, classPath,
-                    getSingleMethodPath(delete.path(), delete.value(), pMethod.getName(), className),
-                    RequestMethod.DELETE);
-        }
-
-        // - Manage PATCH mapping
-        PatchMapping patch = AnnotationUtils.findAnnotation(pMethod, PatchMapping.class);
-        if (patch != null) {
-            return new ResourceMapping(access, classPath,
-                    getSingleMethodPath(patch.path(), patch.value(), pMethod.getName(), className),
-                    RequestMethod.PATCH);
-        }
-
-        return mapping;
     }
 
     /**
@@ -190,7 +150,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
      * @return HTTP method
      * @throws ResourceMappingException
      */
-    private RequestMethod getSingleMethod(RequestMethod[] pMethods, String pMethodName)
+    private static RequestMethod getSingleMethod(RequestMethod[] pMethods, String pMethodName)
             throws ResourceMappingException {
         if (pMethods.length == 1) {
             return pMethods[0];
@@ -206,77 +166,6 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
                 LOG.error(errorMessage);
                 throw new ResourceMappingException(errorMessage);
             }
-    }
-
-    /**
-     * Retrieve single method path
-     *
-     * @param pPaths
-     *            Array of path (alias for values)
-     * @param pValues
-     *            Array of path (alias for path)
-     * @param pMethodName
-     *            method name
-     * @param pClassName
-     *            class name
-     * @return single path
-     * @throws ResourceMappingException
-     *             if multiple paths set
-     */
-    private Optional<String> getSingleMethodPath(String[] pPaths, String[] pValues, String pMethodName,
-            String pClassName) throws ResourceMappingException {
-
-        Optional<String> pathFromPaths = getSingleMethodPath(pPaths, pMethodName, pClassName);
-        Optional<String> pathFromValues = getSingleMethodPath(pValues, pMethodName, pClassName);
-        if (pathFromPaths.isPresent() && pathFromValues.isPresent()
-                && !pathFromPaths.get().equals(pathFromValues.get())) {
-            // Only path or value must be set
-            String errorMessage = MessageFormat.format("Conflict between path and value attributes in method ",
-                                                       pMethodName);
-            LOG.error(errorMessage);
-            throw new ResourceMappingException(errorMessage);
-        }
-
-        if (pathFromValues.isPresent()) {
-            return pathFromValues;
-        } else {
-            return pathFromPaths;
-        }
-
-    }
-
-    /**
-     * Retrieve single method path
-     *
-     * @param pPaths
-     *            Array of path
-     * @param pMethodName
-     *            method name
-     * @param pClassName
-     *            class name
-     * @return single path
-     * @throws ResourceMappingException
-     *             if multiple paths set
-     */
-    private Optional<String> getSingleMethodPath(String[] pPaths, String pMethodName, String pClassName)
-            throws ResourceMappingException {
-        Optional<String> path = Optional.empty();
-
-        if (pPaths.length == 1) {
-            path = Optional.of(pPaths[0]);
-        } else
-            if (pPaths.length == 0) {
-                // Nothing to do
-            } else {
-                // Only single path is accepted
-                String errorMessage = MessageFormat.format(
-                                                           "Only single path is accepted in request mapping for method {0} or class {1}",
-                                                           pMethodName, pClassName);
-                LOG.error(errorMessage);
-                throw new ResourceMappingException(errorMessage);
-            }
-
-        return path;
     }
 
     /**
