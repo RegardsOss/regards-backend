@@ -7,7 +7,7 @@ zuul:
   # Allow 'Authorization' header to pass through Zuul
   sensitiveHeaders: Cookie,Set-Cookie
   routes:
-    my-service:
+    rs-admin:
       path: /**
       serviceId: rs-admin
 

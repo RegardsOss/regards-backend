@@ -6,8 +6,8 @@ eureka:
     enabled: true
     register-with-eureka: false
     fetch-registry: false
-  server:
-    enableSelfPreservation: false
+#  server:
+#    enableSelfPreservation: false
 
 
 # TODO investigate warning:
