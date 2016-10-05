@@ -138,7 +138,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to retrieve a user's permissions.")
     public void getUserPermissions() {
-        String login = accountService_.retrieveAccountList().get(0).getLogin();
+        String login = projectUserService_.retrieveUserList().get(0).getAccount().getLogin();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -199,7 +199,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to update a user's permissions.")
     public void updateUserPermissions() {
-        String userLogin = accountService_.retrieveAccountList().get(0).getLogin();
+        String userLogin = projectUserService_.retrieveUserList().get(0).getAccount().getLogin();
 
         List<ResourcesAccess> newPermissionList = new ArrayList<>();
         newPermissionList.add(new ResourcesAccess(463L, "new", "new", "new", HttpVerb.PUT));
@@ -227,7 +227,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to delete a user's permissions.")
     public void deleteUserPermissions() {
-        String userLogin = accountService_.retrieveAccountList().get(0).getLogin();
+        String userLogin = projectUserService_.retrieveUserList().get(0).getAccount().getLogin();
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());

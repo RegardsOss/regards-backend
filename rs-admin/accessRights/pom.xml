@@ -12,9 +12,10 @@
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
 	<parent>
-		<groupId>fr.cnes.regards.microservices</groupId>
-		<artifactId>administration</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-parent</artifactId>
+		<version>0.0.0-SNAPSHOT</version>
+		<relativePath></relativePath>
 	</parent>
 
 	<modules>
@@ -28,59 +29,36 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- Core dependencies -->
-			<dependency>
-				<groupId>fr.cnes.regards.microservices</groupId>
-				<artifactId>microservice-core</artifactId>
-				<version>1.1-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>module-jobs</artifactId>
-				<version>1.0-SNAPSHOT</version>
-			</dependency>
 			<!-- Module layers -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessRights</groupId>
 				<artifactId>accessRights-dao</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessRights</groupId>
 				<artifactId>accessRights-domain</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessRights</groupId>
 				<artifactId>accessRights-rest</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessRights</groupId>
 				<artifactId>accessRights-service</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessRights</groupId>
 				<artifactId>accessRights-client</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessRights</groupId>
 				<artifactId>accessRights-signature</artifactId>
-				<version>1.0-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.users</groupId>
-				<artifactId>users-service</artifactId>
-				<version>1.0-SNAPSHOT</version>
-			</dependency>
-			<!-- COTS -->
-			<!-- Netflix Feign REST Client -->
-			<dependency>
-				<groupId>com.netflix.feign</groupId>
-				<artifactId>feign-core</artifactId>
-				<version>8.18.0</version>
+				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -89,20 +67,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>module-core</artifactId>
-			<version>1.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
