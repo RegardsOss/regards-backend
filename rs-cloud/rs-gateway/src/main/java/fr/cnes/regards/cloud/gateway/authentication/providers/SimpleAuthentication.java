@@ -53,6 +53,7 @@ public class SimpleAuthentication implements IAuthenticationProvider {
         role.setName("USER");
         user.setRole(role);
         Account newAccount = new Account();
+        newAccount.setLogin(pName);
         newAccount.setEmail("user@regards.c-s.fr");
         user.setAccount(newAccount);
         return user;

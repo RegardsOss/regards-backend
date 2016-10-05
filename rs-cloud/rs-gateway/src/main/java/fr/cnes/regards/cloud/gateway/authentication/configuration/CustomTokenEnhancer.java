@@ -34,7 +34,7 @@ public class CustomTokenEnhancer implements TokenEnhancer {
         Set<String> scopes = authentication.getOAuth2Request().getScope();
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(jwtService_
                 .generateClaims(scopes.stream().findFirst().get(), user.getAccount().getEmail(),
-                                user.getRole().getName()));
+                                user.getRole().getName(), user.getAccount().getLogin()));
         return accessToken;
     }
 }
