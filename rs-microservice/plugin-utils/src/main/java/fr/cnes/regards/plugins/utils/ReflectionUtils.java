@@ -1,7 +1,8 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.plugins.utils;
+
+package fr.cnes.regards.plugins.utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

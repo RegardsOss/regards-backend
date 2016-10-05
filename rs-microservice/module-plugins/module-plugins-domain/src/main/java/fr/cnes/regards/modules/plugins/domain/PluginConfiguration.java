@@ -9,11 +9,15 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;;
+import javax.persistence.Table;
+
+import org.springframework.hateoas.Identifiable;;
 
 /**
  * Class PluginConfiguration
@@ -23,9 +27,16 @@ import javax.persistence.Table;;
  */
 @Entity
 @Table(name = "T_PLUGIN_CONFIGURATION", indexes = {
-        @Index(name = "IDX_PLUGIN_CONFIGURATION", columnList = "pLuginId,tenant") })
-public class PluginConfiguration {
+        @Index(name = "IDX_PLUGIN_CONFIGURATION", columnList = "pluginId") })
+public class PluginConfiguration implements Identifiable<Long> {
 
+    /**
+     * Internal identifier
+     */
+    @Id
+    @GeneratedValue
+    private Long id;
+    
     /**
      * Unique identifier of the plugin. This id is the id defined in the "@Plugin" annotation of the plugin
      * implementation class
@@ -75,19 +86,15 @@ public class PluginConfiguration {
      *            : the list of parameters_
      * @param pOrder
      *            : the order
-     * @param pProject
-     *            : the project TODO CMZ à confirmer
      */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel,
-            final List<PluginParameter> pParameters, final int pOrder, final String pProject) {
+            final List<PluginParameter> pParameters, final int pOrder) {
         super();
-        pluginId_ = pPluginMetaData.getId();
+        pluginId_ = pPluginMetaData.getMetaDataId();
         version_ = pPluginMetaData.getVersion();
         parameters_ = pParameters;
         priorityOrder_ = pOrder;
         label_ = pLabel;
-        // TODO CMZ
-        // setTenant(pProject);
     }
 
     /**
@@ -103,8 +110,8 @@ public class PluginConfiguration {
         String value = null;
         if (parameters_ != null) {
             for (final PluginParameter parameter : parameters_) {
-                if (parameter.getParameterName().equals(pParameterName)) {
-                    value = parameter.getParameterValue();
+                if (parameter.getName().equals(pParameterName)) {
+                    value = parameter.getValue();
                     break;
                 }
             }
@@ -207,28 +214,10 @@ public class PluginConfiguration {
         parameters_ = pParameters;
     }
 
-    /**
-     *
-     * Overridden method
-     * 
-     * @see fr.cs.regards.model.configuration.multitenant.MultitenantEntity#hashCode()
-     * @since 1.0-SNAPSHOT
-     */
     @Override
-    public final int hashCode() {
-        return super.hashCode();
+    public Long getId() {
+        return this.id;
     }
 
-    /**
-     *
-     * Overridden method
-     *
-     * @see fr.cs.regards.model.configuration.multitenant.MultitenantEntity#equals(java.lang.Object)
-     * @since 1.0-SNAPSHOT
-     */
-    @Override
-    public final boolean equals(Object pObj) {
-        return super.equals(pObj);
-    }
 
 }

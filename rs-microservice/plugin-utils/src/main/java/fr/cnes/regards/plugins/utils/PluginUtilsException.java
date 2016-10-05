@@ -1,7 +1,8 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.plugins.utils;
+
+package fr.cnes.regards.plugins.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ public class PluginUtilsException extends Exception {
 
     /**
      *
-     * Default constructor
+     * Constructeur
      *
      * @param pMessage
      *            an error message
@@ -39,7 +40,7 @@ public class PluginUtilsException extends Exception {
 
     /**
      *
-     * Constructor
+     * Constructeur
      *
      * @param pMessage
      *            an error message

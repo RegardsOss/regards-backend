@@ -6,6 +6,11 @@ package fr.cnes.regards.modules.plugins.domain;
 
 import java.util.List;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import org.springframework.hateoas.Identifiable;
+
 /**
  * Class Plugin
  *
@@ -13,28 +18,52 @@ import java.util.List;
  *
  * @author cmertz
  */
-public class PluginMetaData {
+public class PluginMetaData implements Identifiable<Long> {
 
-    private String id_;
+    /**
+     * Internal identifier
+     */
+    @Id
+    @GeneratedValue
+    private Long id_;
 
+    /**
+     * 
+     */
+    private String metaDataId_;
+
+    /**
+     * The plugin class
+     */
     private Class<?> pluginClass_;
 
+    /**
+     * The author of the plugin
+     */
     private String author_;
 
+    /**
+     * The version of the plugin
+     */
     private String version_;
 
+    /**
+     * The description of the plugin
+     */
     private String description_;
 
+    /**
+     * The parameters of the plugin
+     */
     private List<String> parameters_;
 
     /**
      * Get method.
      *
      * @return the Id
-     * @since 1.0
      */
-    public String getId() {
-        return id_;
+    public Long getId() {
+        return this.id_;
     }
 
     /**
@@ -42,20 +71,37 @@ public class PluginMetaData {
      *
      * @param pId
      *            the Id to set
-     * @since 1.0
      */
-    public void setId(String pId) {
-        id_ = pId;
+    public void setId(Long pId) {
+        this.id_ = pId;
+    }
+
+    /**
+     * Get method.
+     * 
+     * @return the meta data id
+     */
+    public String getMetaDataId() {
+        return this.metaDataId_;
+    }
+
+    /**
+     * Set method.
+     * 
+     * @param pMetaDataId
+     *            the metadataId to set
+     */
+    public void setMetaDataId(String pMetaDataId) {
+        this.metaDataId_ = pMetaDataId;
     }
 
     /**
      * Get method.
      *
      * @return the plugin class
-     * @since 1.0
      */
     public Class<?> getPluginClass() {
-        return pluginClass_;
+        return this.pluginClass_;
     }
 
     /**
@@ -63,20 +109,18 @@ public class PluginMetaData {
      *
      * @param pPluginClass
      *            the class which implements the plugin
-     * @since 1.0
      */
     public void setClass(Class<?> pPluginClass) {
-        pluginClass_ = pPluginClass;
+        this.pluginClass_ = pPluginClass;
     }
 
     /**
      * Get method.
      *
      * @return the author
-     * @since 1.0
      */
     public String getAuthor() {
-        return author_;
+        return this.author_;
     }
 
     /**
@@ -84,20 +128,18 @@ public class PluginMetaData {
      *
      * @param pAuthor
      *            the author to set
-     * @since 1.0
      */
     public void setAuthor(String pAuthor) {
-        author_ = pAuthor;
+        this.author_ = pAuthor;
     }
 
     /**
      * Get method.
      *
      * @return the version
-     * @since 1.0
      */
     public String getVersion() {
-        return version_;
+        return this.version_;
     }
 
     /**
@@ -105,20 +147,18 @@ public class PluginMetaData {
      *
      * @param pVersion
      *            the version to set
-     * @since 1.0
      */
     public void setVersion(String pVersion) {
-        version_ = pVersion;
+        this.version_ = pVersion;
     }
 
     /**
      * Get method.
      *
      * @return the description
-     * @since 1.0
      */
     public String getDescription() {
-        return description_;
+        return this.description_;
     }
 
     /**
@@ -126,20 +166,18 @@ public class PluginMetaData {
      *
      * @param pDescription
      *            the description to set
-     * @since 1.0
      */
     public void setDescription(String pDescription) {
-        description_ = pDescription;
+        this.description_ = pDescription;
     }
 
     /**
      * Get method.
      *
      * @return the parameters
-     * @since 1.0
      */
     public List<String> getParameters() {
-        return parameters_;
+        return this.parameters_;
     }
 
     /**
@@ -147,10 +185,9 @@ public class PluginMetaData {
      *
      * @param pParameters
      *            the parameters to set
-     * @since 1.0
      */
     public void setParameters(List<String> pParameters) {
-        parameters_ = pParameters;
+        this.parameters_ = pParameters;
     }
 
 }

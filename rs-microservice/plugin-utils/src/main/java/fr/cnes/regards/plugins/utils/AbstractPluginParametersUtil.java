@@ -1,9 +1,11 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.plugins.utils;
+
+package fr.cnes.regards.plugins.utils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,21 +20,35 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
  *
  * Post process plugin instances to inject annotated parameters.
  *
- * @author msordi
- * @since 1.0-SNAPSHOT
+ * @author cmertz
  */
-public abstract class PluginParametersUtil {
+public abstract class AbstractPluginParametersUtil {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(PluginParametersUtil.class);
+    /**
+     * Logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPluginParametersUtil.class);
 
+    /**
+     * PrimitiveObject for the plugin parameters
+     * 
+     * @author cmertz
+     *
+     */
     private enum PrimitiveObject {
         STRING(String.class), BYTE(Byte.class), SHORT(Short.class), INT(Integer.class), LONG(Long.class), FLOAT(
                 Float.class), DOUBLE(Double.class), BOOLEAN(Boolean.class);
 
+        /**
+         * Type_
+         */
         private final Class<?> type_;
 
         /**
          * Constructor
+         * 
+         * @param pType
+         *            primitive type
          *
          * @since 1.0-SNAPSHOT
          */
@@ -62,7 +78,7 @@ public abstract class PluginParametersUtil {
     public static List<String> getParameters(Class<?> pPluginClass) {
         List<String> parameters = null;
         for (final Field field : pPluginClass.getDeclaredFields()) {
-            if (field.isAnnotationPresent(fr.cnes.regards.modules.plugins.annotations.PluginParameter.class)) {
+            if (field.isAnnotationPresent(PluginParameter.class)) {
                 boolean isSupportedType = false;
 
                 // Register supported parameters
@@ -101,7 +117,6 @@ public abstract class PluginParametersUtil {
      *            the plugin configuration
      * @throws PluginUtilsException
      *             if any error occurs
-     * @since 1.0-SNAPSHOT
      */
     public static <T> void postProcess(T pPluginInstance, PluginConfiguration pPluginConfiguration)
             throws PluginUtilsException {
@@ -117,18 +132,16 @@ public abstract class PluginParametersUtil {
                 for (final PrimitiveObject typeWrapper : PrimitiveObject.values()) {
                     if (field.getType().isAssignableFrom(typeWrapper.getType())) {
                         try {
-                            Object effectiveVal;
+                            final Object effectiveVal;
                             if (typeWrapper.getType().equals(String.class)) {
                                 effectiveVal = paramVal;
-                            }
-                            else {
+                            } else {
                                 final Method method = typeWrapper.getType().getDeclaredMethod("valueOf", String.class);
                                 effectiveVal = method.invoke(null, paramVal);
                             }
                             field.set(pPluginInstance, effectiveVal);
                             break;
-                        }
-                        catch (final Exception e) {
+                        } catch (final IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
                             LOGGER.error(String
                                     .format("Exception while processing param \"%s\" in plugin class \"%s\" with value \"%s\".",
                                             pluginParameter.name(), pPluginInstance.getClass(), paramVal),

@@ -4,6 +4,8 @@
 
 package fr.cnes.regards.modules.plugins.domain;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,7 +18,6 @@ import javax.persistence.Table;
  * Parameter associated to a plugin configuration <PluginConfiguration>
  *
  * @author CS
- * @since 1.0
  */
 @Entity
 @Table(name = "T_PLUGIN_PARAMETER_VALUE")
@@ -32,18 +33,27 @@ public class PluginParameter {
     /**
      * Parameter name
      */
-    private String parameterName_;
+    private String name_;
 
     /**
      * Parameter value
      */
     @Column(length = 2048)
-    private String parameterValue_;
+    private String value_;
+
+    /**
+     * The parameter is dynamic
+     */
+    private Boolean isDynamic_;
+
+    /**
+     * The list of values for a dynamic parameters
+     */
+    private List<String> dynamicsValues_;
 
     /**
      * Default constructor
      *
-     * @since 1.0
      */
     public PluginParameter() {
         super();
@@ -52,16 +62,15 @@ public class PluginParameter {
     /**
      * Constructor
      *
-     * @param pParameterName
-     *          the parameter name
-     * @param pParameterValue
-     *          the parameter value
-     * @since 1.0
+     * @param pName
+     *            the parameter name
+     * @param pValue
+     *            the parameter value
      */
-    public PluginParameter(final String pParameterName, final String pParameterValue) {
+    public PluginParameter(final String pName, final String pValue) {
         super();
-        parameterName_ = pParameterName;
-        parameterValue_ = pParameterValue;
+        name_ = pName;
+        value_ = pValue;
     }
 
     /**
@@ -86,39 +95,77 @@ public class PluginParameter {
     /**
      * Get method.
      *
-     * @return the parameterName_
+     * @return the name_
      */
-    public final String getParameterName() {
-        return parameterName_;
+    public final String getName() {
+        return name_;
     }
 
     /**
      * Set method.
      *
-     * @param pParameterName
-     *            the parameterName_ to set
+     * @param pName
+     *            the name to set
      */
-    public final void setParameterName(final String pParameterName) {
-        parameterName_ = pParameterName;
+    public final void setName(final String pName) {
+        name_ = pName;
     }
 
     /**
      * Get method.
      *
-     * @return the parameterValue_
+     * @return the value_
      */
-    public final String getParameterValue() {
-        return parameterValue_;
+    public final String getValue() {
+        return value_;
     }
 
     /**
      * Set method.
      *
-     * @param pParameterValue
-     *            the parameterValue_ to set
+     * @param pValue
+     *            the value to set
      */
-    public final void setParameterValue(String pParameterValue) {
-        parameterValue_ = pParameterValue;
+    public final void setValue(String pValue) {
+        value_ = pValue;
+    }
+
+    /**
+     * Get the
+     * 
+     * @return is the parameter dynamic
+     */
+    public final Boolean getIsDynamic() {
+        return isDynamic_;
+    }
+
+    /**
+     * Set or unset the parameter to dynamic
+     * 
+     * @param pIsDynamic
+     *            boolean
+     */
+    public final void setIsDynamic(Boolean pIsDynamic) {
+        this.isDynamic_ = pIsDynamic;
+    }
+
+    /**
+     * Get the dynamic values of the parameter
+     * 
+     * @return the dynamic values of the parameter
+     */
+    public final List<String> getDynamicsValues() {
+        return dynamicsValues_;
+    }
+
+    /**
+     * Set the dynamic values to the parameter
+     * 
+     * @param pDynamicsValues
+     *            the dynamic values
+     */
+    public final void setDynamicsValues(List<String> pDynamicsValues) {
+        this.dynamicsValues_ = pDynamicsValues;
     }
 
 }

@@ -1,8 +1,10 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.plugins.utils;
 
+package fr.cnes.regards.plugins.utils;
+
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,38 +19,38 @@ import fr.cnes.regards.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 
-
 /**
  *
  * Plugin utilities
  *
- * @author msordi
+ * @author cmertz
  */
-public class PluginUtils {
+public abstract class AbstractPluginUtils {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPluginUtils.class);
 
     /**
      *
      * Constructor
      *
-     * @since 1.0-SNAPSHOT
      */
-    private PluginUtils() {
+    private AbstractPluginUtils() {
         // Static class
     }
-
-    /**
-     * Class logger
-     */
-    private final static Logger LOGGER = LoggerFactory.getLogger(PluginUtils.class);
 
     /**
      *
      * Retrieve all annotated plugin (@see {@link Plugin}) and init a map whose key is the plugin identifier and value
      * the required plugin metadata.
-     *
-     * @return
+     * 
+     * @param pPrefix
+     *            a package prefix used for the search
+     * @return all class annotated {@link Plugin}
      * @throws PluginUtilsException
-     * @since 1.0-SNAPSHOT
+     *             a pluginId is found a twice
      */
     public static Map<String, PluginMetaData> getPlugins(String pPrefix) throws PluginUtilsException {
 
@@ -62,21 +64,21 @@ public class PluginUtils {
         for (final Class<?> pluginClass : annotatedPlugins) {
 
             // Create plugin metadata
-            final PluginMetaData plugin = PluginUtils.createPluginMetaData(pluginClass);
+            final PluginMetaData plugin = AbstractPluginUtils.createPluginMetaData(pluginClass);
 
             // Check a plugin does not already exists with the same id
             if (plugins.containsKey(plugin.getId())) {
                 final PluginMetaData pMeta = plugins.get(plugin.getId());
-                final String message = String
-                        .format("Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
-                                plugin.getId(), plugin.getPluginClass(), pMeta.getPluginClass());
+                final String message = String.format(
+                                                     "Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
+                                                     plugin.getId(), plugin.getPluginClass(), pMeta.getPluginClass());
                 throw new PluginUtilsException(message);
             }
 
             // Store plugin reference
-            plugins.put(plugin.getId(), plugin);
-            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.", plugin.getPluginClass()
-                    .getTypeName(), plugin.getId()));
+            plugins.put(plugin.getMetaDataId(), plugin);
+            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.",
+                                      plugin.getPluginClass().getTypeName(), plugin.getId()));
         }
         return plugins;
     }
@@ -87,8 +89,7 @@ public class PluginUtils {
      *
      * @param pPluginClass
      *            a class that must contains a {@link Plugin} annotation
-     * @return
-     * @since 1.0
+     * @return the {@link PluginMetaData} create
      */
     public static PluginMetaData createPluginMetaData(Class<?> pPluginClass) {
 
@@ -102,16 +103,15 @@ public class PluginUtils {
         pluginMetaData.setClass(pPluginClass);
         // Manage plugin id
         if ("".equals(plugin.id())) {
-            pluginMetaData.setId(pPluginClass.getCanonicalName());
-        }
-        else {
-            pluginMetaData.setId(plugin.id());
+            pluginMetaData.setMetaDataId(pPluginClass.getCanonicalName());
+        } else {
+            pluginMetaData.setMetaDataId(plugin.id());
         }
         pluginMetaData.setAuthor(plugin.author());
         pluginMetaData.setVersion(plugin.version());
         pluginMetaData.setDescription(plugin.description());
         // Try to detect parameters if any
-        pluginMetaData.setParameters(PluginParametersUtil.getParameters(pPluginClass));
+        pluginMetaData.setParameters(AbstractPluginParametersUtil.getParameters(pPluginClass));
 
         return pluginMetaData;
     }
@@ -124,14 +124,10 @@ public class PluginUtils {
      *            the plugin configuration
      * @param pPluginMetadata
      *            the plugin metadata
-     * @param pReturnInterfaceType
-     *            the required returned type
      * @return an instance
-     * @throws RegardsServiceException
+     * @throws PluginUtilsException
      *             if problem occurs
-     * @since 1.0-SNAPSHOT
      */
-    @SuppressWarnings("unchecked")
     public static <T> T getPlugin(PluginConfiguration pPluginConf, PluginMetaData pPluginMetadata)
             throws PluginUtilsException {
 
@@ -142,13 +138,12 @@ public class PluginUtils {
             // Make a new instance
             returnPlugin = (T) pPluginMetadata.getPluginClass().newInstance();
             // Post process parameters
-            PluginParametersUtil.postProcess(returnPlugin, pPluginConf);
+            AbstractPluginParametersUtil.postProcess(returnPlugin, pPluginConf);
             // Launch init method if detected
             doInitPlugin(returnPlugin);
-        }
-        catch (InstantiationException | IllegalAccessException e) {
-            throw new PluginUtilsException(
-                                           String.format("Cannot instantiate \"%s\"", pPluginMetadata.getPluginClass()), e);
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new PluginUtilsException(String.format("Cannot instantiate \"%s\"", pPluginMetadata.getPluginClass()),
+                    e);
         }
 
         return returnPlugin;
@@ -161,7 +156,7 @@ public class PluginUtils {
      * @param pPluginInstance
      *            the plugin instance
      * @throws PluginUtilsException
-     * @since 1.0-SNAPSHOT
+     *             if problem occurs
      */
     public static <T> void doInitPlugin(T pPluginInstance) throws PluginUtilsException {
         final Method[] allMethods = pPluginInstance.getClass().getDeclaredMethods();
@@ -171,11 +166,10 @@ public class PluginUtils {
                 ReflectionUtils.makeAccessible(method);
                 try {
                     method.invoke(pPluginInstance);
-                }
-                catch (final Exception e) {
+                } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class \"%s\".",
-                                               pPluginInstance.getClass()), e);
-                    // Propagate exception
+                                               pPluginInstance.getClass()),
+                                 e);
                     throw new PluginUtilsException(e);
                 }
             }
