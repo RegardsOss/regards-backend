@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.accessRights.client.ProjectUsersClient;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
@@ -19,6 +20,7 @@ import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 
+@Component
 public class ProjectUsersFallback implements ProjectUsersClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectUsersFallback.class);

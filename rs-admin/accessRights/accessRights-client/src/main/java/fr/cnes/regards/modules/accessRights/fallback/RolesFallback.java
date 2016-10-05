@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.accessRights.client.RolesClient;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
@@ -18,6 +19,7 @@ import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
+@Component
 public class RolesFallback implements RolesClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectUsersFallback.class);

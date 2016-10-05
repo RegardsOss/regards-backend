@@ -11,12 +11,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.accessRights.client.AccessesClient;
 import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
+@Component
 public class AccessesFallback implements AccessesClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(AccessesFallback.class);
