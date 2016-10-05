@@ -19,6 +19,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.impl.TextCodec;
 
 /**
  *
@@ -37,6 +38,8 @@ public class JWTService {
     private static final String CLAIM_EMAIL = "email";
 
     private static final String CLAIM_ROLE = "role";
+
+    private static final String CLAIM_SUBJECT = "sub";
 
     private static Map<String, String> scopesTokensMap_ = new HashMap<>();
 
@@ -80,7 +83,8 @@ public class JWTService {
             throws InvalidJwtException, MissingClaimException {
 
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secret_).parseClaimsJws(pAuthentication.getJwt());
+            Jws<Claims> claims = Jwts.parser().setSigningKey(TextCodec.BASE64.encode(secret_))
+                    .parseClaimsJws(pAuthentication.getJwt());
             // OK, trusted JWT parsed and validated
 
             String project = claims.getBody().get(CLAIM_PROJECT, String.class);
@@ -127,8 +131,8 @@ public class JWTService {
     // - expiration date
     // - data access groups
     public String generateToken(String pProject, String pEmail, String pName, String pRole) {
-        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(pProject, pEmail, pRole)).setSubject(pName)
-                .signWith(ALGO, secret_).compact();
+        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(pProject, pEmail, pRole, pName))
+                .setSubject(pName).signWith(ALGO, TextCodec.BASE64.encode(secret_)).compact();
     }
 
     /**
@@ -141,11 +145,12 @@ public class JWTService {
      * @return
      * @since 1.0-SNAPSHOT
      */
-    public Map<String, Object> generateClaims(String pProject, String pEmail, String pRole) {
+    public Map<String, Object> generateClaims(String pProject, String pEmail, String pRole, String pUserName) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_PROJECT, pProject);
         claims.put(CLAIM_EMAIL, pEmail);
         claims.put(CLAIM_ROLE, pRole);
+        claims.put(CLAIM_SUBJECT, pUserName);
         return claims;
     }
 
