@@ -14,12 +14,14 @@ import springfox.documentation.builders.ApiInfoBuilder;
 /**
  * Main class to start Spring boot application for microservice access
  */
-@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices.core" })
+@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices.core",
+        "fr.cnes.regards.security.utils" })
 @MicroserviceInfo(name = "access", version = "1.0-SNAPSHOT")
 public class Application {
 
     /**
      * API for access REGARDS Microservice
+     * 
      * @return ApiInfoBuilder
      */
     @Bean
@@ -29,11 +31,13 @@ public class Application {
     }
 
     /**
-     * API for access REGARDS Microservice main function 
-     * @param pArgs args
+     * API for access REGARDS Microservice main function
+     * 
+     * @param pArgs
+     *            args
      */
     public static void main(String[] pArgs) {
-        SpringApplication.run(Application.class, pArgs);  // NOSONAR
+        SpringApplication.run(Application.class, pArgs); // NOSONAR
     }
 
 }

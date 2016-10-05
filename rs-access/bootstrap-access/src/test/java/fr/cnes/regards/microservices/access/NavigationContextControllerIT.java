@@ -26,22 +26,22 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.microservices.core.security.endpoint.MethodAutorizationService;
-import fr.cnes.regards.microservices.core.security.jwt.JWTService;
-import fr.cnes.regards.microservices.core.test.RegardsIntegrationTest;
+import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.modules.access.domain.ConfigParameter;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 import fr.cnes.regards.modules.access.domain.Project;
 import fr.cnes.regards.modules.access.domain.Theme;
 import fr.cnes.regards.modules.access.domain.ThemeType;
 import fr.cnes.regards.modules.access.service.INavigationContextService;
+import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
  * @author cmertz
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class NavigationContextControllerIT extends RegardsIntegrationTest {
+public class NavigationContextControllerIT extends AbstractRegardsIntegrationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(NavigationContextControllerIT.class);
 
@@ -54,12 +54,12 @@ public class NavigationContextControllerIT extends RegardsIntegrationTest {
     private JWTService jwtService_;
 
     /**
-     * 
+     *
      */
     private static boolean initialize = true;
 
     @Autowired
-    private MethodAutorizationService methodAutorizationService;
+    private MethodAuthorizationService methodAutorizationService;
 
     @Autowired
     private INavigationContextService navigationContextService_;
@@ -90,7 +90,7 @@ public class NavigationContextControllerIT extends RegardsIntegrationTest {
     public final void aGetAllUrls() {
 
         try {
-            this.mvc_.perform(get("/tiny/urls").header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_))
+            mvc_.perform(get("/tiny/urls").header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_))
                     .andExpect(status().isOk());
         }
         catch (Exception e) {
@@ -109,7 +109,7 @@ public class NavigationContextControllerIT extends RegardsIntegrationTest {
         NavigationContext aNavigationContext = getNavigationContext();
 
         try {
-            this.mvc_.perform(get("/tiny/url/" + aNavigationContext.getTinyUrl())
+            mvc_.perform(get("/tiny/url/" + aNavigationContext.getTinyUrl())
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)).andExpect(status().isOk());
         }
         catch (Exception e) {
@@ -126,13 +126,11 @@ public class NavigationContextControllerIT extends RegardsIntegrationTest {
     public final void cGetAnUnknownUrl() {
 
         try {
-            this.mvc_
-                    .perform(get("/tiny/url/" + this.AN_UNKNOWN_TINY_URL).header(HttpHeaders.AUTHORIZATION,
-                                                                                 "Bearer " + jwt_))
+            mvc_.perform(get("/tiny/url/" + AN_UNKNOWN_TINY_URL).header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_))
                     .andExpect(status().is4xxClientError());
         }
         catch (Exception e) {
-            String message = "Cannot get an unknown url:" + this.AN_UNKNOWN_TINY_URL;
+            String message = "Cannot get an unknown url:" + AN_UNKNOWN_TINY_URL;
             LOG.error(message, e);
             Assert.fail(message);
         }
@@ -155,11 +153,9 @@ public class NavigationContextControllerIT extends RegardsIntegrationTest {
                     new Project("project1", new Theme(themeParameters, true, ThemeType.ALL)), navCtxtParameters,
                     "http:/localhost:port/webapps/url", 95);
 
-            this.mvc_
-                    .perform(put("/tiny/url/" + aNavigationContext.getTinyUrl()).with(csrf())
-                            .content(json(navigationContext)).header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)
-                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
-                    .andExpect(status().isOk());
+            mvc_.perform(put("/tiny/url/" + aNavigationContext.getTinyUrl()).with(csrf())
+                    .content(json(navigationContext)).header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk());
         }
         catch (Exception e) {
             String message = "Cannot put an existing url:" + aNavigationContext.getTinyUrl();
@@ -183,11 +179,9 @@ public class NavigationContextControllerIT extends RegardsIntegrationTest {
                 new Project("project2", new Theme(themeParameters, true, ThemeType.ALL)), navCtxtParameters,
                 "http:/localhost:port/webapps/newUrl", 133);
         try {
-            this.mvc_
-                    .perform(post("/tiny/urls").with(csrf()).content(json(aNavigationContext))
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)
-                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
-                    .andExpect(status().isOk());
+            mvc_.perform(post("/tiny/urls").with(csrf()).content(json(aNavigationContext))
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk());
         }
         catch (Exception e) {
             String message = "Cannot post an existing url:" + aNavigationContext.getTinyUrl();
@@ -204,7 +198,7 @@ public class NavigationContextControllerIT extends RegardsIntegrationTest {
         NavigationContext aNavigationContext = getNavigationContext();
 
         try {
-            this.mvc_.perform(delete("/tiny/url/" + aNavigationContext.getTinyUrl()).with(csrf())
+            mvc_.perform(delete("/tiny/url/" + aNavigationContext.getTinyUrl()).with(csrf())
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)).andExpect(status().isOk());
         }
         catch (Exception e) {
@@ -221,13 +215,11 @@ public class NavigationContextControllerIT extends RegardsIntegrationTest {
     public final void gDeleteAnUnknownUrl() {
 
         try {
-            this.mvc_
-                    .perform(delete("/tiny/url/" + "totutiti").with(csrf()).header(HttpHeaders.AUTHORIZATION,
-                                                                                   "Bearer " + jwt_))
-                    .andExpect(status().is4xxClientError());
+            mvc_.perform(delete("/tiny/url/" + "totutiti").with(csrf())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)).andExpect(status().is4xxClientError());
         }
         catch (Exception e) {
-            String message = "Cannot delete the url:" + this.AN_UNKNOWN_TINY_URL;
+            String message = "Cannot delete the url:" + AN_UNKNOWN_TINY_URL;
             LOG.error(message, e);
             Assert.fail(message);
         }
@@ -235,7 +227,7 @@ public class NavigationContextControllerIT extends RegardsIntegrationTest {
 
     /**
      * Get an existing NavigationContext
-     * 
+     *
      * @return a Navigation context element
      */
     private final NavigationContext getNavigationContext() {
