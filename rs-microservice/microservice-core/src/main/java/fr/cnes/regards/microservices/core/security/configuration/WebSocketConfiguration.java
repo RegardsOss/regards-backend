@@ -8,6 +8,7 @@ import java.util.List;
 import org.eclipse.jetty.websocket.api.WebSocketBehavior;
 import org.eclipse.jetty.websocket.api.WebSocketPolicy;
 import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.MessageConverter;
@@ -31,6 +32,7 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
+@ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true")
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
