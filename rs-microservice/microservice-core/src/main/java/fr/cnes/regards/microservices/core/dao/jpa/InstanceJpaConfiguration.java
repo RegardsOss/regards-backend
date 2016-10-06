@@ -27,8 +27,8 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import fr.cnes.regards.domain.annotation.InstanceEntity;
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
-import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
 
 /**
  *
@@ -56,20 +56,20 @@ public class InstanceJpaConfiguration {
      * Microservice global configuration
      */
     @Autowired
-    private MicroserviceConfiguration configuration_;
+    private MicroserviceConfiguration configuration;
 
     /**
      * JPA Properties
      */
     @Autowired
-    private JpaProperties jpaProperties_;
+    private JpaProperties jpaProperties;
 
     /**
      * Instance datasource
      */
     @Autowired
     @Qualifier("instanceDataSource")
-    private DataSource instanceDataSource_;
+    private DataSource instanceDataSource;
 
     /**
      *
@@ -101,12 +101,12 @@ public class InstanceJpaConfiguration {
     public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory(EntityManagerFactoryBuilder pBuilder) {
 
         final Map<String, Object> hibernateProps = new LinkedHashMap<>();
-        hibernateProps.putAll(jpaProperties_.getHibernateProperties(instanceDataSource_));
+        hibernateProps.putAll(jpaProperties.getHibernateProperties(instanceDataSource));
 
-        if (configuration_.getDao().getEmbedded()) {
+        if (configuration.getDao().getEmbedded()) {
             hibernateProps.put(Environment.DIALECT, DataSourcesConfiguration.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
         } else {
-            hibernateProps.put(Environment.DIALECT, configuration_.getDao().getDialect());
+            hibernateProps.put(Environment.DIALECT, configuration.getDao().getDialect());
         }
         hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.NONE);
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, null);
@@ -115,7 +115,7 @@ public class InstanceJpaConfiguration {
         final List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, InstanceEntity.class,
                                                                     null);
 
-        return pBuilder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
+        return pBuilder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
 
     }

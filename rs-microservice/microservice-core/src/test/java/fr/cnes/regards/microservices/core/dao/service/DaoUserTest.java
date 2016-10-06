@@ -46,13 +46,13 @@ public class DaoUserTest {
      * JPA User repository
      */
     @Autowired
-    private UserRepository userRepository_;
+    private UserRepository userRepository;
 
     /**
      * Mock tenant resolver to set tenant manually instead of reading it from SecurityContext JWT Token.
      */
     @Autowired
-    private CurrentTenantIdentifierResolverMock tenantResolver_;
+    private CurrentTenantIdentifierResolverMock tenantResolver;
 
     /**
      *
@@ -67,12 +67,12 @@ public class DaoUserTest {
     @Transactional(transactionManager = "projectsJpaTransactionManager", rollbackFor = DaoTestException.class)
     public void addWithError(String pTenant) throws DaoTestException {
         final String message = "new user created id=";
-        tenantResolver_.setTenant(pTenant);
-        User plop = userRepository_.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
+        tenantResolver.setTenant(pTenant);
+        User plop = userRepository.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
         LOG.info(message + plop.getId());
-        plop = userRepository_.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
+        plop = userRepository.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
         LOG.info(message + plop.getId());
-        plop = userRepository_.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
+        plop = userRepository.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
         LOG.info(message + plop.getId());
         throw new DaoTestException("Generated test error to check for dao rollback");
 
@@ -87,8 +87,8 @@ public class DaoUserTest {
      * @since 1.0-SNAPSHOT
      */
     public void addWithoutError(String pTenant) {
-        tenantResolver_.setTenant(pTenant);
-        final User plop = userRepository_.save(new User("valid", "thisUser"));
+        tenantResolver.setTenant(pTenant);
+        final User plop = userRepository.save(new User("valid", "thisUser"));
         LOG.info("New user created id=" + plop.getId());
     }
 
@@ -102,8 +102,8 @@ public class DaoUserTest {
      * @since 1.0-SNAPSHOT
      */
     public List<User> getUsers(String pTenant) {
-        tenantResolver_.setTenant(pTenant);
-        final Iterable<User> list = userRepository_.findAll();
+        tenantResolver.setTenant(pTenant);
+        final Iterable<User> list = userRepository.findAll();
         final List<User> results = new ArrayList<>();
         list.forEach(user -> results.add(user));
         return results;
@@ -118,8 +118,8 @@ public class DaoUserTest {
      * @since 1.0-SNAPSHOT
      */
     public void deleteAll(String pTenant) {
-        tenantResolver_.setTenant(pTenant);
-        userRepository_.deleteAll();
+        tenantResolver.setTenant(pTenant);
+        userRepository.deleteAll();
     }
 
 }

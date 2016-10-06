@@ -41,7 +41,7 @@ public class ProjectController {
      * JPA User Repository. Access to Projects in database
      */
     @Autowired
-    private ProjectRepository projectRepo_;
+    private ProjectRepository projectRepo;
 
     /**
      *
@@ -66,7 +66,7 @@ public class ProjectController {
     @RequestMapping(value = "/projects", method = RequestMethod.GET)
     public HttpEntity<List<Project>> getUsers() throws CannotCreateTransactionException {
         final List<Project> projects = new ArrayList<>();
-        projectRepo_.findAll().forEach(project -> projects.add(project));
+        projectRepo.findAll().forEach(project -> projects.add(project));
         return new ResponseEntity<>(projects, HttpStatus.OK);
     }
 

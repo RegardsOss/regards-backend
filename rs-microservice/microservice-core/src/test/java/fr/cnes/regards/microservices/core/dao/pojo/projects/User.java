@@ -32,26 +32,26 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "userSequence")
     @Column(name = "id")
-    private Long id_;
+    private Long id;
 
     /**
      * User first name
      */
     @Column(name = "firstname")
-    private String firstName_;
+    private String firstName;
 
     /**
      * User last name
      */
     @Column(name = "lastname")
-    private String lastName_;
+    private String lastName;
 
     /**
      * User's company
      */
     @ManyToOne
     @JoinColumn(name = "company_id", foreignKey = @javax.persistence.ForeignKey(name = "FK_USER_COMPANY"))
-    private Company company_;
+    private Company company;
 
     /**
      *
@@ -75,8 +75,8 @@ public class User {
      */
     public User(String pFirstName, String pLastName) {
         super();
-        this.firstName_ = pFirstName;
-        this.lastName_ = pLastName;
+        this.firstName = pFirstName;
+        this.lastName = pLastName;
     }
 
     /**
@@ -93,9 +93,9 @@ public class User {
      */
     public User(String pFirstName, String pLastName, Company pCompany) {
         super();
-        this.firstName_ = pFirstName;
-        this.lastName_ = pLastName;
-        this.company_ = pCompany;
+        this.firstName = pFirstName;
+        this.lastName = pLastName;
+        this.company = pCompany;
     }
 
     /**
@@ -104,7 +104,7 @@ public class User {
      * @return User identifier
      */
     public Long getId() {
-        return id_;
+        return id;
     }
 
     /**
@@ -114,7 +114,7 @@ public class User {
      *            User identifier
      */
     public void setId(Long pId) {
-        id_ = pId;
+        id = pId;
     }
 
     /**
@@ -123,7 +123,7 @@ public class User {
      * @return User firstName
      */
     public String getFirstName() {
-        return firstName_;
+        return firstName;
     }
 
     /**
@@ -132,7 +132,7 @@ public class User {
      * @return User lastName
      */
     public String getLastName() {
-        return lastName_;
+        return lastName;
     }
 
     /**
@@ -141,7 +141,7 @@ public class User {
      * @return User's company
      */
     public Company getCompany() {
-        return company_;
+        return company;
     }
 
     /**
@@ -151,7 +151,7 @@ public class User {
      *            User firstName
      */
     public void setFirstName(String pFirstName) {
-        firstName_ = pFirstName;
+        firstName = pFirstName;
     }
 
     /**
@@ -161,7 +161,7 @@ public class User {
      *            User lastName
      */
     public void setLastName(String pLastName) {
-        lastName_ = pLastName;
+        lastName = pLastName;
     }
 
     /**
@@ -171,7 +171,7 @@ public class User {
      *            User's company
      */
     public void setCompany(Company pCompany) {
-        company_ = pCompany;
+        company = pCompany;
     }
 
 }

@@ -53,19 +53,19 @@ public class MultiTenancyDaoIT {
      * Mock Mvc to simulate rest requests.
      */
     @Autowired
-    private MockMvc mockMvc_;
+    private MockMvc mockMvc;
 
     /**
      * Security JWT management service
      */
     @Autowired
-    private JWTService jwtService_;
+    private JWTService jwtService;
 
     /**
      * Security authorization management service
      */
     @Autowired
-    private MethodAuthorizationService authService_;
+    private MethodAuthorizationService authService;
 
     /**
      *
@@ -79,28 +79,28 @@ public class MultiTenancyDaoIT {
     @Test
     public void testMvc() {
 
-        final String tokenTest1 = jwtService_.generateToken("test1", "name", "lastname", TEST_ROLE);
-        final String tokenTest2 = jwtService_.generateToken("invalid", "name2", "lastname2", TEST_ROLE);
+        final String tokenTest1 = jwtService.generateToken("test1", "name", "lastname", TEST_ROLE);
+        final String tokenTest2 = jwtService.generateToken("invalid", "name2", "lastname2", TEST_ROLE);
         final String getUsersRessources = "/test/dao/users";
         final String getProjectsRessources = "/test/dao/projects";
 
-        authService_.setAuthorities(getUsersRessources, RequestMethod.GET, TEST_ROLE);
-        authService_.setAuthorities(getProjectsRessources, RequestMethod.POST, TEST_ROLE);
+        authService.setAuthorities(getUsersRessources, RequestMethod.GET, TEST_ROLE);
+        authService.setAuthorities(getProjectsRessources, RequestMethod.POST, TEST_ROLE);
 
         try {
 
             // Run with valid tenant with multi tenant DAO
-            mockMvc_.perform(MockMvcRequestBuilders.get(getUsersRessources).header(HttpHeaders.AUTHORIZATION,
+            mockMvc.perform(MockMvcRequestBuilders.get(getUsersRessources).header(HttpHeaders.AUTHORIZATION,
                                                                                    BEARER + tokenTest1))
                     .andExpect(MockMvcResultMatchers.status().isOk());
 
             // Run with invalid tenant with multi tenant DAO
-            mockMvc_.perform(MockMvcRequestBuilders.get(getUsersRessources).header(HttpHeaders.AUTHORIZATION,
+            mockMvc.perform(MockMvcRequestBuilders.get(getUsersRessources).header(HttpHeaders.AUTHORIZATION,
                                                                                    BEARER + tokenTest2))
                     .andExpect(MockMvcResultMatchers.status().isInternalServerError());
 
             // Run with valid tenant with an instance DAO
-            mockMvc_.perform(MockMvcRequestBuilders.get(getProjectsRessources).header(HttpHeaders.AUTHORIZATION,
+            mockMvc.perform(MockMvcRequestBuilders.get(getProjectsRessources).header(HttpHeaders.AUTHORIZATION,
                                                                                       BEARER + tokenTest1))
                     .andExpect(MockMvcResultMatchers.status().isOk());
 

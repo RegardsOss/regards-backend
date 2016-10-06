@@ -20,13 +20,13 @@ public class InstanceConfiguration {
     /**
      * Is Instance database enabled ?
      */
-    private Boolean enabled_;
+    private Boolean enabled;
 
     /**
      * Instance JPA Datasource
      */
     @NestedConfigurationProperty
-    private DataSourceProperties datasource_;
+    private DataSourceProperties datasource;
 
     /**
      *
@@ -37,7 +37,7 @@ public class InstanceConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public void setDatasource(DataSourceProperties datasource) {
-        this.datasource_ = datasource;
+        this.datasource = datasource;
     }
 
     /**
@@ -48,7 +48,7 @@ public class InstanceConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public DataSourceProperties getDatasource() {
-        return this.datasource_;
+        return this.datasource;
     }
 
     /**
@@ -59,7 +59,7 @@ public class InstanceConfiguration {
      * @since 1.0 SNAPSHOT
      */
     public Boolean getEnabled() {
-        return enabled_;
+        return enabled;
     }
 
     /**
@@ -71,7 +71,7 @@ public class InstanceConfiguration {
      * @since 1.0 SNAPSHOT
      */
     public void setEnabled(Boolean pEnabled) {
-        enabled_ = pEnabled;
+        enabled = pEnabled;
     }
 
 }

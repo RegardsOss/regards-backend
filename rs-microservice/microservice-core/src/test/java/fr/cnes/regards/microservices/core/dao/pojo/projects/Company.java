@@ -29,13 +29,13 @@ public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "companySequence")
     @Column(name = "id")
-    private Long id_;
+    private Long id;
 
     /**
      * Company name
      */
     @Column(name = "name")
-    private String name_;
+    private String name;
 
     /**
      *
@@ -57,7 +57,7 @@ public class Company {
      */
     public Company(String pName) {
         super();
-        name_ = pName;
+        name = pName;
     }
 
     /**
@@ -68,7 +68,7 @@ public class Company {
      * @since 1.0-SNPASHOT
      */
     public Long getId() {
-        return id_;
+        return id;
     }
 
     /**
@@ -80,7 +80,7 @@ public class Company {
      * @since 1.0-SNAPSHOT
      */
     public void setId(Long pId) {
-        id_ = pId;
+        id = pId;
     }
 
     /**
@@ -91,7 +91,7 @@ public class Company {
      * @since 1.0-SNPASHOT
      */
     public String getName() {
-        return name_;
+        return name;
     }
 
     /**
@@ -103,7 +103,7 @@ public class Company {
      * @since 1.0-SNAPSHOT
      */
     public void setName(String pName) {
-        name_ = pName;
+        name = pName;
     }
 
 }

@@ -17,7 +17,7 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
+import fr.cnes.regards.domain.annotation.InstanceEntity;
 import fr.cnes.regards.microservices.core.dao.exceptions.MultiDataBasesException;
 
 /**

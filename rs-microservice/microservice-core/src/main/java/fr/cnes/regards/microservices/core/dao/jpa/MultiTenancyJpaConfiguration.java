@@ -29,8 +29,8 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import fr.cnes.regards.domain.annotation.InstanceEntity;
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
-import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
 
 /**
  *
@@ -59,31 +59,31 @@ public class MultiTenancyJpaConfiguration {
      */
     @Autowired
     @Qualifier("dataSources")
-    private Map<String, DataSource> dataSources_;
+    private Map<String, DataSource> dataSources;
 
     /**
      * Microservice global configuration
      */
     @Autowired
-    private MicroserviceConfiguration configuration_;
+    private MicroserviceConfiguration configuration;
 
     /**
      * JPA Configuration
      */
     @Autowired
-    private JpaProperties jpaProperties_;
+    private JpaProperties jpaProperties;
 
     /**
      * Multitenant connection provider
      */
     @Autowired
-    private MultiTenantConnectionProvider multiTenantConnectionProvider_;
+    private MultiTenantConnectionProvider multiTenantConnectionProvider;
 
     /**
      * Tenant resolver.
      */
     @Autowired
-    private CurrentTenantIdentifierResolver currentTenantIdentifierResolver_;
+    private CurrentTenantIdentifierResolver currentTenantIdentifierResolver;
 
     /**
      *
@@ -113,18 +113,18 @@ public class MultiTenancyJpaConfiguration {
     @Bean
     public LocalContainerEntityManagerFactoryBean projectsEntityManagerFactory(EntityManagerFactoryBuilder pBuilder) {
         // Use the first dataSource configuration to init the entityManagerFactory
-        final DataSource defaultDataSource = dataSources_.values().iterator().next();
+        final DataSource defaultDataSource = dataSources.values().iterator().next();
 
         final Map<String, Object> hibernateProps = new LinkedHashMap<>();
-        hibernateProps.putAll(jpaProperties_.getHibernateProperties(defaultDataSource));
+        hibernateProps.putAll(jpaProperties.getHibernateProperties(defaultDataSource));
 
         hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
-        hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider_);
-        hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver_);
-        if (configuration_.getDao().getEmbedded()) {
+        hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider);
+        hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver);
+        if (configuration.getDao().getEmbedded()) {
             hibernateProps.put(Environment.DIALECT, DataSourcesConfiguration.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
         } else {
-            hibernateProps.put(Environment.DIALECT, configuration_.getDao().getDialect());
+            hibernateProps.put(Environment.DIALECT, configuration.getDao().getDialect());
         }
 
         // Find classpath for each Entity and not NonStandardEntity

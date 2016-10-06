@@ -62,7 +62,7 @@ public class DataSourcesConfiguration {
      * Microservice globale configuration
      */
     @Autowired
-    private MicroserviceConfiguration configuration_;
+    private MicroserviceConfiguration configuration;
 
     /**
      *
@@ -76,18 +76,18 @@ public class DataSourcesConfiguration {
 
         final Map<String, DataSource> datasources = new HashMap<>();
 
-        for (final ProjectConfiguration project : configuration_.getProjects()) {
-            if (configuration_.getDao().getEmbedded()) {
+        for (final ProjectConfiguration project : configuration.getProjects()) {
+            if (configuration.getDao().getEmbedded()) {
                 final DriverManagerDataSource dataSource = new DriverManagerDataSource();
                 dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-                dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+                dataSource.setUrl(EMBEDDED_HSQL_URL + configuration.getDao().getEmbeddedPath()
                         + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + project.getName()
                         + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
                         + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
                 datasources.put(project.getName(), dataSource);
             } else {
                 final DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
-                        .driverClassName(configuration_.getDao().getDriverClassName())
+                        .driverClassName(configuration.getDao().getDriverClassName())
                         .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
                         .url(project.getDatasource().getUrl());
                 datasources.put(project.getName(), factory.build());
@@ -109,12 +109,12 @@ public class DataSourcesConfiguration {
     public DataSource projectsDataSource() {
 
         DataSource datasource = null;
-        final ProjectConfiguration project = configuration_.getProjects().get(0);
+        final ProjectConfiguration project = configuration.getProjects().get(0);
 
-        if (configuration_.getDao().getEmbedded()) {
+        if (configuration.getDao().getEmbedded()) {
             final DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration.getDao().getEmbeddedPath()
                     + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + project.getName()
                     + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
                     + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
@@ -122,7 +122,7 @@ public class DataSourcesConfiguration {
             datasource = dataSource;
         } else {
             final DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
-                    .driverClassName(configuration_.getDao().getDriverClassName())
+                    .driverClassName(configuration.getDao().getDriverClassName())
                     .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
                     .url(project.getDatasource().getUrl());
             datasource = factory.build();
@@ -142,21 +142,21 @@ public class DataSourcesConfiguration {
     public DataSource instanceDataSource() {
 
         DataSource datasource = null;
-        if (configuration_.getDao().getEmbedded()) {
+        if (configuration.getDao().getEmbedded()) {
             final DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration.getDao().getEmbeddedPath()
                     + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + "instance"
                     + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
                     + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
             datasource = dataSource;
         } else {
             final DataSourceBuilder factory = DataSourceBuilder
-                    .create(configuration_.getDao().getInstance().getDatasource().getClassLoader())
-                    .driverClassName(configuration_.getDao().getDriverClassName())
-                    .username(configuration_.getDao().getInstance().getDatasource().getUsername())
-                    .password(configuration_.getDao().getInstance().getDatasource().getPassword())
-                    .url(configuration_.getDao().getInstance().getDatasource().getUrl());
+                    .create(configuration.getDao().getInstance().getDatasource().getClassLoader())
+                    .driverClassName(configuration.getDao().getDriverClassName())
+                    .username(configuration.getDao().getInstance().getDatasource().getUsername())
+                    .password(configuration.getDao().getInstance().getDatasource().getPassword())
+                    .url(configuration.getDao().getInstance().getDatasource().getUrl());
             datasource = factory.build();
         }
         return datasource;

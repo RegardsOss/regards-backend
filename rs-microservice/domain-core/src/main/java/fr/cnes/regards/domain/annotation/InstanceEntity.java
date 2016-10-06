@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.dao.annotation;
+package fr.cnes.regards.domain.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

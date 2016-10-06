@@ -18,32 +18,32 @@ public class CommonDaoConfiguration {
      * Does the DAO Component is activated ?
      */
     @NotNull
-    private Boolean enabled_;
+    private Boolean enabled;
 
     /**
      * Does the datasource has to be created in memory ?
      */
-    private Boolean embedded_;
+    private Boolean embedded;
 
     /**
      * Directory path for embedded database persistence
      */
-    private String embeddedPath_;
+    private String embeddedPath;
 
     /**
      * Common driver class name to create datasources
      */
-    private String driverClassName_;
+    private String driverClassName;
 
     /**
      * Common hibernate dialect to create datasources
      */
-    private String dialect_;
+    private String dialect;
 
     /**
      * Instance DAO Configuration
      */
-    private InstanceConfiguration instance_;
+    private InstanceConfiguration instance;
 
     /**
      *
@@ -53,7 +53,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public String getDriverClassName() {
-        return driverClassName_;
+        return driverClassName;
     }
 
     /**
@@ -65,7 +65,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public void setDriverClassName(String pDriverClassName) {
-        driverClassName_ = pDriverClassName;
+        driverClassName = pDriverClassName;
     }
 
     /**
@@ -76,7 +76,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public String getDialect() {
-        return dialect_;
+        return dialect;
     }
 
     /**
@@ -88,7 +88,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public void setDialect(String pDialect) {
-        dialect_ = pDialect;
+        dialect = pDialect;
     }
 
     /**
@@ -99,7 +99,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public Boolean getEnabled() {
-        return enabled_;
+        return enabled;
     }
 
     /**
@@ -111,7 +111,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public void setEnabled(Boolean pEnabled) {
-        enabled_ = pEnabled;
+        enabled = pEnabled;
     }
 
     /**
@@ -122,7 +122,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public Boolean getEmbedded() {
-        return embedded_;
+        return embedded;
     }
 
     /**
@@ -134,7 +134,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public void setEmbedded(Boolean pEmbedded) {
-        embedded_ = pEmbedded;
+        embedded = pEmbedded;
     }
 
     /**
@@ -145,7 +145,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public InstanceConfiguration getInstance() {
-        return instance_;
+        return instance;
     }
 
     /**
@@ -157,7 +157,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public void setInstance(InstanceConfiguration pInstance) {
-        instance_ = pInstance;
+        instance = pInstance;
     }
 
     /**
@@ -168,7 +168,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public String getEmbeddedPath() {
-        return embeddedPath_;
+        return embeddedPath;
     }
 
     /**
@@ -180,7 +180,7 @@ public class CommonDaoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public void setEmbeddedPath(String pEmbeddedPath) {
-        embeddedPath_ = pEmbeddedPath;
+        embeddedPath = pEmbeddedPath;
     }
 
 }

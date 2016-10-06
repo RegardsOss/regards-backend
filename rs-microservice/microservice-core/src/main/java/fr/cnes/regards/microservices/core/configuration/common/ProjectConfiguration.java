@@ -19,12 +19,12 @@ public class ProjectConfiguration {
      * Project datasource
      */
     @NestedConfigurationProperty
-    private DataSourceProperties datasource_;
+    private DataSourceProperties datasource;
 
     /**
      * Project name
      */
-    private String name_;
+    private String name;
 
     /**
      *
@@ -34,7 +34,7 @@ public class ProjectConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public String getName() {
-        return name_;
+        return name;
     }
 
     /**
@@ -46,7 +46,7 @@ public class ProjectConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public void setName(String pName) {
-        name_ = pName;
+        name = pName;
     }
 
     /**
@@ -57,7 +57,7 @@ public class ProjectConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public DataSourceProperties getDatasource() {
-        return datasource_;
+        return datasource;
     }
 
     /**
@@ -69,7 +69,7 @@ public class ProjectConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public void setDatasource(DataSourceProperties pDatasource) {
-        this.datasource_ = pDatasource;
+        this.datasource = pDatasource;
     }
 
 }
