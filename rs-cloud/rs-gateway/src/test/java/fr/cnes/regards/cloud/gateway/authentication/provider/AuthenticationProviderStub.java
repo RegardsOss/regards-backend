@@ -25,25 +25,27 @@ import fr.cnes.regards.modules.accessRights.domain.UserStatus;
 @Primary
 public class AuthenticationProviderStub implements IAuthenticationProvider {
 
-    public final static String INVALID_PASSWORD = "invalid";
+    /**
+     * Invalid password for test
+     */
+    public static final String INVALID_PASSWORD = "invalid";
 
     @Override
     public UserStatus authenticate(String pName, String pPassword, String pScope) {
+        UserStatus status = UserStatus.ACCESS_DENIED;
         if (!pPassword.equals(INVALID_PASSWORD)) {
-            return UserStatus.ACCESS_GRANTED;
+            status = UserStatus.ACCESS_GRANTED;
         }
-        else {
-            return UserStatus.ACCESS_DENIED;
-        }
+        return status;
     }
 
     @Override
     public ProjectUser retreiveUser(String pName, String pScope) {
-        ProjectUser user = new ProjectUser();
-        Role role = new Role();
+        final ProjectUser user = new ProjectUser();
+        final Role role = new Role();
         role.setName("USER");
         user.setRole(role);
-        Account newAccount = new Account();
+        final Account newAccount = new Account();
         newAccount.setEmail("user@regards.c-s.fr");
         user.setAccount(newAccount);
         return user;

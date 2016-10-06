@@ -5,11 +5,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import fr.cnes.regards.cloud.registry.RegistryApplication;
+import fr.cnes.regards.cloud.registry.Application;
 
 @RunWith(SpringRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = RegistryApplication.class)
+@ContextConfiguration(classes = Application.class)
 public class RegistryApplicationTest {
 
     @Test

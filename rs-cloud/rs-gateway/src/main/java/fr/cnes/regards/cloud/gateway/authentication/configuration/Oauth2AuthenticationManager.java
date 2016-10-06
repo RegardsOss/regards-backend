@@ -36,6 +36,9 @@ import fr.cnes.regards.modules.accessRights.domain.UserStatus;
 @Component
 public class Oauth2AuthenticationManager implements AuthenticationManager {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(Oauth2AuthenticationManager.class);
 
     /**
@@ -55,8 +58,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager {
             @SuppressWarnings("unchecked")
             final Map<String, String> detailsMap = (Map<String, String>) details;
             scope = detailsMap.get("scope");
-        }
-        else {
+        } else {
             final String message = "Invalid scope";
             LOG.error(message);
             throw new BadCredentialsException(message);
@@ -68,7 +70,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager {
         }
 
         // Retrieve account
-        ProjectUser user = authProvider_.retreiveUser(name, scope);
+        final ProjectUser user = authProvider_.retreiveUser(name, scope);
 
         final List<GrantedAuthority> grantedAuths = new ArrayList<>();
         grantedAuths.add(new SimpleGrantedAuthority(user.getRole().getName()));

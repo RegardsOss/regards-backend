@@ -8,6 +8,10 @@ logging:
   level:
     regards: DEBUG
     
-    
 jwt:
   secret: 123456789
+  
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update

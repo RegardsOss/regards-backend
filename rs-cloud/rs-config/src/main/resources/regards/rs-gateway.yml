@@ -15,6 +15,7 @@ access_token:
   validity_period: 3600
   
 authentication:
+  granttype: password
   client:
     user: client
     secret: secret

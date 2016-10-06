@@ -1,3 +1,44 @@
 # Fixed port for admin
 server:
   port: 8777
+  
+  
+spring: 
+  hateoas:
+    use-hal-as-default-json-media-type: false
+  jackson:
+    deserialization:
+      READ_ENUMS_USING_TO_STRING: true
+    serialization:
+      WRITE_ENUMS_USING_TO_STRING: true
+
+# Swagger
+swagger:
+  api:
+    name: administration-api
+      
+regards:
+  eureka:
+    client:
+      enabled: true
+  instance:
+    account_acceptance: auto-accept
+    project.account_acceptance: auto-accept
+      
+microservice:
+  dao:
+    enabled: true
+    embedded=true
+    embeddedPath=target
+#    driverClassName=org.postgresql.Driver
+#    dialect=org.hibernate.dialect.PostgreSQLDialect
+    instance:
+      enabled: true
+  projects:
+    - 
+      name: project1
+#      datasource:
+#        url: jdbc:postgresql://localhost:5432/project1
+#        username: user
+#        password: mdp
+

@@ -35,8 +35,9 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-    private static final String GRANT_TYPE_PASSWORD = "password";
-
+    /**
+     * Resources identifier
+     */
     @Value("${spring.application.name}")
     private String resourceId_;
 
@@ -64,46 +65,83 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     @Value("${authentication.client.secret}")
     private String clientSecret_;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    /**
+     * Grant type
+     */
+    @Value("${authentication.granttype}")
+    private String grantType_;
 
+    /**
+     * OAuth2 authentication manager
+     */
+    @Autowired
+    private AuthenticationManager authenticationManager_;
+
+    /**
+     *
+     * Create custom token enhancer to add custom claims in the JWT token generated.
+     *
+     * @return CustomTokenEnhancer
+     * @since 1.0-SNAPSHOT
+     */
     @Bean
     public TokenEnhancer tokenEnhancer() {
         return new CustomTokenEnhancer();
     }
 
+    /**
+     *
+     * Create token store for spring JWT manager
+     *
+     * @return TokenStore
+     * @since 1.0-SNAPSHOT
+     */
     @Bean
     public TokenStore tokenStore() {
         return new JwtTokenStore(accessTokenConverter());
     }
 
+    /**
+     *
+     * Create the Oauth2 token to JWT Token converter
+     *
+     * @return JwtAccessTokenConverter
+     * @since 1.0-SNAPSHOT
+     */
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
-        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+        final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
         converter.setSigningKey(jwtSecret_);
         return converter;
     }
 
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+    public void configure(AuthorizationServerEndpointsConfigurer pEndpoints) throws Exception {
 
-        TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+        final TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
         tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), accessTokenConverter()));
 
-        endpoints.tokenStore(tokenStore()).authenticationManager(this.authenticationManager)
+        pEndpoints.tokenStore(tokenStore()).authenticationManager(this.authenticationManager_)
                 .accessTokenConverter(accessTokenConverter()).tokenEnhancer(tokenEnhancerChain);
     }
 
     @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.inMemory().withClient(clientUser_).authorizedGrantTypes(GRANT_TYPE_PASSWORD).resourceIds(resourceId_)
+    public void configure(ClientDetailsServiceConfigurer pClients) throws Exception {
+        pClients.inMemory().withClient(clientUser_).authorizedGrantTypes(grantType_).resourceIds(resourceId_)
                 .secret(clientSecret_);
     }
 
+    /**
+     *
+     * Create token services
+     *
+     * @return DefaultTokenServices
+     * @since 1.0-SNAPSHOT
+     */
     @Bean
     @Primary
     public DefaultTokenServices tokenServices() {
-        DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+        final DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
         defaultTokenServices.setTokenStore(tokenStore());
         defaultTokenServices.setSupportRefreshToken(true);
         return defaultTokenServices;

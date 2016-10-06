@@ -25,16 +25,19 @@ import fr.cnes.regards.security.utils.jwt.JWTService;
  */
 public class CustomTokenEnhancer implements TokenEnhancer {
 
+    /**
+     * Security JWT service
+     */
     @Autowired
     private JWTService jwtService_;
 
     @Override
-    public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
-        final ProjectUser user = (ProjectUser) authentication.getUserAuthentication().getPrincipal();
-        Set<String> scopes = authentication.getOAuth2Request().getScope();
-        ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(jwtService_
+    public OAuth2AccessToken enhance(OAuth2AccessToken pAccessToken, OAuth2Authentication pAuthentication) {
+        final ProjectUser user = (ProjectUser) pAuthentication.getUserAuthentication().getPrincipal();
+        final Set<String> scopes = pAuthentication.getOAuth2Request().getScope();
+        ((DefaultOAuth2AccessToken) pAccessToken).setAdditionalInformation(jwtService_
                 .generateClaims(scopes.stream().findFirst().get(), user.getAccount().getEmail(),
                                 user.getRole().getName(), user.getAccount().getLogin()));
-        return accessToken;
+        return pAccessToken;
     }
 }
