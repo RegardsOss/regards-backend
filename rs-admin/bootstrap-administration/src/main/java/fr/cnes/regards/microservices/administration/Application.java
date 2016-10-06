@@ -20,7 +20,7 @@ import springfox.documentation.builders.ApiInfoBuilder;
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards" })
 @MicroserviceInfo(name = "administration", version = "1.0-SNAPSHOT")
-@ImportResource("classpath*:defaultRoles.xml")
+@ImportResource({ "classpath*:defaultRoles.xml", "classpath*:mailSender.xml" })
 public class Application {
 
     @Bean
@@ -30,7 +30,7 @@ public class Application {
                 .version("1.0-SNAPSHOT");
     }
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         SpringApplication.run(Application.class, args);
     }
 

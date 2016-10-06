@@ -3,15 +3,16 @@
  */
 package fr.cnes.regards.modules.emails.rest;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
@@ -35,21 +36,21 @@ public class EmailController implements EmailSignature {
     private IEmailService emailService_;
 
     @Override
-    public HttpEntity<List<MimeMessage>> retrieveEmails() {
-        List<MimeMessage> emails = emailService_.retrieveEmails();
+    public HttpEntity<List<SimpleMailMessage>> retrieveEmails() {
+        List<SimpleMailMessage> emails = emailService_.retrieveEmails();
         return new ResponseEntity<>(emails, HttpStatus.OK);
     }
 
     @Override
-    public HttpEntity<MimeMessage> sendEmail(final String[] pRecipients, final MimeMessage pEmail)
-            throws MessagingException {
-        MimeMessage email = emailService_.sendEmail(pRecipients, pEmail);
+    public HttpEntity<SimpleMailMessage> sendEmail(final String[] pRecipients, final SimpleMailMessage pEmail)
+            throws MessagingException, IOException {
+        SimpleMailMessage email = emailService_.sendEmail(pRecipients, pEmail);
         return new ResponseEntity<>(email, HttpStatus.CREATED);
     }
 
     @Override
-    public HttpEntity<MimeMessage> retrieveEmail(final Long pId) {
-        MimeMessage email = emailService_.retrieveEmail(pId);
+    public HttpEntity<SimpleMailMessage> retrieveEmail(final Long pId) {
+        SimpleMailMessage email = emailService_.retrieveEmail(pId);
         return new ResponseEntity<>(email, HttpStatus.OK);
     }
 

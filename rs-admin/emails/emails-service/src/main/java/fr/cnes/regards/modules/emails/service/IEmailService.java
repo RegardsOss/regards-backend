@@ -3,10 +3,12 @@
  */
 package fr.cnes.regards.modules.emails.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+
+import org.springframework.mail.SimpleMailMessage;
 
 /**
  * Strategy interface to handle CRUD operations on EmailDTO entities and mailing tasks
@@ -18,9 +20,9 @@ public interface IEmailService {
     /**
      * Retrieves the list of emails
      *
-     * @return A {@link List} of emails as {@link MimeMessage}
+     * @return A {@link List} of emails as {@link SimpleMailMessage}
      */
-    List<MimeMessage> retrieveEmails();
+    List<SimpleMailMessage> retrieveEmails();
 
     /**
      * Sends the passed email to the passed recipients
@@ -29,19 +31,20 @@ public interface IEmailService {
      *            The list of recipients
      * @param pEmail
      *            The ready-to-send email
-     * @return The sent email as {@link MimeMessage}
+     * @return The sent email as {@link SimpleMailMessage}
      * @throws MessagingException
+     * @throws IOException
      */
-    MimeMessage sendEmail(String[] pRecipients, MimeMessage pEmail) throws MessagingException;
+    SimpleMailMessage sendEmail(String[] pRecipients, SimpleMailMessage pEmail);
 
     /**
      * Retrieves the email of passed id
      *
      * @param pId
      *            The email id
-     * @return The email as {@link MimeMessage}
+     * @return The email as {@link SimpleMailMessage}
      */
-    MimeMessage retrieveEmail(Long pId);
+    SimpleMailMessage retrieveEmail(Long pId);
 
     /**
      * Re-sends the email of passed id

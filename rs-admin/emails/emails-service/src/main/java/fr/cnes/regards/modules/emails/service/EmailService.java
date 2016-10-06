@@ -6,11 +6,8 @@ package fr.cnes.regards.modules.emails.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
@@ -48,15 +45,14 @@ public class EmailService implements IEmailService {
     }
 
     @Override
-    public List<MimeMessage> retrieveEmails() {
+    public List<SimpleMailMessage> retrieveEmails() {
         return emailRepository_.findAll().stream().map(emailDTO -> emailDTO.getMail()).collect(Collectors.toList());
     }
 
     @Override
-    public MimeMessage sendEmail(final String[] pRecipients, final MimeMessage pEmail) throws MessagingException {
+    public SimpleMailMessage sendEmail(final String[] pRecipients, final SimpleMailMessage pEmail) {
         // Set the recipients
-        MimeMessageHelper helper = new MimeMessageHelper(pEmail);
-        helper.setTo(pRecipients);
+        pEmail.setTo(pRecipients);
 
         // Send the mail
         mailSender_.send(pEmail);
@@ -69,13 +65,13 @@ public class EmailService implements IEmailService {
     }
 
     @Override
-    public MimeMessage retrieveEmail(final Long pId) {
+    public SimpleMailMessage retrieveEmail(final Long pId) {
         return emailRepository_.findOne(pId).getMail();
     }
 
     @Override
     public void resendEmail(final Long pId) {
-        MimeMessage email = retrieveEmail(pId);
+        SimpleMailMessage email = retrieveEmail(pId);
         mailSender_.send(email);
     }
 

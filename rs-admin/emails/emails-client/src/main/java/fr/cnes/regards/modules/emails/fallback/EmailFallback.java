@@ -5,9 +5,8 @@ package fr.cnes.regards.modules.emails.fallback;
 
 import java.util.List;
 
-import javax.mail.internet.MimeMessage;
-
 import org.springframework.http.HttpEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.emails.client.EmailClient;
@@ -23,19 +22,19 @@ import fr.cnes.regards.modules.emails.client.EmailClient;
 public class EmailFallback implements EmailClient {
 
     @Override
-    public HttpEntity<List<MimeMessage>> retrieveEmails() {
+    public HttpEntity<List<SimpleMailMessage>> retrieveEmails() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<MimeMessage> sendEmail(final String[] pRecipients, final MimeMessage pEmail) {
+    public HttpEntity<SimpleMailMessage> sendEmail(final String[] pRecipients, final SimpleMailMessage pEmail) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<MimeMessage> retrieveEmail(final Long pId) {
+    public HttpEntity<SimpleMailMessage> retrieveEmail(final Long pId) {
         // TODO Auto-generated method stub
         return null;
     }
