@@ -83,6 +83,7 @@ public abstract class AbstractPluginParametersUtil {
 
                 // Register supported parameters
                 for (final PrimitiveObject typeWrapper : PrimitiveObject.values()) {
+                    // TODO CMZ : à compléter
                     if (field.getType().isAssignableFrom(typeWrapper.getType())) {
 
                         isSupportedType = true;
@@ -128,7 +129,7 @@ public abstract class AbstractPluginParametersUtil {
                 // Get configurated value
                 final String paramVal = pPluginConfiguration.getParameterValue(pluginParameter.name());
                 // Inject value
-                ReflectionUtils.makeAccessible(field);
+                AbstractReflectionUtils.makeAccessible(field);
                 for (final PrimitiveObject typeWrapper : PrimitiveObject.values()) {
                     if (field.getType().isAssignableFrom(typeWrapper.getType())) {
                         try {

@@ -53,7 +53,7 @@ public abstract class AbstractPluginUtils {
      *             a pluginId is found a twice
      */
     public static Map<String, PluginMetaData> getPlugins(String pPrefix) throws PluginUtilsException {
-
+// OK
         final Map<String, PluginMetaData> plugins = new HashMap<String, PluginMetaData>();
 
         // Scan class path with Reflections library
@@ -92,7 +92,7 @@ public abstract class AbstractPluginUtils {
      * @return the {@link PluginMetaData} create
      */
     public static PluginMetaData createPluginMetaData(Class<?> pPluginClass) {
-
+// OK
         PluginMetaData pluginMetaData = null;
 
         // Get implementation associated annotations
@@ -101,6 +101,7 @@ public abstract class AbstractPluginUtils {
         // Init plugin metadata
         pluginMetaData = new PluginMetaData();
         pluginMetaData.setClass(pPluginClass);
+        
         // Manage plugin id
         if ("".equals(plugin.id())) {
             pluginMetaData.setMetaDataId(pPluginClass.getCanonicalName());
@@ -110,6 +111,7 @@ public abstract class AbstractPluginUtils {
         pluginMetaData.setAuthor(plugin.author());
         pluginMetaData.setVersion(plugin.version());
         pluginMetaData.setDescription(plugin.description());
+        
         // Try to detect parameters if any
         pluginMetaData.setParameters(AbstractPluginParametersUtil.getParameters(pPluginClass));
 
@@ -130,17 +132,19 @@ public abstract class AbstractPluginUtils {
      */
     public static <T> T getPlugin(PluginConfiguration pPluginConf, PluginMetaData pPluginMetadata)
             throws PluginUtilsException {
-
-        // instantiate plugin
+// OK
         T returnPlugin = null;
 
         try {
             // Make a new instance
             returnPlugin = (T) pPluginMetadata.getPluginClass().newInstance();
+            
             // Post process parameters
             AbstractPluginParametersUtil.postProcess(returnPlugin, pPluginConf);
+            
             // Launch init method if detected
             doInitPlugin(returnPlugin);
+            
         } catch (InstantiationException | IllegalAccessException e) {
             throw new PluginUtilsException(String.format("Cannot instantiate \"%s\"", pPluginMetadata.getPluginClass()),
                     e);
@@ -163,7 +167,8 @@ public abstract class AbstractPluginUtils {
         for (final Method method : allMethods) {
             if (method.isAnnotationPresent(PluginInit.class)) {
                 // Invoke method
-                ReflectionUtils.makeAccessible(method);
+                AbstractReflectionUtils.makeAccessible(method);
+                
                 try {
                     method.invoke(pPluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
