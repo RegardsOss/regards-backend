@@ -17,25 +17,26 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  *
- * Add the allow origin in the response headers.
+ * Add the allow origin in the response headers to allow CORS requests.
  *
  * @author CS SI
- *
+ * @since 1.0-SNAPSHOT
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest pRequest, HttpServletResponse pResponse,
+            FilterChain pFilterChain)
             throws ServletException, IOException {
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        response.setHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
-        response.setHeader("Access-Control-Allow-Headers", "authorization, content-type");
-        response.setHeader("Access-Control-Max-Age", "3600");
+        pResponse.setHeader("Access-Control-Allow-Origin", "*");
+        pResponse.setHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
+        pResponse.setHeader("Access-Control-Allow-Headers", "authorization, content-type");
+        pResponse.setHeader("Access-Control-Max-Age", "3600");
 
-        if (!"OPTIONS".equals(request.getMethod())) {
-            filterChain.doFilter(request, response);
+        if (!"OPTIONS".equals(pRequest.getMethod())) {
+            pFilterChain.doFilter(pRequest, pResponse);
         }
     }
 }

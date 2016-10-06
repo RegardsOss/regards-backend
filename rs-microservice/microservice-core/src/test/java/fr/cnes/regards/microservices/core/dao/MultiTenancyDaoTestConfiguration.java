@@ -13,6 +13,15 @@ import org.springframework.context.annotation.PropertySource;
 import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
 import fr.cnes.regards.microservices.core.dao.hibernate.CurrentTenantIdentifierResolverImpl;
 
+/**
+ *
+ * Class MultiTenancyDaoTestConfiguration
+ *
+ * Configuration class for DAO unit tests
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @ComponentScan(basePackages = "fr.cnes.regards.microservices.core.dao", excludeFilters = {
         @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = CurrentTenantIdentifierResolverImpl.class) })
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })

@@ -8,6 +8,15 @@ import org.springframework.data.repository.CrudRepository;
 import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
 import fr.cnes.regards.microservices.core.dao.pojo.instance.Project;
 
+/**
+ *
+ * Class ProjectRepository
+ *
+ * JPA Project Repository
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @InstanceEntity
 public interface ProjectRepository extends CrudRepository<Project, Long> {
 

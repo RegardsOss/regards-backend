@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.core.dao.pojo.instance;
 
 import javax.persistence.Column;
@@ -9,33 +12,78 @@ import javax.persistence.SequenceGenerator;
 
 import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
 
+/**
+ *
+ * Class Project
+ *
+ * JPA Project Entity. For instance database.
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @Entity(name = "T_PROJECT")
 @InstanceEntity
 @SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "SEQ_PROJECT")
 public class Project {
 
+    /**
+     * Project identifier
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projectSequence")
     @Column(name = "id")
-    private Long id;
+    private Long id_;
 
-    @Column(name = "firstname")
-    private String firstName;
+    /**
+     * Project name
+     */
+    @Column(name = "name")
+    private String name_;
 
+    /**
+     *
+     * Getter
+     *
+     * @return Project identifier
+     * @since 1.0-SNAPSHOT
+     */
     public Long getId() {
-        return id;
+        return id_;
     }
 
+    /**
+     *
+     * Setter
+     *
+     * @param pId
+     *            Project identifier
+     * @since 1.0-SNAPSHOT
+     */
     public void setId(Long pId) {
-        id = pId;
+        id_ = pId;
     }
 
-    public String getFirstName() {
-        return firstName;
+    /**
+     *
+     * Getter
+     *
+     * @return Project name
+     * @since 1.0-SNAPSHOT
+     */
+    public String getName() {
+        return name_;
     }
 
-    public void setFirstName(String pFirstName) {
-        firstName = pFirstName;
+    /**
+     *
+     * Setter
+     *
+     * @param pName
+     *            Project name
+     * @since 1.0-SNAPSHOT
+     */
+    public void setName(String pName) {
+        name_ = pName;
     }
 
 }

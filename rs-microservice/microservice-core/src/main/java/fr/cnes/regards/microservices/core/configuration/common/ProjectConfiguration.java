@@ -26,20 +26,50 @@ public class ProjectConfiguration {
      */
     private String name_;
 
+    /**
+     *
+     * Getter
+     *
+     * @return project name
+     * @since 1.0-SNAPSHOT
+     */
     public String getName() {
         return name_;
     }
 
+    /**
+     *
+     * Setter
+     *
+     * @param pName
+     *            project name
+     * @since 1.0-SNAPSHOT
+     */
     public void setName(String pName) {
         name_ = pName;
     }
 
+    /**
+     *
+     * Getter
+     *
+     * @return project JPA datasource
+     * @since 1.0-SNAPSHOT
+     */
     public DataSourceProperties getDatasource() {
         return datasource_;
     }
 
-    public void setDatasource(DataSourceProperties datasource) {
-        this.datasource_ = datasource;
+    /**
+     *
+     * Setter
+     *
+     * @param datasource
+     *            project JPA datasource
+     * @since 1.0-SNAPSHOT
+     */
+    public void setDatasource(DataSourceProperties pDatasource) {
+        this.datasource_ = pDatasource;
     }
 
 }

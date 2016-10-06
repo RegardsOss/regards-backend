@@ -16,6 +16,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import fr.cnes.regards.microservices.core.dao.exceptions.DaoTestException;
 import fr.cnes.regards.microservices.core.dao.pojo.projects.User;
 import fr.cnes.regards.microservices.core.dao.service.DaoUserTest;
 import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
@@ -35,18 +36,32 @@ import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 @DirtiesContext
 public class DaoTransactionTest {
 
-    static final Logger LOG = LoggerFactory.getLogger(DaoTransactionTest.class);
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(DaoTransactionTest.class);
 
+    /**
+     * User service
+     */
     @Autowired
     private DaoUserTest service_;
 
+    /**
+     *
+     * Test for multitenant transactions.
+     *
+     * @since 1.0-SNAPSHOT
+     */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test multitenant transactions operations in database")
     @Test
     public void transactionTest() {
 
-        String testTenant = "test1";
-        String testTenant2 = "test2";
+        final String testTenant = "test1";
+        final String testTenant2 = "test2";
+        final String exceptionError = "There must be an exception thrown";
+        final String rollbackSucceed = "DAO Rollback correctly done !";
         List<User> users = new ArrayList<>();
 
         // Delete any datas
@@ -57,14 +72,13 @@ public class DaoTransactionTest {
         try {
             LOG.info("Adding users to first tenant with exception thrown ... ");
             service_.addWithError(testTenant);
-            Assert.fail("There must be an exception thrown");
-        }
-        catch (Exception e) {
+            Assert.fail(exceptionError);
+        } catch (DaoTestException e) {
             LOG.error(e.getMessage());
             users.clear();
             users = service_.getUsers(testTenant);
             Assert.assertTrue("The first tenant should be empty !", users.isEmpty());
-            LOG.info("DAO Rollback correctly done !");
+            LOG.info(rollbackSucceed);
         }
 
         // Add valid user
@@ -84,14 +98,13 @@ public class DaoTransactionTest {
         try {
             LOG.info("Adding users to second tenant with exception thrown ... ");
             service_.addWithError(testTenant2);
-            Assert.fail("There must be an exception thrown");
-        }
-        catch (Exception e) {
+            Assert.fail(exceptionError);
+        } catch (DaoTestException e) {
             LOG.error(e.getMessage());
             users.clear();
             users = service_.getUsers(testTenant2);
             Assert.assertTrue("The second tenant should be empty !", users.isEmpty());
-            LOG.info("DAO Rollback correctly done !");
+            LOG.info(rollbackSucceed);
         }
 
         // Add valid users to second tenant

@@ -23,21 +23,49 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.microservices.core.dao.pojo.projects.User;
 import fr.cnes.regards.microservices.core.dao.repository.projects.UserRepository;
 
+/**
+ *
+ * Class DaoTestController
+ *
+ * Test Rest controller to simulate access to DAO using scope (project) in authentication token. Used in Integraion
+ * Tests
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @RestController
 @RequestMapping("/test/dao")
 public class DaoTestController {
 
+    /**
+     * JPA User Repository. Access to Users in database
+     */
     @Autowired
     private UserRepository userRepo_;
 
+    /**
+     *
+     * Exception handler for this REST Controller
+     *
+     * @since 1.0-SNAPSHOT
+     */
     @ExceptionHandler(CannotCreateTransactionException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public void exception() {
     }
 
+    /**
+     *
+     * Retrieve all users from the project of the authenticated user.
+     *
+     * @return List<Users>
+     * @throws CannotCreateTransactionException
+     *             Error accessing project database
+     * @since 1.0-SNAPSHOT
+     */
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public HttpEntity<List<User>> getUsers() throws CannotCreateTransactionException {
-        List<User> users = new ArrayList<>();
+        final List<User> users = new ArrayList<>();
         userRepo_.findAll().forEach(user -> users.add(user));
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
