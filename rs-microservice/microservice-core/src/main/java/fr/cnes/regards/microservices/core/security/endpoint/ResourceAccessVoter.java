@@ -3,19 +3,19 @@
  */
 package fr.cnes.regards.microservices.core.security.endpoint;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.annotation.AnnotationConfigurationException;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.hateoas.core.MappingDiscoverer;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.core.Authentication;
@@ -34,16 +34,39 @@ import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 /**
  * REGARDS endpoint security voter to manage resource access dynamically at method level.
  *
- * @See {@link MethodSecurityConfiguration}
+ * {@link MethodSecurityConfiguration}
+ *
  * @author msordi
  *
  */
 public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
+    /**
+     * Pattern to detect multiple slash
+     */
+    private static final Pattern MULTIPLE_SLASHES = Pattern.compile("\\/{2,}");
+
+    /**
+     * Single slash for building URL
+     */
+    private static final String SINGLE_SLASH = "/";
+
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(ResourceAccessVoter.class);
 
+    /**
+     * Method authorization service
+     */
     private final MethodAuthorizationService methodAuthService_;
 
+    /**
+     * Constructor
+     *
+     * @param pMethodAuthService
+     *            the method authoization service
+     */
     public ResourceAccessVoter(MethodAuthorizationService pMethodAuthService) {
         this.methodAuthService_ = pMethodAuthService;
     }
@@ -69,100 +92,176 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
     @Override
     public int vote(Authentication pAuthentication, Object pObject, Collection<ConfigAttribute> pAttributes) {
 
+        // Default behavior : deny access
+        int access = ACCESS_DENIED;
+
         // If authentication do not contains authority, deny access
-        if ((pAuthentication.getAuthorities() == null) || pAuthentication.getAuthorities().isEmpty()) {
-            return ACCESS_DENIED;
+        if ((pAuthentication.getAuthorities() != null) && !pAuthentication.getAuthorities().isEmpty()) {
+
+            if (pObject instanceof MethodInvocation) {
+
+                final MethodInvocation mi = (MethodInvocation) pObject;
+
+                try {
+                    // Retrieve resource mapping configuration
+                    final ResourceMapping mapping = buildResourceMapping(mi.getMethod());
+                    // Retrieve granted authorities
+                    final Optional<List<GrantedAuthority>> options = methodAuthService_.getAuthorities(mapping);
+                    if (options.isPresent()) {
+                        access = checkAuthorities(options.get(), pAuthentication.getAuthorities());
+
+                        final String decision;
+                        if (access == ACCESS_DENIED) {
+                            decision = "denied";
+                        } else {
+                            decision = "granted";
+                        }
+                        LOG.info("Acess {} to resource {} for user {}.", decision, mapping.getResourceMappingId(),
+                                 pAuthentication.getName());
+                    }
+                } catch (ResourceMappingException e) {
+                    // Nothing to do : access will be denied
+                }
+            }
+        } else {
+            LOG.warn("Access denied cause no role authority can be found!");
         }
 
-        if (!(pObject instanceof MethodInvocation)) {
-            return ACCESS_DENIED;
-        }
-
-        MethodInvocation mi = (MethodInvocation) pObject;
-
-        // Retrieve resource mapping configuration
-        ResourceMapping mapping;
-        try {
-            mapping = buildResourceMapping(mi.getMethod());
-        } catch (ResourceMappingException e) {
-            // If error occurs, deny access
-            LOG.error(e.getMessage(), e);
-            return ACCESS_DENIED;
-        }
-
-        // Retrieve granted authorities
-        Optional<List<GrantedAuthority>> options = methodAuthService_.getAuthorities(mapping);
-        if (!options.isPresent()) {
-            LOG.error("Access denied to resource " + mi.getMethod().toGenericString() + " for user role");
-            return ACCESS_DENIED;
-        }
-
-        int result = checkAuthorities(options.get(), pAuthentication.getAuthorities());
-        if (result == ACCESS_DENIED) {
-            LOG.error("Access denied to resource " + mi.getMethod().toGenericString() + " for user role");
-        }
-        return result;
+        return access;
     }
 
     /**
      * Introspect code to retrieve resource mapping configuration.<br/>
-     * Normalize annotations {@link RequestMapping}, {@link GetMapping}, {@link PostMapping}, {@link PutMapping},
-     * {@link DeleteMapping} and {@link PatchMapping}.
+     * Following annotations are supported : {@link RequestMapping}, {@link GetMapping}, {@link PostMapping},
+     * {@link PutMapping}, {@link DeleteMapping} and {@link PatchMapping}.<br/>
      *
      * @param pMethod
      *            the called method
      * @return {@link ResourceMapping}
      * @throws ResourceMappingException
+     *             if resource mapping cannot be built
      */
     public static ResourceMapping buildResourceMapping(Method pMethod) throws ResourceMappingException {
         // Retrieve resource access annotation
-        ResourceAccess access = AnnotationUtils.findAnnotation(pMethod, ResourceAccess.class);
+        final ResourceAccess access = AnnotationUtils.findAnnotation(pMethod, ResourceAccess.class);
         if (access == null) {
             // Throw exception if resource is not annotated with resource access
             LOG.error("Missing annotation \"{}\" on method {}", ResourceAccess.class.getName(), pMethod.getName());
             throw new ResourceMappingException("No resource access annotation");
         }
 
-        // Retrieve resource access annotation
-        RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(pMethod, RequestMapping.class);
-        if ((requestMapping.value() != null) && (requestMapping.path() != null)
-                && !requestMapping.value()[0].equals(requestMapping.path()[0])) {
-            throw new AnnotationConfigurationException("Provided value and mapping are different!");
+        // Retrieve request mapping annotation
+        // - from class
+        final String classMapping = getMapping(pMethod.getDeclaringClass(), pMethod.getDeclaringClass().getName());
+        // - from method
+        final String methodMapping = getMapping(pMethod, getMethodFullPath(pMethod));
+
+        // Validate mapping
+        if ((classMapping == null) && (methodMapping == null)) {
+            // Throw exception if all path are null
+            final String pattern = "At least one path (on class or method) must be set for method {0}.";
+            final String message = MessageFormat.format(pattern, getMethodFullPath(pMethod));
+            LOG.error(message);
+            throw new ResourceMappingException(message);
         }
 
-        // Retrieve the assembled path (at class and method level) from RequestMapping annotations
-        // (and inherited ones : GetMapping, PutMapping...)
-        MappingDiscoverer discoverer = new AnnotatedElementMappingDiscoverer(RequestMapping.class);
-        String path = discoverer.getMapping(pMethod);
+        // Join path mapping
+        final String path = join(classMapping, methodMapping);
 
-        return new ResourceMapping(access, Optional.of(path),
-                getSingleMethod(requestMapping.method(), pMethod.getName()));
+        return new ResourceMapping(access, Optional.of(path), getSingleMethod(pMethod));
 
+    }
+
+    /**
+     * Retrieve single mapping path of the annotated element
+     *
+     * @param pElement
+     *            {@link RequestMapping} annotated element
+     * @param pElementName
+     *            element name (for logging)
+     * @return single path mapping
+     * @throws ResourceMappingException
+     *             if mapping contains more than one path
+     */
+    private static String getMapping(AnnotatedElement pElement, String pElementName) throws ResourceMappingException {
+        String mapping = null;
+        final RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(pElement,
+                                                                                         RequestMapping.class);
+        if (requestMapping != null) {
+            final String[] paths = requestMapping.value();
+            if (paths != null) {
+                if (paths.length == 1) {
+                    mapping = paths[0];// Nothing to do
+                } else
+                    if (paths.length == 0) {
+                        // Nothing to do
+                        LOG.debug("No path definition for {}", pElementName);
+                    } else {
+                        // Throw exception if resource maps to more than one path
+                        final String message = MessageFormat
+                                .format("Only single path is authorized in annotated element {0}.", pElementName);
+                        LOG.error(message);
+                        throw new ResourceMappingException(message);
+                    }
+            }
+        }
+        return mapping;
+    }
+
+    /**
+     * Join class and method mapping to retrieve full path
+     *
+     * @param pClassMapping
+     *            class mapping
+     * @param pMethodMapping
+     *            method mapping
+     * @return full path to method
+     */
+    private static String join(String pClassMapping, String pMethodMapping) {
+        final StringBuffer fullPath = new StringBuffer();
+        if (pClassMapping != null) {
+            fullPath.append(pClassMapping);
+        }
+        if (pMethodMapping != null) {
+            fullPath.append(SINGLE_SLASH);
+            fullPath.append(pMethodMapping);
+        }
+        return MULTIPLE_SLASHES.matcher(fullPath.toString()).replaceAll(SINGLE_SLASH);
     }
 
     /**
      * Retrieve single HTTP method
      *
-     * @param pMethods
-     *            HTTP methods
-     * @param pMethodName
-     *            method name
+     * @param pMethod
+     *            method
      * @return HTTP method
      * @throws ResourceMappingException
+     *             if no single method detected
      */
-    private static RequestMethod getSingleMethod(RequestMethod[] pMethods, String pMethodName)
-            throws ResourceMappingException {
-        if (pMethods.length == 1) {
-            return pMethods[0];
+    private static RequestMethod getSingleMethod(Method pMethod) throws ResourceMappingException {
+
+        final RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(pMethod, RequestMapping.class);
+
+        if (requestMapping == null) {
+            // Throw exception if request mapping not found
+            final String message = MessageFormat.format("Request mapping is required for method {0}.",
+                                                        getMethodFullPath(pMethod));
+            LOG.error(message);
+            throw new ResourceMappingException(message);
+        }
+
+        final RequestMethod[] methods = requestMapping.method();
+        if (methods.length == 1) {
+            return methods[0];
         } else
-            if (pMethods.length == 0) {
-                String errorMessage = MessageFormat
-                        .format("A single method is required in request mapping for method {0}", pMethodName);
+            if (methods.length == 0) {
+                final String errorMessage = MessageFormat.format("One HTTP method is required for method {0}",
+                                                                 getMethodFullPath(pMethod));
                 LOG.error(errorMessage);
                 throw new ResourceMappingException(errorMessage);
             } else {
-                String errorMessage = MessageFormat
-                        .format("Only single method is accepted in request mapping for method {0}", pMethodName);
+                final String errorMessage = MessageFormat.format("Only one HTTP method is required for method {0}",
+                                                                 getMethodFullPath(pMethod));
                 LOG.error(errorMessage);
                 throw new ResourceMappingException(errorMessage);
             }
@@ -189,5 +288,15 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
             }
         }
         return ACCESS_DENIED;
+    }
+
+    /**
+     *
+     * @param pMethod
+     *            method
+     * @return full method path
+     */
+    private static String getMethodFullPath(Method pMethod) {
+        return pMethod.getDeclaringClass().getName() + "#" + pMethod.getName();
     }
 }

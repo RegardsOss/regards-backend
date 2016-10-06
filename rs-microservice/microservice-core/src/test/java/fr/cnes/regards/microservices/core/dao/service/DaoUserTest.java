@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.microservices.core.dao.exceptions.DaoTestException;
 import fr.cnes.regards.microservices.core.dao.pojo.projects.User;
 import fr.cnes.regards.microservices.core.dao.repository.projects.UserRepository;
 import fr.cnes.regards.microservices.core.dao.util.CurrentTenantIdentifierResolverMock;
@@ -26,31 +27,54 @@ import fr.cnes.regards.microservices.core.dao.util.CurrentTenantIdentifierResolv
 @Component
 public class DaoUserTest {
 
-    static final Logger LOG = LoggerFactory.getLogger(DaoUserTest.class);
+    /**
+     * User name used to simulate creation of user with error.
+     */
+    private static final String USER_NAME_ERROR = "doNotSave";
 
-    @Autowired
-    private UserRepository userRepository;
+    /**
+     * User last name used to simulate creation of user with error.
+     */
+    private static final String USER_LAST_NAME_ERROR = "ThisUser";
 
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(DaoUserTest.class);
+
+    /**
+     * JPA User repository
+     */
     @Autowired
-    private CurrentTenantIdentifierResolverMock tenantResolver;
+    private UserRepository userRepository_;
+
+    /**
+     * Mock tenant resolver to set tenant manually instead of reading it from SecurityContext JWT Token.
+     */
+    @Autowired
+    private CurrentTenantIdentifierResolverMock tenantResolver_;
 
     /**
      *
-     * Test adding a user witho error. Rollback must be done.
+     * Test adding a user with error. Rollback must be done.
      *
      * @param pTenant
+     *            Tenant or project to use
+     * @throws DaoTestException
+     *             Simulated error always thrown to activate JPA rollback
      * @since 1.0-SNAPSHOT
      */
-    @Transactional(transactionManager = "projectsJpaTransactionManager", rollbackFor = Exception.class)
-    public void addWithError(String pTenant) throws Exception {
-        tenantResolver.setTenant(pTenant);
-        User plop = userRepository.save(new User("doNotSave", "thisUser"));
-        LOG.info("new user created id=" + plop.getId());
-        plop = userRepository.save(new User("doNotSave", "thisUser"));
-        LOG.info("new user created id=" + plop.getId());
-        plop = userRepository.save(new User("doNotSave", "thisUser"));
-        LOG.info("new user created id=" + plop.getId());
-        throw new Exception("Generated test error to check for dao rollback");
+    @Transactional(transactionManager = "projectsJpaTransactionManager", rollbackFor = DaoTestException.class)
+    public void addWithError(String pTenant) throws DaoTestException {
+        final String message = "new user created id=";
+        tenantResolver_.setTenant(pTenant);
+        User plop = userRepository_.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
+        LOG.info(message + plop.getId());
+        plop = userRepository_.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
+        LOG.info(message + plop.getId());
+        plop = userRepository_.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
+        LOG.info(message + plop.getId());
+        throw new DaoTestException("Generated test error to check for dao rollback");
 
     }
 
@@ -59,11 +83,12 @@ public class DaoUserTest {
      * Test adding a user without error
      *
      * @param pTenant
+     *            Tenant or project to use
      * @since 1.0-SNAPSHOT
      */
     public void addWithoutError(String pTenant) {
-        tenantResolver.setTenant(pTenant);
-        User plop = userRepository.save(new User("valid", "thisUser"));
+        tenantResolver_.setTenant(pTenant);
+        final User plop = userRepository_.save(new User("valid", "thisUser"));
         LOG.info("New user created id=" + plop.getId());
     }
 
@@ -72,26 +97,29 @@ public class DaoUserTest {
      * Test getting all users from a given tenant
      *
      * @param pTenant
+     *            Tenant or project to use
+     * @return Result list of users
      * @since 1.0-SNAPSHOT
      */
     public List<User> getUsers(String pTenant) {
-        tenantResolver.setTenant(pTenant);
-        Iterable<User> list = userRepository.findAll();
-        List<User> results = new ArrayList<>();
+        tenantResolver_.setTenant(pTenant);
+        final Iterable<User> list = userRepository_.findAll();
+        final List<User> results = new ArrayList<>();
         list.forEach(user -> results.add(user));
         return results;
     }
 
     /**
      *
-     * Test methid to delete all users from a given tenant
+     * Test method to delete all users from a given tenant
      *
      * @param pTenant
+     *            Tenant or project to use
      * @since 1.0-SNAPSHOT
      */
     public void deleteAll(String pTenant) {
-        tenantResolver.setTenant(pTenant);
-        userRepository.deleteAll();
+        tenantResolver_.setTenant(pTenant);
+        userRepository_.deleteAll();
     }
 
 }

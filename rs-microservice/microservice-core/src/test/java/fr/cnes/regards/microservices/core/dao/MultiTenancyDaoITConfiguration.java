@@ -14,8 +14,17 @@ import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfi
 import fr.cnes.regards.microservices.core.dao.service.DaoUserTest;
 import fr.cnes.regards.microservices.core.dao.util.CurrentTenantIdentifierResolverMock;
 
-@ComponentScan(basePackages = { "fr.cnes.regards.microservices.core.dao",
-        "fr.cnes.regards.microservices.core.security" }, excludeFilters = {
+/**
+ *
+ * Class MultiTenancyDaoITConfiguration
+ *
+ * Configuration file for DAO integration tests
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOTS
+ */
+@ComponentScan(basePackages = { "fr.cnes.regards.microservices.core.dao", "fr.cnes.regards.microservices.core.security",
+        "fr.cnes.regards.security.utils" }, excludeFilters = {
                 @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
                         CurrentTenantIdentifierResolverMock.class, DaoUserTest.class }) })
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })

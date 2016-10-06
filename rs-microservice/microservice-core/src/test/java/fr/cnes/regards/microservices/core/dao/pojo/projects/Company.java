@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.dao.pojo.instance;
+package fr.cnes.regards.microservices.core.dao.pojo.projects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,42 +10,62 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
-import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
-
 /**
  *
- * Class Project
+ * Class Company
  *
- * JPA Project Entity. For instance database.
+ * JPA Company Entity. For projects multitenancy databases.
  *
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@Entity(name = "T_PROJECT")
-@InstanceEntity
-@SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "SEQ_PROJECT")
-public class Project {
+@Entity(name = "T_COMPANY")
+@SequenceGenerator(name = "companySequence", initialValue = 1, sequenceName = "SEQ_COMPANY")
+public class Company {
 
     /**
-     * Project identifier
+     * Company identifier
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projectSequence")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "companySequence")
     @Column(name = "id")
     private Long id_;
 
     /**
-     * Project name
+     * Company name
      */
     @Column(name = "name")
     private String name_;
 
     /**
      *
+     * Constructor
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    public Company() {
+
+    }
+
+    /**
+     *
+     * Constructor
+     *
+     * @param pName
+     *            Company name
+     * @since 1.0-SNAPSHOT
+     */
+    public Company(String pName) {
+        super();
+        name_ = pName;
+    }
+
+    /**
+     *
      * Getter
      *
-     * @return Project identifier
-     * @since 1.0-SNAPSHOT
+     * @return Company identifier
+     * @since 1.0-SNPASHOT
      */
     public Long getId() {
         return id_;
@@ -56,7 +76,7 @@ public class Project {
      * Setter
      *
      * @param pId
-     *            Project identifier
+     *            Company identifier
      * @since 1.0-SNAPSHOT
      */
     public void setId(Long pId) {
@@ -67,8 +87,8 @@ public class Project {
      *
      * Getter
      *
-     * @return Project name
-     * @since 1.0-SNAPSHOT
+     * @return Company name
+     * @since 1.0-SNPASHOT
      */
     public String getName() {
         return name_;
@@ -79,7 +99,7 @@ public class Project {
      * Setter
      *
      * @param pName
-     *            Project name
+     *            Company name
      * @since 1.0-SNAPSHOT
      */
     public void setName(String pName) {

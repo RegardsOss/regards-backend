@@ -9,49 +9,30 @@
 	<description>Client core</description>
 	<version>1.0-SNAPSHOT</version>
 
-	<properties>
-		<feign.version>8.18.0</feign.version>
-	</properties>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>Brixton.SR5</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<parent>
-		<groupId>fr.cnes.regards.microservices</groupId>
-		<artifactId>rs-microservice</artifactId>
-		<version>1.0.1-SNAPSHOT</version>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-parent</artifactId>
+		<version>0.0.0-SNAPSHOT</version>
+		<relativePath></relativePath>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.utils</groupId>
 			<artifactId>security-utils</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<!-- Netflix Feign REST Client -->
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
 			<artifactId>feign-core</artifactId>
-			<version>${feign.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
 			<artifactId>feign-hystrix</artifactId>
-			<version>${feign.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
 			<artifactId>feign-gson</artifactId>
-			<version>${feign.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
@@ -62,19 +43,5 @@
 			<artifactId>spring-cloud-starter-feign</artifactId>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
 </project>
 

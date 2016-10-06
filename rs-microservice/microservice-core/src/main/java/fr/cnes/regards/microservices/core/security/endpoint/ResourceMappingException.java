@@ -13,6 +13,12 @@ public class ResourceMappingException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Resource mapping exception
+     *
+     * @param pMessage
+     *            error message
+     */
     public ResourceMappingException(String pMessage) {
         super(pMessage);
     }
