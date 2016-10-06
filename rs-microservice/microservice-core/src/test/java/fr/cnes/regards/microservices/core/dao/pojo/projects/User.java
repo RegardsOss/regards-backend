@@ -1,3 +1,4 @@
+
 /*
  * LICENSE_PLACEHOLDER
  */
@@ -8,6 +9,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 
 @Entity(name = "T_USER")
@@ -25,6 +28,10 @@ public class User {
     @Column(name = "lastname")
     private String lastName;
 
+    @ManyToOne
+    @JoinColumn(name = "parent_id", foreignKey = @javax.persistence.ForeignKey(name = "FK_PLOP"))
+    private Company company;
+
     public User() {
 
     }
@@ -35,28 +42,71 @@ public class User {
         this.lastName = pLastName;
     }
 
+    public User(String pFirstName, String pLastName, Company pCompany) {
+        super();
+        this.firstName = pFirstName;
+        this.lastName = pLastName;
+        this.company = pCompany;
+    }
+
+    /**
+     * @return the id
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * @param pId
+     *            the id to set
+     */
     public void setId(Long pId) {
-        this.id = pId;
+        id = pId;
     }
 
+    /**
+     * @return the firstName
+     */
     public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(String pFirstName) {
-        this.firstName = pFirstName;
-    }
-
+    /**
+     * @return the lastName
+     */
     public String getLastName() {
         return lastName;
     }
 
+    /**
+     * @return the company
+     */
+    public Company getCompany() {
+        return company;
+    }
+
+    /**
+     * @param pFirstName
+     *            the firstName to set
+     */
+    public void setFirstName(String pFirstName) {
+        firstName = pFirstName;
+    }
+
+    /**
+     * @param pLastName
+     *            the lastName to set
+     */
     public void setLastName(String pLastName) {
-        this.lastName = pLastName;
+        lastName = pLastName;
+    }
+
+    /**
+     * @param pCompany
+     *            the company to set
+     */
+    public void setCompany(Company pCompany) {
+        company = pCompany;
     }
 
 }
