@@ -45,6 +45,9 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
 
     private static final long serialVersionUID = 8168907057647334460L;
 
+    /**
+     * Microservice global configuration
+     */
     @Autowired
     private transient MicroserviceConfiguration configuration_;
 
@@ -61,15 +64,21 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     }
 
     @Override
-    protected DataSource selectDataSource(String tenantIdentifier) {
-        return dataSources_.get(tenantIdentifier);
+    protected DataSource selectDataSource(String pTenantIdentifier) {
+        return dataSources_.get(pTenantIdentifier);
     }
 
+    /**
+     *
+     * Initialize configured datasources
+     *
+     * @since 1.0-SNAPSHOT
+     */
     @PostConstruct
     public void initDataSources() {
         // Hibernate do not initialize schema for multitenants.
         // Here whe manually update schema for all configured datasources
-        for (ProjectConfiguration project : configuration_.getProjects()) {
+        for (final ProjectConfiguration project : configuration_.getProjects()) {
             updateDataSourceSchema(selectDataSource(project.getName()));
         }
     }
@@ -79,6 +88,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      * Update datasource schema
      *
      * @param pDataSource
+     *            datasource to update
      * @since 1.0-SNAPSHOT
      */
     private void updateDataSourceSchema(DataSource pDataSource) {
@@ -87,15 +97,15 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         if (configuration_.getDao().getEmbedded()) {
             dialect = DataSourcesConfiguration.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
         }
-        MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder()
+        final MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder()
                 .applySetting(Environment.DIALECT, dialect).applySetting(Environment.DATASOURCE, pDataSource).build());
 
         // 2 Add Entity for database mapping from classpath
-        List<Class<?>> classes = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, Entity.class,
-                                                             InstanceEntity.class);
+        final List<Class<?>> classes = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, Entity.class,
+                                                                   InstanceEntity.class);
         classes.forEach(classe -> metadata.addAnnotatedClass(classe));
 
-        SchemaUpdate export = new SchemaUpdate((MetadataImplementor) metadata.buildMetadata());
+        final SchemaUpdate export = new SchemaUpdate((MetadataImplementor) metadata.buildMetadata());
         export.execute(false, true);
     }
 
@@ -125,12 +135,13 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      * @param pPassword
      *            : Only used if the dao is not configured in embedded mod
      * @param pTenant
+     *            : tenant or project
      * @since 1.0-SNAPSHOT
      */
     public void addDataSource(String pUrl, String pUser, String pPassword, String pTenant) {
 
         if (configuration_.getDao().getEmbedded()) {
-            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+            final DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(DataSourcesConfiguration.EMBEDDED_HSQL_DRIVER_CLASS);
             dataSource.setUrl(DataSourcesConfiguration.EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
                     + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + pTenant
@@ -139,10 +150,10 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
 
             addDataSource(dataSource, pTenant);
         } else {
-            DataSourceBuilder factory = DataSourceBuilder.create()
+            final DataSourceBuilder factory = DataSourceBuilder.create()
                     .driverClassName(configuration_.getDao().getDriverClassName()).username(pUser).password(pPassword)
                     .url(pUrl);
-            DataSource datasource = factory.build();
+            final DataSource datasource = factory.build();
             addDataSource(datasource, pTenant);
         }
     }

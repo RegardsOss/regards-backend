@@ -39,7 +39,10 @@ import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
  */
 @Configuration
 @EnableJpaRepositories(includeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory", transactionManagerRef = "instanceJpaTransactionManager")
+        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+                       basePackages = DaoUtils.PACKAGES_TO_SCAN,
+                       entityManagerFactoryRef = "instanceEntityManagerFactory",
+                       transactionManagerRef = "instanceJpaTransactionManager")
 @EnableTransactionManagement
 @ConditionalOnProperty("microservice.dao.instance.enabled")
 public class InstanceJpaConfiguration {
@@ -49,28 +52,55 @@ public class InstanceJpaConfiguration {
      */
     private static final String PERSITENCE_UNIT_NAME = "instance";
 
+    /**
+     * Microservice global configuration
+     */
     @Autowired
     private MicroserviceConfiguration configuration_;
 
+    /**
+     * JPA Properties
+     */
     @Autowired
     private JpaProperties jpaProperties_;
 
+    /**
+     * Instance datasource
+     */
     @Autowired
     @Qualifier("instanceDataSource")
     private DataSource instanceDataSource_;
 
+    /**
+     *
+     * Create TransactionManager for instance datasource
+     *
+     * @param pBuilder
+     *            EntityManagerFactoryBuilder
+     * @return PlatformTransactionManager
+     * @since 1.0-SNAPSHOT
+     */
     @Bean
-    public PlatformTransactionManager instanceJpaTransactionManager(EntityManagerFactoryBuilder builder) {
-        JpaTransactionManager jtm = new JpaTransactionManager();
-        jtm.setEntityManagerFactory(instanceEntityManagerFactory(builder).getObject());
+    public PlatformTransactionManager instanceJpaTransactionManager(EntityManagerFactoryBuilder pBuilder) {
+        final JpaTransactionManager jtm = new JpaTransactionManager();
+        jtm.setEntityManagerFactory(instanceEntityManagerFactory(pBuilder).getObject());
         return jtm;
     }
 
+    /**
+     *
+     * Create EntityManagerFactory for instance datasource
+     *
+     * @param pBuilder
+     *            EntityManagerFactoryBuilder
+     * @return LocalContainerEntityManagerFactoryBean
+     * @since 1.0-SNAPSHOT
+     */
     @Bean
     @Primary
-    public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory(EntityManagerFactoryBuilder builder) {
+    public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory(EntityManagerFactoryBuilder pBuilder) {
 
-        Map<String, Object> hibernateProps = new LinkedHashMap<>();
+        final Map<String, Object> hibernateProps = new LinkedHashMap<>();
         hibernateProps.putAll(jpaProperties_.getHibernateProperties(instanceDataSource_));
 
         if (configuration_.getDao().getEmbedded()) {
@@ -82,9 +112,10 @@ public class InstanceJpaConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, null);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, null);
 
-        List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, InstanceEntity.class, null);
+        final List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, InstanceEntity.class,
+                                                                    null);
 
-        return builder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
+        return pBuilder.dataSource(instanceDataSource_).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
 
     }

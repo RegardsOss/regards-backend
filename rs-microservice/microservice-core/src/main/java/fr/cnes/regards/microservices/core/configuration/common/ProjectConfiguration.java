@@ -64,7 +64,7 @@ public class ProjectConfiguration {
      *
      * Setter
      *
-     * @param datasource
+     * @param pDatasource
      *            project JPA datasource
      * @since 1.0-SNAPSHOT
      */
