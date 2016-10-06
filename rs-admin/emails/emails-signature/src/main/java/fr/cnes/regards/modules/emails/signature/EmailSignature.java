@@ -3,6 +3,10 @@
  */
 package fr.cnes.regards.modules.emails.signature;
 
+import java.util.List;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 
@@ -12,29 +16,24 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import fr.cnes.regards.modules.emails.domain.Email;
-import fr.cnes.regards.modules.emails.domain.Recipient;
 
 /**
  * REST interface to define the entry points of the module.
  *
  * @author Xavier-Alexandre Brochard
  */
-@RequestMapping("/emails")
 @Produces(MediaType.APPLICATION_JSON_VALUE)
 @Consumes(MediaType.APPLICATION_JSON_VALUE)
-public interface EmailsSignature {
+public interface EmailSignature {
 
     /**
      * Define the endpoint for retrieving the list of sent emails
      *
-     * @return
+     * @return A {@link List} of emails as {@link MimeMessage} wrapped in an {@link HttpEntity}
      */
-    @GetMapping("")
-    HttpEntity<Iterable<Email>> retrieveEmails();
+    @GetMapping("/emails")
+    HttpEntity<List<MimeMessage>> retrieveEmails();
 
     /**
      * Define the endpoint for sending an email to recipients
@@ -43,21 +42,22 @@ public interface EmailsSignature {
      *            The list of recipients
      * @param pEmail
      *            The ready-to-send email
-     * @return
+     * @return The sent email as {@link MimeMessage} wrapped in an {@link HttpEntity}
+     * @throws MessagingException
      */
-    @PostMapping("")
+    @PostMapping("/emails")
     @ResponseBody
-    HttpEntity<Email> sendEmail(Iterable<Recipient> pRecipients, Email pEmail);
+    HttpEntity<MimeMessage> sendEmail(String[] pRecipients, MimeMessage pEmail) throws MessagingException;
 
     /**
      * Define the endpoint for retrieving an email
      *
      * @param pId
      *            The email id
-     * @return
+     * @return The email as a {@link MimeMessage} wrapped in an {@link HttpEntity}
      */
-    @GetMapping("/{mail_id}")
-    HttpEntity<Email> retrieveEmail(Long pId);
+    @GetMapping("/emails/{mail_id}")
+    HttpEntity<MimeMessage> retrieveEmail(Long pId);
 
     /**
      * Define the endpoint for re-sending an email
@@ -66,7 +66,7 @@ public interface EmailsSignature {
      *            The email id
      * @return
      */
-    @PutMapping("/{mail_id}")
+    @PutMapping("/emails/{mail_id}")
     void resendEmail(Long pId);
 
     /**
@@ -76,7 +76,7 @@ public interface EmailsSignature {
      *            The email id
      * @return
      */
-    @DeleteMapping("/{mail_id}")
+    @DeleteMapping("/emails/{mail_id}")
     void deleteEmail(Long pId);
 
 }

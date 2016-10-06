@@ -24,6 +24,7 @@
 		<module>emails-service</module>
 		<module>emails-client</module>
 		<module>emails-signature</module>
+		<module>emails-test</module>
 	</modules>
 
 	<dependencyManagement>
@@ -85,6 +86,11 @@
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>module-core</artifactId>
 			<version>1.1-SNAPSHOT</version>
+		</dependency>
+		<!-- Mail -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 	</dependencies>
 
