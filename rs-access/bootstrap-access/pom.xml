@@ -6,16 +6,22 @@
 
 	<groupId>fr.cnes.regards.microservices.access</groupId>
 	<artifactId>bootstrap-access</artifactId>
+	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>REGARDS microservices access - bootstrap </name>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
 	<parent>
-		<groupId>fr.cnes.regards.microservices</groupId>
-		<artifactId>access</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-boot-parent</artifactId>
+		<version>0.0.0-SNAPSHOT</version>
+		<relativePath></relativePath>
 	</parent>
+	
+	<properties>
+		<fr.cnes.regards.docker.image.name>rs-access</fr.cnes.regards.docker.image.name>
+	</properties>
 
 	<dependencies>
 		<!-- Core dependencies -->

@@ -11,18 +11,10 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-boot-parent</artifactId>
+		<artifactId>regards-aggregator-parent</artifactId>
 		<version>0.0.0-SNAPSHOT</version>
 		<relativePath></relativePath>
 	</parent>
-
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<sonar.language>java</sonar.language>
-		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
-	</properties>
 
 	<modules>
 		<module>access</module>
