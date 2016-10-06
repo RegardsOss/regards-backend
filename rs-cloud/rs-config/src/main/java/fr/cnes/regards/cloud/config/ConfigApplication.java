@@ -26,11 +26,12 @@ public class ConfigApplication {
      *
      * Starter method
      *
-     * @param args
+     * @param pArgs
+     *            params
      * @since 1.0-SNAPSHOT
      */
-    public static void main(String[] args) {
-        final ConfigurableApplicationContext context = SpringApplication.run(ConfigApplication.class, args);
+    public static void main(String[] pArgs) {
+        final ConfigurableApplicationContext context = SpringApplication.run(ConfigApplication.class, pArgs);
         context.close();
     }
 }
