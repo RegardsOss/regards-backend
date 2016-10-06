@@ -29,7 +29,7 @@ public class User {
     private String lastName;
 
     @ManyToOne
-    @JoinColumn(name = "parent_id", foreignKey = @javax.persistence.ForeignKey(name = "FK_PLOP"))
+    @JoinColumn(name = "company_id", foreignKey = @javax.persistence.ForeignKey(name = "FK_USER_COMPANY"))
     private Company company;
 
     public User() {
