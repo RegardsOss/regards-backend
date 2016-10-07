@@ -55,7 +55,6 @@ public class EmailService implements IEmailService {
     @Override
     public Email sendEmail(final Set<Recipient> pRecipients, final Email pEmail) {
         final SimpleMailMessage message = createSimpleMailMessageFromEmail(pEmail);
-        // message.setTo(pEmail.getTo());
 
         // Set the recipients
         final String[] asArray = pRecipients.stream().map(r -> r.getAddress()).toArray(size -> new String[size]);
@@ -65,7 +64,6 @@ public class EmailService implements IEmailService {
         mailSender.send(message);
 
         // Persist in DB
-        // EmailDTO dto = new EmailDTO(pEmail);
         emailRepository.save(pEmail);
 
         return pEmail;
