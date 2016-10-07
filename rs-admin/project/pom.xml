@@ -10,68 +10,55 @@
 	<packaging>pom</packaging>
 
 	<parent>
-		<groupId>fr.cnes.regards.microservices</groupId>
-		<artifactId>administration</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-parent</artifactId>
+		<version>0.0.0-SNAPSHOT</version>
+		<relativePath></relativePath>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
 	<modules>
+		<module>project-client</module>
 		<module>project-dao</module>
 		<module>project-domain</module>
 		<module>project-rest</module>
 		<module>project-service</module>
-
-		<module>project-client</module>
+		<module>project-signature</module>
 	</modules>
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- Core dependencies -->
-			<dependency>
-				<groupId>fr.cnes.regards.microservices</groupId>
-				<artifactId>microservice-core</artifactId>
-				<version>1.1-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>module-jobs</artifactId>
-				<version>1.0-SNAPSHOT</version>
-			</dependency>
-
 			<!-- Module layers -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-dao</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-domain</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-rest</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-service</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-client</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
-			<!-- COTS -->
-			<!-- Netflix Feign REST Client -->
 			<dependency>
-				<groupId>com.netflix.feign</groupId>
-				<artifactId>feign-core</artifactId>
-				<version>8.18.0</version>
+				<groupId>fr.cnes.regards.modules.project</groupId>
+				<artifactId>project-signature</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -80,20 +67,7 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>module-core</artifactId>
-			<version>1.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

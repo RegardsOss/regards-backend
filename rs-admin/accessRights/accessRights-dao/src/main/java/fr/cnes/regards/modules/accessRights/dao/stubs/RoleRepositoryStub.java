@@ -10,11 +10,11 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
+import fr.cnes.regards.modules.accessRights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
-import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 
 @Repository
 @Profile("test")

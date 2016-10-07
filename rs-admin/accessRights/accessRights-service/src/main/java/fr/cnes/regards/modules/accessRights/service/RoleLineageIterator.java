@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.accessRights.service;
 
 import java.util.Iterator;
 
-import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 
 /**
  * Specific implementation of an {@link Iterator} in order to iterate through the {@link Role#getParentRole()}

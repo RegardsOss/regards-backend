@@ -26,8 +26,8 @@ import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
 import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
-import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 

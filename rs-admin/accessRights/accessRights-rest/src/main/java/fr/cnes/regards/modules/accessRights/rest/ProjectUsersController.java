@@ -24,10 +24,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.modules.accessRights.domain.Couple;
-import fr.cnes.regards.modules.accessRights.domain.MetaData;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
-import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.domain.projects.MetaData;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.accessRights.service.IProjectUserService;
 import fr.cnes.regards.modules.accessRights.signature.ProjectUsersSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;

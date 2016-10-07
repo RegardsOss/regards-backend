@@ -19,12 +19,12 @@ import org.junit.Test;
 
 import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
 import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
+import fr.cnes.regards.modules.accessRights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.dao.stubs.RoleRepositoryStub;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
-import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.modules.accessRights.service.RoleService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;

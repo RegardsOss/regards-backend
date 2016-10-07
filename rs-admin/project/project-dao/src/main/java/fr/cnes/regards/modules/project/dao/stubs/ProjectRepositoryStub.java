@@ -20,7 +20,7 @@ public class ProjectRepositoryStub extends RepositoryStub<Project> implements IP
     }
 
     @Override
-    public Project findOneByName(String pName) {
+    public Project findOneByName(final String pName) {
         return entities_.stream().filter(e -> e.getName().equals(pName)).findFirst().get();
     }
 }

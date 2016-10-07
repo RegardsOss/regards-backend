@@ -22,8 +22,8 @@ import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationS
 import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
 import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessRights.domain.Account;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.instance.Account;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 

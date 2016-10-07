@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
+import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
 import fr.cnes.regards.modules.accessRights.signature.AccountsSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;

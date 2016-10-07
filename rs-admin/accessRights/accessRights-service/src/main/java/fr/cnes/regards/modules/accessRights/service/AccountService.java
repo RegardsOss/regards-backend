@@ -9,8 +9,8 @@ import javax.naming.OperationNotSupportedException;
 
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
+import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
@@ -93,7 +93,7 @@ public class AccountService implements IAccountService {
     @Override
     public boolean validatePassword(String pLogin, String pPassword) {
         // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     @Override

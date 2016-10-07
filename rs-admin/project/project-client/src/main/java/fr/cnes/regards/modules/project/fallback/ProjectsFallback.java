@@ -9,11 +9,13 @@ import javax.naming.OperationNotSupportedException;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.project.client.ProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
+@Component
 public class ProjectsFallback implements ProjectsClient {
 
     @Override
