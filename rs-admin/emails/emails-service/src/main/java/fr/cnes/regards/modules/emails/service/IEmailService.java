@@ -3,12 +3,11 @@
  */
 package fr.cnes.regards.modules.emails.service;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
-import javax.mail.MessagingException;
-
-import org.springframework.mail.SimpleMailMessage;
+import fr.cnes.regards.modules.emails.domain.Email;
+import fr.cnes.regards.modules.emails.domain.Recipient;
 
 /**
  * Strategy interface to handle CRUD operations on EmailDTO entities and mailing tasks
@@ -20,31 +19,29 @@ public interface IEmailService {
     /**
      * Retrieves the list of emails
      *
-     * @return A {@link List} of emails as {@link SimpleMailMessage}
+     * @return A {@code List} of {@code Email}s
      */
-    List<SimpleMailMessage> retrieveEmails();
+    List<Email> retrieveEmails();
 
     /**
      * Sends the passed email to the passed recipients
      *
      * @param pRecipients
-     *            The list of recipients
+     *            The set of recipients. Must not be <code>null</code>.
      * @param pEmail
-     *            The ready-to-send email
-     * @return The sent email as {@link SimpleMailMessage}
-     * @throws MessagingException
-     * @throws IOException
+     *            The ready-to-send email. Must not be <code>null</code>.
+     * @return The sent email as {@link Email}
      */
-    SimpleMailMessage sendEmail(String[] pRecipients, SimpleMailMessage pEmail);
+    Email sendEmail(Set<Recipient> pRecipients, Email pEmail);
 
     /**
      * Retrieves the email of passed id
      *
      * @param pId
      *            The email id
-     * @return The email as {@link SimpleMailMessage}
+     * @return The email as {@link Email}
      */
-    SimpleMailMessage retrieveEmail(Long pId);
+    Email retrieveEmail(Long pId);
 
     /**
      * Re-sends the email of passed id

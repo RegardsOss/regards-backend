@@ -6,10 +6,11 @@ package fr.cnes.regards.modules.emails.fallback;
 import java.util.List;
 
 import org.springframework.http.HttpEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.emails.client.EmailClient;
+import fr.cnes.regards.modules.emails.domain.Email;
+import fr.cnes.regards.modules.emails.domain.EmailWithRecipientsDTO;
 
 /**
  * Hystrix fallback for Feign {@link EmailClient}. This default implementation is executed when the circuit is open or
@@ -22,19 +23,19 @@ import fr.cnes.regards.modules.emails.client.EmailClient;
 public class EmailFallback implements EmailClient {
 
     @Override
-    public HttpEntity<List<SimpleMailMessage>> retrieveEmails() {
+    public HttpEntity<List<Email>> retrieveEmails() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<SimpleMailMessage> sendEmail(final String[] pRecipients, final SimpleMailMessage pEmail) {
+    public HttpEntity<Email> sendEmail(final EmailWithRecipientsDTO pEmail) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<SimpleMailMessage> retrieveEmail(final Long pId) {
+    public HttpEntity<Email> retrieveEmail(final Long pId) {
         // TODO Auto-generated method stub
         return null;
     }

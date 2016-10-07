@@ -8,31 +8,36 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.emails.domain.EmailDTO;
+import fr.cnes.regards.modules.emails.domain.Email;
 
+/**
+ * Empty implementation of {@link IEmailRepository} necessary as long as
+ *
+ * @author Xavier-Alexandre Brochard
+ */
 @Repository
 public class EmailRepository implements IEmailRepository {
 
     @Override
-    public List<EmailDTO> findAll() {
+    public List<Email> findAll() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public List<EmailDTO> findAll(final Sort pSort) {
+    public List<Email> findAll(final Sort pSort) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public List<EmailDTO> findAll(final Iterable<Long> pIds) {
+    public List<Email> findAll(final Iterable<Long> pIds) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public <S extends EmailDTO> List<S> save(final Iterable<S> pEntities) {
+    public <S extends Email> List<S> save(final Iterable<S> pEntities) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -44,13 +49,13 @@ public class EmailRepository implements IEmailRepository {
     }
 
     @Override
-    public <S extends EmailDTO> S saveAndFlush(final S pEntity) {
+    public <S extends Email> S saveAndFlush(final S pEntity) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public void deleteInBatch(final Iterable<EmailDTO> pEntities) {
+    public void deleteInBatch(final Iterable<Email> pEntities) {
         // TODO Auto-generated method stub
 
     }
@@ -62,37 +67,37 @@ public class EmailRepository implements IEmailRepository {
     }
 
     @Override
-    public EmailDTO getOne(final Long pId) {
+    public Email getOne(final Long pId) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public <S extends EmailDTO> List<S> findAll(final Example<S> pExample) {
+    public <S extends Email> List<S> findAll(final Example<S> pExample) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public <S extends EmailDTO> List<S> findAll(final Example<S> pExample, final Sort pSort) {
+    public <S extends Email> List<S> findAll(final Example<S> pExample, final Sort pSort) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public Page<EmailDTO> findAll(final Pageable pPageable) {
+    public Page<Email> findAll(final Pageable pPageable) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public <S extends EmailDTO> S save(final S pEntity) {
+    public <S extends Email> S save(final S pEntity) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public EmailDTO findOne(final Long pId) {
+    public Email findOne(final Long pId) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -116,13 +121,13 @@ public class EmailRepository implements IEmailRepository {
     }
 
     @Override
-    public void delete(final EmailDTO pEntity) {
+    public void delete(final Email pEntity) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void delete(final Iterable<? extends EmailDTO> pEntities) {
+    public void delete(final Iterable<? extends Email> pEntities) {
         // TODO Auto-generated method stub
 
     }
@@ -134,25 +139,25 @@ public class EmailRepository implements IEmailRepository {
     }
 
     @Override
-    public <S extends EmailDTO> S findOne(final Example<S> pExample) {
+    public <S extends Email> S findOne(final Example<S> pExample) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public <S extends EmailDTO> Page<S> findAll(final Example<S> pExample, final Pageable pPageable) {
+    public <S extends Email> Page<S> findAll(final Example<S> pExample, final Pageable pPageable) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public <S extends EmailDTO> long count(final Example<S> pExample) {
+    public <S extends Email> long count(final Example<S> pExample) {
         // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
-    public <S extends EmailDTO> boolean exists(final Example<S> pExample) {
+    public <S extends Email> boolean exists(final Example<S> pExample) {
         // TODO Auto-generated method stub
         return false;
     }

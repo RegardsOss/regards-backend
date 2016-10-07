@@ -18,12 +18,23 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.hateoas.Identifiable;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Simple implementation of {@link JpaRepository} for stubbing purposes.
+ *
+ * @param <T>
+ *            The type of entity managed by the repository
+ *
+ * @author Xavier-Alexandre Brochard
+ */
 @Repository
 @Profile("test")
 @Primary
 public class JpaRepositoryStub<T extends Identifiable<Long>> implements JpaRepository<T, Long> {
 
-    protected List<T> entities_ = new ArrayList<>();
+    /**
+     * The list of entities managed by the repository, mirroring the data base behaviour.
+     */
+    private List<T> entities = new ArrayList<>();
 
     @Override
     public Page<T> findAll(final Pageable pPageable) {
@@ -33,46 +44,46 @@ public class JpaRepositoryStub<T extends Identifiable<Long>> implements JpaRepos
 
     @Override
     public <S extends T> S save(final S pEntity) {
-        entities_.removeIf(r -> r.equals(pEntity));
-        entities_.add(pEntity);
+        entities.removeIf(e -> e.equals(pEntity));
+        entities.add(pEntity);
         return pEntity;
     }
 
     @Override
     public T findOne(final Long pId) {
-        return entities_.stream().filter(r -> r.getId().equals(pId)).findFirst().get();
+        return entities.stream().filter(e -> e.getId().equals(pId)).findFirst().get();
     }
 
     @Override
     public boolean exists(final Long pId) {
-        return entities_.stream().filter(r -> r.getId().equals(pId)).findAny().isPresent();
+        return entities.stream().filter(e -> e.getId().equals(pId)).findAny().isPresent();
     }
 
     @Override
     public long count() {
-        return entities_.size();
+        return entities.size();
     }
 
     @Override
     public void delete(final Long pId) {
-        entities_.removeIf(r -> r.getId().equals(pId));
+        entities.removeIf(e -> e.getId().equals(pId));
     }
 
     @Override
     public void delete(final T pEntity) {
-        entities_.remove(pEntity);
+        entities.remove(pEntity);
     }
 
     @Override
     public void delete(final Iterable<? extends T> pEntities) {
-        for (T entity : pEntities) {
+        for (final T entity : pEntities) {
             delete(entity);
         }
     }
 
     @Override
     public void deleteAll() {
-        entities_ = new ArrayList<>();
+        entities = new ArrayList<>();
     }
 
     @Override
@@ -101,7 +112,7 @@ public class JpaRepositoryStub<T extends Identifiable<Long>> implements JpaRepos
 
     @Override
     public List<T> findAll() {
-        return entities_;
+        return entities;
     }
 
     @Override
@@ -129,15 +140,15 @@ public class JpaRepositoryStub<T extends Identifiable<Long>> implements JpaRepos
 
     @Override
     public <S extends T> S saveAndFlush(final S pEntity) {
-        S saved = save(pEntity);
+        final S saved = save(pEntity);
         flush();
         return saved;
     }
 
     @Override
     public void deleteInBatch(final Iterable<T> pEntities) {
-        List<T> asCollection = StreamSupport.stream(pEntities.spliterator(), true).collect(Collectors.toList());
-        entities_.removeAll(asCollection);
+        final List<T> asCollection = StreamSupport.stream(pEntities.spliterator(), true).collect(Collectors.toList());
+        entities.removeAll(asCollection);
     }
 
     @Override
@@ -160,6 +171,25 @@ public class JpaRepositoryStub<T extends Identifiable<Long>> implements JpaRepos
     public <S extends T> List<S> findAll(final Example<S> pExample, final Sort pSort) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    /**
+     * Get entities
+     *
+     * @return The list of entities
+     */
+    protected List<T> getEntities() {
+        return entities;
+    }
+
+    /**
+     * Set entities
+     *
+     * @param pEntities
+     *            The list of entities
+     */
+    protected void setEntities(final List<T> pEntities) {
+        entities = pEntities;
     }
 
 }

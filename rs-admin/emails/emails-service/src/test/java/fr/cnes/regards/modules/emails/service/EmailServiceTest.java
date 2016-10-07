@@ -15,7 +15,9 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.mail.Address;
@@ -37,7 +39,8 @@ import com.icegreen.greenmail.util.ServerSetupTest;
 import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
 import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
-import fr.cnes.regards.modules.emails.domain.EmailDTO;
+import fr.cnes.regards.modules.emails.domain.Email;
+import fr.cnes.regards.modules.emails.domain.Recipient;
 
 /**
  * Test class for {@link EmailService}.
@@ -49,17 +52,17 @@ public class EmailServiceTest {
     /**
      * The tested service
      */
-    private IEmailService emailService_;
+    private IEmailService emailService;
 
     /**
      * Mock repository
      */
-    private IEmailRepository emailRepository_;
+    private IEmailRepository emailRepository;
 
     /**
      * Interface defining a strategy for sending mails
      */
-    private JavaMailSenderImpl mailSender_;
+    private JavaMailSenderImpl mailSender;
 
     /**
      * Defines a rule starting an SMTP server before each test. All test emails will be sent to this server instead of
@@ -79,214 +82,229 @@ public class EmailServiceTest {
      * @see <a href=http://www.icegreen.com/greenmail/#scenarios>Green Mail documentation</a>
      */
     @Rule
-    public final GreenMailRule greenMail_ = new GreenMailRule(ServerSetupTest.SMTP);
+    public final GreenMailRule greenMail = new GreenMailRule(ServerSetupTest.SMTP);
 
     @Before
     public void setUp() {
-        emailRepository_ = mock(IEmailRepository.class);
+        emailRepository = mock(IEmailRepository.class);
 
-        mailSender_ = new JavaMailSenderImpl();
+        mailSender = new JavaMailSenderImpl();
 
         // Inject the SMTP session from GreenMail server to the JavaMailSender
-        Session smtpSession = greenMail_.getSmtp().createSession();
-        mailSender_.setSession(smtpSession);
+        final Session smtpSession = greenMail.getSmtp().createSession();
+        mailSender.setSession(smtpSession);
 
-        emailService_ = new EmailService(emailRepository_, mailSender_);
+        emailService = new EmailService(emailRepository, mailSender);
     }
 
+    /**
+     * Check that the system allows to retrieve the list of sent emails.
+     *
+     * @throws MessagingException
+     *             Exception thrown by getters of {@link MimeMessage}
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to retrieve the list of sent emails.")
-    public void retrieveEmails() throws IOException, MessagingException {
-        // Create a few mime messages
-        SimpleMailMessage mail0 = createDummySimpleMailMessage();
-        SimpleMailMessage mail1 = createDummySimpleMailMessage();
+    public void retrieveEmails() {
+        // Create a few emails
+        final Email email0 = createDummyEmail();
+        final Email email1 = createDummyEmail();
 
         // Mock the method wich will be called
-        List<SimpleMailMessage> expected = new ArrayList<>();
-        expected.add(mail0);
-        expected.add(mail1);
-        List<EmailDTO> emailDTOs = new ArrayList<>();
-        emailDTOs.add(new EmailDTO(0L, expected.get(0)));
-        emailDTOs.add(new EmailDTO(1L, expected.get(1)));
-        when(emailRepository_.findAll()).thenReturn(emailDTOs);
+        final List<Email> expected = new ArrayList<>();
+        expected.add(email0);
+        expected.add(email1);
+        when(emailRepository.findAll()).thenReturn(expected);
 
         // The service returns what is returned by the repository
-        List<SimpleMailMessage> result = emailService_.retrieveEmails();
+        final List<Email> result = emailService.retrieveEmails();
         assertThat("Received list is same size as expected", result.size(), equalTo(expected.size()));
 
         // Check received mails are same as expected
         for (int i = 0; i < expected.size(); i++) {
-            checkMails(expected.get(i), result.get(i));
+            assertThat("Expected and received emails are different", expected.get(i), is(equalTo(result.get(i))));
         }
 
         // Check that the repository's method was called with right arguments
-        verify(emailRepository_).findAll();
+        verify(emailRepository).findAll();
     }
 
+    /**
+     * Check that the system allows to send an email to a list of recipients.
+     *
+     * @throws MessagingException
+     *             Exception thrown by getters of {@link MimeMessage}
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to send an email to a list of recipients.")
-    public void sendEmail() throws MessagingException, IOException {
-        // Create dummy mime message with randow subject and content
-        SimpleMailMessage expected = createDummySimpleMailMessage();
+    public void sendEmail() throws MessagingException {
+        // Create dummy email with random subject and content
+        final Email expected = createDummyEmail();
 
         // Create recipients
-        String[] recipients = { "recipient@test.com" };
+        final Set<Recipient> recipients = new HashSet<>();
+        final Recipient recipient = new Recipient();
+        recipient.setAddress("recipient@test.com");
+        recipients.add(recipient);
 
         // Send the email. It will be sent to the Green Mail SMTP server started by the @Rule GreenMailRule
-        emailService_.sendEmail(recipients, expected);
+        emailService.sendEmail(recipients, expected);
 
         // Retrieve the mail
-        MimeMessage[] emails = greenMail_.getReceivedMessages();
+        final MimeMessage[] emails = greenMail.getReceivedMessages();
         assertEquals(1, emails.length);
 
         // Check that the received mail is the same as the sent mail
-        MimeMessage result = emails[0];
-        checkMails(expected, result);
+        final MimeMessage result = emails[0];
+        checkEmailVsMimeMessage(expected, result);
     }
 
+    /**
+     * Check that the system allows to retrieve a single email.
+     *
+     * @throws MessagingException
+     *             Exception thrown by getters of {@link MimeMessage}
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to retrieve a single email.")
-    public void retrieveEmail() throws MessagingException, IOException {
-        Long id = 0L;
+    public void retrieveEmail() throws MessagingException {
+        final Long id = 0L;
 
-        // Create dummy mime message with random subject and content
-        SimpleMailMessage expected = createDummySimpleMailMessage();
-
-        // Create the associated DTO object
-        EmailDTO emailDTO = new EmailDTO(id, expected);
+        // Create dummy email
+        final Email expected = createDummyEmail();
+        expected.setId(id);
 
         // Mock the method wich will be called
-        when(emailRepository_.findOne(0L)).thenReturn(emailDTO);
+        when(emailRepository.findOne(0L)).thenReturn(expected);
 
         // The service returns what is returned by the repository
-        SimpleMailMessage result = emailService_.retrieveEmail(id);
+        final Email received = emailService.retrieveEmail(id);
 
-        // Check that the received mail is same as expected
-        checkMails(expected, result);
+        // Check that the expected and received emails are equal
+        assertThat("Expected and received emails are different", expected, is(equalTo(received)));
 
         // Check that the repository's method was called with right arguments
-        verify(emailRepository_).findOne(0L);
+        verify(emailRepository).findOne(0L);
     }
 
+    /**
+     * Check that the system handles the case where an email cannot be found when re-sending.
+     */
     @Test(expected = Exception.class)
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system handles the case where an email cannot be found when re-sending.")
     public void resendEmailNotFound() {
-        Long id = 999L;
-        assumeTrue("EmailDTO passed id is expected to not be found", !emailService_.exists(id));
-        emailService_.resendEmail(id);
+        final Long id = 999L;
+        assumeTrue("EmailDTO passed id is expected to not be found", !emailService.exists(id));
+        emailService.resendEmail(id);
     }
 
+    /**
+     * Check that the system allows to re-send an email.
+     *
+     * @throws MessagingException
+     *             Exception thrown by getters of {@link MimeMessage}
+     * @throws IOException
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to re-send an email.")
-    public void resendEmail() throws MessagingException, IOException {
-        Long id = 0L;
+    public void resendEmail() throws MessagingException {
+        final Long id = 0L;
 
-        // Create dummy message with random subject and content and add a recipient
-        SimpleMailMessage expected = createDummySimpleMailMessage();
-        expected.setTo("recipient@test.com");
-
-        // Create the associated DTO object
-        EmailDTO emailDTO = new EmailDTO(id, expected);
+        // Create dummy email with random subject and content and add a recipient
+        final Email expected = createDummyEmail();
+        final String[] recipients = new String[] { "recipient@test.com" };
+        expected.setTo(recipients);
 
         // Mock the method wich will be called
-        when(emailRepository_.findOne(id)).thenReturn(emailDTO);
+        when(emailRepository.findOne(id)).thenReturn(expected);
 
         // Send the email. It will be sent to the Green Mail SMTP server started by the @Rule GreenMailRule
-        emailService_.resendEmail(id);
+        emailService.resendEmail(id);
 
         // Retrieve the mail
-        MimeMessage[] emails = greenMail_.getReceivedMessages();
+        final MimeMessage[] emails = greenMail.getReceivedMessages();
         assertEquals(1, emails.length);
 
         // Check that the received mail is the same as the sent mail
-        MimeMessage result = emails[0];
-        checkMails(expected, result);
+        final MimeMessage result = emails[0];
+        checkEmailVsMimeMessage(expected, result);
 
         // Check that the repository's method was called with right arguments
-        verify(emailRepository_).findOne(0L);
+        verify(emailRepository).findOne(0L);
     }
 
+    /**
+     * Check that the system allows to delete an email.
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to delete an email.")
     public void deleteEmail() {
-        emailService_.deleteEmail(0L);
+        emailService.deleteEmail(0L);
 
         // Check that the repository's method was called with right arguments
-        verify(emailRepository_).delete(0L);
-    }
-
-    private SimpleMailMessage createDummySimpleMailMessage() throws MessagingException {
-        // Create an empty message
-        SimpleMailMessage message = new SimpleMailMessage();
-
-        // With random content to avoid potential residual lingering problems
-        final String subject = GreenMailUtil.random();
-        final String body = GreenMailUtil.random();
-
-        // Set content on the mail
-        message.setSubject(subject);
-        message.setFrom("sender@test.com");
-        message.setText(body);
-
-        return message;
+        verify(emailRepository).delete(0L);
     }
 
     /**
-     * Check that the two {@link SimpleMailMessage}s are equal by comparing their subject, bodies, sender and
-     * recipients.
+     * Creates a {@link Email} with some random values initialized.
      *
-     * @param expected
-     * @param result
-     * @throws MessagingException
+     * @return The mail
      */
-    private void checkMails(final SimpleMailMessage expected, final SimpleMailMessage result)
-            throws MessagingException {
-        // Check subject
-        assertThat("Expected and actual subjects are different", expected.getSubject(),
-                   is(equalTo(result.getSubject())));
-        // Check mail body
-        assertThat("Expected and actual bodies are different", expected.getText(), is(equalTo(result.getText())));
-        // Check mail sender address
-        assertThat("Expected and actual From are different", expected.getFrom(), is(equalTo(result.getFrom())));
-        // Check mail recipients
-        assertThat("Expected and actual recipients are different", expected.getTo(), is(equalTo(result.getTo())));
+    private Email createDummyEmail() {
+        // Create an empty message
+        final Email email = new Email();
+
+        // With random content to avoid potential residual lingering problems
+        final String subject = GreenMailUtil.random();
+        final String sender = GreenMailUtil.random();
+        final String body = GreenMailUtil.random();
+
+        // Set content on the mail
+        email.setSubject(subject);
+        email.setFrom(sender + "@test.com");
+        email.setText(body);
+
+        return email;
     }
 
     /**
      * Check that the passed {@link SimpleMailMessage} has same subject, body and recipients as the passed
      * {@link MimeMessage}. We then consider them equal.
      *
-     * @param expected
-     * @param result
+     * @param pExpected
+     *            The expected email as {@code Email}
+     * @param pResult
+     *            The compared email as {@code MimeMessage}
      * @throws MessagingException
+     *             Exception thrown by getters of {@link MimeMessage}
      */
-
-    private void checkMails(final SimpleMailMessage expected, final MimeMessage result) throws MessagingException {
+    private void checkEmailVsMimeMessage(final Email pExpected, final MimeMessage pResult) throws MessagingException {
         // Check subject
-        assertThat("Expected and actual subjects are different", expected.getSubject(),
-                   is(equalTo(result.getSubject())));
+        assertThat("Expected and actual subjects are different", pExpected.getSubject(),
+                   is(equalTo(pResult.getSubject())));
         // Check mail body
-        assertThat("Expected and actual bodies are different", expected.getText(),
-                   is(equalTo(GreenMailUtil.getBody(result))));
+        assertThat("Expected and actual bodies are different", pExpected.getText(),
+                   is(equalTo(GreenMailUtil.getBody(pResult))));
         // Check mail sender address
-        assertThat("Expected and actual From are different", expected.getFrom(),
-                   is(equalTo(result.getFrom()[0].toString())));
+        assertThat("Expected and actual From are different", pExpected.getFrom(),
+                   is(equalTo(pResult.getFrom()[0].toString())));
         // Check mail recipients
-        List<String> expectedRecipients = Arrays.asList(expected.getTo());
-        List<Address> resultAddresses = Arrays.asList(result.getRecipients(RecipientType.TO));
-        List<String> resultRecipients = resultAddresses.stream().map(a -> a.toString()).collect(Collectors.toList());
+        final List<String> expectedRecipients = Arrays.asList(pExpected.getTo());
+        final List<Address> resultAddresses = Arrays.asList(pResult.getRecipients(RecipientType.TO));
+        final List<String> resultRecipients = resultAddresses.stream().map(a -> a.toString())
+                .collect(Collectors.toList());
         assertThat(expectedRecipients, is(equalTo(resultRecipients)));
     }
 

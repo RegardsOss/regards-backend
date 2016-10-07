@@ -7,7 +7,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-import fr.cnes.regards.modules.emails.domain.EmailDTO;
+import fr.cnes.regards.modules.emails.domain.Email;
 
 /**
  * Interface for an JPA auto-generated CRUD repository managing Emails.<br>
@@ -16,6 +16,6 @@ import fr.cnes.regards.modules.emails.domain.EmailDTO;
  *
  * @author xbrochard
  */
-public interface IEmailRepository extends JpaRepository<EmailDTO, Long> {
+public interface IEmailRepository extends JpaRepository<Email, Long> {
 
 }

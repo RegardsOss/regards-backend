@@ -3,21 +3,21 @@
  */
 package fr.cnes.regards.modules.emails.signature;
 
-import java.io.IOException;
 import java.util.List;
 
-import javax.mail.MessagingException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import fr.cnes.regards.modules.emails.domain.Email;
+import fr.cnes.regards.modules.emails.domain.EmailWithRecipientsDTO;
 
 /**
  * REST interface to define the entry points of the module.
@@ -26,41 +26,36 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Produces(MediaType.APPLICATION_JSON_VALUE)
 @Consumes(MediaType.APPLICATION_JSON_VALUE)
-public interface EmailSignature {
+public interface IEmailSignature {
 
     /**
      * Define the endpoint for retrieving the list of sent emails
      *
-     * @return A {@link List} of emails as {@link SimpleMailMessage} wrapped in an {@link HttpEntity}
+     * @return A {@link List} of emails as {@link Email} wrapped in an {@link HttpEntity}
      */
     @GetMapping("/emails")
-    HttpEntity<List<SimpleMailMessage>> retrieveEmails();
+    HttpEntity<List<Email>> retrieveEmails();
 
     /**
      * Define the endpoint for sending an email to recipients
      *
-     * @param pRecipients
-     *            The list of recipients
      * @param pEmail
-     *            The ready-to-send email
-     * @return The sent email as {@link SimpleMailMessage} wrapped in an {@link HttpEntity}
-     * @throws MessagingException
-     * @throws IOException
+     *            The email in a simple representation.
+     * @return The sent email as {@link Email} wrapped in an {@link HttpEntity}
      */
     @PostMapping("/emails")
     @ResponseBody
-    HttpEntity<SimpleMailMessage> sendEmail(String[] pRecipients, SimpleMailMessage pEmail)
-            throws MessagingException, IOException;
+    HttpEntity<Email> sendEmail(EmailWithRecipientsDTO pEmail);
 
     /**
      * Define the endpoint for retrieving an email
      *
      * @param pId
      *            The email id
-     * @return The email as a {@link SimpleMailMessage} wrapped in an {@link HttpEntity}
+     * @return The email as a {@link Email} wrapped in an {@link HttpEntity}
      */
     @GetMapping("/emails/{mail_id}")
-    HttpEntity<SimpleMailMessage> retrieveEmail(Long pId);
+    HttpEntity<Email> retrieveEmail(Long pId);
 
     /**
      * Define the endpoint for re-sending an email

@@ -5,12 +5,10 @@ package fr.cnes.regards.modules.emails.dao.stubs;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
-import fr.cnes.regards.modules.emails.domain.EmailDTO;
+import fr.cnes.regards.modules.emails.domain.Email;
 
 /**
  * Stub repository class for testing purposes
@@ -20,25 +18,26 @@ import fr.cnes.regards.modules.emails.domain.EmailDTO;
 @Repository
 @Profile("test")
 @Primary
-public class EmailRepositoryStub extends JpaRepositoryStub<EmailDTO> implements IEmailRepository {
+public class EmailRepositoryStub extends JpaRepositoryStub<Email> implements IEmailRepository {
 
-    public EmailRepositoryStub(final JavaMailSender pSender) {
+    /**
+     * Create an {@link EmailRepositoryStub} and populate a few emails
+     */
+    public EmailRepositoryStub() {
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setSubject("The subject");
-        message.setFrom("recipient@stub.com");
-        message.setText("The body of the message");
-        EmailDTO dto = new EmailDTO(message);
-        dto.setId(0L);
-        entities_.add(dto);
+        Email email = new Email();
+        email.setSubject("The subject");
+        email.setFrom("recipient@stub.com");
+        email.setText("The body of the message");
+        email.setId(0L);
+        getEntities().add(email);
 
-        message = new SimpleMailMessage();
-        message.setSubject("Another subject");
-        message.setFrom("another.recipient@stub.com");
-        message.setText("Another body of the message");
-        dto = new EmailDTO(message);
-        dto.setId(1L);
-        entities_.add(dto);
+        email = new Email();
+        email.setSubject("Another subject");
+        email.setFrom("another.recipient@stub.com");
+        email.setText("Another body of the message");
+        email.setId(1L);
+        getEntities().add(email);
     }
 
 }
