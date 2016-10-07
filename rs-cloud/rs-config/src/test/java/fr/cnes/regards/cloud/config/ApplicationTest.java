@@ -18,8 +18,8 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @since 1.0-SNAPSHOT
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ConfigApplication.class)
-public class ConfigApplicationTest {
+@SpringBootTest(classes = Application.class)
+public class ApplicationTest {
 
     /**
      *
