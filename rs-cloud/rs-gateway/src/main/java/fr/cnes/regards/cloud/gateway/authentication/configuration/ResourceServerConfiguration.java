@@ -34,23 +34,23 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
      * Resources identifier
      */
     @Value("${spring.application.name}")
-    private String resourceId_;
+    private String resourceId;
 
     /**
      * JWT Secret key
      */
     @Value("${jwt.secret}")
-    private String jwtSecret_;
+    private String jwtSecret;
 
     /**
      * token services
      */
     @Autowired
-    private DefaultTokenServices tokenServices_;
+    private DefaultTokenServices tokenServices;
 
     @Override
     public void configure(ResourceServerSecurityConfigurer pResources) {
-        pResources.resourceId(resourceId_).tokenServices(tokenServices_);
+        pResources.resourceId(resourceId).tokenServices(tokenServices);
     }
 
     @Override

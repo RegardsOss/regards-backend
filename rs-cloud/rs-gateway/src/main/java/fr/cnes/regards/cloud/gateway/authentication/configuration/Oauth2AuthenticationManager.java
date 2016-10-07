@@ -20,8 +20,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 
 /**
  *
@@ -45,7 +45,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager {
      * Custom authentication provider. TODO : Should be replace with the REGARDS Plugins system.
      */
     @Autowired
-    private IAuthenticationProvider authProvider_;
+    private IAuthenticationProvider authProvider;
 
     @Override
     public Authentication authenticate(Authentication pAuthentication) throws AuthenticationException {
@@ -65,12 +65,12 @@ public class Oauth2AuthenticationManager implements AuthenticationManager {
         }
 
         // Check user/password
-        if (!authProvider_.authenticate(name, password, scope).equals(UserStatus.ACCESS_GRANTED)) {
+        if (!authProvider.authenticate(name, password, scope).equals(UserStatus.ACCESS_GRANTED)) {
             throw new BadCredentialsException("Access denied for user " + name);
         }
 
         // Retrieve account
-        final ProjectUser user = authProvider_.retreiveUser(name, scope);
+        final ProjectUser user = authProvider.retreiveUser(name, scope);
 
         final List<GrantedAuthority> grantedAuths = new ArrayList<>();
         grantedAuths.add(new SimpleGrantedAuthority(user.getRole().getName()));

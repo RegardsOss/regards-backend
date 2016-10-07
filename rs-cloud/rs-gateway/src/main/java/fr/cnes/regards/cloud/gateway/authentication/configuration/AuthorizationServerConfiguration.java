@@ -39,43 +39,43 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
      * Resources identifier
      */
     @Value("${spring.application.name}")
-    private String resourceId_;
+    private String resourceId;
 
     /**
      * Validity time for token generated
      */
     @Value("${access_token.validity_period}")
-    private int accessTokenValiditySeconds_;
+    private int accessTokenValiditySeconds;
 
     /**
      * JWT Secret string to encrypt tokens
      */
     @Value("${jwt.secret}")
-    private String jwtSecret_;
+    private String jwtSecret;
 
     /**
      * Client login
      */
     @Value("${authentication.client.user}")
-    private String clientUser_;
+    private String clientUser;
 
     /**
      * Client secret
      */
     @Value("${authentication.client.secret}")
-    private String clientSecret_;
+    private String clientSecret;
 
     /**
      * Grant type
      */
     @Value("${authentication.granttype}")
-    private String grantType_;
+    private String grantType;
 
     /**
      * OAuth2 authentication manager
      */
     @Autowired
-    private AuthenticationManager authenticationManager_;
+    private AuthenticationManager authenticationManager;
 
     /**
      *
@@ -111,7 +111,7 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
         final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        converter.setSigningKey(jwtSecret_);
+        converter.setSigningKey(jwtSecret);
         return converter;
     }
 
@@ -121,14 +121,14 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
         final TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
         tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), accessTokenConverter()));
 
-        pEndpoints.tokenStore(tokenStore()).authenticationManager(this.authenticationManager_)
+        pEndpoints.tokenStore(tokenStore()).authenticationManager(this.authenticationManager)
                 .accessTokenConverter(accessTokenConverter()).tokenEnhancer(tokenEnhancerChain);
     }
 
     @Override
     public void configure(ClientDetailsServiceConfigurer pClients) throws Exception {
-        pClients.inMemory().withClient(clientUser_).authorizedGrantTypes(grantType_).resourceIds(resourceId_)
-                .secret(clientSecret_);
+        pClients.inMemory().withClient(clientUser).authorizedGrantTypes(grantType).resourceIds(resourceId)
+                .secret(clientSecret);
     }
 
     /**

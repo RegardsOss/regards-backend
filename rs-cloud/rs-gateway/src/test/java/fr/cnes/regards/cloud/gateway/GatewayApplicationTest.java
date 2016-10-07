@@ -72,19 +72,19 @@ public class GatewayApplicationTest {
      * Basic authentication username
      */
     @Value("${authentication.client.user}")
-    private String basicUserName_;
+    private String basicUserName;
 
     /**
      * Basic authentication secret
      */
     @Value("${authentication.client.secret}")
-    private String basicPassword_;
+    private String basicPassword;
 
     /**
      * Spring Mock Mvc to simulare REST requests.
      */
     @Autowired
-    private MockMvc mockMvc_;
+    private MockMvc mockMvc;
 
     /**
      *
@@ -112,12 +112,12 @@ public class GatewayApplicationTest {
             String invalidBasicString = "invalid:invalid";
             invalidBasicString = Base64.getEncoder().encodeToString(invalidBasicString.getBytes());
 
-            mockMvc_.perform(MockMvcRequestBuilders.get(TOKEN_ENDPOINT)).andExpect(MockMvcResultMatchers.status()
+            mockMvc.perform(MockMvcRequestBuilders.get(TOKEN_ENDPOINT)).andExpect(MockMvcResultMatchers.status()
                     .isUnauthorized());
-            mockMvc_.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)).andExpect(MockMvcResultMatchers.status()
+            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)).andExpect(MockMvcResultMatchers.status()
                     .isUnauthorized());
 
-            mockMvc_.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT).with(SecurityMockMvcRequestPostProcessors
+            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT).with(SecurityMockMvcRequestPostProcessors
                     .csrf())
                     .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + invalidBasicString)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -140,10 +140,10 @@ public class GatewayApplicationTest {
     @Test
     public void testAuthenticateCredantialsError() {
         try {
-            String basicString = String.format("%s:%s", basicUserName_, basicPassword_);
+            String basicString = String.format("%s:%s", basicUserName, basicPassword);
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
-            mockMvc_.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT).with(SecurityMockMvcRequestPostProcessors
+            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT).with(SecurityMockMvcRequestPostProcessors
                     .csrf()).header(HttpHeaders.AUTHORIZATION,
                                     BASIC_AUTH
                                             + basicString)
@@ -168,10 +168,10 @@ public class GatewayApplicationTest {
     @Test
     public void testAuthenticate() {
         try {
-            String basicString = basicUserName_ + ":" + basicPassword_;
+            String basicString = basicUserName + ":" + basicPassword;
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
-            mockMvc_.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT).with(SecurityMockMvcRequestPostProcessors
+            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT).with(SecurityMockMvcRequestPostProcessors
                     .csrf()).header(HttpHeaders.AUTHORIZATION,
                                     BASIC_AUTH
                                             + basicString)

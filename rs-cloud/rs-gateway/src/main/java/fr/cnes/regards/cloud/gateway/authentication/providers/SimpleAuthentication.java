@@ -13,10 +13,10 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
 import fr.cnes.regards.modules.accessRights.client.AccountsClient;
-import fr.cnes.regards.modules.accessRights.domain.Account;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
+import fr.cnes.regards.modules.accessRights.domain.instance.Account;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
@@ -45,13 +45,13 @@ public class SimpleAuthentication implements IAuthenticationProvider {
      * rs-admin microservice client for accounts
      */
     @Autowired
-    private AccountsClient accountsClient_;
+    private AccountsClient accountsClient;
 
     /**
      * Security JWT service
      */
     @Autowired
-    private JWTService jwtService_;
+    private JWTService jwtService;
 
     @Override
     public ProjectUser retreiveUser(String pName, String pScope) {
@@ -71,9 +71,9 @@ public class SimpleAuthentication implements IAuthenticationProvider {
         LOG.info("Trying to authenticate user " + pName + " with password=" + pPassword + " for project " + pScope);
 
         UserStatus status = UserStatus.ACCESS_DENIED;
-        jwtService_.injectToken(pScope, GATEWAY_ROLE);
+        jwtService.injectToken(pScope, GATEWAY_ROLE);
         try {
-            final HttpEntity<Boolean> results = accountsClient_.validatePassword(pName, pPassword);
+            final HttpEntity<Boolean> results = accountsClient.validatePassword(pName, pPassword);
             if (results.getBody()) {
                 status = UserStatus.ACCESS_GRANTED;
             }

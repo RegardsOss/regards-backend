@@ -28,10 +28,10 @@ regards:
 microservice:
   dao:
     enabled: true
-    embedded=true
-    embeddedPath=target
-#    driverClassName=org.postgresql.Driver
-#    dialect=org.hibernate.dialect.PostgreSQLDialect
+    embedded: true
+    embeddedPath: target
+#    driverClassName: org.postgresql.Driver
+#    dialect: org.hibernate.dialect.PostgreSQLDialect
     instance:
       enabled: true
   projects:

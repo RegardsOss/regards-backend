@@ -7,10 +7,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
-import fr.cnes.regards.modules.accessRights.domain.Account;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.Role;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
+import fr.cnes.regards.modules.accessRights.domain.instance.Account;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 
 /**
  *

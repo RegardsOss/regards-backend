@@ -11,7 +11,7 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
@@ -29,13 +29,13 @@ public class CustomTokenEnhancer implements TokenEnhancer {
      * Security JWT service
      */
     @Autowired
-    private JWTService jwtService_;
+    private JWTService jwtService;
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken pAccessToken, OAuth2Authentication pAuthentication) {
         final ProjectUser user = (ProjectUser) pAuthentication.getUserAuthentication().getPrincipal();
         final Set<String> scopes = pAuthentication.getOAuth2Request().getScope();
-        ((DefaultOAuth2AccessToken) pAccessToken).setAdditionalInformation(jwtService_
+        ((DefaultOAuth2AccessToken) pAccessToken).setAdditionalInformation(jwtService
                 .generateClaims(scopes.stream().findFirst().get(), user.getAccount().getEmail(),
                                 user.getRole().getName(), user.getAccount().getLogin()));
         return pAccessToken;
