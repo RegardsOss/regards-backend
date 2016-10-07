@@ -7,9 +7,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
 
 import fr.cnes.regards.client.core.ClientRequestInterceptor;
+import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
 
 /**
  *
@@ -33,8 +34,19 @@ public class Application {
      *            params
      * @since 1.0-SNAPSHOT
      */
-    public static void main(String[] pArgs) {
-        final ConfigurableApplicationContext context = SpringApplication.run(Application.class, pArgs);
-        context.close();
+    public static void main(final String[] pArgs) {
+        SpringApplication.run(Application.class, pArgs);
+    }
+
+    /**
+     *
+     * Create zuul proxy filter
+     *
+     * @return ProxyLogFilter
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    public ProxyLogFilter proxyLogFilter() {
+        return new ProxyLogFilter();
     }
 }

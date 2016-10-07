@@ -4,7 +4,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
-import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  *
@@ -28,8 +27,7 @@ public class Application {
      *            arguments
      * @since 1.0-SNAPSHOT
      */
-    public static void main(String[] pArgs) {
-        final ConfigurableApplicationContext context = SpringApplication.run(Application.class, pArgs);
-        context.close();
+    public static void main(final String[] pArgs) {
+        SpringApplication.run(Application.class, pArgs);
     }
 }
