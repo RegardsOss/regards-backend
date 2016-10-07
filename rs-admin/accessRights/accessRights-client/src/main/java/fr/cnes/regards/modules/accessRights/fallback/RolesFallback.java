@@ -14,9 +14,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.accessRights.client.RolesClient;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
-import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
 @Component

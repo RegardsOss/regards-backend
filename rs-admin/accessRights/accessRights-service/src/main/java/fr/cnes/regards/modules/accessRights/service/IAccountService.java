@@ -7,8 +7,8 @@ import java.util.List;
 
 import javax.naming.OperationNotSupportedException;
 
-import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
+import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 

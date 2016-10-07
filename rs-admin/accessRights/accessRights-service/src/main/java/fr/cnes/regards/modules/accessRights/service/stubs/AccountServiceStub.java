@@ -17,9 +17,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
+import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;

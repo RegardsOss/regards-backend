@@ -13,10 +13,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
-import fr.cnes.regards.modules.accessRights.domain.Account;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
+import fr.cnes.regards.modules.accessRights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
+import fr.cnes.regards.modules.accessRights.domain.instance.Account;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
 import fr.cnes.regards.modules.accessRights.signature.AccessesSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;

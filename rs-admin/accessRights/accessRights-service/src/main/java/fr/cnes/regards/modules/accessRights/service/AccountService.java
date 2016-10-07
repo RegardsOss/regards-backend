@@ -9,8 +9,8 @@ import javax.naming.OperationNotSupportedException;
 
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
+import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 

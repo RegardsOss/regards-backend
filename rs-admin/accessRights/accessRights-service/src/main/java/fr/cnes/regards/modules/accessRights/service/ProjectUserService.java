@@ -12,13 +12,13 @@ import javax.naming.OperationNotSupportedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.accessRights.dao.IProjectUserRepository;
-import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
+import fr.cnes.regards.modules.accessRights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessRights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
-import fr.cnes.regards.modules.accessRights.domain.MetaData;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
-import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.domain.projects.MetaData;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 
 @Service
 public class ProjectUserService implements IProjectUserService {
@@ -34,22 +34,23 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public List<ProjectUser> retrieveUserList() {
-        Iterable<ProjectUser> projectUsers = projectUserRepository_.findAll();
+        final Iterable<ProjectUser> projectUsers = projectUserRepository_.findAll();
         return StreamSupport.stream(projectUsers.spliterator(), false).collect(Collectors.toList());
     }
 
     @Override
-    public ProjectUser retrieveUser(Long pUserId) {
+    public ProjectUser retrieveUser(final Long pUserId) {
         return projectUserRepository_.findOne(pUserId);
     }
 
     @Override
-    public ProjectUser retrieveUser(String pLogin) {
+    public ProjectUser retrieveUser(final String pLogin) {
         return projectUserRepository_.findOneByLogin(pLogin);
     }
 
     @Override
-    public void updateUser(Long pUserId, ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
+    public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
+            throws OperationNotSupportedException {
         if (existUser(pUserId)) {
             if (pUpdatedProjectUser.getId() == pUserId) {
                 projectUserRepository_.save(pUpdatedProjectUser);
@@ -61,27 +62,27 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public void removeUser(Long pUserId) {
+    public void removeUser(final Long pUserId) {
         projectUserRepository_.delete(pUserId);
     }
 
     @Override
-    public void updateUserAccessRights(String pLogin, List<ResourcesAccess> pUpdatedUserAccessRights) {
+    public void updateUserAccessRights(final String pLogin, final List<ResourcesAccess> pUpdatedUserAccessRights) {
         if (!existUser(pLogin)) {
             throw new NoSuchElementException("ProjectUser of given login (" + pLogin + ") could not be found");
         }
-        ProjectUser user = retrieveUser(pLogin);
+        final ProjectUser user = retrieveUser(pLogin);
 
         // Finder method
         // Pass the id and the list to search, returns the element with passed id
-        Function<Long, List<ResourcesAccess>> find = (id) -> {
+        final Function<Long, List<ResourcesAccess>> find = (id) -> {
             return pUpdatedUserAccessRights.stream().filter(e -> e.getId().equals(id)).collect(Collectors.toList());
         };
-        Function<Long, Boolean> contains = (id) -> {
+        final Function<Long, Boolean> contains = (id) -> {
             return !find.apply(id).isEmpty();
         };
 
-        List<ResourcesAccess> permissions = user.getPermissions();
+        final List<ResourcesAccess> permissions = user.getPermissions();
         // If an element with the same id is found in the pResourcesAccessList list, replace with it
         // Else keep the old element
         permissions.replaceAll(p -> contains.apply(p.getId()) ? find.apply(p.getId()).get(0) : p);
@@ -89,45 +90,45 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public void removeUserAccessRights(String pLogin) {
-        ProjectUser user = retrieveUser(pLogin);
+    public void removeUserAccessRights(final String pLogin) {
+        final ProjectUser user = retrieveUser(pLogin);
         user.setPermissions(new ArrayList<>());
         projectUserRepository_.save(user);
     }
 
     @Override
-    public List<MetaData> retrieveUserMetaData(Long pUserId) {
-        ProjectUser user = retrieveUser(pUserId);
+    public List<MetaData> retrieveUserMetaData(final Long pUserId) {
+        final ProjectUser user = retrieveUser(pUserId);
         return user.getMetaData();
     }
 
     @Override
-    public void updateUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData) {
-        ProjectUser user = retrieveUser(pUserId);
+    public void updateUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData) {
+        final ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(pUpdatedUserMetaData);
         projectUserRepository_.save(user);
     }
 
     @Override
-    public void removeUserMetaData(Long pUserId) {
-        ProjectUser user = retrieveUser(pUserId);
+    public void removeUserMetaData(final Long pUserId) {
+        final ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(new ArrayList<>());
         projectUserRepository_.save(user);
     }
 
     @Override
-    public Couple<List<ResourcesAccess>, Role> retrieveProjectUserAccessRights(String pLogin, String pBorrowedRoleName)
+    public Couple<List<ResourcesAccess>, Role> retrieveProjectUserAccessRights(final String pLogin,
+            final String pBorrowedRoleName)
             throws OperationNotSupportedException {
-        ProjectUser projectUser = projectUserRepository_.findOneByLogin(pLogin);
-        Role userRole = projectUser.getRole();
+        final ProjectUser projectUser = projectUserRepository_.findOneByLogin(pLogin);
+        final Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
 
         if (pBorrowedRoleName != null) {
-            Role borrowedRole = roleRepository_.findOneByName(pBorrowedRoleName);
+            final Role borrowedRole = roleRepository_.findOneByName(pBorrowedRoleName);
             if (roleService_.isHierarchicallyInferior(borrowedRole, returnedRole)) {
                 returnedRole = borrowedRole;
-            }
-            else {
+            } else {
                 throw new OperationNotSupportedException(
                         "Borrowed role must be hierachically inferior to the project user's role");
             }
@@ -138,12 +139,12 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public boolean existUser(String pLogin) {
+    public boolean existUser(final String pLogin) {
         return projectUserRepository_.exists(pLogin);
     }
 
     @Override
-    public boolean existUser(Long pId) {
+    public boolean existUser(final Long pId) {
         return projectUserRepository_.exists(pId);
     }
 

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 
 /**
  * Crawls through a role's {@link Role#getParentRole()} streak and builds the list of all visited roles like so,

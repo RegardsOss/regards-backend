@@ -15,8 +15,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.accessRights.client.AccountsClient;
-import fr.cnes.regards.modules.accessRights.domain.Account;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
+import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 

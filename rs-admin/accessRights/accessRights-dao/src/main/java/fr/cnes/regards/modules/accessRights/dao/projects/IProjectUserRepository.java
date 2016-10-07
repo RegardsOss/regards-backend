@@ -1,11 +1,11 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessRights.dao;
+package fr.cnes.regards.modules.accessRights.dao.projects;
 
 import org.springframework.data.repository.CrudRepository;
 
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 
 public interface IProjectUserRepository extends CrudRepository<ProjectUser, Long> {
 

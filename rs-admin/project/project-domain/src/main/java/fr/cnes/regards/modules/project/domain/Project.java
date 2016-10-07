@@ -3,94 +3,113 @@
  */
 package fr.cnes.regards.modules.project.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
 import javax.validation.executable.ValidateOnExecution;
 
 import org.springframework.hateoas.Identifiable;
 
+import fr.cnes.regards.domain.annotation.InstanceEntity;
+
 @ValidateOnExecution
+@InstanceEntity
+@Entity(name = "T_PROJECT")
+@SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "SEQ_PROJECT")
 public class Project implements Identifiable<Long> {
 
-    private Long id_;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projectSequence")
+    @Column(name = "id")
+    private Long id;
 
     @NotNull
-    private String name_;
+    @Column(name = "name")
+    private String name;
 
     @NotNull
-    private String description_;
+    @Column(name = "description")
+    private String description;
 
-    private String icon_;
+    @Column(name = "icon")
+    private String icon;
 
     @NotNull
-    private boolean isPublic_;
+    @Column(name = "public")
+    private boolean isPublic;
 
-    private boolean isDeleted_;
+    @Column(name = "deleted")
+    private boolean isDeleted;
 
     public Project() {
-        super();
     }
 
-    public Project(Long pId, String pDesc, String pIcon, boolean pIsPublic, String pName) {
+    public Project(final Long pId, final String pDesc, final String pIcon, final boolean pIsPublic,
+            final String pName) {
         this();
-        id_ = pId;
-        description_ = pDesc;
-        icon_ = pIcon;
-        isPublic_ = pIsPublic;
-        name_ = pName;
+        id = pId;
+        description = pDesc;
+        icon = pIcon;
+        isPublic = pIsPublic;
+        name = pName;
     }
 
     @Override
     public Long getId() {
-        return id_;
+        return id;
     }
 
-    public void setId(Long pId) {
-        id_ = pId;
-    }
-
-    public String getDescription() {
-        return description_;
-    }
-
-    public void setDescription(String pDescription) {
-        description_ = pDescription;
-    }
-
-    public String getIcon() {
-        return icon_;
-    }
-
-    public void setIcon(String pIcon) {
-        icon_ = pIcon;
-    }
-
-    public boolean isPublic() {
-        return isPublic_;
-    }
-
-    public void setPublic(boolean pIsPublic) {
-        isPublic_ = pIsPublic;
+    public void setId(final Long pId) {
+        id = pId;
     }
 
     public String getName() {
-        return name_;
+        return name;
     }
 
-    public void setName(String pName) {
-        name_ = pName;
+    public void setName(final String pName) {
+        name = pName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(final String pDescription) {
+        description = pDescription;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(final String pIcon) {
+        icon = pIcon;
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(final boolean pIsPublic) {
+        isPublic = pIsPublic;
     }
 
     @Override
-    public boolean equals(Object o) {
-        return (o instanceof Project) && ((Project) o).getId().equals(id_);
+    public boolean equals(final Object o) {
+        return (o instanceof Project) && ((Project) o).getId().equals(id);
     }
 
     public boolean isDeleted() {
-        return isDeleted_;
+        return isDeleted;
     }
 
-    public void setDeleted(boolean pIsDeleted) {
-        isDeleted_ = pIsDeleted;
+    public void setDeleted(final boolean pIsDeleted) {
+        isDeleted = pIsDeleted;
     }
 
 }

@@ -10,12 +10,12 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.accessRights.dao.IAccountRepository;
-import fr.cnes.regards.modules.accessRights.dao.IProjectUserRepository;
-import fr.cnes.regards.modules.accessRights.domain.Account;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.dao.instance.IAccountRepository;
+import fr.cnes.regards.modules.accessRights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
+import fr.cnes.regards.modules.accessRights.domain.instance.Account;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
 @Repository
@@ -25,15 +25,15 @@ public class ProjectUserRepositoryStub extends RepositoryStub<ProjectUser> imple
 
     private final IAccountRepository accountRepository_;
 
-    public ProjectUserRepositoryStub(IAccountRepository pAccountService) throws AlreadyExistingException {
+    public ProjectUserRepositoryStub(final IAccountRepository pAccountService) throws AlreadyExistingException {
         super();
         accountRepository_ = pAccountService;
 
-        Role rolePublic = new Role(0L, "Public", null, null, null, true, true);
-        Role roleRegisteredUser = new Role(1L, "Registered User", rolePublic, null, null, false, true);
-        Role roleAdmin = new Role(2L, "Admin", roleRegisteredUser, null, null, false, true);
-        Role roleProjectAdmin = new Role(3L, "Project Admin", roleAdmin, null, null, false, true);
-        Role roleInstanceAdmin = new Role(4L, "Instance Admin", roleProjectAdmin, null, null, false, true);
+        final Role rolePublic = new Role(0L, "Public", null, null, null, true, true);
+        final Role roleRegisteredUser = new Role(1L, "Registered User", rolePublic, null, null, false, true);
+        final Role roleAdmin = new Role(2L, "Admin", roleRegisteredUser, null, null, false, true);
+        final Role roleProjectAdmin = new Role(3L, "Project Admin", roleAdmin, null, null, false, true);
+        final Role roleInstanceAdmin = new Role(4L, "Instance Admin", roleProjectAdmin, null, null, false, true);
 
         entities_.add(buildProjectUser(0L, "instance_admin@cnes.fr", roleInstanceAdmin));
         entities_.add(buildProjectUser(1L, "project_admin_0@cnes.fr", roleProjectAdmin));
@@ -52,7 +52,7 @@ public class ProjectUserRepositoryStub extends RepositoryStub<ProjectUser> imple
         // getByEmail("registered_user_0@cnes.fr").accept();
     }
 
-    private ProjectUser buildProjectUser(Long pProjectUserId, String pMail, Role pRole)
+    private ProjectUser buildProjectUser(final Long pProjectUserId, final String pMail, final Role pRole)
             throws AlreadyExistingException {
 
         Account account = new Account(pMail);
@@ -65,12 +65,12 @@ public class ProjectUserRepositoryStub extends RepositoryStub<ProjectUser> imple
     }
 
     @Override
-    public ProjectUser findOneByLogin(String pLogin) {
+    public ProjectUser findOneByLogin(final String pLogin) {
         return entities_.stream().filter(r -> r.getAccount().getLogin().equals(pLogin)).findFirst().get();
     }
 
     @Override
-    public boolean exists(String pLogin) {
+    public boolean exists(final String pLogin) {
         return findOneByLogin(pLogin) != null;
     }
 

@@ -16,10 +16,10 @@ import javax.naming.OperationNotSupportedException;
 
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.accessRights.dao.IRoleRepository;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
-import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.dao.projects.IRoleRepository;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
 @Service
@@ -30,7 +30,7 @@ public class RoleService implements IRoleService {
     @Resource
     private List<Role> defaultRoles_;
 
-    public RoleService(IRoleRepository pRoleRepository) {
+    public RoleService(final IRoleRepository pRoleRepository) {
         super();
         roleRepository_ = pRoleRepository;
     }
@@ -39,7 +39,8 @@ public class RoleService implements IRoleService {
     public void init() throws AlreadyExistingException {
         // Ensure the existence of default roles
         // If not, add them from their bean definition in defaultRoles.xml
-        for (Role role : defaultRoles_) {
+        // Get all projects in database
+        for (final Role role : defaultRoles_) {
             if (!existRole(role)) {
                 createRole(role);
             }
@@ -48,12 +49,12 @@ public class RoleService implements IRoleService {
 
     @Override
     public List<Role> retrieveRoleList() {
-        Iterable<Role> roles = roleRepository_.findAll();
+        final Iterable<Role> roles = roleRepository_.findAll();
         return StreamSupport.stream(roles.spliterator(), false).collect(Collectors.toList());
     }
 
     @Override
-    public Role createRole(Role pNewRole) throws AlreadyExistingException {
+    public Role createRole(final Role pNewRole) throws AlreadyExistingException {
         if (existRole(pNewRole)) {
             throw new AlreadyExistingException(pNewRole.toString());
         }
@@ -61,12 +62,12 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Role retrieveRole(Long pRoleId) {
+    public Role retrieveRole(final Long pRoleId) {
         return roleRepository_.findOne(pRoleId);
     }
 
     @Override
-    public void updateRole(Long pRoleId, Role pUpdatedRole)
+    public void updateRole(final Long pRoleId, final Role pUpdatedRole)
             throws NoSuchElementException, OperationNotSupportedException {
         if (!pRoleId.equals(pUpdatedRole.getId())) {
             throw new OperationNotSupportedException();
@@ -78,7 +79,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void removeRole(Long pRoleId) {
+    public void removeRole(final Long pRoleId) {
         roleRepository_.delete(pRoleId);
     }
 
@@ -90,23 +91,23 @@ public class RoleService implements IRoleService {
      * @see REGARDS_DSL_ADM_ADM_260
      */
     @Override
-    public List<ResourcesAccess> retrieveRoleResourcesAccessList(Long pRoleId) {
-        List<Role> roleAndHisAncestors = new ArrayList<>();
+    public List<ResourcesAccess> retrieveRoleResourcesAccessList(final Long pRoleId) {
+        final List<Role> roleAndHisAncestors = new ArrayList<>();
 
-        Role role = roleRepository_.findOne(pRoleId);
+        final Role role = roleRepository_.findOne(pRoleId);
         roleAndHisAncestors.add(role);
 
-        RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
+        final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
         roleAndHisAncestors.addAll(roleLineageAssembler.of(role).get());
 
-        List<ResourcesAccess> permissions = roleAndHisAncestors.stream().map(r -> r.getPermissions())
+        final List<ResourcesAccess> permissions = roleAndHisAncestors.stream().map(r -> r.getPermissions())
                 .flatMap(l -> l.stream()).collect(Collectors.toList());
         return permissions;
     }
 
     @Override
-    public void updateRoleResourcesAccess(Long pRoleId, List<ResourcesAccess> pResourcesAccessList) {
-        Role role = roleRepository_.findOne(pRoleId);
+    public void updateRoleResourcesAccess(final Long pRoleId, final List<ResourcesAccess> pResourcesAccessList) {
+        final Role role = roleRepository_.findOne(pRoleId);
         List<ResourcesAccess> permissions = role.getPermissions();
 
         // // Finder method
@@ -130,25 +131,25 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void clearRoleResourcesAccess(Long pRoleId) {
-        Role role = roleRepository_.findOne(pRoleId);
+    public void clearRoleResourcesAccess(final Long pRoleId) {
+        final Role role = roleRepository_.findOne(pRoleId);
         role.setPermissions(new ArrayList<>());
         roleRepository_.save(role);
     }
 
     @Override
-    public List<ProjectUser> retrieveRoleProjectUserList(Long pRoleId) {
-        Role role = roleRepository_.findOne(pRoleId);
+    public List<ProjectUser> retrieveRoleProjectUserList(final Long pRoleId) {
+        final Role role = roleRepository_.findOne(pRoleId);
         return role.getProjectUsers();
     }
 
     @Override
-    public boolean existRole(Long pRoleId) {
+    public boolean existRole(final Long pRoleId) {
         return roleRepository_.exists(pRoleId);
     }
 
     @Override
-    public boolean existRole(Role pRole) {
+    public boolean existRole(final Role pRole) {
         return roleRepository_.exists(pRole.getId());
     }
 
@@ -161,10 +162,10 @@ public class RoleService implements IRoleService {
      * Return true if {@link pRole} is an ancestor of {@link pOther} through the {@link Role#getParentRole()} chain.
      */
     @Override
-    public boolean isHierarchicallyInferior(Role pRole, Role pOther) {
+    public boolean isHierarchicallyInferior(final Role pRole, final Role pOther) {
 
-        RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
-        List<Role> ancestors = roleLineageAssembler.of(pOther).get();
+        final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
+        final List<Role> ancestors = roleLineageAssembler.of(pOther).get();
 
         return ancestors.contains(pRole);
     }

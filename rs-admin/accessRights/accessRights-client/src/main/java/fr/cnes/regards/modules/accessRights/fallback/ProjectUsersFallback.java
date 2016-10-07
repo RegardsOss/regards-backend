@@ -15,10 +15,10 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.accessRights.client.ProjectUsersClient;
 import fr.cnes.regards.modules.accessRights.domain.Couple;
-import fr.cnes.regards.modules.accessRights.domain.MetaData;
-import fr.cnes.regards.modules.accessRights.domain.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.ResourcesAccess;
-import fr.cnes.regards.modules.accessRights.domain.Role;
+import fr.cnes.regards.modules.accessRights.domain.projects.MetaData;
+import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 
 @Component
 public class ProjectUsersFallback implements ProjectUsersClient {
