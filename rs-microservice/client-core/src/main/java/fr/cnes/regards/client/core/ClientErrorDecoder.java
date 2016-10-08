@@ -22,12 +22,23 @@ import feign.codec.ErrorDecoder;
 @Component
 public class ClientErrorDecoder implements ErrorDecoder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(ClientErrorDecoder.class);
 
+    /**
+     *
+     * Override method
+     *
+     * @see feign.codec.ErrorDecoder#decode(java.lang.String, feign.Response)
+     * @since 1.0-SNAPSHOT
+     */
     @Override
-    public Exception decode(String methodKey, Response response) {
+    public Exception decode(final String pMethodKey, final Response pResponse) {
 
-        LOG.error("Remote call to " + methodKey + ". Response is " + response.status() + " : " + response.reason());
-        return new Exception(response.status() + " : " + response.reason());
+        LOG.error(String.format("Remote call to %s. Response is : %d - %s", pMethodKey, pResponse.status(), pResponse
+                .reason()));
+        return new Exception(String.format("%s:%d", pResponse.status(), pResponse.reason()));
     }
 }

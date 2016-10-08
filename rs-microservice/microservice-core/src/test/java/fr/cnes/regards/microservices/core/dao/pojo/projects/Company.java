@@ -14,7 +14,7 @@ import javax.persistence.SequenceGenerator;
  *
  * Class Company
  *
- * Test class for JPA Foreign keys
+ * JPA Company Entity. For projects multitenancy databases.
  *
  * @author CS
  * @since 1.0-SNAPSHOT
@@ -23,37 +23,87 @@ import javax.persistence.SequenceGenerator;
 @SequenceGenerator(name = "companySequence", initialValue = 1, sequenceName = "SEQ_COMPANY")
 public class Company {
 
+    /**
+     * Company identifier
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "companySequence")
     @Column(name = "id")
-    private Long id_;
+    private Long id;
 
+    /**
+     * Company name
+     */
     @Column(name = "name")
-    private String name_;
+    private String name;
 
+    /**
+     *
+     * Constructor
+     *
+     * @since 1.0-SNAPSHOT
+     */
     public Company() {
 
     }
 
+    /**
+     *
+     * Constructor
+     *
+     * @param pName
+     *            Company name
+     * @since 1.0-SNAPSHOT
+     */
     public Company(String pName) {
         super();
-        name_ = pName;
+        name = pName;
     }
 
+    /**
+     *
+     * Getter
+     *
+     * @return Company identifier
+     * @since 1.0-SNPASHOT
+     */
     public Long getId() {
-        return id_;
+        return id;
     }
 
+    /**
+     *
+     * Setter
+     *
+     * @param pId
+     *            Company identifier
+     * @since 1.0-SNAPSHOT
+     */
     public void setId(Long pId) {
-        id_ = pId;
+        id = pId;
     }
 
+    /**
+     *
+     * Getter
+     *
+     * @return Company name
+     * @since 1.0-SNPASHOT
+     */
     public String getName() {
-        return name_;
+        return name;
     }
 
+    /**
+     *
+     * Setter
+     *
+     * @param pName
+     *            Company name
+     * @since 1.0-SNAPSHOT
+     */
     public void setName(String pName) {
-        name_ = pName;
+        name = pName;
     }
 
 }
