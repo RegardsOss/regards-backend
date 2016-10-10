@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.security.configuration;
+package fr.cnes.regards.framework.starter.websocket;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "regards.websocket.enabled", havingValue = "true")
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
