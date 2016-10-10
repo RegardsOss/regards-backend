@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
-import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 
@@ -31,7 +30,7 @@ public class AuthenticationProviderStub implements IAuthenticationProvider {
     public static final String INVALID_PASSWORD = "invalid";
 
     @Override
-    public UserStatus authenticate(String pName, String pPassword, String pScope) {
+    public UserStatus authenticate(final String pName, final String pPassword, final String pScope) {
         UserStatus status = UserStatus.ACCESS_DENIED;
         if (!pPassword.equals(INVALID_PASSWORD)) {
             status = UserStatus.ACCESS_GRANTED;
@@ -40,14 +39,12 @@ public class AuthenticationProviderStub implements IAuthenticationProvider {
     }
 
     @Override
-    public ProjectUser retreiveUser(String pName, String pScope) {
+    public ProjectUser retreiveUser(final String pName, final String pScope) {
         final ProjectUser user = new ProjectUser();
         final Role role = new Role();
         role.setName("USER");
         user.setRole(role);
-        final Account newAccount = new Account();
-        newAccount.setEmail("user@regards.c-s.fr");
-        user.setAccount(newAccount);
+        user.setEmail("user@regards.c-s.fr");
         return user;
     }
 
