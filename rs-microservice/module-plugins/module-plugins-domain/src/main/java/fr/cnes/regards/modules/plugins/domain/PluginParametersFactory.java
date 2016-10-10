@@ -11,21 +11,21 @@ import java.util.List;
  *
  * Utility class to manage a list of plugin parameters.
  *
- * @author msordi
+ * @author cmertz
  */
 public class PluginParametersFactory {
 
     /**
      * List of {@link PluginParameter}
      */
-    private List<PluginParameter> parameters_;
+    private List<PluginParameter> parameters;
 
     /**
      * Constructor
      *
      */
     public PluginParametersFactory() {
-        parameters_ = new ArrayList<PluginParameter>();
+        parameters = new ArrayList<PluginParameter>();
     }
 
     /**
@@ -51,17 +51,11 @@ public class PluginParametersFactory {
      * @return the factory
      */
     public PluginParametersFactory addParameter(String pParameterName, String pParameterValue) {
-        parameters_.add(new PluginParameter(pParameterName, pParameterValue));
+        parameters.add(new PluginParameter(pParameterName, pParameterValue));
         return this;
     }
 
-    /**
-     *
-     * Get method
-     *
-     * @return list of {@link PluginParameter}
-     */
     public List<PluginParameter> getParameters() {
-        return parameters_;
+        return parameters;
     }
 }

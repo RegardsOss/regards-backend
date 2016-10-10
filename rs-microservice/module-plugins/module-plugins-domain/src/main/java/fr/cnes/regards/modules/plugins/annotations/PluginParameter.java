@@ -23,8 +23,7 @@ import java.lang.annotation.Target;
  * <li>Boolean</li>
  * </ul>
  *
- * @author CS
- * @since 1.0
+ * @author cmertz
  */
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)

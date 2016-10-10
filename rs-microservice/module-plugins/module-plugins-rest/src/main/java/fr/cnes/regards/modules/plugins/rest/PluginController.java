@@ -15,20 +15,21 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.modules.plugins.signature.PluginsSignature;
+import fr.cnes.regards.modules.plugins.signature.IPluginsSignature;
+
 
 /**
  * REST module controller
  * 
  * TODO Description
   * 
-* @author TODO
+* @author cmertz
  *
  */
 @RestController
 @ModuleInfo(name="plugins", version="1.0-SNAPSHOT", author="REGARDS", legalOwner="CS", documentation="http://test")
 @RequestMapping("/plugins")
-public class PluginController implements PluginsSignature {
+public class PluginController implements IPluginsSignature {
 
     @Override
     public HttpEntity<List<Resource<PluginMetaData>>> getPlugins() {

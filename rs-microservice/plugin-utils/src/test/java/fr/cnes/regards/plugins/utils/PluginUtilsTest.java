@@ -12,10 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 
 /**
- * ISamplePlugin
+ * PluginUtilsTest
  * 
  * @author cmertz
  *
@@ -37,7 +38,7 @@ public class PluginUtilsTest {
             // Get all the plugins
             final Map<String, PluginMetaData> maps = AbstractPluginUtils.getPlugins("fr.cnes.regards.plugins.utils");
             Assert.assertNotNull(maps);
-            Assert.assertTrue(maps.size() > 0);
+            Assert.assertTrue(maps.size() > 1);
 
             // Get the PluginMetaData of the first plugin
             final PluginMetaData pluginMetaData = maps.get(maps.keySet().stream().findFirst().get());
@@ -52,13 +53,16 @@ public class PluginUtilsTest {
         Assert.assertTrue(true);
     }
 
+    /**
+     * Get a {@link SamplePlugin} with a specific parameters
+     */
     @Test
     public void getSamplePlugin() {
         SamplePlugin samplePlugin = null;
         /*
          * Set all parameters
          */
-        final List<fr.cnes.regards.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory.build()
+        final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, "true").addParameter(SamplePlugin.COEFF, "5")
                 .addParameter(SamplePlugin.SUFFIXE, "chris_test_1").getParameters();
         try {
@@ -69,14 +73,17 @@ public class PluginUtilsTest {
             Assert.assertTrue(true);
         }
         Assert.assertNotNull(samplePlugin);
-        
+
         /*
-         * Use the plugin 
+         * Use the plugin
          */
-        Assert.assertEquals(40,samplePlugin.add(5, 3));
+        Assert.assertEquals(40, samplePlugin.add(5, 3));
         Assert.assertTrue(samplePlugin.echo("hello world").contains("hello"));
     }
 
+    /**
+     * Unable to get {@link SamplePlugin} an Integer parameter is missing
+     */
     @Test
     public void getSamplePluginMissingCoeffParameter() {
         SamplePlugin samplePlugin = null;
@@ -84,7 +91,7 @@ public class PluginUtilsTest {
          * Set parameters : Missing coeff parameter
          */
         final List<fr.cnes.regards.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SamplePlugin.ACTIVE, "true").addParameter(SamplePlugin.SUFFIXE, "chris_test_2")
+                .addParameter(SamplePlugin.ACTIVE, "false").addParameter(SamplePlugin.SUFFIXE, "chris_test_2")
                 .getParameters();
         try {
             // instantiate plugin

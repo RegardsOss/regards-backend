@@ -4,4 +4,4 @@
 /**
  * TODO Description 
  */
-package fr.cnes.regards.plugins.utils;
+package fr.cnes.regards.modules.plugins.service;

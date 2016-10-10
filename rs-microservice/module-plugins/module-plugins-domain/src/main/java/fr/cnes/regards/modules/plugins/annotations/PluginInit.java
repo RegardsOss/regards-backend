@@ -14,8 +14,7 @@ import java.lang.annotation.Target;
  * This annotation can be used to initialize a plugin. It must be used on a no-arg method. The method is call after
  * parameter injection.
  *
- * @author msordi
- * @since 1.0-SNAPSHOT
+ * @author cmertz
  */
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)

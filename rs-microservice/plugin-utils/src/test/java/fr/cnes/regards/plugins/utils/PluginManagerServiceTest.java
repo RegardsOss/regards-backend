@@ -9,6 +9,8 @@ import java.util.List;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.plugins.utils.AbstractPluginUtils;
+import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *

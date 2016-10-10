@@ -50,12 +50,16 @@ public interface IPluginService {
      * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
      *
+     * @param <T>
+     *            a plugin instance
+     * 
      * @param pPluginConfigurationId
      *            a specific plugin's configuration
      * @param pReturnInterfaceType
      *            the plugin's type to return
      * @return a plugin
      * @throws PluginUtilsException
+     *             throw if an error occurs
      */
     <T> T getPlugin(Long pPluginConfigurationId, Class<T> pReturnInterfaceType) throws PluginUtilsException;
 
@@ -63,6 +67,8 @@ public interface IPluginService {
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
      * 
+     * @param <T>
+     *            a plugin instance
      * @param pType
      *            the plugin type
      * @param pReturnInterfaceType
@@ -70,6 +76,7 @@ public interface IPluginService {
      * 
      * @return a plugin
      * @throws PluginUtilsException
+     *             throw if an error occurs
      */
     <T> T getFirstPluginByType(IPluginType pType, Class<T> pReturnInterfaceType) throws PluginUtilsException;
 
@@ -92,6 +99,7 @@ public interface IPluginService {
      *            the plugin configuration to saved
      * @return the saved plugin configuration
      * @throws PluginUtilsException
+     *             throw if an error occurs
      */
     PluginConfiguration savePluginConfiguration(PluginConfiguration pPluginConfiguration) throws PluginUtilsException;
 
@@ -100,6 +108,7 @@ public interface IPluginService {
      * Get the plugin's configuration for a specific configuration
      *
      * @param pId
+     *            a plugin identifier
      * @return a specific configuration
      * @throws PluginUtilsException
      *             TODO CMZ : pourquoi pId
@@ -124,6 +133,7 @@ public interface IPluginService {
      *            a specific configuration
      * @return
      * @throws PluginUtilsException
+     *             throw if an error occurs
      */
     void deletePluginConfiguration(Long pPluginId) throws PluginUtilsException;
 
@@ -134,7 +144,8 @@ public interface IPluginService {
      * @param pPlugin
      *            the plugin's configuration to update
      * @return the updated plugin's configuration
-     * @throws RegardsServiceException
+     * @throws PluginUtilsException
+     *             throw if an error occurs
      */
     PluginConfiguration updatePluginConfiguration(PluginConfiguration pPlugin) throws PluginUtilsException;
 }

@@ -25,6 +25,11 @@ public interface ISamplePlugin {
      * constant coeff
      */
     public static final String COEFF = "coeff";
+    
+    /**
+     * constant coeff
+     */
+    public static final String PLG = "plg";
 
     /**
      * method echo
