@@ -35,7 +35,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         pHttp.authorizeRequests()
                 .antMatchers("/webjars/springfox-swagger-ui/**/*", "/swagger-resources", "/swagger-resources/**/*",
                              "/v2/**/*", "/swagger-ui.html")
-                .permitAll().anyRequest().authenticated().and()
+                .permitAll().anyRequest().authenticated().and().csrf().disable()
                 .addFilterBefore(new CorsFilter(), ChannelProcessingFilter.class)
                 .addFilterBefore(new JWTAuthenticationFilter(authenticationManager()),
                                  UsernamePasswordAuthenticationFilter.class);

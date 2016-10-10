@@ -39,6 +39,7 @@ public class JWTServiceTest {
         String role = "USER";
 
         // Generate token
+
         String jwt = jwtService_.generateToken(project, email, name, role);
         LOG.debug("JWT = " + jwt);
 

@@ -14,7 +14,7 @@ import javax.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.microservices.core.test.report.exception.XMLHelperException;
+import fr.cnes.regards.microservices.core.test.report.exception.ReportException;
 
 /**
  *
@@ -38,10 +38,10 @@ public final class XmlHelper {
      *            type of JAXB element to write
      * @param pJaxbElement
      *            JAXB element
-     * @throws XMLHelperException
+     * @throws ReportException
      */
     public static <T> void write(Path pDirectory, String pFilename, Class<T> pClass, T pJaxbElement)
-            throws XMLHelperException {
+            throws ReportException {
 
         // Validate
         assertNotNull(pDirectory, "Missing directory path");
@@ -66,11 +66,10 @@ public final class XmlHelper {
 
             // Marshall data
             jaxbMarshaller.marshal(pJaxbElement, targetFile);
-        }
-        catch (JAXBException e) {
+        } catch (JAXBException e) {
             String message = "Error while marshalling data";
             LOG.error("Error while marshalling data", e);
-            throw new XMLHelperException(message);
+            throw new ReportException(message);
         }
 
     }
@@ -87,9 +86,9 @@ public final class XmlHelper {
      * @param pClass
      *            type of JAXB element to read
      * @return JAXB element
-     * @throws XMLHelperException
+     * @throws ReportException
      */
-    public static <T> T read(Path pDirectory, String pFilename, Class<T> pClass) throws XMLHelperException {
+    public static <T> T read(Path pDirectory, String pFilename, Class<T> pClass) throws ReportException {
         // Validate
         assertNotNull(pDirectory, "Missing directory path");
         assertNotNull(pFilename, "Missing filename");
@@ -107,13 +106,31 @@ public final class XmlHelper {
             T results = (T) jaxbUnmarshaller.unmarshal(sourceFile);
 
             return results;
-        }
-        catch (JAXBException e) {
+        } catch (JAXBException e) {
             String message = "Error while marshalling data";
-            LOG.error("Error while marshalling data", e);
-            throw new XMLHelperException(message);
+            LOG.error(message, e);
+            throw new ReportException(message);
         }
 
+    }
+
+    /**
+     * Read data from file
+     *
+     * @param <T>
+     *
+     * @param pFilePath
+     *            full file path
+     * @param pClass
+     *            type of JAXB element to read
+     * @return JAXB element
+     * @throws ReportException
+     */
+    public static <T> T read(Path pFilePath, Class<T> pClass) throws ReportException {
+        // Validate
+        assertNotNull(pFilePath, "Missing full file path");
+        assertNotNull(pClass, "Missing JAXB annotated class");
+        return read(pFilePath.getParent(), pFilePath.getFileName().toString(), pClass);
     }
 
     /**
@@ -123,12 +140,12 @@ public final class XmlHelper {
      *            objet to check
      * @param pMessage
      *            error message
-     * @throws XMLHelperException
+     * @throws ReportException
      */
-    private static void assertNotNull(Object pObject, String pMessage) throws XMLHelperException {
+    private static void assertNotNull(Object pObject, String pMessage) throws ReportException {
         if (pObject == null) {
             LOG.error(pMessage);
-            throw new XMLHelperException(pMessage);
+            throw new ReportException(pMessage);
         }
     }
 }

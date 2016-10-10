@@ -21,6 +21,10 @@
 			<artifactId>module-plugins-domain</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.plugins</groupId>
+			<artifactId>module-plugins-dao</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>module-jobs</artifactId>
 		</dependency>
@@ -32,5 +36,10 @@
 			<groupId>com.netflix.feign</groupId>
 			<artifactId>feign-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.utils</groupId>
+			<artifactId>plugin-utils</artifactId>
+		</dependency>
+
 	</dependencies>
 </project>

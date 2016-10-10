@@ -26,6 +26,10 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 @EnableWebSocketMessageBroker
 public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
 
+    private static final int BUFFER_SIZE = 8192;
+
+    private static final long TIMEOUT = 600000;
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Endpoint to which the client must access to connect to websocket server
@@ -44,8 +48,8 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
     public DefaultHandshakeHandler handshakeHandler() {
 
         WebSocketPolicy policy = new WebSocketPolicy(WebSocketBehavior.SERVER);
-        policy.setInputBufferSize(8192);
-        policy.setIdleTimeout(600000);
+        policy.setInputBufferSize(BUFFER_SIZE);
+        policy.setIdleTimeout(TIMEOUT);
 
         return new DefaultHandshakeHandler(new JettyRequestUpgradeStrategy(new WebSocketServerFactory(policy)));
     }

@@ -29,34 +29,34 @@ public class User {
 
     }
 
-    public User(String firstName, String lastName) {
+    public User(String pFirstName, String pLastName) {
         super();
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.firstName = pFirstName;
+        this.lastName = pLastName;
     }
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setId(Long pId) {
+        this.id = pId;
     }
 
     public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setFirstName(String pFirstName) {
+        this.firstName = pFirstName;
     }
 
     public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setLastName(String pLastName) {
+        this.lastName = pLastName;
     }
 
 }

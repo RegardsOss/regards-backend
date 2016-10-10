@@ -70,8 +70,7 @@ public class MethodAuthorizationServiceImpl implements MethodAuthorizationServic
                             }
 
                             setAuthorities(url, httpVerb, roles);
-                        }
-                        catch (IllegalArgumentException pIAE) {
+                        } catch (IllegalArgumentException pIAE) {
                             LOG.error("Cannot retrieve HTTP method from {}", verb);
                         }
                     }
@@ -94,8 +93,7 @@ public class MethodAuthorizationServiceImpl implements MethodAuthorizationServic
                     set.add(grant);
                 }
                 newAuthorities = new ArrayList<>(set);
-            }
-            else {
+            } else {
                 newAuthorities = new ArrayList<>();
                 newAuthorities.addAll(Arrays.asList(pAuthorities));
             }
@@ -121,7 +119,7 @@ public class MethodAuthorizationServiceImpl implements MethodAuthorizationServic
             authorities.add(new RoleAuthority(role));
         }
 
-        setAuthorities(new ResourceMapping(Optional.empty(), Optional.of(pUrlPath), pMethod),
+        setAuthorities(new ResourceMapping(Optional.of(pUrlPath), pMethod),
                        authorities.toArray(new GrantedAuthority[0]));
     }
 }

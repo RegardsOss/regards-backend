@@ -6,6 +6,8 @@
 .classpath
 .settings/
 .springBeans
+.pmd
+.factorypath
 
 ######################
 # Intellij

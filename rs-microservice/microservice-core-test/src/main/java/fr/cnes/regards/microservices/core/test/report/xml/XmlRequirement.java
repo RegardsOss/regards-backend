@@ -3,10 +3,12 @@
  */
 package fr.cnes.regards.microservices.core.test.report.xml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 
 /**
  * Requirement information
@@ -14,7 +16,6 @@ import javax.xml.bind.annotation.XmlType;
  * @author msordi
  *
  */
-@XmlType(propOrder = { "purpose", "testMethodName", "testClass" })
 @XmlRootElement(name = "requirement")
 public class XmlRequirement {
 
@@ -24,19 +25,9 @@ public class XmlRequirement {
     private String requirement_;
 
     /**
-     * Test purpose
+     * List of associated tests
      */
-    private String purpose_;
-
-    /**
-     * Test class
-     */
-    private String testClass_;
-
-    /**
-     * Test method
-     */
-    private String testMethodName_;
+    private List<XmlTest> tests_;
 
     /**
      * @return the requirement
@@ -55,50 +46,44 @@ public class XmlRequirement {
     }
 
     /**
-     * @return the Purpose
+     * @return the tests
      */
-    public String getPurpose() {
-        return purpose_;
+    public List<XmlTest> getTests() {
+        return tests_;
     }
 
     /**
-     * @param pPurpose
-     *            the Purpose to set
+     * @param pTests
+     *            the tests to set
      */
-    @XmlElement(name = "purpose")
-    public void setPurpose(String pPurpose) {
-        purpose_ = pPurpose;
+    @XmlElement(name = "test")
+    public void setTests(List<XmlTest> pTests) {
+        tests_ = pTests;
     }
 
     /**
-     * @return the testClass
+     * Add a test
+     *
+     * @param pTest
+     *            test to add
      */
-    public String getTestClass() {
-        return testClass_;
+    public void addTest(XmlTest pTest) {
+        if (tests_ == null) {
+            tests_ = new ArrayList<>();
+        }
+        tests_.add(pTest);
     }
 
     /**
-     * @param pTestClass
-     *            the testClass to set
+     * Add all tests
+     *
+     * @param pTests
+     *            tests to add
      */
-    @XmlElement(name = "class")
-    public void setTestClass(String pTestClass) {
-        testClass_ = pTestClass;
-    }
-
-    /**
-     * @return the testName
-     */
-    public String getTestMethodName() {
-        return testMethodName_;
-    }
-
-    /**
-     * @param pTestName
-     *            the testName to set
-     */
-    @XmlElement(name = "name")
-    public void setTestMethodName(String pTestMethodName) {
-        testMethodName_ = pTestMethodName;
+    public void addAllTests(List<XmlTest> pTests) {
+        if (tests_ == null) {
+            tests_ = new ArrayList<>();
+        }
+        tests_.addAll(pTests);
     }
 }

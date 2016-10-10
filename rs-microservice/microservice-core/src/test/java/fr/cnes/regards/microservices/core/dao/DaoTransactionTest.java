@@ -18,6 +18,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.microservices.core.dao.pojo.projects.User;
 import fr.cnes.regards.microservices.core.dao.service.DaoUserTest;
+import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
+import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 
 /**
  *
@@ -38,6 +40,8 @@ public class DaoTransactionTest {
     @Autowired
     private DaoUserTest service_;
 
+    @Requirement("REGARDS_DSL_SYS_ARC_050")
+    @Purpose("Test multitenant transactions operations in database")
     @Test
     public void transactionTest() {
 

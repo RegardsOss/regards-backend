@@ -9,6 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.security.utils.jwt.exception.InvalidJwtException;
@@ -18,6 +19,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.impl.TextCodec;
 
 /**
  *
@@ -37,10 +39,34 @@ public class JWTService {
 
     private static final String CLAIM_ROLE = "role";
 
+    private static final String CLAIM_SUBJECT = "sub";
+
+    private static Map<String, String> scopesTokensMap_ = new HashMap<>();
+
     @Value("${jwt.secret}")
     private String secret_;
 
     private static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
+
+    /**
+     *
+     * Inject an auto generated token into the curent SecurityContext
+     *
+     * @param pProject
+     * @param pRole
+     * @since 1.0-SNAPSHOT
+     */
+    public void injectToken(String pProject, String pRole) {
+        String token = null;
+        if (scopesTokensMap_.get(pProject) != null) {
+            token = scopesTokensMap_.get(pProject);
+        }
+        else {
+            token = generateToken(pProject, "", "", pRole);
+        }
+        JWTAuthentication auth = new JWTAuthentication(token);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
 
     /**
      * Parse JWT to retrieve full user information
@@ -57,7 +83,8 @@ public class JWTService {
             throws InvalidJwtException, MissingClaimException {
 
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secret_).parseClaimsJws(pAuthentication.getJwt());
+            Jws<Claims> claims = Jwts.parser().setSigningKey(TextCodec.BASE64.encode(secret_))
+                    .parseClaimsJws(pAuthentication.getJwt());
             // OK, trusted JWT parsed and validated
 
             UserDetails user = new UserDetails();
@@ -104,8 +131,8 @@ public class JWTService {
     // - expiration date
     // - data access groups
     public String generateToken(String pProject, String pEmail, String pName, String pRole) {
-        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(pProject, pEmail, pRole)).setSubject(pName)
-                .signWith(ALGO, secret_).compact();
+        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(pProject, pEmail, pRole, pName))
+                .setSubject(pName).signWith(ALGO, TextCodec.BASE64.encode(secret_)).compact();
     }
 
     /**
@@ -118,11 +145,12 @@ public class JWTService {
      * @return
      * @since 1.0-SNAPSHOT
      */
-    public Map<String, Object> generateClaims(String pProject, String pEmail, String pRole) {
+    public Map<String, Object> generateClaims(String pProject, String pEmail, String pRole, String pUserName) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_PROJECT, pProject);
         claims.put(CLAIM_EMAIL, pEmail);
         claims.put(CLAIM_ROLE, pRole);
+        claims.put(CLAIM_SUBJECT, pUserName);
         return claims;
     }
 
