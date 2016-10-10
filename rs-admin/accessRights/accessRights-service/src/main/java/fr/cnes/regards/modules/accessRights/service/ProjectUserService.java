@@ -45,7 +45,7 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public ProjectUser retrieveUser(final String pLogin) {
-        return projectUserRepository.findOneByLogin(pLogin);
+        return projectUserRepository.findOneByEmail(pLogin);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class ProjectUserService implements IProjectUserService {
     public Couple<List<ResourcesAccess>, Role> retrieveProjectUserAccessRights(final String pLogin,
             final String pBorrowedRoleName)
             throws OperationNotSupportedException {
-        final ProjectUser projectUser = projectUserRepository.findOneByLogin(pLogin);
+        final ProjectUser projectUser = projectUserRepository.findOneByEmail(pLogin);
         final Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
 

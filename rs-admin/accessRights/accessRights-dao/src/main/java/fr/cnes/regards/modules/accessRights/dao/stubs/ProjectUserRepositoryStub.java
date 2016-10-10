@@ -60,18 +60,18 @@ public class ProjectUserRepositoryStub extends RepositoryStub<ProjectUser> imple
 
         ProjectUser projectUser;
         projectUser = new ProjectUser(pProjectUserId, LocalDateTime.now(), LocalDateTime.now(),
-                UserStatus.ACCESS_GRANTED, new ArrayList<>(), pRole, new ArrayList<>(), account);
+                UserStatus.ACCESS_GRANTED, new ArrayList<>(), pRole, new ArrayList<>(), pMail);
         return projectUser;
     }
 
     @Override
-    public ProjectUser findOneByLogin(final String pLogin) {
-        return entities.stream().filter(r -> r.getAccount().getLogin().equals(pLogin)).findFirst().get();
+    public ProjectUser findOneByEmail(final String pEmail) {
+        return entities.stream().filter(r -> r.getEmail().equals(pEmail)).findFirst().get();
     }
 
     @Override
     public boolean exists(final String pLogin) {
-        return findOneByLogin(pLogin) != null;
+        return findOneByEmail(pLogin) != null;
     }
 
 }

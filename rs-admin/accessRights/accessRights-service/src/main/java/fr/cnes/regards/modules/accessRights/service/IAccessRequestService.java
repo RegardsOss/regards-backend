@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessRights.service;
 
 import java.util.List;
 
+import fr.cnes.regards.modules.accessRights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
@@ -13,7 +14,7 @@ public interface IAccessRequestService {
 
     List<ProjectUser> retrieveAccessRequestList();
 
-    ProjectUser requestAccess(ProjectUser pAccessRequest) throws AlreadyExistingException;
+    AccessRequestDTO requestAccess(AccessRequestDTO pAccessRequest) throws AlreadyExistingException;
 
     List<String> getAccessSettingList();
 

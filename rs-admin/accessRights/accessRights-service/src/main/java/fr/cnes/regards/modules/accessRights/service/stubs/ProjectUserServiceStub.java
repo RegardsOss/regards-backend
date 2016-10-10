@@ -37,20 +37,20 @@ import fr.cnes.regards.modules.accessRights.service.IRoleService;
 @Primary
 public class ProjectUserServiceStub implements IProjectUserService {
 
-    public static List<ProjectUser> projectUsers_;
+    public static List<ProjectUser> projectUsers;
 
-    private final IProjectUserRepository projectUserRepository_;
+    private final IProjectUserRepository projectUserRepository;
 
-    private final IRoleService roleService_;
+    private final IRoleService roleService;
 
-    private final IRoleRepository roleRepository_;
+    private final IRoleRepository roleRepository;
 
     public ProjectUserServiceStub(final IProjectUserRepository pDaoProjectUser, final IRoleService pRoleService,
             final IRoleRepository pRoleRepository) {
-        projectUserRepository_ = pDaoProjectUser;
-        roleService_ = pRoleService;
-        roleRepository_ = pRoleRepository;
-        projectUsers_ = StreamSupport.stream(projectUserRepository_.findAll().spliterator(), false)
+        projectUserRepository = pDaoProjectUser;
+        roleService = pRoleService;
+        roleRepository = pRoleRepository;
+        projectUsers = StreamSupport.stream(projectUserRepository.findAll().spliterator(), false)
                 .collect(Collectors.toList());
     }
 
@@ -60,7 +60,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
      */
     @Override
     public List<ProjectUser> retrieveUserList() {
-        return projectUsers_.stream().filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES))
+        return projectUsers.stream().filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES))
                 .collect(Collectors.toList());
     }
 
@@ -70,19 +70,19 @@ public class ProjectUserServiceStub implements IProjectUserService {
      */
     @Override
     public ProjectUser retrieveUser(final Long pUserId) {
-        final List<ProjectUser> notWaitingAccess = projectUsers_.stream()
+        final List<ProjectUser> notWaitingAccess = projectUsers.stream()
                 .filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES)).collect(Collectors.toList());
         final ProjectUser wanted = notWaitingAccess.stream().filter(p -> p.getId() == pUserId).findFirst().get();
         final List<MetaData> visible = wanted.getMetaData().stream()
                 .filter(m -> !m.getVisibility().equals(UserVisibility.HIDDEN)).collect(Collectors.toList());
         final ProjectUser sent = new ProjectUser(wanted.getId(), wanted.getLastConnection(), wanted.getLastUpdate(),
-                wanted.getStatus(), visible, wanted.getRole(), wanted.getPermissions(), wanted.getAccount());
+                wanted.getStatus(), visible, wanted.getRole(), wanted.getPermissions(), wanted.getEmail());
         return sent;
     }
 
     @Override
     public ProjectUser retrieveUser(final String pLogin) {
-        return projectUserRepository_.findOneByLogin(pLogin);
+        return projectUserRepository.findOneByEmail(pLogin);
     }
 
     /*
@@ -94,7 +94,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
             throws OperationNotSupportedException {
         if (existUser(pUserId)) {
             if (pUpdatedProjectUser.getId() == pUserId) {
-                projectUsers_ = projectUsers_.stream().map(a -> a.getId() == pUserId ? pUpdatedProjectUser : a)
+                projectUsers = projectUsers.stream().map(a -> a.getId() == pUserId ? pUpdatedProjectUser : a)
                         .collect(Collectors.toList());
                 return;
             }
@@ -109,13 +109,13 @@ public class ProjectUserServiceStub implements IProjectUserService {
      */
     @Override
     public boolean existUser(final Long pUserId) {
-        return projectUsers_.stream().filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES))
+        return projectUsers.stream().filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES))
                 .filter(p -> p.getId() == pUserId).findFirst().isPresent();
     }
 
     @Override
     public boolean existUser(final String pUserLogin) {
-        return projectUserRepository_.exists(pUserLogin);
+        return projectUserRepository.exists(pUserLogin);
     }
 
     /*
@@ -124,7 +124,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
      */
     @Override
     public void removeUser(final Long pUserId) {
-        projectUsers_ = projectUsers_.stream().filter(p -> p.getId() != pUserId).collect(Collectors.toList());
+        projectUsers = projectUsers.stream().filter(p -> p.getId() != pUserId).collect(Collectors.toList());
     }
 
     /*
@@ -134,15 +134,14 @@ public class ProjectUserServiceStub implements IProjectUserService {
      */
     @Override
     public Couple<List<ResourcesAccess>, Role> retrieveProjectUserAccessRights(final String pLogin,
-            final String pBorrowedRoleName)
-            throws OperationNotSupportedException {
-        final ProjectUser projectUser = projectUserRepository_.findOneByLogin(pLogin);
+            final String pBorrowedRoleName) throws OperationNotSupportedException {
+        final ProjectUser projectUser = projectUserRepository.findOneByEmail(pLogin);
         final Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
 
         if (pBorrowedRoleName != null) {
-            final Role borrowedRole = roleRepository_.findOneByName(pBorrowedRoleName);
-            if (roleService_.isHierarchicallyInferior(borrowedRole, returnedRole)) {
+            final Role borrowedRole = roleRepository.findOneByName(pBorrowedRoleName);
+            if (roleService.isHierarchicallyInferior(borrowedRole, returnedRole)) {
                 returnedRole = borrowedRole;
             } else {
                 throw new OperationNotSupportedException(

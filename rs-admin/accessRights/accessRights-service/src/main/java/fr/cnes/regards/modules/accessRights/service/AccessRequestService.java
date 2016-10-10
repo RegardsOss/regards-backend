@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.modules.accessRights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
@@ -21,7 +22,7 @@ public class AccessRequestService implements IAccessRequestService {
     }
 
     @Override
-    public ProjectUser requestAccess(ProjectUser pAccessRequest) throws AlreadyExistingException {
+    public AccessRequestDTO requestAccess(final AccessRequestDTO pAccessRequest) throws AlreadyExistingException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -33,31 +34,31 @@ public class AccessRequestService implements IAccessRequestService {
     }
 
     @Override
-    public void updateAccessSetting(String pUpdatedProjectUserSetting) throws InvalidValueException {
+    public void updateAccessSetting(final String pUpdatedProjectUserSetting) throws InvalidValueException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void removeAccessRequest(Long pAccessId) {
+    public void removeAccessRequest(final Long pAccessId) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void acceptAccessRequest(Long pAccessId) {
+    public void acceptAccessRequest(final Long pAccessId) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void denyAccessRequest(Long pAccessId) {
+    public void denyAccessRequest(final Long pAccessId) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public boolean existAccessRequest(Long pAccessRequestId) {
+    public boolean existAccessRequest(final Long pAccessRequestId) {
         // TODO Auto-generated method stub
         return false;
     }

@@ -22,88 +22,88 @@ import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationS
 import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
 import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessRights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessRights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
+import fr.cnes.regards.modules.accessRights.domain.UserStatus;
 import fr.cnes.regards.modules.accessRights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
-import fr.cnes.regards.modules.accessRights.service.IAccountService;
 import fr.cnes.regards.modules.accessRights.service.IProjectUserService;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
- * @author svissier
- *
+ * @author svissier *
  */
 public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
 
     @Autowired
-    private JWTService jwtService_;
+    private JWTService jwtService;
 
     @Autowired
-    private MethodAuthorizationService authService_;
+    private MethodAuthorizationService authService;
 
-    private String jwt_;
+    private String jwt;
 
-    private String apiUsers_;
+    private String apiUsers;
 
-    private String apiUserId_;
+    private String apiUserId;
 
-    private String apiUserLogin_;
+    private String apiUserLogin;
 
-    private String apiUserPermissions_;
+    private String apiUserPermissions;
 
-    private String apiUserPermissionsBorrowedRole_;
+    private String apiUserPermissionsBorrowedRole;
 
-    private String apiUserMetaData_;
+    private String apiUserMetaData;
 
-    private String errorMessage_;
-
-    @Autowired
-    private IProjectUserService projectUserService_;
+    private String errorMessage;
 
     @Autowired
-    private IAccountService accountService_;
+    private IProjectUserService projectUserService;
 
     @Autowired
-    private IRoleRepository roleRepository_;
+    private IProjectUserRepository projectUserRepository;
 
     @Autowired
-    private IRoleService roleService_;
+    private IRoleRepository roleRepository;
+
+    @Autowired
+    private IRoleService roleService;
 
     @Before
     public void init() {
         setLogger(LoggerFactory.getLogger(ProjectUsersControllerIT.class));
-        jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
-        authService_.setAuthorities("/users", RequestMethod.GET, "USER");
-        authService_.setAuthorities("/users", RequestMethod.POST, "USER");
-        authService_.setAuthorities("/users/{user_id}", RequestMethod.GET, "USER");
-        authService_.setAuthorities("/users/{user_id}", RequestMethod.PUT, "USER");
-        authService_.setAuthorities("/users/{user_id}", RequestMethod.DELETE, "USER");
-        authService_.setAuthorities("/users/{user_id}/metadata", RequestMethod.GET, "USER");
-        authService_.setAuthorities("/users/{user_id}/metadata", RequestMethod.PUT, "USER");
-        authService_.setAuthorities("/users/{user_id}/metadata", RequestMethod.DELETE, "USER");
-        authService_.setAuthorities("/users/{user_login}/permissions", RequestMethod.GET, "USER");
-        authService_.setAuthorities("/users/{user_login}/permissions", RequestMethod.PUT, "USER");
-        authService_.setAuthorities("/users/{user_login}/permissions", RequestMethod.DELETE, "USER");
-        apiUsers_ = "/users";
-        apiUserId_ = apiUsers_ + "/{user_id}";
-        apiUserLogin_ = apiUsers_ + "/{user_login}";
-        apiUserPermissions_ = apiUserLogin_ + "/permissions";
-        apiUserPermissionsBorrowedRole_ = apiUserPermissions_ + "?borrowedRoleName=";
-        apiUserMetaData_ = apiUserId_ + "/metadata";
-        errorMessage_ = "Cannot reach model attributes";
+        jwt = jwtService.generateToken("PROJECT", "email", "SVG", "USER");
+        authService.setAuthorities("/users", RequestMethod.GET, "USER");
+        authService.setAuthorities("/users", RequestMethod.POST, "USER");
+        authService.setAuthorities("/users/{user_id}", RequestMethod.GET, "USER");
+        authService.setAuthorities("/users/{user_id}", RequestMethod.PUT, "USER");
+        authService.setAuthorities("/users/{user_id}", RequestMethod.DELETE, "USER");
+        authService.setAuthorities("/users/{user_id}/metadata", RequestMethod.GET, "USER");
+        authService.setAuthorities("/users/{user_id}/metadata", RequestMethod.PUT, "USER");
+        authService.setAuthorities("/users/{user_id}/metadata", RequestMethod.DELETE, "USER");
+        authService.setAuthorities("/users/{user_login}/permissions", RequestMethod.GET, "USER");
+        authService.setAuthorities("/users/{user_login}/permissions", RequestMethod.PUT, "USER");
+        authService.setAuthorities("/users/{user_login}/permissions", RequestMethod.DELETE, "USER");
+        apiUsers = "/users";
+        apiUserId = apiUsers + "/{user_id}";
+        apiUserLogin = apiUsers + "/{user_login}";
+        apiUserPermissions = apiUserLogin + "/permissions";
+        apiUserPermissionsBorrowedRole = apiUserPermissions + "?borrowedRoleName=";
+        apiUserMetaData = apiUserId + "/metadata";
+        errorMessage = "Cannot reach model attributes";
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve all user on a project.")
     public void getAllUsers() {
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiUsers_, jwt_, expectations, errorMessage_);
+        performGet(apiUsers, jwt, expectations, errorMessage);
 
     }
 
@@ -111,15 +111,15 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve a single user on a project.")
     public void getUser() {
-        Long userId = projectUserService_.retrieveUserList().get(0).getId();
+        final Long userId = projectUserService.retrieveUserList().get(0).getId();
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiUserId_, jwt_, expectations, errorMessage_, userId);
+        performGet(apiUserId, jwt, expectations, errorMessage, userId);
 
         expectations.clear();
         expectations.add(status().isNotFound());
-        performGet(apiUserId_, jwt_, expectations, errorMessage_, Long.MAX_VALUE);
+        performGet(apiUserId, jwt, expectations, errorMessage, Long.MAX_VALUE);
 
     }
 
@@ -127,56 +127,60 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_330")
     @Purpose("Check that the system allows to retrieve a user's metadata.")
     public void getUserMetaData() {
-        Long userId = projectUserService_.retrieveUserList().get(0).getId();
+        final Long userId = projectUserService.retrieveUserList().get(0).getId();
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiUserMetaData_, jwt_, expectations, errorMessage_, userId);
+        performGet(apiUserMetaData, jwt, expectations, errorMessage, userId);
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to retrieve a user's permissions.")
     public void getUserPermissions() {
-        String login = projectUserService_.retrieveUserList().get(0).getAccount().getLogin();
+        final String email = projectUserService.retrieveUserList().get(0).getEmail();
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiUserPermissions_, jwt_, expectations, errorMessage_, login);
+        performGet(apiUserPermissions, jwt, expectations, errorMessage, email);
 
         expectations.clear();
         expectations.add(status().isNotFound());
-        performGet(apiUserPermissions_, jwt_, expectations, errorMessage_, "wrongLogin");
+        performGet(apiUserPermissions, jwt, expectations, errorMessage, "wrongEmail");
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_270")
     @Purpose("Check that the system allows a user to connect using a hierarchically inferior role to its own and handle fail cases.")
     public void getUserPermissionsWithBorrowedRole() {
-        ProjectUser projectUser = projectUserService_.retrieveUserList().get(0);
-        String projectUserLogin = projectUser.getAccount().getLogin();
+        // Initiate a specific project user for the test
+        final Role role = roleRepository.findOneByName("Admin");
+        final ProjectUser projectUser = new ProjectUser(4824L, null, null, UserStatus.ACCESS_GRANTED, new ArrayList<>(),
+                role, new ArrayList<>(), "email@test.com");
+        // Save it
+        projectUserRepository.save(projectUser);
 
-        Role projectUserRole = projectUser.getRole();
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        // Init the list of test expectations
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
 
         // Borrowing a hierarchically inferior role
         String borrowedRoleName = "Registered User";
-        assertTrue(roleRepository_.findOneByName(borrowedRoleName) != null);
-        Role borrowedRole = roleRepository_.findOneByName(borrowedRoleName);
-        assertTrue(roleService_.isHierarchicallyInferior(borrowedRole, projectUserRole));
+        assertTrue(roleRepository.findOneByName(borrowedRoleName) != null);
+        Role borrowedRole = roleRepository.findOneByName(borrowedRoleName);
+        assertTrue(roleService.isHierarchicallyInferior(borrowedRole, role));
         expectations.add(status().isOk());
-        performGet(apiUserPermissionsBorrowedRole_ + borrowedRoleName, jwt_, expectations, errorMessage_,
-                   projectUserLogin);
+        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, jwt, expectations, errorMessage,
+                   projectUser.getEmail());
 
         // Borrowing a hierarchically superior role
         borrowedRoleName = "Instance Admin";
-        assertTrue(roleRepository_.findOneByName(borrowedRoleName) != null);
-        borrowedRole = roleRepository_.findOneByName(borrowedRoleName);
-        assertTrue(!roleService_.isHierarchicallyInferior(borrowedRole, projectUserRole));
+        assertTrue(roleRepository.findOneByName(borrowedRoleName) != null);
+        borrowedRole = roleRepository.findOneByName(borrowedRoleName);
+        assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, role));
         expectations.clear();
         expectations.add(status().isBadRequest());
-        performGet(apiUserPermissionsBorrowedRole_ + borrowedRoleName, jwt_, expectations, errorMessage_,
-                   projectUserLogin);
+        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, jwt, expectations, errorMessage,
+                   projectUser.getEmail());
     }
 
     @Test
@@ -184,14 +188,14 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_330")
     @Purpose("Check that the system allows to update a user's metadata.")
     public void updateUserMetaData() {
-        Long userId = projectUserService_.retrieveUserList().get(0).getId();
-        List<MetaData> newPermissionList = new ArrayList<>();
+        final Long userId = projectUserService.retrieveUserList().get(0).getId();
+        final List<MetaData> newPermissionList = new ArrayList<>();
         newPermissionList.add(new MetaData());
         newPermissionList.add(new MetaData());
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiUserMetaData_, jwt_, newPermissionList, expectations, errorMessage_, userId);
+        performPut(apiUserMetaData, jwt, newPermissionList, expectations, errorMessage, userId);
     }
 
     @Test
@@ -199,15 +203,15 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to update a user's permissions.")
     public void updateUserPermissions() {
-        String userLogin = projectUserService_.retrieveUserList().get(0).getAccount().getLogin();
+        final String email = projectUserService.retrieveUserList().get(0).getEmail();
 
-        List<ResourcesAccess> newPermissionList = new ArrayList<>();
+        final List<ResourcesAccess> newPermissionList = new ArrayList<>();
         newPermissionList.add(new ResourcesAccess(463L, "new", "new", "new", HttpVerb.PUT));
         newPermissionList.add(new ResourcesAccess(350L, "neww", "neww", "neww", HttpVerb.DELETE));
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiUserPermissions_, jwt_, newPermissionList, expectations, errorMessage_, userLogin);
+        performPut(apiUserPermissions, jwt, newPermissionList, expectations, errorMessage, email);
     }
 
     @Test
@@ -215,11 +219,11 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_330")
     @Purpose("Check that the system allows to delete a user's metadata.")
     public void deleteUserMetaData() {
-        Long userId = projectUserService_.retrieveUserList().get(0).getId();
+        final Long userId = projectUserService.retrieveUserList().get(0).getId();
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiUserMetaData_, jwt_, expectations, errorMessage_, userId);
+        performDelete(apiUserMetaData, jwt, expectations, errorMessage, userId);
     }
 
     @Test
@@ -227,11 +231,11 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to delete a user's permissions.")
     public void deleteUserPermissions() {
-        String userLogin = projectUserService_.retrieveUserList().get(0).getAccount().getLogin();
+        final String email = projectUserService.retrieveUserList().get(0).getEmail();
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiUserPermissions_, jwt_, expectations, errorMessage_, userLogin);
+        performDelete(apiUserPermissions, jwt, expectations, errorMessage, email);
     }
 
     @Test
@@ -239,21 +243,21 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to update a project user and handle fail cases.")
     public void updateUser() {
-        Long userId = projectUserService_.retrieveUserList().get(0).getId();
-        ProjectUser updated = projectUserService_.retrieveUser(userId);
+        final Long userId = projectUserService.retrieveUserList().get(0).getId();
+        final ProjectUser updated = projectUserService.retrieveUser(userId);
         updated.setLastConnection(LocalDateTime.now());
 
         // if that's the same functional ID and the parameter is valid:
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiUserId_, jwt_, updated, expectations, errorMessage_, userId);
+        performPut(apiUserId, jwt, updated, expectations, errorMessage, userId);
 
         // if that's not the same functional ID and the parameter is valid:
-        ProjectUser notSameID = new ProjectUser();
+        final ProjectUser notSameID = new ProjectUser();
 
         expectations.clear();
         expectations.add(status().isBadRequest());
-        performPut(apiUserId_, jwt_, notSameID, expectations, errorMessage_, userId);
+        performPut(apiUserId, jwt, notSameID, expectations, errorMessage, userId);
     }
 
     @Test
@@ -261,10 +265,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to delete a project user.")
     public void deleteUser() {
-        Long userId = projectUserService_.retrieveUserList().get(0).getId();
+        final Long userId = projectUserService.retrieveUserList().get(0).getId();
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiUserId_, jwt_, expectations, errorMessage_, userId);
+        performDelete(apiUserId, jwt, expectations, errorMessage, userId);
     }
 }
