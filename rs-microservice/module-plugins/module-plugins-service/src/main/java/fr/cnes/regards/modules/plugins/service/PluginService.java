@@ -24,7 +24,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
- * 
+ * TODO description
  *
  * @author cmertz
  */
@@ -34,24 +34,24 @@ public class PluginService implements IPluginService {
     /**
      * Package scanned to find plugins.
      */
-    public final static String PLUGINS_PACKAGE = "fr.cnes.regards.plugins";
+    public static final String PLUGINS_PACKAGE = "fr.cnes.regards.plugins";
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
 
     /**
      * Plugin Configuration JPA Repository
      */
     @Autowired
-    IPluginConfigurationRepository pluginConfRepository_;
-
-    /**
-     * Class logger
-     */
-    private final static Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
+    private IPluginConfigurationRepository pluginConfRepository;
 
     /**
      * Plugins implementation list sorted by plugin id. Plugin id, is the id of the "@PluginMetaData" annotation of the
      * implementation class.
      */
-    private Map<String, PluginMetaData> plugins_;
+    private Map<String, PluginMetaData> plugins;
 
     public PluginService() throws PluginUtilsException {
         super();
@@ -70,8 +70,8 @@ public class PluginService implements IPluginService {
     private void loadPlugins() throws PluginUtilsException {
 
         // Scan class spath for plugins implementations only once
-        if (plugins_ == null) {
-            plugins_ = AbstractPluginUtils.getPlugins(PLUGINS_PACKAGE);
+        if (plugins == null) {
+            plugins = AbstractPluginUtils.getPlugins(PLUGINS_PACKAGE);
         }
     }
 
@@ -90,8 +90,8 @@ public class PluginService implements IPluginService {
 
         final List<PluginMetaData> pluginAvailables = new ArrayList<>();
         // Check fo each plugin implementation, ones which implements pClassType
-        for (final String pluginId : plugins_.keySet()) {
-            final PluginMetaData plugin = plugins_.get(pluginId);
+        for (final String pluginId : plugins.keySet()) {
+            final PluginMetaData plugin = plugins.get(pluginId);
             if (pType != null && pType.getClassType().isAssignableFrom(plugin.getPluginClass())) {
                 pluginAvailables.add(plugin);
             } else
@@ -110,7 +110,7 @@ public class PluginService implements IPluginService {
         final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
 
         // Get the plugin implementation associated
-        final PluginMetaData pluginMetadata = plugins_.get(pluginConf.getPluginId());
+        final PluginMetaData pluginMetadata = plugins.get(pluginConf.getPluginId());
 
         // Check if plugin version has changed since the last saved configuration of the plugin
         if (pluginConf.getVersion() != null && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
@@ -130,7 +130,7 @@ public class PluginService implements IPluginService {
             LOGGER.error(message);
             throw new PluginUtilsException(message);
         }
-        if (plugins_.get(pPluginConfiguration.getPluginId()) == null) {
+        if (plugins.get(pPluginConfiguration.getPluginId()) == null) {
             final String message = "Impossible to save plugin configuration. Plugin implementation with id="
                     + pPluginConfiguration.getPluginId() + " does not exists";
             LOGGER.error(message);
@@ -148,7 +148,7 @@ public class PluginService implements IPluginService {
             throw new PluginUtilsException(message);
         }
 
-        final PluginConfiguration pluginSaved = pluginConfRepository_.save(pPluginConfiguration);
+        final PluginConfiguration pluginSaved = pluginConfRepository.save(pPluginConfiguration);
 
         return pluginSaved;
     }
@@ -166,7 +166,7 @@ public class PluginService implements IPluginService {
     @Override
     public PluginConfiguration getPluginConfiguration(Long pId) throws PluginUtilsException {
         // Get plugin configuration from dataBase
-        final PluginConfiguration conf = pluginConfRepository_.findOne(pId);
+        final PluginConfiguration conf = pluginConfRepository.findOne(pId);
         if (conf == null) {
             final String message = "Error getting plugin configuration id=" + pId;
             LOGGER.error(message);
@@ -187,7 +187,7 @@ public class PluginService implements IPluginService {
     @Override
     public void deletePluginConfiguration(Long pPluginId) throws PluginUtilsException {
         try {
-            pluginConfRepository_.delete(pPluginId);
+            pluginConfRepository.delete(pPluginId);
         } catch (final EmptyResultDataAccessException e) {
             throw new PluginUtilsException("Error deleting plugin configuration with id=" + pPluginId + ".", e);
         }
@@ -201,8 +201,8 @@ public class PluginService implements IPluginService {
         final List<PluginConfiguration> configurations = new ArrayList<>();
 
         for (final PluginMetaData pluginImpl : pluginImpls) {
-            configurations.addAll(pluginConfRepository_
-                    .findByPluginIdAndTenantOrderByPriorityOrderDesc(pluginImpl.getMetaDataId()));
+            configurations.addAll(pluginConfRepository
+                    .findByPluginIdAndTenantOrderByPriorityOrderDesc(pluginImpl.getPluginId()));
         }
 
         return configurations;
@@ -210,7 +210,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public PluginMetaData getPluginMetaDataById(String pPluginImplId) {
-        return plugins_.get(pPluginImplId);
+        return plugins.get(pPluginImplId);
     }
 
     /**
@@ -250,7 +250,7 @@ public class PluginService implements IPluginService {
         }
 
         PluginConfiguration configuration = null;
-        ;
+
         for (final PluginConfiguration conf : confs) {
             if (configuration == null || conf.getPriorityOrder() < configuration.getPriorityOrder()) {
                 configuration = conf;

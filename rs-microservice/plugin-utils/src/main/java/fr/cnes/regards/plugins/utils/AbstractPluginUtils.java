@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.reflections.Reflections;
@@ -53,7 +54,6 @@ public abstract class AbstractPluginUtils {
      *             a pluginId is found a twice
      */
     public static Map<String, PluginMetaData> getPlugins(String pPrefix) throws PluginUtilsException {
-
         final Map<String, PluginMetaData> plugins = new HashMap<String, PluginMetaData>();
 
         // Scan class path with Reflections library
@@ -66,19 +66,19 @@ public abstract class AbstractPluginUtils {
             // Create plugin metadata
             final PluginMetaData plugin = AbstractPluginUtils.createPluginMetaData(pluginClass);
 
-            // Check a plugin does not already exists with the same id
-            if (plugins.containsKey(plugin.getId())) {
-                final PluginMetaData pMeta = plugins.get(plugin.getId());
-                final String message = String.format(
-                                                     "Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
-                                                     plugin.getId(), plugin.getPluginClass(), pMeta.getPluginClass());
+            // Check a plugin does not already exists with the same plugin id
+            if (plugins.containsKey(plugin.getPluginId())) {
+                final PluginMetaData pMeta = plugins.get(plugin.getPluginId());
+                final String message = String
+                        .format("Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
+                                plugin.getPluginId(), plugin.getPluginClass(), pMeta.getPluginClass());
                 throw new PluginUtilsException(message);
             }
 
             // Store plugin reference
-            plugins.put(plugin.getMetaDataId(), plugin);
+            plugins.put(plugin.getPluginId(), plugin);
             LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.",
-                                      plugin.getPluginClass().getTypeName(), plugin.getId()));
+                                      plugin.getPluginClass().getTypeName(), plugin.getPluginId()));
         }
         return plugins;
     }
@@ -92,7 +92,6 @@ public abstract class AbstractPluginUtils {
      * @return the {@link PluginMetaData} create
      */
     public static PluginMetaData createPluginMetaData(Class<?> pPluginClass) {
-
         PluginMetaData pluginMetaData = null;
 
         // Get implementation associated annotations
@@ -101,15 +100,17 @@ public abstract class AbstractPluginUtils {
         // Init plugin metadata
         pluginMetaData = new PluginMetaData();
         pluginMetaData.setClass(pPluginClass);
+
         // Manage plugin id
         if ("".equals(plugin.id())) {
-            pluginMetaData.setMetaDataId(pPluginClass.getCanonicalName());
+            pluginMetaData.setPluginId(pPluginClass.getCanonicalName());
         } else {
-            pluginMetaData.setMetaDataId(plugin.id());
+            pluginMetaData.setPluginId(plugin.id());
         }
         pluginMetaData.setAuthor(plugin.author());
         pluginMetaData.setVersion(plugin.version());
         pluginMetaData.setDescription(plugin.description());
+
         // Try to detect parameters if any
         pluginMetaData.setParameters(AbstractPluginParametersUtil.getParameters(pPluginClass));
 
@@ -120,28 +121,32 @@ public abstract class AbstractPluginUtils {
      *
      * Create an instance of plugin based on its configuration and metadata
      *
+     * @param <T>
+     *            a plugin
      * @param pPluginConf
      *            the plugin configuration
      * @param pPluginMetadata
      *            the plugin metadata
+     * 
      * @return an instance
      * @throws PluginUtilsException
      *             if problem occurs
      */
     public static <T> T getPlugin(PluginConfiguration pPluginConf, PluginMetaData pPluginMetadata)
             throws PluginUtilsException {
-
-        // instantiate plugin
         T returnPlugin = null;
 
         try {
             // Make a new instance
             returnPlugin = (T) pPluginMetadata.getPluginClass().newInstance();
+
             // Post process parameters
             AbstractPluginParametersUtil.postProcess(returnPlugin, pPluginConf);
+
             // Launch init method if detected
             doInitPlugin(returnPlugin);
-        } catch (InstantiationException | IllegalAccessException e) {
+
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException e) {
             throw new PluginUtilsException(String.format("Cannot instantiate \"%s\"", pPluginMetadata.getPluginClass()),
                     e);
         }
@@ -153,6 +158,8 @@ public abstract class AbstractPluginUtils {
      *
      * Look for {@link PluginInit} annotation and launch corresponding method if found.
      *
+     * @param <T>
+     *            a plugin instance
      * @param pPluginInstance
      *            the plugin instance
      * @throws PluginUtilsException
@@ -163,7 +170,8 @@ public abstract class AbstractPluginUtils {
         for (final Method method : allMethods) {
             if (method.isAnnotationPresent(PluginInit.class)) {
                 // Invoke method
-                ReflectionUtils.makeAccessible(method);
+                AbstractReflectionUtils.makeAccessible(method);
+
                 try {
                     method.invoke(pPluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {

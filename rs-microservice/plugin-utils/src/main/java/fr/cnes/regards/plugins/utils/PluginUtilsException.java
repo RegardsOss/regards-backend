@@ -11,27 +11,27 @@ import org.slf4j.LoggerFactory;
  *
  * Exception for plugin utils package
  *
- * @author msordi
+ * @author cmertz
  */
 public class PluginUtilsException extends Exception {
 
+    /**
+     * Class Logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtilsException.class);
 
     /**
      * serialVersionUID field.
      *
-     * @author CS
-     * @since 1.0-SNAPSHOT
      */
     private static final long serialVersionUID = 1L;
 
     /**
      *
-     * Constructeur
+     * Constructor
      *
      * @param pMessage
      *            an error message
-     * @since 1.0-SNAPSHOT
      */
     public PluginUtilsException(String pMessage) {
         super(pMessage);
@@ -40,13 +40,12 @@ public class PluginUtilsException extends Exception {
 
     /**
      *
-     * Constructeur
+     * Constructor
      *
      * @param pMessage
      *            an error message
      * @param pCause
      *            the exception
-     * @since 1.0-SNAPSHOT
      */
     public PluginUtilsException(String pMessage, Throwable pCause) {
         super(pMessage, pCause);
@@ -59,7 +58,6 @@ public class PluginUtilsException extends Exception {
      *
      * @param pCause
      *            the exception
-     * @since 1.0-SNAPSHOT
      */
     public PluginUtilsException(Throwable pCause) {
         super(pCause);

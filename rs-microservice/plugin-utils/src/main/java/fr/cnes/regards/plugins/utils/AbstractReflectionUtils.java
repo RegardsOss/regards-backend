@@ -12,14 +12,14 @@ import java.lang.reflect.Modifier;
  *
  * Utility class used in reflections
  *
- * @author msordi
+ * @author cmertz
  */
-public abstract class ReflectionUtils {
+public abstract class AbstractReflectionUtils {
 
     /**
      * A private constructor
      */
-    private ReflectionUtils() {
+    private AbstractReflectionUtils() {
         super();
     }
 

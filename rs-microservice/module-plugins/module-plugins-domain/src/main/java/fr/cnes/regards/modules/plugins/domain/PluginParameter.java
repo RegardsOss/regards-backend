@@ -12,44 +12,51 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.springframework.hateoas.Identifiable;
+
 /**
  * Class PluginParameter
  *
  * Parameter associated to a plugin configuration <PluginConfiguration>
  *
- * @author CS
+ * @author cmertz
  */
 @Entity
 @Table(name = "T_PLUGIN_PARAMETER_VALUE")
-public class PluginParameter {
+public class PluginParameter implements Identifiable<Long> {
+    
+    /**
+     * The max size of a {@link String} value
+     */
+    private static final int MAX_STRING_VALUE = 2048;
 
     /**
-     * Parameter unique id_
+     * Parameter unique id
      */
     @Id
     @GeneratedValue
-    private Long id_;
+    private Long id;
 
     /**
      * Parameter name
      */
-    private String name_;
+    private String name;
 
     /**
      * Parameter value
      */
-    @Column(length = 2048)
-    private String value_;
+    @Column(length = MAX_STRING_VALUE)
+    private String value;
 
     /**
      * The parameter is dynamic
      */
-    private Boolean isDynamic_;
+    private Boolean isDynamic;
 
     /**
      * The list of values for a dynamic parameters
      */
-    private List<String> dynamicsValues_;
+    private List<String> dynamicsValues;
 
     /**
      * Default constructor
@@ -69,103 +76,49 @@ public class PluginParameter {
      */
     public PluginParameter(final String pName, final String pValue) {
         super();
-        name_ = pName;
-        value_ = pValue;
+        name = pName;
+        value = pValue;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the id_
-     */
-    public final Long getId() {
-        return id_;
+    @Override
+    public Long getId() {
+        return id;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pId
-     *            the id_ to set
-     */
     public final void setId(Long pId) {
-        id_ = pId;
+        id = pId;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the name_
-     */
     public final String getName() {
-        return name_;
+        return name;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pName
-     *            the name to set
-     */
     public final void setName(final String pName) {
-        name_ = pName;
+        name = pName;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the value_
-     */
     public final String getValue() {
-        return value_;
+        return value;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pValue
-     *            the value to set
-     */
     public final void setValue(String pValue) {
-        value_ = pValue;
+        value = pValue;
     }
 
-    /**
-     * Get the
-     * 
-     * @return is the parameter dynamic
-     */
     public final Boolean getIsDynamic() {
-        return isDynamic_;
+        return isDynamic;
     }
 
-    /**
-     * Set or unset the parameter to dynamic
-     * 
-     * @param pIsDynamic
-     *            boolean
-     */
     public final void setIsDynamic(Boolean pIsDynamic) {
-        this.isDynamic_ = pIsDynamic;
+        this.isDynamic = pIsDynamic;
     }
 
-    /**
-     * Get the dynamic values of the parameter
-     * 
-     * @return the dynamic values of the parameter
-     */
     public final List<String> getDynamicsValues() {
-        return dynamicsValues_;
+        return dynamicsValues;
     }
 
-    /**
-     * Set the dynamic values to the parameter
-     * 
-     * @param pDynamicsValues
-     *            the dynamic values
-     */
     public final void setDynamicsValues(List<String> pDynamicsValues) {
-        this.dynamicsValues_ = pDynamicsValues;
+        this.dynamicsValues = pDynamicsValues;
     }
 
 }

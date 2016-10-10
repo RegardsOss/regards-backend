@@ -12,7 +12,6 @@ import java.lang.annotation.Target;
 /**
  *
  * Annotate a plugin type.
-
  *
  * @author cmertz
  */

@@ -20,7 +20,13 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 
-public interface PluginsSignature {
+/**
+ * TODO descriptipn
+ * 
+ * @author cmertz
+ *
+ */
+public interface IPluginsSignature {
 
     @RequestMapping(value = "/plugins", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody

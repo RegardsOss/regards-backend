@@ -25,169 +25,92 @@ public class PluginMetaData implements Identifiable<Long> {
      */
     @Id
     @GeneratedValue
-    private Long id_;
+    private Long id;
 
     /**
-     * 
+     * The plugin identifier
      */
-    private String metaDataId_;
+    private String pluginId;
 
     /**
      * The plugin class
      */
-    private Class<?> pluginClass_;
+    private Class<?> pluginClass;
 
     /**
      * The author of the plugin
      */
-    private String author_;
+    private String author;
 
     /**
      * The version of the plugin
      */
-    private String version_;
+    private String version;
 
     /**
      * The description of the plugin
      */
-    private String description_;
+    private String description;
 
     /**
      * The parameters of the plugin
      */
-    private List<String> parameters_;
+    private List<String> parameters;
 
-    /**
-     * Get method.
-     *
-     * @return the Id
-     */
     public Long getId() {
-        return this.id_;
+        return this.id;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pId
-     *            the Id to set
-     */
     public void setId(Long pId) {
-        this.id_ = pId;
+        this.id = pId;
     }
 
-    /**
-     * Get method.
-     * 
-     * @return the meta data id
-     */
-    public String getMetaDataId() {
-        return this.metaDataId_;
+    public String getPluginId() {
+        return this.pluginId;
     }
 
-    /**
-     * Set method.
-     * 
-     * @param pMetaDataId
-     *            the metadataId to set
-     */
-    public void setMetaDataId(String pMetaDataId) {
-        this.metaDataId_ = pMetaDataId;
+    public void setPluginId(String pPluginId) {
+        this.pluginId = pPluginId;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the plugin class
-     */
     public Class<?> getPluginClass() {
-        return this.pluginClass_;
+        return this.pluginClass;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pPluginClass
-     *            the class which implements the plugin
-     */
     public void setClass(Class<?> pPluginClass) {
-        this.pluginClass_ = pPluginClass;
+        this.pluginClass = pPluginClass;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the author
-     */
     public String getAuthor() {
-        return this.author_;
+        return this.author;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pAuthor
-     *            the author to set
-     */
     public void setAuthor(String pAuthor) {
-        this.author_ = pAuthor;
+        this.author = pAuthor;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the version
-     */
     public String getVersion() {
-        return this.version_;
+        return this.version;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pVersion
-     *            the version to set
-     */
     public void setVersion(String pVersion) {
-        this.version_ = pVersion;
+        this.version = pVersion;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the description
-     */
     public String getDescription() {
-        return this.description_;
+        return this.description;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pDescription
-     *            the description to set
-     */
     public void setDescription(String pDescription) {
-        this.description_ = pDescription;
+        this.description = pDescription;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the parameters
-     */
     public List<String> getParameters() {
-        return this.parameters_;
+        return this.parameters;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pParameters
-     *            the parameters to set
-     */
     public void setParameters(List<String> pParameters) {
-        this.parameters_ = pParameters;
+        this.parameters = pParameters;
     }
 
 }
