@@ -1,13 +1,14 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.configuration;
+package fr.cnes.regards.microservices.core.security.configuration;
 
 import java.util.List;
 
 import org.eclipse.jetty.websocket.api.WebSocketBehavior;
 import org.eclipse.jetty.websocket.api.WebSocketPolicy;
 import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.MessageConverter;
@@ -22,32 +23,55 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 import org.springframework.web.socket.server.jetty.JettyRequestUpgradeStrategy;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
+/**
+ *
+ * Class WebSocketConfiguration
+ *
+ * Web Sockets configuration
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
+@ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true")
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
 
+    /**
+     * Buffer size
+     */
     private static final int BUFFER_SIZE = 8192;
 
+    /**
+     * Web socket requests timeout
+     */
     private static final long TIMEOUT = 600000;
 
     @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
+    public void registerStompEndpoints(StompEndpointRegistry pRegistry) {
         // Endpoint to which the client must access to connect to websocket server
-        registry.addEndpoint("/wsconnect").setHandshakeHandler(handshakeHandler()).setAllowedOrigins("*").withSockJS();
+        pRegistry.addEndpoint("/wsconnect").setHandshakeHandler(handshakeHandler()).setAllowedOrigins("*").withSockJS();
     }
 
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry config) {
+    public void configureMessageBroker(MessageBrokerRegistry pConfig) {
         // endpoint to which websocket client should listen to get messages
-        config.enableSimpleBroker("/topic");
-        config.setApplicationDestinationPrefixes("/myApp");
+        pConfig.enableSimpleBroker("/topic");
+        pConfig.setApplicationDestinationPrefixes("/myApp");
 
     }
 
+    /**
+     *
+     * TODO
+     *
+     * @return DefaultHandshakeHandler
+     * @since 1.0-SNAPSHOT
+     */
     @Bean
     public DefaultHandshakeHandler handshakeHandler() {
 
-        WebSocketPolicy policy = new WebSocketPolicy(WebSocketBehavior.SERVER);
+        final WebSocketPolicy policy = new WebSocketPolicy(WebSocketBehavior.SERVER);
         policy.setInputBufferSize(BUFFER_SIZE);
         policy.setIdleTimeout(TIMEOUT);
 
@@ -55,32 +79,32 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
     }
 
     @Override
-    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> arg0) {
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> pArg0) {
         // Not implemented
     }
 
     @Override
-    public void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> arg0) {
+    public void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> pArg0) {
         // Not implemented
     }
 
     @Override
-    public void configureClientInboundChannel(ChannelRegistration arg0) {
+    public void configureClientInboundChannel(ChannelRegistration pArg0) {
         // Not implemented
     }
 
     @Override
-    public void configureClientOutboundChannel(ChannelRegistration arg0) {
+    public void configureClientOutboundChannel(ChannelRegistration pArg0) {
         // Not implemented
     }
 
     @Override
-    public boolean configureMessageConverters(List<MessageConverter> arg0) {
+    public boolean configureMessageConverters(List<MessageConverter> pArg0) {
         return false;
     }
 
     @Override
-    public void configureWebSocketTransport(WebSocketTransportRegistration arg0) {
+    public void configureWebSocketTransport(WebSocketTransportRegistration pArg0) {
         // Not implemented
     }
 

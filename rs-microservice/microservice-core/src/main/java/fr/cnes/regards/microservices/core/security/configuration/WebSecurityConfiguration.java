@@ -3,8 +3,8 @@
  */
 package fr.cnes.regards.microservices.core.security.configuration;
 
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,17 +24,17 @@ import fr.cnes.regards.microservices.core.security.jwt.JWTAuthenticationFilter;
  */
 @Configuration
 @EnableWebSecurity
-@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     /**
      * Override security configuration to deny all requests unless user can be authenticated through a JWT.
      */
     @Override
-    protected void configure(HttpSecurity pHttp) throws Exception {
+    protected void configure(final HttpSecurity pHttp) throws Exception {
         pHttp.authorizeRequests()
                 .antMatchers("/webjars/springfox-swagger-ui/**/*", "/swagger-resources", "/swagger-resources/**/*",
-                             "/v2/**/*", "/swagger-ui.html")
+                             "/v2/**/*", "/swagger-ui.html", "/info")
                 .permitAll().anyRequest().authenticated().and().csrf().disable()
                 .addFilterBefore(new CorsFilter(), ChannelProcessingFilter.class)
                 .addFilterBefore(new JWTAuthenticationFilter(authenticationManager()),

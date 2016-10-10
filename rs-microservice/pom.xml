@@ -20,8 +20,10 @@
 		<module>client-core</module>
 		<module>report-maven-plugin</module>
 		<module>module-plugins</module>
+		<module>domain-core</module>
+		<module>regards-test</module>
 	</modules>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -33,5 +35,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 </project>

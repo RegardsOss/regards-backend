@@ -16,43 +16,53 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.hateoas.Identifiable;
 import org.springframework.stereotype.Repository;
 
+/**
+ * TODO description
+ * 
+ * @author cmertz
+ *
+ * @param <T>
+ */
 @Repository
 @Profile("test")
 @Primary
 public class RepositoryStub<T extends Identifiable<Long>> implements CrudRepository<T, Long> {
 
-    protected Set<T> entities_ = new HashSet<>();
+    /**
+     * A set of entities
+     */
+    protected Set<T> entities = new HashSet<>();
 
     @Override
     public <S extends T> S save(S pEntity) {
-        entities_.removeIf(r -> r.equals(pEntity));
-        entities_.add(pEntity);
+        this.entities.removeIf(r -> r.equals(pEntity));
+        this.entities.add(pEntity);
         return pEntity;
     }
 
     @Override
     public T findOne(Long pId) {
-        return entities_.stream().filter(r -> r.getId().equals(pId)).findFirst().get();
+        return this.entities.stream().filter(r -> r.getId().equals(pId)).findFirst().get();
     }
 
     @Override
     public boolean exists(Long pId) {
-        return entities_.stream().filter(r -> r.getId().equals(pId)).findAny().isPresent();
+        return this.entities.stream().filter(r -> r.getId().equals(pId)).findAny().isPresent();
     }
 
     @Override
     public long count() {
-        return entities_.size();
+        return this.entities.size();
     }
 
     @Override
     public void delete(Long pId) {
-        entities_.removeIf(r -> r.getId().equals(pId));
+        this.entities.removeIf(r -> r.getId().equals(pId));
     }
 
     @Override
     public void delete(T pEntity) {
-        entities_.remove(pEntity);
+        this.entities.remove(pEntity);
     }
 
     @Override
@@ -64,12 +74,12 @@ public class RepositoryStub<T extends Identifiable<Long>> implements CrudReposit
 
     @Override
     public void deleteAll() {
-        entities_ = new HashSet<>();
+        this.entities = new HashSet<>();
     }
 
     @Override
     public <S extends T> List<S> save(Iterable<S> pEntities) {
-        List<S> savedEntities = new ArrayList<>();
+        final List<S> savedEntities = new ArrayList<>();
 
         for (S entity : pEntities) {
             savedEntities.add(save(entity));
@@ -80,12 +90,20 @@ public class RepositoryStub<T extends Identifiable<Long>> implements CrudReposit
 
     @Override
     public Iterable<T> findAll() {
-        return entities_;
+        return this.entities;
     }
 
     @Override
     public Iterable<T> findAll(Iterable<Long> pIds) {
         return StreamSupport.stream(pIds.spliterator(), false).map(id -> findOne(id)).collect(Collectors.toList());
+    }
+
+    public Set<T> getEntities() {
+        return entities;
+    }
+
+    public void setEntities(Set<T> pEntities) {
+        this.entities = pEntities;
     }
 
 }

@@ -116,7 +116,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
                         } else {
                             decision = "granted";
                         }
-                        LOG.info("Acess {} to resource {} for user {}.", decision, mapping.getResourceMappingId(),
+                        LOG.info("Access {} to resource {} for user {}.", decision, mapping.getResourceMappingId(),
                                  pAuthentication.getName());
                     }
                 } catch (ResourceMappingException e) {

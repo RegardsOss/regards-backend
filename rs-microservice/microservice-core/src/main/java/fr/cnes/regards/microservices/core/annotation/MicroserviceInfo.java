@@ -8,6 +8,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ *
+ * Class MicroserviceInfo
+ *
+ * Meta data informations about a Microservice
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MicroserviceInfo {

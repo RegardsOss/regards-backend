@@ -26,24 +26,46 @@ public class MicroserviceConfiguration {
     /**
      * Projects configurations
      */
-    private final List<ProjectConfiguration> projects_ = new ArrayList<>();
+    private final List<ProjectConfiguration> projects = new ArrayList<>();
 
     /**
      * Common DAO Configuration
      */
     @NestedConfigurationProperty
-    private CommonDaoConfiguration dao_;
+    private CommonDaoConfiguration dao;
 
+    /**
+     *
+     * Getter
+     *
+     * @return projects configuration
+     * @since 1.0-SNAPSHOT
+     */
     public List<ProjectConfiguration> getProjects() {
-        return this.projects_;
+        return this.projects;
     }
 
+    /**
+     *
+     * Getter
+     *
+     * @return common DAO Configuration
+     * @since 1.0-SNAPSHOT
+     */
     public CommonDaoConfiguration getDao() {
-        return dao_;
+        return dao;
     }
 
+    /**
+     *
+     * Setter
+     *
+     * @param pDao
+     *            common DAO Configuration
+     * @since 1.0-SNAPSHOT
+     */
     public void setDao(CommonDaoConfiguration pDao) {
-        dao_ = pDao;
+        dao = pDao;
     }
 
 }

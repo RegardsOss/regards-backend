@@ -30,16 +30,16 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
     /**
      * A list of plugin parameters
      */
-    private final ArrayList<PluginParameter> pluginParameters1_ = new ArrayList<>();
+    private final ArrayList<PluginParameter> pluginParameters1 = new ArrayList<>();
 
     /**
      * 
      */
     public PluginConfigurationRepositoryStub() {
-        this.pluginParameters1_.add(new PluginParameter("name1", "val1"));
-        this.pluginParameters1_.add(new PluginParameter("name2", "val2"));
-        this.entities_
-                .add(new PluginConfiguration(new PluginMetaData(), "conf plugion de test", this.pluginParameters1_, 1));
+        this.pluginParameters1.add(new PluginParameter("name1", "val1"));
+        this.pluginParameters1.add(new PluginParameter("name2", "val2"));
+        this.entities
+                .add(new PluginConfiguration(new PluginMetaData(), "conf plugion de test", this.pluginParameters1, 1));
     }
 
     @Override

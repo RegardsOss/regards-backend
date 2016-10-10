@@ -19,27 +19,57 @@ public class ProjectConfiguration {
      * Project datasource
      */
     @NestedConfigurationProperty
-    private DataSourceProperties datasource_;
+    private DataSourceProperties datasource;
 
     /**
      * Project name
      */
-    private String name_;
+    private String name;
 
+    /**
+     *
+     * Getter
+     *
+     * @return project name
+     * @since 1.0-SNAPSHOT
+     */
     public String getName() {
-        return name_;
+        return name;
     }
 
+    /**
+     *
+     * Setter
+     *
+     * @param pName
+     *            project name
+     * @since 1.0-SNAPSHOT
+     */
     public void setName(String pName) {
-        name_ = pName;
+        name = pName;
     }
 
+    /**
+     *
+     * Getter
+     *
+     * @return project JPA datasource
+     * @since 1.0-SNAPSHOT
+     */
     public DataSourceProperties getDatasource() {
-        return datasource_;
+        return datasource;
     }
 
-    public void setDatasource(DataSourceProperties datasource) {
-        this.datasource_ = datasource;
+    /**
+     *
+     * Setter
+     *
+     * @param pDatasource
+     *            project JPA datasource
+     * @since 1.0-SNAPSHOT
+     */
+    public void setDatasource(DataSourceProperties pDatasource) {
+        this.datasource = pDatasource;
     }
 
 }

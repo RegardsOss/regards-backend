@@ -18,15 +18,12 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 public interface IPluginConfigurationRepository extends CrudRepository<PluginConfiguration, Long> {
 
     /**
-    *
-    * Find a {@link List} of {@link PluginConfiguration} for a plugin and for current tenant
-    *
-    * @param pPluginId
-    *            plugin identifier
-    * @param pTenant
-    *            tenant
-    * @return a {@link List} of {@link PluginConfiguration}
-    * @since 1.0-SNAPSHOT
-    */
-   List<PluginConfiguration> findByPluginIdAndTenantOrderByPriorityOrderDesc(String pPluginId);
+     *
+     * Find a {@link List} of {@link PluginConfiguration} for a plugin and for current tenant
+     *
+     * @param pPluginId
+     *            plugin identifier
+     * @return a {@link List} of {@link PluginConfiguration}
+     */
+    List<PluginConfiguration> findByPluginIdAndTenantOrderByPriorityOrderDesc(String pPluginId);
 }

@@ -17,7 +17,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.springframework.hateoas.Identifiable;;
+import org.springframework.hateoas.Identifiable;
 
 /**
  * Class PluginConfiguration
@@ -36,188 +36,125 @@ public class PluginConfiguration implements Identifiable<Long> {
     @Id
     @GeneratedValue
     private Long id;
-    
+
     /**
      * Unique identifier of the plugin. This id is the id defined in the "@Plugin" annotation of the plugin
-     * implementation class
+     * implementation class.
      */
-    private String pluginId_;
+    private String pluginId;
 
     /**
      * Label to identify the configuration.
      */
-    private String label_;
+    private String label;
 
     /**
-     * Version of the plugin configuration. Equals to the plugin version_ when configurer. This attribute is used to
-     * check if the saved configuration plugin version_ differs from the loaded plugin
+     * Version of the plugin configuration. Is set with the plugin version. This attribute is used to check if the saved
+     * configuration plugin version differs from the loaded plugin.
      */
-    private String version_;
+    private String version;
 
     /**
      * Priority order of the plugin.
      */
-    private Integer priorityOrder_;
+    private Integer priorityOrder;
 
     /**
-     * Configuration parameters_ of the plugin.
+     * Configuration parameters of the plugin
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE", joinColumns = {
             @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id") }, inverseJoinColumns = {
                     @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id") })
-    private List<PluginParameter> parameters_;
+    private List<PluginParameter> parameters;
 
     /**
      * Default constructor
-     *
      */
     public PluginConfiguration() {
         super();
     }
 
     /**
+     * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}
      * 
      * @param pPluginMetaData
-     *            : the plugin's metadata
+     *            the plugin's metadata
      * @param pLabel
-     *            : the label
+     *            the label
      * @param pParameters
-     *            : the list of parameters_
+     *            the list of parameters
      * @param pOrder
-     *            : the order
+     *            the order
      */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel,
             final List<PluginParameter> pParameters, final int pOrder) {
         super();
-        pluginId_ = pPluginMetaData.getMetaDataId();
-        version_ = pPluginMetaData.getVersion();
-        parameters_ = pParameters;
-        priorityOrder_ = pOrder;
-        label_ = pLabel;
+        pluginId = pPluginMetaData.getPluginId();
+        version = pPluginMetaData.getVersion();
+        parameters = pParameters;
+        priorityOrder = pOrder;
+        label = pLabel;
     }
 
     /**
-     *
-     * Plugin Parameter getter
-     *
-     * @param pParameterName
-     *            : the parameter
+     * Return the value of a specific parameter
      * 
-     * @return the parameter's value
+     * @param pParameterName
+     *            the parameter to get the value
+     * @return the value of the parameter
      */
     public final String getParameterValue(String pParameterName) {
         String value = null;
-        if (parameters_ != null) {
-            for (final PluginParameter parameter : parameters_) {
-                if (parameter.getName().equals(pParameterName)) {
-                    value = parameter.getValue();
-                    break;
-                }
-            }
+        if (parameters != null) {
+            value = parameters.stream().filter(s -> s.getName().equals(pParameterName)).findFirst().get().getValue();
         }
         return value;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the label
-     */
     public final String getLabel() {
-        return label_;
+        return label;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pLabel
-     *            the label_ to set
-     */
     public final void setLabel(String pLabel) {
-        label_ = pLabel;
+        label = pLabel;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the version_
-     */
     public final String getVersion() {
-        return version_;
+        return version;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pVersion
-     *            the version_ to set
-     */
     public final void setVersion(String pVersion) {
-        version_ = pVersion;
+        version = pVersion;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the pLuginId
-     */
     public final String getPluginId() {
-        return pluginId_;
+        return pluginId;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pPluginId
-     *            the pLuginId to set
-     */
     public final void setPluginId(String pPluginId) {
-        pluginId_ = pPluginId;
+        pluginId = pPluginId;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the order
-     */
     public final Integer getPriorityOrder() {
-        return priorityOrder_;
+        return priorityOrder;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pOrder
-     *            the order to set
-     */
     public final void setPriorityOrder(Integer pOrder) {
-        priorityOrder_ = pOrder;
+        priorityOrder = pOrder;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the parameters_
-     */
     public final List<PluginParameter> getParameters() {
-        return parameters_;
+        return parameters;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pParameters
-     *            the parameters_ to set
-     */
     public final void setParameters(List<PluginParameter> pParameters) {
-        parameters_ = pParameters;
+        parameters = pParameters;
     }
 
     @Override
     public Long getId() {
         return this.id;
     }
-
 
 }

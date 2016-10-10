@@ -6,27 +6,72 @@ package fr.cnes.regards.microservices.core.configuration.common;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
+/**
+ *
+ * Class InstanceConfiguration
+ *
+ * DAO Instance database configuration
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 public class InstanceConfiguration {
 
-    private Boolean enabled_;
+    /**
+     * Is Instance database enabled ?
+     */
+    private Boolean enabled;
 
+    /**
+     * Instance JPA Datasource
+     */
     @NestedConfigurationProperty
-    private DataSourceProperties datasource_;
+    private DataSourceProperties datasource;
 
+    /**
+     *
+     * Setter
+     *
+     * @param datasource
+     *            instance JPA datasource
+     * @since 1.0-SNAPSHOT
+     */
     public void setDatasource(DataSourceProperties datasource) {
-        this.datasource_ = datasource;
+        this.datasource = datasource;
     }
 
+    /**
+     *
+     * Getter
+     *
+     * @return instance JPA Datasource
+     * @since 1.0-SNAPSHOT
+     */
     public DataSourceProperties getDatasource() {
-        return this.datasource_;
+        return this.datasource;
     }
 
+    /**
+     *
+     * Getter
+     *
+     * @return Is Instance database enabled ?
+     * @since 1.0 SNAPSHOT
+     */
     public Boolean getEnabled() {
-        return enabled_;
+        return enabled;
     }
 
+    /**
+     *
+     * Setter
+     *
+     * @param pEnabled
+     *            Is Instance database enabled ?
+     * @since 1.0 SNAPSHOT
+     */
     public void setEnabled(Boolean pEnabled) {
-        enabled_ = pEnabled;
+        enabled = pEnabled;
     }
 
 }

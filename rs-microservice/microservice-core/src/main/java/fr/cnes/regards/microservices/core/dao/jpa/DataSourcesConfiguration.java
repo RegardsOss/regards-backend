@@ -58,33 +58,36 @@ public class DataSourcesConfiguration {
      */
     public static final String EMBEDDED_URL_BASE_NAME = "applicationdb;shutdown=true;";
 
+    /**
+     * Microservice globale configuration
+     */
     @Autowired
-    private MicroserviceConfiguration configuration_;
+    private MicroserviceConfiguration configuration;
 
     /**
      *
      * List of data sources for each configured project.
      *
-     * @return
+     * @return Map<Tenant, DataSource>
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = { "dataSources" })
     public Map<String, DataSource> getDataSources() {
 
-        Map<String, DataSource> datasources = new HashMap<>();
+        final Map<String, DataSource> datasources = new HashMap<>();
 
-        for (ProjectConfiguration project : configuration_.getProjects()) {
-            if (configuration_.getDao().getEmbedded()) {
-                DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        for (final ProjectConfiguration project : configuration.getProjects()) {
+            if (configuration.getDao().getEmbedded()) {
+                final DriverManagerDataSource dataSource = new DriverManagerDataSource();
                 dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-                dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+                dataSource.setUrl(EMBEDDED_HSQL_URL + configuration.getDao().getEmbeddedPath()
                         + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + project.getName()
                         + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
                         + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
                 datasources.put(project.getName(), dataSource);
             } else {
-                DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
-                        .driverClassName(configuration_.getDao().getDriverClassName())
+                final DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
+                        .driverClassName(configuration.getDao().getDriverClassName())
                         .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
                         .url(project.getDatasource().getUrl());
                 datasources.put(project.getName(), factory.build());
@@ -98,61 +101,65 @@ public class DataSourcesConfiguration {
      *
      * Default data source for persistence unit projects.
      *
-     * @return
+     * @return datasource
      * @since 1.0-SNAPSHOT
      */
     @Bean
     @Primary
     public DataSource projectsDataSource() {
 
-        ProjectConfiguration project = configuration_.getProjects().get(0);
+        DataSource datasource = null;
+        final ProjectConfiguration project = configuration.getProjects().get(0);
 
-        if (configuration_.getDao().getEmbedded()) {
-            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        if (configuration.getDao().getEmbedded()) {
+            final DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration.getDao().getEmbeddedPath()
                     + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + project.getName()
                     + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
                     + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
 
-            return dataSource;
+            datasource = dataSource;
         } else {
-            DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
-                    .driverClassName(configuration_.getDao().getDriverClassName())
+            final DataSourceBuilder factory = DataSourceBuilder.create(project.getDatasource().getClassLoader())
+                    .driverClassName(configuration.getDao().getDriverClassName())
                     .username(project.getDatasource().getUsername()).password(project.getDatasource().getPassword())
                     .url(project.getDatasource().getUrl());
-            return factory.build();
+            datasource = factory.build();
         }
+        return datasource;
     }
 
     /**
      *
      * Default data source for persistence unit instance.
      *
-     * @return
+     * @return datasource
      * @since 1.0-SNAPSHOT
      */
     @Bean
     @ConditionalOnProperty("microservice.dao.instance.enabled")
     public DataSource instanceDataSource() {
 
-        if (configuration_.getDao().getEmbedded()) {
-            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        DataSource datasource = null;
+        if (configuration.getDao().getEmbedded()) {
+            final DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration_.getDao().getEmbeddedPath()
+            dataSource.setUrl(EMBEDDED_HSQL_URL + configuration.getDao().getEmbeddedPath()
                     + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR + "instance"
                     + DataSourcesConfiguration.EMBEDDED_URL_SEPARATOR
                     + DataSourcesConfiguration.EMBEDDED_URL_BASE_NAME);
-            return dataSource;
+            datasource = dataSource;
         } else {
-            DataSourceBuilder factory = DataSourceBuilder
-                    .create(configuration_.getDao().getInstance().getDatasource().getClassLoader())
-                    .driverClassName(configuration_.getDao().getDriverClassName())
-                    .username(configuration_.getDao().getInstance().getDatasource().getUsername())
-                    .password(configuration_.getDao().getInstance().getDatasource().getPassword())
-                    .url(configuration_.getDao().getInstance().getDatasource().getUrl());
-            return factory.build();
+            final DataSourceBuilder factory = DataSourceBuilder
+                    .create(configuration.getDao().getInstance().getDatasource().getClassLoader())
+                    .driverClassName(configuration.getDao().getDriverClassName())
+                    .username(configuration.getDao().getInstance().getDatasource().getUsername())
+                    .password(configuration.getDao().getInstance().getDatasource().getPassword())
+                    .url(configuration.getDao().getInstance().getDatasource().getUrl());
+            datasource = factory.build();
         }
+        return datasource;
     }
 
 }
