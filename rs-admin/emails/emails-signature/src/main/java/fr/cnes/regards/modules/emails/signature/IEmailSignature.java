@@ -5,11 +5,7 @@ package fr.cnes.regards.modules.emails.signature;
 
 import java.util.List;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-
 import org.springframework.http.HttpEntity;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,8 +20,6 @@ import fr.cnes.regards.modules.emails.domain.EmailWithRecipientsDTO;
  *
  * @author Xavier-Alexandre Brochard
  */
-@Produces(MediaType.APPLICATION_JSON_VALUE)
-@Consumes(MediaType.APPLICATION_JSON_VALUE)
 public interface IEmailSignature {
 
     /**
