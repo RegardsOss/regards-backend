@@ -23,6 +23,7 @@
 		<module>domain-core</module>
 		<module>regards-test</module>
 		<module>regards-starter-websocket</module>
+		<module>regards-starter-swagger</module>
 	</modules>
 
 	<build>

@@ -1,13 +1,13 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.configuration.swagger;
+package fr.cnes.regards.framework.starter.swagger;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -36,6 +36,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
+@ConditionalOnProperty(name = "regards.swagger.enabled", havingValue = "true")
 @Configuration
 @EnableSwagger2 // Enable swagger 2.0 spec
 public class SwaggerConfiguration {
@@ -55,11 +56,20 @@ public class SwaggerConfiguration {
      */
     public static final String AUTH_SCOPE_GLOBAL_DESC = "accessEverything";
 
-    /**
-     * Swagger api name
-     */
-    @Value("${swagger.api.name:unknwon}")
-    private String swaggerApiName;
+    @Value("${swagger.api.name:API name}")
+    private String apiName;
+
+    @Value("${swagger.api.title:API title}")
+    private String apiTitle;
+
+    @Value("${swagger.api.description:API description}")
+    private String apiDescription;
+
+    @Value("${swagger.api.license:Apache License Version 2.0}")
+    private String apiLicense;
+
+    @Value("${swagger.api.version:API version}")
+    private String apiVersion;
 
     /**
      * Microservice port
@@ -74,10 +84,13 @@ public class SwaggerConfiguration {
     private String serverAdress;
 
     /**
-     * Swagger api informations
+     * Initialize swagger builder
+     *
+     * @return Swagger API builder
      */
-    @Autowired
-    private ApiInfoBuilder apiInfoBuilder;
+    private ApiInfoBuilder apiInfoBuilder() {
+        return new ApiInfoBuilder().title(apiTitle).description(apiDescription).license(apiLicense).version(apiVersion);
+    }
 
     /**
      *
@@ -95,11 +108,11 @@ public class SwaggerConfiguration {
         final List<SecurityContext> ctxs = new ArrayList<>();
         ctxs.add(securityContext());
 
-        final ApiInfo infos = apiInfoBuilder.termsOfServiceUrl(String.format("http://%s:%s", serverAdress,
-                                                                              serverPort)).build();
+        final ApiInfo infos = apiInfoBuilder()
+                .termsOfServiceUrl(String.format("http://%s:%s", serverAdress, serverPort)).build();
 
-        return new Docket(DocumentationType.SWAGGER_2).groupName(swaggerApiName).apiInfo(infos).select()
-                .paths(apiPaths()).build().securitySchemes(schemes).securityContexts(ctxs);
+        return new Docket(DocumentationType.SWAGGER_2).groupName(apiName).apiInfo(infos).select().paths(apiPaths())
+                .build().securitySchemes(schemes).securityContexts(ctxs);
     }
 
     /**
@@ -122,8 +135,8 @@ public class SwaggerConfiguration {
      */
     private OAuth securitySchema() {
         final AuthorizationScope authorizationScope = new AuthorizationScope(AUTH_SCOPE_GLOBAL, AUTH_SCOPE_GLOBAL_DESC);
-        final LoginEndpoint loginEndpoint = new LoginEndpoint("http://" + serverAdress + ":" + serverPort
-                + "/oauth/token");
+        final LoginEndpoint loginEndpoint = new LoginEndpoint(
+                "http://" + serverAdress + ":" + serverPort + "/oauth/token");
         final GrantType grantType = new ImplicitGrant(loginEndpoint, "access_token");
         final List<AuthorizationScope> authList = new ArrayList<>();
         authList.add(authorizationScope);
