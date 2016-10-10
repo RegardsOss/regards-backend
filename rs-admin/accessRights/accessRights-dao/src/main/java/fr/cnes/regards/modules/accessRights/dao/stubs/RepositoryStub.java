@@ -21,38 +21,38 @@ import org.springframework.stereotype.Repository;
 @Primary
 public class RepositoryStub<T extends Identifiable<Long>> implements CrudRepository<T, Long> {
 
-    protected Set<T> entities_ = new HashSet<>();
+    protected Set<T> entities = new HashSet<>();
 
     @Override
     public <S extends T> S save(S pEntity) {
-        entities_.removeIf(r -> r.equals(pEntity));
-        entities_.add(pEntity);
+        entities.removeIf(r -> r.equals(pEntity));
+        entities.add(pEntity);
         return pEntity;
     }
 
     @Override
     public T findOne(Long pId) {
-        return entities_.stream().filter(r -> r.getId().equals(pId)).findFirst().get();
+        return entities.stream().filter(r -> r.getId().equals(pId)).findFirst().get();
     }
 
     @Override
     public boolean exists(Long pId) {
-        return entities_.stream().filter(r -> r.getId().equals(pId)).findAny().isPresent();
+        return entities.stream().filter(r -> r.getId().equals(pId)).findAny().isPresent();
     }
 
     @Override
     public long count() {
-        return entities_.size();
+        return entities.size();
     }
 
     @Override
     public void delete(Long pId) {
-        entities_.removeIf(r -> r.getId().equals(pId));
+        entities.removeIf(r -> r.getId().equals(pId));
     }
 
     @Override
     public void delete(T pEntity) {
-        entities_.remove(pEntity);
+        entities.remove(pEntity);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class RepositoryStub<T extends Identifiable<Long>> implements CrudReposit
 
     @Override
     public void deleteAll() {
-        entities_ = new HashSet<>();
+        entities = new HashSet<>();
     }
 
     @Override
@@ -80,7 +80,7 @@ public class RepositoryStub<T extends Identifiable<Long>> implements CrudReposit
 
     @Override
     public Iterable<T> findAll() {
-        return entities_;
+        return entities;
     }
 
     @Override

@@ -17,9 +17,9 @@ import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 public class AccountRepositoryStub extends RepositoryStub<Account> implements IAccountRepository {
 
     public AccountRepositoryStub() {
-        entities_.add(new Account(0L, "email@email.email", "firstName", "lastName", "flastname", "password",
+        entities.add(new Account(0L, "email@email.email", "firstName", "lastName", "flastname", "password",
                 AccountStatus.ACCEPTED, "code"));
-        entities_.add(new Account(0L, "toto@toto.toto", "Toto", "toto", "tttoto", "mdp", AccountStatus.PENDING,
+        entities.add(new Account(0L, "toto@toto.toto", "Toto", "toto", "tttoto", "mdp", AccountStatus.PENDING,
                 "anotherCode"));
     }
 }

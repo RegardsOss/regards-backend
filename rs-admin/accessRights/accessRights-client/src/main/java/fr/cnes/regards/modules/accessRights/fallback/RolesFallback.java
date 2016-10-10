@@ -24,61 +24,61 @@ public class RolesFallback implements RolesClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectUsersFallback.class);
 
-    private static final String fallBackErrorMessage_ = "RS-ADMIN /roles request error. Fallback.";
+    private static final String fallBackErrorMessage = "RS-ADMIN /roles request error. Fallback.";
 
     @Override
     public HttpEntity<List<Resource<Role>>> retrieveRoleList() {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Resource<Role>> createRole(Role pNewRole) throws AlreadyExistingException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Resource<Role>> retrieveRole(Long pRoleId) {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> updateRole(Long pRoleId, Role pUpdatedRole) throws OperationNotSupportedException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> removeRole(Long pRoleId) throws OperationNotSupportedException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(Long pRoleId) {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> updateRoleResourcesAccess(Long pRoleId, List<ResourcesAccess> pResourcesAccessList)
             throws OperationNotSupportedException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> clearRoleResourcesAccess(Long pRoleId) {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(Long pRoleId)
             throws OperationNotSupportedException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 

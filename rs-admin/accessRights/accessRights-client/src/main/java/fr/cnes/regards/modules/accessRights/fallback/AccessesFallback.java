@@ -23,47 +23,47 @@ public class AccessesFallback implements AccessesClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(AccessesFallback.class);
 
-    private static final String fallBackErrorMessage_ = "RS-ADMIN /accesses request error. Fallback.";
+    private static final String fallBackErrorMessage = "RS-ADMIN /accesses request error. Fallback.";
 
     @Override
     public HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Resource<ProjectUser>> requestAccess(ProjectUser pAccessRequest) throws AlreadyExistingException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> acceptAccessRequest(Long pAccessId) throws OperationNotSupportedException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> denyAccessRequest(Long pAccessId) throws OperationNotSupportedException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> removeAccessRequest(Long pAccessId) {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<List<Resource<String>>> getAccessSettingList() {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> updateAccessSetting(String pUpdatedProjectUserSetting) throws InvalidValueException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 

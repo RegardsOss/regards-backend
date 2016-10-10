@@ -25,73 +25,73 @@ public class AccountsFallback implements AccountsClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(AccountsFallback.class);
 
-    private static final String fallBackErrorMessage_ = "RS-ADMIN /accounts request error. Fallback.";
+    private static final String fallBackErrorMessage = "RS-ADMIN /accounts request error. Fallback.";
 
     @Override
     public HttpEntity<List<Resource<Account>>> retrieveAccountList() {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Resource<Account>> createAccount(Account pNewAccount) throws AlreadyExistingException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Resource<Account>> retrieveAccount(Long pAccountId) {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> updateAccount(Long pAccountId, Account pUpdatedAccount)
             throws OperationNotSupportedException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> removeAccount(Long pAccountId) {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> unlockAccount(Long pAccountId, String pUnlockCode) throws InvalidValueException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> changeAccountPassword(Long pAccountId, String pResetCode, String pNewPassword)
             throws InvalidValueException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> codeForAccount(String pEmail, CodeType pType) {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<List<Resource<String>>> retrieveAccountSettings() {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Void> updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
     public HttpEntity<Boolean> validatePassword(String pLogin, String pPassword) throws NoSuchElementException {
-        LOG.error(fallBackErrorMessage_);
+        LOG.error(fallBackErrorMessage);
         return null;
     }
 

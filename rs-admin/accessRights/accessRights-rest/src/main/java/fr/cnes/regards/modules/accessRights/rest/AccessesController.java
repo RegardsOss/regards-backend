@@ -34,7 +34,7 @@ import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 public class AccessesController implements AccessesSignature {
 
     @Autowired
-    private IAccessRequestService accessRequestService_;
+    private IAccessRequestService accessRequestService;
 
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
@@ -64,7 +64,7 @@ public class AccessesController implements AccessesSignature {
     @Override
     @ResourceAccess(description = "retrieve the list of access request", name = "")
     public HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
-        List<ProjectUser> projectUsers = accessRequestService_.retrieveAccessRequestList();
+        List<ProjectUser> projectUsers = accessRequestService.retrieveAccessRequestList();
         List<Resource<ProjectUser>> resources = projectUsers.stream().map(p -> new Resource<>(p))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -74,7 +74,7 @@ public class AccessesController implements AccessesSignature {
     @ResourceAccess(description = "create a new access request", name = "")
     public HttpEntity<Resource<ProjectUser>> requestAccess(@Valid @RequestBody ProjectUser pAccessRequest)
             throws AlreadyExistingException {
-        ProjectUser created = accessRequestService_.requestAccess(pAccessRequest);
+        ProjectUser created = accessRequestService.requestAccess(pAccessRequest);
         Resource<ProjectUser> resource = new Resource<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
@@ -83,7 +83,7 @@ public class AccessesController implements AccessesSignature {
     @ResourceAccess(description = "accept the access request", name = "")
     public HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException {
-        accessRequestService_.acceptAccessRequest(pAccessId);
+        accessRequestService.acceptAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -91,21 +91,21 @@ public class AccessesController implements AccessesSignature {
     @ResourceAccess(description = "deny the access request", name = "")
     public HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException {
-        accessRequestService_.denyAccessRequest(pAccessId);
+        accessRequestService.denyAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "remove the access request", name = "")
     public HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId) {
-        accessRequestService_.removeAccessRequest(pAccessId);
+        accessRequestService.removeAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "retrieve the list of setting managing the access requests", name = "")
     public HttpEntity<List<Resource<String>>> getAccessSettingList() {
-        List<String> accessSettings = accessRequestService_.getAccessSettingList();
+        List<String> accessSettings = accessRequestService.getAccessSettingList();
         List<Resource<String>> resources = accessSettings.stream().map(a -> new Resource<>(a))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -115,7 +115,7 @@ public class AccessesController implements AccessesSignature {
     @ResourceAccess(description = "update the setting managing the access requests", name = "")
     public HttpEntity<Void> updateAccessSetting(@Valid @RequestBody String pUpdatedProjectUserSetting)
             throws InvalidValueException {
-        accessRequestService_.updateAccessSetting(pUpdatedProjectUserSetting);
+        accessRequestService.updateAccessSetting(pUpdatedProjectUserSetting);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

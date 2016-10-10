@@ -47,7 +47,7 @@ import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 public class ProjectUsersController implements ProjectUsersSignature {
 
     @Autowired
-    private IProjectUserService projectUserService_;
+    private IProjectUserService projectUserService;
 
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
@@ -77,7 +77,7 @@ public class ProjectUsersController implements ProjectUsersSignature {
     @Override
     @ResourceAccess(description = "retrieve the list of users of the project", name = "")
     public HttpEntity<List<Resource<ProjectUser>>> retrieveProjectUserList() {
-        List<ProjectUser> users = projectUserService_.retrieveUserList();
+        List<ProjectUser> users = projectUserService.retrieveUserList();
         List<Resource<ProjectUser>> resources = users.stream().map(u -> new Resource<>(u)).collect(Collectors.toList());
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
@@ -85,7 +85,7 @@ public class ProjectUsersController implements ProjectUsersSignature {
     @Override
     @ResourceAccess(description = "retrieve the project user and only display  metadata")
     public HttpEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long userId) {
-        ProjectUser user = projectUserService_.retrieveUser(userId);
+        ProjectUser user = projectUserService.retrieveUser(userId);
         Resource<ProjectUser> resource = new Resource<ProjectUser>(user);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -94,21 +94,21 @@ public class ProjectUsersController implements ProjectUsersSignature {
     @ResourceAccess(description = "update the project user")
     public HttpEntity<Void> updateProjectUser(@PathVariable("user_id") Long userId,
             @RequestBody ProjectUser pUpdatedProjectUser) throws OperationNotSupportedException {
-        projectUserService_.updateUser(userId, pUpdatedProjectUser);
+        projectUserService.updateUser(userId, pUpdatedProjectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "remove the project user from the instance")
     public HttpEntity<Void> removeProjectUser(@PathVariable("user_id") Long userId) {
-        projectUserService_.removeUser(userId);
+        projectUserService.removeUser(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "retrieve the list of all metadata of the user")
     public HttpEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(@PathVariable("user_id") Long pUserId) {
-        List<MetaData> metaDatas = projectUserService_.retrieveUserMetaData(pUserId);
+        List<MetaData> metaDatas = projectUserService.retrieveUserMetaData(pUserId);
         List<Resource<MetaData>> resources = metaDatas.stream().map(m -> new Resource<>(m))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -118,14 +118,14 @@ public class ProjectUsersController implements ProjectUsersSignature {
     @ResourceAccess(description = "update the list of all metadata of the user")
     public HttpEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") Long userId,
             @Valid @RequestBody List<MetaData> pUpdatedUserMetaData) throws OperationNotSupportedException {
-        projectUserService_.updateUserMetaData(userId, pUpdatedUserMetaData);
+        projectUserService.updateUserMetaData(userId, pUpdatedUserMetaData);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "remove all the metadata of the user")
     public HttpEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") Long userId) {
-        projectUserService_.removeUserMetaData(userId);
+        projectUserService.removeUserMetaData(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -135,7 +135,7 @@ public class ProjectUsersController implements ProjectUsersSignature {
             @PathVariable("user_login") String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) String pBorrowedRoleName)
             throws OperationNotSupportedException {
-        Couple<List<ResourcesAccess>, Role> couple = projectUserService_
+        Couple<List<ResourcesAccess>, Role> couple = projectUserService
                 .retrieveProjectUserAccessRights(pUserLogin, pBorrowedRoleName);
         Resource<Couple<List<ResourcesAccess>, Role>> resource = new Resource<>(couple);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -145,14 +145,14 @@ public class ProjectUsersController implements ProjectUsersSignature {
     @ResourceAccess(description = "update the list of specific user access rights")
     public HttpEntity<Void> updateProjectUserAccessRights(@PathVariable("user_login") String pUserLogin,
             @Valid @RequestBody List<ResourcesAccess> pUpdatedUserAccessRights) throws OperationNotSupportedException {
-        projectUserService_.updateUserAccessRights(pUserLogin, pUpdatedUserAccessRights);
+        projectUserService.updateUserAccessRights(pUserLogin, pUpdatedUserAccessRights);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "remove all the specific access rights")
     public @ResponseBody HttpEntity<Void> removeProjectUserAccessRights(@PathVariable("user_login") String pUserLogin) {
-        projectUserService_.removeUserAccessRights(pUserLogin);
+        projectUserService.removeUserAccessRights(pUserLogin);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

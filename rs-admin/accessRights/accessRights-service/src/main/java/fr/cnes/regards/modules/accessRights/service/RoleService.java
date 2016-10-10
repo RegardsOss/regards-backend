@@ -28,7 +28,7 @@ public class RoleService implements IRoleService {
     private final IRoleRepository roleRepository_;
 
     @Resource
-    private List<Role> defaultRoles_;
+    private List<Role> defaultRoles;
 
     public RoleService(final IRoleRepository pRoleRepository) {
         super();
@@ -40,7 +40,7 @@ public class RoleService implements IRoleService {
         // Ensure the existence of default roles
         // If not, add them from their bean definition in defaultRoles.xml
         // Get all projects in database
-        for (final Role role : defaultRoles_) {
+        for (final Role role : defaultRoles) {
             if (!existRole(role)) {
                 createRole(role);
             }

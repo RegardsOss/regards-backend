@@ -15,21 +15,21 @@ import fr.cnes.regards.modules.accessRights.domain.projects.Role;
  */
 public class RoleLineageIterator implements Iterator<Role> {
 
-    private Role role_;
+    private Role role;
 
     public RoleLineageIterator(Role pRole) {
-        role_ = pRole;
+        role = pRole;
     }
 
     @Override
     public boolean hasNext() {
-        return role_.getParentRole() != null;
+        return role.getParentRole() != null;
     }
 
     @Override
     public Role next() {
-        role_ = role_.getParentRole();
-        return role_;
+        role = role.getParentRole();
+        return role;
     }
 
 }

@@ -23,11 +23,11 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 @Primary
 public class ProjectUserRepositoryStub extends RepositoryStub<ProjectUser> implements IProjectUserRepository {
 
-    private final IAccountRepository accountRepository_;
+    private final IAccountRepository accountRepository;
 
     public ProjectUserRepositoryStub(final IAccountRepository pAccountService) throws AlreadyExistingException {
         super();
-        accountRepository_ = pAccountService;
+        accountRepository = pAccountService;
 
         final Role rolePublic = new Role(0L, "Public", null, null, null, true, true);
         final Role roleRegisteredUser = new Role(1L, "Registered User", rolePublic, null, null, false, true);
@@ -35,17 +35,17 @@ public class ProjectUserRepositoryStub extends RepositoryStub<ProjectUser> imple
         final Role roleProjectAdmin = new Role(3L, "Project Admin", roleAdmin, null, null, false, true);
         final Role roleInstanceAdmin = new Role(4L, "Instance Admin", roleProjectAdmin, null, null, false, true);
 
-        entities_.add(buildProjectUser(0L, "instance_admin@cnes.fr", roleInstanceAdmin));
-        entities_.add(buildProjectUser(1L, "project_admin_0@cnes.fr", roleProjectAdmin));
-        entities_.add(buildProjectUser(2L, "project_admin_1@cnes.fr", roleProjectAdmin));
-        entities_.add(buildProjectUser(3L, "admin_0@cnes.fr", roleAdmin));
-        entities_.add(buildProjectUser(4L, "admin_1@cnes.fr", roleAdmin));
-        entities_.add(buildProjectUser(5L, "registered_user_0@cnes.fr", roleRegisteredUser));
-        entities_.add(buildProjectUser(6L, "registered_user_1@cnes.fr", roleRegisteredUser));
-        entities_.add(buildProjectUser(7L, "registered_user_2@cnes.fr", roleRegisteredUser));
-        entities_.add(buildProjectUser(8L, "registered_user_3@cnes.fr", roleRegisteredUser));
-        entities_.add(buildProjectUser(9L, "public_0@cnes.fr", rolePublic));
-        entities_.add(buildProjectUser(10L, "public_1@cnes.fr", rolePublic));
+        entities.add(buildProjectUser(0L, "instance_admin@cnes.fr", roleInstanceAdmin));
+        entities.add(buildProjectUser(1L, "project_admin_0@cnes.fr", roleProjectAdmin));
+        entities.add(buildProjectUser(2L, "project_admin_1@cnes.fr", roleProjectAdmin));
+        entities.add(buildProjectUser(3L, "admin_0@cnes.fr", roleAdmin));
+        entities.add(buildProjectUser(4L, "admin_1@cnes.fr", roleAdmin));
+        entities.add(buildProjectUser(5L, "registered_user_0@cnes.fr", roleRegisteredUser));
+        entities.add(buildProjectUser(6L, "registered_user_1@cnes.fr", roleRegisteredUser));
+        entities.add(buildProjectUser(7L, "registered_user_2@cnes.fr", roleRegisteredUser));
+        entities.add(buildProjectUser(8L, "registered_user_3@cnes.fr", roleRegisteredUser));
+        entities.add(buildProjectUser(9L, "public_0@cnes.fr", rolePublic));
+        entities.add(buildProjectUser(10L, "public_1@cnes.fr", rolePublic));
 
         // getByEmail("admin_0@cnes.fr").accept();
         // getByEmail("project_admin_0@cnes.fr").accept();
@@ -56,7 +56,7 @@ public class ProjectUserRepositoryStub extends RepositoryStub<ProjectUser> imple
             throws AlreadyExistingException {
 
         Account account = new Account(pMail);
-        account = accountRepository_.save(account);
+        account = accountRepository.save(account);
 
         ProjectUser projectUser;
         projectUser = new ProjectUser(pProjectUserId, LocalDateTime.now(), LocalDateTime.now(),
@@ -66,7 +66,7 @@ public class ProjectUserRepositoryStub extends RepositoryStub<ProjectUser> imple
 
     @Override
     public ProjectUser findOneByLogin(final String pLogin) {
-        return entities_.stream().filter(r -> r.getAccount().getLogin().equals(pLogin)).findFirst().get();
+        return entities.stream().filter(r -> r.getAccount().getLogin().equals(pLogin)).findFirst().get();
     }
 
     @Override

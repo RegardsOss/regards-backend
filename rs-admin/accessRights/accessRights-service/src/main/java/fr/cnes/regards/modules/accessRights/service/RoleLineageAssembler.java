@@ -15,16 +15,16 @@ import fr.cnes.regards.modules.accessRights.domain.projects.Role;
  */
 public class RoleLineageAssembler {
 
-    private Role role_;
+    private Role role;
 
     public RoleLineageAssembler of(Role pRole) {
-        role_ = pRole;
+        role = pRole;
         return this;
     }
 
     public List<Role> get() {
         List<Role> ancestors = new ArrayList<>();
-        Iterator<Role> iterator = new RoleLineageIterator(role_);
+        Iterator<Role> iterator = new RoleLineageIterator(role);
 
         while (iterator.hasNext()) {
             Role role = iterator.next();

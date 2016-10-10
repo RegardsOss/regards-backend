@@ -46,29 +46,29 @@ public class RoleRepositoryStub extends RepositoryStub<Role> implements IRoleRep
                 projectUsers_.subList(1, 4), false, true);
         Role roleInstanceAdmin = new Role(4L, "Instance Admin", roleProjectAdmin, new ArrayList<>(),
                 projectUsers_.subList(0, 2), false, true);
-        entities_.add(rolePublic);
-        entities_.add(roleRegisteredUser);
-        entities_.add(roleAdmin);
-        entities_.add(roleProjectAdmin);
-        entities_.add(roleInstanceAdmin);
+        entities.add(rolePublic);
+        entities.add(roleRegisteredUser);
+        entities.add(roleAdmin);
+        entities.add(roleProjectAdmin);
+        entities.add(roleInstanceAdmin);
 
         // Init some custom roles
         Role role0 = new Role(5L, "Role 0", rolePublic, permissionList_.subList(1, 2), projectUsers_.subList(0, 1));
         Role role1 = new Role(6L, "Role 1", rolePublic, permissionList_.subList(0, 2), projectUsers_.subList(1, 2));
         Role role2 = new Role(7L, "Role 2", rolePublic, permissionList_.subList(1, 3), projectUsers_.subList(0, 2));
-        entities_.add(role0);
-        entities_.add(role1);
-        entities_.add(role2);
+        entities.add(role0);
+        entities.add(role1);
+        entities.add(role2);
     }
 
     @Override
     public Role findByIsDefault(boolean pIsDefault) {
-        return entities_.stream().filter(r -> r.isDefault() == pIsDefault).findFirst().get();
+        return entities.stream().filter(r -> r.isDefault() == pIsDefault).findFirst().get();
     }
 
     @Override
     public Role findOneByName(String pBorrowedRoleName) {
-        return entities_.stream().filter(r -> r.getName().equals(pBorrowedRoleName)).findFirst().get();
+        return entities.stream().filter(r -> r.getName().equals(pBorrowedRoleName)).findFirst().get();
     }
 
 }
