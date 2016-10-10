@@ -35,9 +35,6 @@ public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentif
         if (authentication != null) {
             tenant = authentication.getPrincipal().getTenant();
         }
-        else {
-            return DEFAULT_TENANT;
-        }
         return tenant;
     }
 
