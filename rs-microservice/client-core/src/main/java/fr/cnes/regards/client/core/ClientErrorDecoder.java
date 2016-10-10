@@ -27,8 +27,15 @@ public class ClientErrorDecoder implements ErrorDecoder {
      */
     private static final Logger LOG = LoggerFactory.getLogger(ClientErrorDecoder.class);
 
+    /**
+     *
+     * Override method
+     *
+     * @see feign.codec.ErrorDecoder#decode(java.lang.String, feign.Response)
+     * @since 1.0-SNAPSHOT
+     */
     @Override
-    public Exception decode(String pMethodKey, Response pResponse) {
+    public Exception decode(final String pMethodKey, final Response pResponse) {
 
         LOG.error(String.format("Remote call to %s. Response is : %d - %s", pMethodKey, pResponse.status(), pResponse
                 .reason()));

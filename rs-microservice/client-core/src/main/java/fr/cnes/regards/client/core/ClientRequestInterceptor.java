@@ -31,8 +31,15 @@ public class ClientRequestInterceptor {
     public RequestInterceptor requestTokenBearerInterceptor() {
         return new RequestInterceptor() {
 
+            /**
+             *
+             * Override method
+             *
+             * @see feign.RequestInterceptor#apply(feign.RequestTemplate)
+             * @since 1.0-SNAPSHOT
+             */
             @Override
-            public void apply(RequestTemplate pRequestTemplate) {
+            public void apply(final RequestTemplate pRequestTemplate) {
                 // Read token from SecurityContext. This is possible thanks to the spring hystrix configuration
                 // hystrix.command.default..execution.isolation.strategy=SEMAPHORE
                 final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()

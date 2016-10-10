@@ -41,7 +41,7 @@ public class DaoTestController {
      * JPA User Repository. Access to Users in database
      */
     @Autowired
-    private UserRepository userRepo_;
+    private UserRepository userRepo;
 
     /**
      *
@@ -66,7 +66,7 @@ public class DaoTestController {
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public HttpEntity<List<User>> getUsers() throws CannotCreateTransactionException {
         final List<User> users = new ArrayList<>();
-        userRepo_.findAll().forEach(user -> users.add(user));
+        userRepo.findAll().forEach(user -> users.add(user));
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 

@@ -22,11 +22,11 @@ public class CurrentTenantIdentifierResolverMock implements CurrentTenantIdentif
     /**
      * Default tenant to user
      */
-    private String tenantId_ = "default";
+    private String tenantId = "default";
 
     @Override
     public String resolveCurrentTenantIdentifier() {
-        return this.tenantId_;
+        return this.tenantId;
     }
 
     @Override
@@ -43,6 +43,6 @@ public class CurrentTenantIdentifierResolverMock implements CurrentTenantIdentif
      * @since 1.0-SNAPSHOT
      */
     public void setTenant(String pTenant) {
-        this.tenantId_ = pTenant;
+        this.tenantId = pTenant;
     }
 }

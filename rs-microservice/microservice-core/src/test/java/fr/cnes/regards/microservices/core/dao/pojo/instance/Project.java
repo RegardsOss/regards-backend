@@ -10,7 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
-import fr.cnes.regards.microservices.core.dao.annotation.InstanceEntity;
+import fr.cnes.regards.domain.annotation.InstanceEntity;
 
 /**
  *
@@ -32,13 +32,13 @@ public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projectSequence")
     @Column(name = "id")
-    private Long id_;
+    private Long id;
 
     /**
      * Project name
      */
     @Column(name = "name")
-    private String name_;
+    private String name;
 
     /**
      *
@@ -48,7 +48,7 @@ public class Project {
      * @since 1.0-SNAPSHOT
      */
     public Long getId() {
-        return id_;
+        return id;
     }
 
     /**
@@ -60,7 +60,7 @@ public class Project {
      * @since 1.0-SNAPSHOT
      */
     public void setId(Long pId) {
-        id_ = pId;
+        id = pId;
     }
 
     /**
@@ -71,7 +71,7 @@ public class Project {
      * @since 1.0-SNAPSHOT
      */
     public String getName() {
-        return name_;
+        return name;
     }
 
     /**
@@ -83,7 +83,7 @@ public class Project {
      * @since 1.0-SNAPSHOT
      */
     public void setName(String pName) {
-        name_ = pName;
+        name = pName;
     }
 
 }

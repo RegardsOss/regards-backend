@@ -45,7 +45,7 @@ public class DaoTransactionTest {
      * User service
      */
     @Autowired
-    private DaoUserTest service_;
+    private DaoUserTest service;
 
     /**
      *
@@ -65,60 +65,60 @@ public class DaoTransactionTest {
         List<User> users = new ArrayList<>();
 
         // Delete any datas
-        service_.deleteAll(testTenant);
-        service_.deleteAll(testTenant2);
+        service.deleteAll(testTenant);
+        service.deleteAll(testTenant2);
 
         // Add a user with transaction error. There must be a rollback and nothing commited.
         try {
             LOG.info("Adding users to first tenant with exception thrown ... ");
-            service_.addWithError(testTenant);
+            service.addWithError(testTenant);
             Assert.fail(exceptionError);
         } catch (DaoTestException e) {
             LOG.error(e.getMessage());
             users.clear();
-            users = service_.getUsers(testTenant);
+            users = service.getUsers(testTenant);
             Assert.assertTrue("The first tenant should be empty !", users.isEmpty());
             LOG.info(rollbackSucceed);
         }
 
         // Add valid user
         LOG.info("Adding valid users to first tenant ... ");
-        service_.addWithoutError(testTenant);
+        service.addWithoutError(testTenant);
         users.clear();
-        users = service_.getUsers(testTenant);
+        users = service.getUsers(testTenant);
         Assert.assertTrue("There must be 1 element !", users.size() == 1);
         LOG.info("Insert correctly done and commited ! ");
 
         // Test for second tenant
         users.clear();
-        users = service_.getUsers(testTenant2);
+        users = service.getUsers(testTenant2);
         Assert.assertTrue("There must be 0 elements !", users.isEmpty());
 
         // Add a user with transaction error. There must be a rollback and nothing commited.
         try {
             LOG.info("Adding users to second tenant with exception thrown ... ");
-            service_.addWithError(testTenant2);
+            service.addWithError(testTenant2);
             Assert.fail(exceptionError);
         } catch (DaoTestException e) {
             LOG.error(e.getMessage());
             users.clear();
-            users = service_.getUsers(testTenant2);
+            users = service.getUsers(testTenant2);
             Assert.assertTrue("The second tenant should be empty !", users.isEmpty());
             LOG.info(rollbackSucceed);
         }
 
         // Add valid users to second tenant
         LOG.info("Adding valid users to second tenant ... ");
-        service_.addWithoutError(testTenant2);
-        service_.addWithoutError(testTenant2);
+        service.addWithoutError(testTenant2);
+        service.addWithoutError(testTenant2);
         users.clear();
-        users = service_.getUsers(testTenant2);
+        users = service.getUsers(testTenant2);
         Assert.assertTrue("There must be 2 elements !", users.size() == 2);
         LOG.info("Inserts correctly done and commited ! ");
 
         // Check that the first tenant hasn't changed.
         users.clear();
-        users = service_.getUsers(testTenant);
+        users = service.getUsers(testTenant);
         Assert.assertTrue("There must be 1 element ! " + users.size(), users.size() == 1);
 
     }

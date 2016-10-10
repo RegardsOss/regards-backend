@@ -20,6 +20,10 @@
 	<dependencies>
 		<!-- Regards internal -->
 		<dependency>
+			<groupId>fr.cnes.regards.domain</groupId>
+			<artifactId>domain-core</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.utils</groupId>
 			<artifactId>security-utils</artifactId>
 		</dependency>

@@ -59,25 +59,25 @@ public class SwaggerConfiguration {
      * Swagger api name
      */
     @Value("${swagger.api.name:unknwon}")
-    private String swaggerApiName_;
+    private String swaggerApiName;
 
     /**
      * Microservice port
      */
     @Value("${server.port}")
-    private String serverPort_;
+    private String serverPort;
 
     /**
      * Microservice adress
      */
     @Value("${server.adress}")
-    private String serverAdress_;
+    private String serverAdress;
 
     /**
      * Swagger api informations
      */
     @Autowired
-    private ApiInfoBuilder apiInfoBuilder_;
+    private ApiInfoBuilder apiInfoBuilder;
 
     /**
      *
@@ -95,10 +95,10 @@ public class SwaggerConfiguration {
         final List<SecurityContext> ctxs = new ArrayList<>();
         ctxs.add(securityContext());
 
-        final ApiInfo infos = apiInfoBuilder_.termsOfServiceUrl(String.format("http://%s:%s", serverAdress_,
-                                                                              serverPort_)).build();
+        final ApiInfo infos = apiInfoBuilder.termsOfServiceUrl(String.format("http://%s:%s", serverAdress,
+                                                                              serverPort)).build();
 
-        return new Docket(DocumentationType.SWAGGER_2).groupName(swaggerApiName_).apiInfo(infos).select()
+        return new Docket(DocumentationType.SWAGGER_2).groupName(swaggerApiName).apiInfo(infos).select()
                 .paths(apiPaths()).build().securitySchemes(schemes).securityContexts(ctxs);
     }
 
@@ -122,7 +122,7 @@ public class SwaggerConfiguration {
      */
     private OAuth securitySchema() {
         final AuthorizationScope authorizationScope = new AuthorizationScope(AUTH_SCOPE_GLOBAL, AUTH_SCOPE_GLOBAL_DESC);
-        final LoginEndpoint loginEndpoint = new LoginEndpoint("http://" + serverAdress_ + ":" + serverPort_
+        final LoginEndpoint loginEndpoint = new LoginEndpoint("http://" + serverAdress + ":" + serverPort
                 + "/oauth/token");
         final GrantType grantType = new ImplicitGrant(loginEndpoint, "access_token");
         final List<AuthorizationScope> authList = new ArrayList<>();

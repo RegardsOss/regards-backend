@@ -65,25 +65,25 @@ public class MultiTenancyDaoTest {
      * JPA Project repository
      */
     @Autowired
-    private ProjectRepository projectRepository_;
+    private ProjectRepository projectRepository;
 
     /**
      * JPA User repository
      */
     @Autowired
-    private UserRepository userRepository_;
+    private UserRepository userRepository;
 
     /**
      * JPA Company repository
      */
     @Autowired
-    private CompanyRepository companyRepository_;
+    private CompanyRepository companyRepository;
 
     /**
      * Mock to overload tenant resolver. Allow to set tenant manually.
      */
     @Autowired
-    private CurrentTenantIdentifierResolverMock tenantResolver_;
+    private CurrentTenantIdentifierResolverMock tenantResolver;
 
     /**
      *
@@ -109,15 +109,15 @@ public class MultiTenancyDaoTest {
     @Test
     public void foreignKeyTests() {
 
-        tenantResolver_.setTenant(TENANT_TEST_1);
+        tenantResolver.setTenant(TENANT_TEST_1);
 
-        userRepository_.deleteAll();
+        userRepository.deleteAll();
 
-        final Company comp = companyRepository_.save(new Company("plop"));
+        final Company comp = companyRepository.save(new Company("plop"));
 
-        userRepository_.save(new User("name", "lastname", comp));
+        userRepository.save(new User("name", "lastname", comp));
 
-        Assert.assertNotNull(userRepository_.findAll().iterator().next().getCompany().getId().equals(comp.getId()));
+        Assert.assertNotNull(userRepository.findAll().iterator().next().getCompany().getId().equals(comp.getId()));
 
     }
 
@@ -136,15 +136,15 @@ public class MultiTenancyDaoTest {
         final List<User> results = new ArrayList<>();
 
         // Delete all previous data if any
-        projectRepository_.deleteAll();
+        projectRepository.deleteAll();
 
         // Add a new Project
         final Project newProject = new Project();
         newProject.setName("Project 1");
-        projectRepository_.save(newProject);
+        projectRepository.save(newProject);
 
         // Check results
-        final Iterable<Project> listP = projectRepository_.findAll();
+        final Iterable<Project> listP = projectRepository.findAll();
         listP.forEach(project -> resultsP.add(project));
         Assert.assertTrue(String.format(
                                         "Error, there must be 1 elements in database associated to instance (%d)",
@@ -152,53 +152,53 @@ public class MultiTenancyDaoTest {
                           resultsP.size() == 1);
 
         // Set tenant to project test1
-        tenantResolver_.setTenant(TENANT_TEST_1);
+        tenantResolver.setTenant(TENANT_TEST_1);
         // Delete all previous data if any
-        userRepository_.deleteAll();
+        userRepository.deleteAll();
         // Set tenant to project 2
-        tenantResolver_.setTenant(TENANT_TEST_2);
+        tenantResolver.setTenant(TENANT_TEST_2);
         // Delete all previous data if any
-        userRepository_.deleteAll();
+        userRepository.deleteAll();
 
         // Set tenant to project test1
-        tenantResolver_.setTenant(TENANT_TEST_1);
+        tenantResolver.setTenant(TENANT_TEST_1);
         // Add new users
         User newUser = new User("Jean", "Pont");
-        newUser = userRepository_.save(newUser);
+        newUser = userRepository.save(newUser);
         User newUser2 = new User("Alain", "Deloin");
-        newUser2 = userRepository_.save(newUser2);
+        newUser2 = userRepository.save(newUser2);
 
         // Check results
-        Iterable<User> list = userRepository_.findAll();
+        Iterable<User> list = userRepository.findAll();
         list.forEach(user -> results.add(user));
         Assert.assertTrue("Error, there must be 2 elements in the database associated to the tenant test1 not "
                 + results.size(), results.size() == 2);
 
         // Set tenant to project 2
-        tenantResolver_.setTenant(TENANT_TEST_2);
+        tenantResolver.setTenant(TENANT_TEST_2);
 
         // Check that there is no users added on this project
-        list = userRepository_.findAll();
+        list = userRepository.findAll();
         results.clear();
         list.forEach(user -> results.add(user));
         Assert.assertTrue("Error, there must be no element in the database associated to the tenant test2 ("
                 + results.size() + ")", results.size() == 0);
 
-        newUser = userRepository_.save(newUser);
+        newUser = userRepository.save(newUser);
         LOG.info("id=" + newUser.getId());
 
         // Check results
-        list = userRepository_.findAll();
+        list = userRepository.findAll();
         results.clear();
         list.forEach(user -> results.add(user));
         Assert.assertTrue("Error, there must be 1 elements in the database associated to the tenant test2 + not "
                 + results.size(), results.size() == 1);
 
         // Set tenant to an non existing project
-        tenantResolver_.setTenant(TENANT_INVALID);
+        tenantResolver.setTenant(TENANT_INVALID);
         try {
             // Check that an exception is thrown
-            list = userRepository_.findAll();
+            list = userRepository.findAll();
             Assert.fail("This repository is not valid for tenant");
         } catch (final CannotCreateTransactionException e) {
             // Nothing to do

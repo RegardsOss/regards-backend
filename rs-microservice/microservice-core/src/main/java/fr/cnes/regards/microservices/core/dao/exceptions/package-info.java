@@ -2,6 +2,6 @@
  * LICENSE_PLACEHOLDER
  */
 /**
- * Package for DAO test exceptions
+ * Package for Regards DAO Exceptions
  */
 package fr.cnes.regards.microservices.core.dao.exceptions;
