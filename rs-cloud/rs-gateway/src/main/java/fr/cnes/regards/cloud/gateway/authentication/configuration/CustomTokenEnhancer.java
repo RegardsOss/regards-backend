@@ -32,12 +32,12 @@ public class CustomTokenEnhancer implements TokenEnhancer {
     private JWTService jwtService;
 
     @Override
-    public OAuth2AccessToken enhance(OAuth2AccessToken pAccessToken, OAuth2Authentication pAuthentication) {
+    public OAuth2AccessToken enhance(final OAuth2AccessToken pAccessToken, final OAuth2Authentication pAuthentication) {
         final ProjectUser user = (ProjectUser) pAuthentication.getUserAuthentication().getPrincipal();
         final Set<String> scopes = pAuthentication.getOAuth2Request().getScope();
-        ((DefaultOAuth2AccessToken) pAccessToken).setAdditionalInformation(jwtService
-                .generateClaims(scopes.stream().findFirst().get(), user.getAccount().getEmail(),
-                                user.getRole().getName(), user.getAccount().getLogin()));
+        ((DefaultOAuth2AccessToken) pAccessToken)
+                .setAdditionalInformation(jwtService.generateClaims(scopes.stream().findFirst().get(), user.getEmail(),
+                                                                    user.getRole().getName(), user.getEmail()));
         return pAccessToken;
     }
 }
