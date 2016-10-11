@@ -20,24 +20,25 @@
 	</bean>
 
 	<bean id="admin" name="ADMIN"
-		class="fr.cnes.regards.modules.accessRights.domain.projects.Role">
-		<property name="id" value="1"></property>
+		class="fr.cnes.regards.modules.accessRights.domain.projects.Role"
+		lazy-init="false">
+		<property name="id" value="2"></property>
 		<property name="name" value="Admin"></property>
 		<property name="native" value="true"></property>
-		<property name="parentRole" ref="admin"></property>
+		<property name="parentRole" ref="registeredUser"></property>
 	</bean>
 
 	<bean id="projectAdmin" name="PROJECT_ADMIN"
 		class="fr.cnes.regards.modules.accessRights.domain.projects.Role">
-		<property name="id" value="2"></property>
+		<property name="id" value="3"></property>
 		<property name="name" value="Project Admin"></property>
 		<property name="native" value="true"></property>
-		<property name="parentRole" ref="projectAdmin"></property>
+		<property name="parentRole" ref="admin"></property>
 	</bean>
 
 	<bean id="instanceAdmin" name="INSTANCE_ADMIN"
 		class="fr.cnes.regards.modules.accessRights.domain.projects.Role">
-		<property name="id" value="3"></property>
+		<property name="id" value="4"></property>
 		<property name="name" value="Instance Admin"></property>
 		<property name="native" value="true"></property>
 		<property name="parentRole" ref="projectAdmin"></property>

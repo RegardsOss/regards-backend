@@ -69,9 +69,4 @@ public class ProjectUserRepositoryStub extends RepositoryStub<ProjectUser> imple
         return entities.stream().filter(r -> r.getEmail().equals(pEmail)).findFirst().get();
     }
 
-    @Override
-    public boolean exists(final String pLogin) {
-        return findOneByEmail(pLogin) != null;
-    }
-
 }

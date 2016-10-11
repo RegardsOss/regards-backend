@@ -44,20 +44,17 @@ public class AccessRequestServiceStub implements IAccessRequestService {
         accountService = pAccountService;
         roleService = new RoleService(pRoleRepository);
 
-        // Account account = new Account("login0@test.com", "firstName", "lastName", "password");
         String login = "login0@test.com";
         ProjectUser projectUser = new ProjectUser();
         projectUser.setEmail(login);
         projectUsers.add(projectUser);
 
-        // account = new Account("toto@toto.toto", "firstName", "lastName", "password");
         login = "login1@test.com";
         projectUser = new ProjectUser();
         projectUser.setEmail(login);
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
         projectUsers.add(projectUser);
 
-        // account = new Account("titi@titi.titi", "firstName", "lastName", "password");
         login = "login2@test.com";
         projectUser = new ProjectUser();
         projectUser.setEmail(login);

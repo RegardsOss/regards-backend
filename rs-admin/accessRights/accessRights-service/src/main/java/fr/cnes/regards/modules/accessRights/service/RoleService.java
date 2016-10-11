@@ -40,11 +40,11 @@ public class RoleService implements IRoleService {
         // Ensure the existence of default roles
         // If not, add them from their bean definition in defaultRoles.xml
         // Get all projects in database
-        for (final Role role : defaultRoles) {
-            if (!existRole(role)) {
-                createRole(role);
-            }
-        }
+        // for (final Role role : defaultRoles) {
+        // if (!existRole(role)) {
+        // createRole(role);
+        // }
+        // }
     }
 
     @Override
@@ -109,18 +109,6 @@ public class RoleService implements IRoleService {
     public void updateRoleResourcesAccess(final Long pRoleId, final List<ResourcesAccess> pResourcesAccessList) {
         final Role role = roleRepository_.findOne(pRoleId);
         List<ResourcesAccess> permissions = role.getPermissions();
-
-        // // Finder method
-        // // Pass the id and the list to search, returns the element with passed id
-        // BiFunction<Long, List<ResourcesAccess>, List<ResourcesAccess>> find = (id, list) -> {
-        // return list.stream().filter(e -> e.getId().equals(id)).collect(Collectors.toList());
-        // };
-        // BiFunction<Long, List<ResourcesAccess>, Boolean> contains = (id, list) -> {
-        // return !find.apply(id, list).isEmpty();
-        // };
-        // If an element with the same id is found in the pResourcesAccessList list, replace with it
-        // Else keep the old element
-        // permissions.replaceAll(p -> contains.apply(p.getId()) ? find.apply(p.getId()).get(0) : p);
 
         // permissions.replaceAll(pResourcesAccessList);
         permissions = Stream.concat(permissions.stream(), pResourcesAccessList.stream()).distinct()

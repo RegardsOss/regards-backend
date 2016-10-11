@@ -15,7 +15,7 @@ import springfox.documentation.builders.ApiInfoBuilder;
  *
  * Start microservice ${artifactId}
  *
- * @author TODO
+ * @author CS
  *
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards" })

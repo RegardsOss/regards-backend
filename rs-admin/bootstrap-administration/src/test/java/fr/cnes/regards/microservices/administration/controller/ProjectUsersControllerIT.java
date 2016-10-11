@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
- * @author svissier *
+ * @author svissier
  */
 public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
 
@@ -154,6 +154,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Purpose("Check that the system allows a user to connect using a hierarchically inferior role to its own and handle fail cases.")
     public void getUserPermissionsWithBorrowedRole() {
         // Initiate a specific project user for the test
+        final String adminRoleName = "Admin";
+        assertTrue(roleRepository.findOneByName(adminRoleName) != null);
         final Role role = roleRepository.findOneByName("Admin");
         final ProjectUser projectUser = new ProjectUser(4824L, null, null, UserStatus.ACCESS_GRANTED, new ArrayList<>(),
                 role, new ArrayList<>(), "email@test.com");

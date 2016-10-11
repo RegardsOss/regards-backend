@@ -114,8 +114,9 @@ public class ProjectUserServiceStub implements IProjectUserService {
     }
 
     @Override
-    public boolean existUser(final String pUserLogin) {
-        return projectUserRepository.exists(pUserLogin);
+    public boolean existUser(final String pEmail) {
+        final ProjectUser projectUser = projectUserRepository.findOneByEmail(pEmail);
+        return projectUser != null;
     }
 
     /*
