@@ -2,9 +2,20 @@ package fr.cnes.regards.modules.emails.domain;
 
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.hateoas.Identifiable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.util.ObjectUtils;
+
+import fr.cnes.regards.modules.core.validation.PastOrNow;
 
 /**
  * Models a simple mail message, including data such as the from, to, cc, subject, and text fields.
@@ -14,51 +25,68 @@ import org.springframework.util.ObjectUtils;
  * @author Xaver-Alexandre Brochard
  * @see org.springframework.mail.SimpleMailMessage
  */
+@Entity(name = "T_EMAIL")
+@SequenceGenerator(name = "emailSequence", initialValue = 1, sequenceName = "SEQ_EMAIL")
 public class Email implements Identifiable<Long> {
 
     /**
      * Array of bcc recipients' email address
      */
+    @Column(name = "bcc")
     private String[] bcc;
 
     /**
      * Array of cc recipients' email address
      */
+    @Column(name = "cc")
     private String[] cc;
 
     /**
      * Sender's email address
      */
+    @org.hibernate.validator.constraints.Email
+    @Column(name = "toto")
     private String from;
 
     /**
      * Id of the email
      */
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "emailSequence")
+    @Column(name = "id")
     private Long id;
 
     /**
      * Email address of the replyTo recipient
      */
+    @NotBlank
+    @Column(name = "replyTo")
     private String replyTo;
 
     /**
      * Date when the email was sent
      */
+    @PastOrNow
+    @Column(name = "sentDate")
     private Date sentDate;
 
     /**
      * Subject of the email
      */
+    @Column(name = "subject")
     private String subject;
 
     /**
      * Body of the email
      */
+    @Column(name = "text")
     private String text;
 
     /**
      * Array of recipients' email address
      */
+    @NotEmpty
+    @Column(name = "titi")
     private String[] to;
 
     /**

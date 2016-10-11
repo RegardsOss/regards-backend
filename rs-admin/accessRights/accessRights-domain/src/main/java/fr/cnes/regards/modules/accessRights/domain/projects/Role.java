@@ -19,6 +19,11 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.hateoas.Identifiable;
 
+/**
+ * Models a user's role.
+ *
+ * @author Xaver-Alexandre Brochard
+ */
 @Entity(name = "T_ROLE")
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
 public class Role implements Identifiable<Long> {
@@ -69,8 +74,7 @@ public class Role implements Identifiable<Long> {
     }
 
     public Role(final Long pRoleId, final String pName, final Role pParentRole,
-            final List<ResourcesAccess> pPermissions,
-            final List<ProjectUser> pProjectUsers) {
+            final List<ResourcesAccess> pPermissions, final List<ProjectUser> pProjectUsers) {
         this(pRoleId);
         name = pName;
         parentRole = pParentRole;
@@ -79,8 +83,8 @@ public class Role implements Identifiable<Long> {
     }
 
     public Role(final Long pRoleId, final String pName, final Role pParentRole,
-            final List<ResourcesAccess> pPermissions,
-            final List<ProjectUser> pProjectUsers, final boolean pIsDefault, final boolean pIsNative) {
+            final List<ResourcesAccess> pPermissions, final List<ProjectUser> pProjectUsers, final boolean pIsDefault,
+            final boolean pIsNative) {
         super();
         id = pRoleId;
         name = pName;
