@@ -2,16 +2,15 @@ server:
   adress: localhost
   port: 3339
 
-security:
-  client: acme
-  secret: acmesecret
+jwt:
+  secret: 123456789
 
 spring:
   application:
     name : access
     
   profiles :
-    active : service-stub
+    active : test
     
 swagger:
   api:
