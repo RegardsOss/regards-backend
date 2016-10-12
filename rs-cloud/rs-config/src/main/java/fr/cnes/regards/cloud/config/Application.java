@@ -16,9 +16,11 @@ import org.springframework.cloud.config.server.EnableConfigServer;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
+// CHECKSTYLE:OFF
 @SpringBootApplication
+// CHECKSTYLE:ON
 @EnableConfigServer
-public class ConfigApplication {
+public class Application {
 
     /**
      * .
@@ -30,6 +32,6 @@ public class ConfigApplication {
      * @since 1.0-SNAPSHOT
      */
     public static void main(final String[] pArgs) {
-        SpringApplication.run(ConfigApplication.class, pArgs);
+        SpringApplication.run(Application.class, pArgs);
     }
 }

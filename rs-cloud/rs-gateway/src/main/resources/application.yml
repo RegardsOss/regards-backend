@@ -5,7 +5,14 @@ spring:
   cloud:
     config:
       uri: http://localhost:8888
+
+# Configure zuul
+zuul:
+  prefix: /api/v1
+  # Allow 'Authorization' header to pass through Zuul
+  sensitiveHeaders: Cookie,Set-Cookie
       
+# Configure Hystrix (packaged with zuul)      
 # Enable the user of SecurityContext in the Hystrix thread
 hystrix:
   command:
@@ -13,12 +20,9 @@ hystrix:
       execution:
         isolation:
           strategy: SEMAPHORE
-      
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    leaseRenewalIntervalInSeconds: 10
-    metadataMap:
-      instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
+ 
+# Configure ribbon (packaged with zuul)
+ribbon:
+  eureka:
+    enabled: true
+    
