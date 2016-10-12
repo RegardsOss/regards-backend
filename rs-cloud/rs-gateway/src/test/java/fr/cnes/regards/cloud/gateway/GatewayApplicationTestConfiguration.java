@@ -13,7 +13,7 @@ import org.springframework.context.annotation.PropertySource;
  * Spring Configuration class for tests
  *
  * @author CS
- * @since TODO
+ * @since 1.0-SNAPSHOT
  */
 @Configuration
 @PropertySource("classpath:test.properties")
