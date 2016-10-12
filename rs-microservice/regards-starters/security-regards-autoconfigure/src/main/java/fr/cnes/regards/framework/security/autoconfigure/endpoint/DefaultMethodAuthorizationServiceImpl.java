@@ -33,14 +33,14 @@ import fr.cnes.regards.security.utils.endpoint.RoleAuthority;
  * @author CS SI
  *
  */
-@ConditionalOnMissingBean(IMethodAuthorizationService.class)
+@ConditionalOnMissingBean(ICustomMethodAuthorizationService.class)
 @Service
-public class MethodAuthorizationServiceImpl implements IMethodAuthorizationService {
+public class DefaultMethodAuthorizationServiceImpl implements IMethodAuthorizationService {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(MethodAuthorizationServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultMethodAuthorizationServiceImpl.class);
 
     /**
      * List of configurated authorities
@@ -53,7 +53,7 @@ public class MethodAuthorizationServiceImpl implements IMethodAuthorizationServi
      */
     private final Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource;
 
-    public MethodAuthorizationServiceImpl() {
+    public DefaultMethodAuthorizationServiceImpl() {
         grantedAuthoritiesByResource = new HashMap<>();
     }
 
