@@ -102,36 +102,4 @@ public class DataSourcesConfiguration {
         }
         return datasource;
     }
-
-    // /**
-    // *
-    // * Default data source for persistence unit instance.
-    // *
-    // * @return datasource
-    // * @since 1.0-SNAPSHOT
-    // */
-    // @Bean
-    // @ConditionalOnProperty("microservice.dao.instance.enabled")
-    // public DataSource instanceDataSource() {
-    //
-    // DataSource datasource = null;
-    // if (configuration.getDao().getEmbedded()) {
-    // final DriverManagerDataSource dataSource = new DriverManagerDataSource();
-    // dataSource.setDriverClassName(DataSourceHelper.EMBEDDED_HSQL_DRIVER_CLASS);
-    // dataSource.setUrl(DataSourceHelper.EMBEDDED_HSQL_URL + configuration.getDao().getEmbeddedPath()
-    // + DataSourceHelper.EMBEDDED_URL_SEPARATOR + "instance" + DataSourceHelper.EMBEDDED_URL_SEPARATOR
-    // + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
-    // datasource = dataSource;
-    // } else {
-    // final DataSourceBuilder factory = DataSourceBuilder
-    // .create(configuration.getDao().getInstance().getDatasource().getClassLoader())
-    // .driverClassName(configuration.getDao().getDriverClassName())
-    // .username(configuration.getDao().getInstance().getDatasource().getUsername())
-    // .password(configuration.getDao().getInstance().getDatasource().getPassword())
-    // .url(configuration.getDao().getInstance().getDatasource().getUrl());
-    // datasource = factory.build();
-    // }
-    // return datasource;
-    // }
-
 }

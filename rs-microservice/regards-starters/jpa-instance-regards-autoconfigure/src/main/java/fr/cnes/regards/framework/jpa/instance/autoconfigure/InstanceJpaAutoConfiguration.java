@@ -14,6 +14,7 @@ import org.hibernate.cfg.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -117,6 +119,36 @@ public class InstanceJpaAutoConfiguration {
         return pBuilder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
 
+    }
+
+    /**
+     *
+     * Default data source for persistence unit instance.
+     *
+     * @return datasource
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    public DataSource instanceDataSource() {
+
+        DataSource datasource = null;
+        if (configuration.getDao().getEmbedded()) {
+            final DriverManagerDataSource dataSource = new DriverManagerDataSource();
+            dataSource.setDriverClassName(DataSourceHelper.EMBEDDED_HSQL_DRIVER_CLASS);
+            dataSource.setUrl(DataSourceHelper.EMBEDDED_HSQL_URL + configuration.getDao().getEmbeddedPath()
+                    + DataSourceHelper.EMBEDDED_URL_SEPARATOR + "instance" + DataSourceHelper.EMBEDDED_URL_SEPARATOR
+                    + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
+            datasource = dataSource;
+        } else {
+            final DataSourceBuilder factory = DataSourceBuilder
+                    .create(configuration.getDao().getInstance().getDatasource().getClassLoader())
+                    .driverClassName(configuration.getDao().getDriverClassName())
+                    .username(configuration.getDao().getInstance().getDatasource().getUsername())
+                    .password(configuration.getDao().getInstance().getDatasource().getPassword())
+                    .url(configuration.getDao().getInstance().getDatasource().getUrl());
+            datasource = factory.build();
+        }
+        return datasource;
     }
 
 }
