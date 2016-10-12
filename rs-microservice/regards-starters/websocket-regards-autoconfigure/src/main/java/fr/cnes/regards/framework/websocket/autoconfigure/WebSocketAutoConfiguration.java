@@ -10,6 +10,7 @@ import org.eclipse.jetty.websocket.api.WebSocketPolicy;
 import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,7 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 @Configuration
 @ConditionalOnWebApplication
 @ConditionalOnClass(WebSocketBehavior.class)
-@ConditionalOnMissingBean(DefaultHandshakeHandler.class)
+@ConditionalOnProperty(prefix = "regards.websocket", name = "enabled", matchIfMissing = true)
 @EnableWebSocketMessageBroker
 public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigurer {
 

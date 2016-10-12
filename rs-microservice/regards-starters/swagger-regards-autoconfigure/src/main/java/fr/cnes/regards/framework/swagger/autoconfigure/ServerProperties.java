@@ -21,7 +21,7 @@ public class ServerProperties extends AllNestedConditions {
         super(pConfigurationPhase);
     }
 
-    @ConditionalOnProperty("server.adress")
+    @ConditionalOnProperty("server.address")
     static class OnServerAdress {
 
     }

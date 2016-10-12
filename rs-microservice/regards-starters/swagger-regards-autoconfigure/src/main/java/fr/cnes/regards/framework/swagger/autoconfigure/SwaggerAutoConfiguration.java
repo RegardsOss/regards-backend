@@ -9,6 +9,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +42,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 @ConditionalOnWebApplication
 @ConditionalOnMissingBean(Docket.class)
 @Conditional(ServerProperties.class)
+@ConditionalOnProperty(prefix = "regards.swagger", name = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties(SwaggerProperties.class)
 public class SwaggerAutoConfiguration {
 
@@ -68,7 +70,7 @@ public class SwaggerAutoConfiguration {
     /**
      * Spring boot adress
      */
-    @Value("${server.adress}")
+    @Value("${server.address}")
     private String serverAdress;
 
     /**
