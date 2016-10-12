@@ -42,7 +42,10 @@ import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
         documentation = "http://test")
 public class ProjectsController implements ProjectsSignature {
 
-    private static Logger LOG = LoggerFactory.getLogger(ProjectsController.class);
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectsController.class);
 
     @Autowired
     private IProjectService projectService;
