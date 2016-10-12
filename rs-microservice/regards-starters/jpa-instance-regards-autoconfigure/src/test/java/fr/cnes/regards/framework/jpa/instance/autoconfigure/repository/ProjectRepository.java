@@ -1,12 +1,12 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.dao.repository.instance;
+package fr.cnes.regards.framework.jpa.instance.autoconfigure.repository;
 
 import org.springframework.data.repository.CrudRepository;
 
-import fr.cnes.regards.framework.starter.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.microservices.core.dao.pojo.instance.Project;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.Project;
 
 /**
  *

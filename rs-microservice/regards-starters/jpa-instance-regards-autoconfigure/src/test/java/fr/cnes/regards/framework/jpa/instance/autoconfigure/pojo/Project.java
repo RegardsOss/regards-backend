@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.dao.pojo.instance;
+package fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,7 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
-import fr.cnes.regards.framework.starter.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
 /**
  *
