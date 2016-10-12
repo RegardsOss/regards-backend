@@ -9,7 +9,8 @@ import java.util.stream.StreamSupport;
 
 import javax.naming.OperationNotSupportedException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
@@ -34,7 +35,7 @@ public class ProjectService implements IProjectService {
     /**
      * Class logger
      */
-    private static final Logger LOG = Logger.getLogger(ProjectService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectService.class);
 
     /**
      * JPA Repository to query projects from database
