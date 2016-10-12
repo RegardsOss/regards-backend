@@ -23,6 +23,8 @@
 		<module>websocket-regards-starter</module>
 		<module>security-regards-autoconfigure</module>
 		<module>security-regards-starter</module>
+		<module>cloud-regards-autoconfigure</module>
+		<module>cloud-regards-starter</module>
 	</modules>
 
 	<dependencies>
