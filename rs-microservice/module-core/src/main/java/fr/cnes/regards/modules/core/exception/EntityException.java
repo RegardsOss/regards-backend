@@ -18,7 +18,7 @@ public class EntityException extends Exception {
      * serialVersionUID field.
      *
      * @author CS
-     * @since TODO
+     * @since 1.0-SNAPSHOT
      */
     private static final long serialVersionUID = -6284091634593228162L;
 
