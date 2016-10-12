@@ -23,7 +23,6 @@
 		<module>module-plugins</module>
 		<module>regards-test</module>
 		<module>regards-starter-jpa-multitenant</module>
-		<module>regards-starter-cloud</module>
 		<module>regards-starter-jpa-instance</module>
 		<module>regards-core-jpa-common</module>
 		<module>regards-starters</module>
