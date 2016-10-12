@@ -8,9 +8,10 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
-import org.springframework.context.annotation.FilterType;
 
-import fr.cnes.regards.microservices.core.configuration.swagger.SwaggerConfiguration;
+import fr.cnes.regards.framework.starter.swagger.SwaggerConfiguration;
+
+import org.springframework.context.annotation.FilterType;
 
 /**
  * Mock to test API endpoints at module level

@@ -10,9 +10,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
 
-import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
-import fr.cnes.regards.microservices.core.dao.service.DaoUserTest;
-import fr.cnes.regards.microservices.core.dao.util.CurrentTenantIdentifierResolverMock;
+import fr.cnes.regards.framework.starter.jpa.configuration.MicroserviceConfiguration;
+import fr.cnes.regards.framework.starter.jpa.service.DaoUserTest;
+import fr.cnes.regards.framework.starter.jpa.utils.CurrentTenantIdentifierResolverMock;
 
 /**
  *

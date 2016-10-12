@@ -17,13 +17,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.CannotCreateTransactionException;
 
+import fr.cnes.regards.framework.starter.jpa.pojo.Company;
+import fr.cnes.regards.framework.starter.jpa.pojo.User;
+import fr.cnes.regards.framework.starter.jpa.utils.CurrentTenantIdentifierResolverMock;
 import fr.cnes.regards.microservices.core.dao.pojo.instance.Project;
-import fr.cnes.regards.microservices.core.dao.pojo.projects.Company;
-import fr.cnes.regards.microservices.core.dao.pojo.projects.User;
 import fr.cnes.regards.microservices.core.dao.repository.instance.ProjectRepository;
-import fr.cnes.regards.microservices.core.dao.repository.projects.CompanyRepository;
-import fr.cnes.regards.microservices.core.dao.repository.projects.UserRepository;
-import fr.cnes.regards.microservices.core.dao.util.CurrentTenantIdentifierResolverMock;
 import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
 import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 
@@ -146,8 +144,7 @@ public class MultiTenancyDaoTest {
         // Check results
         final Iterable<Project> listP = projectRepository.findAll();
         listP.forEach(project -> resultsP.add(project));
-        Assert.assertTrue(String.format(
-                                        "Error, there must be 1 elements in database associated to instance (%d)",
+        Assert.assertTrue(String.format("Error, there must be 1 elements in database associated to instance (%d)",
                                         resultsP.size()),
                           resultsP.size() == 1);
 

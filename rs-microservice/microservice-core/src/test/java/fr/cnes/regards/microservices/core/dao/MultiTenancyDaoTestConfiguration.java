@@ -10,8 +10,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
 
-import fr.cnes.regards.microservices.core.configuration.common.MicroserviceConfiguration;
-import fr.cnes.regards.microservices.core.dao.hibernate.CurrentTenantIdentifierResolverImpl;
+import fr.cnes.regards.framework.starter.jpa.configuration.MicroserviceConfiguration;
+import fr.cnes.regards.framework.starter.jpax.hibernate.CurrentTenantIdentifierResolverImpl;
 
 /**
  *

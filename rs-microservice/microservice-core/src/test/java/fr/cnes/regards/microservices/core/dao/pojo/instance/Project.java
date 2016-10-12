@@ -10,7 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
-import fr.cnes.regards.domain.annotation.InstanceEntity;
+import fr.cnes.regards.framework.starter.jpa.annotation.InstanceEntity;
 
 /**
  *
