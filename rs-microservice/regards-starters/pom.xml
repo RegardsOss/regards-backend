@@ -27,6 +27,7 @@
 		<module>cloud-regards-starter</module>
 		<module>jpa-multitenant-regards-autoconfigure</module>
 		<module>jpa-multitenant-regards-starter</module>
+		<module>jpa-instance-regards-autoconfigure</module>
 	</modules>
 
 	<dependencies>

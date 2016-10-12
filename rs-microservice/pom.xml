@@ -22,7 +22,6 @@
 		<module>report-maven-plugin</module>
 		<module>module-plugins</module>
 		<module>regards-test</module>
-		<module>regards-starter-jpa-multitenant</module>
 		<module>regards-starter-jpa-instance</module>
 		<module>regards-core-jpa-common</module>
 		<module>regards-starters</module>
