@@ -149,52 +149,76 @@ public abstract class AbstractPluginParametersUtil {
      * 
      * @param <T>
      *            a plugin type
-     * @param pPluginInstance
+     * @param pReturnPlugin
      *            the plugin instance
      * @param pPluginConfiguration
      *            the plugin configuration
+     * @param pPluginParameters
+     *            an optional set of {@link fr.cnes.regards.modules.plugins.domain.PluginParameter}
      * @throws PluginUtilsException
      *             if any error occurs
      */
-    public static <T> void postProcess(T pPluginInstance, PluginConfiguration pPluginConfiguration)
-            throws PluginUtilsException {
-        LOGGER.debug("Starting postProcess :" + pPluginInstance.getClass().getSimpleName());
+    public static <T> void postProcess(T pReturnPlugin, PluginConfiguration pPluginConfiguration,
+            fr.cnes.regards.modules.plugins.domain.PluginParameter... pPluginParameters) throws PluginUtilsException {
+        LOGGER.debug("Starting postProcess :" + pReturnPlugin.getClass().getSimpleName());
+
         // Look for annotated fields
-        for (final Field field : pPluginInstance.getClass().getDeclaredFields()) {
+        for (final Field field : pReturnPlugin.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(PluginParameter.class)) {
-                final PluginParameter pluginParameter = field.getAnnotation(PluginParameter.class);
-
-                // Inject value
-                AbstractReflectionUtils.makeAccessible(field);
-
-                // Try to get a primitve type for the current parameter
-                final Optional<PrimitiveObject> typeWrapper = isAPrimitiveType(field);
-
-                if (typeWrapper.isPresent()) {
-                    // The parameter is a primtive type
-                    LOGGER.debug("primitive parameter:" + field.getName() + " -> " + field.getType());
-
-                    // Get configurated value
-                    final String paramVal = pPluginConfiguration.getParameterValue(pluginParameter.name());
-
-                    postProcessPrimitiveType(pPluginInstance, field, typeWrapper, pluginParameter.name(), paramVal);
-                } else {
-                    if (isAnInterface(field)) {
-                        // The wrapper is an interface plugin type
-                        LOGGER.debug("interface parameter:" + field.getName() + " -> " + field.getType());
-
-                        // Get configurated value
-                        final PluginConfiguration paramVal = pPluginConfiguration
-                                .getParameterConfiguration(pluginParameter.name());
-
-                        postProcessInterface(pPluginInstance, field, pluginParameter.name(), paramVal);
-                    } else {
-                        throw new PluginUtilsException("Type parameter unknown.");
-                    }
-                }
+                final PluginParameter pluginParameterAnnotation = field.getAnnotation(PluginParameter.class);
+                processPluginParameter(pReturnPlugin, pPluginConfiguration, field, pluginParameterAnnotation,
+                                       pPluginParameters);
             }
         }
-        LOGGER.debug("Ending postProcess :" + pPluginInstance.getClass().getSimpleName());
+
+        LOGGER.debug("Ending postProcess :" + pReturnPlugin.getClass().getSimpleName());
+    }
+
+    /**
+     * Use configured values to set field value for a {@link PluginParameter}
+     * 
+     * @param <T>
+     *            a plugin type
+     * @param pPluginInstance
+     *            the plugin instance
+     * @param pPluginConfiguration
+     *            the plugin configuration to used
+     * @param pField
+     *            the parameter
+     * @param pPluginParameterAnnotation
+     *            the plugin parameter
+     * @param pPluginParameters
+     *            an optional set of {@link fr.cnes.regards.modules.plugins.domain.PluginParameter}
+     * @throws PluginUtilsException
+     *             if any error occurs
+     */
+    private static <T> void processPluginParameter(T pPluginInstance, PluginConfiguration pPluginConfiguration,
+            Field pField, PluginParameter pPluginParameterAnnotation,
+            fr.cnes.regards.modules.plugins.domain.PluginParameter... pPluginParameters) throws PluginUtilsException {
+
+        // Inject value
+        AbstractReflectionUtils.makeAccessible(pField);
+
+        // Try to get a primitve type for the current parameter
+        final Optional<PrimitiveObject> typeWrapper = isAPrimitiveType(pField);
+
+        if (typeWrapper.isPresent()) {
+            // The parameter is a primitive type
+            LOGGER.debug("primitive parameter:" + pField.getName() + " -> " + pField.getType());
+
+            postProcessPrimitiveType(pPluginInstance, pPluginConfiguration, pField, typeWrapper,
+                                     pPluginParameterAnnotation, pPluginParameters);
+        } else {
+            if (isAnInterface(pField)) {
+                // The wrapper is an interface plugin type
+                LOGGER.debug("interface parameter:" + pField.getName() + " -> " + pField.getType());
+
+                postProcessInterface(pPluginInstance, pPluginConfiguration, pField, pPluginParameterAnnotation);
+            } else {
+                throw new PluginUtilsException("Type parameter unknown.");
+            }
+        }
+
     }
 
     /**
@@ -204,40 +228,78 @@ public abstract class AbstractPluginParametersUtil {
      *            a plugin type
      * @param pPluginInstance
      *            the plugin instance
+     * @param pPluginConfiguration
+     *            the plugin configuration to used
      * @param pField
      *            the parameter
      * @param pTypeWrapper
      *            the type wrapper of the parameter
-     * @param pParameterName
-     *            the parameter name
-     * @param pParameterValue
-     *            the parameter value
+     * @param pPluginParameterAnnotation
+     *            the plugin parameter
+     * @param pPluginParameters
+     *            an optional set of {@link fr.cnes.regards.modules.plugins.domain.PluginParameter}
+     * 
      * @throws PluginUtilsException
      *             if any error occurs
      */
-    public static <T> void postProcessPrimitiveType(T pPluginInstance, Field pField,
-            Optional<PrimitiveObject> pTypeWrapper, String pParameterName, String pParameterValue)
-            throws PluginUtilsException {
-        LOGGER.debug("Starting postProcessPrimitiveType :" + pParameterName + " - param value : " + pParameterValue);
+    public static <T> void postProcessPrimitiveType(T pPluginInstance, PluginConfiguration pPluginConfiguration,
+            Field pField, Optional<PrimitiveObject> pTypeWrapper, PluginParameter pPluginParameterAnnotation,
+            fr.cnes.regards.modules.plugins.domain.PluginParameter... pPluginParameters) throws PluginUtilsException {
+
+        LOGGER.debug("Starting postProcessPrimitiveType :" + pPluginParameterAnnotation.name());
+
+        // Get setup value
+        String paramValue = pPluginConfiguration.getParameterValue(pPluginParameterAnnotation.name());
+
+        /*
+         * Test if a specific value is given for this annotation parameter
+         */
+        final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> aDynamicPluginParameter = Arrays
+                .asList(pPluginParameters).stream().filter(s -> s.getName().equals(pPluginParameterAnnotation.name()))
+                .findFirst();
+        if (aDynamicPluginParameter.isPresent()) {
+            /*
+             * Test if this parameter is set as dynamic in the plugin configuration
+             * 
+             */
+            final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> configuratedPluginParameter = pPluginConfiguration
+                    .getParameters().stream()
+                    .filter(s -> s.getName().equals(aDynamicPluginParameter.get().getName()) && s.getIsDynamic())
+                    .findFirst();
+            if (configuratedPluginParameter.isPresent()) {
+                if (configuratedPluginParameter.get().getDynamicsValues() == null
+                        || (configuratedPluginParameter.get().getDynamicsValues() != null
+                                && !configuratedPluginParameter.get().getDynamicsValues().isEmpty()
+                                && Arrays.asList(configuratedPluginParameter.get().getDynamicsValues()).stream()
+                                        .filter(s -> s.equals(aDynamicPluginParameter.get().getValue())).findAny()
+                                        .isPresent())
+                        || (configuratedPluginParameter.get().getDynamicsValues().isEmpty())) {
+                    paramValue = aDynamicPluginParameter.get().getValue();
+                }
+            }
+        }
+
+        LOGGER.debug("parameter value : " + paramValue);
+
         try {
             final Object effectiveVal;
             if (pTypeWrapper.get().getType().equals(String.class)) {
-                effectiveVal = pParameterValue;
+                effectiveVal = paramValue;
             } else {
                 final Method method = pTypeWrapper.get().getType().getDeclaredMethod("valueOf", String.class);
-                effectiveVal = method.invoke(null, pParameterValue);
+                effectiveVal = method.invoke(null, paramValue);
             }
             pField.set(pPluginInstance, effectiveVal);
         } catch (final IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException
                 | InvocationTargetException e) {
             LOGGER.error(String.format(
                                        "Exception while processing param \"%s\" in plugin class \"%s\" with value \"%s\".",
-                                       pParameterName, pPluginInstance.getClass(), pParameterValue),
+                                       pPluginParameterAnnotation.name(), pPluginInstance.getClass(), paramValue),
                          e);
             // Propagate exception
             throw new PluginUtilsException(e);
         }
-        LOGGER.debug("Ending   postProcessPrimitiveType :" + pParameterName);
+        LOGGER.debug("Ending   postProcessPrimitiveType :" + pPluginParameterAnnotation.name());
     }
 
     /**
@@ -247,33 +309,39 @@ public abstract class AbstractPluginParametersUtil {
      *            a plugin type
      * @param pPluginInstance
      *            the plugin instance
+     * @param pPluginConfiguration
+     *            the plugin configuration to used
      * @param pField
      *            the parameter
-     * @param pParameterName
-     *            the parameter name
-     * @param pParameterValue
-     *            the parameter value
+     * @param pPluginParameterAnnotation
+     *            the plugin parameter
+     * 
      * @throws PluginUtilsException
      *             if any error occurs
      */
-    public static <T> void postProcessInterface(T pPluginInstance, Field pField, String pParameterName,
-            PluginConfiguration pParameterValue) throws PluginUtilsException {
-        LOGGER.debug("Starting postProcessInterface :" + pParameterName + " - param value : "
-                + pParameterValue.toString());
+    public static <T> void postProcessInterface(T pPluginInstance, PluginConfiguration pPluginConfiguration,
+            Field pField, PluginParameter pPluginParameterAnnotation) throws PluginUtilsException {
+
+        LOGGER.debug("Starting postProcessInterface :" + pPluginParameterAnnotation.name());
+
+        // Get setup value
+        final PluginConfiguration paramValue = pPluginConfiguration
+                .getParameterConfiguration(pPluginParameterAnnotation.name());
+
+        LOGGER.debug("parameter value : " + paramValue);
 
         try {
-            final Object effectiveVal = AbstractPluginUtils.getPlugin(pParameterValue,
-                                                                      pParameterValue.getPluginMetaData());
+            final Object effectiveVal = AbstractPluginUtils.getPlugin(paramValue, paramValue.getPluginMetaData());
             pField.set(pPluginInstance, effectiveVal);
         } catch (PluginUtilsException | IllegalArgumentException | IllegalAccessException e) {
             LOGGER.error(String.format(
                                        "Exception while processing param \"%s\" in plugin class \"%s\" with value \"%s\".",
-                                       pParameterName, pPluginInstance.getClass(), pParameterValue),
+                                       pPluginParameterAnnotation.name(), pPluginInstance.getClass(), paramValue),
                          e);
             // Propagate exception
             throw new PluginUtilsException(e);
         }
 
-        LOGGER.debug("Ending   postProcessInterface :" + pParameterName);
+        LOGGER.debug("Ending   postProcessInterface :" + pPluginParameterAnnotation.name());
     }
 }

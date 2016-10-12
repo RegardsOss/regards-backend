@@ -19,6 +19,7 @@ import fr.cnes.regards.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 
 /**
  *
@@ -92,7 +93,7 @@ public abstract class AbstractPluginUtils {
      * @return the {@link PluginMetaData} create
      */
     public static PluginMetaData createPluginMetaData(Class<?> pPluginClass) {
-        PluginMetaData pluginMetaData;
+        final PluginMetaData pluginMetaData;
 
         // Get implementation associated annotations
         final Plugin plugin = pPluginClass.getAnnotation(Plugin.class);
@@ -102,7 +103,7 @@ public abstract class AbstractPluginUtils {
         pluginMetaData.setClass(pPluginClass);
 
         // Manage plugin id
-        // TODO CMZ pourquoi pas systématiquement mettre le nom de la classe ? 
+        // TODO CMZ pourquoi pas systématiquement mettre le nom de la classe ?
         if ("".equals(plugin.id())) {
             pluginMetaData.setPluginId(pPluginClass.getCanonicalName());
         } else {
@@ -125,16 +126,19 @@ public abstract class AbstractPluginUtils {
      * @param <T>
      *            a plugin
      * @param pPluginConf
-     *            the plugin configuration
+     *            the {@link PluginConfiguration}
      * @param pPluginMetadata
-     *            the plugin metadata
+     *            the {@link PluginMetaData}
+     * @param pPluginParameters
+     *            an optional list of {@link PluginParameter}
      * 
-     * @return an instance
+     * @return an instance of plugin
+     * 
      * @throws PluginUtilsException
      *             if problem occurs
      */
-    public static <T> T getPlugin(PluginConfiguration pPluginConf, PluginMetaData pPluginMetadata)
-            throws PluginUtilsException {
+    public static <T> T getPlugin(PluginConfiguration pPluginConf, PluginMetaData pPluginMetadata,
+            PluginParameter... pPluginParameters) throws PluginUtilsException {
         T returnPlugin = null;
 
         try {
@@ -142,7 +146,7 @@ public abstract class AbstractPluginUtils {
             returnPlugin = (T) pPluginMetadata.getPluginClass().newInstance();
 
             // Post process parameters
-            AbstractPluginParametersUtil.postProcess(returnPlugin, pPluginConf);
+            AbstractPluginParametersUtil.postProcess(returnPlugin, pPluginConf, pPluginParameters);
 
             // Launch init method if detected
             doInitPlugin(returnPlugin);

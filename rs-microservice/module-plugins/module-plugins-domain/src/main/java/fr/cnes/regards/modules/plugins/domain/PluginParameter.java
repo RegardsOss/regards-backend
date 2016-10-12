@@ -61,11 +61,10 @@ public class PluginParameter implements Identifiable<Long> {
     /**
      * The parameter is dynamic
      */
-    private Boolean isDynamic;
+    private Boolean isDynamic = false;
 
     /**
-     * The list of values for a dynamic parameters TODO : à prendre en compte les paramètres dynamiques passées dans la
-     * requête
+     * The list of values for a dynamic parameters
      */
     private List<String> dynamicsValues;
 

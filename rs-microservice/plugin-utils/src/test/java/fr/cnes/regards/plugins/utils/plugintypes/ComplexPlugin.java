@@ -62,7 +62,7 @@ public class ComplexPlugin implements ISamplePlugin {
 
     @Override
     public int add(int pFirst, int pSecond) {
-        final float f = complexInterfacePlugin.mult(1, 5);
+        final float f = complexInterfacePlugin.mult(4,8);
         LOGGER.info("float=" + f);
         final int res = this.coef * (pFirst + pSecond);
         LOGGER.info("add result : " + res);
