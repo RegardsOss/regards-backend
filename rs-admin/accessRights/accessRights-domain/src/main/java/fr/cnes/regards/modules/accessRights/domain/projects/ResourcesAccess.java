@@ -51,8 +51,7 @@ public class ResourcesAccess implements Identifiable<Long> {
     }
 
     public ResourcesAccess(final Long pResourcesAccessId, final String pDescription, final String pMicroservice,
-            final String pResource,
-            final HttpVerb pVerb) {
+            final String pResource, final HttpVerb pVerb) {
         super();
         id = pResourcesAccessId;
         description = pDescription;
@@ -102,12 +101,16 @@ public class ResourcesAccess implements Identifiable<Long> {
         verb = pVerb;
     }
 
+    // @Override
+    // public boolean equals(final Object o) {
+    // return (o instanceof ResourcesAccess) && ((ResourcesAccess) o).microservice.equals(this.microservice)
+    // && ((ResourcesAccess) o).resource.equals(this.resource)
+    // && ((ResourcesAccess) o).verb.equals(this.verb);
+    //
+    // }
     @Override
-    public boolean equals(final Object o) {
-        return (o instanceof ResourcesAccess) && ((ResourcesAccess) o).microservice.equals(this.microservice)
-                && ((ResourcesAccess) o).resource.equals(this.resource)
-                && ((ResourcesAccess) o).verb.equals(this.verb);
-
+    public boolean equals(final Object pObj) {
+        return (pObj instanceof ResourcesAccess) && ((ResourcesAccess) pObj).getId().equals(id);
     }
 
 }

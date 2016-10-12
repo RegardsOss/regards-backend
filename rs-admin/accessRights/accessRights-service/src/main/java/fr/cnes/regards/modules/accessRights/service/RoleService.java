@@ -25,14 +25,14 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 @Service
 public class RoleService implements IRoleService {
 
-    private final IRoleRepository roleRepository_;
+    private final IRoleRepository roleRepository;
 
     @Resource
     private List<Role> defaultRoles;
 
     public RoleService(final IRoleRepository pRoleRepository) {
         super();
-        roleRepository_ = pRoleRepository;
+        roleRepository = pRoleRepository;
     }
 
     @PostConstruct
@@ -49,7 +49,7 @@ public class RoleService implements IRoleService {
 
     @Override
     public List<Role> retrieveRoleList() {
-        final Iterable<Role> roles = roleRepository_.findAll();
+        final Iterable<Role> roles = roleRepository.findAll();
         return StreamSupport.stream(roles.spliterator(), false).collect(Collectors.toList());
     }
 
@@ -58,12 +58,12 @@ public class RoleService implements IRoleService {
         if (existRole(pNewRole)) {
             throw new AlreadyExistingException(pNewRole.toString());
         }
-        return roleRepository_.save(pNewRole);
+        return roleRepository.save(pNewRole);
     }
 
     @Override
     public Role retrieveRole(final Long pRoleId) {
-        return roleRepository_.findOne(pRoleId);
+        return roleRepository.findOne(pRoleId);
     }
 
     @Override
@@ -75,12 +75,12 @@ public class RoleService implements IRoleService {
         if (!existRole(pRoleId)) {
             throw new NoSuchElementException();
         }
-        roleRepository_.save(pUpdatedRole);
+        roleRepository.save(pUpdatedRole);
     }
 
     @Override
     public void removeRole(final Long pRoleId) {
-        roleRepository_.delete(pRoleId);
+        roleRepository.delete(pRoleId);
     }
 
     /**
@@ -94,7 +94,7 @@ public class RoleService implements IRoleService {
     public List<ResourcesAccess> retrieveRoleResourcesAccessList(final Long pRoleId) {
         final List<Role> roleAndHisAncestors = new ArrayList<>();
 
-        final Role role = roleRepository_.findOne(pRoleId);
+        final Role role = roleRepository.findOne(pRoleId);
         roleAndHisAncestors.add(role);
 
         final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
@@ -107,43 +107,45 @@ public class RoleService implements IRoleService {
 
     @Override
     public void updateRoleResourcesAccess(final Long pRoleId, final List<ResourcesAccess> pResourcesAccessList) {
-        final Role role = roleRepository_.findOne(pRoleId);
+        if (!existRole(pRoleId)) {
+            throw new NoSuchElementException();
+        }
+        final Role role = roleRepository.findOne(pRoleId);
         List<ResourcesAccess> permissions = role.getPermissions();
 
-        // permissions.replaceAll(pResourcesAccessList);
-        permissions = Stream.concat(permissions.stream(), pResourcesAccessList.stream()).distinct()
+        permissions = Stream.concat(pResourcesAccessList.stream(), permissions.stream()).distinct()
                 .collect(Collectors.toList());
 
         role.setPermissions(permissions);
-        roleRepository_.save(role);
+        roleRepository.save(role);
     }
 
     @Override
     public void clearRoleResourcesAccess(final Long pRoleId) {
-        final Role role = roleRepository_.findOne(pRoleId);
+        final Role role = roleRepository.findOne(pRoleId);
         role.setPermissions(new ArrayList<>());
-        roleRepository_.save(role);
+        roleRepository.save(role);
     }
 
     @Override
     public List<ProjectUser> retrieveRoleProjectUserList(final Long pRoleId) {
-        final Role role = roleRepository_.findOne(pRoleId);
+        final Role role = roleRepository.findOne(pRoleId);
         return role.getProjectUsers();
     }
 
     @Override
     public boolean existRole(final Long pRoleId) {
-        return roleRepository_.exists(pRoleId);
+        return roleRepository.exists(pRoleId);
     }
 
     @Override
     public boolean existRole(final Role pRole) {
-        return roleRepository_.exists(pRole.getId());
+        return roleRepository.exists(pRole.getId());
     }
 
     @Override
     public Role getDefaultRole() {
-        return roleRepository_.findByIsDefault(true);
+        return roleRepository.findByIsDefault(true);
     }
 
     /**
