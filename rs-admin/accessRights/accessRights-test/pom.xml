@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>emails</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<artifactId>accessRights</artifactId>
+		<version>1.1-SNAPSHOT</version>
 	</parent>
 
-	<groupId>fr.cnes.regards.modules.emails</groupId>
-	<artifactId>emails-test</artifactId>
+	<groupId>fr.cnes.regards.modules.accessRights</groupId>
+	<artifactId>accessRights-test</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencies>
@@ -17,21 +17,18 @@
 			<artifactId>microservice-core-test</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-dao</artifactId>
+			<groupId>fr.cnes.regards.modules.accessRights</groupId>
+			<artifactId>accessRights-dao</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-domain</artifactId>
+			<groupId>fr.cnes.regards.modules.accessRights</groupId>
+			<artifactId>accessRights-domain</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-service</artifactId>
+			<groupId>fr.cnes.regards.modules.accessRights</groupId>
+			<artifactId>accessRights-service</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.icegreen</groupId>
-			<artifactId>greenmail-spring</artifactId>
-		</dependency>
+
 	</dependencies>
 	
 	<build>
@@ -49,5 +46,5 @@
             </plugin>
         </plugins>
     </build>
-	
+    
 </project>

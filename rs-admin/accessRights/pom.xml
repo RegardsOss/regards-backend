@@ -25,6 +25,7 @@
 		<module>accessRights-service</module>
 		<module>accessRights-client</module>
 		<module>accessRights-signature</module>
+		<module>accessRights-test</module>
 	</modules>
 
 	<dependencyManagement>

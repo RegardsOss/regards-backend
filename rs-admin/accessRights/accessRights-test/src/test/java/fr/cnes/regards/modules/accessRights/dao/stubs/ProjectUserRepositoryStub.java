@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.microservices.core.test.repository.RepositoryStub;
 import fr.cnes.regards.modules.accessRights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessRights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;

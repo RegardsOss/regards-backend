@@ -84,6 +84,9 @@ public class EmailServiceTest {
     @Rule
     public final GreenMailRule greenMail = new GreenMailRule(ServerSetupTest.SMTP);
 
+    /**
+     * Do some setup before each test
+     */
     @Before
     public void setUp() {
         emailRepository = mock(IEmailRepository.class);
