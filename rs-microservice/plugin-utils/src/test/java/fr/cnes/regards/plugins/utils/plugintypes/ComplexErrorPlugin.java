@@ -17,9 +17,14 @@ import fr.cnes.regards.plugins.utils.ISamplePlugin;
 public class ComplexErrorPlugin implements ISamplePlugin {
 
     /**
+     * constant PLG
+     */
+    static final String PLUGIN_PARAM = "plgInterface";
+
+    /**
      * A {@link String} parameter
      */
-    @PluginParameter(description = "plugin parameter", name = PLG)
+    @PluginParameter(description = "plugin parameter", name = PLUGIN_PARAM)
     private INotInterfacePlugin interfacePlugin;
 
     /**

@@ -33,7 +33,7 @@ public class PluginUtilsTest {
      */
     @Test
     public void loadPlugins() {
-        LOGGER.info("start " + this.toString());
+        LOGGER.debug("Starting " + this.toString());
         try {
             // Get all the plugins
             final Map<String, PluginMetaData> maps = AbstractPluginUtils.getPlugins("fr.cnes.regards.plugins.utils");
@@ -51,6 +51,7 @@ public class PluginUtilsTest {
             Assert.assertTrue(false);
         }
         Assert.assertTrue(true);
+        LOGGER.debug("Ending " + this.toString());
     }
 
     /**
@@ -59,6 +60,7 @@ public class PluginUtilsTest {
     @Test
     public void getSamplePlugin() {
         SamplePlugin samplePlugin = null;
+        LOGGER.debug("Starting " + this.toString());
         /*
          * Set all parameters
          */
@@ -70,7 +72,7 @@ public class PluginUtilsTest {
             samplePlugin = PluginManagerServiceTest.getPlugin(parameters, SamplePlugin.class);
         } catch (final PluginUtilsException e) {
             LOGGER.error(e.getMessage());
-            Assert.assertTrue(true);
+            Assert.assertTrue(false);
         }
         Assert.assertNotNull(samplePlugin);
 
@@ -79,6 +81,7 @@ public class PluginUtilsTest {
          */
         Assert.assertEquals(40, samplePlugin.add(5, 3));
         Assert.assertTrue(samplePlugin.echo("hello world").contains("hello"));
+        LOGGER.debug("Ending " + this.toString());
     }
 
     /**
@@ -87,6 +90,7 @@ public class PluginUtilsTest {
     @Test
     public void getSamplePluginMissingCoeffParameter() {
         SamplePlugin samplePlugin = null;
+        LOGGER.debug("Starting " + this.toString());
         /*
          * Set parameters : Missing coeff parameter
          */
@@ -101,6 +105,7 @@ public class PluginUtilsTest {
             Assert.assertTrue(true);
         }
         Assert.assertNull(samplePlugin);
+        LOGGER.debug("Ending " + this.toString());
     }
 
 }

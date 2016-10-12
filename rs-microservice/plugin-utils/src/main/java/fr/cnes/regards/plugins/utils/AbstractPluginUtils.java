@@ -92,7 +92,7 @@ public abstract class AbstractPluginUtils {
      * @return the {@link PluginMetaData} create
      */
     public static PluginMetaData createPluginMetaData(Class<?> pPluginClass) {
-        PluginMetaData pluginMetaData = null;
+        PluginMetaData pluginMetaData;
 
         // Get implementation associated annotations
         final Plugin plugin = pPluginClass.getAnnotation(Plugin.class);
@@ -102,6 +102,7 @@ public abstract class AbstractPluginUtils {
         pluginMetaData.setClass(pPluginClass);
 
         // Manage plugin id
+        // TODO CMZ pourquoi pas systématiquement mettre le nom de la classe ? 
         if ("".equals(plugin.id())) {
             pluginMetaData.setPluginId(pPluginClass.getCanonicalName());
         } else {

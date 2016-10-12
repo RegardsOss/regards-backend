@@ -40,7 +40,7 @@ public class PluginParametersFactory {
 
     /**
      *
-     * Chainable set method
+     * Chained set method
      *
      * @param pParameterName
      *            the name parameter
@@ -52,6 +52,24 @@ public class PluginParametersFactory {
      */
     public PluginParametersFactory addParameter(String pParameterName, String pParameterValue) {
         parameters.add(new PluginParameter(pParameterName, pParameterValue));
+        return this;
+    }
+
+    /**
+     *
+     * Chained set method
+     *
+     * @param pParameterName
+     *            the name parameter
+     * 
+     * @param pPluginConfiguration
+     *            the plugin configuration
+     * 
+     * @return the factory
+     */
+    public PluginParametersFactory addParameterPluginConfiguration(String pParameterName,
+            PluginConfiguration pPluginConfiguration) {
+        parameters.add(new PluginParameter(pParameterName, pPluginConfiguration));
         return this;
     }
 

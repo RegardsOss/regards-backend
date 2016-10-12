@@ -57,7 +57,7 @@ public class SamplePlugin implements ISamplePlugin {
     @Override
     public int add(int pFist, int pSecond) {
         final int res = this.coef * (pFist + pSecond);
-        LOGGER.info(this.getClass().getName() + ":" + res);
+        LOGGER.info("add result : " + res);
         return res;
     }
 

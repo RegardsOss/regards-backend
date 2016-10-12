@@ -5,6 +5,7 @@
 package fr.cnes.regards.modules.plugins.domain;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -26,8 +27,8 @@ import org.springframework.hateoas.Identifiable;
  *
  */
 @Entity
-@Table(name = "T_PLUGIN_CONFIGURATION", indexes = {
-        @Index(name = "IDX_PLUGIN_CONFIGURATION", columnList = "pluginId") })
+@Table(name = "T_PLUGIN_CONFIGURATION",
+        indexes = { @Index(name = "IDX_PLUGIN_CONFIGURATION", columnList = "pluginId") })
 public class PluginConfiguration implements Identifiable<Long> {
 
     /**
@@ -60,12 +61,17 @@ public class PluginConfiguration implements Identifiable<Long> {
     private Integer priorityOrder;
 
     /**
+     * The plugin class
+     */
+    private PluginMetaData pluginMetaData;
+
+    /**
      * Configuration parameters of the plugin
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE", joinColumns = {
-            @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id") }, inverseJoinColumns = {
-                    @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id") })
+    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE",
+            joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id") },
+            inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id") })
     private List<PluginParameter> parameters;
 
     /**
@@ -92,6 +98,7 @@ public class PluginConfiguration implements Identifiable<Long> {
         super();
         pluginId = pPluginMetaData.getPluginId();
         version = pPluginMetaData.getVersion();
+        pluginMetaData = pPluginMetaData;
         parameters = pParameters;
         priorityOrder = pOrder;
         label = pLabel;
@@ -107,7 +114,30 @@ public class PluginConfiguration implements Identifiable<Long> {
     public final String getParameterValue(String pParameterName) {
         String value = null;
         if (parameters != null) {
-            value = parameters.stream().filter(s -> s.getName().equals(pParameterName)).findFirst().get().getValue();
+            final Optional<PluginParameter> pluginParameter = parameters.stream()
+                    .filter(s -> s.getName().equals(pParameterName)).findFirst();
+            if (pluginParameter.isPresent()) {
+                value = pluginParameter.get().getValue();
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Return the value of a specific parameter {@link PluginConfiguration}
+     * 
+     * @param pParameterName
+     *            the parameter to get the value
+     * @return the value of the parameter
+     */
+    public final PluginConfiguration getParameterConfiguration(String pParameterName) {
+        PluginConfiguration value = null;
+        if (parameters != null) {
+            final Optional<PluginParameter> pluginParameter = parameters.stream()
+                    .filter(s -> s.getName().equals(pParameterName)).findFirst();
+            if (pluginParameter.isPresent()) {
+                value = pluginParameter.get().getPluginConfiguration();
+            }
         }
         return value;
     }
@@ -150,6 +180,10 @@ public class PluginConfiguration implements Identifiable<Long> {
 
     public final void setParameters(List<PluginParameter> pParameters) {
         parameters = pParameters;
+    }
+
+    public PluginMetaData getPluginMetaData() {
+        return pluginMetaData;
     }
 
     @Override

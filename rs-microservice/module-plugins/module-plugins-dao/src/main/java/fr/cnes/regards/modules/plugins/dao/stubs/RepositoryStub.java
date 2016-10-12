@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.springframework.context.annotation.Primary;
@@ -95,7 +96,12 @@ public class RepositoryStub<T extends Identifiable<Long>> implements CrudReposit
 
     @Override
     public Iterable<T> findAll(Iterable<Long> pIds) {
-        return StreamSupport.stream(pIds.spliterator(), false).map(id -> findOne(id)).collect(Collectors.toList());
+        final Stream<Long> st = StreamSupport.stream(pIds.spliterator(), false);
+
+        final Iterable<T> iter = st.map(id -> findOne(id)).collect(Collectors.toList());
+        st.close();
+
+        return iter;
     }
 
     public Set<T> getEntities() {
