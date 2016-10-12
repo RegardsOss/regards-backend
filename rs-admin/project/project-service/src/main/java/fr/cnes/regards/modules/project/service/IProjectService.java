@@ -5,9 +5,8 @@ package fr.cnes.regards.modules.project.service;
 
 import java.util.List;
 
-import javax.naming.OperationNotSupportedException;
-
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -18,12 +17,11 @@ public interface IProjectService {
 
     List<Project> deleteProject(String pProjectId);
 
-    Project modifyProject(String pProjectId, Project pProject)
-            throws OperationNotSupportedException, EntityNotFoundException;
+    Project modifyProject(String pProjectId, Project pProject) throws EntityException;
 
     List<Project> retrieveProjectList();
 
-    Project createProject(Project pNewProject) throws AlreadyExistingException;
+    Project createProject(Project pNewProject) throws EntityException;
 
     boolean existProject(String pProjectId);
 
@@ -42,8 +40,7 @@ public interface IProjectService {
      *             The Project referenced doesn't exists
      * @since 1.0-SNAPSHOT
      */
-    ProjectConnection createProjectConnection(ProjectConnection pProjectConnection)
-            throws AlreadyExistingException, EntityNotFoundException;
+    ProjectConnection createProjectConnection(ProjectConnection pProjectConnection) throws EntityException;
 
     /**
      *
@@ -55,7 +52,7 @@ public interface IProjectService {
      *             The ProjectConnection to delete doesn't exists
      * @since 1.0-SNAPSHOT
      */
-    void deleteProjectConnection(Long pProjectConnectionId) throws EntityNotFoundException;
+    void deleteProjectConnection(Long pProjectConnectionId) throws EntityException;
 
     /**
      *
@@ -68,7 +65,7 @@ public interface IProjectService {
      *             Project connecion or referenced project doesn't exists
      * @since 1.0-SNAPSHOT
      */
-    ProjectConnection updateProjectConnection(ProjectConnection pProjectConnection) throws EntityNotFoundException;
+    ProjectConnection updateProjectConnection(ProjectConnection pProjectConnection) throws EntityException;
 
     /**
      *

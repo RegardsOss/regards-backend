@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -68,8 +68,7 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public Project modifyProject(final String projectId, final Project pProject)
-            throws OperationNotSupportedException, EntityNotFoundException {
+    public Project modifyProject(final String projectId, final Project pProject) throws EntityException {
         if (!existProject(projectId)) {
             throw new EntityNotFoundException(projectId, Project.class);
         }
@@ -77,7 +76,7 @@ public class ProjectService implements IProjectService {
             throw new IllegalStateException("This project is deleted");
         }
         if (!pProject.getName().equals(projectId)) {
-            throw new OperationNotSupportedException("projectId and updated project does not match");
+            throw new InvalidEntityException("projectId and updated project does not match");
         }
         return projectRepository.save(pProject);
     }
@@ -115,7 +114,7 @@ public class ProjectService implements IProjectService {
     @Override
     public ProjectConnection createProjectConnection(final ProjectConnection pProjectConnection)
             throws AlreadyExistingException, EntityNotFoundException {
-        ProjectConnection connection = null;
+        ProjectConnection connection;
         final Project project = pProjectConnection.getProject();
         // Check referenced project exists
         if ((project.getId() != null) && projectRepository.exists(project.getId())) {
@@ -150,7 +149,7 @@ public class ProjectService implements IProjectService {
     @Override
     public ProjectConnection updateProjectConnection(final ProjectConnection pProjectConnection)
             throws EntityNotFoundException {
-        ProjectConnection connection = null;
+        ProjectConnection connection;
         // Check that entity to update exists
         if ((pProjectConnection.getId() != null) && projectConnectionRepository.exists(pProjectConnection.getId())) {
             final Project project = pProjectConnection.getProject();

@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.emails.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -49,7 +50,12 @@ public class EmailService implements IEmailService {
 
     @Override
     public List<Email> retrieveEmails() {
-        return emailRepository.findAll();
+        final List<Email> emails = new ArrayList<>();
+        final Iterable<Email> results = emailRepository.findAll();
+        if (results != null) {
+            results.forEach(r -> emails.add(r));
+        }
+        return emails;
     }
 
     @Override

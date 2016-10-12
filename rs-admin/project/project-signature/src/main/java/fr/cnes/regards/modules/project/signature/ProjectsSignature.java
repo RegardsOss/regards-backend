@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.project.signature;
 
 import java.util.List;
 
-import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -34,8 +34,7 @@ public interface ProjectsSignature {
     @RequestMapping(value = "/projects", method = RequestMethod.POST, consumes = "application/json",
             produces = "application/json")
     @ResponseBody
-    HttpEntity<Resource<Project>> createProject(@Valid @RequestBody Project pNewProject)
-            throws AlreadyExistingException;
+    HttpEntity<Resource<Project>> createProject(@Valid @RequestBody Project pNewProject) throws EntityException;
 
     @RequestMapping(method = RequestMethod.GET, value = "/projects/{project_id}", produces = "application/json")
     @ResponseBody
@@ -45,7 +44,7 @@ public interface ProjectsSignature {
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> modifyProject(@PathVariable("project_id") String pProjectId, @RequestBody Project pProjectUpdated)
-            throws OperationNotSupportedException, EntityNotFoundException;
+            throws EntityException;
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/projects/{project_id}", produces = "application/json")
     @ResponseBody
@@ -88,23 +87,23 @@ public interface ProjectsSignature {
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<ProjectConnection>> createProjectConnection(
-            @Valid @RequestBody ProjectConnection pProjectConnection)
-            throws AlreadyExistingException, EntityNotFoundException;
+            @Valid @RequestBody ProjectConnection pProjectConnection) throws EntityException;
 
     /**
      *
      * Update an existing Project connection
      *
      * @param pProjectConnection
-     * @return
+     *            ProjectConnection to update
+     * @return updated pProjectConnection
      * @throws EntityNotFoundException
-     * @since TODO
+     * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.PUT, value = "/projects/connections",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<ProjectConnection>> updateProjectConnection(
-            @Valid @RequestBody ProjectConnection pProjectConnection) throws EntityNotFoundException;
+            @Valid @RequestBody ProjectConnection pProjectConnection) throws EntityException;
 
     /**
      *
@@ -123,5 +122,5 @@ public interface ProjectsSignature {
             produces = "application/json")
     @ResponseBody
     HttpEntity<Void> deleteProjectConnection(@PathVariable("project_name") String pProjectName,
-            @PathVariable("microservice") String pMicroservice) throws EntityNotFoundException;
+            @PathVariable("microservice") String pMicroservice) throws EntityException;
 }

@@ -10,9 +10,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
@@ -26,7 +27,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.core.hateoas.HateoasKeyWords;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -38,6 +41,8 @@ import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 @ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
 public class ProjectsController implements ProjectsSignature {
+
+    private static Logger LOG = LoggerFactory.getLogger(ProjectsController.class);
 
     @Autowired
     private IProjectService projectService;
@@ -52,7 +57,7 @@ public class ProjectsController implements ProjectsSignature {
     public void dataAlreadyExisting() {
     }
 
-    @ExceptionHandler(OperationNotSupportedException.class)
+    @ExceptionHandler(InvalidEntityException.class)
     @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED)
     public void operationNotSupported() {
     }
@@ -71,7 +76,7 @@ public class ProjectsController implements ProjectsSignature {
     @Override
     @ResourceAccess(description = "create a new project")
     public HttpEntity<Resource<Project>> createProject(@Valid @RequestBody final Project newProject)
-            throws AlreadyExistingException {
+            throws EntityException {
 
         final Project project = projectService.createProject(newProject);
         final Resource<Project> resource = new Resource<Project>(project);
@@ -92,7 +97,7 @@ public class ProjectsController implements ProjectsSignature {
     @Override
     @ResourceAccess(description = "update the project project_id")
     public HttpEntity<Void> modifyProject(@PathVariable("project_id") final String projectId,
-            @RequestBody final Project projectUpdated) throws OperationNotSupportedException, EntityNotFoundException {
+            @RequestBody final Project projectUpdated) throws EntityException {
 
         projectService.modifyProject(projectId, projectUpdated);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -111,7 +116,7 @@ public class ProjectsController implements ProjectsSignature {
             @PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroService) {
 
-        ResponseEntity<Resource<ProjectConnection>> response = null;
+        ResponseEntity<Resource<ProjectConnection>> response;
         final ProjectConnection pConn = projectService.retreiveProjectConnection(pProjectName, pMicroService);
 
         if (pConn != null) {
@@ -126,8 +131,7 @@ public class ProjectsController implements ProjectsSignature {
 
     @Override
     public HttpEntity<Resource<ProjectConnection>> createProjectConnection(
-            @Valid @RequestBody final ProjectConnection pProjectConnection)
-            throws AlreadyExistingException, EntityNotFoundException {
+            @Valid @RequestBody final ProjectConnection pProjectConnection) throws EntityException {
         final ProjectConnection pConn = projectService.createProjectConnection(pProjectConnection);
         final Resource<ProjectConnection> resource = new Resource<ProjectConnection>(pConn);
         addLinksToProjectConnection(resource);
@@ -136,7 +140,7 @@ public class ProjectsController implements ProjectsSignature {
 
     @Override
     public HttpEntity<Resource<ProjectConnection>> updateProjectConnection(
-            @Valid @RequestBody final ProjectConnection pProjectConnection) throws EntityNotFoundException {
+            @Valid @RequestBody final ProjectConnection pProjectConnection) throws EntityException {
         final ProjectConnection pConn = projectService.updateProjectConnection(pProjectConnection);
         final Resource<ProjectConnection> resource = new Resource<ProjectConnection>(pConn);
         addLinksToProjectConnection(resource);
@@ -145,7 +149,7 @@ public class ProjectsController implements ProjectsSignature {
 
     @Override
     public HttpEntity<Void> deleteProjectConnection(@PathVariable("project_name") final String pProjectName,
-            @PathVariable("microservice") final String pMicroservice) throws EntityNotFoundException {
+            @PathVariable("microservice") final String pMicroservice) throws EntityException {
 
         ResponseEntity<Void> response;
         final ProjectConnection pConn = projectService.retreiveProjectConnection(pProjectName, pMicroservice);
@@ -188,8 +192,9 @@ public class ProjectsController implements ProjectsSignature {
                 pProjectConnection.add(linkTo(methodOn(ProjectsController.class)
                         .createProjectConnection(pProjectConnection.getContent()))
                                 .withRel(HateoasKeyWords.CREATE.getValue()));
-            } catch (final AlreadyExistingException | EntityNotFoundException e) {
+            } catch (final EntityException e) {
                 // Nothing to do. Method is not called
+                LOG.warn(e.getMessage(), e);
             }
         }
     }
