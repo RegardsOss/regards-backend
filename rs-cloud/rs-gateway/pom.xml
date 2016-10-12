@@ -22,6 +22,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sonar.language>java</sonar.language>
 		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
+		<fr.cnes.regards.docker.image.name>rs-gateway</fr.cnes.regards.docker.image.name>
 	</properties>
 
 	<dependencies>
