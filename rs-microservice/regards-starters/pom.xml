@@ -28,6 +28,7 @@
 		<module>jpa-multitenant-regards-autoconfigure</module>
 		<module>jpa-multitenant-regards-starter</module>
 		<module>jpa-instance-regards-autoconfigure</module>
+		<module>jpa-instance-regards-starter</module>
 	</modules>
 
 	<dependencies>

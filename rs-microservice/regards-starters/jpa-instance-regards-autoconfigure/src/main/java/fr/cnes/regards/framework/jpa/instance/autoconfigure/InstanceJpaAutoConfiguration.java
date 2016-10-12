@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.instance;
+package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,13 +40,11 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-// CHECKSTYLE:OFF
 @EnableJpaRepositories(includeFilters = {
         @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory", transactionManagerRef = "instanceJpaTransactionManager")
-// CHECKSTYLE:ON
 @EnableTransactionManagement
-@ConditionalOnProperty("microservice.dao.instance.enabled")
-public class InstanceJpaConfiguration {
+@ConditionalOnProperty(prefix = "regards.jpa", name = "instance.enabled", matchIfMissing = true)
+public class InstanceJpaAutoConfiguration {
 
     /**
      * JPA Persistence unit name. Used to separate multiples databases
