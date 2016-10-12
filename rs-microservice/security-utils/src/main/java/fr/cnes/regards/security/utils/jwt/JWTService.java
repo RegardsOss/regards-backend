@@ -56,15 +56,15 @@ public class JWTService {
      * @param pRole
      * @since 1.0-SNAPSHOT
      */
-    public void injectToken(String pProject, String pRole) {
+    public void injectToken(final String pProject, final String pRole) {
         String token = null;
         if (scopesTokensMap_.get(pProject) != null) {
             token = scopesTokensMap_.get(pProject);
-        }
-        else {
+        } else {
             token = generateToken(pProject, "", "", pRole);
         }
-        JWTAuthentication auth = new JWTAuthentication(token);
+        final JWTAuthentication auth = new JWTAuthentication(token);
+        auth.setProject(pProject);
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
@@ -79,29 +79,29 @@ public class JWTService {
      * @throws InvalidJwtException
      *             Invalid JWT signature
      */
-    public JWTAuthentication parseToken(JWTAuthentication pAuthentication)
+    public JWTAuthentication parseToken(final JWTAuthentication pAuthentication)
             throws InvalidJwtException, MissingClaimException {
 
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(TextCodec.BASE64.encode(secret_))
+            final Jws<Claims> claims = Jwts.parser().setSigningKey(TextCodec.BASE64.encode(secret_))
                     .parseClaimsJws(pAuthentication.getJwt());
             // OK, trusted JWT parsed and validated
 
-            String project = claims.getBody().get(CLAIM_PROJECT, String.class);
+            final String project = claims.getBody().get(CLAIM_PROJECT, String.class);
             if (project == null) {
                 throw new MissingClaimException(CLAIM_PROJECT);
             }
             pAuthentication.setProject(project);
 
-            UserDetails user = new UserDetails();
+            final UserDetails user = new UserDetails();
 
-            String email = claims.getBody().get(CLAIM_EMAIL, String.class);
+            final String email = claims.getBody().get(CLAIM_EMAIL, String.class);
             if (email == null) {
                 throw new MissingClaimException(CLAIM_EMAIL);
             }
             user.setEmail(email);
 
-            String name = claims.getBody().getSubject();
+            final String name = claims.getBody().getSubject();
             if (name == null) {
                 throw new MissingClaimException("sub");
             }
@@ -109,7 +109,7 @@ public class JWTService {
 
             pAuthentication.setUser(user);
 
-            String role = claims.getBody().get(CLAIM_ROLE, String.class);
+            final String role = claims.getBody().get(CLAIM_ROLE, String.class);
             if (role == null) {
                 throw new MissingClaimException(CLAIM_ROLE);
             }
@@ -118,9 +118,8 @@ public class JWTService {
             pAuthentication.setAuthenticated(Boolean.TRUE);
 
             return pAuthentication;
-        }
-        catch (SignatureException e) {
-            String message = "JWT signature validation failed";
+        } catch (final SignatureException e) {
+            final String message = "JWT signature validation failed";
             LOG.error(message, e);
             throw new InvalidJwtException(message);
         }
@@ -130,7 +129,7 @@ public class JWTService {
     // JWT should be complete with :
     // - expiration date
     // - data access groups
-    public String generateToken(String pProject, String pEmail, String pName, String pRole) {
+    public String generateToken(final String pProject, final String pEmail, final String pName, final String pRole) {
         return Jwts.builder().setIssuer("regards").setClaims(generateClaims(pProject, pEmail, pRole, pName))
                 .setSubject(pName).signWith(ALGO, TextCodec.BASE64.encode(secret_)).compact();
     }
@@ -145,8 +144,9 @@ public class JWTService {
      * @return
      * @since 1.0-SNAPSHOT
      */
-    public Map<String, Object> generateClaims(String pProject, String pEmail, String pRole, String pUserName) {
-        Map<String, Object> claims = new HashMap<>();
+    public Map<String, Object> generateClaims(final String pProject, final String pEmail, final String pRole,
+            final String pUserName) {
+        final Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_PROJECT, pProject);
         claims.put(CLAIM_EMAIL, pEmail);
         claims.put(CLAIM_ROLE, pRole);
@@ -165,7 +165,7 @@ public class JWTService {
      * @param pSecret
      *            the secret to set
      */
-    public void setSecret(String pSecret) {
+    public void setSecret(final String pSecret) {
         secret_ = pSecret;
     }
 }

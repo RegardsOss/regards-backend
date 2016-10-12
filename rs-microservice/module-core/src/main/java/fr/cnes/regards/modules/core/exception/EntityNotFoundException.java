@@ -12,7 +12,7 @@ package fr.cnes.regards.modules.core.exception;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public class EntityNotFoundException extends Exception {
+public class EntityNotFoundException extends EntityException {
 
     /**
      * serialVersionUID field.
