@@ -22,6 +22,7 @@
 		<module>websocket-regards-autoconfigure</module>
 		<module>websocket-regards-starter</module>
 		<module>security-regards-autoconfigure</module>
+		<module>security-regards-starter</module>
 	</modules>
 
 	<dependencies>
