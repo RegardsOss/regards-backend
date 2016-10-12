@@ -58,6 +58,14 @@ public class Project implements Identifiable<Long> {
         name = pName;
     }
 
+    public Project(final String pDesc, final String pIcon, final boolean pIsPublic, final String pName) {
+        this();
+        description = pDesc;
+        icon = pIcon;
+        isPublic = pIsPublic;
+        name = pName;
+    }
+
     @Override
     public Long getId() {
         return id;

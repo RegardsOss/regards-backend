@@ -38,6 +38,18 @@
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-dao</artifactId>
 		</dependency>
+		<!-- Tests -->
+		<dependency>
+			<groupId>fr.cnes.regards.modules.project</groupId>
+			<artifactId>project-test</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.microservices</groupId>
+			<artifactId>microservice-core-test</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>
