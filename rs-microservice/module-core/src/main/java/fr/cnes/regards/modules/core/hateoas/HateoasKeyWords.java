@@ -27,7 +27,11 @@ public enum HateoasKeyWords {
     /**
      * DELETE entity keyword
      */
-    DELETE("delete");
+    DELETE("delete"),
+    /**
+     * SELF entity keyword
+     */
+    SELF("self");
 
     /**
      * Value
