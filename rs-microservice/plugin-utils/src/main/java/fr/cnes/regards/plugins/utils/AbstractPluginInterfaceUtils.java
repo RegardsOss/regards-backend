@@ -38,18 +38,17 @@ public abstract class AbstractPluginInterfaceUtils {
      * @return all class annotated {@link PluginInterface}
      */
     public static List<String> getInterfaces(String pPrefix) {
-        List<String> interfaces = null;
+        final List<String> interfaces;
 
         // Scan class path with Reflections library
         final Reflections reflections = new Reflections(pPrefix);
         final Set<Class<?>> annotatedPlugins = reflections.getTypesAnnotatedWith(PluginInterface.class);
 
-        for (final Class<?> pluginClass : annotatedPlugins) {
-
-            if (interfaces == null) {
-                interfaces = new ArrayList<String>();
-            }
-            interfaces.add(pluginClass.getCanonicalName());
+        if (annotatedPlugins.size() > 0) {
+            interfaces = new ArrayList<String>();
+            annotatedPlugins.stream().forEach(s -> interfaces.add(s.getCanonicalName()));
+        } else {
+            interfaces = null;
         }
 
         return interfaces;

@@ -62,6 +62,25 @@ public class PluginParametersFactory {
      * @param pParameterName
      *            the name parameter
      * 
+     * @param pParameterValue
+     *            the value parameter
+     * 
+     * @return the factory
+     */
+    public PluginParametersFactory addParameterDynamic(String pParameterName, String pParameterValue) {
+        final PluginParameter aPluginParameter = new PluginParameter(pParameterName, pParameterValue);
+        aPluginParameter.setIsDynamic(true);
+        parameters.add(aPluginParameter);
+        return this;
+    }
+
+    /**
+     *
+     * Chained set method
+     *
+     * @param pParameterName
+     *            the name parameter
+     * 
      * @param pPluginConfiguration
      *            the plugin configuration
      * 

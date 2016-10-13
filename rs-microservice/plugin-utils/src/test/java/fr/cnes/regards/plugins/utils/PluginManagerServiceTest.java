@@ -37,18 +37,20 @@ public final class PluginManagerServiceTest {
      *            the plugin parameters
      * @param pReturnInterfaceType
      *            the required returned type
+     * @param pPluginParameters
+     *            an optional list of {@link PluginParameter}
      * 
      * @return an instance
      * @throws PluginUtilsException
      *             if problem occurs
      */
-    public static <T> T getPlugin(List<PluginParameter> pParameters, Class<T> pReturnInterfaceType)
-            throws PluginUtilsException {
+    public static <T> T getPlugin(List<PluginParameter> pParameters, Class<T> pReturnInterfaceType,
+            PluginParameter... pPluginParameters) throws PluginUtilsException {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = AbstractPluginUtils.createPluginMetaData(pReturnInterfaceType);
 
         final PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", pParameters, 0);
-        return AbstractPluginUtils.getPlugin(pluginConfiguration, pluginMetadata);
+        return AbstractPluginUtils.getPlugin(pluginConfiguration, pluginMetadata, pPluginParameters);
     }
 
     /**

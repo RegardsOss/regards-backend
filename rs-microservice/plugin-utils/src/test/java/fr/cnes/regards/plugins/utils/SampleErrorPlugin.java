@@ -11,18 +11,18 @@ import fr.cnes.regards.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
 
 /**
- * SamplePlugin
+ * SampleErrorPlugin
  * 
  * @author cmertz
  *
  */
-@Plugin(author = "CSSI", description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1")
-public class SamplePlugin implements ISamplePlugin {
+@Plugin(author = "CSSI", description = "Sample plugin test", id = "aSampleErrorPlugin", version = "0.0.1")
+public class SampleErrorPlugin implements ISamplePlugin {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SamplePlugin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SampleErrorPlugin.class);
 
     /**
      * A {@link String} parameter
@@ -68,6 +68,7 @@ public class SamplePlugin implements ISamplePlugin {
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + this.suffix + "|active:"
                 + this.isActive + "|coeff:" + this.coef);
+        throw new IllegalArgumentException();
     }
 
 }
