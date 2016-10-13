@@ -11,7 +11,6 @@ import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpEntity;
@@ -57,8 +56,12 @@ public class ProjectsController implements IProjectsSignature {
     /**
      * Business service for Project entities
      */
-    @Autowired
-    private IProjectService projectService;
+    private final IProjectService projectService;
+
+    public ProjectsController(final IProjectService pProjectService) {
+        super();
+        projectService = pProjectService;
+    }
 
     @ExceptionHandler({ EntityNotFoundException.class, NoSuchElementException.class })
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
