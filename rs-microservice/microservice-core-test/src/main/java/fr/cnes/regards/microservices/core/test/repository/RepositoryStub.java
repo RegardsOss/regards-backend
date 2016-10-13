@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.plugins.dao.stubs;
+package fr.cnes.regards.microservices.core.test.repository;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,72 +16,62 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.hateoas.Identifiable;
 import org.springframework.stereotype.Repository;
 
-/**
- * TODO description
- * 
- * @author cmertz
- *
- * @param <T>
- */
 @Repository
 @Profile("test")
 @Primary
 public class RepositoryStub<T extends Identifiable<Long>> implements CrudRepository<T, Long> {
 
-    /**
-     * A set of entities
-     */
     protected Set<T> entities = new HashSet<>();
 
     @Override
-    public <S extends T> S save(S pEntity) {
-        this.entities.removeIf(r -> r.equals(pEntity));
-        this.entities.add(pEntity);
+    public <S extends T> S save(final S pEntity) {
+        entities.removeIf(r -> r.equals(pEntity));
+        entities.add(pEntity);
         return pEntity;
     }
 
     @Override
-    public T findOne(Long pId) {
-        return this.entities.stream().filter(r -> r.getId().equals(pId)).findFirst().get();
+    public T findOne(final Long pId) {
+        return entities.stream().filter(r -> r.getId().equals(pId)).findFirst().get();
     }
 
     @Override
-    public boolean exists(Long pId) {
-        return this.entities.stream().filter(r -> r.getId().equals(pId)).findAny().isPresent();
+    public boolean exists(final Long pId) {
+        return entities.stream().filter(r -> r.getId().equals(pId)).findAny().isPresent();
     }
 
     @Override
     public long count() {
-        return this.entities.size();
+        return entities.size();
     }
 
     @Override
-    public void delete(Long pId) {
-        this.entities.removeIf(r -> r.getId().equals(pId));
+    public void delete(final Long pId) {
+        entities.removeIf(r -> r.getId().equals(pId));
     }
 
     @Override
-    public void delete(T pEntity) {
-        this.entities.remove(pEntity);
+    public void delete(final T pEntity) {
+        entities.remove(pEntity);
     }
 
     @Override
-    public void delete(Iterable<? extends T> pEntities) {
-        for (T entity : pEntities) {
+    public void delete(final Iterable<? extends T> pEntities) {
+        for (final T entity : pEntities) {
             delete(entity);
         }
     }
 
     @Override
     public void deleteAll() {
-        this.entities = new HashSet<>();
+        entities = new HashSet<>();
     }
 
     @Override
-    public <S extends T> List<S> save(Iterable<S> pEntities) {
+    public <S extends T> List<S> save(final Iterable<S> pEntities) {
         final List<S> savedEntities = new ArrayList<>();
 
-        for (S entity : pEntities) {
+        for (final S entity : pEntities) {
             savedEntities.add(save(entity));
         }
 
@@ -90,20 +80,31 @@ public class RepositoryStub<T extends Identifiable<Long>> implements CrudReposit
 
     @Override
     public Iterable<T> findAll() {
-        return this.entities;
-    }
-
-    @Override
-    public Iterable<T> findAll(Iterable<Long> pIds) {
-        return StreamSupport.stream(pIds.spliterator(), false).map(id -> findOne(id)).collect(Collectors.toList());
-    }
-
-    public Set<T> getEntities() {
         return entities;
     }
 
-    public void setEntities(Set<T> pEntities) {
-        this.entities = pEntities;
+    @Override
+    public Iterable<T> findAll(final Iterable<Long> pIds) {
+        return StreamSupport.stream(pIds.spliterator(), false).map(id -> findOne(id)).collect(Collectors.toList());
+    }
+
+    /**
+     * Get entities
+     *
+     * @return The list of entities
+     */
+    protected Set<T> getEntities() {
+        return entities;
+    }
+
+    /**
+     * Set entities
+     *
+     * @param pEntities
+     *            The list of entities
+     */
+    protected void setEntities(final Set<T> pEntities) {
+        entities = pEntities;
     }
 
 }

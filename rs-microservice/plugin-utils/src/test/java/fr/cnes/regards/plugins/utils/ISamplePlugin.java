@@ -27,11 +27,6 @@ public interface ISamplePlugin {
     public static final String COEFF = "coeff";
     
     /**
-     * constant coeff
-     */
-    public static final String PLG = "plg";
-
-    /**
      * method echo
      * 
      * @param pMessage
@@ -44,12 +39,12 @@ public interface ISamplePlugin {
     /**
      * method add
      * 
-     * @param pFist
+     * @param pFirst
      *            first element
      * @param pSecond
      *            second item
      * @return the result
      */
-    int add(int pFist, int pSecond);
+    int add(int pFirst, int pSecond);
 
 }
