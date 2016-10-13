@@ -10,6 +10,13 @@
 	<description>REGARDS tests</description>
 	<packaging>pom</packaging>
 
+	<parent>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-aggregator-parent</artifactId>
+		<version>0.0.0-SNAPSHOT</version>
+		<relativePath />
+	</parent>
+
 	<modules>
 		<module>regards-test</module>
 		<module>regards-test-reporting</module>
