@@ -19,8 +19,9 @@ import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.IPluginType;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.plugins.utils.AbstractPluginUtils;
+import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
+
 
 /**
  *
@@ -71,7 +72,7 @@ public class PluginService implements IPluginService {
 
         // Scan class spath for plugins implementations only once
         if (plugins == null) {
-            plugins = AbstractPluginUtils.getPlugins(PLUGINS_PACKAGE);
+            plugins = PluginUtils.getPlugins(PLUGINS_PACKAGE);
         }
     }
 
@@ -117,7 +118,7 @@ public class PluginService implements IPluginService {
             LOGGER.warn("Warning plugin version changed since last configuration");
         }
 
-        return AbstractPluginUtils.getPlugin(pluginConf, pluginMetadata);
+        return PluginUtils.getPlugin(pluginConf, pluginMetadata);
     }
 
     @Override
