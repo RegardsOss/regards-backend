@@ -108,7 +108,7 @@ public interface IProjectsSignature {
      * @return Void
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.DELETE, value = "/projects/{project_nale}", produces = "application/json")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/projects/{project_name}", produces = "application/json")
     @ResponseBody
     HttpEntity<Void> deleteProject(@PathVariable("project_name") String pProjectName);
 

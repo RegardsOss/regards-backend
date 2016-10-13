@@ -108,8 +108,8 @@ public class ProjectsController implements IProjectsSignature {
     }
 
     @Override
-    @ResourceAccess(description = "update the project project_id")
-    public HttpEntity<Void> modifyProject(@PathVariable("project_id") final String pProjectName,
+    @ResourceAccess(description = "update the project project_name")
+    public HttpEntity<Void> modifyProject(@PathVariable("project_name") final String pProjectName,
             @RequestBody final Project pProjectToUpdate) throws EntityException {
 
         projectService.updateProject(pProjectName, pProjectToUpdate);
@@ -117,8 +117,8 @@ public class ProjectsController implements IProjectsSignature {
     }
 
     @Override
-    @ResourceAccess(description = "remove the project project_id")
-    public HttpEntity<Void> deleteProject(@PathVariable("project_id") final String pProjectName) {
+    @ResourceAccess(description = "remove the project project_name")
+    public HttpEntity<Void> deleteProject(@PathVariable("project_name") final String pProjectName) {
 
         projectService.deleteProject(pProjectName);
         return new ResponseEntity<>(HttpStatus.OK);

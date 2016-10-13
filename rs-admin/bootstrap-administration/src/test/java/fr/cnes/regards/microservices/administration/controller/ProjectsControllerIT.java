@@ -68,9 +68,9 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
 
         authService_.setAuthorities("/projects", RequestMethod.GET, "USER");
         authService_.setAuthorities("/projects", RequestMethod.POST, "USER");
-        authService_.setAuthorities("/projects/{project_id}", RequestMethod.GET, "USER");
-        authService_.setAuthorities("/projects/{project_id}", RequestMethod.PUT, "USER");
-        authService_.setAuthorities("/projects/{project_id}", RequestMethod.DELETE, "USER");
+        authService_.setAuthorities("/projects/{project_name}", RequestMethod.GET, "USER");
+        authService_.setAuthorities("/projects/{project_name}", RequestMethod.PUT, "USER");
+        authService_.setAuthorities("/projects/{project_name}", RequestMethod.DELETE, "USER");
 
         authService_.setAuthorities(apiProjectConnection, RequestMethod.GET, "USER");
         authService_.setAuthorities(apiProjectConnection, RequestMethod.DELETE, "USER");
@@ -80,7 +80,7 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
 
         errorMessage = "Cannot reach model attributes";
         apiProjects = "/projects";
-        apiProjectId = apiProjects + "/{project_id}";
+        apiProjectId = apiProjects + "/{project_name}";
 
     }
 
