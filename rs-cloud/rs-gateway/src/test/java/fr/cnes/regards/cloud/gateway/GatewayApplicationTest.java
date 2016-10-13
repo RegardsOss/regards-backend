@@ -112,18 +112,20 @@ public class GatewayApplicationTest {
             String invalidBasicString = "invalid:invalid";
             invalidBasicString = Base64.getEncoder().encodeToString(invalidBasicString.getBytes());
 
-            mockMvc.perform(MockMvcRequestBuilders.get(TOKEN_ENDPOINT)).andExpect(MockMvcResultMatchers.status()
-                    .isUnauthorized());
-            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)).andExpect(MockMvcResultMatchers.status()
-                    .isUnauthorized());
+            mockMvc.perform(MockMvcRequestBuilders.get(TOKEN_ENDPOINT))
+                    .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT))
+                    .andExpect(MockMvcResultMatchers.status().isUnauthorized());
 
-            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT).with(SecurityMockMvcRequestPostProcessors
-                    .csrf())
+            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
+                    .with(SecurityMockMvcRequestPostProcessors.csrf())
                     .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + invalidBasicString)
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
-                    .param(GRANT_TYPE, PASSWORD).param(SCOPE, "scope1").param(USER_NAME, "name1")
-                    .param(PASSWORD, "mdp")).andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
+                    .param(SCOPE, "scope1").param(USER_NAME, "name1").param(PASSWORD, "mdp"))
+                    .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+            // CHECKSTYLE:OFF
         } catch (final Exception e) {
+            // CHECKSTYLE:ON
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
@@ -143,15 +145,16 @@ public class GatewayApplicationTest {
             String basicString = String.format("%s:%s", basicUserName, basicPassword);
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
-            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT).with(SecurityMockMvcRequestPostProcessors
-                    .csrf()).header(HttpHeaders.AUTHORIZATION,
-                                    BASIC_AUTH
-                                            + basicString)
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
-                    .param(GRANT_TYPE, PASSWORD).param(SCOPE, "scope2").param(USER_NAME, "name2")
+            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
+                    .with(SecurityMockMvcRequestPostProcessors.csrf())
+                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
+                    .param(SCOPE, "scope2").param(USER_NAME, "name2")
                     .param(PASSWORD, AuthenticationProviderStub.INVALID_PASSWORD))
                     .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+            // CHECKSTYLE:OFF
         } catch (final Exception e) {
+            // CHECKSTYLE:ON
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
@@ -171,14 +174,15 @@ public class GatewayApplicationTest {
             String basicString = basicUserName + ":" + basicPassword;
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
-            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT).with(SecurityMockMvcRequestPostProcessors
-                    .csrf()).header(HttpHeaders.AUTHORIZATION,
-                                    BASIC_AUTH
-                                            + basicString)
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
-                    .param(GRANT_TYPE, PASSWORD).param(SCOPE, "scope3").param(USER_NAME, "name3")
-                    .param(PASSWORD, "plop")).andExpect(MockMvcResultMatchers.status().isOk());
+            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
+                    .with(SecurityMockMvcRequestPostProcessors.csrf())
+                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
+                    .param(SCOPE, "scope3").param(USER_NAME, "name3").param(PASSWORD, "plop"))
+                    .andExpect(MockMvcResultMatchers.status().isOk());
+            // CHECKSTYLE:OFF
         } catch (final Exception e) {
+            // CHECKSTYLE:ON
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
