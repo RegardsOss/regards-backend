@@ -18,14 +18,14 @@ import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
  *
  * @author cmertz
  */
-public abstract class AbstractPluginInterfaceUtils {
+public final class PluginInterfaceUtils {
 
     /**
      *
      * Constructor
      *
      */
-    private AbstractPluginInterfaceUtils() {
+    private PluginInterfaceUtils() {
         // Static class
     }
 

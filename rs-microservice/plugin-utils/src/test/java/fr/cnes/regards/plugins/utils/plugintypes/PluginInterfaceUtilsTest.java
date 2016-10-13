@@ -13,10 +13,10 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
-import fr.cnes.regards.plugins.utils.AbstractPluginInterfaceUtils;
-import fr.cnes.regards.plugins.utils.AbstractPluginUtilsConstants;
+import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
 import fr.cnes.regards.plugins.utils.PluginManagerServiceTest;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
+import fr.cnes.regards.plugins.utils.PluginUtilsTestConstants;
 
 /**
  * PluginInterfaceUtilsTest
@@ -24,7 +24,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * @author cmertz
  *
  */
-public class PluginInterfaceUtilsTest extends AbstractPluginUtilsConstants {
+public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Class logger
@@ -38,7 +38,7 @@ public class PluginInterfaceUtilsTest extends AbstractPluginUtilsConstants {
     public void loadPluginsInterface() {
         LOGGER.debug("Starting " + this.toString());
         // Get all the plugin interfaces
-        final List<String> pluginInterfaces = AbstractPluginInterfaceUtils
+        final List<String> pluginInterfaces = PluginInterfaceUtils
                 .getInterfaces("fr.cnes.regards.plugins.utils.plugintypes");
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
@@ -61,9 +61,10 @@ public class PluginInterfaceUtilsTest extends AbstractPluginUtilsConstants {
              * Get the configuration for the Plugin parameter (ie the child)
              */
             final List<PluginParameter> interfaceParameters = PluginParametersFactory.build()
-                    .addParameter(ParameterPlugin.LONG_PARAM, PluginInterfaceUtilsTest.LONG_STR_VALUE).getParameters();
+                    .addParameter(AParameterPluginImplementation.LONG_PARAM, PluginInterfaceUtilsTest.LONG_STR_VALUE)
+                    .getParameters();
             final PluginConfiguration pluginConfigurationInterface = PluginManagerServiceTest
-                    .getPluginConfiguration(interfaceParameters, ParameterPlugin.class);
+                    .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class);
             Assert.assertNotNull(pluginConfigurationInterface);
 
             /*
