@@ -275,16 +275,24 @@ public class ProjectServiceTest {
     @Purpose("Test deletion of a database connection for a given project and a given microservice.")
     @Test
     public void deleteProjectConnection() {
-        ProjectConnection connection = projectService.retreiveProjectConnection(PROJECT_TEST_2, MS_TEST_2);
+        ProjectConnection connection = null;
+        try {
+            connection = projectService.retreiveProjectConnection(PROJECT_TEST_2, MS_TEST_2);
+        } catch (final EntityNotFoundException e) {
+            Assert.fail(e.getMessage());
+        }
         try {
             projectService.deleteProjectConnection(connection.getId());
         } catch (final EntityNotFoundException e1) {
             Assert.fail(e1.getMessage());
         }
 
-        connection = projectService.retreiveProjectConnection(PROJECT_TEST_2, MS_TEST_1);
-
-        Assert.assertNull("Deletion error. Project connection always exists.", connection);
+        try {
+            connection = projectService.retreiveProjectConnection(PROJECT_TEST_2, MS_TEST_1);
+            Assert.fail("Deletion error. Project connection always exists.");
+        } catch (final EntityNotFoundException e1) {
+            // Nothing to do
+        }
 
         try {
             final long id = 5556L;
@@ -309,7 +317,12 @@ public class ProjectServiceTest {
 
         final String updateUserName = "newUser";
         final String errorUpdate = "Error the update should be in error. The entity doest not exists.";
-        ProjectConnection connection = projectService.retreiveProjectConnection(PROJECT_TEST_1, MS_TEST_1);
+        ProjectConnection connection = null;
+        try {
+            connection = projectService.retreiveProjectConnection(PROJECT_TEST_1, MS_TEST_1);
+        } catch (final EntityNotFoundException e) {
+            Assert.fail(e.getMessage());
+        }
         connection.setUserName(updateUserName);
         try {
             connection = projectService.updateProjectConnection(connection);

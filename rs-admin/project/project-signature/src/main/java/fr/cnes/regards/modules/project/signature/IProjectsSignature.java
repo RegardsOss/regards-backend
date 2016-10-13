@@ -99,7 +99,7 @@ public interface IProjectsSignature {
     @RequestMapping(method = RequestMethod.PUT, value = "/projects/{project_name}",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> modifyProject(@PathVariable("project_name") String pProjectName,
+    HttpEntity<Resource<Project>> updateProject(@PathVariable("project_name") String pProjectName,
             @RequestBody Project pProjectToUpdate) throws EntityException;
 
     /**
@@ -129,13 +129,15 @@ public interface IProjectsSignature {
      * @param pMicroService
      *            Microservice name
      * @return HttpEntity<Resource<ProjectConnection>>
+     * @throws EntityNotFoundException
+     *             ProjectConnection doesn't exists
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET, value = "/projects/{project_name}/connection/{microservice}",
             produces = "application/json")
     @ResponseBody
     HttpEntity<Resource<ProjectConnection>> retrieveProjectConnection(@PathVariable("project_name") String pProjectName,
-            @PathVariable("microservice") String pMicroService);
+            @PathVariable("microservice") String pMicroService) throws EntityNotFoundException;
 
     /**
      *

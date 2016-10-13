@@ -167,8 +167,11 @@ public interface IProjectService {
      * @param pMicroService
      *            microservice name
      * @return ProjectConnection
+     * @throws EntityNotFoundException
+     *             ProjectConnection doesn't exists
      * @since 1.0-SNAPSHOT
      */
-    ProjectConnection retreiveProjectConnection(final String pProjectName, String pMicroService);
+    ProjectConnection retreiveProjectConnection(final String pProjectName, String pMicroService)
+            throws EntityNotFoundException;
 
 }

@@ -111,8 +111,15 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public ProjectConnection retreiveProjectConnection(final String pProjectId, final String pMicroService) {
-        return projectConnectionRepository.findOneByProjectNameAndMicroservice(pProjectId, pMicroService);
+    public ProjectConnection retreiveProjectConnection(final String pProjectName, final String pMicroService)
+            throws EntityNotFoundException {
+        final ProjectConnection connection = projectConnectionRepository
+                .findOneByProjectNameAndMicroservice(pProjectName, pMicroService);
+        if (connection == null) {
+            throw new EntityNotFoundException(String.format("%s:%s", pProjectName, pMicroService),
+                    ProjectConnection.class);
+        }
+        return connection;
     }
 
     @Override

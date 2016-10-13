@@ -58,7 +58,7 @@ public class ProjectsFallback implements IProjectsClient {
     }
 
     @Override
-    public HttpEntity<Void> modifyProject(final String pProjectId, final Project pProjectUpdated)
+    public HttpEntity<Resource<Project>> updateProject(final String pProjectId, final Project pProjectUpdated)
             throws EntityException {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return null;

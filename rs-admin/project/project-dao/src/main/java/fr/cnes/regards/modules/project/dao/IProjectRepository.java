@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * JPA Repository to access Project entities
  *
  * @author CS
- * @since TODO
+ * @since 1.0-SNAPSHOT
  */
 @InstanceEntity
 public interface IProjectRepository extends CrudRepository<Project, Long> {

@@ -113,11 +113,13 @@ public class ProjectsController implements IProjectsSignature {
 
     @Override
     @ResourceAccess(description = "update the project project_name")
-    public HttpEntity<Void> modifyProject(@PathVariable("project_name") final String pProjectName,
+    public HttpEntity<Resource<Project>> updateProject(@PathVariable("project_name") final String pProjectName,
             @RequestBody final Project pProjectToUpdate) throws EntityException {
 
-        projectService.updateProject(pProjectName, pProjectToUpdate);
-        return new ResponseEntity<>(HttpStatus.OK);
+        final Project project = projectService.updateProject(pProjectName, pProjectToUpdate);
+        final Resource<Project> resource = new Resource<Project>(project);
+        addLinksToProject(resource);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override
@@ -132,7 +134,7 @@ public class ProjectsController implements IProjectsSignature {
     @Override
     public HttpEntity<Resource<ProjectConnection>> retrieveProjectConnection(
             @PathVariable("project_name") final String pProjectName,
-            @PathVariable("microservice") final String pMicroService) {
+            @PathVariable("microservice") final String pMicroService) throws EntityNotFoundException {
 
         final ResponseEntity<Resource<ProjectConnection>> response;
         final ProjectConnection pConn = projectService.retreiveProjectConnection(pProjectName, pMicroService);
