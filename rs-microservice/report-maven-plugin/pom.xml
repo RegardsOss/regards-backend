@@ -3,7 +3,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<artifactId>report-maven-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
 	<description>Maven plugin to aggregate all requirement reports</description>
@@ -28,13 +28,13 @@
 		</dependency>
 		<!-- Build excel reports -->
 		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-ooxml</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test-reporting</artifactId>
+			<version>1.0-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core-test</artifactId>
-		</dependency>
+		<!-- <dependency> <groupId>org.apache.poi</groupId> <artifactId>poi-ooxml</artifactId> 
+			</dependency> <dependency> <groupId>fr.cnes.regards.microservices</groupId> 
+			<artifactId>microservice-core-test</artifactId> </dependency> -->
 	</dependencies>
 
 	<build>

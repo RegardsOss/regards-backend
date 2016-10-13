@@ -3,24 +3,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>fr.cnes.regards</groupId>
+
+	<groupId>fr.cnes.regards.framework.test</groupId>
 	<artifactId>regards-test</artifactId>
-	<description>Test utilities</description>
-	<version>0.0.0-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<version>1.0-SNAPSHOT</version>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
 		<version>0.0.0-SNAPSHOT</version>
-		<relativePath></relativePath>
+		<relativePath/>
 	</parent>
 
 	<dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -29,10 +24,14 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 		</dependency>
-		<!-- logging -->
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test-reporting</artifactId>
+			<version>1.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

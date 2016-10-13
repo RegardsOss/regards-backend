@@ -19,11 +19,11 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import fr.cnes.regards.microservices.core.test.report.exception.ReportException;
-import fr.cnes.regards.microservices.core.test.report.xls.XlsxHelper;
-import fr.cnes.regards.microservices.core.test.report.xml.XmlHelper;
-import fr.cnes.regards.microservices.core.test.report.xml.XmlRequirement;
-import fr.cnes.regards.microservices.core.test.report.xml.XmlRequirements;
+import fr.cnes.regards.framework.test.report.exception.ReportException;
+import fr.cnes.regards.framework.test.report.xls.XlsxHelper;
+import fr.cnes.regards.framework.test.report.xml.XmlHelper;
+import fr.cnes.regards.framework.test.report.xml.XmlRequirement;
+import fr.cnes.regards.framework.test.report.xml.XmlRequirements;
 
 /**
  * Scan all microservices file tree to retrieve all requirement reports and generate an aggregated XSLX report.
