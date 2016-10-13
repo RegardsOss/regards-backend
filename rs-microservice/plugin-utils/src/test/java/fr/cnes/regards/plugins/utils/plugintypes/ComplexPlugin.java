@@ -40,16 +40,16 @@ public class ComplexPlugin implements ISamplePlugin {
      * A {@link Integer} parameter
      */
     @PluginParameter(description = "int parameter", name = COEFF)
-    private Integer coef = 0;
+    private final Integer coef = 0;
 
     /**
      * A {@link Boolean} parameter
      */
     @PluginParameter(description = "boolean parameter", name = ACTIVE)
-    private Boolean isActive = Boolean.FALSE;
+    private final Boolean isActive = Boolean.FALSE;
 
     @Override
-    public String echo(String pMessage) {
+    public String echo(final String pMessage) {
         final StringBuffer str = new StringBuffer();
         if (this.isActive) {
             str.append(this.getClass().getName() + "-" + pMessage);
@@ -61,7 +61,7 @@ public class ComplexPlugin implements ISamplePlugin {
     }
 
     @Override
-    public int add(int pFirst, int pSecond) {
+    public int add(final int pFirst, final int pSecond) {
         final float f = complexInterfacePlugin.mult(4,8);
         LOGGER.info("float=" + f);
         final int res = this.coef * (pFirst + pSecond);

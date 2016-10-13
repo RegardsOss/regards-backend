@@ -33,7 +33,7 @@ public class PluginUtilsException extends Exception {
      * @param pMessage
      *            an error message
      */
-    public PluginUtilsException(String pMessage) {
+    public PluginUtilsException(final String pMessage) {
         super(pMessage);
         LOGGER.error(pMessage);
     }
@@ -47,7 +47,7 @@ public class PluginUtilsException extends Exception {
      * @param pCause
      *            the exception
      */
-    public PluginUtilsException(String pMessage, Throwable pCause) {
+    public PluginUtilsException(final String pMessage, final Throwable pCause) {
         super(pMessage, pCause);
         LOGGER.error(pMessage, pCause);
     }
@@ -59,7 +59,7 @@ public class PluginUtilsException extends Exception {
      * @param pCause
      *            the exception
      */
-    public PluginUtilsException(Throwable pCause) {
+    public PluginUtilsException(final Throwable pCause) {
         super(pCause);
     }
 }

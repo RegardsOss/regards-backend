@@ -61,6 +61,11 @@ public class PluginConfiguration implements Identifiable<Long> {
     private Integer priorityOrder;
 
     /**
+     * The plugin configuration is active.
+     */
+    private Boolean isActive;
+
+    /**
      * The plugin class
      */
     private PluginMetaData pluginMetaData;
@@ -184,6 +189,14 @@ public class PluginConfiguration implements Identifiable<Long> {
 
     public PluginMetaData getPluginMetaData() {
         return pluginMetaData;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean pIsActive) {
+        this.isActive = pIsActive;
     }
 
     @Override

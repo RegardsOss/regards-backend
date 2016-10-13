@@ -22,16 +22,16 @@ public class ComplexErrorPlugin implements ISamplePlugin {
     static final String PLUGIN_PARAM = "plgInterface";
 
     /**
+     * A {@link Integer} parameter
+     */
+    @PluginParameter(description = "int parameter", name = COEFF)
+    private final Integer coef = 0;
+
+    /**
      * A {@link String} parameter
      */
     @PluginParameter(description = "plugin parameter", name = PLUGIN_PARAM)
     private INotInterfacePlugin interfacePlugin;
-
-    /**
-     * A {@link Integer} parameter
-     */
-    @PluginParameter(description = "int parameter", name = COEFF)
-    private Integer coef = 0;
 
     @Override
     public String echo(String pMessage) {
