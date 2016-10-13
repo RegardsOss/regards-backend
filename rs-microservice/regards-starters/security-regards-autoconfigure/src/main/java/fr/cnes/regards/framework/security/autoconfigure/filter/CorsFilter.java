@@ -10,7 +10,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -23,8 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * @author CS SI
  * @since 1.0-SNAPSHOT
  */
-@ConditionalOnMissingBean(name = { "cors" })
-@Component("cors")
+@Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilter extends OncePerRequestFilter {
 
