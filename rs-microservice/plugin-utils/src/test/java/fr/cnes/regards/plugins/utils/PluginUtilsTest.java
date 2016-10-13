@@ -21,7 +21,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
  * @author cmertz
  *
  */
-public class PluginUtilsTest extends AbstractPluginUtilsConstants {
+public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Class logger
@@ -36,7 +36,7 @@ public class PluginUtilsTest extends AbstractPluginUtilsConstants {
         LOGGER.debug("Starting " + this.toString());
         try {
             // Get all the plugins
-            final Map<String, PluginMetaData> maps = AbstractPluginUtils.getPlugins("fr.cnes.regards.plugins.utils");
+            final Map<String, PluginMetaData> maps = PluginUtils.getPlugins("fr.cnes.regards.plugins.utils");
             Assert.assertNotNull(maps);
             Assert.assertTrue(maps.size() > 1);
 

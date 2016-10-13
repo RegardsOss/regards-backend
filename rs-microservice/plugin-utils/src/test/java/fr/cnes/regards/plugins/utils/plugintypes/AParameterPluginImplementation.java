@@ -13,7 +13,7 @@ import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
  *
  */
 @Plugin(author = "CSSI", description = "Parameter plugin test", id = "aParameterPlugin", version = "0.0.1")
-public class ParameterPlugin implements IComplexInterfacePlugin {
+public class AParameterPluginImplementation implements IComplexInterfacePlugin {
 
     /**
      * A {@link Integer} parameter

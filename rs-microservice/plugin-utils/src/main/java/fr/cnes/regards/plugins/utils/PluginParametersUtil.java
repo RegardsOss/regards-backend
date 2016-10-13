@@ -25,12 +25,12 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
  *
  * @author cmertz
  */
-public abstract class AbstractPluginParametersUtil {
+public abstract class PluginParametersUtil {
 
     /**
      * Logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPluginParametersUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PluginParametersUtil.class);
 
     /**
      * PrimitiveObject for the plugin parameters
@@ -128,7 +128,7 @@ public abstract class AbstractPluginParametersUtil {
      */
     private static boolean isAnInterface(Field pField) {
         boolean isSupportedType = false;
-        final List<String> pluginInterfaces = AbstractPluginInterfaceUtils
+        final List<String> pluginInterfaces = PluginInterfaceUtils
                 .getInterfaces("fr.cnes.regards.plugins.utils");
 
         if (pluginInterfaces != null && !pluginInterfaces.isEmpty()) {
@@ -197,7 +197,7 @@ public abstract class AbstractPluginParametersUtil {
             fr.cnes.regards.modules.plugins.domain.PluginParameter... pPluginParameters) throws PluginUtilsException {
 
         // Inject value
-        AbstractReflectionUtils.makeAccessible(pField);
+        ReflectionUtils.makeAccessible(pField);
 
         // Try to get a primitve type for the current parameter
         final Optional<PrimitiveObject> typeWrapper = isAPrimitiveType(pField);
@@ -331,7 +331,7 @@ public abstract class AbstractPluginParametersUtil {
         LOGGER.debug("parameter value : " + paramValue);
 
         try {
-            final Object effectiveVal = AbstractPluginUtils.getPlugin(paramValue, paramValue.getPluginMetaData());
+            final Object effectiveVal = PluginUtils.getPlugin(paramValue, paramValue.getPluginMetaData());
             pField.set(pPluginInstance, effectiveVal);
         } catch (PluginUtilsException | IllegalArgumentException | IllegalAccessException e) {
             LOGGER.error(String.format(

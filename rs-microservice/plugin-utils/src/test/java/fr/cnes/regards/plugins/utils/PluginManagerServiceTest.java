@@ -9,8 +9,6 @@ import java.util.List;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.plugins.utils.AbstractPluginUtils;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
@@ -47,10 +45,10 @@ public final class PluginManagerServiceTest {
     public static <T> T getPlugin(List<PluginParameter> pParameters, Class<T> pReturnInterfaceType,
             PluginParameter... pPluginParameters) throws PluginUtilsException {
         // Build plugin metadata
-        final PluginMetaData pluginMetadata = AbstractPluginUtils.createPluginMetaData(pReturnInterfaceType);
+        final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType);
 
         final PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", pParameters, 0);
-        return AbstractPluginUtils.getPlugin(pluginConfiguration, pluginMetadata, pPluginParameters);
+        return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, pPluginParameters);
     }
 
     /**
@@ -71,7 +69,7 @@ public final class PluginManagerServiceTest {
     public static <T> PluginConfiguration getPluginConfiguration(List<PluginParameter> pParameters,
             Class<T> pReturnInterfaceType) throws PluginUtilsException {
         // Build plugin metadata
-        final PluginMetaData pluginMetadata = AbstractPluginUtils.createPluginMetaData(pReturnInterfaceType);
+        final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType);
 
         return new PluginConfiguration(pluginMetadata, "", pParameters, 0);
     }

@@ -27,19 +27,19 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
  *
  * @author cmertz
  */
-public abstract class AbstractPluginUtils {
+public final class PluginUtils {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPluginUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtils.class);
 
     /**
      *
      * Constructor
      *
      */
-    private AbstractPluginUtils() {
+    private PluginUtils() {
         // Static class
     }
 
@@ -65,7 +65,7 @@ public abstract class AbstractPluginUtils {
         for (final Class<?> pluginClass : annotatedPlugins) {
 
             // Create plugin metadata
-            final PluginMetaData plugin = AbstractPluginUtils.createPluginMetaData(pluginClass);
+            final PluginMetaData plugin = PluginUtils.createPluginMetaData(pluginClass);
 
             // Check a plugin does not already exists with the same plugin id
             if (plugins.containsKey(plugin.getPluginId())) {
@@ -114,7 +114,7 @@ public abstract class AbstractPluginUtils {
         pluginMetaData.setDescription(plugin.description());
 
         // Try to detect parameters if any
-        pluginMetaData.setParameters(AbstractPluginParametersUtil.getParameters(pPluginClass));
+        pluginMetaData.setParameters(PluginParametersUtil.getParameters(pPluginClass));
 
         return pluginMetaData;
     }
@@ -146,7 +146,7 @@ public abstract class AbstractPluginUtils {
             returnPlugin = (T) pPluginMetadata.getPluginClass().newInstance();
 
             // Post process parameters
-            AbstractPluginParametersUtil.postProcess(returnPlugin, pPluginConf, pPluginParameters);
+            PluginParametersUtil.postProcess(returnPlugin, pPluginConf, pPluginParameters);
 
             // Launch init method if detected
             doInitPlugin(returnPlugin);
@@ -175,7 +175,7 @@ public abstract class AbstractPluginUtils {
         for (final Method method : allMethods) {
             if (method.isAnnotationPresent(PluginInit.class)) {
                 // Invoke method
-                AbstractReflectionUtils.makeAccessible(method);
+                ReflectionUtils.makeAccessible(method);
 
                 try {
                     method.invoke(pPluginInstance);
