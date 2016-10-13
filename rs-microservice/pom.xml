@@ -10,15 +10,11 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>plugin-utils</module>
-		<module>microservice-core</module>
-		<module>module-jobs</module>
-		<module>module-core</module>
-		<module>client-core</module>
-		<module>module-plugins</module>
-		<module>regards-starters</module>
 		<module>regards-archetypes</module>
 		<module>regards-core</module>
+		<module>regards-default-core</module>
+		<module>regards-default-modules</module>
+		<module>regards-starters</module>
 		<module>regards-tests</module>
 	</modules>
 

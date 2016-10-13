@@ -13,7 +13,7 @@
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
 		<version>0.0.2-SNAPSHOT</version>
-		<relativePath/>
+		<relativePath />
 	</parent>
 
 </project>
