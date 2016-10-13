@@ -17,7 +17,7 @@ import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
  *
  */
 @Plugin(author = "CSSI", description = "Sample plugin test", id = "anErrorPluginInterface", version = "0.0.1")
-public class ErrorInterfacePlugin implements ISampleInterfacePlugin {
+public class ErrorInterfacePlugin implements IComplexInterfacePlugin {
 
     /**
      * Class logger
@@ -25,41 +25,22 @@ public class ErrorInterfacePlugin implements ISampleInterfacePlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(ErrorInterfacePlugin.class);
 
     /**
-     * A {@link Byte} parameter
-     */
-    @PluginParameter(description = "kbyte parameter", name = KBYTE)
-    private Byte aByte;
-
-    /**
-     * A {@link Float} parameter
-     */
-    @PluginParameter(description = "float parameter", name = KFLOAT)
-    private Float aFloat;
-
-    /**
      * A {@link Long} parameter
      */
-    @PluginParameter(description = "long parameter", name = KLONG)
+    @PluginParameter(description = "long parameter", name = LONG_PARAM)
     private Long aLong;
-
-    /**
-     * A {@link Short} parameter
-     */
-    @PluginParameter(description = "long parameter", name = KSHORT)
-    private Short aShort;
 
     /**
      * Init method
      */
     @PluginInit
     private void aInit() {
-        LOGGER.info("Init method call : " + this.getClass().getName() + "byte:" + this.aByte + "|float:" + this.aFloat
-                + "|long:" + this.aLong + "|short:" + this.aShort);
+        LOGGER.info("Init method call : " + this.getClass().getName() + "|long:" + this.aLong);
     }
 
     @Override
-    public int mult(int pFist, int pSecond) {
-        return this.aShort * (pFist + pSecond);
+    public int mult(int pFirst, int pSecond) {
+        return 0;
     }
 
 }

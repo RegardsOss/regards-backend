@@ -11,8 +11,6 @@ import fr.cnes.regards.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.plugins.utils.ISamplePlugin;
 
-
-
 /**
  * ISamplePlugin
  * 
@@ -23,16 +21,20 @@ import fr.cnes.regards.plugins.utils.ISamplePlugin;
 public class ComplexPlugin implements ISamplePlugin {
 
     /**
+     * constant PLG
+     */
+    static final String PLUGIN_PARAM = "plgInterface";
+
+    /**
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ComplexPlugin.class);
 
     /**
-     * A {@link String} parameter
+     * A plugin with an annotation {@link PluginParameter}
      */
-    @PluginParameter(description = "string parameter", name = PLG)
-    private ISampleInterfacePlugin sampleInterfacePlugin;
-    // ou directement l'implémentation
+    @PluginParameter(description = "Plugin interface", name = PLUGIN_PARAM)
+    private IComplexInterfacePlugin complexInterfacePlugin;
 
     /**
      * A {@link Integer} parameter
@@ -50,7 +52,7 @@ public class ComplexPlugin implements ISamplePlugin {
     public String echo(String pMessage) {
         final StringBuffer str = new StringBuffer();
         if (this.isActive) {
-            str.append(this.getClass().getName() + "-" + pMessage + this.sampleInterfacePlugin.toString());
+            str.append(this.getClass().getName() + "-" + pMessage);
         } else {
 
             str.append(this.getClass().getName() + ":is not active");
@@ -59,12 +61,16 @@ public class ComplexPlugin implements ISamplePlugin {
     }
 
     @Override
-    public int add(int pFist, int pSecond) {
-        final float f = sampleInterfacePlugin.mult(1, 5);
+    public int add(int pFirst, int pSecond) {
+        final float f = complexInterfacePlugin.mult(4,8);
         LOGGER.info("float=" + f);
-        final int res = this.coef * (pFist + pSecond);
-        LOGGER.info(this.getClass().getName() + ":" + res);
+        final int res = this.coef * (pFirst + pSecond);
+        LOGGER.info("add result : " + res);
         return res;
+    }
+
+    public String echoPluginParameter() {
+        return complexInterfacePlugin.toString();
     }
 
     /**
@@ -74,6 +80,7 @@ public class ComplexPlugin implements ISamplePlugin {
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "|active:" + this.isActive + "|coeff:"
                 + this.coef);
+        // + "|plg_conf:" + this.pluginConfiguration.getId()+ "|plg_int:" + this.complexInterfacePlugin.toString()
     }
 
 }

@@ -10,9 +10,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.plugins.utils.AbstractPluginInterfaceUtils;
+import fr.cnes.regards.plugins.utils.AbstractPluginUtilsConstants;
 import fr.cnes.regards.plugins.utils.PluginManagerServiceTest;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
@@ -22,7 +24,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * @author cmertz
  *
  */
-public class PluginInterfaceUtilsTest {
+public class PluginInterfaceUtilsTest extends AbstractPluginUtilsConstants {
 
     /**
      * Class logger
@@ -34,16 +36,14 @@ public class PluginInterfaceUtilsTest {
      */
     @Test
     public void loadPluginsInterface() {
-        LOGGER.info("start " + this.toString());
+        LOGGER.debug("Starting " + this.toString());
         // Get all the plugin interfaces
         final List<String> pluginInterfaces = AbstractPluginInterfaceUtils
-                .getInterfaces("fr.cnes.regards.plugins.utils");
+                .getInterfaces("fr.cnes.regards.plugins.utils.plugintypes");
         Assert.assertNotNull(pluginInterfaces);
-        Assert.assertTrue(pluginInterfaces.size() > 0);
-
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
-
-        Assert.assertTrue(true);
+        Assert.assertTrue(pluginInterfaces.size() > 0);
+        LOGGER.debug("Ending " + this.toString());
     }
 
     /**
@@ -51,53 +51,65 @@ public class PluginInterfaceUtilsTest {
      */
     @Test
     public void getComplexPlugin() {
-        ComplexPlugin complexPlugin = null;
-        SampleInterfacePlugin sampleInterfacePlugin = null;
+        final ComplexPlugin complexPlugin;
+        LOGGER.debug("Starting " + this.toString());
         /*
          * Set all parameters
          */
         try {
-
+            /*
+             * Get the configuration for the Plugin parameter (ie the child)
+             */
             final List<PluginParameter> interfaceParameters = PluginParametersFactory.build()
-                    .addParameter(SampleInterfacePlugin.KBYTE, "1").addParameter(SampleInterfacePlugin.KFLOAT, "6.2")
-                    .addParameter(SampleInterfacePlugin.KLONG, "15487898989")
-                    .addParameter(SampleInterfacePlugin.KSHORT, "33").getParameters();
-            // instantiate interface plugin
-            sampleInterfacePlugin = PluginManagerServiceTest.getPlugin(interfaceParameters,
-                                                                       SampleInterfacePlugin.class);
-            Assert.assertNotNull(sampleInterfacePlugin);
+                    .addParameter(ParameterPlugin.LONG_PARAM, PluginInterfaceUtilsTest.LONG_STR_VALUE).getParameters();
+            final PluginConfiguration pluginConfigurationInterface = PluginManagerServiceTest
+                    .getPluginConfiguration(interfaceParameters, ParameterPlugin.class);
+            Assert.assertNotNull(pluginConfigurationInterface);
 
+            /*
+             * Get the configuration for the complex Plugin (ie the parent)
+             */
             final List<PluginParameter> complexParameters = PluginParametersFactory.build()
-                    .addParameter(ComplexPlugin.ACTIVE, "true").addParameter(ComplexPlugin.COEFF, "5")
-                    .addParameter(ComplexPlugin.PLG, "coucou").getParameters();
+                    .addParameterPluginConfiguration(ComplexPlugin.PLUGIN_PARAM, pluginConfigurationInterface)
+                    .addParameter(ComplexPlugin.ACTIVE, TRUE)
+                    .addParameter(ComplexPlugin.COEFF, PluginInterfaceUtilsTest.CINQ).getParameters();
 
-            // instantiate plugin
+            /*
+             * Instantiate the parent plugin
+             */
             complexPlugin = PluginManagerServiceTest.getPlugin(complexParameters, ComplexPlugin.class);
             Assert.assertNotNull(complexPlugin);
 
+            Assert.assertTrue(complexPlugin.add(Integer.parseInt(PluginInterfaceUtilsTest.CINQ),
+                                                Integer.parseInt(PluginInterfaceUtilsTest.QUATRE)) > 0);
+            final String str = "hello world";
+            Assert.assertTrue(complexPlugin.echo(str).contains(str));
+
+            LOGGER.info("plugin parameter:" + complexPlugin.echoPluginParameter());
+
         } catch (final PluginUtilsException e) {
             LOGGER.error(e.getMessage());
-            Assert.assertTrue(true);
+            Assert.assertTrue(false);
         }
-
-        /*
-         * Use the plugin
-         */
-        // Assert.assertEquals(40, complexPlugin.add(5, 3));
-        // Assert.assertTrue(complexPlugin.echo("hello world").contains("hello"));
+        LOGGER.debug("Ending " + this.toString());
     }
 
+    /**
+     * 
+     */
     @Test
     public void incompatibleInterfaceError() {
         ComplexErrorPlugin complexErrorPlugin = null;
+        LOGGER.debug("Starting " + this.toString());
         /*
          * Set all parameters
          */
         try {
 
             final List<PluginParameter> complexParameters = PluginParametersFactory.build()
-                    .addParameter(ComplexErrorPlugin.ACTIVE, "true").addParameter(ComplexErrorPlugin.COEFF, "5")
-                    .addParameter(ComplexErrorPlugin.PLG, "coucou").getParameters();
+                    .addParameter(ComplexErrorPlugin.ACTIVE, TRUE)
+                    .addParameter(ComplexErrorPlugin.COEFF, PluginInterfaceUtilsTest.CINQ)
+                    .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "coucou").getParameters();
 
             // instantiate plugin
             complexErrorPlugin = PluginManagerServiceTest.getPlugin(complexParameters, ComplexErrorPlugin.class);
@@ -107,7 +119,34 @@ public class PluginInterfaceUtilsTest {
             LOGGER.error(e.getMessage());
             Assert.assertTrue(true);
         }
+        LOGGER.debug("Ending " + this.toString());
+    }
 
+    /**
+     * 
+     */
+    @Test
+    public void incompatibleParameterError() {
+        ComplexErrorPlugin complexErrorPlugin = null;
+        LOGGER.debug("Starting " + this.toString());
+        /*
+         * Set all parameters
+         */
+        try {
+
+            final List<PluginParameter> complexParameters = PluginParametersFactory.build()
+                    .addParameter(ComplexErrorPlugin.ACTIVE, TRUE).addParameter(ComplexErrorPlugin.COEFF, "allo")
+                    .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "lorem ipsum").getParameters();
+
+            // instantiate plugin
+            complexErrorPlugin = PluginManagerServiceTest.getPlugin(complexParameters, ComplexErrorPlugin.class);
+            Assert.assertNotNull(complexErrorPlugin);
+
+        } catch (final PluginUtilsException e) {
+            LOGGER.error(e.getMessage());
+            Assert.assertTrue(true);
+        }
+        LOGGER.debug("Ending " + this.toString());
     }
 
 }
