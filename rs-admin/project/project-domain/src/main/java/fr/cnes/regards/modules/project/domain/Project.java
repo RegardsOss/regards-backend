@@ -16,32 +16,59 @@ import org.springframework.hateoas.Identifiable;
 
 import fr.cnes.regards.domain.annotation.InstanceEntity;
 
+/**
+ *
+ * Class Project
+ *
+ * Project Entity
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @ValidateOnExecution
 @InstanceEntity
 @Entity(name = "T_PROJECT")
 @SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "SEQ_PROJECT")
 public class Project implements Identifiable<Long> {
 
+    /**
+     * Project Unique Identifier
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projectSequence")
     @Column(name = "id")
     private Long id;
 
+    /**
+     * Project name
+     */
     @NotNull
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     private String name;
 
+    /**
+     * Project description
+     */
     @NotNull
     @Column(name = "description")
     private String description;
 
+    /**
+     * Project image icon
+     */
     @Column(name = "icon")
     private String icon;
 
+    /**
+     * IS the project public ?
+     */
     @NotNull
     @Column(name = "public")
     private boolean isPublic;
 
+    /**
+     * Is the project deleted ?
+     */
     @Column(name = "deleted")
     private boolean isDeleted;
 
@@ -108,8 +135,13 @@ public class Project implements Identifiable<Long> {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        return (o instanceof Project) && ((Project) o).getId().equals(id);
+    public boolean equals(final Object pObject) {
+        return (pObject instanceof Project) && ((Project) pObject).getId().equals(id);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
     }
 
     public boolean isDeleted() {

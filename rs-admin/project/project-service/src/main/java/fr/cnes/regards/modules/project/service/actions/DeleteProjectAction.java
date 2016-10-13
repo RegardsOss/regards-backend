@@ -8,7 +8,16 @@ import java.nio.file.Path;
 import fr.cnes.regards.modules.jobs.Job;
 import fr.cnes.regards.modules.jobs.StatusInfo;
 
-public class DeleteProjectAction extends Job implements ProjectAction {
+/**
+ *
+ * Class DeleteProjectAction
+ *
+ * Business action to delete a project.
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
+public class DeleteProjectAction extends Job implements IProjectAction {
 
     @Override
     public StatusInfo cancel() {
@@ -41,7 +50,7 @@ public class DeleteProjectAction extends Job implements ProjectAction {
     }
 
     @Override
-    public void setWorkspace(Path pPath) {
+    public void setWorkspace(final Path pPath) {
         // TODO Auto-generated method stub
 
     }

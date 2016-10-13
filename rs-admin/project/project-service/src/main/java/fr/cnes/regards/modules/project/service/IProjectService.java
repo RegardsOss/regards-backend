@@ -1,6 +1,9 @@
 /*
  * LICENSE_PLACEHOLDER
  */
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.project.service;
 
 import java.util.List;
@@ -8,24 +11,105 @@ import java.util.List;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
+/**
+ *
+ * Class IProjectService
+ *
+ * Interface for ProjectService. Allow to query projects entities.
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 public interface IProjectService {
 
-    Project retrieveProject(String pProjectId);
+    /**
+     *
+     * Retrieve a project with is unique name
+     *
+     * @param pProjectName
+     *            project name to retrieve
+     * @return Project
+     * @since 1.0-SNAPSHOT
+     */
+    Project retrieveProject(String pProjectName);
 
-    List<Project> deleteProject(String pProjectId);
+    /**
+     *
+     * Delete a project
+     *
+     * @param pProjectName
+     *            Project name to delete
+     * @return Remaining projects
+     * @since 1.0-SNAPSHOT
+     */
+    List<Project> deleteProject(String pProjectName);
 
-    Project modifyProject(String pProjectId, Project pProject) throws EntityException;
+    /**
+     *
+     * Update a project
+     *
+     * @param pProjectName
+     *            Project name to update
+     * @param pProject
+     *            Project to update
+     * @return Updated Project
+     * @throws EntityException
+     *             <br/>
+     *             {@link EntityNotFoundException}</b> if the request project does not exists.<br/>
+     *             {@link InvalidEntityException} if pProjectName doesn't match the given project
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    Project updateProject(String pProjectName, Project pProject) throws EntityException;
 
+    /**
+     *
+     * Retrieve project List.
+     *
+     * @return List of projects
+     * @since 1.0-SNAPSHOT
+     */
     List<Project> retrieveProjectList();
 
+    /**
+     *
+     * Create a new project
+     *
+     * @param pNewProject
+     *            Project ot create
+     * @return Created project
+     * @throws EntityException
+     *             <br/>
+     *             {@link AlreadyExistingException} If Project already exists for the given name
+     * @since 1.0-SNAPSHOT
+     */
     Project createProject(Project pNewProject) throws EntityException;
 
-    boolean existProject(String pProjectId);
+    /**
+     *
+     * Check if given project exists.
+     *
+     * @param pProjectName
+     *            Project to check for existance
+     * @return [true|false]
+     * @since 1.0-SNAPSHOT
+     */
+    boolean existProject(String pProjectName);
 
-    boolean notDeletedProject(String pProjectId);
+    /**
+     *
+     * Check that the given project isn't deleted
+     *
+     * @param pProjectName
+     *            Project to check
+     * @return [true|false]
+     * @since 1.0-SNAPSHOT
+     */
+    boolean notDeletedProject(String pProjectName);
 
     /**
      *
@@ -34,10 +118,11 @@ public interface IProjectService {
      * @param pProjectConnection
      *            ProjectConnection to create
      * @return Created ProjectConnection
-     * @throws AlreadyExistingException
-     *             Project connection already exists for couple (project name/ microservice name)
-     * @throws EntityNotFoundException
-     *             The Project referenced doesn't exists
+     * @throws EntityException
+     *             <br/>
+     *             {@link AlreadyExistingException} Project connection already exists for couple (project name/
+     *             microservice name)<br/>
+     *             {@link AlreadyExistingException} EntityNotFoundException The Project referenced doesn't exists
      * @since 1.0-SNAPSHOT
      */
     ProjectConnection createProjectConnection(ProjectConnection pProjectConnection) throws EntityException;
@@ -48,8 +133,9 @@ public interface IProjectService {
      *
      * @param pProjectConnectionId
      *            ProjectConnection Identifier
-     * @throws EntityNotFoundException
-     *             The ProjectConnection to delete doesn't exists
+     * @throws EntityException
+     *             <br/>
+     *             {@link EntityNotFoundException} The ProjectConnection to delete doesn't exists
      * @since 1.0-SNAPSHOT
      */
     void deleteProjectConnection(Long pProjectConnectionId) throws EntityException;
@@ -61,8 +147,9 @@ public interface IProjectService {
      * @param pProjectConnection
      *            Project connection to update
      * @return ProjectConnection updated
-     * @throws EntityNotFoundException
-     *             Project connecion or referenced project doesn't exists
+     * @throws EntityException
+     *             <br/>
+     *             {@link EntityNotFoundException} Project connection or referenced project doesn't exists
      * @since 1.0-SNAPSHOT
      */
     ProjectConnection updateProjectConnection(ProjectConnection pProjectConnection) throws EntityException;

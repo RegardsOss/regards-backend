@@ -13,15 +13,30 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.project.client.ProjectsClient;
+import fr.cnes.regards.modules.project.client.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
+/**
+ *
+ * Class ProjectsFallback
+ *
+ * Fallback methods for Projects client.
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @Component
-public class ProjectsFallback implements ProjectsClient {
+public class ProjectsFallback implements IProjectsClient {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(ProjectsFallback.class);
 
+    /**
+     * Common error message to log
+     */
     private static final String FALLBACK_ERROR_MESSAGE = "RS-ADMIN / Projects request error. Fallback.";
 
     @Override

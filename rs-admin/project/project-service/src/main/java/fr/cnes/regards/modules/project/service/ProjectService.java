@@ -60,22 +60,22 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public List<Project> deleteProject(final String pProjectId) {
-        final Project deleted = retrieveProject(pProjectId);
+    public List<Project> deleteProject(final String pProjectName) {
+        final Project deleted = retrieveProject(pProjectName);
         deleted.setDeleted(true);
         projectRepository.delete(deleted);
         return this.retrieveProjectList();
     }
 
     @Override
-    public Project modifyProject(final String projectId, final Project pProject) throws EntityException {
-        if (!existProject(projectId)) {
-            throw new EntityNotFoundException(projectId, Project.class);
+    public Project updateProject(final String pProjectName, final Project pProject) throws EntityException {
+        if (!existProject(pProjectName)) {
+            throw new EntityNotFoundException(pProjectName, Project.class);
         }
-        if (!notDeletedProject(projectId)) {
+        if (!notDeletedProject(pProjectName)) {
             throw new IllegalStateException("This project is deleted");
         }
-        if (!pProject.getName().equals(projectId)) {
+        if (!pProject.getName().equals(pProjectName)) {
             throw new InvalidEntityException("projectId and updated project does not match");
         }
         return projectRepository.save(pProject);
@@ -114,7 +114,7 @@ public class ProjectService implements IProjectService {
     @Override
     public ProjectConnection createProjectConnection(final ProjectConnection pProjectConnection)
             throws AlreadyExistingException, EntityNotFoundException {
-        ProjectConnection connection;
+        final ProjectConnection connection;
         final Project project = pProjectConnection.getProject();
         // Check referenced project exists
         if ((project.getId() != null) && projectRepository.exists(project.getId())) {
@@ -138,10 +138,8 @@ public class ProjectService implements IProjectService {
         if (projectConnectionRepository.exists(pProjectConnectionId)) {
             projectConnectionRepository.delete(pProjectConnectionId);
         } else {
-            final String message = String.format(
-                                                 "Invalid entity <ProjectConnection> for deletion. Entity (id=%d) does not exists",
-                                                 pProjectConnectionId);
-            LOG.error(message);
+            final String message = "Invalid entity <ProjectConnection> for deletion. Entity (id=%d) does not exists";
+            LOG.error(String.format(message, pProjectConnectionId));
             throw new EntityNotFoundException(pProjectConnectionId.toString(), ProjectConnection.class);
         }
     }
@@ -149,7 +147,7 @@ public class ProjectService implements IProjectService {
     @Override
     public ProjectConnection updateProjectConnection(final ProjectConnection pProjectConnection)
             throws EntityNotFoundException {
-        ProjectConnection connection;
+        final ProjectConnection connection;
         // Check that entity to update exists
         if ((pProjectConnection.getId() != null) && projectConnectionRepository.exists(pProjectConnection.getId())) {
             final Project project = pProjectConnection.getProject();

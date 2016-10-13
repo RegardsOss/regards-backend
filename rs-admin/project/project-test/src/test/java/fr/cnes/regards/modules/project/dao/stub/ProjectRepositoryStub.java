@@ -11,6 +11,15 @@ import fr.cnes.regards.microservices.core.test.repository.RepositoryStub;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
+/**
+ *
+ * Class ProjectRepositoryStub
+ *
+ * Stub for JPA Repository
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @Repository
 @Profile("test")
 @Primary

@@ -34,6 +34,36 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
 public class ProjectDaoTest {
 
     /**
+     * Common string value for project creation.
+     */
+    private static final String COMMON_PROJECT_DESCRIPTION = "description";
+
+    /**
+     * Common string value for project creation.
+     */
+    private static final String COMMON_PROJECT_ICON = "icon";
+
+    /**
+     * Common string value for project creation.
+     */
+    private static final String COMMON_PROJECT_USER_NAME = "username";
+
+    /**
+     * Common string value for project creation.
+     */
+    private static final String COMMON_PROJECT_USER_PWD = "password";
+
+    /**
+     * Common string value for project creation.
+     */
+    private static final String COMMON_PROJECT_DRIVER = "driver";
+
+    /**
+     * Common string value for project creation.
+     */
+    private static final String COMMON_PROJECT_URL = "url";
+
+    /**
      * Project Repository
      */
     @Autowired
@@ -43,7 +73,7 @@ public class ProjectDaoTest {
      * ProjectConnection Repository
      */
     @Autowired
-    IProjectConnectionRepository projectConnectionRepository;
+    private IProjectConnectionRepository projectConnectionRepository;
 
     /**
      *
@@ -64,8 +94,9 @@ public class ProjectDaoTest {
         projectRepository.deleteAll();
 
         // Create a new projects
-        final Project project = projectRepository.save(new Project("description", "icon", true, "project-test"));
-        projectRepository.save(new Project("description", "icon", true, "project-test-2"));
+        final Project project = projectRepository
+                .save(new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, "project-test"));
+        projectRepository.save(new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, "project-test-2"));
 
         // Check results
         final Iterable<Project> projects = projectRepository.findAll();
@@ -75,10 +106,10 @@ public class ProjectDaoTest {
                           results.size() == 2);
 
         // Create new projects connections
-        projectConnectionRepository
-                .save(new ProjectConnection(project, microservice, "username", "password", "driver", "url"));
-        projectConnectionRepository
-                .save(new ProjectConnection(project, microservice2, "username", "password", "driver", "url"));
+        projectConnectionRepository.save(new ProjectConnection(project, microservice, COMMON_PROJECT_USER_NAME,
+                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
+        projectConnectionRepository.save(new ProjectConnection(project, microservice2, COMMON_PROJECT_USER_NAME,
+                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
 
         // Check results
         final Iterable<ProjectConnection> connections = projectConnectionRepository.findAll();
@@ -88,10 +119,8 @@ public class ProjectDaoTest {
                           cresults.size() == 2);
         final ProjectConnection conn = projectConnectionRepository
                 .findOneByProjectNameAndMicroservice(project.getName(), microservice);
-        Assert.assertNotNull(String.format(
-                                           "Error retreiving project connection for project name %s and microservice %s",
-                                           project.getName(), microservice),
-                             conn);
+        final String errorMessage = "Error retreiving project connection for project name %s and microservice %s";
+        Assert.assertNotNull(String.format(errorMessage, project.getName(), microservice), conn);
         Assert.assertTrue("Error retreiving project connection for project name %s and microservice %s.",
                           conn.getMicroservice().equals(microservice));
 

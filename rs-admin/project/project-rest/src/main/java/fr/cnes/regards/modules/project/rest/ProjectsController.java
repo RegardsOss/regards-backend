@@ -3,9 +3,6 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
-
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -16,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,19 +32,31 @@ import fr.cnes.regards.modules.core.hateoas.HateoasKeyWords;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectService;
-import fr.cnes.regards.modules.project.signature.ProjectsSignature;
+import fr.cnes.regards.modules.project.signature.IProjectsSignature;
 import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
+/**
+ *
+ * Class ProjectsController
+ *
+ * Controller for REST Access to Project entities
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @RestController
 @ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class ProjectsController implements ProjectsSignature {
+public class ProjectsController implements IProjectsSignature {
 
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(ProjectsController.class);
 
+    /**
+     * Business service for Project entities
+     */
     @Autowired
     private IProjectService projectService;
 
@@ -78,20 +88,20 @@ public class ProjectsController implements ProjectsSignature {
 
     @Override
     @ResourceAccess(description = "create a new project")
-    public HttpEntity<Resource<Project>> createProject(@Valid @RequestBody final Project newProject)
+    public HttpEntity<Resource<Project>> createProject(@Valid @RequestBody final Project pNewProject)
             throws EntityException {
 
-        final Project project = projectService.createProject(newProject);
+        final Project project = projectService.createProject(pNewProject);
         final Resource<Project> resource = new Resource<Project>(project);
         addLinksToProject(resource);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
     @Override
-    @ResourceAccess(description = "retrieve the project project_id")
-    public HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_id") final String projectId) {
+    @ResourceAccess(description = "retrieve the project project_name")
+    public HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName) {
 
-        final Project project = projectService.retrieveProject(projectId);
+        final Project project = projectService.retrieveProject(pProjectName);
         final Resource<Project> resource = new Resource<Project>(project);
         addLinksToProject(resource);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -99,18 +109,18 @@ public class ProjectsController implements ProjectsSignature {
 
     @Override
     @ResourceAccess(description = "update the project project_id")
-    public HttpEntity<Void> modifyProject(@PathVariable("project_id") final String projectId,
-            @RequestBody final Project projectUpdated) throws EntityException {
+    public HttpEntity<Void> modifyProject(@PathVariable("project_id") final String pProjectName,
+            @RequestBody final Project pProjectToUpdate) throws EntityException {
 
-        projectService.modifyProject(projectId, projectUpdated);
+        projectService.updateProject(pProjectName, pProjectToUpdate);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "remove the project project_id")
-    public HttpEntity<Void> deleteProject(@PathVariable("project_id") final String projectId) {
+    public HttpEntity<Void> deleteProject(@PathVariable("project_id") final String pProjectName) {
 
-        projectService.deleteProject(projectId);
+        projectService.deleteProject(pProjectName);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -119,7 +129,7 @@ public class ProjectsController implements ProjectsSignature {
             @PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroService) {
 
-        ResponseEntity<Resource<ProjectConnection>> response;
+        final ResponseEntity<Resource<ProjectConnection>> response;
         final ProjectConnection pConn = projectService.retreiveProjectConnection(pProjectName, pMicroService);
 
         if (pConn != null) {
@@ -154,7 +164,7 @@ public class ProjectsController implements ProjectsSignature {
     public HttpEntity<Void> deleteProjectConnection(@PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroservice) throws EntityException {
 
-        ResponseEntity<Void> response;
+        final ResponseEntity<Void> response;
         final ProjectConnection pConn = projectService.retreiveProjectConnection(pProjectName, pMicroservice);
         if (pConn != null) {
             projectService.deleteProjectConnection(pConn.getId());
@@ -177,24 +187,30 @@ public class ProjectsController implements ProjectsSignature {
         if (pProjectConnection.getLinks().isEmpty()) {
             try {
                 // Add self link
-                pProjectConnection.add(linkTo(methodOn(ProjectsController.class)
-                        .retrieveProjectConnection(pProjectConnection.getContent().getProject().getName(),
-                                                   pProjectConnection.getContent().getMicroservice())).withSelfRel());
+                pProjectConnection
+                        .add(ControllerLinkBuilder
+                                .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
+                                        .retrieveProjectConnection(pProjectConnection.getContent().getProject()
+                                                .getName(), pProjectConnection.getContent().getMicroservice()))
+                                .withSelfRel());
                 // Add delete link
-                pProjectConnection.add(linkTo(methodOn(ProjectsController.class)
-                        .deleteProjectConnection(pProjectConnection.getContent().getProject().getName(),
-                                                 pProjectConnection.getContent().getMicroservice()))
-                                                         .withRel(HateoasKeyWords.DELETE.getValue()));
+                pProjectConnection.add(ControllerLinkBuilder
+                        .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
+                                .deleteProjectConnection(pProjectConnection.getContent().getProject().getName(),
+                                                         pProjectConnection.getContent().getMicroservice()))
+                        .withRel(HateoasKeyWords.DELETE.getValue()));
 
                 // Add update link
-                pProjectConnection.add(linkTo(methodOn(ProjectsController.class)
-                        .updateProjectConnection(pProjectConnection.getContent()))
-                                .withRel(HateoasKeyWords.UPDATE.getValue()));
+                pProjectConnection.add(ControllerLinkBuilder
+                        .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
+                                .updateProjectConnection(pProjectConnection.getContent()))
+                        .withRel(HateoasKeyWords.UPDATE.getValue()));
                 // Add create link
 
-                pProjectConnection.add(linkTo(methodOn(ProjectsController.class)
-                        .createProjectConnection(pProjectConnection.getContent()))
-                                .withRel(HateoasKeyWords.CREATE.getValue()));
+                pProjectConnection.add(ControllerLinkBuilder
+                        .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
+                                .createProjectConnection(pProjectConnection.getContent()))
+                        .withRel(HateoasKeyWords.CREATE.getValue()));
             } catch (final EntityException e) {
                 // Nothing to do. Method is not called
                 LOG.warn(e.getMessage(), e);
@@ -206,17 +222,19 @@ public class ProjectsController implements ProjectsSignature {
      *
      * Add Hateoas links to a Project resource.
      *
-     * @param project
+     * @param pProject
      *            Resource<Project> resource
      * @since 1.0-SNAPSHOT
      */
-    private static void addLinksToProject(final Resource<Project> project) {
-        if (project.getLinks().isEmpty()) {
-            project.add(linkTo(methodOn(ProjectsController.class).retrieveProject(project.getContent().getName()))
-                    .withSelfRel());
+    private static void addLinksToProject(final Resource<Project> pProject) {
+        if (pProject.getLinks().isEmpty()) {
+            pProject.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
+                    .retrieveProject(pProject.getContent().getName())).withSelfRel());
             // project.add(linkTo(methodOn(ProjectsController.class).modifyProject(project.getName(), project))
             // .withRel("update"));
-            project.add(linkTo(methodOn(ProjectsController.class).deleteProject(project.getContent().getName()))
+            pProject.add(ControllerLinkBuilder
+                    .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
+                            .deleteProject(pProject.getContent().getName()))
                     .withRel(HateoasKeyWords.DELETE.getValue()));
         }
     }
@@ -225,12 +243,12 @@ public class ProjectsController implements ProjectsSignature {
      *
      * Add Hateoas links to a list of Project resources.
      *
-     * @param projects
+     * @param pProjects
      *            List<Resource<Project>> resources
      * @since 1.0-SNAPSHOT
      */
-    private static void addLinksToProjects(final List<Resource<Project>> projects) {
-        for (final Resource<Project> project : projects) {
+    private static void addLinksToProjects(final List<Resource<Project>> pProjects) {
+        for (final Resource<Project> project : pProjects) {
             addLinksToProject(project);
         }
     }
