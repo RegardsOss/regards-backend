@@ -99,7 +99,8 @@ public class ProjectsController implements IProjectsSignature {
 
     @Override
     @ResourceAccess(description = "retrieve the project project_name")
-    public HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName) {
+    public HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName)
+            throws EntityException {
 
         final Project project = projectService.retrieveProject(pProjectName);
         final Resource<Project> resource = new Resource<Project>(project);
@@ -118,7 +119,8 @@ public class ProjectsController implements IProjectsSignature {
 
     @Override
     @ResourceAccess(description = "remove the project project_name")
-    public HttpEntity<Void> deleteProject(@PathVariable("project_name") final String pProjectName) {
+    public HttpEntity<Void> deleteProject(@PathVariable("project_name") final String pProjectName)
+            throws EntityException {
 
         projectService.deleteProject(pProjectName);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -228,14 +230,19 @@ public class ProjectsController implements IProjectsSignature {
      */
     private static void addLinksToProject(final Resource<Project> pProject) {
         if (pProject.getLinks().isEmpty()) {
-            pProject.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
-                    .retrieveProject(pProject.getContent().getName())).withSelfRel());
-            // project.add(linkTo(methodOn(ProjectsController.class).modifyProject(project.getName(), project))
-            // .withRel("update"));
-            pProject.add(ControllerLinkBuilder
-                    .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
-                            .deleteProject(pProject.getContent().getName()))
-                    .withRel(HateoasKeyWords.DELETE.getValue()));
+            try {
+                pProject.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
+                        .retrieveProject(pProject.getContent().getName())).withSelfRel());
+                // project.add(linkTo(methodOn(ProjectsController.class).modifyProject(project.getName(), project))
+                // .withRel("update"));
+                pProject.add(ControllerLinkBuilder
+                        .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
+                                .deleteProject(pProject.getContent().getName()))
+                        .withRel(HateoasKeyWords.DELETE.getValue()));
+            } catch (final EntityException e) {
+                // Nothing to do. Method is not called
+                LOG.warn(e.getMessage(), e);
+            }
         }
     }
 

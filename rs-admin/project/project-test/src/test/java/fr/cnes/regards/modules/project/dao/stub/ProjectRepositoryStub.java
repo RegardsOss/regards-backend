@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.project.dao.stub;
 
+import java.util.Optional;
+
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -31,6 +33,11 @@ public class ProjectRepositoryStub extends RepositoryStub<Project> implements IP
 
     @Override
     public Project findOneByName(final String pName) {
-        return this.entities.stream().filter(e -> e.getName().equals(pName)).findFirst().get();
+        Project result = null;
+        final Optional<Project> project = this.entities.stream().filter(e -> e.getName().equals(pName)).findFirst();
+        if (project.isPresent()) {
+            result = project.get();
+        }
+        return result;
     }
 }

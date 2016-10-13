@@ -23,6 +23,7 @@ import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationS
 import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
 import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectService;
@@ -131,7 +132,7 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
     @Test
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Purpose("Check that the system allows to update a project on an instance and handle fail cases.")
-    public void dUpdateProject() {
+    public void dUpdateProject() throws EntityException {
 
         assertTrue(projectService_.existProject("name"));
         final Project updated = projectService_.retrieveProject("name");

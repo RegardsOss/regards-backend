@@ -55,12 +55,16 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public Project retrieveProject(final String pProjectName) {
-        return projectRepository.findOneByName(pProjectName);
+    public Project retrieveProject(final String pProjectName) throws EntityException {
+        final Project project = projectRepository.findOneByName(pProjectName);
+        if (project == null) {
+            throw new EntityNotFoundException(pProjectName, Project.class);
+        }
+        return project;
     }
 
     @Override
-    public List<Project> deleteProject(final String pProjectName) {
+    public List<Project> deleteProject(final String pProjectName) throws EntityException {
         final Project deleted = retrieveProject(pProjectName);
         deleted.setDeleted(true);
         projectRepository.delete(deleted);

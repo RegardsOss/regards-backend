@@ -72,11 +72,14 @@ public interface IProjectsSignature {
      * @param pProjectName
      *            Project name
      * @return Project
+     * @throws EntityException
+     *             {@link EntityNotFoundException} project does not exists
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET, value = "/projects/{project_name}", produces = "application/json")
     @ResponseBody
-    HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") String pProjectName);
+    HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") String pProjectName)
+            throws EntityException;
 
     /**
      *
@@ -106,11 +109,13 @@ public interface IProjectsSignature {
      * @param pProjectName
      *            Project name to delete
      * @return Void
+     * @throws EntityException
+     *             {@link EntityNotFoundException} project to delete does not exists
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.DELETE, value = "/projects/{project_name}", produces = "application/json")
     @ResponseBody
-    HttpEntity<Void> deleteProject(@PathVariable("project_name") String pProjectName);
+    HttpEntity<Void> deleteProject(@PathVariable("project_name") String pProjectName) throws EntityException;
 
     // Projects connections requests
     // -----------------------------
