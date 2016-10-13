@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.core.test.repository;
+package fr.cnes.regards.framework.test.repository;
 
 import java.util.ArrayList;
 import java.util.HashSet;
