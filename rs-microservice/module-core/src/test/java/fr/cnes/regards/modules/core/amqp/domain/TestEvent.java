@@ -29,7 +29,7 @@ public class TestEvent {
 
     @Override
     public String toString() {
-        return "{" + content_ + "}";
+        return "{\"content\" : " + content_ + "}";
     }
 
     @Override

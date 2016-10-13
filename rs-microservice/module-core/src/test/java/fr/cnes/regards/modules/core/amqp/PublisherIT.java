@@ -6,8 +6,6 @@ package fr.cnes.regards.modules.core.amqp;
  * LICENSE_PLACEHOLDER
  */
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +23,12 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
+import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.core.amqp.domain.TestEvent;
+import fr.cnes.regards.modules.core.amqp.utils.TenantWrapper;
+import fr.cnes.regards.modules.core.exception.AddingRabbitMQVhostException;
+import fr.cnes.regards.modules.core.exception.AddingRabbitMQVhostPermissionException;
 import fr.cnes.regards.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.security.utils.jwt.JWTService;
 import fr.cnes.regards.security.utils.jwt.exception.InvalidJwtException;
@@ -37,53 +40,81 @@ import fr.cnes.regards.security.utils.jwt.exception.MissingClaimException;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AmqpTestsConfiguration.class })
-@SpringBootTest
+@SpringBootTest(classes = ApplicationTest.class)
 @DirtiesContext
 public class PublisherIT {
 
+    /**
+     * LOGGER used to populate logs when needed
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PublisherIT.class);
 
-    private TestEvent received_;
+    /**
+     * name of the queue in which the message should go and from which we will receive the event
+     */
+    private static final String TEST_EEVENT_NAME = "fr.cnes.regards.modules.core.amqp.domain.TestEvent";
 
-    private static final String testEventName = "fr.cnes.regards.modules.core.amqp.domain.TestEvent";
+    /**
+     * event we should receive from the message broker
+     */
+    private TestEvent received;
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = testEventName, durable = "true"), exchange = @Exchange(value = "PROJECT", type = "direct", durable = "true"), key = testEventName))
-    public final void handle(TestEvent pMessage) {
-        LOGGER.info("================ Received " + pMessage);
-        received_ = pMessage;
+    /**
+     * bean used to generate and place JWT into the context
+     */
+    @Autowired
+    private JWTService jwtService;
+
+    /**
+     * bean used to publish message to the message broker and which is tested here
+     */
+    @Autowired
+    private Publisher publisher;
+
+    // CHECKSTYLE:OFF
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = TEST_EEVENT_NAME, durable = "true"),
+            exchange = @Exchange(value = "REGARDS", type = "direct", durable = "true"), key = TEST_EEVENT_NAME))
+    // CHECKSTYLE:ON
+    public final void handle(TenantWrapper<TestEvent> pMessage) {
+        LOGGER.info("================ Received " + pMessage.getTenant() + " : " + pMessage.getContent());
+        received = pMessage.getContent();
     }
 
-    @Autowired
-    private JWTService jwtService_;
-
-    @Autowired
-    private Publisher publisher_;
-
+    /**
+     * set a tenant into the security context, where it will be taken from to publish in name of the right tenant
+     */
     @Before
     public void init() {
-        String jwt = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
+        final String jwt = jwtService.generateToken("PROJECT", "email", "SVG", "USER");
         try {
-            SecurityContextHolder.getContext().setAuthentication(jwtService_.parseToken(new JWTAuthentication(jwt)));
-        }
-        catch (InvalidJwtException | MissingClaimException e) {
-            // TODO Auto-generated catch block
+            SecurityContextHolder.getContext().setAuthentication(jwtService.parseToken(new JWTAuthentication(jwt)));
+        } catch (InvalidJwtException | MissingClaimException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Purpose: Send a message to the message broker using the publish client
+     */
+    @Purpose("Send a message to the message broker using the publish client")
+    @Requirement("REGARDS_DSL_CMP_ARC_030")
     @Test
     public void publishTest() {
-        try {
-            TestEvent sended = new TestEvent("test1");
 
-            publisher_.publish(sended);
+        try {
+            final TestEvent sended = new TestEvent("test1");
+
+            publisher.publish(sended);
             LOGGER.info("SENDED " + sended);
-            Thread.sleep(2000);
-            assertEquals(sended, received_);
+            final int timeToWaitForRabbitToSendUsTheMessage = 2000;
+
+            Thread.sleep(timeToWaitForRabbitToSendUsTheMessage);
+            Assert.assertEquals(sended, received);
+        } catch (InterruptedException | AddingRabbitMQVhostException | AddingRabbitMQVhostPermissionException e) {
+            final String msg = "Publish Test Failed";
+            LOGGER.error(msg, e);
+            Assert.fail(msg);
         }
-        catch (Exception e) {
-            LOGGER.error("publish Test Failed", e);
-            Assert.fail("publish Test Failed");
-        }
+
     }
 }

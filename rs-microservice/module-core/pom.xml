@@ -25,10 +25,12 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>module-jobs</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>fr.cnes.regards.modules</groupId>
+					<artifactId>module-core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- (De)Serialization -->
 		<dependency>

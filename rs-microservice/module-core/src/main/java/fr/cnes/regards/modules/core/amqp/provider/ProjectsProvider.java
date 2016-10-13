@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.project.client.ProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
  * @author svissier
@@ -22,15 +21,15 @@ import fr.cnes.regards.security.utils.jwt.JWTService;
 @Component
 public class ProjectsProvider implements IProjectsProvider {
 
+    /**
+     * Feign client to retrieve all projects from the project module in the microservice administration by default
+     */
     @Autowired
-    private ProjectsClient projectsClient_;
-
-    @Autowired
-    private JWTService jwtService_;
+    private ProjectsClient projectsClient;
 
     @Override
     public List<String> retrieveProjectList() {
-        HttpEntity<List<Resource<Project>>> httpProjects = projectsClient_.retrieveProjectList();
+        final HttpEntity<List<Resource<Project>>> httpProjects = projectsClient.retrieveProjectList();
         return httpProjects.getBody().stream().map(r -> r.getContent().getName()).collect(Collectors.toList());
     }
 

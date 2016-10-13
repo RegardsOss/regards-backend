@@ -3,14 +3,15 @@
  */
 package fr.cnes.regards.modules.core.amqp.domain;
 
-import fr.cnes.regards.modules.core.amqp.utils.Handler;
+import fr.cnes.regards.modules.core.amqp.utils.IHandler;
+import fr.cnes.regards.modules.core.amqp.utils.TenantWrapper;
 
 /**
  * @author svissier
  *
  */
 
-public class TestReceiver implements Handler<TestEvent> {
+public class TestReceiver implements IHandler<TestEvent> {
 
     private TestEvent message_;
 
@@ -19,8 +20,8 @@ public class TestReceiver implements Handler<TestEvent> {
     }
 
     @Override
-    public void handle(TestEvent pMessage) {
-        message_ = pMessage;
+    public void handle(TenantWrapper<TestEvent> pMessage) {
+        message_ = pMessage.getContent();
     }
 
     public TestEvent getMessage() {

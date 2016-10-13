@@ -4,12 +4,12 @@
 package fr.cnes.regards.modules.core.amqp;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
@@ -17,16 +17,13 @@ import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.modules.core.amqp.configuration.AmqpConfiguration;
 import fr.cnes.regards.modules.core.amqp.provider.IProjectsProvider;
-import fr.cnes.regards.modules.core.amqp.utils.Handler;
-import fr.cnes.regards.modules.core.amqp.utils.TenantWrapper;
-import fr.cnes.regards.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.security.utils.jwt.JWTService;
-import fr.cnes.regards.security.utils.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.security.utils.jwt.exception.MissingClaimException;
+import fr.cnes.regards.modules.core.amqp.utils.IHandler;
+import fr.cnes.regards.modules.core.exception.AddingRabbitMQVhostException;
+import fr.cnes.regards.modules.core.exception.AddingRabbitMQVhostPermissionException;
 
 /**
  * @author svissier
@@ -36,19 +33,26 @@ import fr.cnes.regards.security.utils.jwt.exception.MissingClaimException;
 public class Subscriber {
 
     @Autowired
-    private RabbitAdmin rabbitAdmin_;
+    private RabbitAdmin rabbitAdmin;
 
     @Autowired
-    private Jackson2JsonMessageConverter jackson2JsonMessageConverter_;
+    private AmqpConfiguration amqpConfiguration;
 
+    /**
+     * bean handling the conversion using {@link com.fasterxml.jackson} 2
+     */
     @Autowired
-    private IProjectsProvider projectsProvider_;
+    private Jackson2JsonMessageConverter jackson2JsonMessageConverter;
 
+    /**
+     * provider of projects allowing us to listen to any necessary RabbitMQ Vhost
+     */
     @Autowired
-    private JWTService jwtService_;
+    private IProjectsProvider projectsProvider;
 
     /**
      *
+     * initialize any necessary container to listen to all tenant provided by the provider for the specified element
      *
      * @param pEvt
      *            the event class token you want to subscribe to
@@ -56,54 +60,75 @@ public class Subscriber {
      *            the POJO defining the method handling the corresponding event
      * @param pConnectionFactory
      *            connection factory from context
-     * @return the container initialized with right values
+     * @throws AddingRabbitMQVhostPermissionException
+     * @throws AddingRabbitMQVhostException
      */
-    public final SimpleMessageListenerContainer subscribeTo(Class<?> pEvt, Handler pReceiver,
-            ConnectionFactory pConnectionFactory) {
-        List<String> projects = projectsProvider_.retrieveProjectList();
-        List<DirectExchange> exchanges = projects.stream().map(p -> new DirectExchange(p)).collect(Collectors.toList());
-        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        jackson2JsonMessageConverter_.setTypePrecedence(TypePrecedence.TYPE_ID);
-        for (DirectExchange exchange : exchanges) {
-            rabbitAdmin_.declareExchange(exchange);
-            Queue queue = new Queue(pEvt.getName(), true);
-            rabbitAdmin_.declareQueue(queue);
-            Binding binding = BindingBuilder.bind(queue).to(exchange).with(pEvt.getName());
-            rabbitAdmin_.declareBinding(binding);
-            container.setConnectionFactory(pConnectionFactory);
-            container.setRabbitAdmin(rabbitAdmin_);
-            MessageListenerAdapter messageListener = new MessageListenerAdapter(new TenantWrapperReceiver(pReceiver),
-                    "dewrap");
-            messageListener.setMessageConverter(jackson2JsonMessageConverter_);
-            container.setMessageListener(messageListener);
-            container.addQueues(queue);
+    public final void subscribeTo(Class<?> pEvt, IHandler<?> pReceiver, ConnectionFactory pConnectionFactory)
+            throws AddingRabbitMQVhostException, AddingRabbitMQVhostPermissionException {
+        final List<String> projects = projectsProvider.retrieveProjectList();
+        jackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
+
+        for (String project : projects) {
+            // CHECKSTYLE:OFF
+            final SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(rabbitAdmin, pEvt,
+                                                                                                      pConnectionFactory,
+                                                                                                      project,
+                                                                                                      jackson2JsonMessageConverter,
+                                                                                                      pReceiver);
+            // CHECKSTYLE:ON
+            startSimpleMessageListenerContainer(container);
         }
+    }
+
+    /**
+     *
+     * @param pRabbitAdmin
+     *            bean initialize by spring-boot to manage RabbitMQ
+     * @param pEvt
+     *            event we want to listen to
+     * @param pConnectionFactory
+     *            bean initialized by spring to get host and port of the RabbitMQ server
+     * @param pProject
+     *            Tenant to listen to
+     * @param pJackson2JsonMessageConverter
+     *            converter used to transcript messages
+     * @param pReceiver
+     *            handler provided by user to handle the event reception
+     * @return a container fully parameterized to listen to the corresponding event for the specified tenant
+     * @throws AddingRabbitMQVhostPermissionException
+     * @throws AddingRabbitMQVhostException
+     */
+    public SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(RabbitAdmin pRabbitAdmin,
+            Class<?> pEvt, ConnectionFactory pConnectionFactory, String pProject,
+            Jackson2JsonMessageConverter pJackson2JsonMessageConverter, IHandler pReceiver)
+            throws AddingRabbitMQVhostException, AddingRabbitMQVhostPermissionException {
+        amqpConfiguration.addVhost(pProject);
+        ((CachingConnectionFactory) rabbitAdmin.getRabbitTemplate().getConnectionFactory()).setVirtualHost(pProject);
+        final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        final DirectExchange exchange = new DirectExchange("REGARDS");
+        pRabbitAdmin.declareExchange(exchange);
+        final Queue queue = new Queue(pEvt.getName(), true);
+        pRabbitAdmin.declareQueue(queue);
+        final Binding binding = BindingBuilder.bind(queue).to(exchange).with(pEvt.getName());
+        pRabbitAdmin.declareBinding(binding);
+
+        // container.setConnectionFactory(amqpConfiguration.getConnectionFactory(pProject));
+        container.setConnectionFactory(pRabbitAdmin.getRabbitTemplate().getConnectionFactory());
+        // container.setRabbitAdmin(pRabbitAdmin);
+        final MessageListenerAdapter messageListener = new MessageListenerAdapter(pReceiver, "handle");
+        messageListener.setMessageConverter(pJackson2JsonMessageConverter);
+        container.setMessageListener(messageListener);
+        container.addQueues(queue);
         return container;
     }
 
-    private class TenantWrapperReceiver {
-
-        private final Handler handler_;
-
-        /**
-         *
-         */
-        public TenantWrapperReceiver(Handler pHandler) {
-            handler_ = pHandler;
-        }
-
-        /**
-         *
-         * @param pWrappedMessage
-         * @throws InvalidJwtException
-         * @throws MissingClaimException
-         */
-        public final void dewrap(TenantWrapper pWrappedMessage) throws InvalidJwtException, MissingClaimException {
-            String jwt = jwtService_.generateToken(pWrappedMessage.getTenant(), "", "", "ADMIN");
-            SecurityContextHolder.getContext().setAuthentication(jwtService_.parseToken(new JWTAuthentication(jwt)));
-            handler_.handle(pWrappedMessage.getContent());
-        }
-
+    /**
+     *
+     * @param pContainer
+     *            container to start
+     */
+    public void startSimpleMessageListenerContainer(SimpleMessageListenerContainer pContainer) {
+        pContainer.start();
     }
 
 }
