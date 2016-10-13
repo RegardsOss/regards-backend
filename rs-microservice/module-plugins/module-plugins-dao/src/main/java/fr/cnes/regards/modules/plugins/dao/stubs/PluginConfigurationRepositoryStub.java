@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.microservices.core.test.repository.RepositoryStub;
+import fr.cnes.regards.framework.test.repository.RepositoryStub;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -18,7 +18,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 
 /**
  * Plugin Repository stub
- * 
+ *
  * @author cmertz
  *
  */
@@ -34,7 +34,7 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
     private final ArrayList<PluginParameter> pluginParameters1 = new ArrayList<>();
 
     /**
-     * 
+     *
      */
     public PluginConfigurationRepositoryStub() {
         this.pluginParameters1.add(new PluginParameter("name1", "val1"));

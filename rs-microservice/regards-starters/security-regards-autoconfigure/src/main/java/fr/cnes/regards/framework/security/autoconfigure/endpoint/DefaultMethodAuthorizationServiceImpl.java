@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 
 /**
  * Service MethodAutorizationServiceImpl<br/>

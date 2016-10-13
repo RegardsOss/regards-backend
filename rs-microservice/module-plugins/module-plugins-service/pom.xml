@@ -8,7 +8,6 @@
 	<artifactId>module-plugins-service</artifactId>
 	<packaging>jar</packaging>
 
-
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>module-plugins</artifactId>

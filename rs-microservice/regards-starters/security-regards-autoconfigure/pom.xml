@@ -21,7 +21,7 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.utils</groupId>
+			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
 			<optional>true</optional>
 		</dependency>
@@ -32,8 +32,8 @@
 		</dependency>
 		<!-- Tests -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

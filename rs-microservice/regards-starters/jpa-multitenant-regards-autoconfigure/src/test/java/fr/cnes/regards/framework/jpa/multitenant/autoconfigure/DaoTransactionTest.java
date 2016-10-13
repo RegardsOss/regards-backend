@@ -19,8 +19,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.exception.DaoTestException;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.service.DaoUserService;
-import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
-import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  *

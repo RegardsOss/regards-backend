@@ -26,6 +26,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.plugins</groupId>
 			<artifactId>module-plugins-client</artifactId>
-		</dependency>		
+		</dependency>
 	</dependencies>
 </project>

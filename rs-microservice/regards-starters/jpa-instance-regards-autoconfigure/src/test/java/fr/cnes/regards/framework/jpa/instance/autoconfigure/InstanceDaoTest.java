@@ -18,8 +18,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.Project;
 import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.ProjectRepository;
-import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
-import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  *

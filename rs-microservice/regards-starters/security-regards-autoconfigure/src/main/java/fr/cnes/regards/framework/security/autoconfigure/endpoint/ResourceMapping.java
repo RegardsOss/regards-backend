@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
 
 /**
  *

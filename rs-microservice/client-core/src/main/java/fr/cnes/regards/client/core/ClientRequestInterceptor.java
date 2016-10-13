@@ -5,8 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import feign.RequestInterceptor;
-import feign.RequestTemplate;
-import fr.cnes.regards.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
  *
@@ -29,24 +28,13 @@ public class ClientRequestInterceptor {
      */
     @Bean
     public RequestInterceptor requestTokenBearerInterceptor() {
-        return new RequestInterceptor() {
-
-            /**
-             *
-             * Override method
-             *
-             * @see feign.RequestInterceptor#apply(feign.RequestTemplate)
-             * @since 1.0-SNAPSHOT
-             */
-            @Override
-            public void apply(final RequestTemplate pRequestTemplate) {
-                // Read token from SecurityContext. This is possible thanks to the spring hystrix configuration
-                // hystrix.command.default..execution.isolation.strategy=SEMAPHORE
-                final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
-                        .getAuthentication();
-                // Insert token into request header
-                pRequestTemplate.header("Authorization", "Bearer " + authentication.getJwt());
-            }
+        return pRequestTemplate -> {
+            // Read token from SecurityContext. This is possible thanks to the spring hystrix configuration
+            // hystrix.command.default..execution.isolation.strategy=SEMAPHORE
+            final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
+                    .getAuthentication();
+            // Insert token into request header
+            pRequestTemplate.header("Authorization", "Bearer " + authentication.getJwt());
         };
     }
 

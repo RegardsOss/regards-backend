@@ -22,8 +22,8 @@ import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.ICompanyRepository;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.IUserRepository;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.utils.CurrentTenantIdentifierResolverMock;
-import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
-import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  *

@@ -25,7 +25,7 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.utils</groupId>
+			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
 		</dependency>
 		<dependency>
