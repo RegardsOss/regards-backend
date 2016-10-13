@@ -10,19 +10,16 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>security-utils</module>
 		<module>plugin-utils</module>
 		<module>microservice-core</module>
 		<module>module-jobs</module>
 		<module>module-core</module>
 		<module>client-core</module>
-		<module>report-maven-plugin</module>
 		<module>module-plugins</module>
-		<module>regards-test</module>
-		<module>regards-core-jpa-common</module>
 		<module>regards-starters</module>
 		<module>regards-archetypes</module>
-		<module>regards-test-reporting</module>
+		<module>regards-core</module>
+		<module>regards-tests</module>
 	</modules>
 
 	<build>

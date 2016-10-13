@@ -9,10 +9,9 @@
 	<description>Maven plugin to aggregate all requirement reports</description>
 
 	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>0.0.0-SNAPSHOT</version>
-		<relativePath></relativePath>
+		<groupId>fr.cnes.regards.framework.test</groupId>
+		<artifactId>regards-tests</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
