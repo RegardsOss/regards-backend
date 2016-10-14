@@ -70,7 +70,7 @@ public class SwaggerAutoConfiguration {
     /**
      * Spring boot adress
      */
-    @Value("${server.address}")
+    @Value("${server.adress}")
     private String serverAdress;
 
     /**

@@ -16,7 +16,9 @@ import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
@@ -42,8 +44,11 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(excludeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "projectsEntityManagerFactory", transactionManagerRef = "projectsJpaTransactionManager")
+@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
+@EnableJpaRepositories(
+        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+        basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "projectsEntityManagerFactory",
+        transactionManagerRef = "projectsJpaTransactionManager")
 @EnableTransactionManagement
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
@@ -94,7 +99,7 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public PlatformTransactionManager projectsJpaTransactionManager(EntityManagerFactoryBuilder pBuilder) {
+    public PlatformTransactionManager projectsJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
         final JpaTransactionManager jtm = new JpaTransactionManager();
         jtm.setEntityManagerFactory(projectsEntityManagerFactory(pBuilder).getObject());
         return jtm;
@@ -110,7 +115,8 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public LocalContainerEntityManagerFactoryBean projectsEntityManagerFactory(EntityManagerFactoryBuilder pBuilder) {
+    public LocalContainerEntityManagerFactoryBean projectsEntityManagerFactory(
+            final EntityManagerFactoryBuilder pBuilder) {
         // Use the first dataSource configuration to init the entityManagerFactory
         final DataSource defaultDataSource = dataSources.values().iterator().next();
 
