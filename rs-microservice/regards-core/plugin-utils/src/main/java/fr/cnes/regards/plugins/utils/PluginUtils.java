@@ -54,7 +54,7 @@ public final class PluginUtils {
      * @throws PluginUtilsException
      *             a pluginId is found a twice
      */
-    public static Map<String, PluginMetaData> getPlugins(String pPrefix) throws PluginUtilsException {
+    public static Map<String, PluginMetaData> getPlugins(final String pPrefix) throws PluginUtilsException {
         final Map<String, PluginMetaData> plugins = new HashMap<String, PluginMetaData>();
 
         // Scan class path with Reflections library
@@ -92,7 +92,7 @@ public final class PluginUtils {
      *            a class that must contains a {@link Plugin} annotation
      * @return the {@link PluginMetaData} create
      */
-    public static PluginMetaData createPluginMetaData(Class<?> pPluginClass) {
+    public static PluginMetaData createPluginMetaData(final Class<?> pPluginClass) {
         final PluginMetaData pluginMetaData;
 
         // Get implementation associated annotations
@@ -137,8 +137,8 @@ public final class PluginUtils {
      * @throws PluginUtilsException
      *             if problem occurs
      */
-    public static <T> T getPlugin(PluginConfiguration pPluginConf, PluginMetaData pPluginMetadata,
-            PluginParameter... pPluginParameters) throws PluginUtilsException {
+    public static <T> T getPlugin(final PluginConfiguration pPluginConf, final PluginMetaData pPluginMetadata,
+            final PluginParameter... pPluginParameters) throws PluginUtilsException {
         T returnPlugin = null;
 
         try {
@@ -170,7 +170,7 @@ public final class PluginUtils {
      * @throws PluginUtilsException
      *             if problem occurs
      */
-    public static <T> void doInitPlugin(T pPluginInstance) throws PluginUtilsException {
+    public static <T> void doInitPlugin(final T pPluginInstance) throws PluginUtilsException {
         final Method[] allMethods = pPluginInstance.getClass().getDeclaredMethods();
         for (final Method method : allMethods) {
             if (method.isAnnotationPresent(PluginInit.class)) {

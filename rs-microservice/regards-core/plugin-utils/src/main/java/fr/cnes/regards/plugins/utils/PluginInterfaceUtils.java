@@ -37,7 +37,7 @@ public final class PluginInterfaceUtils {
      *            a package prefix used for the search
      * @return all class annotated {@link PluginInterface}
      */
-    public static List<String> getInterfaces(String pPrefix) {
+    public static List<String> getInterfaces(final String pPrefix) {
         final List<String> interfaces;
 
         // Scan class path with Reflections library
@@ -46,7 +46,7 @@ public final class PluginInterfaceUtils {
 
         if (annotatedPlugins.size() > 0) {
             interfaces = new ArrayList<String>();
-            annotatedPlugins.stream().forEach(s -> interfaces.add(s.getCanonicalName()));
+            annotatedPlugins.stream().forEach(str -> interfaces.add(str.getCanonicalName()));
         } else {
             interfaces = null;
         }

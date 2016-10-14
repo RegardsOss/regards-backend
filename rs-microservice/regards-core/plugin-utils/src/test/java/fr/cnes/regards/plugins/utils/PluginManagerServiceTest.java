@@ -42,8 +42,8 @@ public final class PluginManagerServiceTest {
      * @throws PluginUtilsException
      *             if problem occurs
      */
-    public static <T> T getPlugin(List<PluginParameter> pParameters, Class<T> pReturnInterfaceType,
-            PluginParameter... pPluginParameters) throws PluginUtilsException {
+    public static <T> T getPlugin(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
+            final PluginParameter... pPluginParameters) throws PluginUtilsException {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType);
 
@@ -66,8 +66,8 @@ public final class PluginManagerServiceTest {
      * @throws PluginUtilsException
      *             if problem occurs
      */
-    public static <T> PluginConfiguration getPluginConfiguration(List<PluginParameter> pParameters,
-            Class<T> pReturnInterfaceType) throws PluginUtilsException {
+    public static <T> PluginConfiguration getPluginConfiguration(final List<PluginParameter> pParameters,
+            final Class<T> pReturnInterfaceType) throws PluginUtilsException {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType);
 

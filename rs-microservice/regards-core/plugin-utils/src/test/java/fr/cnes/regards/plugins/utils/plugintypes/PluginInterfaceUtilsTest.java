@@ -83,8 +83,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
 
             Assert.assertTrue(complexPlugin.add(Integer.parseInt(PluginInterfaceUtilsTest.CINQ),
                                                 Integer.parseInt(PluginInterfaceUtilsTest.QUATRE)) > 0);
-            final String str = "hello world";
-            Assert.assertTrue(complexPlugin.echo(str).contains(str));
+            Assert.assertTrue(complexPlugin.echo(PluginInterfaceUtilsTest.HELLO_WORLD)
+                    .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
 
             LOGGER.info("plugin parameter:" + complexPlugin.echoPluginParameter());
 

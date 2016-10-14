@@ -22,7 +22,7 @@ public class AParameterPluginImplementation implements IComplexInterfacePlugin {
     private Long ll;
 
     @Override
-    public int mult(int pFirst, int pSecond) {
+    public int mult(final int pFirst, final int pSecond) {
         final int res = ll.intValue() * (pFirst * pSecond);
 
         return res;
