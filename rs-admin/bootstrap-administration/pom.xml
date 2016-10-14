@@ -21,15 +21,7 @@
 	</properties>
 
 	<dependencies>
-		<!-- Framework Starters dependecies -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>swagger-regards-starter</artifactId>
-		</dependency>
+		<!-- Framework Starters dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-instance-regards-starter</artifactId>
@@ -56,6 +48,15 @@
 			<groupId>fr.cnes.regards.modules.accessRights</groupId>
 			<artifactId>accessRights-rest</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.emails</groupId>
+			<artifactId>emails-rest</artifactId>
+		</dependency>
+		<!-- Embedded database -->
+		<dependency>
+			<groupId>hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
@@ -72,10 +73,6 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-rest</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
