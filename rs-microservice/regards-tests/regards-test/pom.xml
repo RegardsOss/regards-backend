@@ -10,7 +10,7 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
+		<artifactId>regards-boot-parent</artifactId>
 		<version>0.0.2-SNAPSHOT</version>
 		<relativePath />
 	</parent>

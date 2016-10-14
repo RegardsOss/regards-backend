@@ -30,7 +30,7 @@ public final class ReflectionUtils {
      * @param pField
      *            the field to check
      */
-    public static void makeAccessible(Field pField) {
+    public static void makeAccessible(final Field pField) {
         if ((!Modifier.isPublic(pField.getModifiers()) || !Modifier.isPublic(pField.getDeclaringClass().getModifiers())
                 || Modifier.isFinal(pField.getModifiers())) && !pField.isAccessible()) {
             pField.setAccessible(true);
@@ -44,7 +44,7 @@ public final class ReflectionUtils {
      * @param pMethod
      *            the field to check
      */
-    public static void makeAccessible(Method pMethod) {
+    public static void makeAccessible(final Method pMethod) {
         if ((!Modifier.isPublic(pMethod.getModifiers())
                 || !Modifier.isPublic(pMethod.getDeclaringClass().getModifiers())
                 || Modifier.isFinal(pMethod.getModifiers())) && !pMethod.isAccessible()) {

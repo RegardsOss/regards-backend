@@ -43,10 +43,10 @@ public class SamplePlugin implements ISamplePlugin {
     private Boolean isActive;
 
     @Override
-    public String echo(String pMessage) {
+    public String echo(final String pMessage) {
         final StringBuffer str = new StringBuffer();
         if (this.isActive) {
-            str.append(this.getClass().getName() + " -> " + pMessage + this.suffix);
+            str.append(this.getClass().getName() + " -> " + pMessage + " - "+ this.suffix);
         } else {
 
             str.append(this.getClass().getName() + ":is not active");
@@ -55,7 +55,7 @@ public class SamplePlugin implements ISamplePlugin {
     }
 
     @Override
-    public int add(int pFist, int pSecond) {
+    public int add(final int pFist, final int pSecond) {
         final int res = this.coef * (pFist + pSecond);
         LOGGER.info("add result : " + res);
         return res;

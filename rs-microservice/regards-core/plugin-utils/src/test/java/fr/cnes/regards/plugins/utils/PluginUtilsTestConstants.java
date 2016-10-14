@@ -41,6 +41,34 @@ public class PluginUtilsTestConstants {
      */
     public static final String LONG_STR_VALUE = "123456789";
 
+    /**
+     * RED constant {@link String}
+     */
+    public static final String RED = "red";
+
+    /**
+     * GREEN constant {@link String}
+     */
+    public static final String GREEN = "green";
+
+    /**
+     * BLUE constant {@link String}
+     */
+    public static final String BLUE = "blue";
+
+    /**
+     * HELLO_WORLD constant {@link String}
+     */
+    public static final String HELLO_WORLD = "hello world";
+
+    /**
+     * HELLO constant {@link String}
+     */
+    public static final String HELLO = "hello";
+
+    /*
+     * Constructor protected
+     */
     protected PluginUtilsTestConstants() {
         super();
     }

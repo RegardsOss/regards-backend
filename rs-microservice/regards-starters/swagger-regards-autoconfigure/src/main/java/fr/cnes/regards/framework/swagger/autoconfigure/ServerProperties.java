@@ -14,18 +14,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
  */
 public class ServerProperties extends AllNestedConditions {
 
+	/**
+     * Class constructor
+     */
     public ServerProperties() {
         super(ConfigurationPhase.REGISTER_BEAN);
     }
 
-    /**
-     * @param pConfigurationPhase
-     */
-    public ServerProperties(final ConfigurationPhase pConfigurationPhase) {
-        super(pConfigurationPhase);
-    }
-
-    @ConditionalOnProperty("server.adress")
+    @ConditionalOnProperty("server.address")
     static class OnServerAdress {
 
     }

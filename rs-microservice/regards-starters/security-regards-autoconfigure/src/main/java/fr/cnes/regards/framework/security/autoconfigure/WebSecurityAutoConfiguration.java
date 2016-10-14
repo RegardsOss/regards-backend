@@ -13,8 +13,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.filter.CorsFilter;
 
+import fr.cnes.regards.framework.security.autoconfigure.filter.CorsFilter;
 import fr.cnes.regards.framework.security.autoconfigure.filter.JWTAuthenticationFilter;
 
 /**
@@ -27,9 +27,6 @@ import fr.cnes.regards.framework.security.autoconfigure.filter.JWTAuthentication
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
-    /**
-     * CORS Filter
-     */
     @Autowired
     private CorsFilter cors;
 

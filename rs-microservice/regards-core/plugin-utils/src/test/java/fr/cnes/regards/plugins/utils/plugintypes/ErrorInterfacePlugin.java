@@ -39,7 +39,7 @@ public class ErrorInterfacePlugin implements IComplexInterfacePlugin {
     }
 
     @Override
-    public int mult(int pFirst, int pSecond) {
+    public int mult(final int pFirst, final int pSecond) {
         return 0;
     }
 

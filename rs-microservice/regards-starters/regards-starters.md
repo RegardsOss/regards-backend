@@ -21,7 +21,9 @@ TODO : add datasource configuration
 
 ## Security starter
 
-
+```properties
+jwt.secret=MTIzNDU2Nzg5 # Base64 encoded secret
+```
 
 ## Swagger starter
 
