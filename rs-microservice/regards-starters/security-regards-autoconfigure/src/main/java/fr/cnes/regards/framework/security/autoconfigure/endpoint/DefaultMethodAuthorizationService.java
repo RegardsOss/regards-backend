@@ -17,9 +17,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -33,14 +31,12 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
  * @author CS SI
  *
  */
-@ConditionalOnMissingBean(ICustomMethodAuthorizationService.class)
-@Service
-public class DefaultMethodAuthorizationServiceImpl implements IMethodAuthorizationService {
+public class DefaultMethodAuthorizationService implements IMethodAuthorizationService {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultMethodAuthorizationServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultMethodAuthorizationService.class);
 
     /**
      * List of configurated authorities
@@ -53,7 +49,7 @@ public class DefaultMethodAuthorizationServiceImpl implements IMethodAuthorizati
      */
     private final Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource;
 
-    public DefaultMethodAuthorizationServiceImpl() {
+    public DefaultMethodAuthorizationService() {
         grantedAuthoritiesByResource = new HashMap<>();
     }
 
