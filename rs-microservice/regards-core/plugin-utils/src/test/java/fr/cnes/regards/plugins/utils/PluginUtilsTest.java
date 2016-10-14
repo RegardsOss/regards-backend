@@ -48,7 +48,6 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
             // Log the parameters of the first plugin
             pluginMetaData.getParameters().stream().forEach(s -> LOGGER.info(s));
         } catch (PluginUtilsException e) {
-            LOGGER.error(e.getMessage());
             Assert.assertTrue(false);
         }
         Assert.assertTrue(true);
@@ -73,7 +72,6 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
             // instantiate plugin
             samplePlugin = PluginManagerServiceTest.getPlugin(parameters, SamplePlugin.class);
         } catch (final PluginUtilsException e) {
-            LOGGER.error(e.getMessage());
             Assert.assertTrue(false);
         }
         Assert.assertNotNull(samplePlugin);
@@ -111,7 +109,6 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
             // instantiate plugin
             samplePlugin = PluginManagerServiceTest.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
         } catch (final PluginUtilsException e) {
-            LOGGER.error(e.getMessage());
             Assert.assertTrue(false);
         }
         Assert.assertNotNull(samplePlugin);
@@ -148,7 +145,6 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
             // instantiate plugin
             samplePlugin = PluginManagerServiceTest.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
         } catch (final PluginUtilsException e) {
-            LOGGER.error(e.getMessage());
             Assert.assertTrue(false);
         }
         Assert.assertNotNull(samplePlugin);
@@ -179,7 +175,6 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
             // instantiate plugin
             samplePlugin = PluginManagerServiceTest.getPlugin(parameters, SamplePlugin.class);
         } catch (final PluginUtilsException e) {
-            LOGGER.error(e.getMessage());
             Assert.assertTrue(false);
         }
         Assert.assertNotNull(samplePlugin);
@@ -214,7 +209,6 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
             // instantiate plugin
             samplePlugin = PluginManagerServiceTest.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
         } catch (final PluginUtilsException e) {
-            LOGGER.error(e.getMessage());
             Assert.assertTrue(true);
         }
         Assert.assertNull(samplePlugin);
@@ -238,7 +232,6 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
             // instantiate plugin
             samplePlugin = PluginManagerServiceTest.getPlugin(parameters, SamplePlugin.class);
         } catch (final PluginUtilsException e) {
-            LOGGER.error(e.getCause().getMessage());
             Assert.assertTrue(true);
         }
         Assert.assertNull(samplePlugin);
@@ -263,7 +256,6 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
             // instantiate plugin
             samplePlugin = PluginManagerServiceTest.getPlugin(parameters, SampleErrorPlugin.class);
         } catch (final PluginUtilsException e) {
-            LOGGER.error(e.getCause().getMessage());
             Assert.assertTrue(true);
         }
         Assert.assertNull(samplePlugin);
