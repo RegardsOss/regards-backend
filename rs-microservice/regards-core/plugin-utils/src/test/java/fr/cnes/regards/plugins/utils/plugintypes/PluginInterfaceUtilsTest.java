@@ -14,7 +14,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
-import fr.cnes.regards.plugins.utils.PluginManagerServiceTest;
+import fr.cnes.regards.plugins.utils.PluginUtilsWrapper;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 import fr.cnes.regards.plugins.utils.PluginUtilsTestConstants;
 
@@ -63,7 +63,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
             final List<PluginParameter> interfaceParameters = PluginParametersFactory.build()
                     .addParameter(AParameterPluginImplementation.LONG_PARAM, PluginInterfaceUtilsTest.LONG_STR_VALUE)
                     .getParameters();
-            final PluginConfiguration pluginConfigurationInterface = PluginManagerServiceTest
+            final PluginConfiguration pluginConfigurationInterface = PluginUtilsWrapper
                     .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class);
             Assert.assertNotNull(pluginConfigurationInterface);
 
@@ -78,7 +78,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
             /*
              * Instantiate the parent plugin
              */
-            complexPlugin = PluginManagerServiceTest.getPlugin(complexParameters, ComplexPlugin.class);
+            complexPlugin = PluginUtilsWrapper.getPlugin(complexParameters, ComplexPlugin.class);
             Assert.assertNotNull(complexPlugin);
 
             Assert.assertTrue(complexPlugin.add(Integer.parseInt(PluginInterfaceUtilsTest.CINQ),
@@ -113,7 +113,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                     .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "coucou").getParameters();
 
             // instantiate plugin
-            complexErrorPlugin = PluginManagerServiceTest.getPlugin(complexParameters, ComplexErrorPlugin.class);
+            complexErrorPlugin = PluginUtilsWrapper.getPlugin(complexParameters, ComplexErrorPlugin.class);
             Assert.assertNotNull(complexErrorPlugin);
 
         } catch (final PluginUtilsException e) {
@@ -140,7 +140,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                     .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "lorem ipsum").getParameters();
 
             // instantiate plugin
-            complexErrorPlugin = PluginManagerServiceTest.getPlugin(complexParameters, ComplexErrorPlugin.class);
+            complexErrorPlugin = PluginUtilsWrapper.getPlugin(complexParameters, ComplexErrorPlugin.class);
             Assert.assertNotNull(complexErrorPlugin);
 
         } catch (final PluginUtilsException e) {

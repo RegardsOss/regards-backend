@@ -114,7 +114,7 @@ public final class PluginUtils {
         pluginMetaData.setDescription(plugin.description());
 
         // Try to detect parameters if any
-        pluginMetaData.setParameters(PluginParametersUtil.getParameters(pPluginClass));
+        pluginMetaData.setParameters(PluginParameterUtils.getParameters(pPluginClass));
 
         return pluginMetaData;
     }
@@ -146,7 +146,7 @@ public final class PluginUtils {
             returnPlugin = (T) pPluginMetadata.getPluginClass().newInstance();
 
             // Post process parameters
-            PluginParametersUtil.postProcess(returnPlugin, pPluginConf, pPluginParameters);
+            PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPluginParameters);
 
             // Launch init method if detected
             doInitPlugin(returnPlugin);

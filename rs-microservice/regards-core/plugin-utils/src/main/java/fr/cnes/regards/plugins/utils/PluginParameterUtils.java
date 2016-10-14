@@ -25,14 +25,14 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
  *
  * @author cmertz
  */
-public final class PluginParametersUtil {
+public final class PluginParameterUtils {
 
     /**
      * Logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(PluginParametersUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PluginParameterUtils.class);
 
-    private PluginParametersUtil() {
+    private PluginParameterUtils() {
 
     }
 
@@ -357,15 +357,12 @@ public final class PluginParametersUtil {
         LOGGER.debug("Starting postProcessDynamicValues :" + pDynamicPlgParam.get().getName() + " - init value= <"
                 + pParamValue + ">");
 
-        if (pConfiguredPlgParam.get().getDynamicsValues() != null) {
-            if (!pConfiguredPlgParam.get().getDynamicsValues().isEmpty()) {
-                if (!pConfiguredPlgParam.get().getDynamicsValues().contains(pDynamicPlgParam.get().getValue())) {
-                    // The dynamic parameter value is not a possible value
-                    throw new PluginUtilsException("The dynamic value <" + pDynamicPlgParam.get().getValue()
-                            + "> is not an authorized value for the parameter <" + pDynamicPlgParam.get().getName()
-                            + ">");
-                }
-            }
+        if ((pConfiguredPlgParam.get().getDynamicsValues() != null)
+                && (!pConfiguredPlgParam.get().getDynamicsValues().isEmpty())
+                && (!pConfiguredPlgParam.get().getDynamicsValues().contains(pDynamicPlgParam.get().getValue()))) {
+            // The dynamic parameter value is not a possible value
+            throw new PluginUtilsException("The dynamic value <" + pDynamicPlgParam.get().getValue()
+                    + "> is not an authorized value for the parameter <" + pDynamicPlgParam.get().getName() + ">");
         }
 
         paramValue = pDynamicPlgParam.get().getValue();
