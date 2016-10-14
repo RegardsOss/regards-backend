@@ -5,7 +5,6 @@ package fr.cnes.regards.framework.test.integration;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
@@ -15,7 +14,6 @@ import org.springframework.context.annotation.ComponentScan;
  *
  */
 @SpringBootConfiguration
-@EnableAutoConfiguration
 @ComponentScan(basePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices.core",
         "fr.cnes.regards.security.utils" })
 // excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = { SwaggerConfiguration.class }))

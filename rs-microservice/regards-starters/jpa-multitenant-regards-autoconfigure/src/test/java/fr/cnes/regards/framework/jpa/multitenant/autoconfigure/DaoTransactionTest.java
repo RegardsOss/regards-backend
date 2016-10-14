@@ -73,7 +73,7 @@ public class DaoTransactionTest {
             LOG.info("Adding users to first tenant with exception thrown ... ");
             service.addWithError(testTenant);
             Assert.fail(exceptionError);
-        } catch (DaoTestException e) {
+        } catch (final DaoTestException e) {
             LOG.error(e.getMessage());
             users.clear();
             users = service.getUsers(testTenant);
@@ -99,7 +99,7 @@ public class DaoTransactionTest {
             LOG.info("Adding users to second tenant with exception thrown ... ");
             service.addWithError(testTenant2);
             Assert.fail(exceptionError);
-        } catch (DaoTestException e) {
+        } catch (final DaoTestException e) {
             LOG.error(e.getMessage());
             users.clear();
             users = service.getUsers(testTenant2);

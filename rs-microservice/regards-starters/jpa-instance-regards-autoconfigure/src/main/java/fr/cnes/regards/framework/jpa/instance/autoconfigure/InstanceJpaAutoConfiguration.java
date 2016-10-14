@@ -13,9 +13,11 @@ import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.cfg.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -23,14 +25,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.configuration.MicroserviceConfiguration;
+import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 
@@ -42,9 +43,13 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(includeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory", transactionManagerRef = "instanceJpaTransactionManager")
+@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
+@EnableJpaRepositories(
+        includeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+        basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory",
+        transactionManagerRef = "instanceJpaTransactionManager")
 @EnableTransactionManagement
+@EnableConfigurationProperties(InstanceDaoProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "instance.enabled", matchIfMissing = true)
 public class InstanceJpaAutoConfiguration {
 
@@ -57,7 +62,7 @@ public class InstanceJpaAutoConfiguration {
      * Microservice global configuration
      */
     @Autowired
-    private MicroserviceConfiguration configuration;
+    private InstanceDaoProperties daoProperties;
 
     /**
      * JPA Properties
@@ -82,7 +87,7 @@ public class InstanceJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public PlatformTransactionManager instanceJpaTransactionManager(EntityManagerFactoryBuilder pBuilder) {
+    public PlatformTransactionManager instanceJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
         final JpaTransactionManager jtm = new JpaTransactionManager();
         jtm.setEntityManagerFactory(instanceEntityManagerFactory(pBuilder).getObject());
         return jtm;
@@ -99,19 +104,21 @@ public class InstanceJpaAutoConfiguration {
      */
     @Bean
     @Primary
-    public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory(EntityManagerFactoryBuilder pBuilder) {
+    public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory(
+            final EntityManagerFactoryBuilder pBuilder) {
 
         final Map<String, Object> hibernateProps = new LinkedHashMap<>();
         hibernateProps.putAll(jpaProperties.getHibernateProperties(instanceDataSource));
 
-        if (configuration.getDao().getEmbedded()) {
+        if (daoProperties.getEmbedded()) {
             hibernateProps.put(Environment.DIALECT, DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
         } else {
-            hibernateProps.put(Environment.DIALECT, configuration.getDao().getDialect());
+            hibernateProps.put(Environment.DIALECT, daoProperties.getDialect());
         }
         hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.NONE);
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, null);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, null);
+        hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
 
         final List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, InstanceEntity.class,
                                                                     null);
@@ -119,36 +126,6 @@ public class InstanceJpaAutoConfiguration {
         return pBuilder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
 
-    }
-
-    /**
-     *
-     * Default data source for persistence unit instance.
-     *
-     * @return datasource
-     * @since 1.0-SNAPSHOT
-     */
-    @Bean
-    public DataSource instanceDataSource() {
-
-        DataSource datasource = null;
-        if (configuration.getDao().getEmbedded()) {
-            final DriverManagerDataSource dataSource = new DriverManagerDataSource();
-            dataSource.setDriverClassName(DataSourceHelper.EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(DataSourceHelper.EMBEDDED_HSQL_URL + configuration.getDao().getEmbeddedPath()
-                    + DataSourceHelper.EMBEDDED_URL_SEPARATOR + "instance" + DataSourceHelper.EMBEDDED_URL_SEPARATOR
-                    + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
-            datasource = dataSource;
-        } else {
-            final DataSourceBuilder factory = DataSourceBuilder
-                    .create(configuration.getDao().getInstance().getDatasource().getClassLoader())
-                    .driverClassName(configuration.getDao().getDriverClassName())
-                    .username(configuration.getDao().getInstance().getDatasource().getUsername())
-                    .password(configuration.getDao().getInstance().getDatasource().getPassword())
-                    .url(configuration.getDao().getInstance().getDatasource().getUrl());
-            datasource = factory.build();
-        }
-        return datasource;
     }
 
 }

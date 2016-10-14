@@ -20,13 +20,10 @@ import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.configuration.MicroserviceConfiguration;
-import fr.cnes.regards.framework.jpa.configuration.ProjectConfiguration;
+import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 
@@ -49,18 +46,18 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      * Microservice global configuration
      */
     @Autowired
-    private transient MicroserviceConfiguration configuration;
+    private transient MultitenantDaoProperties daoProperties;
 
     /**
      * Pool of datasources available for this connection provider
      */
     @Autowired
-    @Qualifier("dataSources")
+    @Qualifier("multitenantsDataSources")
     private final transient Map<String, DataSource> dataSources = new HashMap<>();
 
     @Override
     protected DataSource selectAnyDataSource() {
-        return dataSources.get(configuration.getProjects().get(0).getName());
+        return dataSources.values().iterator().next();
     }
 
     @Override
@@ -78,8 +75,8 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     public void initDataSources() {
         // Hibernate do not initialize schema for multitenants.
         // Here whe manually update schema for all configured datasources
-        for (final ProjectConfiguration project : configuration.getProjects()) {
-            updateDataSourceSchema(selectDataSource(project.getName()));
+        for (final String tenant : dataSources.keySet()) {
+            updateDataSourceSchema(selectDataSource(tenant));
         }
     }
 
@@ -93,8 +90,8 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      */
     private void updateDataSourceSchema(final DataSource pDataSource) {
         // 1. Update database schema if needed
-        String dialect = configuration.getDao().getDialect();
-        if (configuration.getDao().getEmbedded()) {
+        String dialect = daoProperties.getDialect();
+        if (daoProperties.getEmbedded()) {
             dialect = DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
         }
         final MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder()
@@ -116,7 +113,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      * @param pDataSource
      *            : Datasource to add
      * @param pTenant
-     *            : Project name
+     *            : tenant name
      * @since 1.0-SNAPSHOT
      */
     private void addDataSource(final DataSource pDataSource, final String pTenant) {
@@ -134,26 +131,19 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      *            : Only used if the dao is not configured in embedded mod
      * @param pPassword
      *            : Only used if the dao is not configured in embedded mod
+     * @param pDriverClassName
+     *            : Only used if the dao is not configured in embedded mod
      * @param pTenant
-     *            : tenant or project
+     *            : tenant
      * @since 1.0-SNAPSHOT
      */
-    public void addDataSource(final String pUrl, final String pUser, final String pPassword, final String pTenant) {
+    public void addDataSource(final String pUrl, final String pUser, final String pPassword,
+            final String pDriverClassName, final String pTenant) {
 
-        if (configuration.getDao().getEmbedded()) {
-            final DriverManagerDataSource dataSource = new DriverManagerDataSource();
-            dataSource.setDriverClassName(DataSourceHelper.EMBEDDED_HSQL_DRIVER_CLASS);
-            dataSource.setUrl(DataSourceHelper.EMBEDDED_HSQL_URL + configuration.getDao().getEmbeddedPath()
-                    + DataSourceHelper.EMBEDDED_URL_SEPARATOR + pTenant + DataSourceHelper.EMBEDDED_URL_SEPARATOR
-                    + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
-
-            addDataSource(dataSource, pTenant);
+        if (daoProperties.getEmbedded()) {
+            addDataSource(DataSourceHelper.createEmbeddedDataSource(pTenant, daoProperties.getEmbeddedPath()), pTenant);
         } else {
-            final DataSourceBuilder factory = DataSourceBuilder.create()
-                    .driverClassName(configuration.getDao().getDriverClassName()).username(pUser).password(pPassword)
-                    .url(pUrl);
-            final DataSource datasource = factory.build();
-            addDataSource(datasource, pTenant);
+            addDataSource(DataSourceHelper.createDataSource(pUrl, pDriverClassName, pUser, pPassword), pTenant);
         }
     }
 

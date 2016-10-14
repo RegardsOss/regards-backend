@@ -14,7 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
  */
 public class ServerProperties extends AllNestedConditions {
 
-    /**
+	/**
      * Class constructor
      */
     public ServerProperties() {

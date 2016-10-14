@@ -17,12 +17,12 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
  *
  * @author cmertz
  */
-public final class PluginManagerServiceTest {
+public final class PluginUtilsWrapper {
 
     /**
      * Default constructor
      */
-    private PluginManagerServiceTest() {
+    private PluginUtilsWrapper() {
     }
 
     /**
