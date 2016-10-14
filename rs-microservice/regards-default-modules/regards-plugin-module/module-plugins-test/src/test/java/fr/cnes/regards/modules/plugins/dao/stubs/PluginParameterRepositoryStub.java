@@ -21,7 +21,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 @Repository
 @Primary
 @Profile("test")
-public class PluginParameterStub extends RepositoryStub<PluginParameter> implements IPluginParameterRepository {
+public class PluginParameterRepositoryStub extends RepositoryStub<PluginParameter> implements IPluginParameterRepository {
 
     /**
      * A list of plugin parameters
@@ -33,8 +33,8 @@ public class PluginParameterStub extends RepositoryStub<PluginParameter> impleme
     /**
     *
     */
-    public PluginParameterStub() {
-        parameters.stream().forEach(s -> entities.add(s));
+    public PluginParameterRepositoryStub() {
+//        parameters.stream().forEach(s -> entities.add(s));
     }
 
 }

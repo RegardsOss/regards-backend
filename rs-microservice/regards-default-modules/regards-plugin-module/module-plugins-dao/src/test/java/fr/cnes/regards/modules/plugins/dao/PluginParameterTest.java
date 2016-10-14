@@ -27,11 +27,11 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 public class PluginParameterTest extends RepositoryStub<PluginParameter> {
 
     @Autowired
-    IPluginMetaDataRepository pluginMetaDataRepository;
+    IPluginParameterRepository pluginParameterRepository;
 
     @Test
     public void createOnePluginParameter() {
-        pluginMetaDataRepository.deleteAll();
+//        pluginParameterRepository.deleteAll();
         Assert.assertTrue(true);
     }
 }

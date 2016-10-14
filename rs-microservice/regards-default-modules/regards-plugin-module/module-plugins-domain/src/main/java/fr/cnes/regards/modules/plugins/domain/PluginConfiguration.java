@@ -17,6 +17,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.springframework.hateoas.Identifiable;
 
@@ -73,10 +74,11 @@ public class PluginConfiguration implements Identifiable<Long> {
     /**
      * Configuration parameters of the plugin
      */
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE",
-            joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id") },
-            inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id") })
+//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE",
+//            joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id") },
+//            inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id") })
+    @Transient
     private List<PluginParameter> parameters;
 
     /**

@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.plugins.dao;
 
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -19,7 +17,6 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Configuration
 @ComponentScan(basePackages = "fr.cnes.regards")
-@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
 @PropertySource("classpath:tests.properties")
 public class PluginDaoTestConfiguration {
 
