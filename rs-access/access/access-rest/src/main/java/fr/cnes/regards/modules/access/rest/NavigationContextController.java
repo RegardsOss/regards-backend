@@ -22,12 +22,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 import fr.cnes.regards.modules.access.service.INavigationContextService;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
+
 
 /**
  * REST controller for the microservice Access
@@ -39,9 +39,6 @@ import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 @ModuleInfo(name = "navigation context", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/tiny")
 public class NavigationContextController {
-
-    @Autowired
-    MethodAuthorizationService authService_;
 
     @Autowired
     INavigationContextService service_;
