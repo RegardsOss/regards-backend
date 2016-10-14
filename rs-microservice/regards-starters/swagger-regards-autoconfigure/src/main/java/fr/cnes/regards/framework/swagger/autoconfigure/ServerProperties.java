@@ -8,17 +8,17 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 /**
  * Check that spring boot server is already configured
- * 
+ *
  * @author msordi
  *
  */
 public class ServerProperties extends AllNestedConditions {
 
     /**
-     * @param pConfigurationPhase
+     * Class constructor
      */
-    public ServerProperties(ConfigurationPhase pConfigurationPhase) {
-        super(pConfigurationPhase);
+    public ServerProperties() {
+        super(ConfigurationPhase.REGISTER_BEAN);
     }
 
     @ConditionalOnProperty("server.address")
