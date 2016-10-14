@@ -7,10 +7,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
-
-import fr.cnes.regards.microservices.core.configuration.swagger.SwaggerConfiguration;
 
 /**
  *
@@ -22,8 +19,7 @@ import fr.cnes.regards.microservices.core.configuration.swagger.SwaggerConfigura
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@ComponentScan(basePackages = "fr.cnes.regards",
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SwaggerConfiguration.class))
+@ComponentScan(basePackages = "fr.cnes.regards")
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
 @PropertySource("classpath:tests.properties")
 public class ProjectDaoTestConfiguration {

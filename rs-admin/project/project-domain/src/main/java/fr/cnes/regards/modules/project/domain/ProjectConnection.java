@@ -17,7 +17,7 @@ import javax.validation.executable.ValidateOnExecution;
 
 import org.springframework.hateoas.Identifiable;
 
-import fr.cnes.regards.domain.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
 /**
  *

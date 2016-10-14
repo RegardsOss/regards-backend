@@ -13,22 +13,14 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core-test</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.accessRights</groupId>
 			<artifactId>accessRights-dao</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.accessRights</groupId>
-			<artifactId>accessRights-domain</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.accessRights</groupId>
-			<artifactId>accessRights-service</artifactId>
-		</dependency>
-
 	</dependencies>
 	
 	<build>

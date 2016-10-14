@@ -6,10 +6,9 @@ package fr.cnes.regards.modules.project.dao.stub;
 import java.util.Optional;
 
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.microservices.core.test.repository.RepositoryStub;
+import fr.cnes.regards.framework.test.repository.RepositoryStub;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -23,7 +22,6 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @since 1.0-SNAPSHOT
  */
 @Repository
-@Profile("test")
 @Primary
 public class ProjectRepositoryStub extends RepositoryStub<Project> implements IProjectRepository {
 

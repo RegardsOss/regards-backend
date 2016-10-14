@@ -4,6 +4,7 @@
 
 	<groupId>fr.cnes.regards.modules.project</groupId>
 	<artifactId>project-test</artifactId>
+	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
@@ -15,11 +16,10 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-dao</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core-test</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

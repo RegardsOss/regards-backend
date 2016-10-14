@@ -15,8 +15,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
-import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.hateoas.HateoasKeyWords;
@@ -85,6 +85,9 @@ public class ProjectsControllerTest {
      */
     private final IProjectConnectionRepository projectConnRepo = new ProjectConnectionRepositoryStub();
 
+    /**
+     * Project instantiate in the init method for all tests.
+     */
     private Project existingProject;
 
     /**
@@ -243,7 +246,7 @@ public class ProjectsControllerTest {
                     .retrieveProjectConnection(PROJECT_TEST_0, MICROSERVICE_TEST);
             final Resource<ProjectConnection> resource = result.getBody();
             final ProjectConnection connection = resource.getContent();
-            Assert.assertNotNull("Error during project update.", connection);
+            Assert.assertNotNull("Error retrieving project connection.", connection);
             Link link = resource.getLink(HateoasKeyWords.DELETE.getValue());
             Assert.assertNotNull(String.format(HATEOAS_MISSING, HateoasKeyWords.DELETE), link);
             link = resource.getLink(HateoasKeyWords.SELF.getValue());
@@ -275,7 +278,7 @@ public class ProjectsControllerTest {
                             "newUserName", "newPassword", "newDriver", "newUrl"));
             final Resource<ProjectConnection> resource = result.getBody();
             final ProjectConnection connection = resource.getContent();
-            Assert.assertNotNull("Error during project update.", connection);
+            Assert.assertNotNull("Error during project connection creation.", connection);
             Link link = resource.getLink(HateoasKeyWords.DELETE.getValue());
             Assert.assertNotNull(String.format(HATEOAS_MISSING, HateoasKeyWords.DELETE), link);
             link = resource.getLink(HateoasKeyWords.SELF.getValue());
@@ -307,7 +310,7 @@ public class ProjectsControllerTest {
                             "updateUserName", "updatePassword", "updateDriver", "updateUrl"));
             final Resource<ProjectConnection> resource = result.getBody();
             final ProjectConnection connection = resource.getContent();
-            Assert.assertNotNull("Error during project update.", connection);
+            Assert.assertNotNull("Error during project connection update.", connection);
             Link link = resource.getLink(HateoasKeyWords.DELETE.getValue());
             Assert.assertNotNull(String.format(HATEOAS_MISSING, HateoasKeyWords.DELETE), link);
             link = resource.getLink(HateoasKeyWords.SELF.getValue());

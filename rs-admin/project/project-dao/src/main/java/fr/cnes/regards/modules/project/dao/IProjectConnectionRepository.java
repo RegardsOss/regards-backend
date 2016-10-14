@@ -5,7 +5,7 @@ package fr.cnes.regards.modules.project.dao;
 
 import org.springframework.data.repository.CrudRepository;
 
-import fr.cnes.regards.domain.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**

@@ -22,15 +22,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 
-import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
-import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
-import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationServiceImpl;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.domain.EmailWithRecipientsDTO;
 import fr.cnes.regards.modules.emails.domain.Recipient;
 import fr.cnes.regards.modules.emails.service.IEmailService;
-import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
  * Integration tests for the email module
@@ -50,7 +50,7 @@ public class EmailControllerIT extends AbstractRegardsIntegrationTest {
      * Method authorization service.Autowired by Spring.
      */
     @Autowired
-    private MethodAuthorizationService authService;
+    private DefaultMethodAuthorizationServiceImpl authService;
 
     /**
      * The jwt string

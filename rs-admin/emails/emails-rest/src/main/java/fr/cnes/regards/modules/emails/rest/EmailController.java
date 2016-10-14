@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
@@ -28,7 +29,6 @@ import fr.cnes.regards.modules.emails.domain.EmailWithRecipientsDTO;
 import fr.cnes.regards.modules.emails.domain.Recipient;
 import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.emails.signature.IEmailSignature;
-import fr.cnes.regards.security.utils.endpoint.annotation.ResourceAccess;
 
 /**
  * Controller defining the REST entry points of the module

@@ -29,8 +29,14 @@
 			<artifactId>accessRights-signature</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.utils</groupId>
+			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
+		</dependency>
+		<!-- Tests -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

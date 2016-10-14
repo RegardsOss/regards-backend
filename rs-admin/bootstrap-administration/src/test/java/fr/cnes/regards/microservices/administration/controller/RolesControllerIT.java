@@ -21,15 +21,15 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
-import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
-import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationServiceImpl;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
-import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
  * Just Test the REST API so status code. Correction is left to others.
@@ -43,7 +43,7 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     private JWTService jwtService_;
 
     @Autowired
-    private MethodAuthorizationService authService_;
+    private DefaultMethodAuthorizationServiceImpl authService_;
 
     private String jwt_;
 
@@ -90,7 +90,7 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the allows to retrieve roles.")
     public void retrieveRoleList() {
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiRoles, jwt_, expectations, "TODO Error message");
     }
@@ -99,7 +99,7 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to create a role and handle fail cases.")
     public void createRole() {
-        Role newRole = new Role(15464L, "new role", null, null, null);
+        final Role newRole = new Role(15464L, "new role", null, null, null);
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
@@ -114,14 +114,14 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the allows to retrieve a single role and handle fail cases.")
     public void retrieveRole() {
-        Long roleId = 0L;
+        final Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiRolesId, jwt_, expectations, "TODO Error message", roleId);
 
-        Long wrongRoleId = 46453L;
+        final Long wrongRoleId = 46453L;
         assertFalse(roleService_.existRole(wrongRoleId));
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
@@ -133,17 +133,17 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update a role and handle fail cases.")
     public void updateRole() {
-        Long roleId = 0L;
+        final Long roleId = 0L;
         assertTrue(roleService_.existRole(roleId));
-        Role updated = roleService_.retrieveRole(roleId);
+        final Role updated = roleService_.retrieveRole(roleId);
         updated.setName("newName");
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performPut(apiRolesId, jwt_, updated, expectations, "TODO Error message", roleId);
 
-        Long notSameID = 41554L;
-        Role notUpdated = new Role(notSameID, null, null, null, null);
+        final Long notSameID = 41554L;
+        final Role notUpdated = new Role(notSameID, null, null, null, null);
 
         expectations = new ArrayList<>(1);
         expectations.add(status().isBadRequest());
@@ -155,9 +155,9 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to delete a role.")
     public void removeRole() {
-        Long roleId = 0L;
+        final Long roleId = 0L;
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDelete(apiRolesId, jwt_, expectations, "TODO Error message", roleId);
     }
@@ -166,9 +166,9 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to retrieve all resources accesses of a role.")
     public void retrieveRoleResourcesAccessList() {
-        Long roleId = 0L;
+        final Long roleId = 0L;
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiRolesPermissions, jwt_, expectations, "TODO Error message", roleId);
     }
@@ -178,13 +178,13 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update resources accesses of a role.")
     public void updateRoleResourcesAccess() {
-        Long roleId = 0L;
+        final Long roleId = 0L;
 
-        List<ResourcesAccess> newPermissionList = new ArrayList<>();
+        final List<ResourcesAccess> newPermissionList = new ArrayList<>();
         newPermissionList.add(new ResourcesAccess(463L, "new", "new", "new", HttpVerb.PUT));
         newPermissionList.add(new ResourcesAccess(350L, "neww", "neww", "neww", HttpVerb.DELETE));
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performPut(apiRolesPermissions, jwt_, newPermissionList, expectations, "TODO Error message", roleId);
     }
@@ -194,9 +194,9 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to remove all resources accesses of a role.")
     public void clearRoleResourcesAccess() {
-        Long roleId = 0L;
+        final Long roleId = 0L;
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDelete(apiRolesPermissions, jwt_, expectations, "TODO Error message", roleId);
     }
@@ -205,9 +205,9 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to retrieve all users of a role.")
     public void retrieveRoleProjectUserList() {
-        Long roleId = 0L;
+        final Long roleId = 0L;
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiRolesUsers, jwt_, expectations, "TODO Error message", roleId);
     }

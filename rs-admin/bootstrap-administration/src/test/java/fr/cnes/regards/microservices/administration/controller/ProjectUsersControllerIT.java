@@ -18,10 +18,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
-import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
-import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationServiceImpl;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessRights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessRights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
@@ -32,7 +33,6 @@ import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.accessRights.service.IProjectUserService;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
-import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
  * @author svissier
@@ -43,7 +43,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     private JWTService jwtService;
 
     @Autowired
-    private MethodAuthorizationService authService;
+    private DefaultMethodAuthorizationServiceImpl authService;
 
     private String jwt;
 

@@ -17,14 +17,14 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
-import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
-import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationServiceImpl;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessRights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
-import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
  * Integration tests for the accesses functionalities.
@@ -43,7 +43,7 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
      * The autowired authorization service.
      */
     @Autowired
-    private MethodAuthorizationService authService;
+    private DefaultMethodAuthorizationServiceImpl authService;
 
     /**
      * The jwt token

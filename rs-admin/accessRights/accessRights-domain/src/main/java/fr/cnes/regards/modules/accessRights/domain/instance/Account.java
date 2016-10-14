@@ -18,7 +18,7 @@ import org.springframework.hateoas.Identifiable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import fr.cnes.regards.domain.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessRights.domain.AccountStatus;
 
 @InstanceEntity
@@ -96,8 +96,7 @@ public class Account implements Identifiable<Long> {
     }
 
     public Account(final Long pId, final String pEmail, final String pFirstName, final String pLastName,
-            final String pLogin, final String pPassword,
-            final AccountStatus pStatus, final String pCode) {
+            final String pLogin, final String pPassword, final AccountStatus pStatus, final String pCode) {
         super();
         id = pId;
         email = pEmail;

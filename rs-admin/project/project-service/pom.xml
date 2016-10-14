@@ -24,16 +24,6 @@
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>module-jobs</artifactId>
 		</dependency>
-		<!-- Spring dependencies -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-		</dependency>
-		<!-- Netflix Feign REST Client -->
-		<dependency>
-			<groupId>com.netflix.feign</groupId>
-			<artifactId>feign-core</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-dao</artifactId>
@@ -46,8 +36,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core-test</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

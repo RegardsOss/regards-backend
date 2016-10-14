@@ -4,10 +4,9 @@
 package fr.cnes.regards.modules.project.dao.stub;
 
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.microservices.core.test.repository.RepositoryStub;
+import fr.cnes.regards.framework.test.repository.RepositoryStub;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
@@ -21,7 +20,6 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @since 1.0-SNAPSHOT
  */
 @Repository
-@Profile("test")
 @Primary
 public class ProjectConnectionRepositoryStub extends RepositoryStub<ProjectConnection>
         implements IProjectConnectionRepository {

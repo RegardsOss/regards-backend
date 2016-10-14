@@ -13,24 +13,13 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core-test</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
 			<artifactId>emails-dao</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-service</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.icegreen</groupId>
-			<artifactId>greenmail-spring</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	

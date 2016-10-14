@@ -17,12 +17,26 @@
 	<dependencies>
 		<!-- Microservice internal dependencies -->
 		<dependency>
+			<groupId>fr.cnes.regards.microservices</groupId>
+			<artifactId>microservice-core</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
 			<artifactId>emails-service</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
 			<artifactId>emails-signature</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-utils</artifactId>
+		</dependency>
+		<!-- Tests -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

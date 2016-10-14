@@ -21,14 +21,14 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.microservices.core.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.microservices.core.test.AbstractRegardsIntegrationTest;
-import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
-import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationServiceImpl;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessRights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
-import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
  * Just Test the REST API so status code. Correction is left to others.
@@ -42,7 +42,7 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
     private JWTService jwtService_;
 
     @Autowired
-    private MethodAuthorizationService authService_;
+    private DefaultMethodAuthorizationServiceImpl authService_;
 
     private String jwt_;
 
@@ -102,7 +102,7 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system allows to retrieve all users for an instance.")
     public void getAllAccounts() {
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiAccounts_, jwt_, expectations, errorMessage);
     }
@@ -111,7 +111,7 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("?")
     @Purpose("?")
     public void getSettings() {
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiAccountSetting_, jwt_, expectations, errorMessage);
     }
@@ -125,7 +125,7 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
         newAccount = new Account(1584L, "pEmail@email.email", "pFirstName", "pLastName", "pLogin", "pPassword",
                 AccountStatus.PENDING, "pCode");
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
         performPost(apiAccounts_, jwt_, newAccount, expectations, errorMessage);
 
@@ -133,7 +133,7 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
         expectations.add(status().isConflict());
         performPost(apiAccounts_, jwt_, newAccount, expectations, errorMessage);
 
-        Account containNulls = new Account();
+        final Account containNulls = new Account();
 
         expectations.clear();
         expectations.add(status().isUnprocessableEntity());
@@ -144,9 +144,9 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system allows to retrieve a specific user for an instance and handle fail cases.")
     public void getAccount() {
-        Long accountId = accountService_.retrieveAccountList().get(0).getId();
+        final Long accountId = accountService_.retrieveAccountList().get(0).getId();
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiAccountId_, jwt_, expectations, errorMessage, accountId);
 
@@ -160,7 +160,7 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("?")
     @Purpose("?")
     public void updateAccountSetting() {
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performPut(apiAccountSetting_, jwt_, "manual", expectations, errorMessage);
 
@@ -180,10 +180,10 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_470")
     @Purpose("Check that the system allows to provide a reset/unlock code associated to an instance user.")
     public void getCode() {
-        Account account = accountService_.retrieveAccountList().get(0);
-        String accountEmail = account.getEmail();
+        final Account account = accountService_.retrieveAccountList().get(0);
+        final String accountEmail = account.getEmail();
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiAccountCode + "?email=" + accountEmail + "&type=UNLOCK", jwt_, expectations, errorMessage);
     }
@@ -192,17 +192,17 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system allows to update user for an instance and handle fail cases.")
     public void updateAccount() {
-        Account updated = accountService_.retrieveAccountList().get(0);
+        final Account updated = accountService_.retrieveAccountList().get(0);
         updated.setFirstName("AnOtherFirstName");
-        Long accountId = updated.getId();
+        final Long accountId = updated.getId();
 
         // if that's the same functional ID and the parameter is valid:
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performPut(apiAccountId_, jwt_, updated, expectations, errorMessage, accountId);
 
         // if that's not the same functional ID and the parameter is valid:
-        Account notSameID = new Account("notSameEmail", "firstName", "lastName", "login", "password");
+        final Account notSameID = new Account("notSameEmail", "firstName", "lastName", "login", "password");
 
         expectations.clear();
         expectations.add(status().isBadRequest());
@@ -213,10 +213,10 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to unlock an instance user's account.")
     public void unlockAccount() {
-        Account account = accountService_.retrieveAccountList().get(0);
-        Long accountId = account.getId();
+        final Account account = accountService_.retrieveAccountList().get(0);
+        final Long accountId = account.getId();
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiUnlockAccount_, jwt_, expectations, errorMessage, accountId, account.getCode());
     }
@@ -225,10 +225,10 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_470")
     @Purpose("Check that the system allows to reset an instance user's password.")
     public void changeAccountPassword() {
-        Account account = accountService_.retrieveAccountList().get(0);
-        Long accountId = account.getId();
+        final Account account = accountService_.retrieveAccountList().get(0);
+        final Long accountId = account.getId();
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performPut(apiChangePassword_, jwt_, "newPassword", expectations, errorMessage, accountId, account.getCode());
 
@@ -239,9 +239,9 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system allows to delete an instance user.")
     public void deleteAccount() {
-        Long accountId = accountService_.retrieveAccountList().get(0).getId();
+        final Long accountId = accountService_.retrieveAccountList().get(0).getId();
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDelete(apiAccountId_, jwt_, expectations, errorMessage, accountId);
 
@@ -251,13 +251,13 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Check that the system allows validate an instance user's password.")
     public void validatePassword() {
-        Account account = accountService_.retrieveAccountList().get(0);
-        String login = account.getLogin();
-        String rightPassword = account.getPassword();
-        String wrongPassword = "wrongPassword";
+        final Account account = accountService_.retrieveAccountList().get(0);
+        final String login = account.getLogin();
+        final String rightPassword = account.getPassword();
+        final String wrongPassword = "wrongPassword";
         assertNotEquals(rightPassword, wrongPassword);
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiValidatePassword_, jwt_, expectations, errorMessage, login, rightPassword);
 
@@ -265,7 +265,7 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
         expectations.add(status().isOk());
         performGet(apiValidatePassword_, jwt_, expectations, errorMessage, login, wrongPassword);
 
-        String wrongLogin = "wrongLogin";
+        final String wrongLogin = "wrongLogin";
         assertFalse(accountService_.existAccount(wrongLogin));
         expectations.clear();
         expectations.add(status().isNotFound());
