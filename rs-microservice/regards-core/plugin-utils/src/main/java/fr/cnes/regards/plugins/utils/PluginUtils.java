@@ -4,6 +4,7 @@
 
 package fr.cnes.regards.plugins.utils;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -152,8 +153,48 @@ public final class PluginUtils {
             doInitPlugin(returnPlugin);
 
         } catch (InstantiationException | IllegalAccessException | NoSuchElementException e) {
-            throw new PluginUtilsException(String.format("Cannot instantiate \"%s\"", pPluginMetadata.getPluginClass()),
-                    e);
+            throw new PluginUtilsException(
+                    String.format("Cannot instantiate \"%s\"", pPluginMetadata.getPluginClass().getName()), e);
+        }
+
+        return returnPlugin;
+    }
+
+    /**
+     *
+     * Create an instance of plugin based on its configuration and the plugin class name
+     *
+     * @param <T>
+     *            a plugin
+     * @param pPluginConf
+     *            the {@link PluginConfiguration}
+     * @param pPluginClassName
+     *            the plugin class name
+     * @param pPluginParameters
+     *            an optional list of {@link PluginParameter}
+     * 
+     * @return an instance of plugin
+     * 
+     * @throws PluginUtilsException
+     *             if problem occurs
+     */
+    public static <T> T getPlugin(final PluginConfiguration pPluginConf, final String pPluginClassName,
+            final PluginParameter... pPluginParameters) throws PluginUtilsException {
+        T returnPlugin = null;
+
+        try {
+            // Make a new instance
+            returnPlugin = (T) Class.forName(pPluginClassName).newInstance();
+
+            // Post process parameters
+            PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPluginParameters);
+
+            // Launch init method if detected
+            doInitPlugin(returnPlugin);
+
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
+                | SecurityException | ClassNotFoundException e) {
+            throw new PluginUtilsException(String.format("Cannot instantiate \"%s\"", pPluginClassName), e);
         }
 
         return returnPlugin;

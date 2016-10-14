@@ -321,7 +321,7 @@ public final class PluginParameterUtils {
         LOGGER.debug("parameter value : " + paramValue);
 
         try {
-            final Object effectiveVal = PluginUtils.getPlugin(paramValue, paramValue.getPluginMetaData());
+            final Object effectiveVal = PluginUtils.getPlugin(paramValue, paramValue.getPluginClassName());
             pField.set(pPluginInstance, effectiveVal);
         } catch (PluginUtilsException | IllegalArgumentException | IllegalAccessException e) {
             LOGGER.error(String.format(

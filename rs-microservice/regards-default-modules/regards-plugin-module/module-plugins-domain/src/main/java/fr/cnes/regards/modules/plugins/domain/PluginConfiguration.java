@@ -66,9 +66,9 @@ public class PluginConfiguration implements Identifiable<Long> {
     private Boolean isActive;
 
     /**
-     * The plugin class
+     * The plugin class name
      */
-    private PluginMetaData pluginMetaData;
+    private String pluginClassName;
 
     /**
      * Configuration parameters of the plugin
@@ -103,7 +103,7 @@ public class PluginConfiguration implements Identifiable<Long> {
         super();
         pluginId = pPluginMetaData.getPluginId();
         version = pPluginMetaData.getVersion();
-        pluginMetaData = pPluginMetaData;
+        pluginClassName = pPluginMetaData.getPluginClass().getName();
         parameters = pParameters;
         priorityOrder = pOrder;
         label = pLabel;
@@ -187,12 +187,12 @@ public class PluginConfiguration implements Identifiable<Long> {
         parameters = pParameters;
     }
 
-    public PluginMetaData getPluginMetaData() {
-        return pluginMetaData;
-    }
-
     public Boolean getIsActive() {
         return isActive;
+    }
+
+    public String getPluginClassName() {
+        return pluginClassName;
     }
 
     public void setIsActive(Boolean pIsActive) {
