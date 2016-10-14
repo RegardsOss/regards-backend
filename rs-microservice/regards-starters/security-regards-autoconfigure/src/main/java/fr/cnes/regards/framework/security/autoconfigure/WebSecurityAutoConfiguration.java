@@ -46,8 +46,6 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity pWeb) throws Exception {
-        // pWeb.ignoring().antMatchers("/v2/api-docs", "/configuration/ui", "/swagger-resources",
-        // "/configuration/security", "/swagger-ui.html", "/webjars/**");
 
         pWeb.ignoring().antMatchers("/favicon", "/webjars/springfox-swagger-ui/**/*", "/swagger-resources",
                                     "/swagger-resources/**/*", "/v2/**/*", "/swagger-ui.html");
