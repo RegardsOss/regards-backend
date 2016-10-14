@@ -30,7 +30,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.configuration.MicroserviceConfiguration;
+import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 
@@ -42,8 +42,10 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(excludeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "projectsEntityManagerFactory", transactionManagerRef = "projectsJpaTransactionManager")
+@EnableJpaRepositories(
+        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+        basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
+        transactionManagerRef = "multitenantsJpaTransactionManager")
 @EnableTransactionManagement
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
@@ -57,14 +59,14 @@ public class MultitenantJpaAutoConfiguration {
      * Data sources pool
      */
     @Autowired
-    @Qualifier("dataSources")
+    @Qualifier("multitenantsDataSources")
     private Map<String, DataSource> dataSources;
 
     /**
      * Microservice global configuration
      */
     @Autowired
-    private MicroserviceConfiguration configuration;
+    private MultitenantDaoProperties configuration;
 
     /**
      * JPA Configuration
@@ -93,8 +95,8 @@ public class MultitenantJpaAutoConfiguration {
      * @return PlatformTransactionManager
      * @since 1.0-SNAPSHOT
      */
-    @Bean
-    public PlatformTransactionManager projectsJpaTransactionManager(EntityManagerFactoryBuilder pBuilder) {
+    @Bean(name = "multitenantsJpaTransactionManager")
+    public PlatformTransactionManager projectsJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
         final JpaTransactionManager jtm = new JpaTransactionManager();
         jtm.setEntityManagerFactory(projectsEntityManagerFactory(pBuilder).getObject());
         return jtm;
@@ -102,15 +104,16 @@ public class MultitenantJpaAutoConfiguration {
 
     /**
      *
-     * Create EntityManagerFactory for multitenancy projects datasources
+     * Create EntityManagerFactory for multitenancy datasources
      *
      * @param pBuilder
      *            EntityManagerFactoryBuilder
      * @return LocalContainerEntityManagerFactoryBean
      * @since 1.0-SNAPSHOT
      */
-    @Bean
-    public LocalContainerEntityManagerFactoryBean projectsEntityManagerFactory(EntityManagerFactoryBuilder pBuilder) {
+    @Bean(name = "multitenantsEntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean projectsEntityManagerFactory(
+            final EntityManagerFactoryBuilder pBuilder) {
         // Use the first dataSource configuration to init the entityManagerFactory
         final DataSource defaultDataSource = dataSources.values().iterator().next();
 
@@ -120,10 +123,11 @@ public class MultitenantJpaAutoConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver);
-        if (configuration.getDao().getEmbedded()) {
+        hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
+        if (configuration.getEmbedded()) {
             hibernateProps.put(Environment.DIALECT, DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
         } else {
-            hibernateProps.put(Environment.DIALECT, configuration.getDao().getDialect());
+            hibernateProps.put(Environment.DIALECT, configuration.getDialect());
         }
 
         // Find classpath for each Entity and not NonStandardEntity

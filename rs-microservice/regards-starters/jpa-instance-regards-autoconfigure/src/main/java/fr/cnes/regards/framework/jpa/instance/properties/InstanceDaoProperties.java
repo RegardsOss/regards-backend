@@ -1,21 +1,23 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.configuration;
+package fr.cnes.regards.framework.jpa.instance.properties;
 
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
  *
- * Class InstanceConfiguration
+ * Class InstanceDaoProperties
  *
  * DAO Instance database configuration
  *
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public class InstanceConfiguration {
+@ConfigurationProperties("regards.jpa.instance")
+public class InstanceDaoProperties {
 
     /**
      * Is Instance database enabled ?
@@ -29,6 +31,21 @@ public class InstanceConfiguration {
     private DataSourceProperties datasource;
 
     /**
+     * Does the instance dao is embedded ?
+     */
+    private Boolean embedded = Boolean.FALSE;
+
+    /**
+     * Path for embedded databases
+     */
+    private String embeddedPath;
+
+    /**
+     * Hibernate dialect
+     */
+    private String dialect;
+
+    /**
      *
      * Setter
      *
@@ -36,7 +53,7 @@ public class InstanceConfiguration {
      *            instance JPA datasource
      * @since 1.0-SNAPSHOT
      */
-    public void setDatasource(DataSourceProperties pDatasource) {
+    public void setDatasource(final DataSourceProperties pDatasource) {
         this.datasource = pDatasource;
     }
 
@@ -70,8 +87,32 @@ public class InstanceConfiguration {
      *            Is Instance database enabled ?
      * @since 1.0 SNAPSHOT
      */
-    public void setEnabled(Boolean pEnabled) {
+    public void setEnabled(final Boolean pEnabled) {
         enabled = pEnabled;
+    }
+
+    public Boolean getEmbedded() {
+        return embedded;
+    }
+
+    public void setEmbedded(final Boolean pEmbedded) {
+        embedded = pEmbedded;
+    }
+
+    public String getEmbeddedPath() {
+        return embeddedPath;
+    }
+
+    public void setEmbeddedPath(final String pEmbeddedPath) {
+        embeddedPath = pEmbeddedPath;
+    }
+
+    public String getDialect() {
+        return dialect;
+    }
+
+    public void setDialect(final String pDialect) {
+        dialect = pDialect;
     }
 
 }

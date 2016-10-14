@@ -10,15 +10,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.hateoas.Identifiable;
-import org.springframework.stereotype.Repository;
 
-@Repository
-@Profile("test")
-@Primary
 public class RepositoryStub<T extends Identifiable<Long>> implements CrudRepository<T, Long> {
 
     protected Set<T> entities = new HashSet<>();

@@ -21,7 +21,7 @@ import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.Company;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.ICompanyRepository;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.IUserRepository;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.utils.CurrentTenantIdentifierResolverMock;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -59,6 +59,8 @@ public class MultiTenancyDaoTest {
      */
     private static final String TENANT_INVALID = "invalid";
 
+    private static final String TEST_ROLE = "USER";
+
     /**
      * JPA User repository
      */
@@ -72,10 +74,10 @@ public class MultiTenancyDaoTest {
     private ICompanyRepository companyRepository;
 
     /**
-     * Mock to overload tenant resolver. Allow to set tenant manually.
+     * Security JWT management service
      */
     @Autowired
-    private CurrentTenantIdentifierResolverMock tenantResolver;
+    private JWTService jwtService;
 
     /**
      *
@@ -101,7 +103,7 @@ public class MultiTenancyDaoTest {
     @Test
     public void foreignKeyTests() {
 
-        tenantResolver.setTenant(TENANT_TEST_1);
+        jwtService.injectToken(TENANT_TEST_1, TEST_ROLE);
 
         userRepository.deleteAll();
 
@@ -127,16 +129,16 @@ public class MultiTenancyDaoTest {
         final List<User> results = new ArrayList<>();
 
         // Set tenant to project test1
-        tenantResolver.setTenant(TENANT_TEST_1);
+        jwtService.injectToken(TENANT_TEST_1, TEST_ROLE);
         // Delete all previous data if any
         userRepository.deleteAll();
         // Set tenant to project 2
-        tenantResolver.setTenant(TENANT_TEST_2);
+        jwtService.injectToken(TENANT_TEST_2, TEST_ROLE);
         // Delete all previous data if any
         userRepository.deleteAll();
 
         // Set tenant to project test1
-        tenantResolver.setTenant(TENANT_TEST_1);
+        jwtService.injectToken(TENANT_TEST_1, TEST_ROLE);
         // Add new users
         User newUser = new User("Jean", "Pont");
         newUser = userRepository.save(newUser);
@@ -150,7 +152,7 @@ public class MultiTenancyDaoTest {
                 + results.size(), results.size() == 2);
 
         // Set tenant to project 2
-        tenantResolver.setTenant(TENANT_TEST_2);
+        jwtService.injectToken(TENANT_TEST_2, TEST_ROLE);
 
         // Check that there is no users added on this project
         list = userRepository.findAll();
@@ -170,7 +172,7 @@ public class MultiTenancyDaoTest {
                 + results.size(), results.size() == 1);
 
         // Set tenant to an non existing project
-        tenantResolver.setTenant(TENANT_INVALID);
+        jwtService.injectToken(TENANT_INVALID, TEST_ROLE);
         try {
             // Check that an exception is thrown
             list = userRepository.findAll();

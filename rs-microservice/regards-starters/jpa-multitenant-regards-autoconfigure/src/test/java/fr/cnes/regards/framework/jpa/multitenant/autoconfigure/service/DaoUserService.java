@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.exception.DaoTestException;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.IUserRepository;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.utils.CurrentTenantIdentifierResolverMock;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
  *
@@ -48,11 +48,8 @@ public class DaoUserService {
     @Autowired
     private IUserRepository userRepository;
 
-    /**
-     * Mock tenant resolver to set tenant manually instead of reading it from SecurityContext JWT Token.
-     */
     @Autowired
-    private CurrentTenantIdentifierResolverMock tenantResolver;
+    private JWTService jwtService;
 
     /**
      *
@@ -64,10 +61,10 @@ public class DaoUserService {
      *             Simulated error always thrown to activate JPA rollback
      * @since 1.0-SNAPSHOT
      */
-    @Transactional(transactionManager = "projectsJpaTransactionManager", rollbackFor = DaoTestException.class)
-    public void addWithError(String pTenant) throws DaoTestException {
+    @Transactional(transactionManager = "multitenantsJpaTransactionManager", rollbackFor = DaoTestException.class)
+    public void addWithError(final String pTenant) throws DaoTestException {
         final String message = "new user created id=";
-        tenantResolver.setTenant(pTenant);
+        jwtService.injectToken(pTenant, "USER");
         User plop = userRepository.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
         LOG.info(message + plop.getId());
         plop = userRepository.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
@@ -86,8 +83,8 @@ public class DaoUserService {
      *            Tenant or project to use
      * @since 1.0-SNAPSHOT
      */
-    public void addWithoutError(String pTenant) {
-        tenantResolver.setTenant(pTenant);
+    public void addWithoutError(final String pTenant) {
+        jwtService.injectToken(pTenant, "USER");
         final User plop = userRepository.save(new User("valid", "thisUser"));
         LOG.info("New user created id=" + plop.getId());
     }
@@ -101,8 +98,8 @@ public class DaoUserService {
      * @return Result list of users
      * @since 1.0-SNAPSHOT
      */
-    public List<User> getUsers(String pTenant) {
-        tenantResolver.setTenant(pTenant);
+    public List<User> getUsers(final String pTenant) {
+        jwtService.injectToken(pTenant, "USER");
         final Iterable<User> list = userRepository.findAll();
         final List<User> results = new ArrayList<>();
         list.forEach(user -> results.add(user));
@@ -117,8 +114,8 @@ public class DaoUserService {
      *            Tenant or project to use
      * @since 1.0-SNAPSHOT
      */
-    public void deleteAll(String pTenant) {
-        tenantResolver.setTenant(pTenant);
+    public void deleteAll(final String pTenant) {
+        jwtService.injectToken(pTenant, "USER");
         userRepository.deleteAll();
     }
 

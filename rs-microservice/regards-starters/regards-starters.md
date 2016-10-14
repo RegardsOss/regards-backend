@@ -9,15 +9,29 @@ regards.cloud.name=false # Disable cloud support
 
 ```properties
 regards.jpa.instance.enabled=false # Disable JPA instance support
-```
-TODO : add datasource configuration
+regards.jpa.instance.embedded=true # Activate embedded mode with HSQLDB
+regards.jpa.instance.embeddedPath=target # Path for embedded databases files
+regards.jpa.instance.dialect=org.hibernate.dialect.PostgreSQLDialect # Not mandatory if embedded mode is activated
+regards.jpa.instance.datasource.url=jdbc:postgresql://localhost:5432/postgres # Not mandatory if embedded mode is activated
+regards.jpa.instance.datasource.username=postgres # Not mandatory if embedded mode is activated
+regards.jpa.instance.datasource.password=postgres # Not mandatory if embedded mode is activated
+regards.jpa.instance.datasource.driverClassName=org.postgresql.Driver # Not mandatory if embedded mode is activated
 
 ## JPA multitenant starter
 
 ```properties
 regards.jpa.multitenant.enabled=false # Disable JPA multitenant support
+regards.jpa.multitenant.embedded=true # Activate embedded mode with HSQLDB
+regards.jpa.multitenant.embeddedPath=target # Path for embedded databases files
+regards.jpa.multitenant.dialect=org.hibernate.dialect.PostgreSQLDialect # Not mandatory if embedded mode is activated
+regards.jpa.multitenant.tenants[<x>].name=example
+regards.jpa.multitenant.tenants[<x>].datasource.url=jdbc:postgresql://localhost:5432/test1 # Not mandatory if embedded mode is activated
+regards.jpa.multitenant.tenants[<x>].datasource.username=postgres # Not mandatory if embedded mode is activated
+regards.jpa.multitenant.tenants[<x>].datasource.password=postgres # Not mandatory if embedded mode is activated 
+regards.jpa.multitenant.tenants[<x>].datasource.driverClassName=org.postgresql.Driver # Not mandatory if embedded mode is activated
+
+<x> : Integer value for tenant index starting with 0.
 ```
-TODO : add datasource configuration
 
 ## Security starter
 
