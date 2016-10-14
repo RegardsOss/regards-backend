@@ -90,64 +90,48 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
 
         } catch (final PluginUtilsException e) {
             LOGGER.error(e.getMessage());
-            Assert.assertTrue(false);
+            Assert.fail();
         }
         LOGGER.debug("Ending " + this.toString());
     }
 
     /**
+     * @throws PluginUtilsException
      * 
      */
-    @Test
-    public void incompatibleInterfaceError() {
-        ComplexErrorPlugin complexErrorPlugin = null;
+    @Test(expected = PluginUtilsException.class)
+    public void incompatibleInterfaceError() throws PluginUtilsException {
         LOGGER.debug("Starting " + this.toString());
         /*
          * Set all parameters
          */
-        try {
 
-            final List<PluginParameter> complexParameters = PluginParametersFactory.build()
-                    .addParameter(ComplexErrorPlugin.ACTIVE, TRUE)
-                    .addParameter(ComplexErrorPlugin.COEFF, PluginInterfaceUtilsTest.CINQ)
-                    .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "coucou").getParameters();
+        final List<PluginParameter> complexParameters = PluginParametersFactory.build()
+                .addParameter(ComplexErrorPlugin.ACTIVE, TRUE)
+                .addParameter(ComplexErrorPlugin.COEFF, PluginInterfaceUtilsTest.CINQ)
+                .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "coucou").getParameters();
 
-            // instantiate plugin
-            complexErrorPlugin = PluginUtilsWrapper.getPlugin(complexParameters, ComplexErrorPlugin.class);
-            Assert.assertNotNull(complexErrorPlugin);
-
-        } catch (final PluginUtilsException e) {
-            LOGGER.error(e.getMessage());
-            Assert.assertTrue(true);
-        }
-        LOGGER.debug("Ending " + this.toString());
+        // instantiate plugin
+        PluginUtilsWrapper.getPlugin(complexParameters, ComplexErrorPlugin.class);
     }
 
     /**
+     * @throws PluginUtilsException
      * 
      */
-    @Test
-    public void incompatibleParameterError() {
-        ComplexErrorPlugin complexErrorPlugin = null;
+    @Test(expected = PluginUtilsException.class)
+    public void incompatibleParameterError() throws PluginUtilsException {
         LOGGER.debug("Starting " + this.toString());
         /*
          * Set all parameters
          */
-        try {
 
-            final List<PluginParameter> complexParameters = PluginParametersFactory.build()
-                    .addParameter(ComplexErrorPlugin.ACTIVE, TRUE).addParameter(ComplexErrorPlugin.COEFF, "allo")
-                    .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "lorem ipsum").getParameters();
+        final List<PluginParameter> complexParameters = PluginParametersFactory.build()
+                .addParameter(ComplexErrorPlugin.ACTIVE, TRUE).addParameter(ComplexErrorPlugin.COEFF, "allo")
+                .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "lorem ipsum").getParameters();
 
-            // instantiate plugin
-            complexErrorPlugin = PluginUtilsWrapper.getPlugin(complexParameters, ComplexErrorPlugin.class);
-            Assert.assertNotNull(complexErrorPlugin);
-
-        } catch (final PluginUtilsException e) {
-            LOGGER.error(e.getMessage());
-            Assert.assertTrue(true);
-        }
-        LOGGER.debug("Ending " + this.toString());
+        // instantiate plugin
+        PluginUtilsWrapper.getPlugin(complexParameters, ComplexErrorPlugin.class);
     }
 
 }
