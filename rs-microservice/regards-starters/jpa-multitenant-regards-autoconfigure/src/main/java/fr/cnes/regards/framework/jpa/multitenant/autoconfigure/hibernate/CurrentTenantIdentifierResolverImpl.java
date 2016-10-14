@@ -4,7 +4,6 @@
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.hibernate;
 
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -21,7 +20,6 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  */
 @Component
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
-@ConditionalOnMissingBean(CurrentTenantIdentifierResolver.class)
 public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentifierResolver {
 
     /**

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.configuration;
+package fr.cnes.regards.framework.jpa.multitenant.properties;
 
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public class ProjectConfiguration {
+public class TenantConfiguration {
 
     /**
      * Project datasource
