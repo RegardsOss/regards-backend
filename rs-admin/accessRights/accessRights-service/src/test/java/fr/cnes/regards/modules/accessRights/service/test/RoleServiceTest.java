@@ -366,7 +366,6 @@ public class RoleServiceTest {
         final Role roleRegisteredUser = new Role(1L, "Registered User", rolePublic, null, null);
         final Role roleAdmin = new Role(2L, "Admin", roleRegisteredUser, null, null);
         final Role roleProjectAdmin = new Role(3L, "Project Admin", roleAdmin, null, null);
-        final Role roleInstanceAdmin = new Role(4L, "Instance Admin", roleProjectAdmin, null, null);
 
         Assert.assertTrue(roleService.isHierarchicallyInferior(roleRegisteredUser, roleProjectAdmin));
         Assert.assertFalse(roleService.isHierarchicallyInferior(roleProjectAdmin, roleRegisteredUser));
