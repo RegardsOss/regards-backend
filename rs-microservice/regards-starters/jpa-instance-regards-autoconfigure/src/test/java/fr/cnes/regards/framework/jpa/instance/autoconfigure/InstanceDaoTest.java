@@ -9,8 +9,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -34,11 +32,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 @ContextConfiguration(classes = { InstanceDaoTestConfiguration.class })
 @DirtiesContext
 public class InstanceDaoTest {
-
-    /**
-     * class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(InstanceDaoTest.class);
 
     /**
      * JPA Project repository
