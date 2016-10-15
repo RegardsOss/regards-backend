@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -47,6 +48,7 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
         basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
         transactionManagerRef = "multitenantsJpaTransactionManager")
 @EnableTransactionManagement
+@EnableConfigurationProperties(JpaProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
 
@@ -96,9 +98,9 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = "multitenantsJpaTransactionManager")
-    public PlatformTransactionManager projectsJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
+    public PlatformTransactionManager multitenantsJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
         final JpaTransactionManager jtm = new JpaTransactionManager();
-        jtm.setEntityManagerFactory(projectsEntityManagerFactory(pBuilder).getObject());
+        jtm.setEntityManagerFactory(multitenantsEntityManagerFactory(pBuilder).getObject());
         return jtm;
     }
 
@@ -112,7 +114,7 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = "multitenantsEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean projectsEntityManagerFactory(
+    public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory(
             final EntityManagerFactoryBuilder pBuilder) {
         // Use the first dataSource configuration to init the entityManagerFactory
         final DataSource defaultDataSource = dataSources.values().iterator().next();
