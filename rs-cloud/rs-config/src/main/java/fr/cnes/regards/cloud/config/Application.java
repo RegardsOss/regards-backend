@@ -23,7 +23,6 @@ import org.springframework.cloud.config.server.EnableConfigServer;
 public class Application {
 
     /**
-     * .
      *
      * Starter method
      *

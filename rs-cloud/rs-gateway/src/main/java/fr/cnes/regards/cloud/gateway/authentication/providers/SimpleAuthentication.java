@@ -12,11 +12,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessRights.client.AccountsClient;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
-import fr.cnes.regards.security.utils.jwt.JWTService;
 
 /**
  *
