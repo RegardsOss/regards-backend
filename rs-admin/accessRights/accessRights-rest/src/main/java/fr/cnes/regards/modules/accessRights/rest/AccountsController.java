@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAcce
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
 import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
-import fr.cnes.regards.modules.accessRights.signature.AccountsSignature;
+import fr.cnes.regards.modules.accessRights.signature.IAccountsSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RestController
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class AccountsController implements AccountsSignature {
+public class AccountsController implements IAccountsSignature {
 
     @Autowired
     private IAccountService accountService;

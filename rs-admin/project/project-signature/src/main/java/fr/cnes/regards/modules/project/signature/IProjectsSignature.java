@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
+@RequestMapping("/projects")
 public interface IProjectsSignature {
 
     // Projects Requests
@@ -44,7 +45,7 @@ public interface IProjectsSignature {
      * @return List of projects
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(value = "/projects", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     HttpEntity<List<Resource<Project>>> retrieveProjectList();
 
@@ -60,8 +61,7 @@ public interface IProjectsSignature {
      *             {@link AlreadyExistingException} If Project already exists for the given name
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(value = "/projects", method = RequestMethod.POST, consumes = "application/json",
-            produces = "application/json")
+    @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
     HttpEntity<Resource<Project>> createProject(@Valid @RequestBody Project pNewProject) throws EntityException;
 
@@ -76,7 +76,7 @@ public interface IProjectsSignature {
      *             {@link EntityNotFoundException} project does not exists
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/projects/{project_name}", produces = "application/json")
+    @RequestMapping(method = RequestMethod.GET, value = "/{project_name}", produces = "application/json")
     @ResponseBody
     HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") String pProjectName)
             throws EntityException;
@@ -96,8 +96,8 @@ public interface IProjectsSignature {
      *             {@link InvalidEntityException} if pProjectName doesn't match the given project
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.PUT, value = "/projects/{project_name}",
-            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<Project>> updateProject(@PathVariable("project_name") String pProjectName,
             @RequestBody Project pProjectToUpdate) throws EntityException;
@@ -113,7 +113,7 @@ public interface IProjectsSignature {
      *             {@link EntityNotFoundException} project to delete does not exists
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.DELETE, value = "/projects/{project_name}", produces = "application/json")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}", produces = "application/json")
     @ResponseBody
     HttpEntity<Void> deleteProject(@PathVariable("project_name") String pProjectName) throws EntityException;
 
@@ -133,7 +133,7 @@ public interface IProjectsSignature {
      *             ProjectConnection doesn't exists
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/projects/{project_name}/connection/{microservice}",
+    @RequestMapping(method = RequestMethod.GET, value = "/{project_name}/connection/{microservice}",
             produces = "application/json")
     @ResponseBody
     HttpEntity<Resource<ProjectConnection>> retrieveProjectConnection(@PathVariable("project_name") String pProjectName,
@@ -154,8 +154,8 @@ public interface IProjectsSignature {
      *             {@link EntityNotFoundException} Thrown in case of Referenced project does not exists
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.POST, value = "/projects/connections",
-            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.POST, value = "/connections", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<ProjectConnection>> createProjectConnection(
             @Valid @RequestBody ProjectConnection pProjectConnection) throws EntityException;
@@ -172,8 +172,8 @@ public interface IProjectsSignature {
      *             {@link EntityNotFoundException} Thrown in case of the ProjectConnection does not exists
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.PUT, value = "/projects/connections",
-            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.PUT, value = "/connections", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<ProjectConnection>> updateProjectConnection(
             @Valid @RequestBody ProjectConnection pProjectConnection) throws EntityException;
@@ -192,7 +192,7 @@ public interface IProjectsSignature {
      *             {@link EntityNotFoundException} Thrown in case of the ProjectConnection does not exists
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.DELETE, value = "/projects/{project_name}/connection/{microservice}",
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}/connection/{microservice}",
             produces = "application/json")
     @ResponseBody
     HttpEntity<Void> deleteProjectConnection(@PathVariable("project_name") String pProjectName,

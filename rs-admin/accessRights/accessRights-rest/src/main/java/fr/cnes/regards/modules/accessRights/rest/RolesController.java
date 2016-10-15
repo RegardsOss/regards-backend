@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
-import fr.cnes.regards.modules.accessRights.signature.RolesSignature;
+import fr.cnes.regards.modules.accessRights.signature.IRolesSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RestController
 @ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class RolesController implements RolesSignature {
+public class RolesController implements IRolesSignature {
 
     @Autowired
     private IRoleService roleService;

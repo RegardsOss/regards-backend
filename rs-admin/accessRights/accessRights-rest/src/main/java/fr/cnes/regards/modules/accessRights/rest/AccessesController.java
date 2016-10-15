@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAcce
 import fr.cnes.regards.modules.accessRights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
-import fr.cnes.regards.modules.accessRights.signature.AccessesSignature;
+import fr.cnes.regards.modules.accessRights.signature.IAccessesSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @RestController
 @ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class AccessesController implements AccessesSignature {
+public class AccessesController implements IAccessesSignature {
 
     @Autowired
     private IAccessRequestService accessRequestService;

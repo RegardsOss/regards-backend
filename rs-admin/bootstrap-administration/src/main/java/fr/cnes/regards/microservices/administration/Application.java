@@ -16,13 +16,13 @@ import fr.cnes.regards.microservices.core.annotation.MicroserviceInfo;
  * @author CS
  *
  */
-@SpringBootApplication(scanBasePackages = { "fr.cnes.regards" })
+@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.framework", "fr.cnes.regards.modules" })
 @MicroserviceInfo(name = "administration", version = "1.0-SNAPSHOT")
 @ImportResource({ "classpath*:defaultRoles.xml", "classpath*:mailSender.xml" })
 public class Application {
 
-    public static void main(final String[] args) {
-        SpringApplication.run(Application.class, args);
+    public static void main(final String[] pArgs) {
+        SpringApplication.run(Application.class, pArgs);
     }
 
 }

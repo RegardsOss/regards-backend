@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.modules.emails.domain.Email;
@@ -20,6 +21,7 @@ import fr.cnes.regards.modules.emails.domain.EmailWithRecipientsDTO;
  *
  * @author Xavier-Alexandre Brochard
  */
+@RequestMapping("/emails")
 public interface IEmailSignature {
 
     /**
@@ -27,7 +29,7 @@ public interface IEmailSignature {
      *
      * @return A {@link List} of emails as {@link Email} wrapped in an {@link HttpEntity}
      */
-    @GetMapping("/emails")
+    @GetMapping
     HttpEntity<List<Email>> retrieveEmails();
 
     /**
@@ -37,7 +39,7 @@ public interface IEmailSignature {
      *            The email in a simple representation.
      * @return The sent email as {@link Email} wrapped in an {@link HttpEntity}
      */
-    @PostMapping("/emails")
+    @PostMapping
     @ResponseBody
     HttpEntity<Email> sendEmail(EmailWithRecipientsDTO pEmail);
 
@@ -48,7 +50,7 @@ public interface IEmailSignature {
      *            The email id
      * @return The email as a {@link Email} wrapped in an {@link HttpEntity}
      */
-    @GetMapping("/emails/{mail_id}")
+    @GetMapping("/{mail_id}")
     HttpEntity<Email> retrieveEmail(Long pId);
 
     /**
@@ -58,7 +60,7 @@ public interface IEmailSignature {
      *            The email id
      * @return
      */
-    @PutMapping("/emails/{mail_id}")
+    @PutMapping("/{mail_id}")
     void resendEmail(Long pId);
 
     /**
@@ -68,7 +70,7 @@ public interface IEmailSignature {
      *            The email id
      * @return
      */
-    @DeleteMapping("/emails/{mail_id}")
+    @DeleteMapping("/{mail_id}")
     void deleteEmail(Long pId);
 
 }

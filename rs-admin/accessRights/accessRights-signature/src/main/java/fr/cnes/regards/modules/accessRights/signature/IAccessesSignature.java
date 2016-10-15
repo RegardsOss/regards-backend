@@ -22,40 +22,39 @@ import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
-public interface AccessesSignature {
+@RequestMapping("/accesses")
+public interface IAccessesSignature {
 
-    @RequestMapping(value = "/accesses", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList();
 
-    @RequestMapping(value = "/accesses", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
+    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<AccessRequestDTO>> requestAccess(@Valid @RequestBody AccessRequestDTO pAccessRequest)
             throws AlreadyExistingException;
 
-    @RequestMapping(value = "/accesses/{access_id}/accept", method = RequestMethod.PUT,
+    @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT,
             produces = MediaType.APPLICATION_JSON_VALUE)
     HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId)
             throws OperationNotSupportedException;
 
-    @RequestMapping(value = "/accesses/{access_id}/deny", method = RequestMethod.PUT,
+    @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId) throws OperationNotSupportedException;
 
-    @RequestMapping(value = "/accesses/{access_id}", method = RequestMethod.DELETE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId);
 
-    @RequestMapping(value = "/accesses/settings", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<List<Resource<String>>> getAccessSettingList();
 
-    @RequestMapping(value = "/accesses/settings", method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> updateAccessSetting(@Valid @RequestBody String pUpdatedProjectUserSetting)
             throws InvalidValueException;

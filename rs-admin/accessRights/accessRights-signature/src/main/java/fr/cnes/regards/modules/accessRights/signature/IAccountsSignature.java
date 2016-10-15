@@ -24,27 +24,30 @@ import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
-public interface AccountsSignature {
+@RequestMapping("/accounts")
+public interface IAccountsSignature {
 
-    @RequestMapping(value = "/accounts", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<List<Resource<Account>>> retrieveAccountList();
 
-    @RequestMapping(value = "/accounts", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<Account>> createAccount(@Valid @RequestBody Account pNewAccount)
             throws AlreadyExistingException;
 
-    @RequestMapping(value = "/accounts/{account_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{account_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") Long accountId);
 
-    @RequestMapping(value = "/accounts/{account_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> updateAccount(@PathVariable("account_id") Long accountId,
             @Valid @RequestBody Account pUpdatedAccount) throws OperationNotSupportedException;
 
-    @RequestMapping(value = "/accounts/{account_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> removeAccount(@PathVariable("account_id") Long accountId);
 
@@ -56,31 +59,35 @@ public interface AccountsSignature {
      * @return
      * @throws InvalidValueException
      */
-    @RequestMapping(value = "/accounts/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> unlockAccount(@PathVariable("account_id") Long accountId,
             @PathVariable("unlock_code") String unlockCode) throws InvalidValueException;
 
-    @RequestMapping(value = "/accounts/{account_id}/password/{reset_code}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> changeAccountPassword(@PathVariable("account_id") Long accountId,
             @PathVariable("reset_code") String resetCode, @Valid @RequestBody String pNewPassword)
             throws InvalidValueException;
 
-    @RequestMapping(value = "/accounts/code", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/code", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> codeForAccount(@RequestParam("email") String email, @RequestParam("type") CodeType type);
 
-    @RequestMapping(value = "/accounts/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<List<Resource<String>>> retrieveAccountSettings();
 
-    @RequestMapping(value = "/accounts/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting)
             throws InvalidValueException;
 
-    @RequestMapping(value = "/accounts/{account_login}/validate", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{account_login}/validate", method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Boolean> validatePassword(@PathVariable("account_login") String pLogin,
             @RequestParam("password") String pPassword) throws NoSuchElementException;
