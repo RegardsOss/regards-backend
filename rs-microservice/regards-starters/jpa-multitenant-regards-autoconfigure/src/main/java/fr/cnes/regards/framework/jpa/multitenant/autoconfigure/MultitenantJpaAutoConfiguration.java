@@ -55,7 +55,7 @@ public class MultitenantJpaAutoConfiguration {
     /**
      * JPA Persistence unit name. Used to separate multiples databases.
      */
-    private static final String PERSITENCE_UNIT_NAME = "projects";
+    private static final String PERSITENCE_UNIT_NAME = "multitenant";
 
     /**
      * Data sources pool
@@ -126,6 +126,7 @@ public class MultitenantJpaAutoConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver);
         hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
+        hibernateProps.put(DataSourceHelper.HIBERNATE_ID_GENERATOR_PROP, "true");
         if (configuration.getEmbedded()) {
             hibernateProps.put(Environment.DIALECT, DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
         } else {

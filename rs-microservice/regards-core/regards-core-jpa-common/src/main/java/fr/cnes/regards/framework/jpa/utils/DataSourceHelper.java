@@ -46,6 +46,12 @@ public final class DataSourceHelper {
     public static final String EMBEDDED_URL_BASE_NAME = "applicationdb;shutdown=true;";
 
     /**
+     * Property to allow hibernate to select org.hibernate.id.enhanced.SequenceStyleGenerator instead of
+     * org.hibernate.id.SequenceHiLoGenerator
+     */
+    public static final String HIBERNATE_ID_GENERATOR_PROP = "hibernate.id.new_generator_mappings";
+
+    /**
      * Staticc class
      */
     private DataSourceHelper() {
