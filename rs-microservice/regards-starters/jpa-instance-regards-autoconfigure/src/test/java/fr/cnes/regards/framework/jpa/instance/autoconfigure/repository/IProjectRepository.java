@@ -18,6 +18,6 @@ import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.Project;
  * @since 1.0-SNAPSHOT
  */
 @InstanceEntity
-public interface ProjectRepository extends CrudRepository<Project, Long> {
+public interface IProjectRepository extends CrudRepository<Project, Long> {
 
 }

@@ -17,7 +17,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public class DataSourceHelper {
+public final class DataSourceHelper {
 
     /**
      * Hibernate dialect for embedded HSQL Database
@@ -44,6 +44,12 @@ public class DataSourceHelper {
      * connection is close.
      */
     public static final String EMBEDDED_URL_BASE_NAME = "applicationdb;shutdown=true;";
+
+    /**
+     * Staticc class
+     */
+    private DataSourceHelper() {
+    }
 
     /**
      *

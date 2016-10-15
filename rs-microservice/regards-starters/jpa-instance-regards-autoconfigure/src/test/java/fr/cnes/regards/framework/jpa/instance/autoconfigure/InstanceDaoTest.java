@@ -15,7 +15,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.Project;
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.ProjectRepository;
+import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.IProjectRepository;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -37,7 +37,7 @@ public class InstanceDaoTest {
      * JPA Project repository
      */
     @Autowired
-    private ProjectRepository projectRepository;
+    private IProjectRepository projectRepository;
 
     /**
      *
