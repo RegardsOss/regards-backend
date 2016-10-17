@@ -21,7 +21,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationServiceImpl;
+import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -40,12 +40,12 @@ import fr.cnes.regards.modules.accessRights.service.IRoleService;
 public class RolesControllerIT extends AbstractRegardsIntegrationTest {
 
     @Autowired
-    private JWTService jwtService_;
+    private JWTService jwtService;
 
     @Autowired
-    private DefaultMethodAuthorizationServiceImpl authService_;
+    private DefaultMethodAuthorizationService authService;
 
-    private String jwt_;
+    private String jwt;
 
     private String apiRoles;
 
@@ -56,7 +56,7 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     private String apiRolesUsers;
 
     @Autowired
-    private IRoleService roleService_;
+    private IRoleService roleService;
 
     @Rule
     public ExpectedException thrown_ = ExpectedException.none();
@@ -70,16 +70,16 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Before
     public void init() {
         setLogger(LoggerFactory.getLogger(ProjectsControllerIT.class));
-        jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
-        authService_.setAuthorities("/roles", RequestMethod.GET, "USER");
-        authService_.setAuthorities("/roles", RequestMethod.POST, "USER");
-        authService_.setAuthorities("/roles/{role_id}", RequestMethod.GET, "USER");
-        authService_.setAuthorities("/roles/{role_id}", RequestMethod.PUT, "USER");
-        authService_.setAuthorities("/roles/{role_id}", RequestMethod.DELETE, "USER");
-        authService_.setAuthorities("/roles/{role_id}/permissions", RequestMethod.GET, "USER");
-        authService_.setAuthorities("/roles/{role_id}/permissions", RequestMethod.PUT, "USER");
-        authService_.setAuthorities("/roles/{role_id}/permissions", RequestMethod.DELETE, "USER");
-        authService_.setAuthorities("/roles/{role_id}/users", RequestMethod.GET, "USER");
+        jwt = jwtService.generateToken("PROJECT", "email", "SVG", "USER");
+        authService.setAuthorities("/roles", RequestMethod.GET, "USER");
+        authService.setAuthorities("/roles", RequestMethod.POST, "USER");
+        authService.setAuthorities("/roles/{role_id}", RequestMethod.GET, "USER");
+        authService.setAuthorities("/roles/{role_id}", RequestMethod.PUT, "USER");
+        authService.setAuthorities("/roles/{role_id}", RequestMethod.DELETE, "USER");
+        authService.setAuthorities("/roles/{role_id}/permissions", RequestMethod.GET, "USER");
+        authService.setAuthorities("/roles/{role_id}/permissions", RequestMethod.PUT, "USER");
+        authService.setAuthorities("/roles/{role_id}/permissions", RequestMethod.DELETE, "USER");
+        authService.setAuthorities("/roles/{role_id}/users", RequestMethod.GET, "USER");
         apiRoles = "/roles";
         apiRolesId = apiRoles + "/{role_id}";
         apiRolesPermissions = apiRolesId + "/permissions";
@@ -92,7 +92,7 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     public void retrieveRoleList() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRoles, jwt_, expectations, "TODO Error message");
+        performGet(apiRoles, jwt, expectations, "TODO Error message");
     }
 
     @Test
@@ -103,11 +103,11 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
-        performPost(apiRoles, jwt_, newRole, expectations, "TODO Error message");
+        performPost(apiRoles, jwt, newRole, expectations, "TODO Error message");
 
         expectations = new ArrayList<>(1);
         expectations.add(status().isConflict());
-        performPost(apiRoles, jwt_, newRole, expectations, "TODO Error message");
+        performPost(apiRoles, jwt, newRole, expectations, "TODO Error message");
     }
 
     @Test
@@ -115,17 +115,17 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Purpose("Check that the allows to retrieve a single role and handle fail cases.")
     public void retrieveRole() {
         final Long roleId = 0L;
-        assertTrue(roleService_.existRole(roleId));
+        assertTrue(roleService.existRole(roleId));
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRolesId, jwt_, expectations, "TODO Error message", roleId);
+        performGet(apiRolesId, jwt, expectations, "TODO Error message", roleId);
 
         final Long wrongRoleId = 46453L;
-        assertFalse(roleService_.existRole(wrongRoleId));
+        assertFalse(roleService.existRole(wrongRoleId));
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
-        performGet(apiRolesId, jwt_, expectations, "TODO Error message", wrongRoleId);
+        performGet(apiRolesId, jwt, expectations, "TODO Error message", wrongRoleId);
     }
 
     @Test
@@ -134,20 +134,20 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Purpose("Check that the system allows to update a role and handle fail cases.")
     public void updateRole() {
         final Long roleId = 0L;
-        assertTrue(roleService_.existRole(roleId));
-        final Role updated = roleService_.retrieveRole(roleId);
+        assertTrue(roleService.existRole(roleId));
+        final Role updated = roleService.retrieveRole(roleId);
         updated.setName("newName");
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiRolesId, jwt_, updated, expectations, "TODO Error message", roleId);
+        performPut(apiRolesId, jwt, updated, expectations, "TODO Error message", roleId);
 
         final Long notSameID = 41554L;
         final Role notUpdated = new Role(notSameID, null, null, null, null);
 
         expectations = new ArrayList<>(1);
         expectations.add(status().isBadRequest());
-        performPut(apiRolesId, jwt_, notUpdated, expectations, "TODO Error message", roleId);
+        performPut(apiRolesId, jwt, notUpdated, expectations, "TODO Error message", roleId);
     }
 
     @Test
@@ -159,7 +159,7 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiRolesId, jwt_, expectations, "TODO Error message", roleId);
+        performDelete(apiRolesId, jwt, expectations, "TODO Error message", roleId);
     }
 
     @Test
@@ -170,7 +170,7 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRolesPermissions, jwt_, expectations, "TODO Error message", roleId);
+        performGet(apiRolesPermissions, jwt, expectations, "TODO Error message", roleId);
     }
 
     @Test
@@ -186,7 +186,7 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiRolesPermissions, jwt_, newPermissionList, expectations, "TODO Error message", roleId);
+        performPut(apiRolesPermissions, jwt, newPermissionList, expectations, "TODO Error message", roleId);
     }
 
     @Test
@@ -198,7 +198,7 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiRolesPermissions, jwt_, expectations, "TODO Error message", roleId);
+        performDelete(apiRolesPermissions, jwt, expectations, "TODO Error message", roleId);
     }
 
     @Test
@@ -209,7 +209,7 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRolesUsers, jwt_, expectations, "TODO Error message", roleId);
+        performGet(apiRolesUsers, jwt, expectations, "TODO Error message", roleId);
     }
 
 }
