@@ -34,7 +34,6 @@
 		<dependency>
 			<groupId>javax.el</groupId>
 			<artifactId>javax.el-api</artifactId>
-			<optional>true</optional>
 		</dependency>
 		<!-- Tests -->
 		<dependency>

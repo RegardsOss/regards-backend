@@ -10,6 +10,7 @@ import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -74,11 +75,12 @@ public class PluginConfiguration implements Identifiable<Long> {
     /**
      * Configuration parameters of the plugin
      */
-//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-//    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE",
-//            joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id") },
-//            inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id") })
-    @Transient
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE",
+            joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_ID")) },
+            inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMMETER_ID")) })
     private List<PluginParameter> parameters;
 
     /**

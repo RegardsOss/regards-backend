@@ -10,11 +10,11 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Transient;
 
 import org.springframework.hateoas.Identifiable;
@@ -26,8 +26,8 @@ import org.springframework.hateoas.Identifiable;
  *
  * @author cmertz
  */
-@Entity
-@Table(name = "T_PLUGIN_PARAMETER_VALUE")
+@Entity(name = "T_PLUGIN_PARAMETER_VALUE")
+@SequenceGenerator(name = "pluginParameterSequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_PARAMETER")
 public class PluginParameter implements Identifiable<Long> {
 
     /**
@@ -39,7 +39,8 @@ public class PluginParameter implements Identifiable<Long> {
      * Parameter unique id
      */
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginParameterSequence")
+    @Column(name = "id")
     private Long id;
 
     /**
@@ -56,10 +57,9 @@ public class PluginParameter implements Identifiable<Long> {
     /**
      * {@link PluginConfiguration} parameter is optional
      */
-//    @ManyToOne(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "PLUGIN_CONF_ID", unique = true, nullable = true, insertable = true, updatable = true,
-//            foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_CONF"))
-    @Transient
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "PLUGIN_CONF_ID", referencedColumnName = "id", unique = true, nullable = true, insertable = true,
+            updatable = true, foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_CONF"))
     private PluginConfiguration pluginConfiguration;
 
     /**
@@ -68,8 +68,7 @@ public class PluginParameter implements Identifiable<Long> {
     private Boolean isDynamic = false;
 
     /**
-     * The list of values for a dynamic parameters
-     * TODO CMZ enlever le @Transient
+     * The list of values for a dynamic parameters TODO CMZ enlever le @Transient
      */
     @Transient
     private List<String> dynamicsValues;
