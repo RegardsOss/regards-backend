@@ -116,6 +116,7 @@ public class InstanceJpaAutoConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, null);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, null);
         hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
+        hibernateProps.put(DataSourceHelper.HIBERNATE_ID_GENERATOR_PROP, "true");
 
         final List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, InstanceEntity.class,
                                                                     null);

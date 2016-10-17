@@ -53,7 +53,7 @@ public class MultitenantJpaAutoConfiguration {
     /**
      * JPA Persistence unit name. Used to separate multiples databases.
      */
-    private static final String PERSITENCE_UNIT_NAME = "projects";
+    private static final String PERSITENCE_UNIT_NAME = "multitenant";
 
     /**
      * Data sources pool
@@ -96,9 +96,9 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = "multitenantsJpaTransactionManager")
-    public PlatformTransactionManager projectsJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
+    public PlatformTransactionManager multitenantsJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
         final JpaTransactionManager jtm = new JpaTransactionManager();
-        jtm.setEntityManagerFactory(projectsEntityManagerFactory(pBuilder).getObject());
+        jtm.setEntityManagerFactory(multitenantsEntityManagerFactory(pBuilder).getObject());
         return jtm;
     }
 
@@ -112,7 +112,7 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = "multitenantsEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean projectsEntityManagerFactory(
+    public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory(
             final EntityManagerFactoryBuilder pBuilder) {
         // Use the first dataSource configuration to init the entityManagerFactory
         final DataSource defaultDataSource = dataSources.values().iterator().next();
@@ -124,6 +124,7 @@ public class MultitenantJpaAutoConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver);
         hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
+        hibernateProps.put(DataSourceHelper.HIBERNATE_ID_GENERATOR_PROP, "true");
         if (configuration.getEmbedded()) {
             hibernateProps.put(Environment.DIALECT, DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
         } else {

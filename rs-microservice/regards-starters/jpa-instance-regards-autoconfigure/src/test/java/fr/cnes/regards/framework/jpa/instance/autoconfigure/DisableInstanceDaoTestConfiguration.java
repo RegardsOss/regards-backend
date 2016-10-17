@@ -1,5 +1,6 @@
 package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
@@ -17,6 +18,7 @@ import fr.cnes.regards.framework.jpa.instance.autoconfigure.controller.ProjectCo
  */
 @ComponentScan(basePackages = "fr.cnes.regards.framework.jpa.instance",
         excludeFilters = @ComponentScan.Filter(value = ProjectController.class, type = FilterType.ASSIGNABLE_TYPE))
+@EnableAutoConfiguration
 @PropertySource("classpath:disable-dao.properties")
 public class DisableInstanceDaoTestConfiguration {
 

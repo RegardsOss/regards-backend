@@ -3,11 +3,9 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
-
-import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 
 /**
  *
@@ -20,7 +18,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProper
  */
 @ComponentScan(
         basePackages = { "fr.cnes.regards.framework.jpa.multitenant", "fr.cnes.regards.framework.security.utils" })
-@EnableConfigurationProperties(MultitenantDaoProperties.class)
+@EnableAutoConfiguration
 @PropertySource("classpath:dao.properties")
 public class MultiTenancyDaoTestConfiguration {
 
