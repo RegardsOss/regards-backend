@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationServiceImpl;
+import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -50,7 +50,7 @@ public class EmailControllerIT extends AbstractRegardsIntegrationTest {
      * Method authorization service.Autowired by Spring.
      */
     @Autowired
-    private DefaultMethodAuthorizationServiceImpl authService;
+    private DefaultMethodAuthorizationService authService;
 
     /**
      * The jwt string

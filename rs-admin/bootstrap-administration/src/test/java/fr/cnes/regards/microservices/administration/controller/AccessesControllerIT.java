@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationServiceImpl;
+import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -43,7 +43,7 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
      * The autowired authorization service.
      */
     @Autowired
-    private DefaultMethodAuthorizationServiceImpl authService;
+    private DefaultMethodAuthorizationService authService;
 
     /**
      * The jwt token

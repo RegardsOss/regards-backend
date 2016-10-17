@@ -20,7 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationServiceImpl;
+import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -41,12 +41,12 @@ import fr.cnes.regards.modules.project.service.IProjectService;
 public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
 
     @Autowired
-    private JWTService jwtService_;
+    private JWTService jwtService;
 
     @Autowired
-    private DefaultMethodAuthorizationServiceImpl authService_;
+    private DefaultMethodAuthorizationService authService;
 
-    private String jwt_;
+    private String jwt;
 
     private String apiProjects;
 
@@ -64,22 +64,22 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
     @Before
     public void init() {
         setLogger(LoggerFactory.getLogger(ProjectsControllerIT.class));
-        jwt_ = jwtService_.generateToken("PROJECT", "email", "SVG", "USER");
+        jwt = jwtService.generateToken("PROJECT", "email", "SVG", "USER");
 
         apiProjectConnection = "/projects/{project_name}/connection/{microservice}";
         apiProjectConnections = "/projects/connections";
 
-        authService_.setAuthorities("/projects", RequestMethod.GET, "USER");
-        authService_.setAuthorities("/projects", RequestMethod.POST, "USER");
-        authService_.setAuthorities("/projects/{project_name}", RequestMethod.GET, "USER");
-        authService_.setAuthorities("/projects/{project_name}", RequestMethod.PUT, "USER");
-        authService_.setAuthorities("/projects/{project_name}", RequestMethod.DELETE, "USER");
+        authService.setAuthorities("/projects", RequestMethod.GET, "USER");
+        authService.setAuthorities("/projects", RequestMethod.POST, "USER");
+        authService.setAuthorities("/projects/{project_name}", RequestMethod.GET, "USER");
+        authService.setAuthorities("/projects/{project_name}", RequestMethod.PUT, "USER");
+        authService.setAuthorities("/projects/{project_name}", RequestMethod.DELETE, "USER");
 
-        authService_.setAuthorities(apiProjectConnection, RequestMethod.GET, "USER");
-        authService_.setAuthorities(apiProjectConnection, RequestMethod.DELETE, "USER");
+        authService.setAuthorities(apiProjectConnection, RequestMethod.GET, "USER");
+        authService.setAuthorities(apiProjectConnection, RequestMethod.DELETE, "USER");
 
-        authService_.setAuthorities(apiProjectConnections, RequestMethod.PUT, "USER");
-        authService_.setAuthorities(apiProjectConnections, RequestMethod.POST, "USER");
+        authService.setAuthorities(apiProjectConnections, RequestMethod.PUT, "USER");
+        authService.setAuthorities(apiProjectConnections, RequestMethod.POST, "USER");
 
         errorMessage = "Cannot reach model attributes";
         apiProjects = "/projects";
@@ -93,7 +93,7 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
     public void aGetAllProjects() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiProjects, jwt_, expectations, errorMessage);
+        performGet(apiProjects, jwt, expectations, errorMessage);
 
     }
 
@@ -106,11 +106,11 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
-        performPost(apiProjects, jwt_, newProject, expectations, errorMessage);
+        performPost(apiProjects, jwt, newProject, expectations, errorMessage);
 
         expectations = new ArrayList<>(1);
         expectations.add(status().isConflict());
-        performPost(apiProjects, jwt_, newProject, expectations, errorMessage);
+        performPost(apiProjects, jwt, newProject, expectations, errorMessage);
 
     }
 
@@ -122,13 +122,13 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiProjectId, jwt_, expectations, errorMessage, "name");
+        performGet(apiProjectId, jwt, expectations, errorMessage, "name");
 
         assertFalse(projectService_.existProject("msdfqmsdfqbndsjkqfmsdbqjkmfsdjkqfbkmfbjkmsdfqsdfmqbsdq"));
 
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
-        performGet(apiProjectId, jwt_, expectations, errorMessage, "mqsdfhnlùsdfqhnjlm");
+        performGet(apiProjectId, jwt, expectations, errorMessage, "mqsdfhnlùsdfqhnjlm");
     }
 
     @Test
@@ -142,13 +142,13 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiProjectId, jwt_, updated, expectations, errorMessage, "name");
+        performPut(apiProjectId, jwt, updated, expectations, errorMessage, "name");
 
         final Project notSameID = new Project(454L, "desc", "icon", Boolean.TRUE, "AnotherName");
 
         expectations = new ArrayList<>(1);
         expectations.add(status().isMethodNotAllowed());
-        performPut(apiProjectId, jwt_, notSameID, expectations, errorMessage, "name");
+        performPut(apiProjectId, jwt, notSameID, expectations, errorMessage, "name");
 
     }
 
@@ -158,7 +158,7 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
     public void eDeleteProject() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiProjectId, jwt_, expectations, errorMessage, "name");
+        performDelete(apiProjectId, jwt, expectations, errorMessage, "name");
     }
 
     /**
@@ -178,20 +178,20 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
         // Initialize database with a valid project
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
-        performPost(apiProjects, jwt_, newProject, expectations, errorMessage);
+        performPost(apiProjects, jwt, newProject, expectations, errorMessage);
 
         // Test creation of a valid project connection
         ProjectConnection projectConnection = new ProjectConnection(10L, newProject, "create-microservice", "user",
                 "pwd", "driver", "url");
-        performPost(apiProjectConnections, jwt_, projectConnection, expectations, errorMessage);
+        performPost(apiProjectConnections, jwt, projectConnection, expectations, errorMessage);
 
         // Test creation of a already existing project connection
         expectations.clear();
         expectations.add(status().isConflict());
-        performPost(apiProjectConnections, jwt_, projectConnection, expectations, errorMessage);
+        performPost(apiProjectConnections, jwt, projectConnection, expectations, errorMessage);
         projectConnection = new ProjectConnection(20L, newProject, "create-microservice", "user", "pwd", "driver",
                 "url");
-        performPost(apiProjectConnections, jwt_, projectConnection, expectations, errorMessage);
+        performPost(apiProjectConnections, jwt, projectConnection, expectations, errorMessage);
 
         // Test creation of a project connection associated to an non existing project
         expectations.clear();
@@ -200,7 +200,7 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
                 "create-project-inexisting");
         projectConnection = new ProjectConnection(10L, inexistingProject, "create-microservice", "user", "pwd",
                 "driver", "url");
-        performPost(apiProjectConnections, jwt_, projectConnection, expectations, errorMessage);
+        performPost(apiProjectConnections, jwt, projectConnection, expectations, errorMessage);
 
     }
 
@@ -218,22 +218,22 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
         // Test deletion of non existing project connection
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
-        performDelete(apiProjectConnection, jwt_, expectations, errorMessage, "delete-project", "delete-microservice");
+        performDelete(apiProjectConnection, jwt, expectations, errorMessage, "delete-project", "delete-microservice");
 
         // Create a project and a project connection to delete
         Project newProject;
         newProject = new Project(61L, "description", "iconICON", Boolean.TRUE, "delete-project");
         expectations.clear();
         expectations.add(status().isCreated());
-        performPost(apiProjects, jwt_, newProject, expectations, errorMessage);
+        performPost(apiProjects, jwt, newProject, expectations, errorMessage);
         final ProjectConnection projectConnection = new ProjectConnection(11L, newProject, "delete-microservice",
                 "user", "pwd", "driver", "url");
-        performPost(apiProjectConnections, jwt_, projectConnection, expectations, errorMessage);
+        performPost(apiProjectConnections, jwt, projectConnection, expectations, errorMessage);
 
         // Delete a valid project connection
         expectations.clear();
         expectations.add(status().isOk());
-        performDelete(apiProjectConnection, jwt_, expectations, errorMessage, "delete-project", "delete-microservice");
+        performDelete(apiProjectConnection, jwt, expectations, errorMessage, "delete-project", "delete-microservice");
 
     }
 
@@ -256,19 +256,19 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
         // Test updating a non existing project connection
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
-        performPut(apiProjectConnections, jwt_, projectConnection, expectations, errorMessage);
+        performPut(apiProjectConnections, jwt, projectConnection, expectations, errorMessage);
 
         // Initialization of database with valid project and project connection
         expectations.clear();
         expectations.add(status().isCreated());
-        performPost(apiProjects, jwt_, newProject, expectations, errorMessage);
-        performPost(apiProjectConnections, jwt_, projectConnection, expectations, errorMessage);
+        performPost(apiProjects, jwt, newProject, expectations, errorMessage);
+        performPost(apiProjectConnections, jwt, projectConnection, expectations, errorMessage);
 
         // Test update
         projectConnection.setUrl("new url");
         expectations.clear();
         expectations.add(status().isOk());
-        performPut(apiProjectConnections, jwt_, projectConnection, expectations, errorMessage);
+        performPut(apiProjectConnections, jwt, projectConnection, expectations, errorMessage);
 
     }
 
@@ -286,7 +286,7 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
         // Test getting a non existing project connection
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
-        performGet(apiProjectConnection, jwt_, expectations, errorMessage, "get-project", "get-microservice");
+        performGet(apiProjectConnection, jwt, expectations, errorMessage, "get-project", "get-microservice");
 
         // Initialization of database with valid project and project connection
         Project newProject;
@@ -295,13 +295,13 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
                 "pwd", "driver", "url");
         expectations.clear();
         expectations.add(status().isCreated());
-        performPost(apiProjects, jwt_, newProject, expectations, errorMessage);
-        performPost(apiProjectConnections, jwt_, projectConnection, expectations, errorMessage);
+        performPost(apiProjects, jwt, newProject, expectations, errorMessage);
+        performPost(apiProjectConnections, jwt, projectConnection, expectations, errorMessage);
 
         // Test getting existing project connection
         expectations.clear();
         expectations.add(status().isOk());
-        performGet(apiProjectConnection, jwt_, expectations, errorMessage, "get-project", "get-microservice");
+        performGet(apiProjectConnection, jwt, expectations, errorMessage, "get-project", "get-microservice");
 
     }
 }
