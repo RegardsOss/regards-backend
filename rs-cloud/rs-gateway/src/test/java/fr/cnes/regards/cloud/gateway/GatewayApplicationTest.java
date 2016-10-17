@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -36,6 +37,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
+@PropertySource("classpath:test.properties")
 public class GatewayApplicationTest {
 
     /**
@@ -171,7 +173,7 @@ public class GatewayApplicationTest {
     @Test
     public void testAuthenticate() {
         try {
-            String basicString = basicUserName + ":" + basicPassword;
+            String basicString = String.format("%s:%s", basicUserName, basicPassword);
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.modules.accessRights.client.AccountsClient;
+import fr.cnes.regards.modules.accessRights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
@@ -44,7 +44,7 @@ public class SimpleAuthentication implements IAuthenticationProvider {
      * rs-admin microservice client for accounts
      */
     @Autowired
-    private AccountsClient accountsClient;
+    private IAccountsClient accountsClient;
 
     /**
      * Security JWT service
