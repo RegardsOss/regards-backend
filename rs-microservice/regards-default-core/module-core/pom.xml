@@ -22,16 +22,6 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.project</groupId>
-			<artifactId>project-client</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>fr.cnes.regards.modules</groupId>
-					<artifactId>module-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<!-- (De)Serialization -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -43,10 +33,6 @@
 			<artifactId>hibernate-validator</artifactId>
 		</dependency>
 		<!-- Spring -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-amqp</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>

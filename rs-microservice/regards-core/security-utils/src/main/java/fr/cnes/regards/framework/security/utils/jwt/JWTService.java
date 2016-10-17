@@ -54,17 +54,19 @@ public class JWTService {
      *
      * @param pProject
      * @param pRole
+     * @throws MissingClaimException
+     * @throws InvalidJwtException
      * @since 1.0-SNAPSHOT
      */
-    public void injectToken(final String pProject, final String pRole) {
+    public void injectToken(final String pProject, final String pRole)
+            throws InvalidJwtException, MissingClaimException {
         String token = null;
         if (scopesTokensMap_.get(pProject) != null) {
             token = scopesTokensMap_.get(pProject);
         } else {
             token = generateToken(pProject, "", "", pRole);
         }
-        final JWTAuthentication auth = new JWTAuthentication(token);
-        auth.setProject(pProject);
+        final JWTAuthentication auth = parseToken(new JWTAuthentication(token));
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 

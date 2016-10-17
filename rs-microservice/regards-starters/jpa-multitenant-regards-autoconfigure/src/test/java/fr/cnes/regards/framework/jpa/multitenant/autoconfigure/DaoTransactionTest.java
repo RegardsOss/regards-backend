@@ -19,6 +19,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.exception.DaoTestException;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.service.DaoUserService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -50,13 +52,16 @@ public class DaoTransactionTest {
     /**
      *
      * Test for multitenant transactions.
+     * 
+     * @throws MissingClaimException
+     * @throws InvalidJwtException
      *
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test multitenant transactions operations in database")
     @Test
-    public void transactionTest() {
+    public void transactionTest() throws InvalidJwtException, MissingClaimException {
 
         final String testTenant = "test1";
         final String testTenant2 = "test2";
