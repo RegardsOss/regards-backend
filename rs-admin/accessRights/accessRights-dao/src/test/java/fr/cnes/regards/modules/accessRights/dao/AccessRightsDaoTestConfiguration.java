@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.project.dao;
+package fr.cnes.regards.modules.accessRights.dao;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
@@ -9,9 +9,9 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  *
- * Class ProjectDaoTestConfiguration
+ * Class AccessRightsDaoTestConfiguration
  *
- * Configuration class for DAO tests.
+ * Test Configuration class
  *
  * @author CS
  * @since 1.0-SNAPSHOT
@@ -19,6 +19,6 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @EnableAutoConfiguration
 @PropertySource("classpath:tests.properties")
-public class ProjectDaoTestConfiguration {
+public class AccessRightsDaoTestConfiguration {
 
 }
