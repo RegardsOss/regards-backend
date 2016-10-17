@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
 
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 
 /**
@@ -17,7 +16,6 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
  *
  */
 
-@InstanceEntity
 public interface IPluginConfigurationRepository extends CrudRepository<PluginConfiguration, Long> {
 
     /**

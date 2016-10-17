@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.plugins.dao;
 
 import org.springframework.data.repository.CrudRepository;
 
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 
 /**
@@ -15,7 +14,6 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
  *
  */
 
-@InstanceEntity
 public interface IPluginParameterRepository extends CrudRepository<PluginParameter, Long> {
 
 }
