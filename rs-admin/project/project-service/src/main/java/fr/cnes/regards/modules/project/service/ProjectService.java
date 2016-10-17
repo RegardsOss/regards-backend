@@ -55,7 +55,7 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public Project retrieveProject(final String pProjectName) throws EntityException {
+    public Project retrieveProject(final String pProjectName) throws EntityNotFoundException {
         final Project project = projectRepository.findOneByName(pProjectName);
         if (project == null) {
             throw new EntityNotFoundException(pProjectName, Project.class);
@@ -64,7 +64,7 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public List<Project> deleteProject(final String pProjectName) throws EntityException {
+    public List<Project> deleteProject(final String pProjectName) throws EntityNotFoundException {
         final Project deleted = retrieveProject(pProjectName);
         deleted.setDeleted(true);
         projectRepository.delete(deleted);

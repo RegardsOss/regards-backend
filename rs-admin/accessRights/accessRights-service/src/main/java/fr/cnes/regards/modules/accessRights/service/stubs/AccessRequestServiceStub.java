@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.accessRights.service.stubs;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +23,8 @@ import fr.cnes.regards.modules.accessRights.service.IAccountService;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.modules.accessRights.service.RoleService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 @Service
@@ -69,14 +70,9 @@ public class AccessRequestServiceStub implements IAccessRequestService {
                 .collect(Collectors.toList());
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessRights.service.IAccessRequestService#requestAccess(fr.cnes.regards.modules.
-     * accessRights.domain.Account)
-     */
     @Override
-    public AccessRequestDTO requestAccess(final AccessRequestDTO pDto) throws AlreadyExistingException {
+    public AccessRequestDTO requestAccess(final AccessRequestDTO pDto)
+            throws InvalidEntityException, AlreadyExistingException {
         if (existAccessRequest(pDto.getEmail())) {
             throw new AlreadyExistingException(
                     pDto.getEmail() + " already has made an access request for this project");
@@ -135,11 +131,13 @@ public class AccessRequestServiceStub implements IAccessRequestService {
 
     }
 
-    // public boolean existAccessRequest(final Account pAccount) {
-    // return projectUsers.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCES))
-    // .filter(p -> p.getAccount().equals(pAccount)).findFirst().isPresent();
-    // }
-
+    /**
+     * Check thats the request access (project user) with passed <code>email</code> exists
+     *
+     * @param pEmail
+     *            The email
+     * @return
+     */
     public boolean existAccessRequest(final String pEmail) {
         return projectUsers.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCES))
                 .filter(p -> p.getEmail().equals(pEmail)).findFirst().isPresent();
@@ -152,32 +150,32 @@ public class AccessRequestServiceStub implements IAccessRequestService {
     }
 
     @Override
-    public void removeAccessRequest(final Long pAccessId) {
+    public void removeAccessRequest(final Long pAccessId) throws EntityNotFoundException {
         if (existAccessRequest(pAccessId)) {
             projectUsers = projectUsers.stream().filter(p -> p.getId() != pAccessId).collect(Collectors.toList());
             return;
         }
-        throw new NoSuchElementException(pAccessId + "");
+        throw new EntityNotFoundException(pAccessId.toString(), ProjectUser.class);
     }
 
     @Override
-    public void acceptAccessRequest(final Long pAccessId) {
+    public void acceptAccessRequest(final Long pAccessId) throws EntityNotFoundException {
         if (existAccessRequest(pAccessId)) {
             projectUsers = projectUsers.stream().map(p -> p.getId() == pAccessId ? p.accept() : p)
                     .collect(Collectors.toList());
             return;
         }
-        throw new NoSuchElementException(pAccessId + "");
+        throw new EntityNotFoundException(pAccessId.toString(), ProjectUser.class);
     }
 
     @Override
-    public void denyAccessRequest(final Long pAccessId) {
+    public void denyAccessRequest(final Long pAccessId) throws EntityNotFoundException {
         if (existAccessRequest(pAccessId)) {
             projectUsers = projectUsers.stream().map(p -> p.getId() == pAccessId ? p.deny() : p)
                     .collect(Collectors.toList());
             return;
         }
-        throw new NoSuchElementException(pAccessId + "");
+        throw new EntityNotFoundException(pAccessId.toString(), ProjectUser.class);
     }
 
 }

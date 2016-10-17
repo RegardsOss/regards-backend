@@ -153,7 +153,6 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
         expectations.clear();
         expectations.add(status().isNotFound());
         performGet(apiAccountId, jwt, expectations, errorMessage, Integer.MAX_VALUE);
-
     }
 
     @Test

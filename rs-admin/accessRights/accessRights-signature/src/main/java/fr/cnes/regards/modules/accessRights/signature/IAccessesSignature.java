@@ -20,8 +20,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import fr.cnes.regards.modules.accessRights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
+/**
+ * Define the common interface of REST clients for accesses.
+ *
+ * @author CS SI
+ */
 @RequestMapping("/accesses")
 public interface IAccessesSignature {
 
@@ -33,21 +40,22 @@ public interface IAccessesSignature {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Resource<AccessRequestDTO>> requestAccess(@Valid @RequestBody AccessRequestDTO pAccessRequest)
-            throws AlreadyExistingException;
+            throws AlreadyExistingException, InvalidEntityException;
 
     @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT,
             produces = MediaType.APPLICATION_JSON_VALUE)
     HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId)
-            throws OperationNotSupportedException;
+            throws OperationNotSupportedException, EntityNotFoundException;
 
     @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId) throws OperationNotSupportedException;
+    HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId)
+            throws OperationNotSupportedException, EntityNotFoundException;
 
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId);
+    HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId) throws EntityNotFoundException;
 
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody

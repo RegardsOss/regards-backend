@@ -5,8 +5,6 @@ package fr.cnes.regards.modules.accessRights.fallback;
 
 import java.util.List;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
@@ -34,59 +32,57 @@ public class ProjectUsersFallback implements ProjectUsersClient {
     }
 
     @Override
-    public HttpEntity<Resource<ProjectUser>> retrieveProjectUser(Long pUserId) {
+    public HttpEntity<Resource<ProjectUser>> retrieveProjectUser(final Long pUserId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateProjectUser(Long pUserId, ProjectUser pUpdatedProjectUser)
-            throws OperationNotSupportedException {
+    public HttpEntity<Void> updateProjectUser(final Long pUserId, final ProjectUser pUpdatedProjectUser) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> removeProjectUser(Long pUserId) {
+    public HttpEntity<Void> removeProjectUser(final Long pUserId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(Long pUserId) {
+    public HttpEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(final Long pUserId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateProjectUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData)
-            throws OperationNotSupportedException {
+    public HttpEntity<Void> updateProjectUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> removeProjectUserMetaData(Long pUserId) {
+    public HttpEntity<Void> removeProjectUserMetaData(final Long pUserId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<Couple<List<ResourcesAccess>, Role>>> retrieveProjectUserAccessRights(String pUserLogin,
-            String pBorrowedRoleName) throws OperationNotSupportedException {
+    public HttpEntity<Resource<Couple<List<ResourcesAccess>, Role>>> retrieveProjectUserAccessRights(
+            final String pUserLogin, final String pBorrowedRoleName) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateProjectUserAccessRights(String pUserLogin,
-            List<ResourcesAccess> pUpdatedUserAccessRights) throws OperationNotSupportedException {
+    public HttpEntity<Void> updateProjectUserAccessRights(final String pLogin,
+            final List<ResourcesAccess> pUpdatedUserAccessRights) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> removeProjectUserAccessRights(String pUserLogin) {
+    public HttpEntity<Void> removeProjectUserAccessRights(final String pUserLogin) {
         LOG.error(fallBackErrorMessage);
         return null;
     }

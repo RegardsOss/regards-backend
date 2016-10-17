@@ -17,6 +17,7 @@ import fr.cnes.regards.modules.accessRights.client.AccessesClient;
 import fr.cnes.regards.modules.accessRights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 @Component
@@ -52,7 +53,7 @@ public class AccessesFallback implements AccessesClient {
     }
 
     @Override
-    public HttpEntity<Void> removeAccessRequest(final Long pAccessId) {
+    public HttpEntity<Void> removeAccessRequest(final Long pAccessId) throws EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
         return null;
     }
