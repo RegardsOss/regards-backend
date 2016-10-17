@@ -13,17 +13,32 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.modules.accessRights.client.RolesClient;
+import fr.cnes.regards.modules.accessRights.client.IRolesClient;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
+/**
+ *
+ * Class RolesFallback
+ *
+ * Fallback for Roles Feign client. This implementation is used in case of error during feign client calls.
+ *
+ * @author CS
+ * @since 1.0-SNAPSHOT
+ */
 @Component
-public class RolesFallback implements RolesClient {
+public class RolesFallback implements IRolesClient {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(ProjectUsersFallback.class);
 
+    /**
+     * Common error message to log
+     */
     private static final String fallBackErrorMessage = "RS-ADMIN /roles request error. Fallback.";
 
     @Override
@@ -33,50 +48,51 @@ public class RolesFallback implements RolesClient {
     }
 
     @Override
-    public HttpEntity<Resource<Role>> createRole(Role pNewRole) throws AlreadyExistingException {
+    public HttpEntity<Resource<Role>> createRole(final Role pNewRole) throws AlreadyExistingException {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<Role>> retrieveRole(Long pRoleId) {
+    public HttpEntity<Resource<Role>> retrieveRole(final Long pRoleId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateRole(Long pRoleId, Role pUpdatedRole) throws OperationNotSupportedException {
-        LOG.error(fallBackErrorMessage);
-        return null;
-    }
-
-    @Override
-    public HttpEntity<Void> removeRole(Long pRoleId) throws OperationNotSupportedException {
-        LOG.error(fallBackErrorMessage);
-        return null;
-    }
-
-    @Override
-    public HttpEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(Long pRoleId) {
-        LOG.error(fallBackErrorMessage);
-        return null;
-    }
-
-    @Override
-    public HttpEntity<Void> updateRoleResourcesAccess(Long pRoleId, List<ResourcesAccess> pResourcesAccessList)
+    public HttpEntity<Void> updateRole(final Long pRoleId, final Role pUpdatedRole)
             throws OperationNotSupportedException {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> clearRoleResourcesAccess(Long pRoleId) {
+    public HttpEntity<Void> removeRole(final Long pRoleId) throws OperationNotSupportedException {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(Long pRoleId)
+    public HttpEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(final Long pRoleId) {
+        LOG.error(fallBackErrorMessage);
+        return null;
+    }
+
+    @Override
+    public HttpEntity<Void> updateRoleResourcesAccess(final Long pRoleId,
+            final List<ResourcesAccess> pResourcesAccessList) throws OperationNotSupportedException {
+        LOG.error(fallBackErrorMessage);
+        return null;
+    }
+
+    @Override
+    public HttpEntity<Void> clearRoleResourcesAccess(final Long pRoleId) {
+        LOG.error(fallBackErrorMessage);
+        return null;
+    }
+
+    @Override
+    public HttpEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId)
             throws OperationNotSupportedException {
         LOG.error(fallBackErrorMessage);
         return null;
