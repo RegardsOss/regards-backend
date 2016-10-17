@@ -4,6 +4,7 @@
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -20,6 +21,8 @@ import org.springframework.context.annotation.Configuration;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConfiguration;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
+import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
  *
@@ -64,14 +67,25 @@ public class DataSourcesConfiguration {
 
         // Add datasources from bean configuration
         if (customProjectsConnectionReader != null) {
-            final Map<String, DataSource> datasourcesBean = customProjectsConnectionReader.getDataSources();
-            for (final String tenant : datasourcesBean.keySet()) {
-                if (!datasources.containsKey(tenant)) {
-                    datasources.put(tenant, datasourcesBean.get(tenant));
+            final List<ProjectConnection> connections = customProjectsConnectionReader.getTenantConnections();
+            for (final ProjectConnection connection : connections) {
+                final Project project = connection.getProject();
+                if (!datasources.containsKey(project.getName())) {
+                    if (daoProperties.getEmbedded()) {
+                        datasources.put(project.getName(), DataSourceHelper
+                                .createEmbeddedDataSource(project.getName(), daoProperties.getEmbeddedPath()));
+                    } else {
+                        datasources.put(project.getName(),
+                                        DataSourceHelper
+                                                .createDataSource(connection.getUrl(), connection.getDriverClassName(),
+                                                                  connection.getUserName(), connection.getPassword()));
+                    }
                 } else {
-                    LOG.warn(String.format("Datasource for project %s already defined.", tenant));
+                    LOG.warn(String.format("Datasource for project %s already defined.", project.getName()));
                 }
             }
+        } else {
+            LOG.warn("No Custom tenant reader defined. Using only properties file to create datasources for MultitenantJpaAutoConfiguration");
         }
 
         // Add datasources configuration from properties file.
