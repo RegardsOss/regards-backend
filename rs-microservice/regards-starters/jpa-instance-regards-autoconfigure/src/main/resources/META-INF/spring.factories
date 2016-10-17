@@ -1,2 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.framework.jpa.instance.autoconfigure.InstanceDataSourceConfiguration,\
 fr.cnes.regards.framework.jpa.instance.autoconfigure.InstanceJpaAutoConfiguration
