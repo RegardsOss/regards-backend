@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.Project;
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.ProjectRepository;
+import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.IProjectRepository;
 
 /**
  *
@@ -41,7 +41,7 @@ public class ProjectController {
      * JPA User Repository. Access to Projects in database
      */
     @Autowired
-    private ProjectRepository projectRepo;
+    private IProjectRepository projectRepo;
 
     /**
      *

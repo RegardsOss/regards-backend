@@ -17,7 +17,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public class DataSourceHelper {
+public final class DataSourceHelper {
 
     /**
      * Hibernate dialect for embedded HSQL Database
@@ -44,6 +44,18 @@ public class DataSourceHelper {
      * connection is close.
      */
     public static final String EMBEDDED_URL_BASE_NAME = "applicationdb;shutdown=true;";
+
+    /**
+     * Property to allow hibernate to select org.hibernate.id.enhanced.SequenceStyleGenerator instead of
+     * org.hibernate.id.SequenceHiLoGenerator
+     */
+    public static final String HIBERNATE_ID_GENERATOR_PROP = "hibernate.id.new_generator_mappings";
+
+    /**
+     * Staticc class
+     */
+    private DataSourceHelper() {
+    }
 
     /**
      *

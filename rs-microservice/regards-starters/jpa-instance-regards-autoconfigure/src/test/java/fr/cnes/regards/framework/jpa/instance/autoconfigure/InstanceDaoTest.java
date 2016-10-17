@@ -9,15 +9,13 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.Project;
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.ProjectRepository;
+import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.IProjectRepository;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -36,15 +34,10 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 public class InstanceDaoTest {
 
     /**
-     * class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(InstanceDaoTest.class);
-
-    /**
      * JPA Project repository
      */
     @Autowired
-    private ProjectRepository projectRepository;
+    private IProjectRepository projectRepository;
 
     /**
      *
