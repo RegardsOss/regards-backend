@@ -3,9 +3,9 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
-import java.util.Map;
+import java.util.List;
 
-import javax.sql.DataSource;
+import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
  *
@@ -19,5 +19,12 @@ import javax.sql.DataSource;
  */
 public interface IMultitenantConnectionsReader {
 
-    public Map<String, DataSource> getDataSources();
+    /**
+     *
+     * Retrieve the connection configuration for each tenant.
+     *
+     * @return
+     * @since 1.0-SNAPSHOT
+     */
+    public List<ProjectConnection> getTenantConnections();
 }
