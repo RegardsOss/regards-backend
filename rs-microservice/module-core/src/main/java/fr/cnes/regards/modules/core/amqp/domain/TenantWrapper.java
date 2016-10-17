@@ -1,10 +1,10 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.core.amqp.utils;
+package fr.cnes.regards.modules.core.amqp.domain;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 /**
  * @param <T>
@@ -28,12 +28,12 @@ public class TenantWrapper<T> {
     public TenantWrapper() {
     }
 
-    @JsonCreator
-    public TenantWrapper(@JsonProperty("content") T pContent, @JsonProperty("tenant") String pTenant) {
+    public TenantWrapper(T pContent, String pTenant) {
         content = pContent;
         tenant = pTenant;
     }
 
+    @JsonTypeInfo(use = Id.CLASS)
     public T getContent() {
         return content;
     }

@@ -9,7 +9,10 @@ package fr.cnes.regards.modules.core.amqp.domain;
  */
 public class TestEvent {
 
-    private String content_;
+    /**
+     * content sent
+     */
+    private String content;
 
     public TestEvent() {
 
@@ -20,20 +23,25 @@ public class TestEvent {
     }
 
     public final String getContent() {
-        return content_;
+        return content;
     }
 
     public final void setContent(String pContent) {
-        content_ = pContent;
+        content = pContent;
     }
 
     @Override
     public String toString() {
-        return "{\"content\" : " + content_ + "}";
+        return "{\"content\" : " + content + "}";
     }
 
     @Override
     public boolean equals(Object pO) {
-        return (pO instanceof TestEvent) && ((TestEvent) pO).content_.equals(content_);
+        return (pO instanceof TestEvent) && ((TestEvent) pO).content.equals(content);
+    }
+
+    @Override
+    public int hashCode() {
+        return content.hashCode();
     }
 }

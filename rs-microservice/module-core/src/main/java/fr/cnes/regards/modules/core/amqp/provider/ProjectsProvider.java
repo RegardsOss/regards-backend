@@ -11,7 +11,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.modules.project.client.ProjectsClient;
+import fr.cnes.regards.modules.project.client.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
@@ -25,7 +25,7 @@ public class ProjectsProvider implements IProjectsProvider {
      * Feign client to retrieve all projects from the project module in the microservice administration by default
      */
     @Autowired
-    private ProjectsClient projectsClient;
+    private IProjectsClient projectsClient;
 
     @Override
     public List<String> retrieveProjectList() {

@@ -24,8 +24,16 @@ public class ApplicationTest {
         return new RestTemplate();
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        SpringApplication.run(ApplicationTest.class, args);
+    /**
+     * main
+     *
+     * @param pArgs
+     *            args
+     * @throws InterruptedException
+     *             Exception
+     */
+    public static void main(String[] pArgs) throws InterruptedException {
+        SpringApplication.run(ApplicationTest.class, pArgs);
     }
 
 }

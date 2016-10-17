@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -22,9 +20,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.microservices.core.test.report.annotation.Purpose;
 import fr.cnes.regards.microservices.core.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.core.amqp.domain.TenantWrapper;
 import fr.cnes.regards.modules.core.amqp.domain.TestEvent;
 import fr.cnes.regards.modules.core.amqp.domain.TestReceiver;
-import fr.cnes.regards.modules.core.amqp.utils.TenantWrapper;
 import fr.cnes.regards.modules.core.exception.AddingRabbitMQVhostException;
 import fr.cnes.regards.modules.core.exception.AddingRabbitMQVhostPermissionException;
 
@@ -37,30 +35,58 @@ import fr.cnes.regards.modules.core.exception.AddingRabbitMQVhostPermissionExcep
  *
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { SubscriberTestsConfiguration.class })
+@ContextConfiguration(classes = { AmqpTestsConfiguration.class })
 @SpringBootTest(classes = ApplicationTest.class)
 @DirtiesContext
 public class SubscriberIT {
 
+    /**
+     * Logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SubscriberIT.class);
 
+    /**
+     * PROJECT1
+     */
+    private static final String TENANT = "PROJECT1";
+
+    /**
+     * 2000
+     */
+    private static final int SLEEP_TIME = 2000;
+
+    /**
+     * SLEEP_FAIL
+     */
+    private static final String SLEEP_FAIL = "Sleep Failed";
+
+    /**
+     * bean to test
+     */
     @Autowired
     private Subscriber subscriber;
 
+    /**
+     * bean provided
+     */
     @Autowired
     private ConnectionFactory connectionFactory;
 
+    /**
+     * message received
+     */
     private TestEvent received;
 
+    /**
+     * message receiver
+     */
     private TestReceiver receiver;
 
-    private SimpleMessageListenerContainer container;
-
+    /**
+     * Template to send original message
+     */
     @Autowired
     private RabbitTemplate rabbitTemplate;
-
-    @Autowired
-    private Jackson2JsonMessageConverter jackson2JsonMessageConverter;
 
     @Before
     public void init() {
@@ -73,26 +99,29 @@ public class SubscriberIT {
         }
     }
 
+    /**
+     * test the subscription to message broker
+     */
     @Requirement("REGARDS_DSL_CMP_ARC_160")
-    @Purpose("test the subscribing to message broker")
+    @Purpose("test the subscription to message broker")
     @Test
     public void testSubscribeTo() {
         final TestEvent toSend = new TestEvent("test2");
-        final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, "PROJECT1");
+        final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
         LOGGER.info("SENDED " + sended);
-        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), "PROJECT1");
-        rabbitTemplate.convertAndSend("REGARDS", TestEvent.class.getName(), sended);
+        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
+        rabbitTemplate.convertAndSend(TestEvent.class.getName(), "", sended);
         SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(SLEEP_TIME);
         } catch (InterruptedException e) {
-            LOGGER.error("Sleep Failed", e);
-            Assert.fail("Sleep Failed");
+            LOGGER.error(SLEEP_FAIL, e);
+            Assert.fail(SLEEP_FAIL);
         }
         LOGGER.info("=================RECEIVED " + receiver.getMessage());
         received = receiver.getMessage();
-        Assert.assertEquals(sended, received);
+        Assert.assertEquals(toSend, received);
 
     }
 

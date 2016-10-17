@@ -19,7 +19,7 @@ public class ProjectsProviderStub implements IProjectsProvider {
 
     @Override
     public List<String> retrieveProjectList() {
-        List<String> projectListStub = new ArrayList<String>(2);
+        final List<String> projectListStub = new ArrayList<String>(2);
         projectListStub.add("PROJECT1");
         projectListStub.add("PROJECT2");
         return projectListStub;

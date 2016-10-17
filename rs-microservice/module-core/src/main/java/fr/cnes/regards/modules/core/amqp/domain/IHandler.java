@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.core.amqp.utils;
+package fr.cnes.regards.modules.core.amqp.domain;
 
 /**
  * @param <T>
