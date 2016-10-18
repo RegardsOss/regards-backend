@@ -22,7 +22,6 @@ import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
-
 /**
  *
  * TODO description
@@ -87,13 +86,13 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public List<PluginMetaData> getPluginsByType(IPluginType pType) {
+    public List<PluginMetaData> getPluginsByType(final IPluginType pType) {
 
         final List<PluginMetaData> pluginAvailables = new ArrayList<>();
         // Check fo each plugin implementation, ones which implements pClassType
         for (final String pluginId : plugins.keySet()) {
             final PluginMetaData plugin = plugins.get(pluginId);
-            if (pType != null && pType.getClassType().isAssignableFrom(plugin.getPluginClass())) {
+            if ((pType != null) && pType.getClassType().isAssignableFrom(plugin.getPluginClass())) {
                 pluginAvailables.add(plugin);
             } else
                 if (pType == null) {
@@ -105,7 +104,8 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public <T> T getPlugin(Long pPluginConfigurationId, Class<T> pReturnInterfaceType) throws PluginUtilsException {
+    public <T> T getPlugin(final Long pPluginConfigurationId, final Class<T> pReturnInterfaceType)
+            throws PluginUtilsException {
 
         // Get last saved plugin configuration
         final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
@@ -114,7 +114,7 @@ public class PluginService implements IPluginService {
         final PluginMetaData pluginMetadata = plugins.get(pluginConf.getPluginId());
 
         // Check if plugin version has changed since the last saved configuration of the plugin
-        if (pluginConf.getVersion() != null && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
+        if ((pluginConf.getVersion() != null) && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
             LOGGER.warn("Warning plugin version changed since last configuration");
         }
 
@@ -122,7 +122,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public PluginConfiguration savePluginConfiguration(PluginConfiguration pPluginConfiguration)
+    public PluginConfiguration savePluginConfiguration(final PluginConfiguration pPluginConfiguration)
             throws PluginUtilsException {
 
         // Check plugin configuration validity
@@ -165,7 +165,7 @@ public class PluginService implements IPluginService {
      * @since 1.0
      */
     @Override
-    public PluginConfiguration getPluginConfiguration(Long pId) throws PluginUtilsException {
+    public PluginConfiguration getPluginConfiguration(final Long pId) throws PluginUtilsException {
         // Get plugin configuration from dataBase
         final PluginConfiguration conf = pluginConfRepository.findOne(pId);
         if (conf == null) {
@@ -186,7 +186,7 @@ public class PluginService implements IPluginService {
      * @since 1.0
      */
     @Override
-    public void deletePluginConfiguration(Long pPluginId) throws PluginUtilsException {
+    public void deletePluginConfiguration(final Long pPluginId) throws PluginUtilsException {
         try {
             pluginConfRepository.delete(pPluginId);
         } catch (final EmptyResultDataAccessException e) {
@@ -195,22 +195,22 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public List<PluginConfiguration> getPluginConfigurationsByType(IPluginType pType) {
+    public List<PluginConfiguration> getPluginConfigurationsByType(final IPluginType pType) {
 
         final List<PluginMetaData> pluginImpls = this.getPluginsByType(pType);
 
         final List<PluginConfiguration> configurations = new ArrayList<>();
 
         for (final PluginMetaData pluginImpl : pluginImpls) {
-            configurations.addAll(pluginConfRepository
-                    .findByPluginIdOrderByPriorityOrderDesc(pluginImpl.getPluginId()));
+            configurations
+                    .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pluginImpl.getPluginId()));
         }
 
         return configurations;
     }
 
     @Override
-    public PluginMetaData getPluginMetaDataById(String pPluginImplId) {
+    public PluginMetaData getPluginMetaDataById(final String pPluginImplId) {
         return plugins.get(pPluginImplId);
     }
 
@@ -224,7 +224,8 @@ public class PluginService implements IPluginService {
      * @since 1.0
      */
     @Override
-    public PluginConfiguration updatePluginConfiguration(PluginConfiguration pPlugin) throws PluginUtilsException {
+    public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPlugin)
+            throws PluginUtilsException {
         // Check if plugin configuration exists
         PluginConfiguration conf = getPluginConfiguration(pPlugin.getId());
         if (conf == null) {
@@ -239,12 +240,15 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public <T> T getFirstPluginByType(IPluginType pType, Class<T> pReturnInterfaceType) throws PluginUtilsException {
+    public <T> T getFirstPluginByType(final IPluginType pType, final Class<T> pReturnInterfaceType)
+            throws PluginUtilsException {
+
+        T resultPlugin = null;
 
         // Get plugins configuration for given type
         final List<PluginConfiguration> confs = this.getPluginConfigurationsByType(pType);
 
-        if (confs == null || confs.isEmpty()) {
+        if ((confs == null) || confs.isEmpty()) {
             final String message = "No plugin configuration defined for the type : " + pType.getName();
             LOGGER.error(message);
             throw new PluginUtilsException(message);
@@ -253,12 +257,14 @@ public class PluginService implements IPluginService {
         PluginConfiguration configuration = null;
 
         for (final PluginConfiguration conf : confs) {
-            if (configuration == null || conf.getPriorityOrder() < configuration.getPriorityOrder()) {
+            if ((configuration == null) || (conf.getPriorityOrder() < configuration.getPriorityOrder())) {
                 configuration = conf;
             }
         }
-        return getPlugin(configuration.getId(), pReturnInterfaceType);
-
+        if (configuration != null) {
+            resultPlugin = getPlugin(configuration.getId(), pReturnInterfaceType);
+        }
+        return resultPlugin;
     }
 
     @Override
