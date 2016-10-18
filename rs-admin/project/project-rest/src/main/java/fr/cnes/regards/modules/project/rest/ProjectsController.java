@@ -59,23 +59,6 @@ public class ProjectsController extends Controller implements IProjectsSignature
         projectService = pProjectService;
     }
 
-    // @Override
-    // @ExceptionHandler({ EntityNotFoundException.class, NoSuchElementException.class })
-    // @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
-    // public void dataNotFound() {
-    // }
-    //
-    // @Override
-    // @ExceptionHandler(AlreadyExistingException.class)
-    // @ResponseStatus(value = HttpStatus.CONFLICT)
-    // public void dataAlreadyExisting() {
-    // }
-    //
-    // @ExceptionHandler(InvalidEntityException.class)
-    // @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED)
-    // public void operationNotSupported() {
-    // }
-
     @Override
     @ResourceAccess(description = "retrieve the list of project of instance")
     public HttpEntity<List<Resource<Project>>> retrieveProjectList() {
