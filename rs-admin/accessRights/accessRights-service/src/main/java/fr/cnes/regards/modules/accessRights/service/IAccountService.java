@@ -10,6 +10,7 @@ import javax.naming.OperationNotSupportedException;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
 import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 public interface IAccountService {
@@ -76,8 +77,9 @@ public interface IAccountService {
     /**
      * @param pEmail
      * @return
+     * @throws EntityNotFoundException
      */
-    Account retrieveAccountByEmail(String pEmail);
+    Account retrieveAccountByEmail(String pEmail) throws EntityNotFoundException;
 
     /**
      * @param pLogin

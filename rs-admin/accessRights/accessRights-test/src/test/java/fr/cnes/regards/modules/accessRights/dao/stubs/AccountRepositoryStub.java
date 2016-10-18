@@ -23,4 +23,10 @@ public class AccountRepositoryStub extends RepositoryStub<Account> implements IA
         entities.add(new Account(0L, "toto@toto.toto", "Toto", "toto", "tttoto", "mdp", AccountStatus.PENDING,
                 "anotherCode"));
     }
+
+    @Override
+    public Account findOneByEmail(final String pEmail) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

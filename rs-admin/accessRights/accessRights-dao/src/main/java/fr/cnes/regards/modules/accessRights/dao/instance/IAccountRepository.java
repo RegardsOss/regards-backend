@@ -11,4 +11,6 @@ import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 @InstanceEntity
 public interface IAccountRepository extends CrudRepository<Account, Long> {
 
+    Account findOneByEmail(String pEmail);
+
 }

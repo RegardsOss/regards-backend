@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
-@RequestMapping("/accounts")
+@RequestMapping(path = "/accounts")
 public interface IAccountsSignature {
 
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
