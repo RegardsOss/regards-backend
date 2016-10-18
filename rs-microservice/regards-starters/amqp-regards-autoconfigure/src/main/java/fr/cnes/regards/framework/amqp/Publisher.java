@@ -15,6 +15,7 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
@@ -42,13 +43,13 @@ public class Publisher {
      *            the event you want to publish
      * @param pAmqpCommunicationMode
      *            publishing mode
+     * @throws RabbitMQVhostException
      * @throws AddingRabbitMQVhostException
      *             represent any error that could occur while trying to add the new Vhost
      * @throws AddingRabbitMQVhostPermissionException
      *             represent any error that could occur while adding the permission to the specified vhost
      */
-    public final void publish(Object pEvt, AmqpCommunicationMode pAmqpCommunicationMode)
-            throws AddingRabbitMQVhostException, AddingRabbitMQVhostPermissionException {
+    public final void publish(Object pEvt, AmqpCommunicationMode pAmqpCommunicationMode) throws RabbitMQVhostException {
         final String tenant = ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication())
                 .getPrincipal().getTenant();
         final String evtName = pEvt.getClass().getName();

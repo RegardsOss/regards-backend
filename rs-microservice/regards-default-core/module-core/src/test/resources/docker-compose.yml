@@ -1,12 +1,12 @@
 version: '2'
 services:
-#  rabbitmq:
-#    image: rabbitmq:latest
-#    ports:
-#      - "5672:5672"
-#      - "15672:15762"
-#    network_mode: "bridge"
-#    
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15762"
+    network_mode: "bridge"
+    
   rs-frontend:
     image: 172.26.47.52:5000/rs-frontend
     restart: always

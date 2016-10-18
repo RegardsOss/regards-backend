@@ -5,11 +5,9 @@ package fr.cnes.regards.framework.amqp;
 
 import java.util.List;
 
-import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
@@ -22,6 +20,7 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.provider.IProjectsProvider;
 
 /**
@@ -59,20 +58,18 @@ public class Subscriber {
      *            the POJO defining the method handling the corresponding event
      * @param pConnectionFactory
      *            connection factory from context
+     * @throws RabbitMQVhostException
      * @throws AddingRabbitMQVhostException
      *             represent any error that could occur while trying to add the new Vhost
      * @throws AddingRabbitMQVhostPermissionException
      *             represent any error that could occur while adding the permission to the specified vhost
      */
-    public final void subscribeTo(Class<?> pEvt, IHandler<?> pReceiver, ConnectionFactory pConnectionFactory)
-            throws AddingRabbitMQVhostException, AddingRabbitMQVhostPermissionException {
+    public final void subscribeTo(Class<?> pEvt, IHandler<?> pReceiver) throws RabbitMQVhostException {
         final List<String> projects = projectsProvider.retrieveProjectList();
         jackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
         for (String project : projects) {
             // CHECKSTYLE:OFF
-            final SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(pEvt,
-                                                                                                      pConnectionFactory,
-                                                                                                      project,
+            final SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(pEvt, project,
                                                                                                       jackson2JsonMessageConverter,
                                                                                                       pReceiver);
             // CHECKSTYLE:ON
@@ -93,15 +90,15 @@ public class Subscriber {
      * @param pReceiver
      *            handler provided by user to handle the event reception
      * @return a container fully parameterized to listen to the corresponding event for the specified tenant
+     * @throws RabbitMQVhostException
      * @throws AddingRabbitMQVhostException
      *             represent any error that could occur while trying to add the new Vhost
      * @throws AddingRabbitMQVhostPermissionException
      *             represent any error that could occur while adding the permission to the specified vhost
      */
-    public SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(Class<?> pEvt,
-            ConnectionFactory pConnectionFactory, String pProject,
+    public SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(Class<?> pEvt, String pProject,
             Jackson2JsonMessageConverter pJackson2JsonMessageConverter, IHandler pReceiver)
-            throws AddingRabbitMQVhostException, AddingRabbitMQVhostPermissionException {
+            throws RabbitMQVhostException {
         amqpConfiguration.addVhost(pProject);
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         // for now subscription is only for ONE_TO_MANY purpose
@@ -109,8 +106,7 @@ public class Subscriber {
                                                                     pProject);
         final Queue queue = amqpConfiguration.declarequeue(pEvt.getClass(), AmqpCommunicationMode.ONE_TO_MANY,
                                                            pProject);
-        final Binding binding = amqpConfiguration.declareBinding(queue, exchange, "", AmqpCommunicationMode.ONE_TO_MANY,
-                                                                 pProject);
+        amqpConfiguration.declareBinding(queue, exchange, "", AmqpCommunicationMode.ONE_TO_MANY, pProject);
 
         final CachingConnectionFactory connectionFactory = amqpConfiguration.getRabbitConnectionFactory();
         connectionFactory.setVirtualHost(pProject);

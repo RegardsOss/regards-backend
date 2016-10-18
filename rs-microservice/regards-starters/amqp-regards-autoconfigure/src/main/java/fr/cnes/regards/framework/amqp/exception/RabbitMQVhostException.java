@@ -1,21 +1,20 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.core.exception;
+package fr.cnes.regards.framework.amqp.exception;
 
 /**
  * @author svissier
  *
  */
-public class AddingRabbitMQVhostException extends Exception {
+public class RabbitMQVhostException extends Exception {
 
     /**
      *
      */
     private static final long serialVersionUID = 1L;
 
-    public AddingRabbitMQVhostException(String pMessage) {
+    public RabbitMQVhostException(String pMessage) {
         super(pMessage);
     }
-
 }

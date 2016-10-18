@@ -5,4 +5,4 @@
  * @author svissier
  *
  */
-package fr.cnes.regards.modules.core.amqp;
+package fr.cnes.regards.modules.core.validation.test.domain;

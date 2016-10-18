@@ -25,8 +25,7 @@ import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -74,7 +73,7 @@ public class PollerIT {
     private RestTemplate restTemplate;
 
     @Before
-    public void init() throws AddingRabbitMQVhostException, AddingRabbitMQVhostPermissionException {
+    public void init() throws RabbitMQVhostException {
         Assume.assumeTrue(amqpConfiguration.brokerRunning());
         amqpConfiguration.addVhost(TENANT);
         final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
@@ -116,7 +115,7 @@ public class PollerIT {
             LOGGER.info("=================RECEIVED " + wrapperReceived.getContent());
             final TestEvent received = wrapperReceived.getContent();
             Assert.assertEquals(toSend, received);
-        } catch (AddingRabbitMQVhostException | AddingRabbitMQVhostPermissionException e) {
+        } catch (RabbitMQVhostException e) {
             final String msg = "Polling one to many Test Failed";
             LOGGER.error(msg, e);
             Assert.fail(msg);
@@ -151,7 +150,7 @@ public class PollerIT {
             LOGGER.info("=================RECEIVED :" + wrapperReceived.getContent());
             final TestEvent received = wrapperReceived.getContent();
             Assert.assertEquals(toSend, received);
-        } catch (AddingRabbitMQVhostException | AddingRabbitMQVhostPermissionException e) {
+        } catch (RabbitMQVhostException e) {
             final String msg = "Polling one to one Test Failed";
             LOGGER.error(msg, e);
             Assert.fail(msg);
