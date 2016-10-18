@@ -9,7 +9,7 @@ package fr.cnes.regards.framework.security.utils.jwt.exception;
  * @author msordi
  *
  */
-public class MissingClaimException extends Exception {
+public class MissingClaimException extends JwtException {
 
     private static final long serialVersionUID = 1L;
 
