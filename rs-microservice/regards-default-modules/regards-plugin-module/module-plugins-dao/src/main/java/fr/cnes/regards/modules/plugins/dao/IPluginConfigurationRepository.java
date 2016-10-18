@@ -10,20 +10,21 @@ import org.springframework.data.repository.CrudRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 
 /**
- * Interface plugin repository
+ * {@link PluginConfiguration} repository
  * 
  * @author cmertz
  *
  */
+
 public interface IPluginConfigurationRepository extends CrudRepository<PluginConfiguration, Long> {
 
     /**
      *
-     * Find a {@link List} of {@link PluginConfiguration} for a plugin and for current tenant
+     * Find a {@link List} of {@link PluginConfiguration} for a plugin
      *
      * @param pPluginId
-     *            plugin identifier
+     *            the plugin identifier
      * @return a {@link List} of {@link PluginConfiguration}
      */
-    List<PluginConfiguration> findByPluginIdAndTenantOrderByPriorityOrderDesc(String pPluginId);
+    List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pPluginId);
 }
