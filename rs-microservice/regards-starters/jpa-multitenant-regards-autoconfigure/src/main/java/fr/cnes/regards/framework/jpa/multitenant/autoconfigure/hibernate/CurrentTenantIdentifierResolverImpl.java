@@ -33,7 +33,7 @@ public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentif
         final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
                 .getAuthentication();
         if (authentication != null) {
-            tenant = authentication.getProject();
+            tenant = authentication.getTenant();
         }
         return tenant;
     }

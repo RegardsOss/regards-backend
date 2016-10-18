@@ -11,12 +11,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 
 /***
  * {@link PluginParameter} unit testing domain persistence
- * 
+ *
  * @author cmertz
  *
  */
@@ -44,18 +46,22 @@ public class PluginConfigurationTest extends PluginDaoTestDataUtility {
      */
     @Test
     public void createPluginConfiguration() {
-        jwtService.injectToken(PROJECT, USERROLE);
+        try {
+            jwtService.injectToken(PROJECT, USERROLE);
 
-        Assert.assertEquals(0, pluginConfigurationRepository.count());
-        final PluginConfiguration jpaConf = pluginConfigurationRepository.save(getPluginConfiguration());
-        Assert.assertEquals(1, pluginConfigurationRepository.count());
+            Assert.assertEquals(0, pluginConfigurationRepository.count());
+            final PluginConfiguration jpaConf = pluginConfigurationRepository.save(getPluginConfiguration());
+            Assert.assertEquals(1, pluginConfigurationRepository.count());
 
-        Assert.assertEquals(getPluginConfiguration().getLabel(), jpaConf.getLabel());
-        Assert.assertEquals(getPluginConfiguration().getVersion(), jpaConf.getVersion());
-        Assert.assertEquals(getPluginConfiguration().getPluginId(), jpaConf.getPluginId());
+            Assert.assertEquals(getPluginConfiguration().getLabel(), jpaConf.getLabel());
+            Assert.assertEquals(getPluginConfiguration().getVersion(), jpaConf.getVersion());
+            Assert.assertEquals(getPluginConfiguration().getPluginId(), jpaConf.getPluginId());
 
-        pluginConfigurationRepository.deleteAll();
-        Assert.assertEquals(0, pluginConfigurationRepository.count());
+            pluginConfigurationRepository.deleteAll();
+            Assert.assertEquals(0, pluginConfigurationRepository.count());
+        } catch (InvalidJwtException | MissingClaimException e) {
+            Assert.fail("Invalid JWT");
+        }
     }
 
     // /**

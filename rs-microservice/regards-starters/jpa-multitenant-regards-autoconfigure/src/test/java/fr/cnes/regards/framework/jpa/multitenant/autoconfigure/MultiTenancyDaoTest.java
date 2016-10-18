@@ -22,6 +22,8 @@ import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.ICompanyRepository;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.IUserRepository;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -96,12 +98,15 @@ public class MultiTenancyDaoTest {
      *
      * Unit test to check JPA foreign keys management
      *
+     * @throws MissingClaimException
+     * @throws InvalidJwtException
+     *
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Unit test to check JPA foreign keys management")
     @Test
-    public void foreignKeyTests() {
+    public void foreignKeyTests() throws InvalidJwtException, MissingClaimException {
 
         jwtService.injectToken(TENANT_TEST_1, TEST_ROLE);
 
@@ -118,13 +123,16 @@ public class MultiTenancyDaoTest {
     /**
      *
      * Unit test to check JPA uses the good tenant through the tenant resolver
+     * 
+     * @throws MissingClaimException
+     * @throws InvalidJwtException
      *
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Unit test to check that JPA uses the good tenant through the tenant resolver")
     @Test
-    public void multitenancyAccessTest() {
+    public void multitenancyAccessTest() throws InvalidJwtException, MissingClaimException {
 
         final List<User> results = new ArrayList<>();
 

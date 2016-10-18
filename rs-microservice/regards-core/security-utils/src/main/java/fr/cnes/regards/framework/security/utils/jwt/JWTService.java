@@ -54,17 +54,19 @@ public class JWTService {
      *
      * @param pProject
      * @param pRole
+     * @throws MissingClaimException
+     * @throws InvalidJwtException
      * @since 1.0-SNAPSHOT
      */
-    public void injectToken(final String pProject, final String pRole) {
+    public void injectToken(final String pProject, final String pRole)
+            throws InvalidJwtException, MissingClaimException {
         String token = null;
         if (scopesTokensMap_.get(pProject) != null) {
             token = scopesTokensMap_.get(pProject);
         } else {
             token = generateToken(pProject, "", "", pRole);
         }
-        final JWTAuthentication auth = new JWTAuthentication(token);
-        auth.setProject(pProject);
+        final JWTAuthentication auth = parseToken(new JWTAuthentication(token));
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
@@ -87,13 +89,13 @@ public class JWTService {
                     .parseClaimsJws(pAuthentication.getJwt());
             // OK, trusted JWT parsed and validated
 
-            final String project = claims.getBody().get(CLAIM_PROJECT, String.class);
+            UserDetails user = new UserDetails();
+
+            String project = claims.getBody().get(CLAIM_PROJECT, String.class);
             if (project == null) {
                 throw new MissingClaimException(CLAIM_PROJECT);
             }
-            pAuthentication.setProject(project);
-
-            final UserDetails user = new UserDetails();
+            user.setTenant(project);
 
             final String email = claims.getBody().get(CLAIM_EMAIL, String.class);
             if (email == null) {
