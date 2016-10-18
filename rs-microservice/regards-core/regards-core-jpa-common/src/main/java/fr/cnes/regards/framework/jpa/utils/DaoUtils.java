@@ -7,7 +7,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.Entity;
 
 import org.slf4j.Logger;
@@ -15,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
@@ -27,9 +25,8 @@ import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
  * Tools class for DAO
  *
  * @author CS
- * @since TODO
+ * @since 1.0-SNAPSHOT
  */
-@Component
 public class DaoUtils {
 
     /**
@@ -49,24 +46,24 @@ public class DaoUtils {
      *
      * @since 1.0-SNAPSHOT
      */
-    @PostConstruct
-    public void checkClassPath() {
+    public static void checkClassPath(final String packageToScan) throws MultiDataBasesException {
 
         LOG.info("Checking classpath for conflicts between instance and projects databases ...");
 
-        final List<Class<?>> instanceClasses = DaoUtils.scanForJpaPackages(PACKAGES_TO_SCAN, InstanceEntity.class,
-                                                                           null);
-        final List<Class<?>> projectsClasses = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, Entity.class,
+        final List<Class<?>> instanceClasses = DaoUtils.scanForJpaPackages(packageToScan, InstanceEntity.class, null);
+        final List<Class<?>> projectsClasses = DaoUtils.scanForJpaPackages(packageToScan, Entity.class,
                                                                            InstanceEntity.class);
         final List<String> instancePackages = new ArrayList<>();
         instanceClasses.forEach(instanceClass -> instancePackages.add(instanceClass.getPackage().getName()));
         final List<String> projectPackages = new ArrayList<>();
         projectsClasses.forEach(projectClass -> projectPackages.add(projectClass.getPackage().getName()));
         instancePackages.forEach(instancePackage -> {
-            if (projectPackages.contains(instancePackage)) {
-                final String message = "Invalid classpath. Package " + instancePackage
-                        + " is used for instance DAO Entities and projects DAO Entities";
-                throw new MultiDataBasesException(message);
+            for (final String pack : projectPackages) {
+                if (pack.contains(instancePackage) || instancePackage.contains(pack)) {
+                    final String message = "Invalid classpath. Package " + instancePackage
+                            + " is used for instance DAO Entities and projects DAO Entities";
+                    throw new MultiDataBasesException(message);
+                }
             }
         });
 
@@ -87,8 +84,9 @@ public class DaoUtils {
      * @return matching classes
      * @since 1.0-SNAPSHOT
      */
-    public static List<Class<?>> scanForJpaPackages(String pPackageToScan,
-            Class<? extends Annotation> pIncludeAnnotation, Class<? extends Annotation> pExcludeAnnotation) {
+    public static List<Class<?>> scanForJpaPackages(final String pPackageToScan,
+            final Class<? extends Annotation> pIncludeAnnotation,
+            final Class<? extends Annotation> pExcludeAnnotation) {
         final List<Class<?>> packages = new ArrayList<>();
         final ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
