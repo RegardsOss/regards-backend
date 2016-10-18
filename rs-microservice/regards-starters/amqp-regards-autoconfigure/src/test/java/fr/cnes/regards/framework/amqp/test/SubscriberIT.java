@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import fr.cnes.regards.framework.amqp.Subscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.amqp.test.domain.TestReceiver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -70,12 +68,6 @@ public class SubscriberIT {
     private Subscriber subscriber;
 
     /**
-     * bean provided
-     */
-    @Autowired
-    private ConnectionFactory connectionFactory;
-
-    /**
      * message received
      */
     private TestEvent received;
@@ -99,8 +91,8 @@ public class SubscriberIT {
         Assume.assumeTrue(amqpConfiguration.brokerRunning());
         receiver = new TestReceiver();
         try {
-            subscriber.subscribeTo(TestEvent.class, receiver, connectionFactory);
-        } catch (AddingRabbitMQVhostException | AddingRabbitMQVhostPermissionException e) {
+            subscriber.subscribeTo(TestEvent.class, receiver);
+        } catch (RabbitMQVhostException e) {
             LOGGER.error(e.getMessage(), e);
             Assert.fail("Error during init");
         }

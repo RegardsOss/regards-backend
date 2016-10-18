@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.amqp.test.domain.TestReceiver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -104,7 +105,7 @@ public class PublisherIT {
      *
      */
     @Before
-    public void init() throws AddingRabbitMQVhostException, AddingRabbitMQVhostPermissionException {
+    public void init() throws RabbitMQVhostException {
         Assume.assumeTrue(amqpConfiguration.brokerRunning());
         amqpConfiguration.addVhost(TENANT);
         ((CachingConnectionFactory) rabbitAdmin.getRabbitTemplate().getConnectionFactory()).setVirtualHost(TENANT);
@@ -145,7 +146,7 @@ public class PublisherIT {
             Thread.sleep(timeToWaitForRabbitToSendUsTheMessage);
             received = testReceiver.getMessage();
             Assert.assertEquals(sended, received);
-        } catch (InterruptedException | AddingRabbitMQVhostException | AddingRabbitMQVhostPermissionException e) {
+        } catch (InterruptedException | RabbitMQVhostException e) {
             final String msg = "Publish Test Failed";
             LOGGER.error(msg, e);
             Assert.fail(msg);
