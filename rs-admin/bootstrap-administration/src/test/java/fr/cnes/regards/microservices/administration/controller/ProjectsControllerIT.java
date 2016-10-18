@@ -147,7 +147,7 @@ public class ProjectsControllerIT extends AbstractRegardsIntegrationTest {
         final Project notSameID = new Project(454L, "desc", "icon", Boolean.TRUE, "AnotherName");
 
         expectations = new ArrayList<>(1);
-        expectations.add(status().isMethodNotAllowed());
+        expectations.add(status().isUnprocessableEntity());
         performPut(apiProjectId, jwt, notSameID, expectations, errorMessage, "name");
 
     }

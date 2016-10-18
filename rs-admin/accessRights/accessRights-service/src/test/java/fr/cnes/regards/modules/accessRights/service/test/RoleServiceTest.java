@@ -7,9 +7,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-
-import javax.naming.OperationNotSupportedException;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -27,6 +24,8 @@ import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.modules.accessRights.service.RoleService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
  * Test class for {@link RoleService}.
@@ -120,10 +119,10 @@ public class RoleServiceTest {
         Mockito.verify(roleRepository).save(expected);
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to update a role which does not exist.")
-    public void updateRoleNotExistent() throws NoSuchElementException, OperationNotSupportedException {
+    public void updateRoleNotExistent() throws EntityNotFoundException, InvalidValueException {
         final Long id = 58354L;
         final Role notExistent = new Role(id);
         Mockito.when(roleRepository.exists(id)).thenReturn(false);
@@ -131,10 +130,10 @@ public class RoleServiceTest {
         roleService.updateRole(id, notExistent);
     }
 
-    @Test(expected = OperationNotSupportedException.class)
+    @Test(expected = InvalidValueException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to update a role which id is different from the passed one.")
-    public void updateRoleWrongId() throws NoSuchElementException, OperationNotSupportedException {
+    public void updateRoleWrongId() throws EntityNotFoundException, InvalidValueException {
         final Long id = 58354L;
         final Role role = new Role(9999L);
         assertTrue(!id.equals(role.getId()));
@@ -145,7 +144,7 @@ public class RoleServiceTest {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update a role in a regular case.")
-    public void updateRole() throws NoSuchElementException, OperationNotSupportedException {
+    public void updateRole() throws EntityNotFoundException, InvalidValueException {
         final Long passedRoleId = 0L;
 
         // Define the previous role in db
@@ -175,7 +174,7 @@ public class RoleServiceTest {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to delete a role in a regular case.")
-    public void removeRole() {
+    public void removeRole() throws EntityNotFoundException {
         final Long id = 0L;
 
         Mockito.when(roleRepository.exists(id)).thenReturn(true);
@@ -191,10 +190,10 @@ public class RoleServiceTest {
         Mockito.verify(roleRepository).delete(id);
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to update permissions of a role which does not exist.")
-    public void updateRoleResourcesAccessNotExistent() throws NoSuchElementException {
+    public void updateRoleResourcesAccessNotExistent() throws EntityNotFoundException {
         final Long id = 44255L;
 
         Mockito.when(roleRepository.exists(id)).thenReturn(false);
@@ -207,7 +206,7 @@ public class RoleServiceTest {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to add resources accesses on a role.")
-    public void updateRoleResourcesAccessAddingResourcesAccess() throws NoSuchElementException {
+    public void updateRoleResourcesAccessAddingResourcesAccess() throws EntityNotFoundException {
         final Long id = 0L;
         final Role role = new Role(id, "name", null, new ArrayList<>(), new ArrayList<>());
 
@@ -236,7 +235,7 @@ public class RoleServiceTest {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update resources accesses of a role.")
-    public void updateRoleResourcesAccessUpdatingResourcesAccess() throws NoSuchElementException {
+    public void updateRoleResourcesAccessUpdatingResourcesAccess() throws EntityNotFoundException {
         final Long roleId = 0L;
         final List<ResourcesAccess> initRAs = new ArrayList<>();
         initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));
@@ -269,7 +268,7 @@ public class RoleServiceTest {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to remove all resources accesses of a role.")
-    public void clearRoleResourcesAccess() {
+    public void clearRoleResourcesAccess() throws EntityNotFoundException {
         final Long id = 0L;
         final List<ResourcesAccess> resourcesAccesses = new ArrayList<>();
         resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));
@@ -295,7 +294,7 @@ public class RoleServiceTest {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to retrieve all users of a role.")
-    public void retrieveRoleProjectUserList() {
+    public void retrieveRoleProjectUserList() throws EntityNotFoundException {
         final Long id = 0L;
         final List<ProjectUser> expected = new ArrayList<>();
         expected.add(new ProjectUser());
@@ -330,7 +329,7 @@ public class RoleServiceTest {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to retrieve all resources accesses of a role.")
-    public void retrieveRoleResourcesAccessList() {
+    public void retrieveRoleResourcesAccessList() throws EntityNotFoundException {
         final Long id = 0L;
         final List<ResourcesAccess> expected = new ArrayList<>();
         expected.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));

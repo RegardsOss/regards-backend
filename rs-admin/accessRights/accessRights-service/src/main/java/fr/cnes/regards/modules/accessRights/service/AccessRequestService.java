@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.modules.accessRights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 @Service
@@ -40,19 +41,19 @@ public class AccessRequestService implements IAccessRequestService {
     }
 
     @Override
-    public void removeAccessRequest(final Long pAccessId) {
+    public void removeAccessRequest(final Long pAccessId) throws EntityNotFoundException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void acceptAccessRequest(final Long pAccessId) {
+    public void acceptAccessRequest(final Long pAccessId) throws EntityNotFoundException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void denyAccessRequest(final Long pAccessId) {
+    public void denyAccessRequest(final Long pAccessId) throws EntityNotFoundException {
         // TODO Auto-generated method stub
 
     }

@@ -33,11 +33,11 @@ public interface IProjectService {
      * @param pProjectName
      *            project name to retrieve
      * @return Project
-     * @throws EntityException
-     *             {@link EntityNotFoundException} Entity ro retrieve does not exists.
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Project} with passed <code>name</code> exists.
      * @since 1.0-SNAPSHOT
      */
-    Project retrieveProject(String pProjectName) throws EntityException;
+    Project retrieveProject(String pProjectName) throws EntityNotFoundException;
 
     /**
      *
@@ -46,11 +46,11 @@ public interface IProjectService {
      * @param pProjectName
      *            Project name to delete
      * @return Remaining projects
-     * @throws EntityException
-     *             {@link EntityNotFoundException} Entity ro retrieve does not exists.
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Project} with passed <code>name</code> exists.
      * @since 1.0-SNAPSHOT
      */
-    List<Project> deleteProject(String pProjectName) throws EntityException;
+    List<Project> deleteProject(String pProjectName) throws EntityNotFoundException;
 
     /**
      *

@@ -4,9 +4,6 @@
 package fr.cnes.regards.modules.accessRights.fallback;
 
 import java.util.List;
-import java.util.NoSuchElementException;
-
-import javax.naming.OperationNotSupportedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +15,7 @@ import fr.cnes.regards.modules.accessRights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessRights.domain.CodeType;
 import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
@@ -62,7 +60,7 @@ public class AccountsFallback implements IAccountsClient {
 
     @Override
     public HttpEntity<Void> updateAccount(final Long pAccountId, final Account pUpdatedAccount)
-            throws OperationNotSupportedException {
+            throws EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
         return null;
     }
@@ -107,7 +105,7 @@ public class AccountsFallback implements IAccountsClient {
 
     @Override
     public HttpEntity<Boolean> validatePassword(final String pLogin, final String pPassword)
-            throws NoSuchElementException {
+            throws EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
         return null;
     }
