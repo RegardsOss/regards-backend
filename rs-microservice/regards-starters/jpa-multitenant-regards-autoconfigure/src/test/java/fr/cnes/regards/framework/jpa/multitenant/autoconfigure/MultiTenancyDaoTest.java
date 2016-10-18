@@ -122,7 +122,7 @@ public class MultiTenancyDaoTest {
             userRepository.save(new User("name", "lastname", comp));
 
             Assert.assertNotNull(userRepository.findAll().iterator().next().getCompany().getId().equals(comp.getId()));
-        } catch (JwtException e) {
+        } catch (final JwtException e) {
             LOG.error(INVALID_JWT);
             Assert.fail(INVALID_JWT);
         }
@@ -154,6 +154,10 @@ public class MultiTenancyDaoTest {
             // Delete all previous data if any
             userRepository.deleteAll();
 
+            jwtService.injectToken(ProjectClientStub.PROJECT_NAME, TEST_ROLE);
+            // Delete all previous data if any
+            userRepository.deleteAll();
+
             // Set tenant to project test1
             jwtService.injectToken(TENANT_TEST_1, TEST_ROLE);
             // Add new users
@@ -161,10 +165,6 @@ public class MultiTenancyDaoTest {
             newUser = userRepository.save(newUser);
             User newUser2 = new User("Alain", "Deloin");
             newUser2 = userRepository.save(newUser2);
-
-        jwtService.injectToken(ProjectClientStub.PROJECT_NAME, TEST_ROLE);
-        // Delete all previous data if any
-        userRepository.deleteAll();
 
             // Check results
             Iterable<User> list = userRepository.findAll();
@@ -201,7 +201,7 @@ public class MultiTenancyDaoTest {
             } catch (final CannotCreateTransactionException e) {
                 // Nothing to do
             }
-        } catch (JwtException e) {
+        } catch (final JwtException e) {
             LOG.error(INVALID_JWT);
             Assert.fail(INVALID_JWT);
         }
