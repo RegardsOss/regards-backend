@@ -58,7 +58,7 @@ public class Poller {
         amqpConfiguration.addVhost(pTenant);
         final Exchange exchange = amqpConfiguration.declareExchange(pEvt.getClass().getName(), pAmqpCommunicationMode,
                                                                     pTenant);
-        final Queue queue = amqpConfiguration.declarequeue(pEvt, pAmqpCommunicationMode, pTenant);
+        final Queue queue = amqpConfiguration.declareQueue(pEvt, pAmqpCommunicationMode, pTenant);
         amqpConfiguration.declareBinding(queue, exchange, exchange.getName(), pAmqpCommunicationMode, pTenant);
 
         SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), pTenant);

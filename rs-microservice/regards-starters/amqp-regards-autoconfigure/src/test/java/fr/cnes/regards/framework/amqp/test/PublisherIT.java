@@ -13,12 +13,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.FanoutExchange;
+import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -31,6 +30,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
@@ -47,7 +47,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AmqpTestsConfiguration.class })
-@SpringBootTest(classes = ApplicationTest.class)
+@SpringBootTest(classes = Application.class)
 @DirtiesContext
 public class PublisherIT {
 
@@ -91,12 +91,16 @@ public class PublisherIT {
     @Autowired
     private Publisher publisher;
 
+    /**
+     *
+     */
     @Autowired
     private RabbitAdmin rabbitAdmin;
 
     /**
      * create and start a message listener to receive the published event
      *
+     * @throws RabbitMQVhostException
      * @throws AddingRabbitMQVhostPermissionException
      *             exception that will be thrown if the permission on a Vhost are not added correctly
      * @throws AddingRabbitMQVhostException
@@ -109,12 +113,12 @@ public class PublisherIT {
         amqpConfiguration.addVhost(TENANT);
         ((CachingConnectionFactory) rabbitAdmin.getRabbitTemplate().getConnectionFactory()).setVirtualHost(TENANT);
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        final FanoutExchange exchange = new FanoutExchange(TestEvent.class.getName());
-        rabbitAdmin.declareExchange(exchange);
-        final Queue queue = new Queue(amqpConfiguration.getUniqueName(), true);
-        rabbitAdmin.declareQueue(queue);
-        final Binding binding = BindingBuilder.bind(queue).to(exchange);
-        rabbitAdmin.declareBinding(binding);
+
+        final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
+                                                                    AmqpCommunicationMode.ONE_TO_MANY, TENANT);
+        final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT);
+        amqpConfiguration.declareBinding(queue, exchange, TestEvent.class.getName(), AmqpCommunicationMode.ONE_TO_MANY,
+                                         TENANT);
 
         container.setConnectionFactory(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
         final MessageListenerAdapter messageListener = new MessageListenerAdapter(testReceiver, "handle");
@@ -148,6 +152,50 @@ public class PublisherIT {
             final String msg = "Publish Test Failed";
             LOGGER.error(msg, e);
             Assert.fail(msg);
+        } catch (JwtException e) {
+            LOGGER.error(INVALID_JWT);
+            Assert.fail(INVALID_JWT);
+        }
+    }
+
+    /**
+     * Purpose: Send a message to the message broker using the publish client with priority
+     */
+    @Purpose("Send a message to the message broker using the publish client with priority")
+    @Test
+    public void testPublishPriority() {
+        try {
+            jwtService.injectToken(TENANT, "USER");
+            final TestEvent priority0 = new TestEvent("priority 0");
+            final TestEvent priority1 = new TestEvent("priority 1");
+            final TestEvent priority02 = new TestEvent("priority 02");
+            final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+
+            final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
+                                                                        AmqpCommunicationMode.ONE_TO_ONE, TENANT);
+            final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
+                                                               TENANT);
+            amqpConfiguration.declareBinding(queue, exchange, TestEvent.class.getName(),
+                                             AmqpCommunicationMode.ONE_TO_ONE, TENANT);
+            publisher.publish(priority0, AmqpCommunicationMode.ONE_TO_ONE, 0);
+            publisher.publish(priority1, AmqpCommunicationMode.ONE_TO_ONE, 1);
+            publisher.publish(priority02, AmqpCommunicationMode.ONE_TO_ONE, 0);
+            // TODO: poll
+            final RabbitTemplate rabbitTemplate = rabbitAdmin.getRabbitTemplate();
+            ((CachingConnectionFactory) rabbitTemplate.getConnectionFactory()).setVirtualHost(TENANT);
+            rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter);
+            TenantWrapper<TestEvent> wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
+                    .receiveAndConvert(TestEvent.class.getName());
+            Assert.assertEquals(priority1, wrappedMessage.getContent());
+
+            wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate.receiveAndConvert(TestEvent.class.getName());
+            Assert.assertEquals(priority0, wrappedMessage.getContent());
+
+            wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate.receiveAndConvert(TestEvent.class.getName());
+            Assert.assertEquals(priority02, wrappedMessage.getContent());
+        } catch (RabbitMQVhostException e) {
+            final String msg = "Publish Test Failed";
+            LOGGER.error(msg, e);
         } catch (JwtException e) {
             LOGGER.error(INVALID_JWT);
             Assert.fail(INVALID_JWT);
