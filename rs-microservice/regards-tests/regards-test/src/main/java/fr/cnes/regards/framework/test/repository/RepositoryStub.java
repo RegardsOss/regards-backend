@@ -81,8 +81,7 @@ public class RepositoryStub<T extends Identifiable<Long>> implements CrudReposit
     @Override
     public Iterable<T> findAll(final Iterable<Long> pIds) {
         try (final Stream<Long> stream = StreamSupport.stream(pIds.spliterator(), false)) {
-            final List<T> result = stream.map(id -> findOne(id)).collect(Collectors.toList());
-            return result;
+            return stream.map(id -> findOne(id)).collect(Collectors.toList());
         }
     }
 
