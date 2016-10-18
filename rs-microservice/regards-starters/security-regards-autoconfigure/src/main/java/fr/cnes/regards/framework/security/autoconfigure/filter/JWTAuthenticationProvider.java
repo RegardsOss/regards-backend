@@ -12,8 +12,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 
 /**
  * REGARDS JWT provider to authenticate request issuer parsing JWT
@@ -37,7 +36,7 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
             // Fill authentication parsing JWT token
             final JWTAuthentication auth = jwtService.parseToken((JWTAuthentication) pAuthentication);
             return auth;
-        } catch (InvalidJwtException | MissingClaimException e) {
+        } catch (JwtException e) {
             throw new InsufficientAuthenticationException(e.getMessage());
         }
 

@@ -11,8 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 
 /***
@@ -55,7 +54,7 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
 
             pluginParameterRepository.deleteAll();
             Assert.assertEquals(0, pluginParameterRepository.count());
-        } catch (InvalidJwtException | MissingClaimException e) {
+        } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
     }
@@ -81,7 +80,7 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
 
             pluginParameterRepository.deleteAll();
             Assert.assertEquals(0, pluginParameterRepository.count());
-        } catch (InvalidJwtException | MissingClaimException e) {
+        } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
     }
@@ -103,7 +102,7 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
 
             pluginParameterRepository.deleteAll();
             Assert.assertEquals(0, pluginParameterRepository.count());
-        } catch (InvalidJwtException | MissingClaimException e) {
+        } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
     }
@@ -122,7 +121,7 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
 
             pluginParameterRepository.deleteAll();
             Assert.assertEquals(0, pluginParameterRepository.count());
-        } catch (InvalidJwtException | MissingClaimException e) {
+        } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
     }

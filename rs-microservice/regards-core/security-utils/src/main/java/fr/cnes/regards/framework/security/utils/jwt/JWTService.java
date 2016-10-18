@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -58,8 +59,7 @@ public class JWTService {
      * @throws InvalidJwtException
      * @since 1.0-SNAPSHOT
      */
-    public void injectToken(final String pProject, final String pRole)
-            throws InvalidJwtException, MissingClaimException {
+    public void injectToken(final String pProject, final String pRole) throws JwtException {
         String token = null;
         if (scopesTokensMap_.get(pProject) != null) {
             token = scopesTokensMap_.get(pProject);
@@ -81,8 +81,7 @@ public class JWTService {
      * @throws InvalidJwtException
      *             Invalid JWT signature
      */
-    public JWTAuthentication parseToken(final JWTAuthentication pAuthentication)
-            throws InvalidJwtException, MissingClaimException {
+    public JWTAuthentication parseToken(final JWTAuthentication pAuthentication) throws JwtException {
 
         try {
             final Jws<Claims> claims = Jwts.parser().setSigningKey(TextCodec.BASE64.encode(secret_))
