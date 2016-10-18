@@ -76,6 +76,16 @@ public class InstanceJpaAutoConfiguration {
 
     /**
      *
+     * Constructor. Check for classpath errors.
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    public InstanceJpaAutoConfiguration() {
+        DaoUtils.checkClassPath(DaoUtils.PACKAGES_TO_SCAN);
+    }
+
+    /**
+     *
      * Create TransactionManager for instance datasource
      *
      * @param pBuilder

@@ -90,6 +90,16 @@ public class MultitenantJpaAutoConfiguration {
 
     /**
      *
+     * Constructor. Check for classpath errors.
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    public MultitenantJpaAutoConfiguration() {
+        DaoUtils.checkClassPath(DaoUtils.PACKAGES_TO_SCAN);
+    }
+
+    /**
+     *
      * Create Transaction manager for multitenancy projects datasources
      *
      * @param pBuilder

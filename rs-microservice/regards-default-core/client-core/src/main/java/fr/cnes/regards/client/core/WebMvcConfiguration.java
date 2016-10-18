@@ -35,7 +35,7 @@ public class WebMvcConfiguration extends EnableWebMvcConfiguration {
 
     @Override
     protected RequestMappingHandlerMapping createRequestMappingHandlerMapping() {
-        final RequestMappingHandlerMapping mapping = new RequestMappingHandlerMapping() {
+        return new RequestMappingHandlerMapping() {
 
             @Override
             protected boolean isHandler(final Class<?> beanType) {
@@ -43,6 +43,5 @@ public class WebMvcConfiguration extends EnableWebMvcConfiguration {
                         && (AnnotationUtils.findAnnotation(beanType, FeignClient.class) == null);
             }
         };
-        return mapping;
     }
 }

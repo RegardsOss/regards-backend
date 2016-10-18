@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @since 1.0-SNAPSHOT
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { MultiTenancyDaoTestConfiguration.class })
+@ContextConfiguration(classes = { DaoTransactionTestConfiguration.class })
 @DirtiesContext
 public class DaoTransactionTest {
 
@@ -52,7 +52,7 @@ public class DaoTransactionTest {
     /**
      *
      * Test for multitenant transactions.
-     * 
+     *
      * @throws MissingClaimException
      * @throws InvalidJwtException
      *

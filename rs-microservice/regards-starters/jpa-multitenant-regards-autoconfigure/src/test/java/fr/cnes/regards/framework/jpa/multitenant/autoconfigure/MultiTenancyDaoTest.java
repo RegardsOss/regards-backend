@@ -21,6 +21,7 @@ import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.Company;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.ICompanyRepository;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.IUserRepository;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.stub.ProjectClientStub;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
@@ -123,7 +124,7 @@ public class MultiTenancyDaoTest {
     /**
      *
      * Unit test to check JPA uses the good tenant through the tenant resolver
-     * 
+     *
      * @throws MissingClaimException
      * @throws InvalidJwtException
      *
@@ -142,6 +143,10 @@ public class MultiTenancyDaoTest {
         userRepository.deleteAll();
         // Set tenant to project 2
         jwtService.injectToken(TENANT_TEST_2, TEST_ROLE);
+        // Delete all previous data if any
+        userRepository.deleteAll();
+
+        jwtService.injectToken(ProjectClientStub.PROJECT_NAME, TEST_ROLE);
         // Delete all previous data if any
         userRepository.deleteAll();
 
