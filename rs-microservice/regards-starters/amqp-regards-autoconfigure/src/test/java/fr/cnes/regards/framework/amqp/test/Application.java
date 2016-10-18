@@ -17,7 +17,7 @@ import org.springframework.web.client.RestTemplate;
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.framework.security.utils.jwt",
         "fr.cnes.regards.framework.amqp", "fr.cnes.regards.modules.project" })
-public class ApplicationTest {
+public class Application {
 
     @Bean
     public RestTemplate restTemplate() {
@@ -33,7 +33,7 @@ public class ApplicationTest {
      *             Exception
      */
     public static void main(String[] pArgs) throws InterruptedException {
-        SpringApplication.run(ApplicationTest.class, pArgs);
+        SpringApplication.run(Application.class, pArgs);
     }
 
 }
