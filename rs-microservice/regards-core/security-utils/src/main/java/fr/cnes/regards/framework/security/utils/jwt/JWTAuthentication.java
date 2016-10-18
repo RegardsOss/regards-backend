@@ -100,6 +100,15 @@ public class JWTAuthentication implements Authentication {
     }
 
     /**
+     * Abstraction on how to get the tenant
+     *
+     * @return tenant for whom the JWT was provided
+     */
+    public String getTenant() {
+        return user.getTenant();
+    }
+
+    /**
      * @return the jwt
      */
     public String getJwt() {

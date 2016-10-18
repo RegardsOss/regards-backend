@@ -19,6 +19,8 @@ import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.exception.DaoTest
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.IUserRepository;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
 
 /**
  *
@@ -75,10 +77,12 @@ public class DaoUserService {
      *            Tenant or project to use
      * @throws DaoTestException
      *             Simulated error always thrown to activate JPA rollback
+     * @throws MissingClaimException
+     * @throws InvalidJwtException
      * @since 1.0-SNAPSHOT
      */
     @Transactional(transactionManager = "multitenantsJpaTransactionManager", rollbackFor = DaoTestException.class)
-    public void addWithError(final String pTenant) throws DaoTestException {
+    public void addWithError(final String pTenant) throws DaoTestException, InvalidJwtException, MissingClaimException {
         final String message = "new user created id=";
         jwtService.injectToken(pTenant, "USER");
         User plop = userRepository.save(new User(USER_NAME_ERROR, USER_LAST_NAME_ERROR));
@@ -97,9 +101,11 @@ public class DaoUserService {
      *
      * @param pTenant
      *            Tenant or project to use
+     * @throws MissingClaimException
+     * @throws InvalidJwtException
      * @since 1.0-SNAPSHOT
      */
-    public void addWithoutError(final String pTenant) {
+    public void addWithoutError(final String pTenant) throws InvalidJwtException, MissingClaimException {
         jwtService.injectToken(pTenant, "USER");
         final User plop = userRepository.save(new User("valid", "thisUser"));
         LOG.info("New user created id=" + plop.getId());
@@ -112,9 +118,11 @@ public class DaoUserService {
      * @param pTenant
      *            Tenant or project to use
      * @return Result list of users
+     * @throws MissingClaimException
+     * @throws InvalidJwtException
      * @since 1.0-SNAPSHOT
      */
-    public List<User> getUsers(final String pTenant) {
+    public List<User> getUsers(final String pTenant) throws InvalidJwtException, MissingClaimException {
         jwtService.injectToken(pTenant, "USER");
         final Iterable<User> list = userRepository.findAll();
         final List<User> results = new ArrayList<>();
@@ -128,9 +136,11 @@ public class DaoUserService {
      *
      * @param pTenant
      *            Tenant or project to use
+     * @throws MissingClaimException
+     * @throws InvalidJwtException
      * @since 1.0-SNAPSHOT
      */
-    public void deleteAll(final String pTenant) {
+    public void deleteAll(final String pTenant) throws InvalidJwtException, MissingClaimException {
         jwtService.injectToken(pTenant, "USER");
         userRepository.deleteAll();
     }

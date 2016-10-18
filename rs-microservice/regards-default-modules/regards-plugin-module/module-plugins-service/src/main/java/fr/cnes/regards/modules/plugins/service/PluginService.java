@@ -203,7 +203,7 @@ public class PluginService implements IPluginService {
 
         for (final PluginMetaData pluginImpl : pluginImpls) {
             configurations.addAll(pluginConfRepository
-                    .findByPluginIdAndTenantOrderByPriorityOrderDesc(pluginImpl.getPluginId()));
+                    .findByPluginIdOrderByPriorityOrderDesc(pluginImpl.getPluginId()));
         }
 
         return configurations;

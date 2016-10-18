@@ -10,6 +10,7 @@ import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -17,6 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.springframework.hateoas.Identifiable;
 
@@ -66,17 +68,19 @@ public class PluginConfiguration implements Identifiable<Long> {
     private Boolean isActive;
 
     /**
-     * The plugin class
+     * The plugin class name
      */
-    private PluginMetaData pluginMetaData;
+    private String pluginClassName;
 
     /**
      * Configuration parameters of the plugin
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE",
-            joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id") },
-            inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id") })
+            joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_ID")) },
+            inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMMETER_ID")) })
     private List<PluginParameter> parameters;
 
     /**
@@ -103,7 +107,7 @@ public class PluginConfiguration implements Identifiable<Long> {
         super();
         pluginId = pPluginMetaData.getPluginId();
         version = pPluginMetaData.getVersion();
-        pluginMetaData = pPluginMetaData;
+        pluginClassName = pPluginMetaData.getPluginClass().getName();
         parameters = pParameters;
         priorityOrder = pOrder;
         label = pLabel;
@@ -187,12 +191,12 @@ public class PluginConfiguration implements Identifiable<Long> {
         parameters = pParameters;
     }
 
-    public PluginMetaData getPluginMetaData() {
-        return pluginMetaData;
-    }
-
     public Boolean getIsActive() {
         return isActive;
+    }
+
+    public String getPluginClassName() {
+        return pluginClassName;
     }
 
     public void setIsActive(Boolean pIsActive) {

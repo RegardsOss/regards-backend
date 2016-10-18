@@ -30,6 +30,11 @@ public class UserDetails implements Serializable {
     private String email;
 
     /**
+     * Tenant the user is requesting
+     */
+    private String tenant_;
+
+    /**
      * @return the name
      */
     public String getName() {
@@ -57,6 +62,21 @@ public class UserDetails implements Serializable {
      */
     public void setEmail(String pEmail) {
         email = pEmail;
+    }
+
+    /**
+     * @return the tenant
+     */
+    public String getTenant() {
+        return tenant_;
+    }
+
+    /**
+     * @param pTenant
+     *            the tenant to set
+     */
+    public void setTenant(String pTenant) {
+        tenant_ = pTenant;
     }
 
 }

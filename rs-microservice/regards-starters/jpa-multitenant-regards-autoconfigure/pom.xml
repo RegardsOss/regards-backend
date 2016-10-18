@@ -15,6 +15,7 @@
 	</parent>
 
 	<dependencies>
+		<!-- REGARDS -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>regards-core-jpa-common</artifactId>
@@ -22,8 +23,8 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
+			<groupId>fr.cnes.regards.modules.project</groupId>
+			<artifactId>project-client</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -31,9 +32,14 @@
 			<artifactId>security-utils</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!-- COTS -->
 		<dependency>
 			<groupId>javax.el</groupId>
 			<artifactId>javax.el-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<!-- Tests -->
