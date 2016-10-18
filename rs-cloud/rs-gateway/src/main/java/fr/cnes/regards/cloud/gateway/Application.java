@@ -4,15 +4,14 @@
 package fr.cnes.regards.cloud.gateway;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 
 import fr.cnes.regards.client.core.ClientRequestInterceptor;
 import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
+import fr.cnes.regards.modules.accessRights.client.IAccountsClient;
 
 /**
  *
@@ -24,9 +23,7 @@ import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
  * @since 1.0-SNAPSHOT
  */
 @SpringBootApplication
-@ComponentScan(basePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.cloud" })
-@EnableAutoConfiguration
-@EnableFeignClients(defaultConfiguration = { ClientRequestInterceptor.class })
+@EnableFeignClients(clients = IAccountsClient.class, defaultConfiguration = { ClientRequestInterceptor.class })
 @EnableZuulProxy
 public class Application {
 
@@ -53,4 +50,5 @@ public class Application {
     public ProxyLogFilter proxyLogFilter() {
         return new ProxyLogFilter();
     }
+
 }

@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 
+import com.netflix.hystrix.exception.HystrixRuntimeException;
+
 import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessRights.client.IAccountsClient;
@@ -69,10 +71,15 @@ public class SimpleAuthentication implements IAuthenticationProvider {
         UserStatus status = UserStatus.ACCESS_DENIED;
         jwtService.injectToken(pScope, GATEWAY_ROLE);
         try {
-            final HttpEntity<Boolean> results = accountsClient.validatePassword(pName, pPassword);
-            if (results.getBody()) {
-                status = UserStatus.ACCESS_GRANTED;
+            try {
+                final HttpEntity<Boolean> results = accountsClient.validatePassword(pName, pPassword);
+                if (results.getBody().equals(Boolean.TRUE)) {
+                    status = UserStatus.ACCESS_GRANTED;
+                }
+            } catch (final HystrixRuntimeException e) {
+                LOG.error(e.getMessage());
             }
+
         } catch (final NoSuchElementException e) {
             LOG.error(e.getMessage(), e);
         }
