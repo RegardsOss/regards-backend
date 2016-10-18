@@ -11,11 +11,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 
 /***
  * {@link PluginParameter} unit testing domain persistence
- * 
+ *
  * @author cmertz
  *
  */
@@ -25,6 +27,8 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 @ContextConfiguration(classes = { PluginDaoTestConfig.class })
 @DirtiesContext
 public class PluginParameterTest extends PluginDaoTestDataUtility {
+
+    private static String INVALID_JWT = "Invalid JWT";
 
     /**
      * IPluginParameterRepository
@@ -40,16 +44,20 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
 
     @Test
     public void createPluginParameter() {
-        jwtService.injectToken(PROJECT, USERROLE);
+        try {
+            jwtService.injectToken(PROJECT, USERROLE);
 
-        pluginParameterRepository.save(PARAMETER1);
-        Assert.assertEquals(1, pluginParameterRepository.count());
+            pluginParameterRepository.save(PARAMETER1);
+            Assert.assertEquals(1, pluginParameterRepository.count());
 
-        pluginParameterRepository.save(PARAMETER2);
-        Assert.assertEquals(2, pluginParameterRepository.count());
+            pluginParameterRepository.save(PARAMETER2);
+            Assert.assertEquals(2, pluginParameterRepository.count());
 
-        pluginParameterRepository.deleteAll();
-        Assert.assertEquals(0, pluginParameterRepository.count());
+            pluginParameterRepository.deleteAll();
+            Assert.assertEquals(0, pluginParameterRepository.count());
+        } catch (InvalidJwtException | MissingClaimException e) {
+            Assert.fail(INVALID_JWT);
+        }
     }
 
     /**
@@ -57,21 +65,25 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
      */
     @Test
     public void updatePluginParameter() {
-        jwtService.injectToken(PROJECT, USERROLE);
+        try {
+            jwtService.injectToken(PROJECT, USERROLE);
 
-        pluginParameterRepository.save(PARAMETER1);
-        final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
-        Assert.assertEquals(paramJpa.getName(), PARAMETER2.getName());
-        Assert.assertEquals(2, pluginParameterRepository.count());
+            pluginParameterRepository.save(PARAMETER1);
+            final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
+            Assert.assertEquals(paramJpa.getName(), PARAMETER2.getName());
+            Assert.assertEquals(2, pluginParameterRepository.count());
 
-        pluginParameterRepository.save(paramJpa);
-        Assert.assertEquals(2, pluginParameterRepository.count());
+            pluginParameterRepository.save(paramJpa);
+            Assert.assertEquals(2, pluginParameterRepository.count());
 
-        final PluginParameter paramFound = pluginParameterRepository.findOne(paramJpa.getId());
-        Assert.assertEquals(paramFound.getName(), paramJpa.getName());
+            final PluginParameter paramFound = pluginParameterRepository.findOne(paramJpa.getId());
+            Assert.assertEquals(paramFound.getName(), paramJpa.getName());
 
-        pluginParameterRepository.deleteAll();
-        Assert.assertEquals(0, pluginParameterRepository.count());
+            pluginParameterRepository.deleteAll();
+            Assert.assertEquals(0, pluginParameterRepository.count());
+        } catch (InvalidJwtException | MissingClaimException e) {
+            Assert.fail(INVALID_JWT);
+        }
     }
 
     /**
@@ -79,35 +91,40 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
      */
     @Test
     public void deletePluginParameter() {
-        jwtService.injectToken(PROJECT, USERROLE);
+        try {
+            jwtService.injectToken(PROJECT, USERROLE);
 
-        pluginParameterRepository.save(PARAMETER1);
-        final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
-        Assert.assertEquals(2, pluginParameterRepository.count());
+            pluginParameterRepository.save(PARAMETER1);
+            final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
+            Assert.assertEquals(2, pluginParameterRepository.count());
 
-        pluginParameterRepository.delete(paramJpa);
-        Assert.assertEquals(1, pluginParameterRepository.count());
+            pluginParameterRepository.delete(paramJpa);
+            Assert.assertEquals(1, pluginParameterRepository.count());
 
-        pluginParameterRepository.deleteAll();
-        Assert.assertEquals(0, pluginParameterRepository.count());
+            pluginParameterRepository.deleteAll();
+            Assert.assertEquals(0, pluginParameterRepository.count());
+        } catch (InvalidJwtException | MissingClaimException e) {
+            Assert.fail(INVALID_JWT);
+        }
     }
 
-    
-    
     /**
      * Unit test for the delete of a {@link PluginParameter}
      */
     @Test
     public void setPluginParameter() {
-        jwtService.injectToken(PROJECT, USERROLE);
+        try {
+            jwtService.injectToken(PROJECT, USERROLE);
 
-        pluginParameterRepository.save(PARAMETER1);
-        final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
-        Assert.assertEquals(2, pluginParameterRepository.count());
+            pluginParameterRepository.save(PARAMETER1);
+            final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
+            Assert.assertEquals(2, pluginParameterRepository.count());
 
-
-        pluginParameterRepository.deleteAll();
-        Assert.assertEquals(0, pluginParameterRepository.count());
+            pluginParameterRepository.deleteAll();
+            Assert.assertEquals(0, pluginParameterRepository.count());
+        } catch (InvalidJwtException | MissingClaimException e) {
+            Assert.fail(INVALID_JWT);
+        }
     }
 
 }
