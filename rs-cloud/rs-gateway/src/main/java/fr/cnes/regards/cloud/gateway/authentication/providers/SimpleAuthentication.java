@@ -19,6 +19,7 @@ import fr.cnes.regards.modules.accessRights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 
 /**
  *
@@ -78,6 +79,9 @@ public class SimpleAuthentication implements IAuthenticationProvider {
                 }
             } catch (final HystrixRuntimeException e) {
                 LOG.error(e.getMessage());
+            } catch (final EntityNotFoundException e) {
+                LOG.error(e.getMessage());
+                LOG.error(String.format("Accound %s doesn't exists", pName));
             }
 
         } catch (final NoSuchElementException e) {
