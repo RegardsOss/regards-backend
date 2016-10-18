@@ -21,6 +21,7 @@
 		<module>regards-test</module>
 		<module>regards-test-reporting</module>
 		<module>report-maven-plugin</module>
+		<module>regards-integration-test</module>
 	</modules>
 </project>
 	

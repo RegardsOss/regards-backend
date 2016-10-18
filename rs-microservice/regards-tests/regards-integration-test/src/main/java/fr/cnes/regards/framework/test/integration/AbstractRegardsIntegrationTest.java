@@ -4,7 +4,6 @@
 package fr.cnes.regards.framework.test.integration;
 
 // CHECKSTYLE:OFF
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -72,7 +71,7 @@ public abstract class AbstractRegardsIntegrationTest {
     public void performPost(String urlTemplate, String authentificationToken, Object content,
             List<ResultMatcher> matchers, String errorMessage, Object... pUrlVariables) {
         try {
-            ResultActions request = mvc.perform(post(urlTemplate, pUrlVariables).with(csrf()).content(json(content))
+            ResultActions request = mvc.perform(post(urlTemplate, pUrlVariables).content(json(content))
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + authentificationToken)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
             for (ResultMatcher matcher : matchers) {
@@ -91,7 +90,7 @@ public abstract class AbstractRegardsIntegrationTest {
     public void performPut(String urlTemplate, String authentificationToken, Object content,
             List<ResultMatcher> matchers, String errorMessage, Object... pUrlVariables) {
         try {
-            ResultActions request = mvc.perform(put(urlTemplate, pUrlVariables).with(csrf()).content(json(content))
+            ResultActions request = mvc.perform(put(urlTemplate, pUrlVariables).content(json(content))
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + authentificationToken)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
             for (ResultMatcher matcher : matchers) {
@@ -110,7 +109,7 @@ public abstract class AbstractRegardsIntegrationTest {
     public void performDelete(String urlTemplate, String authentificationToken, List<ResultMatcher> matchers,
             String errorMessage, Object... pUrlVariables) {
         try {
-            ResultActions request = mvc.perform(delete(urlTemplate, pUrlVariables).with(csrf())
+            ResultActions request = mvc.perform(delete(urlTemplate, pUrlVariables)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + authentificationToken));
             for (ResultMatcher matcher : matchers) {
                 request = request.andExpect(matcher);

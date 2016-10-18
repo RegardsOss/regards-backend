@@ -8,9 +8,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
@@ -28,32 +26,60 @@ import io.jsonwebtoken.impl.TextCodec;
  * @author msordi
  *
  */
-@Service
 public class JWTService {
 
+    /**
+     * Crypting algorithm
+     */
     private static SignatureAlgorithm ALGO = SignatureAlgorithm.HS512;
 
+    /**
+     * Project claim
+     */
     private static final String CLAIM_PROJECT = "project";
 
+    /**
+     * Email claim
+     */
     private static final String CLAIM_EMAIL = "email";
 
+    /**
+     * Role claim
+     */
     private static final String CLAIM_ROLE = "role";
 
+    /**
+     * Subject claim
+     */
     private static final String CLAIM_SUBJECT = "sub";
 
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
+
+    /**
+     * TODO
+     */
     private static Map<String, String> scopesTokensMap_ = new HashMap<>();
 
-    @Value("${jwt.secret}")
-    private String secret_;
+    /**
+     * JWT Secret
+     */
+    private String secret;
 
-    private static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
+    public JWTService(String pSecret) {
+        this.secret = pSecret;
+    }
 
     /**
      *
      * Inject an auto generated token into the curent SecurityContext
      *
      * @param pProject
+     *            project name
      * @param pRole
+     *            role name
      * @since 1.0-SNAPSHOT
      */
     public void injectToken(final String pProject, final String pRole) {
@@ -83,7 +109,7 @@ public class JWTService {
             throws InvalidJwtException, MissingClaimException {
 
         try {
-            final Jws<Claims> claims = Jwts.parser().setSigningKey(TextCodec.BASE64.encode(secret_))
+            final Jws<Claims> claims = Jwts.parser().setSigningKey(TextCodec.BASE64.encode(secret))
                     .parseClaimsJws(pAuthentication.getJwt());
             // OK, trusted JWT parsed and validated
 
@@ -103,7 +129,7 @@ public class JWTService {
 
             final String name = claims.getBody().getSubject();
             if (name == null) {
-                throw new MissingClaimException("sub");
+                throw new MissingClaimException(CLAIM_SUBJECT);
             }
             user.setName(name);
 
@@ -131,7 +157,7 @@ public class JWTService {
     // - data access groups
     public String generateToken(final String pProject, final String pEmail, final String pName, final String pRole) {
         return Jwts.builder().setIssuer("regards").setClaims(generateClaims(pProject, pEmail, pRole, pName))
-                .setSubject(pName).signWith(ALGO, TextCodec.BASE64.encode(secret_)).compact();
+                .setSubject(pName).signWith(ALGO, TextCodec.BASE64.encode(secret)).compact();
     }
 
     /**
@@ -139,9 +165,14 @@ public class JWTService {
      * Method to generate REGARDS JWT Tokens CLAIMS
      *
      * @param pProject
+     *            project name
      * @param pEmail
+     *            user email
      * @param pRole
-     * @return
+     *            user role
+     * @param pUserName
+     *            user name
+     * @return claim map
      * @since 1.0-SNAPSHOT
      */
     public Map<String, Object> generateClaims(final String pProject, final String pEmail, final String pRole,
@@ -158,7 +189,7 @@ public class JWTService {
      * @return the secret
      */
     public String getSecret() {
-        return secret_;
+        return secret;
     }
 
     /**
@@ -166,6 +197,6 @@ public class JWTService {
      *            the secret to set
      */
     public void setSecret(final String pSecret) {
-        secret_ = pSecret;
+        secret = pSecret;
     }
 }

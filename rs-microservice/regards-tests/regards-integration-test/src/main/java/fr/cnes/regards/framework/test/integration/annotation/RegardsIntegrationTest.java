@@ -17,7 +17,7 @@ import fr.cnes.regards.framework.test.integration.TestApplication;
 
 /**
  * This annotation is used to pass integration tests at API level.
- * 
+ *
  * @author msordi
  *
  */

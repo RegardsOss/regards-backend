@@ -6,9 +6,12 @@ package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,13 +46,26 @@ public class DaoUserService {
     private static final Logger LOG = LoggerFactory.getLogger(DaoUserService.class);
 
     /**
+     * JWT Secret
+     */
+    @Value("jwt.secret")
+    private String secret;
+
+    /**
      * JPA User repository
      */
     @Autowired
     private IUserRepository userRepository;
 
-    @Autowired
+    /**
+     * JWT service
+     */
     private JWTService jwtService;
+
+    @PostConstruct
+    public void init() {
+        jwtService = new JWTService(secret);
+    }
 
     /**
      *

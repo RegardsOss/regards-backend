@@ -42,5 +42,4 @@ public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfigu
         decisionVoters.add(new ResourceAccessVoter(methodAuthService));
         return new AffirmativeBased(decisionVoters);
     }
-
 }

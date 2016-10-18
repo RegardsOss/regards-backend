@@ -16,7 +16,7 @@ regards.jpa.instance.datasource.url=jdbc:postgresql://localhost:5432/postgres # 
 regards.jpa.instance.datasource.username=postgres # Not mandatory if embedded mode is activated
 regards.jpa.instance.datasource.password=postgres # Not mandatory if embedded mode is activated
 regards.jpa.instance.datasource.driverClassName=org.postgresql.Driver # Not mandatory if embedded mode is activated
-
+```
 ## JPA multitenant starter
 
 ```properties
