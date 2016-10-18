@@ -33,7 +33,7 @@ public class Controller {
     }
 
     /**
-     * Exception handler returning the code 404 when an element requested does not exists (for example in a stream).
+     * Exception handler returning the code 404 when an element accessed does not exists (for example in a stream).
      */
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
