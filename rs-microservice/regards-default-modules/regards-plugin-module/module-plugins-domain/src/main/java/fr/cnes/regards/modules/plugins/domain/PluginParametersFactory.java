@@ -91,7 +91,11 @@ public class PluginParametersFactory {
             List<String> pDynamicValues) {
         final PluginParameter aPluginParameter = new PluginParameter(pParameterName, pParameterValue);
         aPluginParameter.setIsDynamic(true);
-        aPluginParameter.setDynamicsValues(pDynamicValues);
+
+        final List<PluginDynamicValue> dyns = new ArrayList<>();
+        pDynamicValues.forEach(s -> dyns.add(new PluginDynamicValue(s)));
+
+        aPluginParameter.setDynamicsValues(dyns);
         parameters.add(aPluginParameter);
         return this;
     }
