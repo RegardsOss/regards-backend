@@ -3,8 +3,7 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,10 +35,10 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
     /**
-     * JWT Secret
+     * JWT service
      */
-    @Value("jwt.secret")
-    private String secret;
+    @Autowired
+    private JWTService jwtService;
 
     @Override
     protected void configure(HttpSecurity pHttp) throws Exception {
@@ -63,14 +62,8 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    public JWTService jwtService() {
-        return new JWTService(secret);
-    }
-
-    @Bean
     public JWTAuthenticationProvider jwtAuthenticationProvider() {
-        return new JWTAuthenticationProvider(jwtService());
+        return new JWTAuthenticationProvider(jwtService);
     }
 
 }

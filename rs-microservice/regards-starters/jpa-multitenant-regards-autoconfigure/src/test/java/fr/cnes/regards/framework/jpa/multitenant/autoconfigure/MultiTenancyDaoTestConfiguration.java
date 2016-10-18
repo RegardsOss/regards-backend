@@ -16,8 +16,7 @@ import org.springframework.context.annotation.PropertySource;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@ComponentScan(
-        basePackages = { "fr.cnes.regards.framework.jpa.multitenant", "fr.cnes.regards.framework.security.utils" })
+@ComponentScan(basePackages = { "fr.cnes.regards.framework.jpa.multitenant" })
 @EnableAutoConfiguration
 @PropertySource("classpath:dao.properties")
 public class MultiTenancyDaoTestConfiguration {

@@ -32,7 +32,7 @@ public class UserDetails implements Serializable {
     /**
      * Tenant the user is requesting
      */
-    private String tenant_;
+    private String tenant;
 
     /**
      * @return the name
@@ -68,7 +68,7 @@ public class UserDetails implements Serializable {
      * @return the tenant
      */
     public String getTenant() {
-        return tenant_;
+        return tenant;
     }
 
     /**
@@ -76,7 +76,7 @@ public class UserDetails implements Serializable {
      *            the tenant to set
      */
     public void setTenant(String pTenant) {
-        tenant_ = pTenant;
+        tenant = pTenant;
     }
 
 }

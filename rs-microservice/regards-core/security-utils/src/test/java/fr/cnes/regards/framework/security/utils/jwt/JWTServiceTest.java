@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -29,10 +29,10 @@ public class JWTServiceTest {
     static final Logger LOG = LoggerFactory.getLogger(JWTServiceTest.class);
 
     /**
-     * JWT Secret
+     * JWT service
      */
-    @Value("jwt.secret")
-    private String secret;
+    @Autowired
+    private JWTService jwtService;
 
     /**
      * Test JWT generation
@@ -43,9 +43,6 @@ public class JWTServiceTest {
         final String email = "marc.sordi@c-s.fr";
         final String name = "Marc SORDI";
         final String role = "USER";
-
-        // Init JWT service
-        final JWTService jwtService = new JWTService(secret);
 
         // Generate token
         final String jwt = jwtService.generateToken(project, email, name, role);

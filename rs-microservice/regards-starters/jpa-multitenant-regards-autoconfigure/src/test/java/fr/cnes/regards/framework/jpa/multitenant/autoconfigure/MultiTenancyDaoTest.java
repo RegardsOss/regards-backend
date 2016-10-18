@@ -7,13 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -66,12 +64,6 @@ public class MultiTenancyDaoTest {
     private static final String TEST_ROLE = "USER";
 
     /**
-     * JWT Secret
-     */
-    @Value("jwt.secret")
-    private String secret;
-
-    /**
      * JPA User repository
      */
     @Autowired
@@ -86,12 +78,8 @@ public class MultiTenancyDaoTest {
     /**
      * Security JWT management service
      */
+    @Autowired
     private JWTService jwtService;
-
-    @Before
-    public void init() {
-        jwtService = new JWTService(secret);
-    }
 
     /**
      *
@@ -135,7 +123,7 @@ public class MultiTenancyDaoTest {
     /**
      *
      * Unit test to check JPA uses the good tenant through the tenant resolver
-     * 
+     *
      * @throws MissingClaimException
      * @throws InvalidJwtException
      *

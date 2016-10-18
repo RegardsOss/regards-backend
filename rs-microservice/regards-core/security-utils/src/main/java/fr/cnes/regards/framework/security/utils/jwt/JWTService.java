@@ -8,7 +8,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
@@ -26,6 +28,7 @@ import io.jsonwebtoken.impl.TextCodec;
  * @author msordi
  *
  */
+@Service
 public class JWTService {
 
     /**
@@ -66,11 +69,8 @@ public class JWTService {
     /**
      * JWT Secret
      */
+    @Value("${jwt.secret}")
     private String secret;
-
-    public JWTService(String pSecret) {
-        this.secret = pSecret;
-    }
 
     /**
      *

@@ -48,11 +48,6 @@ public class JWTAuthentication implements Authentication {
     private Boolean isAuthenticated;
 
     /**
-     * Current tenant represented by the project
-     */
-    private String project;
-
-    /**
      * Constructor
      *
      * @param pJWT
@@ -148,14 +143,6 @@ public class JWTAuthentication implements Authentication {
      * @return the project
      */
     public String getProject() {
-        return project;
-    }
-
-    /**
-     * @param pProject
-     *            the project to set
-     */
-    public void setProject(String pProject) {
-        project = pProject;
+        return user.getTenant();
     }
 }
