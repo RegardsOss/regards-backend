@@ -11,6 +11,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
 import fr.cnes.regards.modules.accessRights.dao.projects.IProjectUserRepository;
 
 /**
@@ -42,11 +44,14 @@ public class AccessRightsDaoTest {
     /**
      *
      * Test method
+     * 
+     * @throws MissingClaimException
+     * @throws InvalidJwtException
      *
      * @since 1.0-SNAPSHOT
      */
     @Test
-    public void test() {
+    public void test() throws InvalidJwtException, MissingClaimException {
 
         jwtService.injectToken("test1", "USER");
 

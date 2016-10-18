@@ -5,12 +5,10 @@ package fr.cnes.regards.modules.accessRights.service.stubs;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
-import javax.naming.OperationNotSupportedException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -22,6 +20,7 @@ import fr.cnes.regards.modules.accessRights.domain.CodeType;
 import fr.cnes.regards.modules.accessRights.domain.instance.Account;
 import fr.cnes.regards.modules.accessRights.service.IAccountService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 @Service
@@ -48,7 +47,7 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public Account createAccount(Account pNewAccount) throws AlreadyExistingException {
+    public Account createAccount(final Account pNewAccount) throws AlreadyExistingException {
         if (existAccount(pNewAccount)) {
             throw new AlreadyExistingException(pNewAccount.getId() + "");
         }
@@ -57,65 +56,68 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public Account retrieveAccount(Long pAccountId) {
-        return accounts.stream().filter(a -> a.getId() == pAccountId).findFirst().get();
+    public Account retrieveAccount(final Long pAccountId) throws EntityNotFoundException {
+        return accounts.stream().filter(a -> a.getId() == pAccountId).findFirst()
+                .orElseThrow(() -> new EntityNotFoundException(pAccountId.toString(), Account.class));
     }
 
     @Override
-    public void updateAccount(Long pAccountId, Account pUpdatedAccount) throws OperationNotSupportedException {
+    public void updateAccount(final Long pAccountId, final Account pUpdatedAccount)
+            throws InvalidValueException, EntityNotFoundException {
         if (existAccount(pAccountId)) {
             if (pUpdatedAccount.getId() == pAccountId) {
                 accounts = accounts.stream().map(a -> a.getEmail().equals(pAccountId) ? pUpdatedAccount : a)
                         .collect(Collectors.toList());
                 return;
             }
-            throw new OperationNotSupportedException("Account id specified differs from updated account id");
+            throw new InvalidValueException("Account id specified differs from updated account id");
         }
-        throw new NoSuchElementException(pAccountId + "");
+        throw new EntityNotFoundException(pAccountId.toString(), Account.class);
     }
 
     @Override
-    public void removeAccount(Long pAccountId) {
+    public void removeAccount(final Long pAccountId) {
         accounts = accounts.stream().filter(a -> a.getId() != pAccountId).collect(Collectors.toList());
     }
 
     @Override
-    public void codeForAccount(String pAccountEmail, CodeType pType) {
-        String code = generateCode(pType);
-        Account account = this.retrieveAccountByEmail(pAccountEmail);
+    public void codeForAccount(final String pAccountEmail, final CodeType pType) {
+        final String code = generateCode(pType);
+        final Account account = this.retrieveAccountByEmail(pAccountEmail);
         account.setCode(code);
         // TODO: sendEmail(pEmail,code);
     }
 
-    private String generateCode(CodeType pType) {
+    private String generateCode(final CodeType pType) {
         return UUID.randomUUID().toString();
     }
 
     @Override
-    public void unlockAccount(Long pAccountId, String pUnlockCode) throws InvalidValueException {
-        Account toUnlock = this.retrieveAccount(pAccountId);
+    public void unlockAccount(final Long pAccountId, final String pUnlockCode)
+            throws InvalidValueException, EntityNotFoundException {
+        final Account toUnlock = this.retrieveAccount(pAccountId);
         check(toUnlock, pUnlockCode);
         toUnlock.unlock();
 
     }
 
     @Override
-    public void changeAccountPassword(Long pAccountId, String pResetCode, String pNewPassword)
-            throws InvalidValueException {
-        Account account = this.retrieveAccount(pAccountId);
+    public void changeAccountPassword(final Long pAccountId, final String pResetCode, final String pNewPassword)
+            throws InvalidValueException, EntityNotFoundException {
+        final Account account = this.retrieveAccount(pAccountId);
         check(account, pResetCode);
         account.setPassword(pNewPassword);
     }
 
     @Override
     public List<String> retrieveAccountSettings() {
-        List<String> accountSettings = new ArrayList<>();
+        final List<String> accountSettings = new ArrayList<>();
         accountSettings.add(this.accountSetting);
         return accountSettings;
     }
 
     @Override
-    public void updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException {
+    public void updateAccountSetting(final String pUpdatedAccountSetting) throws InvalidValueException {
         if (pUpdatedAccountSetting.toLowerCase().equals("manual") || pUpdatedAccountSetting.equals("auto-accept")) {
             this.accountSetting = pUpdatedAccountSetting.toLowerCase();
             return;
@@ -124,7 +126,7 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public boolean existAccount(Long id) {
+    public boolean existAccount(final Long id) {
         return accounts.stream().filter(p -> p.getId() == id).findFirst().isPresent();
     }
 
@@ -132,7 +134,7 @@ public class AccountServiceStub implements IAccountService {
      * @param pNewAccount
      * @return
      */
-    private boolean existAccount(Account pNewAccount) {
+    private boolean existAccount(final Account pNewAccount) {
         return accounts.stream().filter(p -> p.equals(pNewAccount)).findFirst().isPresent();
     }
 
@@ -141,7 +143,7 @@ public class AccountServiceStub implements IAccountService {
      * @return
      */
     @Override
-    public boolean existAccount(String pLogin) {
+    public boolean existAccount(final String pLogin) {
         return accounts.stream().filter(p -> p.getLogin().equals(pLogin)).findFirst().isPresent();
     }
 
@@ -151,24 +153,25 @@ public class AccountServiceStub implements IAccountService {
      * @see fr.cnes.regards.modules.accessRights.service.IAccountService#retrieveAccount(java.lang.String)
      */
     @Override
-    public Account retrieveAccountByEmail(String pEmail) {
+    public Account retrieveAccountByEmail(final String pEmail) {
         return accounts.stream().filter(p -> p.getEmail().equals(pEmail)).findFirst().get();
     }
 
-    private void check(Account account, String pCode) throws InvalidValueException {
+    private void check(final Account account, final String pCode) throws InvalidValueException {
         if (!account.getCode().equals(pCode)) {
             throw new InvalidValueException("this is not the right code");
         }
     }
 
     @Override
-    public boolean validatePassword(String pLogin, String pPassword) {
-        Account account = retrieveAccountByLogin(pLogin);
+    public boolean validatePassword(final String pLogin, final String pPassword) throws EntityNotFoundException {
+        final Account account = retrieveAccountByLogin(pLogin);
         return account.getPassword().equals(pPassword);
     }
 
     @Override
-    public Account retrieveAccountByLogin(String pLogin) {
-        return accounts.stream().filter(p -> p.getLogin().equals(pLogin)).findFirst().get();
+    public Account retrieveAccountByLogin(final String pLogin) throws EntityNotFoundException {
+        return accounts.stream().filter(p -> p.getLogin().equals(pLogin)).findFirst()
+                .orElseThrow(() -> new EntityNotFoundException(pLogin, Account.class));
     }
 }

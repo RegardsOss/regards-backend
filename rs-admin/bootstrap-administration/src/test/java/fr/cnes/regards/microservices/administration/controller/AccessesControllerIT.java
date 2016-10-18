@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.microservices.administration.controller;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,8 +115,6 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
 
     /**
      * Check that the system allows to retrieve all users for a project.
-     *
-     * @throws IOException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_310")

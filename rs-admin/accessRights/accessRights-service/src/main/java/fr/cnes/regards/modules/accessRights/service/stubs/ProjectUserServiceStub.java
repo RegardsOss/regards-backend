@@ -10,8 +10,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -27,6 +25,8 @@ import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.accessRights.service.IProjectUserService;
 import fr.cnes.regards.modules.accessRights.service.IRoleService;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
  * @author svissier
@@ -85,22 +85,18 @@ public class ProjectUserServiceStub implements IProjectUserService {
         return projectUserRepository.findOneByEmail(pLogin);
     }
 
-    /*
-     * (non-fr.cnes.regards.modules.accessRights.service.IProjectUserServicesRights.service.IProjectUserService#
-     * updateUser(int, fr.cnes.regards.modules.accessRights.domain.ProjectUser)
-     */
     @Override
     public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
-            throws OperationNotSupportedException {
+            throws InvalidValueException, EntityNotFoundException {
         if (existUser(pUserId)) {
             if (pUpdatedProjectUser.getId() == pUserId) {
                 projectUsers = projectUsers.stream().map(a -> a.getId() == pUserId ? pUpdatedProjectUser : a)
                         .collect(Collectors.toList());
                 return;
             }
-            throw new OperationNotSupportedException("Account id specified differs from updated account id");
+            throw new InvalidValueException("Account id specified differs from updated account id");
         }
-        throw new NoSuchElementException(pUserId + "");
+        throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
     }
 
     /**
@@ -128,14 +124,9 @@ public class ProjectUserServiceStub implements IProjectUserService {
         projectUsers = projectUsers.stream().filter(p -> p.getId() != pUserId).collect(Collectors.toList());
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessRights.service.IUserService#retrieveUserAccessRights(int)
-     */
     @Override
     public Couple<List<ResourcesAccess>, Role> retrieveProjectUserAccessRights(final String pLogin,
-            final String pBorrowedRoleName) throws OperationNotSupportedException {
+            final String pBorrowedRoleName) throws InvalidValueException {
         final ProjectUser projectUser = projectUserRepository.findOneByEmail(pLogin);
         final Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
@@ -145,7 +136,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
             if (roleService.isHierarchicallyInferior(borrowedRole, returnedRole)) {
                 returnedRole = borrowedRole;
             } else {
-                throw new OperationNotSupportedException(
+                throw new InvalidValueException(
                         "Borrowed role must be hierachically inferior to the project user's role");
             }
         }

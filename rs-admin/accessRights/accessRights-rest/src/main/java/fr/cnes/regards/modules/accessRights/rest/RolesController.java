@@ -4,10 +4,8 @@
 package fr.cnes.regards.modules.accessRights.rest;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +13,8 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
@@ -29,35 +25,17 @@ import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.modules.accessRights.signature.IRolesSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.modules.core.rest.Controller;
 
 @RestController
 @ModuleInfo(name = "accessRights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class RolesController implements IRolesSignature {
+public class RolesController extends Controller implements IRolesSignature {
 
     @Autowired
     private IRoleService roleService;
-
-    @ExceptionHandler(NoSuchElementException.class)
-    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
-    public void dataNotFound() {
-    }
-
-    @ExceptionHandler(AlreadyExistingException.class)
-    @ResponseStatus(value = HttpStatus.CONFLICT)
-    public void dataAlreadyExisting() {
-    }
-
-    @ExceptionHandler(OperationNotSupportedException.class)
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "operation not supported")
-    public void operationNotSupported() {
-    }
-
-    @ExceptionHandler(InvalidValueException.class)
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "invalid Value")
-    public void invalidValue() {
-    }
 
     @Override
     @ResourceAccess(description = "Retrieve the list of roles", name = "")
@@ -87,15 +65,14 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Update the role of role_id with passed body", name = "")
     public HttpEntity<Void> updateRole(@PathVariable("role_id") final Long pRoleId,
-            @Valid @RequestBody final Role pUpdatedRole) throws OperationNotSupportedException {
+            @Valid @RequestBody final Role pUpdatedRole) throws EntityNotFoundException, InvalidValueException {
         roleService.updateRole(pRoleId, pUpdatedRole);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "Remove the role of role_id", name = "")
-    public HttpEntity<Void> removeRole(@PathVariable("role_id") final Long pRoleId)
-            throws OperationNotSupportedException {
+    public HttpEntity<Void> removeRole(@PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
         roleService.removeRole(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -103,7 +80,7 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Retrieve the list of permissions of the role with role_id", name = "")
     public HttpEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(
-            @PathVariable("role_id") final Long pRoleId) {
+            @PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
         final List<ResourcesAccess> resourcesAccesses = roleService.retrieveRoleResourcesAccessList(pRoleId);
         final List<Resource<ResourcesAccess>> resources = resourcesAccesses.stream().map(ra -> new Resource<>(ra))
                 .collect(Collectors.toList());
@@ -113,8 +90,7 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Incrementally update the list of permissions of the role with role_id", name = "")
     public HttpEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId,
-            @Valid @RequestBody final List<ResourcesAccess> pResourcesAccessList)
-            throws OperationNotSupportedException {
+            @Valid @RequestBody final List<ResourcesAccess> pResourcesAccessList) throws EntityNotFoundException {
         roleService.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -122,7 +98,7 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Clear the list of permissions of the", name = "")
     public HttpEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId)
-            throws OperationNotSupportedException {
+            throws EntityNotFoundException {
         roleService.clearRoleResourcesAccess(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -130,7 +106,7 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Retrieve the list of project users of the role with role_id", name = "")
     public HttpEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(
-            @PathVariable("role_id") final Long pRoleId) throws OperationNotSupportedException {
+            @PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
         final List<ProjectUser> projectUserList = roleService.retrieveRoleProjectUserList(pRoleId);
         final List<Resource<ProjectUser>> resources = projectUserList.stream().map(pu -> new Resource<>(pu))
                 .collect(Collectors.toList());

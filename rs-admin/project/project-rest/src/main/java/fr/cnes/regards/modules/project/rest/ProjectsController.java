@@ -4,7 +4,6 @@
 package fr.cnes.regards.modules.project.rest;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -16,19 +15,16 @@ import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.core.hateoas.HateoasKeyWords;
+import fr.cnes.regards.modules.core.rest.Controller;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectService;
@@ -46,7 +42,7 @@ import fr.cnes.regards.modules.project.signature.IProjectsSignature;
 @RestController
 @ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class ProjectsController implements IProjectsSignature {
+public class ProjectsController extends Controller implements IProjectsSignature {
 
     /**
      * Class logger
@@ -54,28 +50,13 @@ public class ProjectsController implements IProjectsSignature {
     private static final Logger LOG = LoggerFactory.getLogger(ProjectsController.class);
 
     /**
-     * Business service for Project entities
+     * Business service for Project entities. Autowired.
      */
     private final IProjectService projectService;
 
     public ProjectsController(final IProjectService pProjectService) {
         super();
         projectService = pProjectService;
-    }
-
-    @ExceptionHandler({ EntityNotFoundException.class, NoSuchElementException.class })
-    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
-    public void dataNotFound() {
-    }
-
-    @ExceptionHandler(AlreadyExistingException.class)
-    @ResponseStatus(value = HttpStatus.CONFLICT)
-    public void dataAlreadyExisting() {
-    }
-
-    @ExceptionHandler(InvalidEntityException.class)
-    @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED)
-    public void operationNotSupported() {
     }
 
     @Override

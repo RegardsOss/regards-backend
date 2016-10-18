@@ -79,7 +79,7 @@ public class AccountService implements IAccountService {
 
     @Override
     public void updateAccount(final Long pAccountId, final Account pUpdatedAccount)
-            throws OperationNotSupportedException {
+            throws InvalidValueException, EntityNotFoundException {
         // TODO Auto-generated method stub
 
     }
@@ -141,7 +141,7 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Account retrieveAccountByLogin(final String pLogin) {
+    public Account retrieveAccountByLogin(final String pLogin) throws EntityNotFoundException {
         // TODO Auto-generated method stub
         return null;
     }

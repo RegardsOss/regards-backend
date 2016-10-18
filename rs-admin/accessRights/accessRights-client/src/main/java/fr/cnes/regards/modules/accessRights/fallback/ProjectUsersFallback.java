@@ -5,8 +5,6 @@ package fr.cnes.regards.modules.accessRights.fallback;
 
 import java.util.List;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
@@ -55,8 +53,7 @@ public class ProjectUsersFallback implements IProjectUsersClient {
     }
 
     @Override
-    public HttpEntity<Void> updateProjectUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
-            throws OperationNotSupportedException {
+    public HttpEntity<Void> updateProjectUser(final Long pUserId, final ProjectUser pUpdatedProjectUser) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
@@ -74,8 +71,7 @@ public class ProjectUsersFallback implements IProjectUsersClient {
     }
 
     @Override
-    public HttpEntity<Void> updateProjectUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData)
-            throws OperationNotSupportedException {
+    public HttpEntity<Void> updateProjectUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
@@ -88,14 +84,14 @@ public class ProjectUsersFallback implements IProjectUsersClient {
 
     @Override
     public HttpEntity<Resource<Couple<List<ResourcesAccess>, Role>>> retrieveProjectUserAccessRights(
-            final String pUserLogin, final String pBorrowedRoleName) throws OperationNotSupportedException {
+            final String pUserLogin, final String pBorrowedRoleName) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateProjectUserAccessRights(final String pUserLogin,
-            final List<ResourcesAccess> pUpdatedUserAccessRights) throws OperationNotSupportedException {
+    public HttpEntity<Void> updateProjectUserAccessRights(final String pLogin,
+            final List<ResourcesAccess> pUpdatedUserAccessRights) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
