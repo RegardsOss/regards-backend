@@ -10,7 +10,6 @@ import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -18,7 +17,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.springframework.hateoas.Identifiable;
 
@@ -80,7 +78,7 @@ public class PluginConfiguration implements Identifiable<Long> {
             joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id",
                     foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_ID")) },
             inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMMETER_ID")) })
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMETER_ID")) })
     private List<PluginParameter> parameters;
 
     /**
@@ -109,6 +107,15 @@ public class PluginConfiguration implements Identifiable<Long> {
         version = pPluginMetaData.getVersion();
         pluginClassName = pPluginMetaData.getPluginClass().getName();
         parameters = pParameters;
+        priorityOrder = pOrder;
+        label = pLabel;
+    }
+
+    public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel, final int pOrder) {
+        super();
+        pluginId = pPluginMetaData.getPluginId();
+        version = pPluginMetaData.getVersion();
+        pluginClassName = pPluginMetaData.getPluginClass().getName();
         priorityOrder = pOrder;
         label = pLabel;
     }
@@ -206,6 +213,10 @@ public class PluginConfiguration implements Identifiable<Long> {
     @Override
     public Long getId() {
         return this.id;
+    }
+    
+    public final void setId(Long pId) {
+        id = pId;
     }
 
 }
