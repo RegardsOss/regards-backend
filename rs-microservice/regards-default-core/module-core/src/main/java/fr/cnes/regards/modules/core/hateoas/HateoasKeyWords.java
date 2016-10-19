@@ -46,8 +46,4 @@ public enum HateoasKeyWords {
         return value;
     }
 
-    public void setValue(final String pValue) {
-        value = pValue;
-    }
-
 }

@@ -15,6 +15,7 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 
 /**
  *
@@ -45,18 +46,19 @@ public class Poller {
      * @param pAmqpCommunicationMode
      *            communication mode
      * @return received message from the broker
+     * @throws RabbitMQVhostException
      * @throws AddingRabbitMQVhostException
      *             represent any error that could occur while trying to add the new Vhost
      * @throws AddingRabbitMQVhostPermissionException
      *             represent any error that could occur while adding the permission to the specified vhost
      */
     public <T> TenantWrapper<T> poll(String pTenant, Class<T> pEvt, AmqpCommunicationMode pAmqpCommunicationMode)
-            throws AddingRabbitMQVhostException, AddingRabbitMQVhostPermissionException {
+            throws RabbitMQVhostException {
         final TenantWrapper<T> evt;
         amqpConfiguration.addVhost(pTenant);
         final Exchange exchange = amqpConfiguration.declareExchange(pEvt.getClass().getName(), pAmqpCommunicationMode,
                                                                     pTenant);
-        final Queue queue = amqpConfiguration.declarequeue(pEvt, pAmqpCommunicationMode, pTenant);
+        final Queue queue = amqpConfiguration.declareQueue(pEvt, pAmqpCommunicationMode, pTenant);
         amqpConfiguration.declareBinding(queue, exchange, exchange.getName(), pAmqpCommunicationMode, pTenant);
 
         SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), pTenant);

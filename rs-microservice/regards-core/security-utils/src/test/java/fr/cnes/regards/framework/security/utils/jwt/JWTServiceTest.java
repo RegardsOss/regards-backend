@@ -12,8 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 
 /**
  * @author msordi
@@ -57,7 +56,8 @@ public class JWTServiceTest {
             final UserDetails user = jwtAuth.getPrincipal();
             Assert.assertEquals(email, user.getEmail());
             Assert.assertEquals(name, user.getName());
-        } catch (InvalidJwtException | MissingClaimException e) {
+            Assert.assertEquals(project, user.getTenant());
+        } catch (JwtException e) {
             final String message = "JWT test error";
             LOG.debug(message, e);
             Assert.fail(message);

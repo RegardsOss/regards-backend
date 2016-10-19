@@ -21,7 +21,7 @@ public class PastOrNowValidator implements ConstraintValidator<PastOrNow, LocalD
      */
     @Override
     public void initialize(PastOrNow pArg0) {
-
+        // Nothing to initialize for now
     }
 
     /*

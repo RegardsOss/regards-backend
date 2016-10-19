@@ -7,7 +7,7 @@ package fr.cnes.regards.framework.amqp.exception;
  * @author svissier
  *
  */
-public class AddingRabbitMQVhostPermissionException extends Exception {
+public class AddingRabbitMQVhostPermissionException extends RabbitMQVhostException {
 
     /**
      *

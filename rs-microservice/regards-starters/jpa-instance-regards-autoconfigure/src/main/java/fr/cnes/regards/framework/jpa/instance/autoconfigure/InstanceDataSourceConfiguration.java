@@ -46,7 +46,7 @@ public class InstanceDataSourceConfiguration {
     @Primary
     public DataSource instanceDataSource() {
 
-        DataSource datasource = null;
+        DataSource datasource;
         if (daoProperties.getEmbedded()) {
             datasource = DataSourceHelper.createEmbeddedDataSource("instance", daoProperties.getEmbeddedPath());
 

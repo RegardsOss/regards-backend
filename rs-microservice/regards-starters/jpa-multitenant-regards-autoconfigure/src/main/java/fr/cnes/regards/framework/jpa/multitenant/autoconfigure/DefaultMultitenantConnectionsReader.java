@@ -42,9 +42,15 @@ public class DefaultMultitenantConnectionsReader implements IMultitenantConnecti
      */
     private static final Logger LOG = LoggerFactory.getLogger(DefaultMultitenantConnectionsReader.class);
 
+    /**
+     * Current Microservice name
+     */
     @Value("${spring.application.name")
     private String microserviceName;
 
+    /**
+     * Feign client to request administration service for projects informations
+     */
     @Autowired
     private IProjectsClient projectsClient;
 
