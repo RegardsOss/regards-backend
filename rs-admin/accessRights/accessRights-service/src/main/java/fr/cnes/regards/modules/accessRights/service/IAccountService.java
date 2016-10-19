@@ -152,8 +152,9 @@ public interface IAccountService {
      * @param pEmail
      *            The {@link Account}'s <code>email</code>
      * @return
+     * @throws EntityNotFoundException
      */
-    Account retrieveAccountByEmail(String pEmail);
+    Account retrieveAccountByEmail(String pEmail) throws EntityNotFoundException;
 
     /**
      * Retrieve the {@link Account} of passed <code>login</code>

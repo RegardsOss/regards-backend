@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
  *
  * @author CS SI
  */
-@RequestMapping("/accounts")
+@RequestMapping(path = "/accounts")
 public interface IAccountsSignature {
 
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

@@ -8,8 +8,8 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,7 +47,7 @@ public interface IProjectsSignature {
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    HttpEntity<List<Resource<Project>>> retrieveProjectList();
+    ResponseEntity<List<Resource<Project>>> retrieveProjectList();
 
     /**
      *
@@ -63,7 +63,7 @@ public interface IProjectsSignature {
      */
     @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
-    HttpEntity<Resource<Project>> createProject(@Valid @RequestBody Project pNewProject) throws EntityException;
+    ResponseEntity<Resource<Project>> createProject(@Valid @RequestBody Project pNewProject) throws EntityException;
 
     /**
      *
@@ -78,7 +78,7 @@ public interface IProjectsSignature {
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}", produces = "application/json")
     @ResponseBody
-    HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") String pProjectName)
+    ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") String pProjectName)
             throws EntityException;
 
     /**
@@ -99,7 +99,7 @@ public interface IProjectsSignature {
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Resource<Project>> updateProject(@PathVariable("project_name") String pProjectName,
+    ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") String pProjectName,
             @RequestBody Project pProjectToUpdate) throws EntityException;
 
     /**
@@ -115,7 +115,7 @@ public interface IProjectsSignature {
      */
     @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}", produces = "application/json")
     @ResponseBody
-    HttpEntity<Void> deleteProject(@PathVariable("project_name") String pProjectName) throws EntityException;
+    ResponseEntity<Void> deleteProject(@PathVariable("project_name") String pProjectName) throws EntityException;
 
     // Projects connections requests
     // -----------------------------
@@ -136,8 +136,9 @@ public interface IProjectsSignature {
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}/connection/{microservice}",
             produces = "application/json")
     @ResponseBody
-    HttpEntity<Resource<ProjectConnection>> retrieveProjectConnection(@PathVariable("project_name") String pProjectName,
-            @PathVariable("microservice") String pMicroService) throws EntityNotFoundException;
+    ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
+            @PathVariable("project_name") String pProjectName, @PathVariable("microservice") String pMicroService)
+            throws EntityNotFoundException;
 
     /**
      *
@@ -157,7 +158,7 @@ public interface IProjectsSignature {
     @RequestMapping(method = RequestMethod.POST, value = "/connections", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Resource<ProjectConnection>> createProjectConnection(
+    ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
             @Valid @RequestBody ProjectConnection pProjectConnection) throws EntityException;
 
     /**
@@ -175,7 +176,7 @@ public interface IProjectsSignature {
     @RequestMapping(method = RequestMethod.PUT, value = "/connections", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Resource<ProjectConnection>> updateProjectConnection(
+    ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
             @Valid @RequestBody ProjectConnection pProjectConnection) throws EntityException;
 
     /**
@@ -195,6 +196,6 @@ public interface IProjectsSignature {
     @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}/connection/{microservice}",
             produces = "application/json")
     @ResponseBody
-    HttpEntity<Void> deleteProjectConnection(@PathVariable("project_name") String pProjectName,
+    ResponseEntity<Void> deleteProjectConnection(@PathVariable("project_name") String pProjectName,
             @PathVariable("microservice") String pMicroservice) throws EntityException;
 }
