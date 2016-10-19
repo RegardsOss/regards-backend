@@ -41,8 +41,19 @@ public class DaoUtils {
 
     /**
      *
+     * Constructor
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    private DaoUtils() {
+    }
+
+    /**
+     *
      * This method check that the classPatch is valid. That the scan packages for instance database and the projects
      * database are not in conflict.
+     *
+     * @throws MultiDataBasesException
      *
      * @since 1.0-SNAPSHOT
      */
@@ -57,17 +68,22 @@ public class DaoUtils {
         instanceClasses.forEach(instanceClass -> instancePackages.add(instanceClass.getPackage().getName()));
         final List<String> projectPackages = new ArrayList<>();
         projectsClasses.forEach(projectClass -> projectPackages.add(projectClass.getPackage().getName()));
+        final boolean errorFound = false;
         instancePackages.forEach(instancePackage -> {
             for (final String pack : projectPackages) {
                 if (pack.contains(instancePackage) || instancePackage.contains(pack)) {
-                    final String message = "Invalid classpath. Package " + instancePackage
-                            + " is used for instance DAO Entities and projects DAO Entities";
-                    throw new MultiDataBasesException(message);
+                    LOG.error(String.format(
+                                            "Invalid classpath. Package %s is used for instance DAO Entities and multitenant DAO Entities",
+                                            instancePackage));
                 }
             }
         });
 
-        LOG.info("Check complete !");
+        if (errorFound) {
+            throw new MultiDataBasesException("Invalid classpath for JPA multitenant and JPA instance databases.");
+        }
+
+        LOG.info("Classpath is valid !");
 
     }
 
