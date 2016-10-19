@@ -31,6 +31,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
@@ -91,10 +92,12 @@ public class MultitenantJpaAutoConfiguration {
     /**
      *
      * Constructor. Check for classpath errors.
+     * 
+     * @throws MultiDataBasesException
      *
      * @since 1.0-SNAPSHOT
      */
-    public MultitenantJpaAutoConfiguration() {
+    public MultitenantJpaAutoConfiguration() throws MultiDataBasesException {
         DaoUtils.checkClassPath(DaoUtils.PACKAGES_TO_SCAN);
     }
 
