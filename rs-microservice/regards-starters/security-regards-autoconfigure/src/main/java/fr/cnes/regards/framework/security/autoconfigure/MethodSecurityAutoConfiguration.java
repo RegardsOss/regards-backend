@@ -26,9 +26,7 @@ import fr.cnes.regards.framework.security.autoconfigure.endpoint.ResourceAccessV
  */
 @ConditionalOnWebApplication
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfiguration
-
-{
+public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfiguration {
 
     /**
      * Global method authorization service

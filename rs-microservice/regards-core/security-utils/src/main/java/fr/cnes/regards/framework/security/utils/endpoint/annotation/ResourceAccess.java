@@ -12,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Security hook to identify and secured REST endpoint accesses.
- * 
+ *
  * @author msordi
  *
  */
@@ -37,4 +37,13 @@ public @interface ResourceAccess {
      * @return feature description
      */
     String description();
+
+    /**
+     *
+     * If the resource access is a plugin implementation, this parameter allow to identify the plugin interface
+     *
+     * @return
+     * @since 1.0-SNAPSHOT
+     */
+    Class<?> plugin() default void.class;
 }
