@@ -117,7 +117,7 @@ public class ProjectUser implements Identifiable<Long> {
         maxProjectUserId_++;
         permissions = new ArrayList<>();
         metaData = new ArrayList<>();
-        status = UserStatus.WAITING_ACCES;
+        status = UserStatus.WAITING_ACCESS;
         lastConnection = LocalDateTime.now();
         lastUpdate = LocalDateTime.now();
     }
@@ -263,7 +263,7 @@ public class ProjectUser implements Identifiable<Long> {
      * @return The accepted user
      */
     public ProjectUser accept() {
-        if (status.equals(UserStatus.WAITING_ACCES)) {
+        if (status.equals(UserStatus.WAITING_ACCESS)) {
             setStatus(UserStatus.ACCESS_GRANTED);
             return this;
         }
@@ -276,7 +276,7 @@ public class ProjectUser implements Identifiable<Long> {
      * @return The denied user
      */
     public ProjectUser deny() {
-        if (status.equals(UserStatus.WAITING_ACCES)) {
+        if (status.equals(UserStatus.WAITING_ACCESS)) {
             setStatus(UserStatus.ACCESS_DENIED);
             return this;
         }
@@ -343,6 +343,24 @@ public class ProjectUser implements Identifiable<Long> {
     @Override
     public boolean equals(final Object pObject) {
         return (pObject instanceof ProjectUser) && (((ProjectUser) pObject).getId() == id);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 37;
+        int result = 1;
+
+        result = (prime * result);
+        if (id != null) {
+            result += id.hashCode();
+        }
+
+        return result;
     }
 
 }

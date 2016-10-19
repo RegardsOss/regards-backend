@@ -60,7 +60,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
      */
     @Override
     public List<ProjectUser> retrieveUserList() {
-        return projectUsers.stream().filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES))
+        return projectUsers.stream().filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCESS))
                 .collect(Collectors.toList());
     }
 
@@ -71,7 +71,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
     @Override
     public ProjectUser retrieveUser(final Long pUserId) {
         final List<ProjectUser> notWaitingAccess = projectUsers.stream()
-                .filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES)).collect(Collectors.toList());
+                .filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCESS)).collect(Collectors.toList());
         final ProjectUser wanted = notWaitingAccess.stream().filter(p -> p.getId() == pUserId).findFirst().get();
         final List<MetaData> visible = wanted.getMetaData().stream()
                 .filter(m -> !m.getVisibility().equals(UserVisibility.HIDDEN)).collect(Collectors.toList());
@@ -105,7 +105,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
      */
     @Override
     public boolean existUser(final Long pUserId) {
-        return projectUsers.stream().filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCES))
+        return projectUsers.stream().filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCESS))
                 .filter(p -> p.getId() == pUserId).findFirst().isPresent();
     }
 

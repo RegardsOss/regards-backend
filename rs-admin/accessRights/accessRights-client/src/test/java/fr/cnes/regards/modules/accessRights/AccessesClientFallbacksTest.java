@@ -41,7 +41,7 @@ public class AccessesClientFallbacksTest {
             status = results.getStatusCode();
             Assert.assertTrue("Fallback error", status.equals(HttpStatus.SERVICE_UNAVAILABLE));
 
-            results = (ResponseEntity<?>) accessesClient.getAccessSettingList();
+            results = (ResponseEntity<?>) accessesClient.getAccessSettings();
             status = results.getStatusCode();
             Assert.assertTrue("Fallback error", status.equals(HttpStatus.SERVICE_UNAVAILABLE));
 
@@ -53,7 +53,7 @@ public class AccessesClientFallbacksTest {
             status = results.getStatusCode();
             Assert.assertTrue("Fallback error", status.equals(HttpStatus.SERVICE_UNAVAILABLE));
 
-            results = (ResponseEntity<?>) accessesClient.updateAccessSetting("");
+            results = (ResponseEntity<?>) accessesClient.updateAccessSettings(null);
             status = results.getStatusCode();
             Assert.assertTrue("Fallback error", status.equals(HttpStatus.SERVICE_UNAVAILABLE));
         } catch (final Exception e) {

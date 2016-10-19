@@ -162,10 +162,6 @@ public class Account implements Identifiable<Long> {
         }
     }
 
-    public void setAccountId(final Long pAccountId) {
-        id = pAccountId;
-    }
-
     @Override
     public Long getId() {
         return id;
