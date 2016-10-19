@@ -48,10 +48,15 @@ public class PluginDaoTestDataUtility {
     static final String BLUE = "blue";
 
     /**
+     * BLUE constant {@link String}
+     */
+    static final String INVALID_JWT = "Invalid JWT";
+
+    /**
      * A {@link PluginParameter}
      */
     static final PluginParameter PARAMETER1 = PluginParametersFactory.build().addParameter("param11", "value11")
-            .addParameterDynamic("param-dyn12", "value12").getParameters().get(0);
+            .getParameters().get(0);
 
     /**
      * A {@link List} of values
@@ -61,25 +66,32 @@ public class PluginDaoTestDataUtility {
     /**
      * A {@link PluginParameter}
      */
-    static final PluginParameter PARAMETER2 = PluginParametersFactory.build().addParameter("param21", "value21")
-            .addParameterDynamic("param-dyn22", RED, DYNAMICVALUES).getParameters().get(0);
+    static final PluginParameter PARAMETER2 = PluginParametersFactory.build()
+            .addParameterDynamic("param-dyn21", RED, DYNAMICVALUES).getParameters().get(0);
 
     /**
      * A list of {@link PluginParameter}
      */
     static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
-            .addParameter("param31", "value31").addParameter("param32", "value32").getParameters();
+            .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
+            .addParameter("param34", "value34").addParameter("param35", "value35").getParameters();
 
     /**
      * A {@link PluginConfiguration}
      */
     private PluginConfiguration pluginConfiguration1 = new PluginConfiguration(this.getPluginMetaData(),
             "a configuration", INTERFACEPARAMETERS, 0);
-    
+
+    /**
+     * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
+     */
+    private PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
+            "second configuration", Arrays.asList(PARAMETER1, PARAMETER2), 0);
+
     /**
      * A {@link PluginParameter} with a reference to a {@link PluginConfiguration}
      */
-    private PluginParameter pluginParameter4 = new PluginParameter("param41", getPluginConfiguration());
+    private PluginParameter pluginParameter4 = new PluginParameter("param41", getPluginConfigurationWithParameters());
 
     PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
@@ -90,14 +102,26 @@ public class PluginDaoTestDataUtility {
         return pluginMetaData;
     }
 
-    public PluginConfiguration getPluginConfiguration() {
+    public PluginConfiguration getPluginConfigurationWithParameters() {
         pluginConfiguration1.setIsActive(true);
         return pluginConfiguration1;
+    }
+
+    public PluginConfiguration getPluginConfigurationWithDynamicParameter() {
+        pluginConfiguration2.setIsActive(true);
+        return pluginConfiguration2;
     }
 
     public PluginParameter getPluginParameterWithPluginConfiguration() {
         return pluginParameter4;
     }
-
+    
+    public void resetId() {
+        getPluginConfigurationWithDynamicParameter().setId(null);
+        getPluginConfigurationWithDynamicParameter().getParameters().forEach(p->p.setId(null));
+        getPluginConfigurationWithParameters().setId(null);
+        getPluginConfigurationWithParameters().getParameters().forEach(p->p.setId(null));
+        PARAMETER2.getDynamicsValues().forEach(p->p.setId(null));
+    }
 
 }

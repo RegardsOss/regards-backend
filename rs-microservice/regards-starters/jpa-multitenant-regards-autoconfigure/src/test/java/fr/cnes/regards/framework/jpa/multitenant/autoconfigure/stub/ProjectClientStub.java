@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -39,14 +38,14 @@ public class ProjectClientStub implements IProjectsClient {
     private final Project project = new Project(0L, "", "", true, PROJECT_NAME);
 
     @Override
-    public HttpEntity<List<Resource<Project>>> retrieveProjectList() {
+    public ResponseEntity<List<Resource<Project>>> retrieveProjectList() {
         final List<Resource<Project>> resouces = new ArrayList<>();
         resouces.add(new Resource<Project>(project));
         return new ResponseEntity<>(resouces, HttpStatus.OK);
     }
 
     @Override
-    public HttpEntity<Resource<ProjectConnection>> retrieveProjectConnection(final String pProjectName,
+    public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(final String pProjectName,
             final String pMicroService) throws EntityNotFoundException {
 
         final ProjectConnection connection = new ProjectConnection(0L, project, pMicroService, "", "", "", "");
@@ -55,46 +54,46 @@ public class ProjectClientStub implements IProjectsClient {
     }
 
     @Override
-    public HttpEntity<Resource<Project>> createProject(final Project pNewProject) throws EntityException {
+    public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) throws EntityException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<Project>> retrieveProject(final String pProjectName) throws EntityException {
+    public ResponseEntity<Resource<Project>> retrieveProject(final String pProjectName) throws EntityException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<Project>> updateProject(final String pProjectName, final Project pProjectToUpdate)
+    public ResponseEntity<Resource<Project>> updateProject(final String pProjectName, final Project pProjectToUpdate)
             throws EntityException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<Void> deleteProject(final String pProjectName) throws EntityException {
+    public ResponseEntity<Void> deleteProject(final String pProjectName) throws EntityException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<ProjectConnection>> createProjectConnection(final ProjectConnection pProjectConnection)
-            throws EntityException {
+    public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
+            final ProjectConnection pProjectConnection) throws EntityException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<ProjectConnection>> updateProjectConnection(final ProjectConnection pProjectConnection)
-            throws EntityException {
+    public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
+            final ProjectConnection pProjectConnection) throws EntityException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<Void> deleteProjectConnection(final String pProjectName, final String pMicroservice)
+    public ResponseEntity<Void> deleteProjectConnection(final String pProjectName, final String pMicroservice)
             throws EntityException {
         // TODO Auto-generated method stub
         return null;
