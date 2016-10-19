@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.springframework.context.annotation.Primary;
@@ -37,12 +38,24 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 @Primary
 public class ProjectUserServiceStub implements IProjectUserService {
 
-    public static List<ProjectUser> projectUsers;
+    /**
+     * Stub project users db
+     */
+    private List<ProjectUser> projectUsers;
 
+    /**
+     * CRUD repository managing {@link ProjectUser}s
+     */
     private final IProjectUserRepository projectUserRepository;
 
+    /**
+     * Service handling CRUD operations on {@link Role}s
+     */
     private final IRoleService roleService;
 
+    /**
+     * CRUD repository managing {@link Roles}s
+     */
     private final IRoleRepository roleRepository;
 
     public ProjectUserServiceStub(final IProjectUserRepository pDaoProjectUser, final IRoleService pRoleService,
@@ -50,8 +63,9 @@ public class ProjectUserServiceStub implements IProjectUserService {
         projectUserRepository = pDaoProjectUser;
         roleService = pRoleService;
         roleRepository = pRoleRepository;
-        projectUsers = StreamSupport.stream(projectUserRepository.findAll().spliterator(), false)
-                .collect(Collectors.toList());
+        try (Stream<ProjectUser> stream = StreamSupport.stream(projectUserRepository.findAll().spliterator(), false)) {
+            projectUsers = stream.collect(Collectors.toList());
+        }
     }
 
     /*
@@ -75,9 +89,8 @@ public class ProjectUserServiceStub implements IProjectUserService {
         final ProjectUser wanted = notWaitingAccess.stream().filter(p -> p.getId() == pUserId).findFirst().get();
         final List<MetaData> visible = wanted.getMetaData().stream()
                 .filter(m -> !m.getVisibility().equals(UserVisibility.HIDDEN)).collect(Collectors.toList());
-        final ProjectUser sent = new ProjectUser(wanted.getId(), wanted.getLastConnection(), wanted.getLastUpdate(),
-                wanted.getStatus(), visible, wanted.getRole(), wanted.getPermissions(), wanted.getEmail());
-        return sent;
+        return new ProjectUser(wanted.getId(), wanted.getLastConnection(), wanted.getLastUpdate(), wanted.getStatus(),
+                visible, wanted.getRole(), wanted.getPermissions(), wanted.getEmail());
     }
 
     @Override
@@ -88,15 +101,26 @@ public class ProjectUserServiceStub implements IProjectUserService {
     @Override
     public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
             throws InvalidValueException, EntityNotFoundException {
-        if (existUser(pUserId)) {
-            if (pUpdatedProjectUser.getId() == pUserId) {
-                projectUsers = projectUsers.stream().map(a -> a.getId() == pUserId ? pUpdatedProjectUser : a)
-                        .collect(Collectors.toList());
-                return;
-            }
+        if (!existUser(pUserId)) {
+            throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
+        }
+        if (!pUserId.equals(pUpdatedProjectUser.getId())) {
             throw new InvalidValueException("Account id specified differs from updated account id");
         }
-        throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
+
+        try (Stream<ProjectUser> stream = projectUsers.stream()) {
+
+            final Function<ProjectUser, ProjectUser> replaceWithUpdated = p -> {
+                ProjectUser result = null;
+                if (p.getId().equals(pUserId)) {
+                    result = pUpdatedProjectUser;
+                } else {
+                    result = p;
+                }
+                return result;
+            };
+            projectUsers = stream.map(replaceWithUpdated).collect(Collectors.toList());
+        }
     }
 
     /**
@@ -121,7 +145,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
      */
     @Override
     public void removeUser(final Long pUserId) {
-        projectUsers = projectUsers.stream().filter(p -> p.getId() != pUserId).collect(Collectors.toList());
+        projectUsers.stream().filter(p -> p.getId() != pUserId).collect(Collectors.toList());
     }
 
     @Override
@@ -153,12 +177,10 @@ public class ProjectUserServiceStub implements IProjectUserService {
 
         // Finder method
         // Pass the id and the list to search, returns the element with passed id
-        final Function<Long, List<ResourcesAccess>> find = (id) -> {
-            return pUpdatedUserAccessRights.stream().filter(e -> e.getId().equals(id)).collect(Collectors.toList());
-        };
-        final Function<Long, Boolean> contains = (id) -> {
-            return !find.apply(id).isEmpty();
-        };
+        final Function<Long, List<ResourcesAccess>> find = id -> pUpdatedUserAccessRights.stream()
+                .filter(e -> e.getId().equals(id)).collect(Collectors.toList());
+
+        final Function<Long, Boolean> contains = id -> !find.apply(id).isEmpty();
 
         final List<ResourcesAccess> permissions = user.getPermissions();
         // If an element with the same id is found in the pResourcesAccessList list, replace with it

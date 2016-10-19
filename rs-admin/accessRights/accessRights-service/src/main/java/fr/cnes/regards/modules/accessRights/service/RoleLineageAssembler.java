@@ -17,18 +17,18 @@ public class RoleLineageAssembler {
 
     private Role role;
 
-    public RoleLineageAssembler of(Role pRole) {
+    public RoleLineageAssembler of(final Role pRole) {
         role = pRole;
         return this;
     }
 
     public List<Role> get() {
-        List<Role> ancestors = new ArrayList<>();
-        Iterator<Role> iterator = new RoleLineageIterator(role);
+        final List<Role> ancestors = new ArrayList<>();
+        final Iterator<Role> iterator = new RoleLineageIterator(role);
 
         while (iterator.hasNext()) {
-            Role role = iterator.next();
-            ancestors.add(role);
+            final Role nextRole = iterator.next();
+            ancestors.add(nextRole);
         }
 
         return ancestors;

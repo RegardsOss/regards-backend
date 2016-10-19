@@ -48,7 +48,7 @@ public class RoleServiceTest {
      * Do some setup before each test
      */
     @Before
-    public void init() throws AlreadyExistingException {
+    public void init() {
         roleRepository = Mockito.mock(IRoleRepository.class);
         roleService = new RoleService(roleRepository);
     }
