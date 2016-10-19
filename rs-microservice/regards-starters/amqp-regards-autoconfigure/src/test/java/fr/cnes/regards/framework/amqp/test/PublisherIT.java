@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
@@ -92,10 +93,16 @@ public class PublisherIT {
     private Publisher publisher;
 
     /**
-     *
+     * bean provided
      */
     @Autowired
     private RabbitAdmin rabbitAdmin;
+
+    /**
+     * bean provided
+     */
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * create and start a message listener to receive the published event
@@ -110,8 +117,8 @@ public class PublisherIT {
     @Before
     public void init() throws RabbitMQVhostException {
         Assume.assumeTrue(amqpConfiguration.brokerRunning());
-        amqpConfiguration.addVhost(TENANT);
-        ((CachingConnectionFactory) rabbitAdmin.getRabbitTemplate().getConnectionFactory()).setVirtualHost(TENANT);
+        final CachingConnectionFactory connectionFactory = amqpConfiguration.createConnectionFactory(TENANT);
+        amqpConfiguration.addVhost(TENANT, connectionFactory);
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
 
         final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
@@ -120,7 +127,7 @@ public class PublisherIT {
         amqpConfiguration.declareBinding(queue, exchange, TestEvent.class.getName(), AmqpCommunicationMode.ONE_TO_MANY,
                                          TENANT);
 
-        container.setConnectionFactory(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
+        container.setConnectionFactory(connectionFactory);
         final MessageListenerAdapter messageListener = new MessageListenerAdapter(testReceiver, "handle");
         messageListener.setMessageConverter(jackson2JsonMessageConverter);
         container.setMessageListener(messageListener);
@@ -180,18 +187,21 @@ public class PublisherIT {
             publisher.publish(priority0, AmqpCommunicationMode.ONE_TO_ONE, 0);
             publisher.publish(priority1, AmqpCommunicationMode.ONE_TO_ONE, 1);
             publisher.publish(priority02, AmqpCommunicationMode.ONE_TO_ONE, 0);
-            // TODO: poll
-            final RabbitTemplate rabbitTemplate = rabbitAdmin.getRabbitTemplate();
-            ((CachingConnectionFactory) rabbitTemplate.getConnectionFactory()).setVirtualHost(TENANT);
-            rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter);
+
+            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
             TenantWrapper<TestEvent> wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
                     .receiveAndConvert(TestEvent.class.getName());
+            SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
             Assert.assertEquals(priority1, wrappedMessage.getContent());
 
+            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
             wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate.receiveAndConvert(TestEvent.class.getName());
+            SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
             Assert.assertEquals(priority0, wrappedMessage.getContent());
 
+            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
             wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate.receiveAndConvert(TestEvent.class.getName());
+            SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
             Assert.assertEquals(priority02, wrappedMessage.getContent());
         } catch (RabbitMQVhostException e) {
             final String msg = "Publish Test Failed";
