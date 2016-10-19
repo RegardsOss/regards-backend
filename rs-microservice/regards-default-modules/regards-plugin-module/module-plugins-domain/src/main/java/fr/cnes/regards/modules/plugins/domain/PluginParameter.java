@@ -4,18 +4,22 @@
 
 package fr.cnes.regards.modules.plugins.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
-import javax.persistence.Transient;
 
 import org.springframework.hateoas.Identifiable;
 
@@ -68,10 +72,13 @@ public class PluginParameter implements Identifiable<Long> {
     private Boolean isDynamic = false;
 
     /**
-     * The list of values for a dynamic parameters TODO CMZ enlever le @Transient
+     * The list of values for a dynamic parameters
      */
-    @Transient
-    private List<String> dynamicsValues;
+    @ElementCollection(targetClass = PluginDynamicValue.class)
+    @CollectionTable(name = "dynParamValue",
+            joinColumns = @JoinColumn(name = "ID", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_ID")))
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<PluginDynamicValue> dynamicsValues;
 
     /**
      * Default constructor
@@ -113,7 +120,7 @@ public class PluginParameter implements Identifiable<Long> {
     public Long getId() {
         return id;
     }
-
+    
     public final void setId(Long pId) {
         id = pId;
     }
@@ -142,16 +149,24 @@ public class PluginParameter implements Identifiable<Long> {
         this.isDynamic = pIsDynamic;
     }
 
-    public final List<String> getDynamicsValues() {
+    public final PluginConfiguration getPluginConfiguration() {
+        return pluginConfiguration;
+    }
+
+    public List<PluginDynamicValue> getDynamicsValues() {
         return dynamicsValues;
     }
 
-    public final void setDynamicsValues(List<String> pDynamicsValues) {
-        this.dynamicsValues = pDynamicsValues;
+    public List<String> getDynamicsValuesAsString() {
+        final List<String> result = new ArrayList<String>();
+        if (dynamicsValues != null && !dynamicsValues.isEmpty()) {
+            dynamicsValues.forEach(d -> result.add(d.getValue()));
+        }
+        return result;
     }
 
-    public final PluginConfiguration getPluginConfiguration() {
-        return pluginConfiguration;
+    public void setDynamicsValues(List<PluginDynamicValue> pDynamicValues) {
+        this.dynamicsValues = pDynamicValues;
     }
 
 }

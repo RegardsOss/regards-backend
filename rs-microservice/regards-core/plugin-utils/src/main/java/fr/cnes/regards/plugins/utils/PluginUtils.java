@@ -4,7 +4,6 @@
 
 package fr.cnes.regards.plugins.utils;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
