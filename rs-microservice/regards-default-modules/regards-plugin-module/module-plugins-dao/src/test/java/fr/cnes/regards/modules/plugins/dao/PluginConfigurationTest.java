@@ -168,8 +168,7 @@ public class PluginConfigurationTest extends PluginDaoTestDataUtility {
 
     private void deleteAllFromRepository() {
         pluginConfigurationRepository.deleteAll();
-        pluginParameterRepository.deleteAll();
-        pluginDynamicValueRepository.deleteAll();
+        pluginParameterRepository.findAll().forEach(p -> pluginParameterRepository.delete(p));
         resetId();
     }
 
