@@ -83,9 +83,15 @@ public class PluginDaoTestDataUtility {
             "a configuration", INTERFACEPARAMETERS, 0);
 
     /**
+     * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
+     */
+    private PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
+            "second configuration", Arrays.asList(PARAMETER1, PARAMETER2), 0);
+
+    /**
      * A {@link PluginParameter} with a reference to a {@link PluginConfiguration}
      */
-    private PluginParameter pluginParameter4 = new PluginParameter("param41", getPluginConfiguration());
+    private PluginParameter pluginParameter4 = new PluginParameter("param41", getPluginConfigurationWithParameters());
 
     PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
@@ -96,13 +102,26 @@ public class PluginDaoTestDataUtility {
         return pluginMetaData;
     }
 
-    public PluginConfiguration getPluginConfiguration() {
+    public PluginConfiguration getPluginConfigurationWithParameters() {
         pluginConfiguration1.setIsActive(true);
         return pluginConfiguration1;
     }
 
+    public PluginConfiguration getPluginConfigurationWithDynamicParameter() {
+        pluginConfiguration2.setIsActive(true);
+        return pluginConfiguration2;
+    }
+
     public PluginParameter getPluginParameterWithPluginConfiguration() {
         return pluginParameter4;
+    }
+    
+    public void resetId() {
+        getPluginConfigurationWithDynamicParameter().setId(null);
+        getPluginConfigurationWithDynamicParameter().getParameters().forEach(p->p.setId(null));
+        getPluginConfigurationWithParameters().setId(null);
+        getPluginConfigurationWithParameters().getParameters().forEach(p->p.setId(null));
+        PARAMETER2.getDynamicsValues().forEach(p->p.setId(null));
     }
 
 }

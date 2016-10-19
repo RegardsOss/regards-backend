@@ -78,7 +78,7 @@ public class PluginConfiguration implements Identifiable<Long> {
             joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id",
                     foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_ID")) },
             inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMMETER_ID")) })
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMETER_ID")) })
     private List<PluginParameter> parameters;
 
     /**
@@ -107,6 +107,15 @@ public class PluginConfiguration implements Identifiable<Long> {
         version = pPluginMetaData.getVersion();
         pluginClassName = pPluginMetaData.getPluginClass().getName();
         parameters = pParameters;
+        priorityOrder = pOrder;
+        label = pLabel;
+    }
+
+    public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel, final int pOrder) {
+        super();
+        pluginId = pPluginMetaData.getPluginId();
+        version = pPluginMetaData.getVersion();
+        pluginClassName = pPluginMetaData.getPluginClass().getName();
         priorityOrder = pOrder;
         label = pLabel;
     }
@@ -204,6 +213,10 @@ public class PluginConfiguration implements Identifiable<Long> {
     @Override
     public Long getId() {
         return this.id;
+    }
+    
+    public final void setId(Long pId) {
+        id = pId;
     }
 
 }

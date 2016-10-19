@@ -13,8 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 
 /***
@@ -67,19 +66,16 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
             jwtService.injectToken(PROJECT, USERROLE);
 
             deleteAllFromRepository();
-            Assert.assertEquals(0, pluginParameterRepository.count());
-            Assert.assertEquals(0, pluginDynamicValueRepository.count());
 
             pluginParameterRepository.save(PARAMETER1);
             Assert.assertEquals(1, pluginParameterRepository.count());
 
             pluginParameterRepository.save(PARAMETER2);
-            Assert.assertEquals(PARAMETER2.getDynamicsValues().size(),pluginDynamicValueRepository.count());
+            Assert.assertEquals(PARAMETER2.getDynamicsValues().size(), pluginDynamicValueRepository.count());
 
             Assert.assertEquals(2, pluginParameterRepository.count());
 
-            deleteAllFromRepository();
-        } catch (InvalidJwtException | MissingClaimException e) {
+        } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
     }
@@ -108,8 +104,7 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
             final PluginParameter paramFound = pluginParameterRepository.findOne(paramJpa.getId());
             Assert.assertEquals(paramFound.getName(), paramJpa.getName());
 
-            deleteAllFromRepository();
-        } catch (InvalidJwtException | MissingClaimException e) {
+        } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
     }
@@ -131,8 +126,7 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
             pluginParameterRepository.delete(paramJpa);
             Assert.assertEquals(1, pluginParameterRepository.count());
 
-            deleteAllFromRepository();
-        } catch (InvalidJwtException | MissingClaimException e) {
+        } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
     }
@@ -161,8 +155,7 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
             Assert.assertEquals(paramJpa.getIsDynamic(), paramJpa.getIsDynamic());
             Assert.assertEquals(paramJpa.getDynamicsValues().size(), paramFound.getDynamicsValues().size());
 
-            deleteAllFromRepository();
-        } catch (InvalidJwtException | MissingClaimException e) {
+        } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
     }
@@ -170,6 +163,7 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
     private void deleteAllFromRepository() {
         pluginParameterRepository.deleteAll();
         pluginDynamicValueRepository.deleteAll();
+        resetId();
     }
 
 }

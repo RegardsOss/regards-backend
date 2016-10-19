@@ -51,5 +51,10 @@ public class PluginDynamicValue {
     public void setValue(String pValue) {
         this.value = pValue;
     }
+    
+    public final void setId(Long pId) {
+        id = pId;
+    }
+
 
 }

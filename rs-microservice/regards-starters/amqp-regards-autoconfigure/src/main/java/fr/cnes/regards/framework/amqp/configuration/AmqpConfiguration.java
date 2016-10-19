@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.amqp.domain.RabbitMqVhostPermission;
 import fr.cnes.regards.framework.amqp.domain.RabbitVhost;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 
 /**
  * @author svissier
@@ -176,7 +177,7 @@ public class AmqpConfiguration {
      * @throws AddingRabbitMQVhostPermissionException
      *             represent any error that could occur while adding the permission to the specified vhost
      */
-    public void addVhost(String pName) throws AddingRabbitMQVhostException, AddingRabbitMQVhostPermissionException {
+    public void addVhost(String pName) throws RabbitMQVhostException {
         retrieveVhostList();
         if (!existVhost(pName)) {
             final HttpHeaders headers = new HttpHeaders();

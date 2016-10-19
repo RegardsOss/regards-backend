@@ -1,5 +1,10 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.client.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +25,11 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 public class ClientRequestInterceptor {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(ClientRequestInterceptor.class);
+
+    /**
      *
      * Create request interceptor in spring context
      *
@@ -35,7 +45,14 @@ public class ClientRequestInterceptor {
                     .getAuthentication();
             // Insert token into request header
             pRequestTemplate.header("Authorization", "Bearer " + authentication.getJwt());
+
+            LOG.info("Running Feign client request to : " + pRequestTemplate.request().url());
         };
+    }
+
+    @Bean
+    public ClientErrorDecoder errorDecoder() {
+        return new ClientErrorDecoder();
     }
 
 }

@@ -24,7 +24,6 @@ import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -34,12 +33,11 @@ import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.amqp.test.domain.TestReceiver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -62,6 +60,8 @@ public class PublisherIT {
      * fake tenant
      */
     private static final String TENANT = "PROJECT";
+
+    private static final String INVALID_JWT = "Invalid JWT";
 
     @Autowired
     private Jackson2JsonMessageConverter jackson2JsonMessageConverter;
@@ -104,7 +104,7 @@ public class PublisherIT {
      *
      */
     @Before
-    public void init() throws AddingRabbitMQVhostException, AddingRabbitMQVhostPermissionException {
+    public void init() throws RabbitMQVhostException {
         Assume.assumeTrue(amqpConfiguration.brokerRunning());
         amqpConfiguration.addVhost(TENANT);
         ((CachingConnectionFactory) rabbitAdmin.getRabbitTemplate().getConnectionFactory()).setVirtualHost(TENANT);
@@ -133,9 +133,8 @@ public class PublisherIT {
     @Requirement("REGARDS_DSL_CMP_ARC_030")
     @Test
     public void testPublishOneToMany() {
-        final String jwt = jwtService.generateToken(TENANT, "email", "SVG", "USER");
         try {
-            SecurityContextHolder.getContext().setAuthentication(jwtService.parseToken(new JWTAuthentication(jwt)));
+            jwtService.injectToken(TENANT, "USER");
             final TestEvent sended = new TestEvent("test1");
 
             publisher.publish(sended, AmqpCommunicationMode.ONE_TO_MANY);
@@ -145,12 +144,13 @@ public class PublisherIT {
             Thread.sleep(timeToWaitForRabbitToSendUsTheMessage);
             received = testReceiver.getMessage();
             Assert.assertEquals(sended, received);
-        } catch (InterruptedException | AddingRabbitMQVhostException | AddingRabbitMQVhostPermissionException e) {
+        } catch (InterruptedException | RabbitMQVhostException e) {
             final String msg = "Publish Test Failed";
             LOGGER.error(msg, e);
             Assert.fail(msg);
-        } catch (InvalidJwtException | MissingClaimException e) {
-            e.printStackTrace();
+        } catch (JwtException e) {
+            LOGGER.error(INVALID_JWT);
+            Assert.fail(INVALID_JWT);
         }
     }
 }

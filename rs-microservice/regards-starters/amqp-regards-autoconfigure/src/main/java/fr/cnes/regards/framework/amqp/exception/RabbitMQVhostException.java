@@ -7,15 +7,14 @@ package fr.cnes.regards.framework.amqp.exception;
  * @author svissier
  *
  */
-public class AddingRabbitMQVhostException extends RabbitMQVhostException {
+public class RabbitMQVhostException extends Exception {
 
     /**
      *
      */
     private static final long serialVersionUID = 1L;
 
-    public AddingRabbitMQVhostException(String pMessage) {
+    public RabbitMQVhostException(String pMessage) {
         super(pMessage);
     }
-
 }

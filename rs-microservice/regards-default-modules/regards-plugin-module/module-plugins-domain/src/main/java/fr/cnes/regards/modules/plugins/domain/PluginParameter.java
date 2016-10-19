@@ -76,7 +76,7 @@ public class PluginParameter implements Identifiable<Long> {
     @ElementCollection(targetClass = PluginDynamicValue.class)
     @CollectionTable(name = "dynParamValue",
             joinColumns = @JoinColumn(name = "ID", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_ID")))
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PluginDynamicValue> dynamicsValues;
 
     /**
@@ -119,7 +119,7 @@ public class PluginParameter implements Identifiable<Long> {
     public Long getId() {
         return id;
     }
-
+    
     public final void setId(Long pId) {
         id = pId;
     }
@@ -156,8 +156,8 @@ public class PluginParameter implements Identifiable<Long> {
         return dynamicsValues;
     }
 
-    public void setDynamicsValues(List<PluginDynamicValue> dynamicValueChris) {
-        this.dynamicsValues = dynamicValueChris;
+    public void setDynamicsValues(List<PluginDynamicValue> pDynamicValues) {
+        this.dynamicsValues = pDynamicValues;
     }
 
 }
