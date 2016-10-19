@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +72,8 @@ public class PollerIT {
     @Before
     public void init() throws RabbitMQVhostException {
         Assume.assumeTrue(amqpConfiguration.brokerRunning());
-        amqpConfiguration.addVhost(TENANT);
+        final CachingConnectionFactory connectionFactory = amqpConfiguration.createConnectionFactory(TENANT);
+        amqpConfiguration.addVhost(TENANT, connectionFactory);
         final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
                                                                     AmqpCommunicationMode.ONE_TO_MANY, TENANT);
         final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT);
