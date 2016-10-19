@@ -4,6 +4,7 @@
 
 package fr.cnes.regards.modules.plugins.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -154,6 +155,14 @@ public class PluginParameter implements Identifiable<Long> {
 
     public List<PluginDynamicValue> getDynamicsValues() {
         return dynamicsValues;
+    }
+
+    public List<String> getDynamicsValuesAsString() {
+        final List<String> result = new ArrayList<String>();
+        if (dynamicsValues != null && !dynamicsValues.isEmpty()) {
+            dynamicsValues.forEach(d -> result.add(d.getValue()));
+        }
+        return result;
     }
 
     public void setDynamicsValues(List<PluginDynamicValue> pDynamicValues) {
