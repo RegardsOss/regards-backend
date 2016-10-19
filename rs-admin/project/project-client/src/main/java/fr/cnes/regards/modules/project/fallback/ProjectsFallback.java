@@ -43,71 +43,59 @@ public class ProjectsFallback implements IProjectsClient {
     @Override
     public ResponseEntity<List<Resource<Project>>> retrieveProjectList() {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        final ResponseEntity<List<Resource<Project>>> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) throws AlreadyExistingException {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        final ResponseEntity<Resource<Project>> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Resource<Project>> retrieveProject(final String pProjectId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        final ResponseEntity<Resource<Project>> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Resource<Project>> updateProject(final String pProjectId, final Project pProjectUpdated)
             throws EntityException {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        final ResponseEntity<Resource<Project>> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Void> deleteProject(final String pProjectId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(final String pProjectId,
             final String pMicroService) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        final ResponseEntity<Resource<ProjectConnection>> response = new ResponseEntity<>(
-                HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
             final ProjectConnection pProjectConnection) throws AlreadyExistingException {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        final ResponseEntity<Resource<ProjectConnection>> response = new ResponseEntity<>(
-                HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
             final ProjectConnection pProjectConnection) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        final ResponseEntity<Resource<ProjectConnection>> response = new ResponseEntity<>(
-                HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Void> deleteProjectConnection(final String pProjectName, final String pMicroservice) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }
