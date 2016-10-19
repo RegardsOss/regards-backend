@@ -80,8 +80,7 @@ public class DefaultMultitenantConnectionsReader implements IMultitenantConnecti
     private List<Project> getProjects() {
 
         final List<Project> projects = new ArrayList<>();
-        final ResponseEntity<List<Resource<Project>>> response = (ResponseEntity<List<Resource<Project>>>) projectsClient
-                .retrieveProjectList();
+        final ResponseEntity<List<Resource<Project>>> response = projectsClient.retrieveProjectList();
 
         if (response.getStatusCode().equals(HttpStatus.OK)) {
 
@@ -109,7 +108,7 @@ public class DefaultMultitenantConnectionsReader implements IMultitenantConnecti
     private ProjectConnection getProjectConnection(final String pProjectName, final String pMicroserviceName) {
         ProjectConnection projectConnection = null;
         try {
-            final ResponseEntity<Resource<ProjectConnection>> response = (ResponseEntity<Resource<ProjectConnection>>) projectsClient
+            final ResponseEntity<Resource<ProjectConnection>> response = projectsClient
                     .retrieveProjectConnection(pProjectName, microserviceName);
             if (response.getStatusCode().equals(HttpStatus.OK)) {
                 projectConnection = response.getBody().getContent();
