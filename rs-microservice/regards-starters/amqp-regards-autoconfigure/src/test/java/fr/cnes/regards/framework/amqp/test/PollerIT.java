@@ -19,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
 
 import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
@@ -68,9 +67,6 @@ public class PollerIT {
 
     @Autowired
     private AmqpConfiguration amqpConfiguration;
-
-    @Autowired
-    private RestTemplate restTemplate;
 
     @Before
     public void init() throws RabbitMQVhostException {

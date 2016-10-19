@@ -10,6 +10,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.amqp.Subscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
@@ -62,20 +65,25 @@ public class SubscriberIT {
     private static final String SLEEP_FAIL = "Sleep Failed";
 
     /**
+     * =================RECEIVED
+     */
+    private static final String RECEIVED = "=================RECEIVED ";
+
+    /**
+     * SENDED
+     */
+    private static final String SENDED = "SENDED ";
+
+    /**
      * bean to test
      */
     @Autowired
-    private Subscriber subscriber;
-
-    /**
-     * message received
-     */
-    private TestEvent received;
+    private Subscriber subscriberOneToMany;
 
     /**
      * message receiver
      */
-    private TestReceiver receiver;
+    private TestReceiver receiverOneToMany;
 
     /**
      * Template to send original message
@@ -83,15 +91,20 @@ public class SubscriberIT {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    /**
+     * bean used to know if the broker is running
+     */
     @Autowired
     private AmqpConfiguration amqpConfiguration;
 
     @Before
     public void init() {
         Assume.assumeTrue(amqpConfiguration.brokerRunning());
-        receiver = new TestReceiver();
+        receiverOneToMany = new TestReceiver();
+
         try {
-            subscriber.subscribeTo(TestEvent.class, receiver);
+            subscriberOneToMany.subscribeTo(TestEvent.class, receiverOneToMany, AmqpCommunicationMode.ONE_TO_MANY);
+
         } catch (RabbitMQVhostException e) {
             LOGGER.error(e.getMessage(), e);
             Assert.fail("Error during init");
@@ -104,12 +117,16 @@ public class SubscriberIT {
     @Requirement("REGARDS_DSL_CMP_ARC_160")
     @Purpose("test the subscription to message broker")
     @Test
-    public void testSubscribeTo() {
-        final TestEvent toSend = new TestEvent("test2");
+    public void testSubscribeToOneToMany() {
+        final TestEvent toSend = new TestEvent("test one to many");
         final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
-        LOGGER.info("SENDED " + sended);
+        LOGGER.info(SENDED + sended);
         SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
-        rabbitTemplate.convertAndSend(TestEvent.class.getName(), "", sended);
+        rabbitTemplate.convertAndSend(TestEvent.class.getName(), TestEvent.class.getName(), sended, pMessage -> {
+            final MessageProperties propertiesWithPriority = pMessage.getMessageProperties();
+            propertiesWithPriority.setPriority(0);
+            return new Message(pMessage.getBody(), propertiesWithPriority);
+        });
         SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
 
         try {
@@ -118,9 +135,8 @@ public class SubscriberIT {
             LOGGER.error(SLEEP_FAIL, e);
             Assert.fail(SLEEP_FAIL);
         }
-        LOGGER.info("=================RECEIVED " + receiver.getMessage());
-        received = receiver.getMessage();
-        Assert.assertEquals(toSend, received);
+        LOGGER.info(RECEIVED + receiverOneToMany.getMessage());
+        Assert.assertEquals(toSend, receiverOneToMany.getMessage());
 
     }
 
