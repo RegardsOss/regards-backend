@@ -14,11 +14,6 @@
 	</parent>
 
 	<dependencies>
-		<!-- Microservice internal dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-service</artifactId>

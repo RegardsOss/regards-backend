@@ -11,6 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessRights.dao.projects.IProjectUserRepository;
 
 /**
@@ -42,11 +43,13 @@ public class AccessRightsDaoTest {
     /**
      *
      * Test method
+     * 
+     * @throws JwtException
      *
      * @since 1.0-SNAPSHOT
      */
     @Test
-    public void test() {
+    public void test() throws JwtException {
 
         jwtService.injectToken("test1", "USER");
 
