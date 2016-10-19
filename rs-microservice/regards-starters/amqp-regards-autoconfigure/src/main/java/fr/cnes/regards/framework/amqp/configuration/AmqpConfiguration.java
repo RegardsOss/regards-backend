@@ -3,7 +3,9 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.amqp.core.Binding;
@@ -258,8 +260,23 @@ public class AmqpConfiguration {
         return exchange;
     }
 
-    public Queue declarequeue(Class<?> pEvtClass, AmqpCommunicationMode pAmqpCommunicationMode, String pTenant) {
-        final Queue queue = new Queue(getQueueName(pEvtClass, pAmqpCommunicationMode), true);
+    /**
+     *
+     * Declare a queue that can handle 255 priority
+     *
+     * @param pEvtClass
+     *            class token corresponding to the message types the queue will receive, used for naming convention
+     * @param pAmqpCommunicationMode
+     *            communication mode, used for naming conventing
+     * @param pTenant
+     *            tenant for who the queue is created
+     * @return instance of the queue
+     */
+    public Queue declareQueue(Class<?> pEvtClass, AmqpCommunicationMode pAmqpCommunicationMode, String pTenant) {
+        final Map<String, Object> args = new HashMap<>();
+        final Integer maxPriority = 255;
+        args.put("x-max-priority", maxPriority);
+        final Queue queue = new Queue(getQueueName(pEvtClass, pAmqpCommunicationMode), true, false, false, args);
         ((CachingConnectionFactory) rabbitAdmin.getRabbitTemplate().getConnectionFactory()).setVirtualHost(pTenant);
         rabbitAdmin.declareQueue(queue);
         return queue;
@@ -356,15 +373,16 @@ public class AmqpConfiguration {
     }
 
     /**
-     * @return
+     * @return either the message broker is running or not
      */
     public boolean brokerRunning() {
+        boolean isRunning = true;
         try {
             retrieveVhostList();
-            return true;
         } catch (ResourceAccessException e) {
-            return false;
+            isRunning = false;
         }
+        return isRunning;
     }
 
 }

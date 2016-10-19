@@ -153,7 +153,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
             // instantiate plugin
             samplePlugin = PluginUtilsWrapper.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
         } catch (final PluginUtilsException e) {
-            Assert.assertTrue(false);
+            Assert.fail();
         }
         Assert.assertNotNull(samplePlugin);
 
@@ -257,7 +257,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
          */
         final List<fr.cnes.regards.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
-                .addParameter(SampleErrorPlugin.SUFFIXE, "chris_test_4")
+                .addParameter(SamplePlugin.SUFFIXE, "chris_test_4")
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.CINQ).getParameters();
 
         // instantiate plugin

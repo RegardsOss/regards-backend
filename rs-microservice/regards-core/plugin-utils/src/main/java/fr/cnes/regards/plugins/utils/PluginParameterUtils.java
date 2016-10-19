@@ -359,7 +359,7 @@ public final class PluginParameterUtils {
 
         if ((pConfiguredPlgParam.get().getDynamicsValues() != null)
                 && (!pConfiguredPlgParam.get().getDynamicsValues().isEmpty())
-                && (!pConfiguredPlgParam.get().getDynamicsValues().contains(pDynamicPlgParam.get().getValue()))) {
+                && (!pConfiguredPlgParam.get().getDynamicsValuesAsString().contains(pDynamicPlgParam.get().getValue()))) {
             // The dynamic parameter value is not a possible value
             throw new PluginUtilsException("The dynamic value <" + pDynamicPlgParam.get().getValue()
                     + "> is not an authorized value for the parameter <" + pDynamicPlgParam.get().getName() + ">");

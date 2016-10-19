@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AmqpTestsConfiguration.class })
-@SpringBootTest(classes = ApplicationTest.class)
+@SpringBootTest(classes = Application.class)
 @DirtiesContext
 public class SubscriberIT {
 

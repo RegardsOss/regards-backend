@@ -22,23 +22,23 @@ public class UserDetails implements Serializable {
     /**
      * User real name
      */
-    private String name_;
+    private String name;
 
     /**
      * User email
      */
-    private String email_;
+    private String email;
 
     /**
      * Tenant the user is requesting
      */
-    private String tenant_;
+    private String tenant;
 
     /**
      * @return the name
      */
     public String getName() {
-        return name_;
+        return name;
     }
 
     /**
@@ -46,14 +46,14 @@ public class UserDetails implements Serializable {
      *            the name to set
      */
     public void setName(String pName) {
-        name_ = pName;
+        name = pName;
     }
 
     /**
      * @return the email
      */
     public String getEmail() {
-        return email_;
+        return email;
     }
 
     /**
@@ -61,14 +61,14 @@ public class UserDetails implements Serializable {
      *            the email to set
      */
     public void setEmail(String pEmail) {
-        email_ = pEmail;
+        email = pEmail;
     }
 
     /**
      * @return the tenant
      */
     public String getTenant() {
-        return tenant_;
+        return tenant;
     }
 
     /**
@@ -76,7 +76,7 @@ public class UserDetails implements Serializable {
      *            the tenant to set
      */
     public void setTenant(String pTenant) {
-        tenant_ = pTenant;
+        tenant = pTenant;
     }
 
 }

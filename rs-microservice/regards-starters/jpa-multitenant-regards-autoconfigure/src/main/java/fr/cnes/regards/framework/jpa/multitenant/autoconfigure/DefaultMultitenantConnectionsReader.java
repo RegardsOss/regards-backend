@@ -42,9 +42,15 @@ public class DefaultMultitenantConnectionsReader implements IMultitenantConnecti
      */
     private static final Logger LOG = LoggerFactory.getLogger(DefaultMultitenantConnectionsReader.class);
 
+    /**
+     * Current Microservice name
+     */
     @Value("${spring.application.name")
     private String microserviceName;
 
+    /**
+     * Feign client to request administration service for projects informations
+     */
     @Autowired
     private IProjectsClient projectsClient;
 
@@ -74,8 +80,7 @@ public class DefaultMultitenantConnectionsReader implements IMultitenantConnecti
     private List<Project> getProjects() {
 
         final List<Project> projects = new ArrayList<>();
-        final ResponseEntity<List<Resource<Project>>> response = (ResponseEntity<List<Resource<Project>>>) projectsClient
-                .retrieveProjectList();
+        final ResponseEntity<List<Resource<Project>>> response = projectsClient.retrieveProjectList();
 
         if (response.getStatusCode().equals(HttpStatus.OK)) {
 
@@ -103,7 +108,7 @@ public class DefaultMultitenantConnectionsReader implements IMultitenantConnecti
     private ProjectConnection getProjectConnection(final String pProjectName, final String pMicroserviceName) {
         ProjectConnection projectConnection = null;
         try {
-            final ResponseEntity<Resource<ProjectConnection>> response = (ResponseEntity<Resource<ProjectConnection>>) projectsClient
+            final ResponseEntity<Resource<ProjectConnection>> response = projectsClient
                     .retrieveProjectConnection(pProjectName, microserviceName);
             if (response.getStatusCode().equals(HttpStatus.OK)) {
                 projectConnection = response.getBody().getContent();
