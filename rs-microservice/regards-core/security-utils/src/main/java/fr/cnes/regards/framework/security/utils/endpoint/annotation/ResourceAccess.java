@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.framework.security.utils.endpoint.annotation;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,10 +13,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Security hook to identify and secured REST endpoint accesses.
- * 
+ *
  * @author msordi
  *
  */
+@Documented
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @PreAuthorize("VOID")
