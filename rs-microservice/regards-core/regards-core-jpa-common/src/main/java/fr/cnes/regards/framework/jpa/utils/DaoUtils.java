@@ -68,19 +68,16 @@ public class DaoUtils {
         instanceClasses.forEach(instanceClass -> instancePackages.add(instanceClass.getPackage().getName()));
         final List<String> projectPackages = new ArrayList<>();
         projectsClasses.forEach(projectClass -> projectPackages.add(projectClass.getPackage().getName()));
-        final boolean errorFound = false;
-        instancePackages.forEach(instancePackage -> {
+        for (final String instancePackage : instancePackages) {
             for (final String pack : projectPackages) {
                 if (pack.contains(instancePackage) || instancePackage.contains(pack)) {
                     LOG.error(String.format(
                                             "Invalid classpath. Package %s is used for instance DAO Entities and multitenant DAO Entities",
                                             instancePackage));
+                    throw new MultiDataBasesException(
+                            "Invalid classpath for JPA multitenant and JPA instance databases.");
                 }
             }
-        });
-
-        if (errorFound) {
-            throw new MultiDataBasesException("Invalid classpath for JPA multitenant and JPA instance databases.");
         }
 
         LOG.info("Classpath is valid !");
