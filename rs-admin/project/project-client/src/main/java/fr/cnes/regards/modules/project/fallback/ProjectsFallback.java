@@ -8,7 +8,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
@@ -40,60 +41,73 @@ public class ProjectsFallback implements IProjectsClient {
     private static final String FALLBACK_ERROR_MESSAGE = "RS-ADMIN / Projects request error. Fallback.";
 
     @Override
-    public HttpEntity<List<Resource<Project>>> retrieveProjectList() {
+    public ResponseEntity<List<Resource<Project>>> retrieveProjectList() {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        return null;
+        final ResponseEntity<List<Resource<Project>>> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        return response;
     }
 
     @Override
-    public HttpEntity<Resource<Project>> createProject(final Project pNewProject) throws AlreadyExistingException {
+    public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) throws AlreadyExistingException {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        return null;
+        final ResponseEntity<Resource<Project>> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        return response;
     }
 
     @Override
-    public HttpEntity<Resource<Project>> retrieveProject(final String pProjectId) {
+    public ResponseEntity<Resource<Project>> retrieveProject(final String pProjectId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        return null;
+        final ResponseEntity<Resource<Project>> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        return response;
     }
 
     @Override
-    public HttpEntity<Resource<Project>> updateProject(final String pProjectId, final Project pProjectUpdated)
+    public ResponseEntity<Resource<Project>> updateProject(final String pProjectId, final Project pProjectUpdated)
             throws EntityException {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        return null;
+        final ResponseEntity<Resource<Project>> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        return response;
     }
 
     @Override
-    public HttpEntity<Void> deleteProject(final String pProjectId) {
+    public ResponseEntity<Void> deleteProject(final String pProjectId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        return null;
+        final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        return response;
     }
 
     @Override
-    public HttpEntity<Resource<ProjectConnection>> retrieveProjectConnection(final String pProjectId,
+    public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(final String pProjectId,
             final String pMicroService) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        return null;
+        final ResponseEntity<Resource<ProjectConnection>> response = new ResponseEntity<>(
+                HttpStatus.SERVICE_UNAVAILABLE);
+        return response;
     }
 
     @Override
-    public HttpEntity<Resource<ProjectConnection>> createProjectConnection(final ProjectConnection pProjectConnection)
-            throws AlreadyExistingException {
+    public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
+            final ProjectConnection pProjectConnection) throws AlreadyExistingException {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        return null;
+        final ResponseEntity<Resource<ProjectConnection>> response = new ResponseEntity<>(
+                HttpStatus.SERVICE_UNAVAILABLE);
+        return response;
     }
 
     @Override
-    public HttpEntity<Resource<ProjectConnection>> updateProjectConnection(final ProjectConnection pProjectConnection) {
+    public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
+            final ProjectConnection pProjectConnection) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        return null;
+        final ResponseEntity<Resource<ProjectConnection>> response = new ResponseEntity<>(
+                HttpStatus.SERVICE_UNAVAILABLE);
+        return response;
     }
 
     @Override
-    public HttpEntity<Void> deleteProjectConnection(final String pProjectName, final String pMicroservice) {
+    public ResponseEntity<Void> deleteProjectConnection(final String pProjectName, final String pMicroservice) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
-        return null;
+        final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        return response;
     }
 
 }

@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 import javax.validation.executable.ValidateOnExecution;
 
 import org.springframework.hateoas.Identifiable;
@@ -48,12 +49,14 @@ public class ProjectConnection implements Identifiable<Long> {
      */
     @ManyToOne
     @JoinColumn(name = "project_id", foreignKey = @javax.persistence.ForeignKey(name = "FK_PROJECT_CONNECTION"))
+    @NotNull
     private Project project;
 
     /**
      * Microservice name
      */
     @Column(name = "microservice")
+    @NotNull
     private String microservice;
 
     /**

@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,7 +60,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
 
     @Override
     @ResourceAccess(description = "retrieve the list of project of instance")
-    public HttpEntity<List<Resource<Project>>> retrieveProjectList() {
+    public ResponseEntity<List<Resource<Project>>> retrieveProjectList() {
 
         final List<Project> projects = projectService.retrieveProjectList();
         final List<Resource<Project>> resources = projects.stream().map(p -> new Resource<>(p))
@@ -72,7 +71,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
 
     @Override
     @ResourceAccess(description = "create a new project")
-    public HttpEntity<Resource<Project>> createProject(@Valid @RequestBody final Project pNewProject)
+    public ResponseEntity<Resource<Project>> createProject(@Valid @RequestBody final Project pNewProject)
             throws EntityException {
 
         final Project project = projectService.createProject(pNewProject);
@@ -83,7 +82,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
 
     @Override
     @ResourceAccess(description = "retrieve the project project_name")
-    public HttpEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName)
+    public ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName)
             throws EntityException {
 
         final Project project = projectService.retrieveProject(pProjectName);
@@ -94,7 +93,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
 
     @Override
     @ResourceAccess(description = "update the project project_name")
-    public HttpEntity<Resource<Project>> updateProject(@PathVariable("project_name") final String pProjectName,
+    public ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") final String pProjectName,
             @RequestBody final Project pProjectToUpdate) throws EntityException {
 
         final Project project = projectService.updateProject(pProjectName, pProjectToUpdate);
@@ -105,7 +104,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
 
     @Override
     @ResourceAccess(description = "remove the project project_name")
-    public HttpEntity<Void> deleteProject(@PathVariable("project_name") final String pProjectName)
+    public ResponseEntity<Void> deleteProject(@PathVariable("project_name") final String pProjectName)
             throws EntityException {
 
         projectService.deleteProject(pProjectName);
@@ -113,7 +112,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
     }
 
     @Override
-    public HttpEntity<Resource<ProjectConnection>> retrieveProjectConnection(
+    public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
             @PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroService) throws EntityNotFoundException {
 
@@ -131,7 +130,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
     }
 
     @Override
-    public HttpEntity<Resource<ProjectConnection>> createProjectConnection(
+    public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
             @Valid @RequestBody final ProjectConnection pProjectConnection) throws EntityException {
         final ProjectConnection pConn = projectService.createProjectConnection(pProjectConnection);
         final Resource<ProjectConnection> resource = new Resource<ProjectConnection>(pConn);
@@ -140,7 +139,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
     }
 
     @Override
-    public HttpEntity<Resource<ProjectConnection>> updateProjectConnection(
+    public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
             @Valid @RequestBody final ProjectConnection pProjectConnection) throws EntityException {
         final ProjectConnection pConn = projectService.updateProjectConnection(pProjectConnection);
         final Resource<ProjectConnection> resource = new Resource<ProjectConnection>(pConn);
@@ -149,7 +148,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
     }
 
     @Override
-    public HttpEntity<Void> deleteProjectConnection(@PathVariable("project_name") final String pProjectName,
+    public ResponseEntity<Void> deleteProjectConnection(@PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroservice) throws EntityException {
 
         final ResponseEntity<Void> response;
