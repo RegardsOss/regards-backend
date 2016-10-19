@@ -17,6 +17,7 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -55,16 +56,16 @@ public class DefaultMethodAuthorizationService implements IMethodAuthorizationSe
     /**
      * Plugin resource manager. To handle plugins endpoints specific resources.
      */
-    private final IPluginResourceManager pluginResourceManager;
+    @Autowired
+    private IPluginResourceManager pluginResourceManager;
 
     /**
      * Authorities cache that provide granted authorities per resource
      */
     private final Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource;
 
-    public DefaultMethodAuthorizationService(final IPluginResourceManager pPluginResourceManager) {
+    public DefaultMethodAuthorizationService() {
         grantedAuthoritiesByResource = new HashMap<>();
-        pluginResourceManager = pPluginResourceManager;
     }
 
     /**

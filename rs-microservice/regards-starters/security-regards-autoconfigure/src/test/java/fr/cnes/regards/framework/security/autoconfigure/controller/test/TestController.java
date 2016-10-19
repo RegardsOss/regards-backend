@@ -33,10 +33,4 @@ public class TestController implements ITestController {
 
     }
 
-    @ResourceAccess(description = "pluginEndpoint", plugin = IPluginTest.class)
-    @RequestMapping(method = RequestMethod.POST, value = "/endpoint/plugin")
-    public void pluginTestMethod() {
-
-    }
-
 }

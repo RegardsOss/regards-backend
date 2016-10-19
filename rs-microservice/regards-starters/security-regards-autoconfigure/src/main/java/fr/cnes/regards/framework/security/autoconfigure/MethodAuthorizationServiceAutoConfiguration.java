@@ -3,13 +3,13 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
+import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultPluginResourceManager;
 import fr.cnes.regards.framework.security.autoconfigure.endpoint.IMethodAuthorizationService;
 import fr.cnes.regards.framework.security.autoconfigure.endpoint.IPluginResourceManager;
 
@@ -23,15 +23,15 @@ import fr.cnes.regards.framework.security.autoconfigure.endpoint.IPluginResource
 @ConditionalOnWebApplication
 public class MethodAuthorizationServiceAutoConfiguration {
 
-    /**
-     * Plugin resource manager. To handle plugins endpoints specific resources.
-     */
-    @Autowired(required = false)
-    private IPluginResourceManager pluginManager;
-
     @Bean
     @ConditionalOnMissingBean
     public IMethodAuthorizationService methodAuthorizationService() {
-        return new DefaultMethodAuthorizationService(pluginManager);
+        return new DefaultMethodAuthorizationService();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public IPluginResourceManager pluginResourceManager() {
+        return new DefaultPluginResourceManager();
     }
 }

@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.autoconfigure.controller.test.PluginResourceManager;
 import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
 import fr.cnes.regards.framework.security.autoconfigure.endpoint.ResourceMapping;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -31,8 +30,7 @@ public class ResourcesControllerTest {
     /**
      *
      */
-    private final ResourcesController controller = new ResourcesController(
-            new DefaultMethodAuthorizationService(new PluginResourceManager()));
+    private final ResourcesController controller = new ResourcesController(new DefaultMethodAuthorizationService());
 
     /**
      *
@@ -45,18 +43,15 @@ public class ResourcesControllerTest {
     @Purpose("Check the /resources common endpoint that retrieves all resources of a microservice.")
     @Test
     public void resourcesTest() {
+
         final ResponseEntity<List<ResourceMapping>> response = controller.getAllResources();
         Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
         // CHECKSTYLE:OFF
-        Assert.assertTrue("There should be 4 resources", response.getBody().size() == 4);
+        Assert.assertTrue("There should be 2 resources", response.getBody().size() == 2);
         Assert.assertTrue(response.getBody().get(0).getFullPath().get().equals("/tests/endpoint"));
         Assert.assertTrue(response.getBody().get(0).getMethod().equals(RequestMethod.GET));
         Assert.assertTrue(response.getBody().get(1).getFullPath().get().equals("/tests/endpoint/post"));
         Assert.assertTrue(response.getBody().get(1).getMethod().equals(RequestMethod.POST));
-        Assert.assertTrue(response.getBody().get(2).getFullPath().get().equals("/tests/endpoint/plugin/plugin_1"));
-        Assert.assertTrue(response.getBody().get(2).getMethod().equals(RequestMethod.POST));
-        Assert.assertTrue(response.getBody().get(3).getFullPath().get().equals("/tests/endpoint/plugin/plugin_2"));
-        Assert.assertTrue(response.getBody().get(3).getMethod().equals(RequestMethod.POST));
         // CHECKSTYLE:ON
     }
 
