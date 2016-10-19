@@ -104,7 +104,7 @@ public class Subscriber {
         // for now subscription is only for ONE_TO_MANY purpose
         final Exchange exchange = amqpConfiguration.declareExchange(pEvt.getName(), AmqpCommunicationMode.ONE_TO_MANY,
                                                                     pProject);
-        final Queue queue = amqpConfiguration.declarequeue(pEvt.getClass(), AmqpCommunicationMode.ONE_TO_MANY,
+        final Queue queue = amqpConfiguration.declareQueue(pEvt.getClass(), AmqpCommunicationMode.ONE_TO_MANY,
                                                            pProject);
         amqpConfiguration.declareBinding(queue, exchange, "", AmqpCommunicationMode.ONE_TO_MANY, pProject);
 

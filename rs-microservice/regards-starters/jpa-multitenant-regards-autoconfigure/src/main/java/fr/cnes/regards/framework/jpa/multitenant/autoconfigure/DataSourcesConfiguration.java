@@ -68,29 +68,14 @@ public class DataSourcesConfiguration {
         // Add datasources from bean configuration
         if (customProjectsConnectionReader != null) {
             final List<ProjectConnection> connections = customProjectsConnectionReader.getTenantConnections();
-            for (final ProjectConnection connection : connections) {
-                final Project project = connection.getProject();
-                if (!datasources.containsKey(project.getName())) {
-                    if (daoProperties.getEmbedded()) {
-                        datasources.put(project.getName(), DataSourceHelper
-                                .createEmbeddedDataSource(project.getName(), daoProperties.getEmbeddedPath()));
-                    } else {
-                        datasources.put(project.getName(),
-                                        DataSourceHelper
-                                                .createDataSource(connection.getUrl(), connection.getDriverClassName(),
-                                                                  connection.getUserName(), connection.getPassword()));
-                    }
-                } else {
-                    LOG.warn(String.format("Datasource for project %s already defined.", project.getName()));
-                }
-            }
+            datasources.putAll(createDataSourcesFromProjectConnection(connections));
         } else {
             LOG.warn("No Custom tenant reader defined. Using only properties file to create datasources for MultitenantJpaAutoConfiguration");
         }
 
         // Add datasources configuration from properties file.
         for (final TenantConfiguration tenant : daoProperties.getTenants()) {
-            DataSource datasource = null;
+            DataSource datasource;
             if (daoProperties.getEmbedded()) {
                 datasource = DataSourceHelper.createEmbeddedDataSource(tenant.getName(),
                                                                        daoProperties.getEmbeddedPath());
@@ -107,6 +92,39 @@ public class DataSourcesConfiguration {
             }
         }
 
+        return datasources;
+    }
+
+    /**
+     *
+     * Create the datasources from the ProjectConnection list given
+     *
+     * @param pProjectConnections
+     *            Project connections
+     * @return datasources created
+     * @since 1.0-SNAPSHOT
+     */
+    private Map<String, DataSource> createDataSourcesFromProjectConnection(
+            final List<ProjectConnection> pProjectConnections) {
+
+        final Map<String, DataSource> datasources = new HashMap<>();
+
+        for (final ProjectConnection connection : pProjectConnections) {
+            final Project project = connection.getProject();
+            if ((project != null) && !datasources.containsKey(project.getName())) {
+                if (daoProperties.getEmbedded()) {
+                    datasources.put(project.getName(), DataSourceHelper
+                            .createEmbeddedDataSource(project.getName(), daoProperties.getEmbeddedPath()));
+                } else {
+                    datasources.put(project.getName(),
+                                    DataSourceHelper
+                                            .createDataSource(connection.getUrl(), connection.getDriverClassName(),
+                                                              connection.getUserName(), connection.getPassword()));
+                }
+            } else {
+                LOG.warn(String.format("Datasource for project %s already defined.", project.getName()));
+            }
+        }
         return datasources;
     }
 

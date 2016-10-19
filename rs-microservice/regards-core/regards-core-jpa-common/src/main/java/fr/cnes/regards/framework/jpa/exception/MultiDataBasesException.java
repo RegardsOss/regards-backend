@@ -12,7 +12,7 @@ package fr.cnes.regards.framework.jpa.exception;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public class MultiDataBasesException extends RuntimeException {
+public class MultiDataBasesException extends Exception {
 
     /**
      * serialVersionUID field.
@@ -32,7 +32,7 @@ public class MultiDataBasesException extends RuntimeException {
      *            cause
      * @since 1.0-SNAPSHOT
      */
-    public MultiDataBasesException(String pMessage, Throwable pCause) {
+    public MultiDataBasesException(final String pMessage, final Throwable pCause) {
         super(pMessage, pCause);
     }
 
@@ -44,7 +44,7 @@ public class MultiDataBasesException extends RuntimeException {
      *            message
      * @since 1.0-SNAPSHOT
      */
-    public MultiDataBasesException(String pMessage) {
+    public MultiDataBasesException(final String pMessage) {
         super(pMessage);
     }
 
@@ -56,7 +56,7 @@ public class MultiDataBasesException extends RuntimeException {
      *            cause
      * @since 1.0-SNAPSHOT
      */
-    public MultiDataBasesException(Throwable pCause) {
+    public MultiDataBasesException(final Throwable pCause) {
         super(pCause);
     }
 

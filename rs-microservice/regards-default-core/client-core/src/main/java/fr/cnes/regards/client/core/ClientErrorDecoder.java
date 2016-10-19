@@ -37,6 +37,6 @@ public class ClientErrorDecoder implements ErrorDecoder {
 
         LOG.error(String.format("Remote call to %s. Response is : %d - %s", pMethodKey, pResponse.status(),
                                 pResponse.reason()));
-        return new Exception(String.format("%s:%d", pResponse.status(), pResponse.reason()));
+        return new Exception(String.format("%s:%s", pResponse.status(), pResponse.reason()));
     }
 }

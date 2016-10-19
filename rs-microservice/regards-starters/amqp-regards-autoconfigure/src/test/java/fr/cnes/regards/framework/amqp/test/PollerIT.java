@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AmqpTestsConfiguration.class })
-@SpringBootTest(classes = ApplicationTest.class)
+@SpringBootTest(classes = Application.class)
 @DirtiesContext
 public class PollerIT {
 
@@ -78,12 +78,13 @@ public class PollerIT {
         amqpConfiguration.addVhost(TENANT);
         final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
                                                                     AmqpCommunicationMode.ONE_TO_MANY, TENANT);
-        final Queue queue = amqpConfiguration.declarequeue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT);
-        amqpConfiguration.declareBinding(queue, exchange, "", AmqpCommunicationMode.ONE_TO_MANY, TENANT);
+        final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT);
+        amqpConfiguration.declareBinding(queue, exchange, TestEvent.class.getName(), AmqpCommunicationMode.ONE_TO_MANY,
+                                         TENANT);
 
         final Exchange exchangeOneToOne = amqpConfiguration.declareExchange(TestEvent.class.getName(),
                                                                             AmqpCommunicationMode.ONE_TO_ONE, TENANT);
-        final Queue queueOneToOne = amqpConfiguration.declarequeue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
+        final Queue queueOneToOne = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
                                                                    TENANT);
         amqpConfiguration.declareBinding(queueOneToOne, exchangeOneToOne, TestEvent.class.getName(),
                                          AmqpCommunicationMode.ONE_TO_ONE, TENANT);
