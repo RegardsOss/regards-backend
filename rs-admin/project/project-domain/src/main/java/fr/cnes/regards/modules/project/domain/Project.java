@@ -141,7 +141,11 @@ public class Project implements Identifiable<Long> {
 
     @Override
     public int hashCode() {
-        return this.id.hashCode();
+        if (this.id != null) {
+            return this.id.hashCode();
+        } else {
+            return 0;
+        }
     }
 
     public boolean isDeleted() {
