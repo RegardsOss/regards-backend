@@ -25,7 +25,7 @@ import fr.cnes.regards.modules.accessRights.client.IAccountsClient;
 @SpringBootApplication
 @EnableFeignClients(clients = IAccountsClient.class, defaultConfiguration = { ClientRequestInterceptor.class })
 @EnableZuulProxy
-public class Application {
+public class Application { // NOSONAR
 
     /**
      *
@@ -36,7 +36,7 @@ public class Application {
      * @since 1.0-SNAPSHOT
      */
     public static void main(final String[] pArgs) {
-        SpringApplication.run(Application.class, pArgs);
+        SpringApplication.run(Application.class, pArgs); // NOSONAR
     }
 
     /**

@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.cloud.gateway.authentication.providers;
 
-import java.util.NoSuchElementException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,20 +70,15 @@ public class SimpleAuthentication implements IAuthenticationProvider {
         UserStatus status = UserStatus.ACCESS_DENIED;
         jwtService.injectToken(pScope, GATEWAY_ROLE);
         try {
-            try {
-                final HttpEntity<Boolean> results = accountsClient.validatePassword(pName, pPassword);
-                if (results.getBody().equals(Boolean.TRUE)) {
-                    status = UserStatus.ACCESS_GRANTED;
-                }
-            } catch (final HystrixRuntimeException e) {
-                LOG.error(e.getMessage());
-            } catch (final EntityNotFoundException e) {
-                LOG.error(e.getMessage());
-                LOG.error(String.format("Accound %s doesn't exists", pName));
+            final HttpEntity<Boolean> results = accountsClient.validatePassword(pName, pPassword);
+            if (results.getBody().equals(Boolean.TRUE)) {
+                status = UserStatus.ACCESS_GRANTED;
             }
-
-        } catch (final NoSuchElementException e) {
+        } catch (final HystrixRuntimeException e) {
             LOG.error(e.getMessage(), e);
+        } catch (final EntityNotFoundException e) {
+            LOG.error(e.getMessage(), e);
+            LOG.error(String.format("Accound %s doesn't exists", pName));
         }
 
         return status;
