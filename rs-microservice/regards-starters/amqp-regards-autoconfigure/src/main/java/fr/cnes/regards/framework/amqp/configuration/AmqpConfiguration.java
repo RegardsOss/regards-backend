@@ -32,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 
 import fr.cnes.regards.framework.amqp.connection.RegardsSimpleRoutingConnectionFactory;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.RabbitMqVhostPermission;
 import fr.cnes.regards.framework.amqp.domain.RabbitVhost;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
@@ -61,25 +62,33 @@ public class AmqpConfiguration {
     private static final String COLON = ":";
 
     /**
-     * instance IP
+     * _
      */
-    @Value("${server.address}")
-    private String address;
+    private static final String UNDERSCORE = "_";
 
     /**
-     * instance Port
+     * type identifier
      */
-    @Value("${server.port}")
-    private int port;
+    @Value("${regards.amqp.microservice.type.identifier}")
+    private String typeIdentifier;
+
+    /**
+     * instance identifier
+     */
+    @Value("${regards.amqp.microservice.instance.identifier}")
+    private String instanceIdentifier;
+
+    /**
+     * addresses configured to
+     */
+    @Value("${spring.rabbitmq.addresses}")
+    private String rabbitAddresses;
 
     /**
      * username used to connect to the broker and it's manager
      */
     @Value("${spring.rabbitmq.username}")
     private String rabbitmqUserName;
-
-    @Value("${spring.rabbitmq.addresses}")
-    private String rabbitAddresses;
 
     /**
      * password used to connect to the broker and it's manager
@@ -111,6 +120,9 @@ public class AmqpConfiguration {
     @Autowired
     private RabbitAdmin rabbitAdmin;
 
+    /**
+     * connection factory
+     */
     @Autowired
     private RegardsSimpleRoutingConnectionFactory simpleRoutingConnectionFactory;
 
@@ -158,8 +170,7 @@ public class AmqpConfiguration {
         final String fullCredential = pRabbitmqUserName + COLON + pRabbitmqPassword;
         final byte[] plainCredsBytes = fullCredential.getBytes();
         final byte[] base64CredsBytes = Base64.encode(plainCredsBytes);
-        final String base64Creds = new String(base64CredsBytes);
-        return base64Creds;
+        return new String(base64CredsBytes);
     }
 
     /**
@@ -173,7 +184,7 @@ public class AmqpConfiguration {
      * @return parameterized url to /api of the broker
      */
     private String getRabbitApiEndpoint() {
-        return "http://" + amqpManagementHost + COLON + amqpManagementPort + "/api";
+        return "http" + COLON + "//" + amqpManagementHost + COLON + amqpManagementPort + "/api";
     }
 
     /**
@@ -225,7 +236,7 @@ public class AmqpConfiguration {
      * @return {host, port}
      */
     private String[] parseRabbitAddresses(String pRabbitAddresses) {
-        return rabbitAddresses.split(":");
+        return pRabbitAddresses.split(COLON);
     }
 
     public CachingConnectionFactory createConnectionFactory(String pVhost) {
@@ -289,11 +300,12 @@ public class AmqpConfiguration {
      * @return ip:port of microservice instance
      */
     public String getUniqueName() {
-        return address + COLON + port;
+        return instanceIdentifier;
     }
 
-    public Exchange declareExchange(String pName, AmqpCommunicationMode pAmqpCommunicationMode, String pTenant) {
-        final Exchange exchange = instantiateExchange(pName, pAmqpCommunicationMode);
+    public Exchange declareExchange(String pName, AmqpCommunicationMode pAmqpCommunicationMode, String pTenant,
+            AmqpCommunicationTarget pAmqpCommunicationTarget) {
+        final Exchange exchange = instantiateExchange(pName, pAmqpCommunicationMode, pAmqpCommunicationTarget);
         SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(), pTenant);
         rabbitAdmin.declareExchange(exchange);
         SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
@@ -307,16 +319,16 @@ public class AmqpConfiguration {
      * @param pEvtClass
      *            class token corresponding to the message types the queue will receive, used for naming convention
      * @param pAmqpCommunicationMode
-     *            communication mode, used for naming conventing
+     *            communication mode, used for naming convention
+     * @param pAmqpCommunicationTarget
+     *            communication target, used for naming convention
      * @param pTenant
      *            tenant for who the queue is created
      * @return instance of the queue
      */
-    public Queue declareQueue(Class<?> pEvtClass, AmqpCommunicationMode pAmqpCommunicationMode, String pTenant) {
-        final Map<String, Object> args = new HashMap<>();
-        final Integer maxPriority = 255;
-        args.put("x-max-priority", maxPriority);
-        final Queue queue = new Queue(getQueueName(pEvtClass, pAmqpCommunicationMode), true, false, false, args);
+    public Queue declareQueue(Class<?> pEvtClass, AmqpCommunicationMode pAmqpCommunicationMode, String pTenant,
+            AmqpCommunicationTarget pAmqpCommunicationTarget) {
+        final Queue queue = instanciateQueue(pEvtClass, pAmqpCommunicationMode, pAmqpCommunicationTarget);
         SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(), pTenant);
         rabbitAdmin.declareQueue(queue);
         SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
@@ -325,19 +337,41 @@ public class AmqpConfiguration {
 
     /**
      * @param pEvtClass
+     *            class token corresponding to the message types the queue will receive, used for naming convention
+     * @param pAmqpCommunicationMode
+     *            communication mode, used for naming convention
+     * @param pAmqpCommunicationTarget
+     *            communication target, used for naming convention
+     * @return instance of the queue
+     */
+    protected Queue instanciateQueue(Class<?> pEvtClass, AmqpCommunicationMode pAmqpCommunicationMode,
+            AmqpCommunicationTarget pAmqpCommunicationTarget) {
+        final Map<String, Object> args = new HashMap<>();
+        final Integer maxPriority = 255;
+        args.put("x-max-priority", maxPriority);
+        return new Queue(getQueueName(pEvtClass, pAmqpCommunicationMode, pAmqpCommunicationTarget), true, false, false,
+                args);
+
+    }
+
+    /**
+     * @param pEvtClass
      *            event class token
      * @param pAmqpCommunicationMode
      *            communication mode
-     * @return queue name according to communication mode
+     * @param pAmqpCommunicationTarget
+     *            scope of message origin
+     * @return queue name according to communication mode and target
      */
-    public String getQueueName(Class<?> pEvtClass, AmqpCommunicationMode pAmqpCommunicationMode) {
+    public String getQueueName(Class<?> pEvtClass, AmqpCommunicationMode pAmqpCommunicationMode,
+            AmqpCommunicationTarget pAmqpCommunicationTarget) {
         final String queueName;
         switch (pAmqpCommunicationMode) {
             case ONE_TO_ONE:
-                queueName = pEvtClass.getName();
+                queueName = getQueueNameOneToOne(pEvtClass, pAmqpCommunicationTarget);
                 break;
             case ONE_TO_MANY:
-                queueName = getUniqueName();
+                queueName = getQueueNameOneToMany(pEvtClass, pAmqpCommunicationTarget);
                 break;
             default:
                 throw new EnumConstantNotPresentException(AmqpCommunicationMode.class, pAmqpCommunicationMode.name());
@@ -345,9 +379,55 @@ public class AmqpConfiguration {
         return queueName;
     }
 
-    public Binding declareBinding(Queue pQueue, Exchange pExchange, String pBindingName,
-            AmqpCommunicationMode pAmqpCommunicationMode, String pTenant) {
-        final Binding binding = instantiateBinding(pQueue, pExchange, pBindingName, pAmqpCommunicationMode);
+    /**
+     *
+     * @param pEvtClass
+     *            event class token
+     * @param pAmqpCommunicationTarget
+     *            scope of message origin
+     * @return queue name according to communication target for mode ONE_TO_MANY
+     */
+    protected String getQueueNameOneToMany(Class<?> pEvtClass, AmqpCommunicationTarget pAmqpCommunicationTarget) {
+        return getQueueNamePrefix(pAmqpCommunicationTarget) + pEvtClass.getName() + UNDERSCORE + getUniqueName();
+    }
+
+    /**
+     *
+     * @param pEvtClass
+     *            event class token
+     * @param pAmqpCommunicationTarget
+     *            scope of message origin
+     * @return queue name according to communication target for mode ONE_TO_ONE
+     */
+    protected String getQueueNameOneToOne(Class<?> pEvtClass, AmqpCommunicationTarget pAmqpCommunicationTarget) {
+        return getQueueNamePrefix(pAmqpCommunicationTarget) + pEvtClass.getName();
+    }
+
+    /**
+     *
+     * @param pAmqpCommunicationTarget
+     *            communication target
+     * @return queue name prefix according to communication target
+     */
+    protected String getQueueNamePrefix(AmqpCommunicationTarget pAmqpCommunicationTarget) {
+        final String queueNamePrefix;
+        switch (pAmqpCommunicationTarget) {
+            case INTERNAL:
+                queueNamePrefix = typeIdentifier + UNDERSCORE;
+                break;
+            case EXTERNAL:
+                queueNamePrefix = "";
+                break;
+            default:
+                throw new EnumConstantNotPresentException(AmqpCommunicationTarget.class,
+                        pAmqpCommunicationTarget.name());
+        }
+        return queueNamePrefix;
+    }
+
+    public Binding declareBinding(Queue pQueue, Exchange pExchange, AmqpCommunicationMode pAmqpCommunicationMode,
+            String pTenant) {
+        final Binding binding = instantiateBinding(pQueue, pExchange, pAmqpCommunicationMode);
         SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(), pTenant);
         rabbitAdmin.declareBinding(binding);
         SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
@@ -359,18 +439,17 @@ public class AmqpConfiguration {
      *            queue instance
      * @param pExchange
      *            exchange instance
-     * @param pBindingName
-     *            binding name
      * @param pAmqpCommunicationMode
      *            communication mode
      * @return correct binding according to the communication mode
      */
-    private Binding instantiateBinding(Queue pQueue, Exchange pExchange, String pBindingName,
+    protected Binding instantiateBinding(Queue pQueue, Exchange pExchange,
             AmqpCommunicationMode pAmqpCommunicationMode) {
         final Binding binding;
         switch (pAmqpCommunicationMode) {
             case ONE_TO_ONE:
-                binding = BindingBuilder.bind(pQueue).to((DirectExchange) pExchange).with(pBindingName);
+                binding = BindingBuilder.bind(pQueue).to((DirectExchange) pExchange)
+                        .with(getRoutingKey(pQueue.getName(), AmqpCommunicationMode.ONE_TO_ONE));
                 break;
             case ONE_TO_MANY:
                 binding = BindingBuilder.bind(pQueue).to((FanoutExchange) pExchange);
@@ -384,27 +463,85 @@ public class AmqpConfiguration {
 
     /**
      *
+     * @param pQueueName
+     *            queue name
+     * @param pAmqpCommunicationMode
+     *            communication target
+     * @return routing key
+     */
+    public String getRoutingKey(String pQueueName, AmqpCommunicationMode pAmqpCommunicationMode) {
+        final String routingKey;
+        switch (pAmqpCommunicationMode) {
+            case ONE_TO_ONE:
+                routingKey = pQueueName;
+                break;
+            case ONE_TO_MANY:
+                routingKey = "";
+                break;
+            default:
+                throw new EnumConstantNotPresentException(AmqpCommunicationMode.class, pAmqpCommunicationMode.name());
+        }
+        return routingKey;
+    }
+
+    /**
+     *
      * Instantiate the java object corresponding to an exchange
      *
      * @param pName
      *            name of exchange
      * @param pAmqpCommunicationMode
      *            publishing mode
+     * @param pAmqpCommunicationTarget
+     *            communication target
      * @return exchange type associate with the publish mode specified
      */
-    public Exchange instantiateExchange(String pName, AmqpCommunicationMode pAmqpCommunicationMode) {
+    protected Exchange instantiateExchange(String pName, AmqpCommunicationMode pAmqpCommunicationMode,
+            AmqpCommunicationTarget pAmqpCommunicationTarget) {
         final Exchange exchange;
         switch (pAmqpCommunicationMode) {
             case ONE_TO_ONE:
-                exchange = new DirectExchange("REGARDS", true, false);
+                exchange = new DirectExchange(getExchangeName("REGARDS", pAmqpCommunicationTarget), true, false);
                 break;
             case ONE_TO_MANY:
-                exchange = new FanoutExchange(pName, true, false);
+                exchange = new FanoutExchange(getExchangeName(pName, pAmqpCommunicationTarget), true, false);
                 break;
             default:
                 throw new EnumConstantNotPresentException(AmqpCommunicationMode.class, pAmqpCommunicationMode.name());
         }
         return exchange;
+    }
+
+    /**
+     * @param pName
+     *            base name
+     * @param pAmqpCommunicationTarget
+     *            communication target
+     * @return prefixed name according to communication target
+     */
+    public String getExchangeName(String pName, AmqpCommunicationTarget pAmqpCommunicationTarget) {
+        return getExchangeNamePrefix(pAmqpCommunicationTarget) + pName;
+    }
+
+    /**
+     * @param pAmqpCommunicationTarget
+     *            communication target
+     * @return prefix according to the communication target
+     */
+    protected String getExchangeNamePrefix(AmqpCommunicationTarget pAmqpCommunicationTarget) {
+        final String exchangeNamePrefix;
+        switch (pAmqpCommunicationTarget) {
+            case EXTERNAL:
+                exchangeNamePrefix = "";
+                break;
+            case INTERNAL:
+                exchangeNamePrefix = typeIdentifier + UNDERSCORE;
+                break;
+            default:
+                throw new EnumConstantNotPresentException(AmqpCommunicationTarget.class,
+                        pAmqpCommunicationTarget.name());
+        }
+        return exchangeNamePrefix;
     }
 
     /**
@@ -414,7 +551,7 @@ public class AmqpConfiguration {
         boolean isRunning = true;
         try {
             retrieveVhostList();
-        } catch (ResourceAccessException e) {
+        } catch (ResourceAccessException e) { // NOSONAR
             isRunning = false;
         }
         return isRunning;

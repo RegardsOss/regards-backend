@@ -16,6 +16,11 @@ import fr.cnes.regards.framework.amqp.Subscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
 import fr.cnes.regards.framework.amqp.connection.RegardsSimpleRoutingConnectionFactory;
 
+/**
+ *
+ * @author svissier
+ *
+ */
 @Configuration
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
 public class AmqpAutoConfiguration {
