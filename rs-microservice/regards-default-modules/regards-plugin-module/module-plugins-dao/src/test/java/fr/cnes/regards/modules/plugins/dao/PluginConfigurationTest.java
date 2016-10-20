@@ -43,12 +43,6 @@ public class PluginConfigurationTest extends PluginDaoTestDataUtility {
     private IPluginParameterRepository pluginParameterRepository;
 
     /**
-     * IPluginDynamicValueRepository
-     */
-    @Autowired
-    private IPluginDynamicValueRepository pluginDynamicValueRepository;
-
-    /**
      * Security service to generate tokens.
      */
     @Autowired
@@ -57,7 +51,6 @@ public class PluginConfigurationTest extends PluginDaoTestDataUtility {
     /**
      * Unit test of creation {@link PluginConfiguration}
      */
-    @DirtiesContext
     @Test
     public void createPluginConfiguration() {
         try {
@@ -90,7 +83,6 @@ public class PluginConfigurationTest extends PluginDaoTestDataUtility {
     /**
      * Unit test of creation {@link PluginConfiguration}
      */
-    @DirtiesContext
     @Test
     public void createAndFindPluginConfigurationWithParameters() {
         try {
@@ -127,7 +119,6 @@ public class PluginConfigurationTest extends PluginDaoTestDataUtility {
     /**
      * Unit test of creation {@link PluginConfiguration}
      */
-    @DirtiesContext
     @Test
     public void updatePluginConfigurationWithParameters() {
         try {

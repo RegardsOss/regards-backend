@@ -4,13 +4,23 @@
 package fr.cnes.regards.plugins.utils;
 
 /**
- * AbstractPluginUtilsConstants
+ * This class contains a set of {@link String) constants used in the tests.
  * 
  * @author cmertz
  *
  */
 public class PluginUtilsTestConstants {
-
+    
+    /**
+     * Starting constant {@link String}
+     */
+    public static final String STARTING = "Starting ";
+    
+    /**
+     * Ending constant {@link String}
+     */
+    public static final String ENDING = "Ending ";
+    
     /**
      * TRUE constant {@link String}
      */

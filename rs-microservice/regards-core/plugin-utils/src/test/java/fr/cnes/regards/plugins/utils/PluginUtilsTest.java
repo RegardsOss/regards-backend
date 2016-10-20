@@ -34,7 +34,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
      */
     @Test
     public void loadPlugins() {
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
 
         try {
             // Get all the plugins
@@ -51,7 +51,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         } catch (PluginUtilsException e) {
             Assert.fail();
         }
-        LOGGER.debug("Ending " + this.toString());
+        LOGGER.debug(ENDING + this.toString());
     }
 
     /**
@@ -61,7 +61,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     public void getSamplePlugin() {
         SamplePlugin samplePlugin = null;
 
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
 
         /*
          * Set all parameters
@@ -86,7 +86,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                             samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
                                              Integer.parseInt(PluginUtilsTest.CINQ)));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
-        LOGGER.debug("Ending " + this.toString());
+        LOGGER.debug(ENDING + this.toString());
     }
 
     /**
@@ -96,7 +96,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     public void getSamplePluginWithOneDynamicParameter() {
         SamplePlugin samplePlugin = null;
 
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
 
         /*
          * Set all parameters
@@ -123,7 +123,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         Assert.assertTrue(0 > samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
                                                Integer.parseInt(PluginUtilsTest.CINQ)));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
-        LOGGER.debug("Ending " + this.toString());
+        LOGGER.debug(ENDING + this.toString());
     }
 
     /**
@@ -133,7 +133,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     public void getSamplePluginWithOneDynamicParameterWithValues() {
         SamplePlugin samplePlugin = null;
 
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
 
         /*
          * Set all parameters
@@ -161,7 +161,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
          * Use the plugin
          */
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.BLUE));
-        LOGGER.debug("Ending " + this.toString());
+        LOGGER.debug(ENDING + this.toString());
     }
 
     /**
@@ -171,7 +171,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     public void getSamplePluginWithoutDynamicParameterWithValues() {
         SamplePlugin samplePlugin = null;
 
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
 
         /*
          * Set all parameters
@@ -194,17 +194,18 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
          * Use the plugin
          */
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.RED));
-        LOGGER.debug("Ending " + this.toString());
+        LOGGER.debug(ENDING + this.toString());
     }
 
     /**
      * Get a {@link SamplePlugin} with a specific parameters
      * 
      * @throws PluginUtilsException
+     *             An error occurs
      */
     @Test(expected = PluginUtilsException.class)
     public void getSamplePluginWithUnknownDynamicParameterWithValues() throws PluginUtilsException {
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
 
         /*
          * Set all parameters
@@ -227,10 +228,11 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
      * Unable to get {@link SamplePlugin} an Integer parameter is missing
      * 
      * @throws PluginUtilsException
+     *             An error occurs
      */
     @Test(expected = PluginUtilsException.class)
     public void getSamplePluginMissingCoeffParameter() throws PluginUtilsException {
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
 
         /*
          * Set parameters : Missing coeff parameter
@@ -247,10 +249,11 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
      * Unable to get {@link SamplePlugin} an Integer parameter is missing
      * 
      * @throws PluginUtilsException
+     *             An error occurs
      */
     @Test(expected = PluginUtilsException.class)
     public void getSamplePluginWithErrorInitMethod() throws PluginUtilsException {
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
 
         /*
          * Set parameters
