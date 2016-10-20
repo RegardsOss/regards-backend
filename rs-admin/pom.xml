@@ -21,6 +21,7 @@
 		<module>bootstrap-administration</module>
 		<module>accessrights</module>
 		<module>emails</module>
+		<module>notification</module>
 	</modules>
 
 </project>
