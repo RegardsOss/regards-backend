@@ -21,10 +21,6 @@
 			<artifactId>project-domain</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>module-jobs</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-dao</artifactId>
 		</dependency>
