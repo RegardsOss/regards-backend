@@ -1,0 +1,76 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
+package fr.cnes.regards.modules.jobs.service.manager;
+
+import java.nio.file.Path;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import fr.cnes.regards.modules.jobs.domain.IJob;
+import fr.cnes.regards.modules.jobs.domain.Output;
+import fr.cnes.regards.modules.jobs.domain.StatusInfo;
+
+/**
+ *
+ */
+public class AJob implements IJob {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AJob.class);
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            if (!Thread.currentThread().isInterrupted()) {
+                LOG.info("AJob: Waiting..");
+                try {
+                    Thread.sleep(4000);
+                } catch (InterruptedException e) {
+                    LOG.warn("Thread interrupted, closing", e);
+                    return;
+                }
+            } else {
+                LOG.warn("Thread interrupted, closing");
+                return;
+            }
+        }
+    }
+
+    @Override
+    public int getPriority() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public List<Output> getResults() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public StatusInfo getStatus() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean hasResult() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean needWorkspace() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public void setWorkspace(Path pPath) {
+        // TODO Auto-generated method stub
+
+    }
+}
