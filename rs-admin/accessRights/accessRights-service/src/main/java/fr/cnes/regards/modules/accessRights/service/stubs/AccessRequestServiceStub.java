@@ -5,9 +5,10 @@ package fr.cnes.regards.modules.accessRights.service.stubs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -24,23 +25,40 @@ import fr.cnes.regards.modules.accessRights.service.IRoleService;
 import fr.cnes.regards.modules.accessRights.service.RoleService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidEntityException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
+/**
+ * Stubbed {@link IAccessRequestService} implementation
+ *
+ * @author CS SI
+ */
 @Service
 @Profile("test")
 @Primary
 public class AccessRequestServiceStub implements IAccessRequestService {
 
-    private static List<ProjectUser> projectUsers = new ArrayList<>();
+    /**
+     * The stub project users data base
+     */
+    private List<ProjectUser> projectUsers = new ArrayList<>();
 
+    /**
+     * Service handling CRUD operation on {@link Account}s
+     */
     private final IAccountService accountService;
 
+    /**
+     * Service handling CRUD operation on {@link Role}s
+     */
     private final IRoleService roleService;
 
-    @Value("${regards.project.account_acceptance}")
-    private String accessSetting;
-
+    /**
+     * Create a new stub implementation of {@link IAccessRequestService} with passed repositories
+     *
+     * @param pAccountService
+     *            The account repository
+     * @param pRoleRepository
+     *            The role repository
+     */
     public AccessRequestServiceStub(final IAccountService pAccountService, final IRoleRepository pRoleRepository) {
         accountService = pAccountService;
         roleService = new RoleService(pRoleRepository);
@@ -66,14 +84,13 @@ public class AccessRequestServiceStub implements IAccessRequestService {
 
     @Override
     public List<ProjectUser> retrieveAccessRequestList() {
-        return projectUsers.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCES))
+        return projectUsers.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public AccessRequestDTO requestAccess(final AccessRequestDTO pDto)
-            throws InvalidEntityException, AlreadyExistingException {
-        if (existAccessRequest(pDto.getEmail())) {
+    public AccessRequestDTO requestAccess(final AccessRequestDTO pDto) throws AlreadyExistingException {
+        if (existsByEmail(pDto.getEmail())) {
             throw new AlreadyExistingException(
                     pDto.getEmail() + " already has made an access request for this project");
         }
@@ -104,30 +121,11 @@ public class AccessRequestServiceStub implements IAccessRequestService {
         projectUser.setPermissions(pDto.getPermissions());
         projectUser.setRole(pDto.getRole());
         projectUser.setMetaData(pDto.getMetaData());
-        projectUser.setStatus(UserStatus.WAITING_ACCES);
+        projectUser.setStatus(UserStatus.WAITING_ACCESS);
 
         // "Save" it
         projectUsers.add(projectUser);
         return pDto;
-
-    }
-
-    @Override
-    public List<String> getAccessSettingList() {
-        final List<String> accessSettings = new ArrayList<>();
-        accessSettings.add(accessSetting);
-        return accessSettings;
-    }
-
-    @Override
-    public void updateAccessSetting(final String pUpdatedProjectUserSetting) throws InvalidValueException {
-
-        if (pUpdatedProjectUserSetting.toLowerCase().equals("manual")
-                || pUpdatedProjectUserSetting.equals("auto-accept")) {
-            accessSetting = pUpdatedProjectUserSetting.toLowerCase();
-            return;
-        }
-        throw new InvalidValueException("Only value accepted : manual or auto-accept");
 
     }
 
@@ -136,22 +134,22 @@ public class AccessRequestServiceStub implements IAccessRequestService {
      *
      * @param pEmail
      *            The email
-     * @return
+     * @return <code>True</code> if exists, esle <code>False</code>
      */
     public boolean existAccessRequest(final String pEmail) {
-        return projectUsers.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCES))
+        return projectUsers.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS))
                 .filter(p -> p.getEmail().equals(pEmail)).findFirst().isPresent();
     }
 
     @Override
-    public boolean existAccessRequest(final Long pAccessRequestId) {
-        return projectUsers.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCES))
-                .filter(p -> p.getId() == pAccessRequestId).findFirst().isPresent();
+    public boolean exists(final Long pId) {
+        return projectUsers.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS))
+                .filter(p -> p.getId() == pId).findFirst().isPresent();
     }
 
     @Override
     public void removeAccessRequest(final Long pAccessId) throws EntityNotFoundException {
-        if (existAccessRequest(pAccessId)) {
+        if (exists(pAccessId)) {
             projectUsers = projectUsers.stream().filter(p -> p.getId() != pAccessId).collect(Collectors.toList());
             return;
         }
@@ -160,22 +158,49 @@ public class AccessRequestServiceStub implements IAccessRequestService {
 
     @Override
     public void acceptAccessRequest(final Long pAccessId) throws EntityNotFoundException {
-        if (existAccessRequest(pAccessId)) {
-            projectUsers = projectUsers.stream().map(p -> p.getId() == pAccessId ? p.accept() : p)
-                    .collect(Collectors.toList());
-            return;
+        if (!exists(pAccessId)) {
+            throw new EntityNotFoundException(pAccessId.toString(), ProjectUser.class);
         }
-        throw new EntityNotFoundException(pAccessId.toString(), ProjectUser.class);
+
+        try (final Stream<ProjectUser> stream = projectUsers.stream()) {
+            final Consumer<? super ProjectUser> acceptIfRightId = p -> {
+                if (p.getId() == pAccessId) {
+                    p.accept();
+                }
+            };
+            stream.forEach(acceptIfRightId);
+            projectUsers = stream.collect(Collectors.toList());
+        }
+
     }
 
     @Override
     public void denyAccessRequest(final Long pAccessId) throws EntityNotFoundException {
-        if (existAccessRequest(pAccessId)) {
-            projectUsers = projectUsers.stream().map(p -> p.getId() == pAccessId ? p.deny() : p)
-                    .collect(Collectors.toList());
-            return;
+        if (!exists(pAccessId)) {
+            throw new EntityNotFoundException(pAccessId.toString(), ProjectUser.class);
         }
-        throw new EntityNotFoundException(pAccessId.toString(), ProjectUser.class);
+
+        try (final Stream<ProjectUser> stream = projectUsers.stream()) {
+            final Consumer<? super ProjectUser> denyIfRightId = p -> {
+                if (p.getId() == pAccessId) {
+                    p.accept();
+                }
+            };
+            stream.forEach(denyIfRightId);
+            projectUsers = stream.collect(Collectors.toList());
+        }
+
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessRights.service.IAccessRequestService#existsByEmail(java.lang.String)
+     */
+    @Override
+    public boolean existsByEmail(final String pEmail) {
+        return projectUsers.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS))
+                .filter(p -> p.getEmail().equals(pEmail)).findFirst().isPresent();
     }
 
 }

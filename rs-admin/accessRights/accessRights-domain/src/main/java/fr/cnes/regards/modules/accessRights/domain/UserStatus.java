@@ -8,7 +8,7 @@ package fr.cnes.regards.modules.accessRights.domain;
  */
 public enum UserStatus {
 
-    WAITING_ACCES, ACCESS_DENIED, ACCESS_GRANTED, ACCESS_INACTIVE;
+    WAITING_ACCESS, ACCESS_DENIED, ACCESS_GRANTED, ACCESS_INACTIVE;
 
     @Override
     public String toString() {

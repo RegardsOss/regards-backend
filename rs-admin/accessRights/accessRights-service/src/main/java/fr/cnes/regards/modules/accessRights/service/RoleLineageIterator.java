@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.accessRights.service;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 
@@ -17,7 +18,7 @@ public class RoleLineageIterator implements Iterator<Role> {
 
     private Role role;
 
-    public RoleLineageIterator(Role pRole) {
+    public RoleLineageIterator(final Role pRole) {
         role = pRole;
     }
 
@@ -28,8 +29,12 @@ public class RoleLineageIterator implements Iterator<Role> {
 
     @Override
     public Role next() {
-        role = role.getParentRole();
-        return role;
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        } else {
+            role = role.getParentRole();
+            return role;
+        }
     }
 
 }

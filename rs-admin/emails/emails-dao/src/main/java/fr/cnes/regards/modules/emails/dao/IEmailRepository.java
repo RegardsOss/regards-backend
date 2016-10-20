@@ -14,7 +14,7 @@ import fr.cnes.regards.modules.emails.domain.Email;
  * Embeds paging/sorting abilities by entending {@link PagingAndSortingRepository}.<br>
  * Allows execution of Query by Example {@link Example} instances.
  *
- * @author xbrochard
+ * @author CS SI
  */
 public interface IEmailRepository extends CrudRepository<Email, Long> {
 

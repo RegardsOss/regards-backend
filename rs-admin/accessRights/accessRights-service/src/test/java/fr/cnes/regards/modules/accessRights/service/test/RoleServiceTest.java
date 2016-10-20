@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 /**
  * Test class for {@link RoleService}.
  *
- * @author Xavier-Alexandre Brochard
+ * @author CS SI
  */
 public class RoleServiceTest {
 
@@ -48,8 +48,7 @@ public class RoleServiceTest {
      * Do some setup before each test
      */
     @Before
-    public void init() throws AlreadyExistingException {
-        // IRoleRepository roleRepository = new RoleRepositoryStub();
+    public void init() {
         roleRepository = Mockito.mock(IRoleRepository.class);
         roleService = new RoleService(roleRepository);
     }

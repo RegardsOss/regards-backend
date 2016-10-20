@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,22 +21,37 @@ import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
+/**
+ * {@link IProjectUserService} implementation
+ *
+ * @author CS SI
+ */
 @Service
 public class ProjectUserService implements IProjectUserService {
 
+    /**
+     * CRUD repository managing {@link ProjectUser}s. Autowired by Spring.
+     */
     @Autowired
     private IProjectUserRepository projectUserRepository;
 
+    /**
+     * Service handling CRUD operation on {@link Role}s
+     */
     @Autowired
     private IRoleService roleService;
 
+    /**
+     * CRUD repository managing {@link Role}s. Autowired by Spring.
+     */
     @Autowired
     private IRoleRepository roleRepository;
 
     @Override
     public List<ProjectUser> retrieveUserList() {
-        final Iterable<ProjectUser> projectUsers = projectUserRepository.findAll();
-        return StreamSupport.stream(projectUsers.spliterator(), false).collect(Collectors.toList());
+        try (Stream<ProjectUser> stream = StreamSupport.stream(projectUserRepository.findAll().spliterator(), true)) {
+            return stream.collect(Collectors.toList());
+        }
     }
 
     @Override
@@ -75,12 +91,9 @@ public class ProjectUserService implements IProjectUserService {
 
         // Finder method
         // Pass the id and the list to search, returns the element with passed id
-        final Function<Long, List<ResourcesAccess>> find = (id) -> {
-            return pUpdatedUserAccessRights.stream().filter(e -> e.getId().equals(id)).collect(Collectors.toList());
-        };
-        final Function<Long, Boolean> contains = (id) -> {
-            return !find.apply(id).isEmpty();
-        };
+        final Function<Long, List<ResourcesAccess>> find = id -> pUpdatedUserAccessRights.stream()
+                .filter(e -> e.getId().equals(id)).collect(Collectors.toList());
+        final Function<Long, Boolean> contains = id -> !find.apply(id).isEmpty();
 
         final List<ResourcesAccess> permissions = user.getPermissions();
         // If an element with the same id is found in the pResourcesAccessList list, replace with it

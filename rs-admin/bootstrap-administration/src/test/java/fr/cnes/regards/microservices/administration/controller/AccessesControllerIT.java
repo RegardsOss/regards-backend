@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.microservices.administration.controller;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +24,10 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessRights.domain.AccessRequestDTO;
+import fr.cnes.regards.modules.accessRights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessRights.domain.projects.Role;
 import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
+import fr.cnes.regards.modules.accessRights.service.IAccessSettingsService;
 
 /**
  * Integration tests for the accesses functionalities.
@@ -86,6 +90,12 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
     private IAccessRequestService accessRequestService;
 
     /**
+     * The autowired {@link IAccessSettingsService} implementation.
+     */
+    @Autowired
+    private IAccessSettingsService accessSettingsService;
+
+    /**
      * Do some setup before each test
      */
     @Before
@@ -96,7 +106,7 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
         apiAccessId = apiAccesses + "/{access_id}";
         apiAccessAccept = apiAccessId + "/accept";
         apiAccessDeny = apiAccessId + "/deny";
-        apiAccessSettings = apiAccessId + "/settings";
+        apiAccessSettings = apiAccesses + "/settings";
 
         final String roleName = "USER";
         jwt = jwtService.generateToken("PROJECT", "email", "SVG", roleName);
@@ -114,11 +124,11 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
     }
 
     /**
-     * Check that the system allows to retrieve all users for a project.
+     * Check that the system allows to retrieve all access requests for a project.
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_310")
-    @Purpose("Check that the system allows to retrieve all users for a project.")
+    @Purpose("Check that the system allows to retrieve all access requests for a project.")
     public void getAllAccesses() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -160,7 +170,7 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
     @Purpose("Check that the system allows to validate a registration request.")
     public void acceptAccessRequest() {
         final Long accessRequestId = accessRequestService.retrieveAccessRequestList().get(0).getId();
-        Assert.assertFalse(!accessRequestService.existAccessRequest(accessRequestId));
+        Assert.assertFalse(!accessRequestService.exists(accessRequestId));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -221,6 +231,50 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDelete(apiAccessId, jwt, expectations, errorMessage, accessRequestId);
+    }
 
+    /**
+     * Check that the system allows to retrieve the access settings.
+     */
+    @Test
+    @DirtiesContext
+    @Requirement("?")
+    @Purpose("Check that the system allows to retrieve the access settings.")
+    public void getAccessSettings() {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performGet(apiAccessSettings, jwt, expectations, errorMessage);
+    }
+
+    /**
+     * Check that the system fails when trying to update a non existing access settings.
+     */
+    @Test
+    @DirtiesContext
+    @Requirement("?")
+    @Purpose("Check that the system fails when trying to update a non existing access settings.")
+    public void updateAccessSettingsEntityNotFound() {
+        final AccessSettings settings = new AccessSettings();
+        settings.setId(999L);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isNotFound());
+        performPut(apiAccessSettings, jwt, settings, expectations, "TODO Error message");
+    }
+
+    /**
+     * Check that the system allows to update access settings in regular case.
+     */
+    @Test
+    @DirtiesContext
+    @Requirement("?")
+    @Purpose("Check that the system allows to update access settings in regular case.")
+    public void updateAccessSettings() {
+        final AccessSettings settings = new AccessSettings();
+        settings.setId(0L);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performPut(apiAccessSettings, jwt, settings, expectations, "TODO Error message");
     }
 }

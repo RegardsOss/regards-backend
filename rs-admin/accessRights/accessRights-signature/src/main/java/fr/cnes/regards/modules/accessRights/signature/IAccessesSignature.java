@@ -18,11 +18,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.modules.accessRights.domain.AccessRequestDTO;
+import fr.cnes.regards.modules.accessRights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidEntityException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
  * Define the common interface of REST clients for accesses.
@@ -59,11 +59,11 @@ public interface IAccessesSignature {
 
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<List<Resource<String>>> getAccessSettingList();
+    HttpEntity<Resource<AccessSettings>> getAccessSettings();
 
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> updateAccessSetting(@Valid @RequestBody String pUpdatedProjectUserSetting)
-            throws InvalidValueException;
+    HttpEntity<Void> updateAccessSettings(@Valid @RequestBody AccessSettings pAccessSettings)
+            throws EntityNotFoundException;
 }

@@ -49,8 +49,9 @@ public class RoleService implements IRoleService {
 
     @Override
     public List<Role> retrieveRoleList() {
-        final Iterable<Role> roles = roleRepository.findAll();
-        return StreamSupport.stream(roles.spliterator(), false).collect(Collectors.toList());
+        try (Stream<Role> stream = StreamSupport.stream(roleRepository.findAll().spliterator(), true)) {
+            return stream.collect(Collectors.toList());
+        }
     }
 
     @Override
@@ -104,9 +105,8 @@ public class RoleService implements IRoleService {
         final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
         roleAndHisAncestors.addAll(roleLineageAssembler.of(role).get());
 
-        final List<ResourcesAccess> permissions = roleAndHisAncestors.stream().map(r -> r.getPermissions())
-                .flatMap(l -> l.stream()).collect(Collectors.toList());
-        return permissions;
+        return roleAndHisAncestors.stream().map(r -> r.getPermissions()).flatMap(l -> l.stream())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -116,13 +116,13 @@ public class RoleService implements IRoleService {
             throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
         final Role role = roleRepository.findOne(pRoleId);
-        List<ResourcesAccess> permissions = role.getPermissions();
+        final List<ResourcesAccess> permissions = role.getPermissions();
 
-        permissions = Stream.concat(pResourcesAccessList.stream(), permissions.stream()).distinct()
-                .collect(Collectors.toList());
-
-        role.setPermissions(permissions);
-        roleRepository.save(role);
+        try (Stream<ResourcesAccess> stream = Stream.concat(pResourcesAccessList.stream(), permissions.stream())) {
+            role.setPermissions(stream.distinct().collect(Collectors.toList()));
+            role.setPermissions(permissions);
+            roleRepository.save(role);
+        }
     }
 
     @Override

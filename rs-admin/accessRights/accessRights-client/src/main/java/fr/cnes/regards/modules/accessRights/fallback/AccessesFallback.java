@@ -17,10 +17,10 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.accessRights.client.IAccessesClient;
 import fr.cnes.regards.modules.accessRights.domain.AccessRequestDTO;
+import fr.cnes.regards.modules.accessRights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
  *
@@ -82,17 +82,30 @@ public class AccessesFallback implements IAccessesClient {
         return response;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessRights.signature.IAccessesSignature#updateAccessSetting(fr.cnes.regards.modules.
+     * accessRights.domain.projects.AccessSettings)
+     */
     @Override
-    public HttpEntity<List<Resource<String>>> getAccessSettingList() {
-        LOG.error(fallBackErrorMessage);
-        final ResponseEntity<List<Resource<String>>> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
-    }
-
-    @Override
-    public HttpEntity<Void> updateAccessSetting(final String pUpdatedProjectUserSetting) throws InvalidValueException {
+    public HttpEntity<Void> updateAccessSettings(final AccessSettings pAccessSettings) throws EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
         final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        return response;
+
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessRights.signature.IAccessesSignature#getAccessSettings()
+     */
+    @Override
+    public HttpEntity<Resource<AccessSettings>> getAccessSettings() {
+        LOG.error(fallBackErrorMessage);
+        final ResponseEntity<Resource<AccessSettings>> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
         return response;
     }
 

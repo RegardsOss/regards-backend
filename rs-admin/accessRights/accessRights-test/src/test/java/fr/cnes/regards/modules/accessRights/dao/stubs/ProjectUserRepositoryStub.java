@@ -5,12 +5,14 @@ package fr.cnes.regards.modules.accessRights.dao.stubs;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.test.repository.RepositoryStub;
+import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
 import fr.cnes.regards.modules.accessRights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessRights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessRights.domain.UserStatus;
@@ -22,7 +24,7 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 @Repository
 @Profile("test")
 @Primary
-public class ProjectUserRepositoryStub extends RepositoryStub<ProjectUser> implements IProjectUserRepository {
+public class ProjectUserRepositoryStub extends JpaRepositoryStub<ProjectUser> implements IProjectUserRepository {
 
     private final IAccountRepository accountRepository;
 
@@ -68,6 +70,19 @@ public class ProjectUserRepositoryStub extends RepositoryStub<ProjectUser> imple
     @Override
     public ProjectUser findOneByEmail(final String pEmail) {
         return entities.stream().filter(r -> r.getEmail().equals(pEmail)).findFirst().get();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessRights.dao.projects.IProjectUserRepository#findByStatus(fr.cnes.regards.modules.
+     * accessRights.domain.UserStatus)
+     */
+    @Override
+    public List<ProjectUser> findByStatus(final UserStatus pStatus) {
+        return entities.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS))
+                .collect(Collectors.toList());
     }
 
 }
