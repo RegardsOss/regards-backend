@@ -1,0 +1,23 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>fr.cnes.regards.modules.accessrights</groupId>
+	<artifactId>accessrights-signature</artifactId>
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>fr.cnes.regards.modules</groupId>
+		<artifactId>accessrights</artifactId>
+		<version>1.1-SNAPSHOT</version>
+	</parent>
+
+	<dependencies>
+		<!-- Microservice internal dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-domain</artifactId>
+		</dependency>
+	</dependencies>
+
+</project>

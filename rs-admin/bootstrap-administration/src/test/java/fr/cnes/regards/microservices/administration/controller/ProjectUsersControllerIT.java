@@ -23,16 +23,16 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessRights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessRights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessRights.domain.UserStatus;
-import fr.cnes.regards.modules.accessRights.domain.projects.MetaData;
-import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessRights.domain.projects.Role;
-import fr.cnes.regards.modules.accessRights.service.IProjectUserService;
-import fr.cnes.regards.modules.accessRights.service.IRoleService;
+import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
+import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.IRoleService;
 
 /**
  * @author svissier

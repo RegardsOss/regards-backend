@@ -26,9 +26,9 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessRights.domain.AccountStatus;
-import fr.cnes.regards.modules.accessRights.domain.instance.Account;
-import fr.cnes.regards.modules.accessRights.service.IAccountService;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.service.IAccountService;
 
 /**
  * Just Test the REST API so status code. Correction is left to others.
@@ -201,11 +201,18 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
         performPut(apiAccountId, jwt, updated, expectations, errorMessage, accountId);
 
         // if that's not the same functional ID and the parameter is valid:
-        final Account notSameID = new Account("notSameEmail", "firstName", "lastName", "login", "password");
-
+        final Account notSameID = new Account("othereamil@test.com", "firstName", "lastName", "login", "password");
         expectations.clear();
         expectations.add(status().isBadRequest());
         performPut(apiAccountId, jwt, notSameID, expectations, errorMessage, accountId);
+
+        // If entity not found
+        final Long inexistentId = 99L;
+        final Account inexistentAccount = new Account(inexistentId, "email@test.com", "firstname", "lastname", "login",
+                "password", AccountStatus.ACTIVE, "code");
+        expectations.clear();
+        expectations.add(status().isNotFound());
+        performPut(apiAccountId, jwt, inexistentAccount, expectations, errorMessage, inexistentId);
     }
 
     @Test

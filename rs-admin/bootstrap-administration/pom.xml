@@ -50,8 +50,8 @@
 			<artifactId>project-rest</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.accessRights</groupId>
-			<artifactId>accessRights-rest</artifactId>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-rest</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
@@ -81,8 +81,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.accessRights</groupId>
-			<artifactId>accessRights-test</artifactId>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-test</artifactId>
 			<scope>test</scope>
 			<type>test-jar</type>
 		</dependency>

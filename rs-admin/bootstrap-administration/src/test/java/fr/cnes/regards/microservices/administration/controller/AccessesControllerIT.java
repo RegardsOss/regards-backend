@@ -23,11 +23,11 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessRights.domain.AccessRequestDTO;
-import fr.cnes.regards.modules.accessRights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.accessRights.domain.projects.Role;
-import fr.cnes.regards.modules.accessRights.service.IAccessRequestService;
-import fr.cnes.regards.modules.accessRights.service.IAccessSettingsService;
+import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
+import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.IAccessRequestService;
+import fr.cnes.regards.modules.accessrights.service.IAccessSettingsService;
 
 /**
  * Integration tests for the accesses functionalities.

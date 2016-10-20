@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<bean id="public" name="PUBLIC"
-		class="fr.cnes.regards.modules.accessRights.domain.projects.Role">
+		class="fr.cnes.regards.modules.accessrights.domain.projects.Role">
 		<property name="id" value="0"></property>
 		<property name="name" value="Public"></property>
 		<property name="native" value="true"></property>
@@ -12,7 +12,7 @@
 	</bean>
 
 	<bean id="registeredUser" name="REGISTERED_USER"
-		class="fr.cnes.regards.modules.accessRights.domain.projects.Role">
+		class="fr.cnes.regards.modules.accessrights.domain.projects.Role">
 		<property name="id" value="1"></property>
 		<property name="name" value="Registered User"></property>
 		<property name="native" value="true"></property>
@@ -20,7 +20,7 @@
 	</bean>
 
 	<bean id="admin" name="ADMIN"
-		class="fr.cnes.regards.modules.accessRights.domain.projects.Role"
+		class="fr.cnes.regards.modules.accessrights.domain.projects.Role"
 		lazy-init="false">
 		<property name="id" value="2"></property>
 		<property name="name" value="Admin"></property>
@@ -29,7 +29,7 @@
 	</bean>
 
 	<bean id="projectAdmin" name="PROJECT_ADMIN"
-		class="fr.cnes.regards.modules.accessRights.domain.projects.Role">
+		class="fr.cnes.regards.modules.accessrights.domain.projects.Role">
 		<property name="id" value="3"></property>
 		<property name="name" value="Project Admin"></property>
 		<property name="native" value="true"></property>
@@ -37,7 +37,7 @@
 	</bean>
 
 	<bean id="instanceAdmin" name="INSTANCE_ADMIN"
-		class="fr.cnes.regards.modules.accessRights.domain.projects.Role">
+		class="fr.cnes.regards.modules.accessrights.domain.projects.Role">
 		<property name="id" value="4"></property>
 		<property name="name" value="Instance Admin"></property>
 		<property name="native" value="true"></property>

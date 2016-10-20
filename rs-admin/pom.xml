@@ -19,7 +19,7 @@
 	<modules>
 		<module>project</module>
 		<module>bootstrap-administration</module>
-		<module>accessRights</module>
+		<module>accessrights</module>
 		<module>emails</module>
 	</modules>
 

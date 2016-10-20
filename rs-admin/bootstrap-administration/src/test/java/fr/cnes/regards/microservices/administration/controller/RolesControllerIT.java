@@ -26,15 +26,15 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessRights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessRights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessRights.domain.projects.Role;
-import fr.cnes.regards.modules.accessRights.service.IRoleService;
+import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
+import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.IRoleService;
 
 /**
  * Just Test the REST API so status code. Correction is left to others.
  *
- * @author xbrochar
+ * @author CS SI
  *
  */
 public class RolesControllerIT extends AbstractRegardsIntegrationTest {
