@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 
 import fr.cnes.regards.client.core.ClientRequestInterceptor;
 import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
-import fr.cnes.regards.modules.accessRights.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 
 /**
  *

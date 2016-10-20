@@ -15,13 +15,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.cloud.gateway.authentication.provider.AuthenticationProviderStub;
+import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -34,7 +33,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@RunWith(SpringRunner.class)
+@RunWith(RegardsSpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @PropertySource("classpath:test.properties")
@@ -100,6 +99,14 @@ public class GatewayApplicationTest {
         // The application can start with spring configuration
     }
 
+    @Test
+    public void test() throws Exception {
+        String invalidBasicString = "invalid:invalid";
+        invalidBasicString = Base64.getEncoder().encodeToString(invalidBasicString.getBytes());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/plop")).andExpect(MockMvcResultMatchers.status().isUnauthorized());
+    }
+
     /**
      *
      * Test the Oauth2 authentication process. Test unauthorized for basic authentication fail.
@@ -120,7 +127,6 @@ public class GatewayApplicationTest {
                     .andExpect(MockMvcResultMatchers.status().isUnauthorized());
 
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                    .with(SecurityMockMvcRequestPostProcessors.csrf())
                     .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + invalidBasicString)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
                     .param(SCOPE, "scope1").param(USER_NAME, "name1").param(PASSWORD, "mdp"))
@@ -148,7 +154,6 @@ public class GatewayApplicationTest {
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                    .with(SecurityMockMvcRequestPostProcessors.csrf())
                     .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
                     .param(SCOPE, "scope2").param(USER_NAME, "name2")
@@ -177,7 +182,6 @@ public class GatewayApplicationTest {
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                    .with(SecurityMockMvcRequestPostProcessors.csrf())
                     .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
                     .param(SCOPE, "scope3").param(USER_NAME, "name3").param(PASSWORD, "plop"))

@@ -13,10 +13,11 @@ import com.netflix.hystrix.exception.HystrixRuntimeException;
 
 import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.modules.accessRights.client.IAccountsClient;
-import fr.cnes.regards.modules.accessRights.domain.UserStatus;
-import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.projects.Role;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 
 /**
@@ -68,13 +69,14 @@ public class SimpleAuthentication implements IAuthenticationProvider {
         LOG.info("Trying to authenticate user " + pName + " with password=" + pPassword + " for project " + pScope);
 
         UserStatus status = UserStatus.ACCESS_DENIED;
-        jwtService.injectToken(pScope, GATEWAY_ROLE);
+
         try {
+            jwtService.injectToken(pScope, GATEWAY_ROLE);
             final HttpEntity<Boolean> results = accountsClient.validatePassword(pName, pPassword);
             if (results.getBody().equals(Boolean.TRUE)) {
                 status = UserStatus.ACCESS_GRANTED;
             }
-        } catch (final HystrixRuntimeException e) {
+        } catch (final HystrixRuntimeException | JwtException e) {
             LOG.error(e.getMessage(), e);
         } catch (final EntityNotFoundException e) {
             LOG.error(e.getMessage(), e);

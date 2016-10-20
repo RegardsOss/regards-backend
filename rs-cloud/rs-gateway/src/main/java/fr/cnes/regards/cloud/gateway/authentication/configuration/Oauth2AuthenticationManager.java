@@ -14,14 +14,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
-import fr.cnes.regards.modules.accessRights.domain.UserStatus;
-import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
  *
@@ -42,18 +41,18 @@ public class Oauth2AuthenticationManager implements AuthenticationManager {
     private static final Logger LOG = LoggerFactory.getLogger(Oauth2AuthenticationManager.class);
 
     /**
-     * Custom authentication provider. TODO : Should be replace with the REGARDS Plugins system.
+     * Custom authentication provider.
      */
     @Autowired
     private IAuthenticationProvider authProvider;
 
     @Override
-    public Authentication authenticate(Authentication pAuthentication) throws AuthenticationException {
+    public Authentication authenticate(final Authentication pAuthentication) {
         final String name = pAuthentication.getName();
         final String password = pAuthentication.getCredentials().toString();
 
         final Object details = pAuthentication.getDetails();
-        String scope = null;
+        final String scope;
         if (details instanceof Map) {
             @SuppressWarnings("unchecked")
             final Map<String, String> detailsMap = (Map<String, String>) details;
