@@ -51,6 +51,9 @@ public class DaoUserService {
     @Autowired
     private IUserRepository userRepository;
 
+    /**
+     * JWT service
+     */
     @Autowired
     private JWTService jwtService;
 

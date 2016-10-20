@@ -13,7 +13,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
- * Plugin management service. Manage plugin configuraton, type, instanciation.
+ * Plugin management service.
  *
  * @author cmertz
  */
@@ -21,7 +21,7 @@ public interface IPluginService {
 
     /**
      *
-     * Return all plugin types available
+     * Return all plugin types available.
      *
      * @return List<String>
      */
@@ -37,7 +37,7 @@ public interface IPluginService {
 
     /**
      *
-     * Return all {@link PluginMetaData} available for a specific plugin type
+     * Return all {@link PluginMetaData} available for a specific plugin type.
      *
      * @param pPluginType
      *            a specific plugin type
@@ -52,9 +52,8 @@ public interface IPluginService {
      *
      * @param <T>
      *            a plugin instance
-     * 
      * @param pPluginConfigurationId
-     *            a specific plugin's configuration
+     *            the id of a {@link PluginConfiguration}.
      * @param pReturnInterfaceType
      *            the plugin's type to return
      * @return a plugin
@@ -73,7 +72,6 @@ public interface IPluginService {
      *            the plugin type
      * @param pReturnInterfaceType
      *            the plugin's type to return
-     * 
      * @return a plugin
      * @throws PluginUtilsException
      *             throw if an error occurs
@@ -85,19 +83,18 @@ public interface IPluginService {
      * Get a specific plugin implementation.
      *
      * @param pPluginImplId
-     *            the id of the spscific metadata
-     * 
-     * @return metadata of a specific plugin's configuration
+     *            the id of the specific metadata
+     * @return a {@link PluginMetaData} for a specific {@link PluginConfiguration}
      */
     PluginMetaData getPluginMetaDataById(String pPluginImplId);
 
     /**
      *
-     * Save a plugin configuration in internal database.
+     * Save a {@link PluginConfiguration} in internal database.
      *
      * @param pPluginConfiguration
      *            the plugin configuration to saved
-     * @return the saved plugin configuration
+     * @return the saved {@link PluginConfiguration}
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -105,13 +102,13 @@ public interface IPluginService {
 
     /**
      *
-     * Get the plugin's configuration for a specific configuration
+     * Get the {@link PluginConfiguration}.
      *
      * @param pId
      *            a plugin identifier
      * @return a specific configuration
      * @throws PluginUtilsException
-     *             TODO CMZ : pourquoi pId
+     *             throw if an error occurs
      */
     PluginConfiguration getPluginConfiguration(Long pId) throws PluginUtilsException;
 
@@ -121,13 +118,13 @@ public interface IPluginService {
      *
      * @param pType
      *            a specific plugin's type
-     * @return all the plugin's configuration for a specific plugin type.
+     * @return all the {@link PluginConfiguration} for a specific plugin type.
      */
     List<PluginConfiguration> getPluginConfigurationsByType(IPluginType pType);
 
     /**
      *
-     * Delete a plugin configuration
+     * Delete a {@link PluginConfiguration}.
      *
      * @param pPluginId
      *            a specific configuration
@@ -139,11 +136,11 @@ public interface IPluginService {
 
     /**
      *
-     * Update a plugin configuration
+     * Update a {@link PluginConfiguration}.
      *
      * @param pPlugin
-     *            the plugin's configuration to update
-     * @return the updated plugin's configuration
+     *            the {@link PluginConfiguration} to update
+     * @return the updated {@link PluginConfiguration}
      * @throws PluginUtilsException
      *             throw if an error occurs
      */

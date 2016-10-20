@@ -55,7 +55,7 @@ public final class PluginUtils {
      *             a pluginId is found a twice
      */
     public static Map<String, PluginMetaData> getPlugins(final String pPrefix) throws PluginUtilsException {
-        final Map<String, PluginMetaData> plugins = new HashMap<String, PluginMetaData>();
+        final Map<String, PluginMetaData> plugins = new HashMap<>();
 
         // Scan class path with Reflections library
         final Reflections reflections = new Reflections(pPrefix);

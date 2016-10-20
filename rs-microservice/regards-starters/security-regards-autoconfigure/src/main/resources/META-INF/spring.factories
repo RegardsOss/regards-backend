@@ -1,4 +1,5 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 fr.cnes.regards.framework.security.autoconfigure.WebSecurityAutoConfiguration,\
 fr.cnes.regards.framework.security.autoconfigure.MethodAuthorizationServiceAutoConfiguration,\
-fr.cnes.regards.framework.security.autoconfigure.MethodSecurityAutoConfiguration
+fr.cnes.regards.framework.security.autoconfigure.MethodSecurityAutoConfiguration,\
+fr.cnes.regards.framework.security.autoconfigure.controller.ResourcesController
