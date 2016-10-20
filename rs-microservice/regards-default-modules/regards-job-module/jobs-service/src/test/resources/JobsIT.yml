@@ -1,0 +1,28 @@
+server:
+  port: 8888
+  
+jwt:
+  secret: 123456789
+  
+
+spring: 
+  application:
+    name: TestDao
+  hateoas:
+    use-hal-as-default-json-media-type: false
+  jackson:
+    deserialization:
+      READ_ENUMS_USING_TO_STRING: true
+    serialization:
+      WRITE_ENUMS_USING_TO_STRING: true
+
+      
+microservice:
+  dao:
+    enabled: true
+    embedded: true
+    embeddedPath: target
+    projects:
+      - name: test1
+    instance:
+      enabled: true

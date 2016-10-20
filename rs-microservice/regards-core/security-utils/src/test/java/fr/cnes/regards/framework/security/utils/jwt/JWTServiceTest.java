@@ -22,33 +22,43 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 @ContextConfiguration(classes = { JwtTestConfiguration.class })
 public class JWTServiceTest {
 
-    @Autowired
-    private JWTService jwtService_;
-
+    /**
+     * Class logger
+     */
     static final Logger LOG = LoggerFactory.getLogger(JWTServiceTest.class);
 
+    /**
+     * JWT service
+     */
+    @Autowired
+    private JWTService jwtService;
+
+    /**
+     * Test JWT generation
+     */
     @Test
     public void generateJWT() {
-        String project = "PROJECT";
-        String email = "marc.sordi@c-s.fr";
-        String name = "Marc SORDI";
-        String role = "USER";
+        final String project = "PROJECT";
+        final String email = "marc.sordi@c-s.fr";
+        final String name = "Marc SORDI";
+        final String role = "USER";
 
         // Generate token
-
-        String jwt = jwtService_.generateToken(project, email, name, role);
+        final String jwt = jwtService.generateToken(project, email, name, role);
         LOG.debug("JWT = " + jwt);
 
         // Parse token and retrieve user information
         try {
-            JWTAuthentication jwtAuth = jwtService_.parseToken(new JWTAuthentication(jwt));
+            final JWTAuthentication jwtAuth = jwtService.parseToken(new JWTAuthentication(jwt));
 
-            UserDetails user = jwtAuth.getPrincipal();
+            Assert.assertEquals(project, jwtAuth.getProject());
+
+            final UserDetails user = jwtAuth.getPrincipal();
             Assert.assertEquals(email, user.getEmail());
             Assert.assertEquals(name, user.getName());
             Assert.assertEquals(project, user.getTenant());
         } catch (JwtException e) {
-            String message = "JWT test error";
+            final String message = "JWT test error";
             LOG.debug(message, e);
             Assert.fail(message);
         }

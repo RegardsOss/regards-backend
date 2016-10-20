@@ -30,27 +30,22 @@ public class JWTAuthentication implements Authentication {
     /**
      * JWT from request header
      */
-    private final String jwt_;
+    private final String jwt;
 
     /**
      * List contains a single role
      */
-    private List<RoleAuthority> roles_;
+    private List<RoleAuthority> roles;
 
     /**
      * Current user info
      */
-    private UserDetails user_;
+    private UserDetails user;
 
     /**
      * Whether the user is authenticated
      */
-    private Boolean isAuthenticated_;
-
-    /**
-     * Current tenant represented by the project
-     */
-    private String project_;
+    private Boolean isAuthenticated;
 
     /**
      * Constructor
@@ -59,17 +54,17 @@ public class JWTAuthentication implements Authentication {
      *            the JSON Web Token
      */
     public JWTAuthentication(String pJWT) {
-        jwt_ = pJWT;
+        jwt = pJWT;
     }
 
     @Override
     public String getName() {
-        return user_.getName();
+        return user.getName();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles_;
+        return roles;
     }
 
     @Override
@@ -86,17 +81,17 @@ public class JWTAuthentication implements Authentication {
 
     @Override
     public UserDetails getPrincipal() {
-        return user_;
+        return user;
     }
 
     @Override
     public boolean isAuthenticated() {
-        return isAuthenticated_;
+        return isAuthenticated;
     }
 
     @Override
     public void setAuthenticated(boolean pIsAuthenticated) throws IllegalArgumentException {
-        isAuthenticated_ = pIsAuthenticated;
+        isAuthenticated = pIsAuthenticated;
     }
 
     /**
@@ -105,14 +100,14 @@ public class JWTAuthentication implements Authentication {
      * @return tenant for whom the JWT was provided
      */
     public String getTenant() {
-        return user_.getTenant();
+        return user.getTenant();
     }
 
     /**
      * @return the jwt
      */
     public String getJwt() {
-        return jwt_;
+        return jwt;
     }
 
     /**
@@ -122,18 +117,18 @@ public class JWTAuthentication implements Authentication {
      *            the role name
      */
     public void setRole(String pRoleName) {
-        if (roles_ == null) {
-            roles_ = new ArrayList<>();
+        if (roles == null) {
+            roles = new ArrayList<>();
         }
-        roles_.clear();
-        roles_.add(new RoleAuthority(pRoleName));
+        roles.clear();
+        roles.add(new RoleAuthority(pRoleName));
     }
 
     /**
      * @return the user
      */
     public UserDetails getUser() {
-        return user_;
+        return user;
     }
 
     /**
@@ -141,21 +136,13 @@ public class JWTAuthentication implements Authentication {
      *            the user to set
      */
     public void setUser(UserDetails pUser) {
-        user_ = pUser;
+        user = pUser;
     }
 
     /**
      * @return the project
      */
     public String getProject() {
-        return project_;
-    }
-
-    /**
-     * @param pProject
-     *            the project to set
-     */
-    public void setProject(String pProject) {
-        project_ = pProject;
+        return user.getTenant();
     }
 }

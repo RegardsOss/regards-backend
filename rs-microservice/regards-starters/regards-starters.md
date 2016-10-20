@@ -16,7 +16,7 @@ regards.jpa.instance.datasource.url=jdbc:postgresql://localhost:5432/postgres # 
 regards.jpa.instance.datasource.username=postgres # Not mandatory if embedded mode is activated
 regards.jpa.instance.datasource.password=postgres # Not mandatory if embedded mode is activated
 regards.jpa.instance.datasource.driverClassName=org.postgresql.Driver # Not mandatory if embedded mode is activated
-
+```
 ## JPA multitenant starter
 
 ```properties
@@ -31,6 +31,28 @@ regards.jpa.multitenant.tenants[<x>].datasource.password=postgres # Not mandator
 regards.jpa.multitenant.tenants[<x>].datasource.driverClassName=org.postgresql.Driver # Not mandatory if embedded mode is activated
 
 <x> : Integer value for tenant index starting with 0.
+```
+
+## Multitenant starter
+
+### Default configuration
+
+```properties
+regards.tenants=PROJECT1, PROJECT2 # List of available tenants / Only useful for default configuration
+```
+### Customize tenant resolver
+
+In a @Configuration file, define your bean as follow :
+
+```java
+@Bean
+public ITenantResolver customTenantResolver() {
+            return new CustomTenantResolver();
+}
+...
+class CustomTenantResolver implements ITenantResolver {
+...
+}
 ```
 
 ## Security starter

@@ -13,8 +13,6 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 
 /**
@@ -47,21 +45,18 @@ public class Poller {
      *            communication mode
      * @return received message from the broker
      * @throws RabbitMQVhostException
-     * @throws AddingRabbitMQVhostException
-     *             represent any error that could occur while trying to add the new Vhost
-     * @throws AddingRabbitMQVhostPermissionException
-     *             represent any error that could occur while adding the permission to the specified vhost
+     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     public <T> TenantWrapper<T> poll(String pTenant, Class<T> pEvt, AmqpCommunicationMode pAmqpCommunicationMode)
             throws RabbitMQVhostException {
         final TenantWrapper<T> evt;
         amqpConfiguration.addVhost(pTenant);
-        final Exchange exchange = amqpConfiguration.declareExchange(pEvt.getClass().getName(), pAmqpCommunicationMode,
-                                                                    pTenant);
+        final Exchange exchange = amqpConfiguration.declareExchange(pEvt.getName(), pAmqpCommunicationMode, pTenant);
         final Queue queue = amqpConfiguration.declareQueue(pEvt, pAmqpCommunicationMode, pTenant);
-        amqpConfiguration.declareBinding(queue, exchange, exchange.getName(), pAmqpCommunicationMode, pTenant);
+        amqpConfiguration.declareBinding(queue, exchange, queue.getName(), pAmqpCommunicationMode, pTenant);
 
         SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), pTenant);
+        // the CannotCastException should be thrown that mean someone/something tempered with the broker queue
         evt = (TenantWrapper<T>) rabbitTemplate
                 .receiveAndConvert(amqpConfiguration.getQueueName(pEvt, pAmqpCommunicationMode));
         SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());

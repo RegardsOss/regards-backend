@@ -15,7 +15,7 @@ import org.springframework.context.annotation.PropertySource;
  *
  */
 @Configuration
-@ComponentScan(basePackages = { "fr.cnes.regards.framework.security.utils.jwt" })
+@ComponentScan
 @PropertySource("classpath:jwt.properties")
 public class JwtTestConfiguration {
 

@@ -21,11 +21,15 @@ import fr.cnes.regards.framework.security.autoconfigure.endpoint.ResourceAccessV
  * This class allow to add a security filter on method access. Each time a method is called, the accessDecisionManager
  * check if the connected user can access the method via the ResourceAccessVoter class.
  *
+ * {@link EnableGlobalMethodSecurity#proxyTargetClass()} is required to manage controller interface in SPRING MVC
+ * controllers.
+ *
  * @author CS SI
  *
  */
 @ConditionalOnWebApplication
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+
+@EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfiguration
 
 {
@@ -42,5 +46,4 @@ public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfigu
         decisionVoters.add(new ResourceAccessVoter(methodAuthService));
         return new AffirmativeBased(decisionVoters);
     }
-
 }
