@@ -4,6 +4,9 @@
 package fr.cnes.regards.framework.amqp.domain;
 
 /**
+ *
+ * Enum containing each communication mode possible in REGARDS
+ *
  * @author svissier
  *
  */

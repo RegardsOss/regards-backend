@@ -18,6 +18,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public interface IMethodAuthorizationService {
 
     /**
+     *
+     * Get all endpoints of the current web application managed by ResourcesAccess annotation.
+     *
+     * @return List<ResourceMapping>
+     * @since 1.0-SNAPSHOT
+     */
+    List<ResourceMapping> getResources();
+
+    /**
      * Get all granted role to access a particular resource access
      *
      * @param pResourceMapping

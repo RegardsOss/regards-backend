@@ -15,6 +15,7 @@ import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,7 @@ import org.springframework.security.crypto.codec.Base64;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import fr.cnes.regards.framework.amqp.connection.RegardsSimpleRoutingConnectionFactory;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.RabbitMqVhostPermission;
 import fr.cnes.regards.framework.amqp.domain.RabbitVhost;
@@ -76,6 +78,9 @@ public class AmqpConfiguration {
     @Value("${spring.rabbitmq.username}")
     private String rabbitmqUserName;
 
+    @Value("${spring.rabbitmq.addresses}")
+    private String rabbitAddresses;
+
     /**
      * password used to connect to the broker and it's manager
      */
@@ -105,6 +110,9 @@ public class AmqpConfiguration {
      */
     @Autowired
     private RabbitAdmin rabbitAdmin;
+
+    @Autowired
+    private RegardsSimpleRoutingConnectionFactory simpleRoutingConnectionFactory;
 
     /**
      * List of vhost already known
@@ -174,10 +182,24 @@ public class AmqpConfiguration {
      *
      * @param pName
      *            name of the Vhost you want to add
-     * @throws AddingRabbitMQVhostException
-     *             represent any error that could occur while trying to add the new Vhost
-     * @throws AddingRabbitMQVhostPermissionException
-     *             represent any error that could occur while adding the permission to the specified vhost
+     * @param pConnectionFactory
+     *            connection factory to which the virtual host should be bound to for further use
+     * @throws RabbitMQVhostException
+     *             represent any error that could occur while handling RabbitMQ Vhosts
+     */
+    public void addVhost(String pName, CachingConnectionFactory pConnectionFactory) throws RabbitMQVhostException {
+        simpleRoutingConnectionFactory.addTargetConnectionFactory(pName, pConnectionFactory);
+        addVhost(pName);
+    }
+
+    /**
+     *
+     * PUT Request to /api/vhost/{name} to add this Vhost only if it is not already defined
+     *
+     * @param pName
+     *            name of the Vhost you want to add
+     * @throws RabbitMQVhostException
+     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     public void addVhost(String pName) throws RabbitMQVhostException {
         retrieveVhostList();
@@ -195,6 +217,23 @@ public class AmqpConfiguration {
             addPermissionToAccessVhost(pName);
             vhostList.add(pName);
         }
+    }
+
+    /**
+     * @param pRabbitAddresses
+     *            addresses from configuration file
+     * @return {host, port}
+     */
+    private String[] parseRabbitAddresses(String pRabbitAddresses) {
+        return rabbitAddresses.split(":");
+    }
+
+    public CachingConnectionFactory createConnectionFactory(String pVhost) {
+        final String[] rabbitHostAndPort = parseRabbitAddresses(rabbitAddresses);
+        final CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHostAndPort[0],
+                Integer.parseInt(rabbitHostAndPort[1]));
+        connectionFactory.setVirtualHost(pVhost);
+        return connectionFactory;
     }
 
     /**
@@ -255,8 +294,9 @@ public class AmqpConfiguration {
 
     public Exchange declareExchange(String pName, AmqpCommunicationMode pAmqpCommunicationMode, String pTenant) {
         final Exchange exchange = instantiateExchange(pName, pAmqpCommunicationMode);
-        ((CachingConnectionFactory) rabbitAdmin.getRabbitTemplate().getConnectionFactory()).setVirtualHost(pTenant);
+        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(), pTenant);
         rabbitAdmin.declareExchange(exchange);
+        SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
         return exchange;
     }
 
@@ -277,8 +317,9 @@ public class AmqpConfiguration {
         final Integer maxPriority = 255;
         args.put("x-max-priority", maxPriority);
         final Queue queue = new Queue(getQueueName(pEvtClass, pAmqpCommunicationMode), true, false, false, args);
-        ((CachingConnectionFactory) rabbitAdmin.getRabbitTemplate().getConnectionFactory()).setVirtualHost(pTenant);
+        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(), pTenant);
         rabbitAdmin.declareQueue(queue);
+        SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
         return queue;
     }
 
@@ -307,8 +348,9 @@ public class AmqpConfiguration {
     public Binding declareBinding(Queue pQueue, Exchange pExchange, String pBindingName,
             AmqpCommunicationMode pAmqpCommunicationMode, String pTenant) {
         final Binding binding = instantiateBinding(pQueue, pExchange, pBindingName, pAmqpCommunicationMode);
-        ((CachingConnectionFactory) rabbitAdmin.getRabbitTemplate().getConnectionFactory()).setVirtualHost(pTenant);
+        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(), pTenant);
         rabbitAdmin.declareBinding(binding);
+        SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
         return binding;
     }
 
@@ -363,13 +405,6 @@ public class AmqpConfiguration {
                 throw new EnumConstantNotPresentException(AmqpCommunicationMode.class, pAmqpCommunicationMode.name());
         }
         return exchange;
-    }
-
-    /**
-     * @return connection factory used by rabbit template to connect to the broker
-     */
-    public CachingConnectionFactory getRabbitConnectionFactory() {
-        return (CachingConnectionFactory) rabbitAdmin.getRabbitTemplate().getConnectionFactory();
     }
 
     /**

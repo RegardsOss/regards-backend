@@ -15,8 +15,6 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
@@ -46,10 +44,7 @@ public class Publisher {
      * @param pAmqpCommunicationMode
      *            publishing mode
      * @throws RabbitMQVhostException
-     * @throws AddingRabbitMQVhostException
-     *             represent any error that could occur while trying to add the new Vhost
-     * @throws AddingRabbitMQVhostPermissionException
-     *             represent any error that could occur while adding the permission to the specified vhost
+     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     public final void publish(Object pEvt, AmqpCommunicationMode pAmqpCommunicationMode, int priority)
             throws RabbitMQVhostException {
