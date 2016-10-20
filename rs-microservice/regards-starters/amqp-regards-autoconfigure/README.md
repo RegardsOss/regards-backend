@@ -1,4 +1,4 @@
-# REGARDS Module Core
+# AMQP regards autoconfigure
 
 ## How to run integration tests
 
@@ -6,7 +6,7 @@
 
 ### For AMQP client
 
-To run integration test you have to have a rabbitmq-server running and precise it's host and port in `src/test/resources/application-rabbit.yml`.
+To run integration test you have to have a rabbitmq-server running and copy `src/test/resources/application-rabbit.properties.sample` to `src/test/resources/application-rabbit.properties` and change any needed properties.
 
 ## How to use AMQP client
 
