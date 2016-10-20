@@ -5,7 +5,7 @@ package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 
 /**
  *
@@ -17,7 +17,8 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public interface IMultitenantConnectionsReader {
+@FunctionalInterface
+public interface ITenantConnectionResolver {
 
     /**
      *
@@ -26,5 +27,5 @@ public interface IMultitenantConnectionsReader {
      * @return
      * @since 1.0-SNAPSHOT
      */
-    public List<ProjectConnection> getTenantConnections();
+    public List<TenantConnection> getTenantConnections();
 }
