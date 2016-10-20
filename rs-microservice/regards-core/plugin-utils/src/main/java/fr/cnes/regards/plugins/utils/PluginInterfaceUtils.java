@@ -44,8 +44,8 @@ public final class PluginInterfaceUtils {
         final Reflections reflections = new Reflections(pPrefix);
         final Set<Class<?>> annotatedPlugins = reflections.getTypesAnnotatedWith(PluginInterface.class);
 
-        if (annotatedPlugins.size() > 0) {
-            interfaces = new ArrayList<String>();
+        if (!annotatedPlugins.isEmpty()) {
+            interfaces = new ArrayList<>();
             annotatedPlugins.stream().forEach(str -> interfaces.add(str.getCanonicalName()));
         } else {
             interfaces = null;
