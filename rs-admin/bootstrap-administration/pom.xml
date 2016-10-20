@@ -64,14 +64,14 @@
 		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules.project</groupId>
-			<artifactId>project-test</artifactId>
-			<type>test-jar</type>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<groupId>fr.cnes.regards.modules.project</groupId>
+			<artifactId>project-test</artifactId>
+			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -85,11 +85,6 @@
 			<artifactId>accessrights-test</artifactId>
 			<scope>test</scope>
 			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
