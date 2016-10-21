@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.provider.IProjectsProvider;
@@ -27,6 +28,11 @@ import fr.cnes.regards.framework.amqp.provider.IProjectsProvider;
  */
 @Component
 public class Subscriber {
+
+    /**
+     * method from {@link fr.cnes.regards.framework.amqp.domain.IHandler}
+     */
+    private static final String DEFAULT_HANDLING_METHOD = "handle";
 
     /**
      * configuration allowing us to declare virtual host using http api and get a unique name for the instance
@@ -50,88 +56,41 @@ public class Subscriber {
      *
      * initialize any necessary container to listen to all tenant provided by the provider for the specified element
      *
+     * @param <T>
+     *            event type to which we subscribe
      * @param pEvt
      *            the event class token you want to subscribe to
      * @param pReceiver
      *            the POJO defining the method handling the corresponding event connection factory from context
      * @param pAmqpCommunicationMode
      *            {@link AmqpCommunicationMode}
+     * @param pAmqpCommunicationTarget
+     *            communication scope
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
-    public final void subscribeTo(Class<?> pEvt, IHandler<?> pReceiver, AmqpCommunicationMode pAmqpCommunicationMode)
+    public final <T> void subscribeTo(Class<T> pEvt, IHandler<T> pReceiver,
+            AmqpCommunicationMode pAmqpCommunicationMode, AmqpCommunicationTarget pAmqpCommunicationTarget)
             throws RabbitMQVhostException {
         final List<String> projects = projectsProvider.retrieveProjectList();
         jackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
-        switch (pAmqpCommunicationMode) {
-            case ONE_TO_MANY:
-                // ONE_TO_MANY => 1 exchange per event per project => 1 container per project => N container with one
-                // queue to listen to
-                for (String project : projects) {
-                    // CHECKSTYLE:OFF
-                    final SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(pEvt,
-                                                                                                              project,
-                                                                                                              jackson2JsonMessageConverter,
-                                                                                                              pReceiver);
-                    // CHECKSTYLE:ON
-                    startSimpleMessageListenerContainer(container);
 
-                }
-                break;
-            case ONE_TO_ONE:
-                // Not implemented yet, to be done if needed
-                // ONE_TO_ONE => 1 exchange per project with 1 queue to listen to => 1 container per event => 1
-                // container with multiple queue to listen to
-                // CHECKSTYLE:OFF
-                // final SimpleMessageListenerContainer container =
-                // initializeSimpleMessageListenerContainer(pEvt,projects,jackson2JsonMessageConverter,pReceiver);
-                // CHECKTYLE:ON
-                // startSimpleMessageListenerContainer(container);
-                break;
-            default:
-                throw new EnumConstantNotPresentException(AmqpCommunicationMode.class, pAmqpCommunicationMode.name());
+        for (String project : projects) {
+            // CHECKSTYLE:OFF
+            final SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(pEvt, project,
+                                                                                                      jackson2JsonMessageConverter,
+                                                                                                      pReceiver,
+                                                                                                      pAmqpCommunicationMode,
+                                                                                                      pAmqpCommunicationTarget);
+            // CHECKSTYLE:ON
+            startSimpleMessageListenerContainer(container);
         }
-    }
-
-    /**
-     * @param pEvt
-     *            event we want to listen to
-     * @param pProjects
-     *            list of all tenant to listen to
-     * @param pJackson2JsonMessageConverter
-     *            converter used to transcript messages
-     * @param pReceiver
-     *            handler provided by user to handle the event reception
-     * @return 1 container to listen to each queue of all vhost for pEvt
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
-     */
-    public SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(Class<?> pEvt,
-            List<String> pProjects, Jackson2JsonMessageConverter pJackson2JsonMessageConverter, IHandler<?> pReceiver)
-            throws RabbitMQVhostException {
-        final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        for (String project : pProjects) {
-            final CachingConnectionFactory connectionFactory = amqpConfiguration.createConnectionFactory(project);
-            amqpConfiguration.addVhost(project, connectionFactory);
-
-            final Exchange exchange = amqpConfiguration.declareExchange(pEvt.getName(),
-                                                                        AmqpCommunicationMode.ONE_TO_ONE, project);
-            final Queue queue = amqpConfiguration.declareQueue(pEvt, AmqpCommunicationMode.ONE_TO_ONE, project);
-            amqpConfiguration.declareBinding(queue, exchange, queue.getName(), AmqpCommunicationMode.ONE_TO_ONE,
-                                             project);
-
-            container.setConnectionFactory(connectionFactory);
-
-            final MessageListenerAdapter messageListener = new MessageListenerAdapter(pReceiver, "handle");
-            messageListener.setMessageConverter(pJackson2JsonMessageConverter);
-            container.setMessageListener(messageListener);
-            container.addQueues(queue);
-        }
-        return container;
     }
 
     /**
      *
+     * @param <T>
+     *            event type to which we subscribe
      * @param pEvt
      *            event we want to listen to
      * @param pProject
@@ -140,24 +99,31 @@ public class Subscriber {
      *            converter used to transcript messages
      * @param pReceiver
      *            handler provided by user to handle the event reception
+     * @param pAmqpCommunicationMode
+     *            communication Mode
+     * @param pAmqpCommunicationTarget
+     *            communication scope
      * @return a container fully parameterized to listen to the corresponding event for the specified tenant
+     *
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
-    public SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(Class<?> pEvt, String pProject,
-            Jackson2JsonMessageConverter pJackson2JsonMessageConverter, IHandler pReceiver)
+    public <T> SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(Class<T> pEvt, String pProject,
+            Jackson2JsonMessageConverter pJackson2JsonMessageConverter, IHandler<T> pReceiver,
+            AmqpCommunicationMode pAmqpCommunicationMode, AmqpCommunicationTarget pAmqpCommunicationTarget)
             throws RabbitMQVhostException {
         final CachingConnectionFactory connectionFactory = amqpConfiguration.createConnectionFactory(pProject);
         amqpConfiguration.addVhost(pProject, connectionFactory);
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        final Exchange exchange = amqpConfiguration.declareExchange(pEvt.getName(), AmqpCommunicationMode.ONE_TO_MANY,
-                                                                    pProject);
-        final Queue queue = amqpConfiguration.declareQueue(pEvt, AmqpCommunicationMode.ONE_TO_MANY, pProject);
-        amqpConfiguration.declareBinding(queue, exchange, queue.getName(), AmqpCommunicationMode.ONE_TO_MANY, pProject);
+        final Exchange exchange = amqpConfiguration.declareExchange(pEvt.getName(), pAmqpCommunicationMode, pProject,
+                                                                    pAmqpCommunicationTarget);
+        final Queue queue = amqpConfiguration.declareQueue(pEvt, pAmqpCommunicationMode, pProject,
+                                                           pAmqpCommunicationTarget);
+        amqpConfiguration.declareBinding(queue, exchange, pAmqpCommunicationMode, pProject);
 
         container.setConnectionFactory(connectionFactory);
 
-        final MessageListenerAdapter messageListener = new MessageListenerAdapter(pReceiver, "handle");
+        final MessageListenerAdapter messageListener = new MessageListenerAdapter(pReceiver, DEFAULT_HANDLING_METHOD);
         messageListener.setMessageConverter(pJackson2JsonMessageConverter);
         container.setMessageListener(messageListener);
         container.addQueues(queue);

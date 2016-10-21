@@ -9,6 +9,7 @@ import java.util.List;
  * @author svissier
  *
  */
+@FunctionalInterface
 public interface IProjectsProvider {
 
     public List<String> retrieveProjectList();
