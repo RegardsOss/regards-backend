@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.cloud.gateway.authentication.configuration;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -16,6 +18,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
@@ -118,8 +121,11 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 
     @Override
     public void configure(final AuthorizationServerEndpointsConfigurer pEndpoints) throws Exception {
+        final TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), accessTokenConverter()));
+
         pEndpoints.tokenStore(tokenStore()).authenticationManager(this.authenticationManager)
-                .accessTokenConverter(accessTokenConverter()).tokenEnhancer(tokenEnhancer());
+                .accessTokenConverter(accessTokenConverter()).tokenEnhancer(tokenEnhancerChain);
     }
 
     /**
