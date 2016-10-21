@@ -14,12 +14,12 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
-import fr.cnes.regards.plugins.utils.PluginUtilsWrapper;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 import fr.cnes.regards.plugins.utils.PluginUtilsTestConstants;
+import fr.cnes.regards.plugins.utils.PluginUtilsWrapper;
 
 /**
- * PluginInterfaceUtilsTest
+ * Unit testing of {@link PluginInterfaceUtils}.
  * 
  * @author cmertz
  *
@@ -36,14 +36,14 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      */
     @Test
     public void loadPluginsInterface() {
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
         // Get all the plugin interfaces
         final List<String> pluginInterfaces = PluginInterfaceUtils
                 .getInterfaces("fr.cnes.regards.plugins.utils.plugintypes");
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
         Assert.assertTrue(pluginInterfaces.size() > 0);
-        LOGGER.debug("Ending " + this.toString());
+        LOGGER.debug(ENDING + this.toString());
     }
 
     /**
@@ -52,7 +52,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     @Test
     public void getComplexPlugin() {
         final ComplexPlugin complexPlugin;
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
         /*
          * Set all parameters
          */
@@ -92,16 +92,16 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
             LOGGER.error(e.getMessage());
             Assert.fail();
         }
-        LOGGER.debug("Ending " + this.toString());
+        LOGGER.debug(ENDING + this.toString());
     }
 
     /**
      * @throws PluginUtilsException
-     * 
+     *             throw if an error occurs
      */
     @Test(expected = PluginUtilsException.class)
     public void incompatibleInterfaceError() throws PluginUtilsException {
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
         /*
          * Set all parameters
          */
@@ -117,11 +117,11 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * @throws PluginUtilsException
-     * 
+     *             throw if an error occurs
      */
     @Test(expected = PluginUtilsException.class)
     public void incompatibleParameterError() throws PluginUtilsException {
-        LOGGER.debug("Starting " + this.toString());
+        LOGGER.debug(STARTING + this.toString());
         /*
          * Set all parameters
          */

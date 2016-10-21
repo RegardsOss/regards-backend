@@ -8,10 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- *
- * Class PluginDaoTestConfig
- *
- * Configuration class for DAO tests.
+ * Configuration class for unit testing of plugin's DAO.
  *
  * @author cmertz
  */

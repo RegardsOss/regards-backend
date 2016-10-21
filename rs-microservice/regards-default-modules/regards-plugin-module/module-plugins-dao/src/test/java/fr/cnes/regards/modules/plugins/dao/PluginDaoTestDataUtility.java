@@ -10,7 +10,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 
 /***
- * {@link PluginConfiguration} unit testing domain persistence
+ * Constants and datas for unit testing of plugin's DAO.
  * 
  * @author cmertz
  *
@@ -115,13 +115,13 @@ public class PluginDaoTestDataUtility {
     public PluginParameter getPluginParameterWithPluginConfiguration() {
         return pluginParameter4;
     }
-    
+
     public void resetId() {
         getPluginConfigurationWithDynamicParameter().setId(null);
-        getPluginConfigurationWithDynamicParameter().getParameters().forEach(p->p.setId(null));
+        getPluginConfigurationWithDynamicParameter().getParameters().forEach(p -> p.setId(null));
         getPluginConfigurationWithParameters().setId(null);
-        getPluginConfigurationWithParameters().getParameters().forEach(p->p.setId(null));
-        PARAMETER2.getDynamicsValues().forEach(p->p.setId(null));
+        getPluginConfigurationWithParameters().getParameters().forEach(p -> p.setId(null));
+        PARAMETER2.getDynamicsValues().forEach(p -> p.setId(null));
     }
 
 }

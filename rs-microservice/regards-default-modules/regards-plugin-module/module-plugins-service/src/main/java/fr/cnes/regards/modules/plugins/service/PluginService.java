@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.modules.plugins.domain.IPluginType;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
@@ -58,7 +57,7 @@ public class PluginService implements IPluginService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
 
     /**
-     * Plugin Configuration JPA Repository
+     * {@link PluginConfiguration} JPA Repository
      */
     @Autowired
     private IPluginConfigurationRepository pluginConfRepository;
@@ -77,6 +76,20 @@ public class PluginService implements IPluginService {
      */
     public PluginService() throws PluginUtilsException {
         super();
+        this.loadPlugins();
+    }
+
+    /**
+     * A constructor with the {@link IPluginConfigurationRepository}.
+     * 
+     * @param pPluginConfigurationRepository
+     *            {@link PluginConfiguration} JPA repository
+     * @throws PluginUtilsException
+     *             throw if an error occurs
+     */
+    public PluginService(IPluginConfigurationRepository pPluginConfigurationRepository) throws PluginUtilsException {
+        super();
+        pluginConfRepository = pPluginConfigurationRepository;
         this.loadPlugins();
     }
 
@@ -108,11 +121,12 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public List<PluginMetaData> getPluginsByType(final IPluginType pType) {
+    public List<PluginMetaData> getPluginsByType(final Class<?> pInterfacePluginType) {
         final List<PluginMetaData> pluginAvailables = new ArrayList<>();
 
         plugins.forEach((pKey, pValue) -> {
-            if (pType == null || (pType != null && pType.getClass().isAssignableFrom(pValue.getPluginClass()))) {
+            if (pInterfacePluginType == null || (pInterfacePluginType != null
+                    && pInterfacePluginType.isAssignableFrom(pValue.getPluginClass()))) {
                 pluginAvailables.add(pValue);
             }
         });
@@ -150,7 +164,7 @@ public class PluginService implements IPluginService {
             message += ". The plugin configuration cannot be null.";
             throwError = true;
         }
-        if (!throwError && plugins.get(pPluginConfiguration.getPluginId()) == null) {
+        if (!throwError && pPluginConfiguration.getPluginId() == null) {
             message += ". The unique identifier of the plugin (attribute pluginId) is required.";
             throwError = true;
         }
@@ -195,10 +209,10 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public List<PluginConfiguration> getPluginConfigurationsByType(final IPluginType pType) {
+    public List<PluginConfiguration> getPluginConfigurationsByType(final Class<?> pInterfacePluginType) {
         final List<PluginConfiguration> configurations = new ArrayList<>();
 
-        final List<PluginMetaData> pluginImpls = getPluginsByType(pType);
+        final List<PluginMetaData> pluginImpls = getPluginsByType(pInterfacePluginType);
 
         pluginImpls.forEach(p -> configurations
                 .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(p.getPluginId())));
@@ -229,15 +243,15 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public <T> T getFirstPluginByType(final IPluginType pType, final Class<T> pReturnInterfaceType)
+    public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final Class<T> pReturnPluginType)
             throws PluginUtilsException {
 
         // Get plugins configuration for given type
-        final List<PluginConfiguration> confs = getPluginConfigurationsByType(pType);
+        final List<PluginConfiguration> confs = getPluginConfigurationsByType(pInterfacePluginType);
 
         if ((confs == null) || confs.isEmpty()) {
-            final String message = "No plugin configuration defined for the type " + START_ID_LOG + pType.getName()
-                    + END_ID_LOG + DOT_LOG;
+            final String message = "No plugin configuration defined for the type " + START_ID_LOG
+                    + pInterfacePluginType.getName() + END_ID_LOG + DOT_LOG;
             LOGGER.error(message);
             throw new PluginUtilsException(message);
         }
@@ -255,7 +269,7 @@ public class PluginService implements IPluginService {
         T resultPlugin = null;
 
         if (configuration != null) {
-            resultPlugin = getPlugin(configuration.getId(), pReturnInterfaceType);
+            resultPlugin = getPlugin(configuration.getId(), pReturnPluginType);
         }
 
         return resultPlugin;

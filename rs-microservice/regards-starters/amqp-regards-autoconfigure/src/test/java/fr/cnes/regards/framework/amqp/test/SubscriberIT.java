@@ -23,6 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import fr.cnes.regards.framework.amqp.Subscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
@@ -78,7 +79,7 @@ public class SubscriberIT {
      * bean to test
      */
     @Autowired
-    private Subscriber subscriberOneToMany;
+    private Subscriber subscriberOneToManyExternal;
 
     /**
      * message receiver
@@ -97,13 +98,18 @@ public class SubscriberIT {
     @Autowired
     private AmqpConfiguration amqpConfiguration;
 
+    /**
+     * initialization ran before each test case
+     */
     @Before
     public void init() {
         Assume.assumeTrue(amqpConfiguration.brokerRunning());
         receiverOneToMany = new TestReceiver();
 
         try {
-            subscriberOneToMany.subscribeTo(TestEvent.class, receiverOneToMany, AmqpCommunicationMode.ONE_TO_MANY);
+            subscriberOneToManyExternal.subscribeTo(TestEvent.class, receiverOneToMany,
+                                                    AmqpCommunicationMode.ONE_TO_MANY,
+                                                    AmqpCommunicationTarget.EXTERNAL);
 
         } catch (RabbitMQVhostException e) {
             LOGGER.error(e.getMessage(), e);
@@ -117,20 +123,27 @@ public class SubscriberIT {
     @Requirement("REGARDS_DSL_CMP_ARC_160")
     @Purpose("test the subscription to message broker")
     @Test
-    public void testSubscribeToOneToMany() {
+    public void testSubscribeToOneToManyExternal() {
         final TestEvent toSend = new TestEvent("test one to many");
         final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
         LOGGER.info(SENDED + sended);
         SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
-        rabbitTemplate.convertAndSend(TestEvent.class.getName(), TestEvent.class.getName(), sended, pMessage -> {
-            final MessageProperties propertiesWithPriority = pMessage.getMessageProperties();
-            propertiesWithPriority.setPriority(0);
-            return new Message(pMessage.getBody(), propertiesWithPriority);
-        });
+        // CHECKSTYLE:OFF
+        rabbitTemplate.convertAndSend(
+                                      amqpConfiguration.getExchangeName(TestEvent.class.getName(),
+                                                                        AmqpCommunicationTarget.EXTERNAL),
+                                      amqpConfiguration.getRoutingKey("", AmqpCommunicationMode.ONE_TO_MANY), sended,
+                                      pMessage -> {
+                                          final MessageProperties propertiesWithPriority = pMessage
+                                                  .getMessageProperties();
+                                          propertiesWithPriority.setPriority(0);
+                                          return new Message(pMessage.getBody(), propertiesWithPriority);
+                                      });
+        // CHECKSTYLE:ON
         SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
 
         try {
-            Thread.sleep(SLEEP_TIME);
+            Thread.sleep(SLEEP_TIME); // NOSONAR : passive test so we have to wait for the message to be sent
         } catch (InterruptedException e) {
             LOGGER.error(SLEEP_FAIL, e);
             Assert.fail(SLEEP_FAIL);
