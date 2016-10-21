@@ -30,7 +30,7 @@ public class ResourcesControllerTest {
     /**
      *
      */
-    private final ResourcesController controller = new ResourcesController(new DefaultMethodAuthorizationService());
+    private final SecurityResourcesController controller = new SecurityResourcesController(new DefaultMethodAuthorizationService());
 
     /**
      *

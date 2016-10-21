@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.security.domain.ResourceMapping;
  */
 @RestController
 @RequestMapping("/security")
-public class ResourcesController {
+public class SecurityResourcesController {
 
     /**
      * Authorization service
@@ -40,7 +40,7 @@ public class ResourcesController {
      *            MethodeAutorizationService autowired by spring
      * @since 1.0-SNAPSHOT
      */
-    public ResourcesController(final IMethodAuthorizationService pService) {
+    public SecurityResourcesController(final IMethodAuthorizationService pService) {
         service = pService;
     }
 
