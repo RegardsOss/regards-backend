@@ -13,11 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
@@ -37,7 +38,13 @@ public class Publisher {
      * configuration initializing required bean
      */
     @Autowired
-    private AmqpConfiguration amqpConfiguration;
+    private RegardsAmqpAdmin regardsAmqpAdmin;
+
+    /**
+     * bean assisting us to manipulate virtual host
+     */
+    @Autowired
+    private RabbitVirtualHostUtils rabbitVirtualHostUtils;
 
     /**
      * @param <T>
@@ -59,13 +66,13 @@ public class Publisher {
                 .getPrincipal().getTenant();
         final String evtName = pEvt.getClass().getName();
         // add the Vhost corresponding to this tenant
-        amqpConfiguration.addVhost(tenant);
-        final Exchange exchange = amqpConfiguration.declareExchange(evtName, pAmqpCommunicationMode, tenant,
+        rabbitVirtualHostUtils.addVhost(tenant);
+        final Exchange exchange = regardsAmqpAdmin.declareExchange(evtName, pAmqpCommunicationMode, tenant,
                                                                     pAmqpCommunicationTarget);
         if (pAmqpCommunicationMode.equals(AmqpCommunicationMode.ONE_TO_ONE)) {
-            final Queue queue = amqpConfiguration.declareQueue(pEvt.getClass(), AmqpCommunicationMode.ONE_TO_ONE,
+            final Queue queue = regardsAmqpAdmin.declareQueue(pEvt.getClass(), AmqpCommunicationMode.ONE_TO_ONE,
                                                                tenant, pAmqpCommunicationTarget);
-            amqpConfiguration.declareBinding(queue, exchange, pAmqpCommunicationMode, tenant);
+            regardsAmqpAdmin.declareBinding(queue, exchange, pAmqpCommunicationMode, tenant);
         }
         final TenantWrapper<T> messageSended = new TenantWrapper<>(pEvt, tenant);
         // bind the connection to the right vHost ie tenant to publish the message

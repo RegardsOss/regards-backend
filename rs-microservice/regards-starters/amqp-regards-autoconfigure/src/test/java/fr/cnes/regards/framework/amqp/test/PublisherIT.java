@@ -20,17 +20,19 @@ import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Profile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.amqp.Publisher;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -40,6 +42,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @author svissier
  *
  */
+@Profile("rabbit")
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AmqpTestsConfiguration.class })
 @SpringBootTest(classes = Application.class)
@@ -75,7 +78,7 @@ public class PublisherIT {
      * configuration
      */
     @Autowired
-    private AmqpConfiguration amqpConfiguration;
+    private RegardsAmqpAdmin amqpConfiguration;
 
     /**
      * bean used to generate and place JWT into the context
@@ -95,6 +98,9 @@ public class PublisherIT {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    @Autowired
+    private RabbitVirtualHostUtils rabbitVirtualHostUtils;
+
     /**
      * create and start a message listener to receive the published event
      *
@@ -103,9 +109,9 @@ public class PublisherIT {
      */
     @Before
     public void init() throws RabbitMQVhostException {
-        Assume.assumeTrue(amqpConfiguration.brokerRunning());
+        Assume.assumeTrue(rabbitVirtualHostUtils.brokerRunning());
         final CachingConnectionFactory connectionFactory = amqpConfiguration.createConnectionFactory(TENANT);
-        amqpConfiguration.addVhost(TENANT, connectionFactory);
+        rabbitVirtualHostUtils.addVhost(TENANT, connectionFactory);
     }
 
     /**
