@@ -1,13 +1,11 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.security.autoconfigure.endpoint;
-
-import java.util.Optional;
+package fr.cnes.regards.framework.security.domain;
 
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 
 /**
  *
@@ -31,7 +29,7 @@ public class ResourceMapping {
     /**
      * Full URL paths to the resource (class level + method level)
      */
-    private final Optional<String> fullPath;
+    private String fullPath = "/";
 
     /**
      * HTTP method
@@ -48,7 +46,7 @@ public class ResourceMapping {
      * @param pMethod
      *            the called HTTP method
      */
-    public ResourceMapping(ResourceAccess pResourceAccess, Optional<String> pFullPath, RequestMethod pMethod) {
+    public ResourceMapping(final ResourceAccess pResourceAccess, final String pFullPath, final RequestMethod pMethod) {
         resourceAccess = pResourceAccess;
         fullPath = pFullPath;
         method = pMethod;
@@ -62,7 +60,7 @@ public class ResourceMapping {
      * @param pMethod
      *            the called HTTP method
      */
-    public ResourceMapping(Optional<String> pFullPath, RequestMethod pMethod) {
+    public ResourceMapping(final String pFullPath, final RequestMethod pMethod) {
         this(null, pFullPath, pMethod);
     }
 
@@ -74,10 +72,7 @@ public class ResourceMapping {
     public String getResourceMappingId() {
         final StringBuffer identifier = new StringBuffer();
 
-        if (fullPath.isPresent()) {
-            identifier.append(fullPath.get());
-        }
-
+        identifier.append(fullPath);
         identifier.append(SEPARATOR);
         identifier.append(method.toString());
 
@@ -94,7 +89,7 @@ public class ResourceMapping {
     /**
      * @return the path
      */
-    public Optional<String> getFullPath() {
+    public String getFullPath() {
         return fullPath;
     }
 

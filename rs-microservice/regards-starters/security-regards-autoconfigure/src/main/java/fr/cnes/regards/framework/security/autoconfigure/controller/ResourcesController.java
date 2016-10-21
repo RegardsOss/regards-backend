@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.security.autoconfigure.endpoint.IMethodAuthorizationService;
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.ResourceMapping;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
 
 /**
  *
@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.security.autoconfigure.endpoint.ResourceMapping
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@RequestMapping("/")
+@RequestMapping("/security")
 public class ResourcesController {
 
     /**
