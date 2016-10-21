@@ -4,40 +4,33 @@ package fr.cnes.regards.modules.plugins.dao.stubs;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.context.annotation.Profile;
-
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 
 /***
- * {@link PluginParameter} Repository stub
+ * Constants and datas for unit testing of plugin's DAO.
  * 
  * @author cmertz
  *
  */
+public class PluginDataUtility {
 
-@Profile("test")
-public class PluginParameterRepositoryStub {
-
-    private PluginParameterRepositoryStub() {
-        super();
-    }
-
-    private static PluginParameterRepositoryStub INSTANCE = null;
-
-    public static PluginParameterRepositoryStub getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new PluginParameterRepositoryStub();
-        }
-        return INSTANCE;
-    }
+    /**
+     * Project used for test
+     */
+    static final String PROJECT = "test1";
 
     /**
      * Version
      */
     static final String VERSION = "12345-6789-11";
+
+    /**
+     * Role used for test
+     */
+    static final String USERROLE = "USERROLE";
 
     /**
      * RED constant {@link String}
@@ -53,6 +46,11 @@ public class PluginParameterRepositoryStub {
      * BLUE constant {@link String}
      */
     static final String BLUE = "blue";
+
+    /**
+     * BLUE constant {@link String}
+     */
+    static final String INVALID_JWT = "Invalid JWT";
 
     /**
      * A {@link PluginParameter}
@@ -95,7 +93,7 @@ public class PluginParameterRepositoryStub {
      */
     private PluginParameter pluginParameter4 = new PluginParameter("param41", getPluginConfigurationWithParameters());
 
-    public PluginMetaData getPluginMetaData() {
+    PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setClass(Integer.class);
         pluginMetaData.setPluginId("plugin-id");
