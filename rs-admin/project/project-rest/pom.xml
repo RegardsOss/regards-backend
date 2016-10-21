@@ -14,6 +14,11 @@
 	</parent>
 
 	<dependencies>
+		<!-- REGARDS Framework -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-service</artifactId>

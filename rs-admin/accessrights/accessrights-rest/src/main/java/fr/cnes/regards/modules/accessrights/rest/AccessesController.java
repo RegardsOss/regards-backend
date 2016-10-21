@@ -10,14 +10,13 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -49,7 +48,7 @@ public class AccessesController extends Controller implements IAccessesSignature
 
     @Override
     @ResourceAccess(description = "retrieve the list of access request", name = "")
-    public HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
+    public ResponseEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
         final List<ProjectUser> projectUsers = accessRequestService.retrieveAccessRequestList();
         final List<Resource<ProjectUser>> resources = projectUsers.stream().map(p -> new Resource<>(p))
                 .collect(Collectors.toList());
@@ -58,7 +57,7 @@ public class AccessesController extends Controller implements IAccessesSignature
 
     @Override
     @ResourceAccess(description = "create a new access request", name = "")
-    public HttpEntity<Resource<AccessRequestDTO>> requestAccess(
+    public ResponseEntity<Resource<AccessRequestDTO>> requestAccess(
             @Valid @RequestBody final AccessRequestDTO pAccessRequest)
             throws AlreadyExistingException, InvalidEntityException {
         final AccessRequestDTO created = accessRequestService.requestAccess(pAccessRequest);
@@ -68,7 +67,7 @@ public class AccessesController extends Controller implements IAccessesSignature
 
     @Override
     @ResourceAccess(description = "accept the access request", name = "")
-    public HttpEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long pAccessId)
+    public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityNotFoundException {
         accessRequestService.acceptAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -76,7 +75,7 @@ public class AccessesController extends Controller implements IAccessesSignature
 
     @Override
     @ResourceAccess(description = "deny the access request", name = "")
-    public HttpEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long pAccessId)
+    public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityNotFoundException {
         accessRequestService.denyAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -84,7 +83,7 @@ public class AccessesController extends Controller implements IAccessesSignature
 
     @Override
     @ResourceAccess(description = "remove the access request", name = "")
-    public HttpEntity<Void> removeAccessRequest(@PathVariable("access_id") final Long pAccessId)
+    public ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityNotFoundException {
         accessRequestService.removeAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -92,7 +91,7 @@ public class AccessesController extends Controller implements IAccessesSignature
 
     @Override
     @ResourceAccess(description = "retrieve the settings managing the access requests", name = "")
-    public HttpEntity<Resource<AccessSettings>> getAccessSettings() {
+    public ResponseEntity<Resource<AccessSettings>> getAccessSettings() {
         final AccessSettings accessSettings = accessSettingsService.retrieve();
         final Resource<AccessSettings> resource = new Resource<>(accessSettings);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -100,7 +99,7 @@ public class AccessesController extends Controller implements IAccessesSignature
 
     @Override
     @ResourceAccess(description = "update the setting managing the access requests", name = "")
-    public HttpEntity<Void> updateAccessSettings(@Valid @RequestBody final AccessSettings pAccessSettings)
+    public ResponseEntity<Void> updateAccessSettings(@Valid @RequestBody final AccessSettings pAccessSettings)
             throws EntityNotFoundException {
         accessSettingsService.update(pAccessSettings);
         return new ResponseEntity<>(HttpStatus.OK);

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
@@ -112,6 +112,8 @@ public class ProjectsController extends Controller implements IProjectsSignature
     }
 
     @Override
+    @ResourceAccess(
+            description = "retrieve a project connection associated to a given project and a given microservice")
     public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
             @PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroService) throws EntityNotFoundException {
@@ -130,6 +132,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
     }
 
     @Override
+    @ResourceAccess(description = "create a new project connection")
     public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
             @Valid @RequestBody final ProjectConnection pProjectConnection) throws EntityException {
         final ProjectConnection pConn = projectService.createProjectConnection(pProjectConnection);
@@ -139,6 +142,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
     }
 
     @Override
+    @ResourceAccess(description = "update a project connection")
     public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
             @Valid @RequestBody final ProjectConnection pProjectConnection) throws EntityException {
         final ProjectConnection pConn = projectService.updateProjectConnection(pProjectConnection);
@@ -148,6 +152,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
     }
 
     @Override
+    @ResourceAccess(description = "delete a project connection")
     public ResponseEntity<Void> deleteProjectConnection(@PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroservice) throws EntityException {
 

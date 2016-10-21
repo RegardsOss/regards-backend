@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -38,6 +40,7 @@ public class ResourcesAccess implements Identifiable<Long> {
 
     @NotNull
     @Column(name = "verb")
+    @Enumerated(EnumType.STRING)
     private HttpVerb verb;
 
     public ResourcesAccess() {
@@ -54,6 +57,15 @@ public class ResourcesAccess implements Identifiable<Long> {
             final String pResource, final HttpVerb pVerb) {
         super();
         id = pResourcesAccessId;
+        description = pDescription;
+        microservice = pMicroservice;
+        resource = pResource;
+        verb = pVerb;
+    }
+
+    public ResourcesAccess(final String pDescription, final String pMicroservice, final String pResource,
+            final HttpVerb pVerb) {
+        super();
         description = pDescription;
         microservice = pMicroservice;
         resource = pResource;

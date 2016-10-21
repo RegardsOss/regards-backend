@@ -26,4 +26,11 @@ public class ResourcesAccessRepositoryStub extends RepositoryStub<ResourcesAcces
         entities.add(new ResourcesAccess(3L, "ResourceAccess 3", "Microservice 3", "Resource 3", HttpVerb.GET));
     }
 
+    @Override
+    public ResourcesAccess findOneByMicroserviceAndResourceAndVerb(final String pMicroservice,
+            final String pResourceFullPath, final HttpVerb pVerb) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

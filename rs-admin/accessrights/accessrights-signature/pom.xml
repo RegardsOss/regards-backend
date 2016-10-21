@@ -13,6 +13,11 @@
 	</parent>
 
 	<dependencies>
+		<!-- REGARDS Framework -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards</artifactId>
+		</dependency>
 		<!-- Microservice internal dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
