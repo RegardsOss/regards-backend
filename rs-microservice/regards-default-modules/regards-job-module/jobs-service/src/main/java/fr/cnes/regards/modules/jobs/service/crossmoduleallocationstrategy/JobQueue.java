@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy;
 
-import fr.cnes.regards.modules.jobs.service.manager.IEvent;
+import fr.cnes.regards.modules.jobs.domain.IEvent;
 
 public class JobQueue implements IJobQueue {
 

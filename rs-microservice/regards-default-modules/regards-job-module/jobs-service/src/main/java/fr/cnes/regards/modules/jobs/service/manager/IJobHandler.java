@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.jobs.service.manager;
 
+import fr.cnes.regards.modules.jobs.domain.IEvent;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.StatusInfo;
 
@@ -16,20 +17,34 @@ public interface IJobHandler {
      */
     StatusInfo create(JobInfo job);
 
-    StatusInfo delete(JobInfo job);
-
-    /**
-     * @param pJobId
-     * @return
-     */
-    StatusInfo execute(Long pJobId);
-
     JobInfo getJob(Long jobId);
 
-    StatusInfo handle(JobInfo job);
+    /**
+     * @return
+     */
+    StatusInfo shutdown();
 
-    StatusInfo restart(JobInfo job);
+    /**
+     * @param pJob
+     * @return
+     */
+    StatusInfo abort(JobInfo pJob);
 
-    StatusInfo stop(Long jobId);
+    /**
+     * @param pTenantName
+     * @param pJobInfoId
+     * @return
+     */
+    StatusInfo execute(String pTenantName, Long pJobInfoId);
+
+    /**
+     * @return
+     */
+    StatusInfo shutdownNow();
+
+    /**
+     * @param pEvent
+     */
+    void onEvent(IEvent pEvent);
 
 }

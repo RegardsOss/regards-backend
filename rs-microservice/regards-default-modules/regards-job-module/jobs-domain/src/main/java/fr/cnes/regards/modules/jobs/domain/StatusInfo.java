@@ -68,9 +68,9 @@ public class StatusInfo {
      * @param pStatus
      * @param pStopDate
      */
-    public StatusInfo(String pDescription, LocalDateTime pEstimatedCompletion, LocalDateTime pExpirationDate,
-            LocalDateTime pNextPoll, int pPercentCompleted, LocalDateTime pStartDate, JobStatus pStatus,
-            LocalDateTime pStopDate) {
+    public StatusInfo(final String pDescription, final LocalDateTime pEstimatedCompletion,
+            final LocalDateTime pExpirationDate, final LocalDateTime pNextPoll, final int pPercentCompleted,
+            final LocalDateTime pStartDate, final JobStatus pStatus, final LocalDateTime pStopDate) {
         super();
         description = pDescription;
         estimatedCompletion = pEstimatedCompletion;
@@ -86,7 +86,7 @@ public class StatusInfo {
         return description;
     }
 
-    public void setDescription(String pDescription) {
+    public void setDescription(final String pDescription) {
         description = pDescription;
     }
 
@@ -94,7 +94,7 @@ public class StatusInfo {
         return estimatedCompletion;
     }
 
-    public void setEstimatedCompletion(LocalDateTime pEstimatedCompletion) {
+    public void setEstimatedCompletion(final LocalDateTime pEstimatedCompletion) {
         estimatedCompletion = pEstimatedCompletion;
     }
 
@@ -102,7 +102,7 @@ public class StatusInfo {
         return expirationDate;
     }
 
-    public void setExpirationDate(LocalDateTime pExpirationDate) {
+    public void setExpirationDate(final LocalDateTime pExpirationDate) {
         expirationDate = pExpirationDate;
     }
 
@@ -112,7 +112,7 @@ public class StatusInfo {
     }
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public void setNextPoll(LocalDateTime pNextPoll) {
+    public void setNextPoll(final LocalDateTime pNextPoll) {
         nextPoll = pNextPoll;
     }
 
@@ -120,7 +120,7 @@ public class StatusInfo {
         return percentCompleted;
     }
 
-    public void setPercentCompleted(int pPercentCompleted) {
+    public void setPercentCompleted(final int pPercentCompleted) {
         percentCompleted = pPercentCompleted;
     }
 
@@ -130,15 +130,15 @@ public class StatusInfo {
     }
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public void setStartDate(LocalDateTime pStartDate) {
+    public void setStartDate(final LocalDateTime pStartDate) {
         startDate = pStartDate;
     }
 
-    public JobStatus getStatus() {
+    public JobStatus getJobStatus() {
         return status;
     }
 
-    public void setStatus(JobStatus pStatus) {
+    public void setJobStatus(final JobStatus pStatus) {
         status = pStatus;
     }
 
@@ -148,7 +148,7 @@ public class StatusInfo {
     }
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public void setStopDate(LocalDateTime pStopDate) {
+    public void setStopDate(final LocalDateTime pStopDate) {
         stopDate = pStopDate;
     }
 }
