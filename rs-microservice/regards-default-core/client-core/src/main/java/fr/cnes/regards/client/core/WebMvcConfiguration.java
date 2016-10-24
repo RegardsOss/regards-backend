@@ -9,9 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration.EnableWebMvcConfiguration;
 import org.springframework.boot.autoconfigure.web.WebMvcProperties;
 import org.springframework.boot.autoconfigure.web.WebMvcRegistrations;
-import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
@@ -35,13 +33,6 @@ public class WebMvcConfiguration extends EnableWebMvcConfiguration {
 
     @Override
     protected RequestMappingHandlerMapping createRequestMappingHandlerMapping() {
-        return new RequestMappingHandlerMapping() {
-
-            @Override
-            protected boolean isHandler(final Class<?> beanType) {
-                return super.isHandler(beanType)
-                        && (AnnotationUtils.findAnnotation(beanType, FeignClient.class) == null);
-            }
-        };
+        return new CustomRequestMappingHandler();
     }
 }

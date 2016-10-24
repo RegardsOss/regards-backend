@@ -106,7 +106,7 @@ public class DataSourcesConfiguration {
         final Map<String, DataSource> datasources = new HashMap<>();
 
         for (final TenantConnection tenant : pTenants) {
-            if ((tenant != null) && !datasources.containsKey(tenant.getName())) {
+            if (!datasources.containsKey(tenant.getName())) {
                 if (daoProperties.getEmbedded()) {
                     datasources.put(tenant.getName(), DataSourceHelper
                             .createEmbeddedDataSource(tenant.getName(), daoProperties.getEmbeddedPath()));
