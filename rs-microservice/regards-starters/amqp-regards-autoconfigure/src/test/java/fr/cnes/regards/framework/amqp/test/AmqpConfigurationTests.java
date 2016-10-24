@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 
 /**
  * @author svissier
@@ -85,7 +85,7 @@ public class AmqpConfigurationTests {
     private Integer amqpManagementPort;
 
     @Autowired
-    private RabbitVirtualHostUtils rabbitVirtualHostUtils;
+    private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
 
     /**
      * Test setBasic method

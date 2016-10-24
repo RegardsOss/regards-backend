@@ -7,41 +7,35 @@ import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 
 /**
  *
  * @author svissier
  *
  */
-@Component
 public class Poller {
 
     /**
      * bean provided by spring to receive message from broker
      */
-    @Autowired
     private RabbitTemplate rabbitTemplate;
 
     /**
      * bean assisting us to declare elements
      */
-    @Autowired
     private RegardsAmqpAdmin regardsAmqpAdmin;
 
     /**
      * bean assisting us to manipulate virtual hosts
      */
-    @Autowired
-    private RabbitVirtualHostUtils rabbitVirtualHostUtils;
+    private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
 
     /**
      *

@@ -12,8 +12,6 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
@@ -21,13 +19,12 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.provider.IProjectsProvider;
-import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 
 /**
  * @author svissier
  *
  */
-@Component
 public class Subscriber {
 
     /**
@@ -38,26 +35,30 @@ public class Subscriber {
     /**
      * configuration allowing us to declare virtual host using http api and get a unique name for the instance
      */
-    @Autowired
-    private RegardsAmqpAdmin regardsAmqpAdmin;
+    private final RegardsAmqpAdmin regardsAmqpAdmin;
 
     /**
      * bean assisting us to manipulate virtual hosts
      */
-    @Autowired
-    private RabbitVirtualHostUtils rabbitVirtualHostUtils;
+    private final IRabbitVirtualHostUtils rabbitVirtualHostUtils;
 
     /**
      * bean handling the conversion using {@link com.fasterxml.jackson} 2
      */
-    @Autowired
-    private Jackson2JsonMessageConverter jackson2JsonMessageConverter;
+    private final Jackson2JsonMessageConverter jackson2JsonMessageConverter;
 
     /**
      * provider of projects allowing us to listen to any necessary RabbitMQ Vhost
      */
-    @Autowired
     private IProjectsProvider projectsProvider;
+
+    public Subscriber(RegardsAmqpAdmin pRegardsAmqpAdmin, IRabbitVirtualHostUtils pRabbitVirtualHostUtils,
+            Jackson2JsonMessageConverter pJackson2JsonMessageConverter) {
+        super();
+        regardsAmqpAdmin = pRegardsAmqpAdmin;
+        rabbitVirtualHostUtils = pRabbitVirtualHostUtils;
+        jackson2JsonMessageConverter = pJackson2JsonMessageConverter;
+    }
 
     /**
      *

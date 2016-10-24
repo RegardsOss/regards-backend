@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
  *
  */
 @Configuration
+// @AutoConfigureAfter(MultitenantA)
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties(AmqpProperties.class)
 public class AmqpAutoConfiguration {
@@ -69,12 +70,12 @@ public class AmqpAutoConfiguration {
 
     @Bean
     public Publisher publisher() {
-        return new Publisher();
+        return new Publisher(rabbitTemplate(), regardsAmqpAdmin(), rabbitVirtualHostUtils());
     }
 
     @Bean
     public Subscriber subscriber() {
-        return new Subscriber();
+        return new Subscriber(regardsAmqpAdmin(), rabbitVirtualHostUtils(), jackson2JsonMessageConverter());
     }
 
     @Bean

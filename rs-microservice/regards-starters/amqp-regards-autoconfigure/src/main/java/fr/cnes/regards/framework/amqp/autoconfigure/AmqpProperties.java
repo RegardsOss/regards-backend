@@ -14,11 +14,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties
 public class AmqpProperties {
 
-    private SpringRabbitMQProperties springRabbitMQProperties;
+    private final SpringRabbitMQProperties springRabbitMQProperties;
 
-    private AmqpMicroserviceProperties amqpMicroserviceProperties;
+    private final AmqpMicroserviceProperties amqpMicroserviceProperties;
 
-    private AmqpManagmentProperties amqpManagmentProperties;
+    private final AmqpManagmentProperties amqpManagmentProperties;
+
+    public AmqpProperties() {
+        springRabbitMQProperties = new SpringRabbitMQProperties();
+        amqpManagmentProperties = new AmqpManagmentProperties();
+        amqpMicroserviceProperties = new AmqpMicroserviceProperties();
+    }
 
     public String getRabbitmqPassword() {
         return springRabbitMQProperties.getRabbitmqPassword();

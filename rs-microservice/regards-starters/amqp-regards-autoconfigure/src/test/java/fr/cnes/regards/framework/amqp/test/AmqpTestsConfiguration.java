@@ -5,7 +5,6 @@ package fr.cnes.regards.framework.amqp.test;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 
 /**
@@ -16,6 +15,5 @@ import org.springframework.context.annotation.PropertySource;
 @ComponentScan(basePackages = { "fr.cnes.regards..framework.security.utils", "fr.cnes.regards.framework.amqp",
         "fr.cnes.regards.modules.project" })
 @PropertySource("classpath:application.properties")
-@Profile("rabbit")
 public class AmqpTestsConfiguration {
 }
