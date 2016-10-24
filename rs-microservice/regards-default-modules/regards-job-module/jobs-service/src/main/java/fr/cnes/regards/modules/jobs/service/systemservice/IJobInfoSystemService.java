@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.jobs.service.systemservice;
 
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.modules.jobs.domain.JobStatus;
 
 /**
  *
@@ -23,4 +24,13 @@ public interface IJobInfoSystemService {
      */
     JobInfo updateJobInfo(String pTenantId, JobInfo pJobInfo);
 
+    /**
+     * Setup the end date
+     *
+     * @param pJobInfoId
+     *            the jobInfo id
+     * @param pJobStatus
+     *            the new jobStatus
+     */
+    JobInfo updateJobInfoToDone(final Long pJobInfoId, final JobStatus pJobStatus, final String tenantName);
 }

@@ -3,15 +3,10 @@
  */
 package fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy;
 
-import fr.cnes.regards.modules.jobs.domain.IEvent;
-
+/**
+ * The JobAllocationStrategy plugin returns JobQueue to allocate a number of slot per tenant
+ */
 public interface IJobQueue {
-
-    public IEvent get();
-
-    public void publish(IEvent pEvent);
-
-    public void subscribe(IEvent pEvent);
 
     public String getName();
 

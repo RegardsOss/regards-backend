@@ -16,6 +16,9 @@ import fr.cnes.regards.modules.jobs.domain.IEvent;
  */
 public class JobMonitor implements Runnable {
 
+    /**
+     * Logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(JobMonitor.class);
 
     /**

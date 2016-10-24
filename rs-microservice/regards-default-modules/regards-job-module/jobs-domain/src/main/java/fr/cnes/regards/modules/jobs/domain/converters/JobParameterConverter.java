@@ -28,7 +28,7 @@ public class JobParameterConverter implements AttributeConverter<JobParameters, 
         mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
         String json = "";
         try {
-            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(pAttribute.getMap());
+            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(pAttribute.getParameters());
         } catch (Exception e) {
             LOG.error("Failed to convert JobParameter POJO to string", e);
         }

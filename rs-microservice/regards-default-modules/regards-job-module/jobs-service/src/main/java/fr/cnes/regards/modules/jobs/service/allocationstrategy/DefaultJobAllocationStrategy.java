@@ -27,11 +27,11 @@ public class DefaultJobAllocationStrategy implements IJobAllocationStrategy {
      */
     @Override
     public JobAllocationStrategyResponse getNextQueue(final List<Project> pProjects,
-            final List<IJobQueue> pPreviousQueueList, final int maxThread) {
-        List<IJobQueue> nextQueueList;
+            final List<IJobQueue> pPreviousQueueList, final int pMaxThread) {
+        final List<IJobQueue> nextQueueList;
         // Recreate the queueList on initialization / on projectList change
         if ((pPreviousQueueList == null) || (pProjects.size() != pPreviousQueueList.size())) {
-            nextQueueList = initializeQueueList(pProjects, pPreviousQueueList, maxThread);
+            nextQueueList = initializeQueueList(pProjects, pPreviousQueueList, pMaxThread);
         } else {
             nextQueueList = pPreviousQueueList;
         }
@@ -74,21 +74,34 @@ public class DefaultJobAllocationStrategy implements IJobAllocationStrategy {
         final int nbJobsPerProject = ((Double) Math.ceil(((double) pMaxThread) / ((double) pProjects.size())))
                 .intValue();
         for (int i = 0; i < pProjects.size(); i++) {
-            int projectNbJobs = 0;
+
             // If the previous queue list contained the project, then reuses the number of current jobs for that queue
             final String projectName = pProjects.get(i).getName();
-            if (pPreviousQueueList != null) {
-
-                for (int j = 0; j < pPreviousQueueList.size(); j++) {
-                    if (pPreviousQueueList.get(j).getName().equals(projectName)) {
-                        projectNbJobs = pPreviousQueueList.get(j).getCurrentSize();
-                        break;
-                    }
-                }
-            }
+            final int projectNbJobs = getProjectNbJobs(pPreviousQueueList, projectName);
             queueList.add(new JobQueue(projectName, projectNbJobs, nbJobsPerProject));
         }
         return queueList;
 
+    }
+
+    /**
+     * @param pPreviousQueueList
+     *            the previous list of
+     * @param pProjectName
+     *            the project/tenant name
+     * @return the number of jobs for this project
+     */
+    private int getProjectNbJobs(final List<IJobQueue> pPreviousQueueList, final String pProjectName) {
+        int projectNbJobs = 0;
+        if (pPreviousQueueList != null) {
+
+            for (int j = 0; j < pPreviousQueueList.size(); j++) {
+                if (pPreviousQueueList.get(j).getName().equals(pProjectName)) {
+                    projectNbJobs = pPreviousQueueList.get(j).getCurrentSize();
+                    break;
+                }
+            }
+        }
+        return projectNbJobs;
     }
 }

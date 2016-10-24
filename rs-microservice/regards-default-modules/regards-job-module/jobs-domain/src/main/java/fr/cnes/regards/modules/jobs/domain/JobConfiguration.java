@@ -90,21 +90,30 @@ public class JobConfiguration {
         startDate = LocalDateTime.now();
         stopDate = null;
         percentCompleted = 0;
-        status = JobStatus.PENDING;
+        status = JobStatus.QUEUED;
     }
 
     /**
      * @param pDescription
-     * @param pEstimatedCompletion
-     * @param pExpirationDate
-     * @param pPriority
-     * @param pWorkspace
+     *            Job description
      * @param pParameters
+     *            job parameters
+     * @param pClassName
+     *            the job class to execute
+     * @param pEstimatedCompletion
+     *            estimated date to job completion
+     * @param pExpirationDate
+     *            specify the date when the job should be expired
+     * @param pPriority
+     *            the job priority
+     * @param pWorkspace
+     *            the job workspace
      * @param pOwner
+     *            job owner
      */
-    public JobConfiguration(String pDescription, JobParameters pParameters, String pClassName,
-            LocalDateTime pEstimatedCompletion, LocalDateTime pExpirationDate, int pPriority, Path pWorkspace,
-            String pOwner) {
+    public JobConfiguration(final String pDescription, final JobParameters pParameters, final String pClassName,
+            final LocalDateTime pEstimatedCompletion, final LocalDateTime pExpirationDate, final int pPriority,
+            final Path pWorkspace, final String pOwner) {
         this();
         statusInfo = new StatusInfo();
         statusInfo.setDescription(pDescription);
@@ -132,26 +141,23 @@ public class JobConfiguration {
     }
 
     /**
-     * @return
+     * @return the owner
      */
     public String getOwner() {
-        // TODO Auto-generated method stub
         return owner;
     }
 
     /**
-     * @return
+     * @return the workspace
      */
     public Path getWorkspace() {
-        // TODO Auto-generated method stub
         return workspace;
     }
 
     /**
-     * @return
+     * @return the priority
      */
     public int getPriority() {
-        // TODO Auto-generated method stub
         return priority;
     }
 
@@ -159,7 +165,7 @@ public class JobConfiguration {
      * @param pDescription
      *            the description to set
      */
-    public void setDescription(String pDescription) {
+    public void setDescription(final String pDescription) {
         description = pDescription;
     }
 
@@ -167,7 +173,7 @@ public class JobConfiguration {
      * @param pEstimatedCompletion
      *            the estimatedCompletion to set
      */
-    public void setEstimatedCompletion(LocalDateTime pEstimatedCompletion) {
+    public void setEstimatedCompletion(final LocalDateTime pEstimatedCompletion) {
         estimatedCompletion = pEstimatedCompletion;
     }
 
@@ -175,7 +181,7 @@ public class JobConfiguration {
      * @param pExpirationDate
      *            the expirationDate to set
      */
-    public void setExpirationDate(LocalDateTime pExpirationDate) {
+    public void setExpirationDate(final LocalDateTime pExpirationDate) {
         expirationDate = pExpirationDate;
     }
 
@@ -183,7 +189,7 @@ public class JobConfiguration {
      * @param pNextPoll
      *            the nextPoll to set
      */
-    public void setNextPoll(LocalDateTime pNextPoll) {
+    public void setNextPoll(final LocalDateTime pNextPoll) {
         nextPoll = pNextPoll;
     }
 
@@ -191,7 +197,7 @@ public class JobConfiguration {
      * @param pPercentCompleted
      *            the percentCompleted to set
      */
-    public void setPercentCompleted(int pPercentCompleted) {
+    public void setPercentCompleted(final int pPercentCompleted) {
         percentCompleted = pPercentCompleted;
     }
 
@@ -199,7 +205,7 @@ public class JobConfiguration {
      * @param pStartDate
      *            the startDate to set
      */
-    public void setStartDate(LocalDateTime pStartDate) {
+    public void setStartDate(final LocalDateTime pStartDate) {
         startDate = pStartDate;
     }
 
@@ -207,7 +213,7 @@ public class JobConfiguration {
      * @param pStatus
      *            the status to set
      */
-    public void setStatus(JobStatus pStatus) {
+    public void setStatus(final JobStatus pStatus) {
         status = pStatus;
     }
 
@@ -215,12 +221,12 @@ public class JobConfiguration {
      * @param pStopDate
      *            the stopDate to set
      */
-    public void setStopDate(LocalDateTime pStopDate) {
+    public void setStopDate(final LocalDateTime pStopDate) {
         stopDate = pStopDate;
     }
 
     /**
-     * @return
+     * @return the job class to execute
      */
     public String getClassName() {
         return className;

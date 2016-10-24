@@ -11,7 +11,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
-import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -20,67 +19,69 @@ import fr.cnes.regards.modules.core.deserializer.LocalDateTimeDeserializer;
 import fr.cnes.regards.modules.core.serializer.LocalDateTimeSerializer;
 import fr.cnes.regards.modules.core.validation.PastOrNow;
 
+/**
+ * Store job status
+ */
 @Entity(name = "T_JOB_STATUS_INFO")
 @SequenceGenerator(name = "statusInfoSequence", initialValue = 1, sequenceName = "SEQ_JOB_STATUS_INFO")
 public class StatusInfo {
 
-    @NotNull
+    /**
+     * Job StatusInfo id
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "statusInfoSequence")
     @Column(name = "id")
     private Long id;
 
+    /**
+     * Job StatusInfo description
+     */
     @Column(name = "description")
     private String description;
 
+    /**
+     * Job StatusInfo estimated date to job completion
+     */
     @Column(name = "estimatedCompletion")
     private LocalDateTime estimatedCompletion;
 
+    /**
+     * Job StatusInfo specify the date when the job should be expired
+     */
     @Column(name = "expirationDate")
     private LocalDateTime expirationDate;
 
+    /**
+     * TODO
+     */
     @Column(name = "nextPoll")
     private LocalDateTime nextPoll;
 
+    /**
+     * the job advancement
+     */
     @Column(name = "percentCompleted")
     private int percentCompleted;
 
+    /**
+     * the job creation date
+     */
     @PastOrNow
     @Column(name = "startDate")
     private LocalDateTime startDate;
 
+    /**
+     * the job status
+     */
     @Column(name = "status")
     private JobStatus status;
 
+    /**
+     * the job end date
+     */
     @Column(name = "stopDate")
     private LocalDateTime stopDate;
-
-    public StatusInfo() {
-    }
-
-    /**
-     * @param pDescription
-     * @param pEstimatedCompletion
-     * @param pExpirationDate
-     * @param pNextPoll
-     * @param pPercentCompleted
-     * @param pStartDate
-     * @param pStatus
-     * @param pStopDate
-     */
-    public StatusInfo(final String pDescription, final LocalDateTime pEstimatedCompletion,
-            final LocalDateTime pExpirationDate, final LocalDateTime pNextPoll, final int pPercentCompleted,
-            final LocalDateTime pStartDate, final JobStatus pStatus, final LocalDateTime pStopDate) {
-        super();
-        description = pDescription;
-        estimatedCompletion = pEstimatedCompletion;
-        expirationDate = pExpirationDate;
-        nextPoll = pNextPoll;
-        percentCompleted = pPercentCompleted;
-        startDate = pStartDate;
-        status = pStatus;
-        stopDate = pStopDate;
-    }
 
     public String getDescription() {
         return description;

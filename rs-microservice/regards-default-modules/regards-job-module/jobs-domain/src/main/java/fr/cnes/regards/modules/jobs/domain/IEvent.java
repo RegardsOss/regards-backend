@@ -8,12 +8,12 @@ public interface IEvent {
     public Object getData();
 
     /**
-     * @return
+     * @return the event type
      */
     EventType getType();
 
     /**
-     * @return
+     * @return the jobInfo id
      */
     Long getJobInfoId();
 }

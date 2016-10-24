@@ -5,17 +5,26 @@ package fr.cnes.regards.modules.jobs.domain;
 
 import java.net.URI;
 
+/**
+ * Job output
+ */
 public class Output {
 
+    /**
+     * Job mimetype
+     */
     private char mimeType;
 
+    /**
+     * Job path
+     */
     private URI data;
 
     public char getMimeType() {
         return mimeType;
     }
 
-    public void setMimeType(char pMimeType) {
+    public void setMimeType(final char pMimeType) {
         mimeType = pMimeType;
     }
 
@@ -23,7 +32,7 @@ public class Output {
         return data;
     }
 
-    public void setData(URI pData) {
+    public void setData(final URI pData) {
         data = pData;
     }
 }

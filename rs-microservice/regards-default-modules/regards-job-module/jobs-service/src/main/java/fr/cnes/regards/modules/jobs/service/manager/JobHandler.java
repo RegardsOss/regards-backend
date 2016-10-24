@@ -26,17 +26,32 @@ import fr.cnes.regards.modules.jobs.domain.StatusInfo;
 import fr.cnes.regards.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.modules.jobs.service.systemservice.IJobInfoSystemService;
 
+/**
+ * Service to manipulate Job and JobInfo Contains a threadPool to manage the lifecycle of our jobs
+ */
 @Component
 public class JobHandler implements IJobHandler {
 
     /**
+     * logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(JobHandler.class);
+
+    /**
      *
+     */
+    private final IJobInfoService jobInfoService;
+
+    private final IJobInfoSystemService jobInfoSystemService;
+
+    /**
+     * Store the small delay accepted to let jobs stop by themself while shuting down instantly
      */
     @Value("${regards.microservice.job.shutdownNowInSeconds}")
     private Integer timeoutShutdownNowInSeconds;
 
     /**
-     *
+     * Store the delay while jobs can stop by themself while shuting down the threadpool
      */
     @Value("${regards.microservice.job.shutdownInHours}")
     private Integer timeoutShutdownInHours;
@@ -47,29 +62,36 @@ public class JobHandler implements IJobHandler {
     @Value("${regards.microservice.job.max}")
     private Integer maxJobCapacity;
 
-    private static final Logger LOG = LoggerFactory.getLogger(JobHandler.class);
-
+    /**
+     * Excecutor service and helpers
+     */
     private ExecutorService executorService;
 
+    /**
+     * Spring thread pool executor
+     */
     private ThreadPoolExecutorFactoryBean threadPoolExecutorFactoryBean;
 
     /**
-     * Key: jobInfoId, Tuple.x: Tenant name, Tuple.y: Thread instance
+     * Key: jobInfoId, CoupleThreadTenantName(Tenant name, Thread instance)
      */
     private final Map<Long, CoupleThreadTenantName> threads;
 
-    private final IJobInfoService jobInfoService;
-
-    private final IJobInfoSystemService jobInfoSystemService;
-
-    private JobMonitor jobMonitor;
+    /**
+     * Monitor jobs, allows them to send event to JobHandler
+     */
+    private final JobMonitor jobMonitor;
 
     public JobHandler(final IJobInfoService pJobInfoService, final IJobInfoSystemService pJobInfoSystemService) {
         threads = new HashMap<>();
         jobInfoService = pJobInfoService;
         jobInfoSystemService = pJobInfoSystemService;
+        jobMonitor = new JobMonitor(this);
     }
 
+    /**
+     * Spring boot shall set the value of JobHandler attributes after the constructor so we create here the thread pool
+     */
     @PostConstruct
     public void init() {
         // We also store the JobMonitor inside the ThreadPool so we add 1 slot
@@ -81,16 +103,10 @@ public class JobHandler implements IJobHandler {
         threadPoolExecutorFactoryBean.setBeanName("JobHandler thread pool");
         threadPoolExecutorFactoryBean.setQueueCapacity(maxThreadCapacity);
         executorService = Executors.newFixedThreadPool(maxThreadCapacity, threadPoolExecutorFactoryBean);
-        jobMonitor = new JobMonitor(this);
         final Thread jobMonitorThread = threadPoolExecutorFactoryBean.createThread(jobMonitor);
         jobMonitorThread.start();
     }
 
-    /**
-     * Store the JobInfo into the database
-     *
-     * @return StatusInfo of the new JobInfo
-     */
     @Override
     public StatusInfo create(final JobInfo pJobInfo) {
         final JobInfo jobInfo = jobInfoService.createJobInfo(pJobInfo);
@@ -98,9 +114,6 @@ public class JobHandler implements IJobHandler {
         return jobInfo.getStatus();
     }
 
-    /**
-     * Delete a job: Ensure that the job will be interrupted if it was running and change its status to Aborted
-     */
     @Override
     public StatusInfo abort(final JobInfo pJob) {
         final CoupleThreadTenantName tupleThreadTenant = threads.get(pJob.getId());
@@ -129,9 +142,6 @@ public class JobHandler implements IJobHandler {
         return resultingStatus;
     }
 
-    /**
-     * Retrieve the jobInfo, then execute that job.
-     */
     @Override
     public StatusInfo execute(final String tenantName, final Long jobInfoId) {
         final JobInfo jobInfo = jobInfoSystemService.findJobInfo(tenantName, jobInfoId);
@@ -169,20 +179,47 @@ public class JobHandler implements IJobHandler {
     }
 
     @Override
-    public StatusInfo shutdownNow() {
-        return this.shutdownIn(timeoutShutdownNowInSeconds, TimeUnit.SECONDS);
+    public void shutdownNow() {
+        this.shutdownIn(timeoutShutdownNowInSeconds, TimeUnit.SECONDS);
     }
 
     @Override
-    public StatusInfo shutdown() {
-        return this.shutdownIn(timeoutShutdownInHours, TimeUnit.HOURS);
+    public void shutdown() {
+        this.shutdownIn(timeoutShutdownInHours, TimeUnit.HOURS);
     }
 
-    private StatusInfo shutdownIn(final int timeout, final TimeUnit timeUnit) {
+    @Override
+    public void onEvent(final IEvent pEvent) {
+        LOG.info(String.format("Received a new event %s", pEvent.getType().toString()));
+        final Long jobInfoId = pEvent.getJobInfoId();
+        switch (pEvent.getType()) {
+            case JOB_PERCENT_COMPLETED:
+                final int jobPercentCompleted = (int) pEvent.getData();
+                setJobInfoPercentCompleted(jobInfoId, jobPercentCompleted);
+                break;
+            case SUCCEEDED:
+                setJobStatusTo(jobInfoId, JobStatus.SUCCEEDED);
+                break;
+            case RUN_ERROR:
+                setJobStatusTo(jobInfoId, JobStatus.FAILED);
+                break;
+            default:
+                LOG.error(String.format("Unknow event type %s", pEvent.getType().toString()));
+        }
+    }
+
+    /**
+     *
+     * @param pTimeout
+     *            let threads survive during pTimeout
+     * @param pTimeUnit
+     *            the pTimeout unit
+     */
+    private void shutdownIn(final int pTimeout, final TimeUnit pTimeUnit) {
         executorService.shutdown();
         boolean doneCorrectly = false;
         try {
-            doneCorrectly = executorService.awaitTermination(timeout, timeUnit);
+            doneCorrectly = executorService.awaitTermination(pTimeout, pTimeUnit);
         } catch (final InterruptedException e) {
             LOG.error("Thread interrupted, closing", e);
             Thread.currentThread().interrupt();
@@ -202,75 +239,36 @@ public class JobHandler implements IJobHandler {
             }
         }
         LOG.info("All threads stopped correctly: ", doneCorrectly);
-        return null;
-    }
-
-    @Override
-    public JobInfo getJob(final Long pJobId) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     /**
-     * Receive event from jobs (throw JobMonitor)
-     */
-    @Override
-    public void onEvent(final IEvent pEvent) {
-        LOG.info(String.format("Received a new event %s", pEvent.getType().toString()));
-        final Long jobInfoId = pEvent.getJobInfoId();
-        switch (pEvent.getType()) {
-            case JOB_PERCENT_COMPLETED:
-                final int jobPercentCompleted = (int) pEvent.getData();
-                setJobInfoPercentCompleted(jobInfoId, jobPercentCompleted);
-                break;
-            case SUCCEEDED:
-                setJobStatusToSucceed(jobInfoId);
-                break;
-            case RUN_ERROR:
-                setJobStatusToFailed(jobInfoId);
-                break;
-            default:
-                LOG.error(String.format("Unknow event type %s", pEvent.getType().toString()));
-        }
-    }
-
-    /**
+     *
      * @param pJobInfoId
+     *            the jobInfo id
+     * @param pJobStatus
+     *            the new jobStatus
      */
-    private void setJobStatusToFailed(final Long pJobInfoId) {
+    private void setJobStatusTo(final Long pJobInfoId, final JobStatus pJobStatus) {
         final CoupleThreadTenantName tupleTenantThread = threads.get(pJobInfoId);
         final String tenantName = tupleTenantThread.getTenantName();
-        final JobInfo jobInfo = jobInfoSystemService.findJobInfo(tenantName, pJobInfoId);
-        if (jobInfo != null) {
-            jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
-            jobInfoSystemService.updateJobInfo(tenantName, jobInfo);
-        } else {
-            LOG.error(String.format("Job not found %d", pJobInfoId));
-        }
-        threads.remove(pJobInfoId);
-
-    }
-
-    private void setJobStatusToSucceed(final Long pJobInfoId) {
-        final CoupleThreadTenantName tupleTenantThread = threads.get(pJobInfoId);
-        final String tenantName = tupleTenantThread.getTenantName();
-        final JobInfo jobInfo = jobInfoSystemService.findJobInfo(tenantName, pJobInfoId);
-        if (jobInfo != null) {
-            jobInfo.getStatus().setJobStatus(JobStatus.SUCCEEDED);
-            jobInfoSystemService.updateJobInfo(tenantName, jobInfo);
-        } else {
-            LOG.error(String.format("Job not found %d", pJobInfoId));
-        }
+        jobInfoSystemService.updateJobInfoToDone(pJobInfoId, pJobStatus, tenantName);
         threads.remove(pJobInfoId);
     }
 
-    private void setJobInfoPercentCompleted(final Long pJobInfoId, final int jobAdvancement) {
-        LOG.info(String.format("Received a new avancement %d", jobAdvancement));
+    /**
+     *
+     * @param pJobInfoId
+     *            the jobInfo id
+     * @param pJobAdvancement
+     *            the jobInfo advancement
+     */
+    private void setJobInfoPercentCompleted(final Long pJobInfoId, final int pJobAdvancement) {
+        LOG.info(String.format("Received a new avancement %d", pJobAdvancement));
         final CoupleThreadTenantName tupleTenantThread = threads.get(pJobInfoId);
         final String tenantName = tupleTenantThread.getTenantName();
         final JobInfo jobInfo = jobInfoSystemService.findJobInfo(tenantName, pJobInfoId);
         if (jobInfo != null) {
-            jobInfo.getStatus().setPercentCompleted(jobAdvancement);
+            jobInfo.getStatus().setPercentCompleted(pJobAdvancement);
             jobInfoSystemService.updateJobInfo(tenantName, jobInfo);
         } else {
             LOG.error(String.format("Job not found %d", pJobInfoId));
