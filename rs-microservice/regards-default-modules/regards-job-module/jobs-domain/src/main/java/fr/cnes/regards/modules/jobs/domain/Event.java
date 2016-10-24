@@ -24,18 +24,24 @@ public class Event implements IEvent {
     private final Long jobId;
 
     /**
+     * Store the tenantName
+     */
+    private final String tenantName;
+
+    /**
      * @param pEventType
      *            the event type
      * @param pData
      *            to store some data
-     * @param pJobId
+     * @param pJobInfoId
      *            the jobInfo id
      */
-    public Event(final EventType pEventType, final Object pData, final Long pJobId) {
+    public Event(final EventType pEventType, final Object pData, final Long pJobInfoId, final String pTenantName) {
         super();
         eventType = pEventType;
         data = pData;
-        jobId = pJobId;
+        jobId = pJobInfoId;
+        tenantName = pTenantName;
     }
 
     @Override
@@ -53,4 +59,8 @@ public class Event implements IEvent {
         return jobId;
     }
 
+    @Override
+    public String getTenantName() {
+        return tenantName;
+    }
 }

@@ -53,12 +53,6 @@ public class StatusInfo {
     private LocalDateTime expirationDate;
 
     /**
-     * TODO
-     */
-    @Column(name = "nextPoll")
-    private LocalDateTime nextPoll;
-
-    /**
      * the job advancement
      */
     @Column(name = "percentCompleted")
@@ -105,16 +99,6 @@ public class StatusInfo {
 
     public void setExpirationDate(final LocalDateTime pExpirationDate) {
         expirationDate = pExpirationDate;
-    }
-
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    public LocalDateTime getNextPoll() {
-        return nextPoll;
-    }
-
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public void setNextPoll(final LocalDateTime pNextPoll) {
-        nextPoll = pNextPoll;
     }
 
     public int getPercentCompleted() {

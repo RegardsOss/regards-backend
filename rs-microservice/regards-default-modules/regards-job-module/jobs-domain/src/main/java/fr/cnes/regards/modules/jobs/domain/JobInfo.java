@@ -88,7 +88,7 @@ public class JobInfo implements Identifiable<Long> {
     /**
      * When true, the job is done, results deleted, job metadata archived
      */
-    @Column(name = "owner")
+    @Column(name = "archived")
     private boolean archived;
 
     public JobInfo() {
@@ -221,7 +221,7 @@ public class JobInfo implements Identifiable<Long> {
     }
 
     public boolean needWorkspace() {
-        return false;
+        return workspace != null;
     }
 
     /**

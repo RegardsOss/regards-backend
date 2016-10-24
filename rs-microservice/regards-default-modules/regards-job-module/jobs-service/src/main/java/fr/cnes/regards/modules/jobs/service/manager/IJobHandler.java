@@ -37,11 +37,11 @@ public interface IJobHandler {
     /**
      * Delete a job: Ensure that the job will be interrupted if it was running and change its status to Aborted
      *
-     * @param pJobInfo
-     *            abort the corresponding pJobInfo
+     * @param pJobInfoId
+     *            abort the corresponding pJobInfo id
      * @return the updated status of that job
      */
-    StatusInfo abort(JobInfo pJobInfo);
+    StatusInfo abort(final Long pJobInfoId);
 
     /**
      * Retrieve the jobInfo, then execute that job.

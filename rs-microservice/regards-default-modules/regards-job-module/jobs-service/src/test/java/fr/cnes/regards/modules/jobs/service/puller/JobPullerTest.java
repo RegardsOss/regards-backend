@@ -122,4 +122,13 @@ public class JobPullerTest {
         Assertions.assertThat(jobPuller.getJobQueueList().get(1).getMaxSize()).isEqualTo(2);
 
     }
+
+    @Test
+    public void testDomain() {
+        final List<Project> projects = new ArrayList<>();
+        projects.add(new Project());
+        jobPuller.setProjects(projects);
+        Assertions.assertThat(jobPuller.getProjects().size()).isEqualTo(1);
+
+    }
 }

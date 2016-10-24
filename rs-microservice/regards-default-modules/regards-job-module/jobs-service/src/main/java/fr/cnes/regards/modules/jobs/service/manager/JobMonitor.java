@@ -26,8 +26,14 @@ public class JobMonitor implements Runnable {
      */
     private final BlockingQueue<IEvent> queueEvent;
 
+    /**
+     * Store jobHandler
+     */
     private final IJobHandler jobHandler;
 
+    /**
+     * Stop the jobMonitor on shutdown
+     */
     private boolean isRunning;
 
     /**

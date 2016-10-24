@@ -21,6 +21,11 @@ public abstract class AbstractJob implements IJob {
     private Long jobInfoId;
 
     /**
+     * Store the tenantName
+     */
+    private String tenantName;
+
+    /**
      * Job parameters
      */
     private JobParameters parameters;
@@ -40,7 +45,7 @@ public abstract class AbstractJob implements IJob {
      * @throws InterruptedException
      */
     protected void sendEvent(final EventType pEventType, final Object pValue) throws InterruptedException {
-        queueEvent.put(new Event(pEventType, pValue, jobInfoId));
+        queueEvent.put(new Event(pEventType, pValue, jobInfoId, tenantName));
     }
 
     /**
@@ -49,7 +54,7 @@ public abstract class AbstractJob implements IJob {
      * @throws InterruptedException
      */
     protected void sendEvent(final EventType pEventType) throws InterruptedException {
-        queueEvent.put(new Event(pEventType, null, jobInfoId));
+        queueEvent.put(new Event(pEventType, null, jobInfoId, tenantName));
     }
 
     /**
@@ -75,6 +80,14 @@ public abstract class AbstractJob implements IJob {
      */
     public JobParameters getParameters() {
         return parameters;
+    }
+
+    /**
+     * @param pTenantName
+     *            the tenantName to set
+     */
+    public void setTenantName(final String pTenantName) {
+        tenantName = pTenantName;
     }
 
 }

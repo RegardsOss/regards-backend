@@ -49,4 +49,10 @@ public interface IJob extends Runnable {
      */
     void setParameters(JobParameters pParameters);
 
+    /**
+     * @param pTenantName
+     *            set the tenant name
+     */
+    void setTenantName(String pTenantName);
+
 }

@@ -13,18 +13,18 @@ public class Output {
     /**
      * Job mimetype
      */
-    private char mimeType;
+    private String mimeType;
 
     /**
      * Job path
      */
     private URI data;
 
-    public char getMimeType() {
+    public String getMimeType() {
         return mimeType;
     }
 
-    public void setMimeType(final char pMimeType) {
+    public void setMimeType(final String pMimeType) {
         mimeType = pMimeType;
     }
 

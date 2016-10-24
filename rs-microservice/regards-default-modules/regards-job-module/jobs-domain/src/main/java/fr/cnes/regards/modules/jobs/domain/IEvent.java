@@ -16,4 +16,9 @@ public interface IEvent {
      * @return the jobInfo id
      */
     Long getJobInfoId();
+
+    /**
+     * @return the tenantName
+     */
+    public String getTenantName();
 }
