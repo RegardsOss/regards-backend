@@ -25,17 +25,25 @@ public class Poller {
     /**
      * bean provided by spring to receive message from broker
      */
-    private RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
     /**
      * bean assisting us to declare elements
      */
-    private RegardsAmqpAdmin regardsAmqpAdmin;
+    private final RegardsAmqpAdmin regardsAmqpAdmin;
 
     /**
      * bean assisting us to manipulate virtual hosts
      */
-    private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
+    private final IRabbitVirtualHostUtils rabbitVirtualHostUtils;
+
+    public Poller(RabbitTemplate pRabbitTemplate, RegardsAmqpAdmin pRegardsAmqpAdmin,
+            IRabbitVirtualHostUtils pRabbitVirtualHostUtils) {
+        super();
+        rabbitTemplate = pRabbitTemplate;
+        regardsAmqpAdmin = pRegardsAmqpAdmin;
+        rabbitVirtualHostUtils = pRabbitVirtualHostUtils;
+    }
 
     /**
      *
@@ -58,7 +66,7 @@ public class Poller {
             AmqpCommunicationTarget pAmqpCommunicationTarget) throws RabbitMQVhostException {
 
         rabbitVirtualHostUtils.addVhost(pTenant);
-        final Exchange exchange = regardsAmqpAdmin.declareExchange(pEvt.getName(), pAmqpCommunicationMode, pTenant,
+        final Exchange exchange = regardsAmqpAdmin.declareExchange(pEvt, pAmqpCommunicationMode, pTenant,
                                                                    pAmqpCommunicationTarget);
         final Queue queue = regardsAmqpAdmin.declareQueue(pEvt, pAmqpCommunicationMode, pTenant,
                                                           pAmqpCommunicationTarget);

@@ -66,10 +66,10 @@ public class Publisher {
             AmqpCommunicationTarget pAmqpCommunicationTarget, int pPriority) throws RabbitMQVhostException {
         final String tenant = ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication())
                 .getPrincipal().getTenant();
-        final String evtName = pEvt.getClass().getName();
+        final Class<?> evtClass = pEvt.getClass();
         // add the Vhost corresponding to this tenant
         rabbitVirtualHostUtils.addVhost(tenant);
-        final Exchange exchange = regardsAmqpAdmin.declareExchange(evtName, pAmqpCommunicationMode, tenant,
+        final Exchange exchange = regardsAmqpAdmin.declareExchange(evtClass, pAmqpCommunicationMode, tenant,
                                                                    pAmqpCommunicationTarget);
         if (pAmqpCommunicationMode.equals(AmqpCommunicationMode.ONE_TO_ONE)) {
             final Queue queue = regardsAmqpAdmin.declareQueue(pEvt.getClass(), AmqpCommunicationMode.ONE_TO_ONE, tenant,
@@ -80,7 +80,7 @@ public class Publisher {
         // bind the connection to the right vHost ie tenant to publish the message
         SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), tenant);
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
-        rabbitTemplate.convertAndSend(exchange.getName(), evtName, messageSended, pMessage -> {
+        rabbitTemplate.convertAndSend(exchange.getName(), evtClass.getName(), messageSended, pMessage -> {
             final MessageProperties propertiesWithPriority = pMessage.getMessageProperties();
             propertiesWithPriority.setPriority(pPriority);
             return new Message(pMessage.getBody(), propertiesWithPriority);

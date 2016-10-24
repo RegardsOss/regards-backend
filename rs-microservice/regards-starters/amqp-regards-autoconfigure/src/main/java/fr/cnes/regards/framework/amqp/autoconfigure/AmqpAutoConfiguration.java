@@ -3,15 +3,18 @@
  */
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
 import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.Publisher;
@@ -29,20 +32,52 @@ import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 @Configuration
 // @AutoConfigureAfter(MultitenantA)
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
-@EnableConfigurationProperties(AmqpProperties.class)
+@EnableConfigurationProperties({ SpringRabbitMQProperties.class, AmqpManagementProperties.class,
+        AmqpMicroserviceProperties.class })
 public class AmqpAutoConfiguration {
 
     /**
      * bean providing properties from the configuration file
      */
     @Autowired
+    private SpringRabbitMQProperties springRabbitMQProperties;
+
+    /**
+     * bean providing properties from the configuration file
+     */
+    @Autowired
+    private AmqpManagementProperties amqpManagmentProperties;
+
+    /**
+     * bean providing properties from the configuration file
+     */
+    @Autowired
+    private AmqpMicroserviceProperties amqpMicroserviceProperties;
+
+    /**
+     * class regrouping accesses to all properties used by the client
+     */
     private AmqpProperties amqpProperties;
 
+    @PostConstruct
+    public void init() {
+        amqpProperties = new AmqpProperties(springRabbitMQProperties, amqpManagmentProperties,
+                amqpMicroserviceProperties);
+    }
+
     @Bean
-    @ConditionalOnBean(IRabbitVirtualHostUtils.class)
-    public IRabbitVirtualHostUtils rabbitVirtualHostUtils() {
+    @ConditionalOnMissingBean(IRabbitVirtualHostUtils.class)
+    public IRabbitVirtualHostUtils iRabbitVirtualHostUtils(
+            RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory, RestTemplate pRestTemplate) {
         return new RabbitVirtualHostUtils(amqpProperties.getRabbitmqUserName(), amqpProperties.getRabbitmqPassword(),
-                amqpProperties.getAmqpManagementHost(), amqpProperties.getAmqpManagementPort());
+                amqpProperties.getAmqpManagementHost(), amqpProperties.getAmqpManagementPort(), pRestTemplate,
+                pSimpleRoutingConnectionFactory);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(RestTemplate.class)
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 
     @Bean
@@ -52,13 +87,13 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public RabbitAdmin rabbitAdmin() {
-        return new RabbitAdmin(regardsSimpleRoutingConnectionFactory());
+    public RabbitAdmin rabbitAdmin(RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory) {
+        return new RabbitAdmin(pSimpleRoutingConnectionFactory);
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate() {
-        final RabbitTemplate rabbitTemplate = new RabbitTemplate(regardsSimpleRoutingConnectionFactory());
+    public RabbitTemplate rabbitTemplate(RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory) {
+        final RabbitTemplate rabbitTemplate = new RabbitTemplate(pSimpleRoutingConnectionFactory);
         rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter());
         return rabbitTemplate;
     }
@@ -69,18 +104,21 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public Publisher publisher() {
-        return new Publisher(rabbitTemplate(), regardsAmqpAdmin(), rabbitVirtualHostUtils());
+    public Publisher publisher(IRabbitVirtualHostUtils pIRabbitVirtualHostUtils, RabbitTemplate pRabbitTemplate,
+            RegardsAmqpAdmin pRegardsAmqpAdmin) {
+        return new Publisher(pRabbitTemplate, pRegardsAmqpAdmin, pIRabbitVirtualHostUtils);
     }
 
     @Bean
-    public Subscriber subscriber() {
-        return new Subscriber(regardsAmqpAdmin(), rabbitVirtualHostUtils(), jackson2JsonMessageConverter());
+    public Subscriber subscriber(RegardsAmqpAdmin pRegardsAmqpAdmin, IRabbitVirtualHostUtils pIRabbitVirtualHostUtils,
+            Jackson2JsonMessageConverter pJackson2JsonMessageConverter) {
+        return new Subscriber(pRegardsAmqpAdmin, pIRabbitVirtualHostUtils, pJackson2JsonMessageConverter);
     }
 
     @Bean
-    public Poller poller() {
-        return new Poller();
+    public Poller poller(RabbitTemplate pRabbitTemplate, RegardsAmqpAdmin pRegardsAmqpAdmin,
+            IRabbitVirtualHostUtils pIRabbitVirtualHostUtils) {
+        return new Poller(pRabbitTemplate, pRegardsAmqpAdmin, pIRabbitVirtualHostUtils);
     }
 
     @Bean

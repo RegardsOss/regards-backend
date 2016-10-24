@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -51,14 +50,12 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
     /**
      * template used to perform REST request
      */
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     /**
      * connection factory
      */
-    @Autowired
-    private RegardsSimpleRoutingConnectionFactory simpleRoutingConnectionFactory;
+    private final RegardsSimpleRoutingConnectionFactory simpleRoutingConnectionFactory;
 
     /**
      * List of vhost already known
@@ -97,10 +94,17 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
      *            management host
      * @param pAmqpManagementPort
      *            management port
+     * @param pRestTemplate
+     *            client REST
+     * @param pSimpleRoutingConnectionFactory
+     *            connection factory to handle multi-tenancy
      */
     public RabbitVirtualHostUtils(String pRabbitmqUserName, String pRabbitmqPassword, String pAmqpManagementHost,
-            Integer pAmqpManagementPort) {
+            Integer pAmqpManagementPort, RestTemplate pRestTemplate,
+            RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory) {
         super();
+        restTemplate = pRestTemplate;
+        simpleRoutingConnectionFactory = pSimpleRoutingConnectionFactory;
         rabbitmqUserName = pRabbitmqUserName;
         rabbitmqPassword = pRabbitmqPassword;
         amqpManagementHost = pAmqpManagementHost;
@@ -108,7 +112,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
     }
 
     @Override
-    public void retrieveVhostList() {
+    public List<String> retrieveVhostList() {
         // CHECKSTYLE:OFF
         final ParameterizedTypeReference<List<RabbitVhost>> typeRef = new ParameterizedTypeReference<List<RabbitVhost>>() {
 
@@ -121,6 +125,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
         final ResponseEntity<List<RabbitVhost>> response = restTemplate.exchange(host, HttpMethod.GET, request,
                                                                                  typeRef);
         vhostList = response.getBody().stream().map(rVh -> rVh.getName()).collect(Collectors.toList());
+        return vhostList;
     }
 
     @Override

@@ -92,9 +92,8 @@ public class PollerIT {
     @Purpose("test the polling ONE_TO_MANY to message broker")
     @Test
     public void testPollOneToManyExternal() {
-        final Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class.getName(),
-                                                                   AmqpCommunicationMode.ONE_TO_MANY, TENANT,
-                                                                   AmqpCommunicationTarget.EXTERNAL);
+        final Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
+                                                                   TENANT, AmqpCommunicationTarget.EXTERNAL);
         final Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT,
                                                           AmqpCommunicationTarget.EXTERNAL);
         regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT);
@@ -128,7 +127,7 @@ public class PollerIT {
     @Purpose("test the polling ONE_TO_ONE to message broker")
     @Test
     public void testPollOneToOneExternal() {
-        final Exchange exchangeOneToOne = regardsAmqpAdmin.declareExchange(TestEvent.class.getName(),
+        final Exchange exchangeOneToOne = regardsAmqpAdmin.declareExchange(TestEvent.class,
                                                                            AmqpCommunicationMode.ONE_TO_ONE, TENANT,
                                                                            AmqpCommunicationTarget.EXTERNAL);
         final Queue queueOneToOne = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,

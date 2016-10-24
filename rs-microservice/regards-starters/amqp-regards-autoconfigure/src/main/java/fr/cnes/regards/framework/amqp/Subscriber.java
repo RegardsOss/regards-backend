@@ -12,6 +12,7 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
@@ -50,6 +51,7 @@ public class Subscriber {
     /**
      * provider of projects allowing us to listen to any necessary RabbitMQ Vhost
      */
+    @Autowired
     private IProjectsProvider projectsProvider;
 
     public Subscriber(RegardsAmqpAdmin pRegardsAmqpAdmin, IRabbitVirtualHostUtils pRabbitVirtualHostUtils,
@@ -123,7 +125,7 @@ public class Subscriber {
         final CachingConnectionFactory connectionFactory = regardsAmqpAdmin.createConnectionFactory(pProject);
         rabbitVirtualHostUtils.addVhost(pProject, connectionFactory);
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        final Exchange exchange = regardsAmqpAdmin.declareExchange(pEvt.getName(), pAmqpCommunicationMode, pProject,
+        final Exchange exchange = regardsAmqpAdmin.declareExchange(pEvt, pAmqpCommunicationMode, pProject,
                                                                    pAmqpCommunicationTarget);
         final Queue queue = regardsAmqpAdmin.declareQueue(pEvt, pAmqpCommunicationMode, pProject,
                                                           pAmqpCommunicationTarget);

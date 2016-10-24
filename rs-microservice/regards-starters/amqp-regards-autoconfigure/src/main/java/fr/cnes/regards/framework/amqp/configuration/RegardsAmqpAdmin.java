@@ -88,9 +88,10 @@ public class RegardsAmqpAdmin {
         return instanceIdentifier;
     }
 
-    public Exchange declareExchange(String pName, AmqpCommunicationMode pAmqpCommunicationMode, String pTenant,
+    public Exchange declareExchange(Class<?> pEvt, AmqpCommunicationMode pAmqpCommunicationMode, String pTenant,
             AmqpCommunicationTarget pAmqpCommunicationTarget) {
-        final Exchange exchange = instantiateExchange(pName, pAmqpCommunicationMode, pAmqpCommunicationTarget);
+        final Exchange exchange = instantiateExchange(pEvt.getName(), pAmqpCommunicationMode,
+                                                      pAmqpCommunicationTarget);
         SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(), pTenant);
         rabbitAdmin.declareExchange(exchange);
         SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());

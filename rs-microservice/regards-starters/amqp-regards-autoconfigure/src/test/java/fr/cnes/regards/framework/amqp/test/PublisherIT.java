@@ -122,7 +122,7 @@ public class PublisherIT {
         try {
             jwtService.injectToken(TENANT, ROLE);
 
-            final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
+            final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class,
                                                                         AmqpCommunicationMode.ONE_TO_MANY, TENANT,
                                                                         AmqpCommunicationTarget.EXTERNAL);
             final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
@@ -164,7 +164,7 @@ public class PublisherIT {
         try {
             jwtService.injectToken(TENANT, ROLE);
 
-            final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
+            final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class,
                                                                         AmqpCommunicationMode.ONE_TO_ONE, TENANT,
                                                                         AmqpCommunicationTarget.EXTERNAL);
             final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,

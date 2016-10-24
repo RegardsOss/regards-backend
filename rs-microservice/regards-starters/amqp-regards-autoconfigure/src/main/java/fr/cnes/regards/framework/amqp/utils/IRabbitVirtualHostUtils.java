@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.framework.amqp.utils;
 
+import java.util.List;
+
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
@@ -16,8 +18,10 @@ public interface IRabbitVirtualHostUtils {
 
     /**
      * GET Request to host/api/vhosts to know which Vhosts are already defined
+     *
+     * @return list of all virtual hosts
      */
-    void retrieveVhostList();
+    List<String> retrieveVhostList();
 
     /**
      * @return basic authentication to the broker
@@ -25,7 +29,7 @@ public interface IRabbitVirtualHostUtils {
     String setBasic();
 
     /**
-     * @return complete url string representing rabbitMQ api endpoint for vhost
+     * @return complete url string representing rabbitMQ api endpoint for vhost /api/vhosts
      */
     String getRabbitApiVhostEndpoint();
 
