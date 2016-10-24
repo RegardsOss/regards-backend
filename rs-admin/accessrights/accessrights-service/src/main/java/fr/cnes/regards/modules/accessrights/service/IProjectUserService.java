@@ -23,7 +23,7 @@ public interface IProjectUserService {
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
      *
-     * @return
+     * @return The list of project users
      */
     List<ProjectUser> retrieveUserList();
 
@@ -32,6 +32,7 @@ public interface IProjectUserService {
      *
      * @param pUserId
      *            The {@link ProjectUser}'s <code>id</code>
+     * @return The project user
      */
     ProjectUser retrieveUser(Long pUserId);
 
@@ -40,8 +41,16 @@ public interface IProjectUserService {
      *
      * @param pLogin
      *            The {@link ProjectUser}'s <code>login</code>
+     * @return The project user
      */
     ProjectUser retrieveUser(String pLogin);
+
+    /**
+     * Retrieve the current {@link ProjectUser}.
+     *
+     * @return The project user
+     */
+    ProjectUser retrieveCurrentUser();
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.
@@ -73,7 +82,7 @@ public interface IProjectUserService {
      *            The {@link ProjectUser}'s <code>id</code>
      * @param pBorrowedRoleName
      *            The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
-     * @return
+     * @return The list of resources access and the role, wrapped as a {@link Couple}
      * @throws InvalidValueException
      *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
      *             <code>role</code>.
@@ -109,7 +118,7 @@ public interface IProjectUserService {
      *
      * @param pUserId
      *            The {@link ProjectUser}'s <code>id</code>
-     * @return
+     * @return The list of meta data
      * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
@@ -122,6 +131,8 @@ public interface IProjectUserService {
      *            The {@link ProjectUser}'s <code>id</code>
      * @param pUpdatedUserMetaData
      *            The {@link List} of {@link MetaData} to set
+     * @throws EntityNotFoundException
+     *             Thhrown when not project user of passed <code>id</code> could be found
      */
     void updateUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException;
 
@@ -140,7 +151,7 @@ public interface IProjectUserService {
      *
      * @param pId
      *            The {@link ProjectUser}'s <code>id</code>
-     * @return
+     * @return <code>True</code> exists, else <code>False</code>
      */
     boolean existUser(Long pId);
 
@@ -149,7 +160,7 @@ public interface IProjectUserService {
      *
      * @param pLogin
      *            The {@link ProjectUser}'s <code>login</code>
-     * @return
+     * @return <code>True</code> exists, else <code>False</code>
      */
     boolean existUser(String pLogin);
 }

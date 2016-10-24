@@ -4,7 +4,10 @@
 package fr.cnes.regards.modules.accessrights.dao.stubs;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
@@ -72,6 +75,18 @@ public class RoleRepositoryStub extends RepositoryStub<Role> implements IRoleRep
     @Override
     public Role findOneByName(final String pBorrowedRoleName) {
         return entities.stream().filter(r -> r.getName().equals(pBorrowedRoleName)).findFirst().get();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository#findByNameIn(java.util.Collection)
+     */
+    @Override
+    public List<Role> findByNameIn(final Collection<String> pNames) {
+        try (final Stream<Role> stream = entities.stream()) {
+            return stream.filter(e -> pNames.contains(e.getName())).collect(Collectors.toList());
+        }
     }
 
 }

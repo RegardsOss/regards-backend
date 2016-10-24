@@ -5,8 +5,10 @@ package fr.cnes.regards.modules.accessrights.dao.stubs;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
@@ -83,6 +85,18 @@ public class ProjectUserRepositoryStub extends JpaRepositoryStub<ProjectUser> im
     public List<ProjectUser> findByStatus(final UserStatus pStatus) {
         return entities.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS))
                 .collect(Collectors.toList());
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository#findByEmailIn(java.util.Collection)
+     */
+    @Override
+    public List<ProjectUser> findByEmailIn(final Collection<String> pEmail) {
+        try (final Stream<ProjectUser> stream = entities.stream()) {
+            return stream.filter(e -> pEmail.contains(e.getEmail())).collect(Collectors.toList());
+        }
     }
 
 }

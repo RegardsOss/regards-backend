@@ -213,4 +213,14 @@ public class ProjectUserServiceStub implements IProjectUserService {
 
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveCurrentUser()
+     */
+    @Override
+    public ProjectUser retrieveCurrentUser() {
+        return retrieveUserList().get(0);
+    }
+
 }
