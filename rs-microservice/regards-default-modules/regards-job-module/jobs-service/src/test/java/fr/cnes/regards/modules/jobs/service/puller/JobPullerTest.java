@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.jobs.service.JobDaoTestConfiguration;
@@ -32,15 +33,14 @@ import fr.cnes.regards.modules.project.client.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
- * @author lmieulet
- *
+ * This test run with spring in order to get the jwtService
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration(classes = { JobDaoTestConfiguration.class })
-public class JobPullerIT {
+public class JobPullerTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JobPullerIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JobPullerTest.class);
 
     /**
      * Utility service for handling JWT. Autowired by Spring.
@@ -85,6 +85,8 @@ public class JobPullerIT {
 
         Mockito.when(projectsClient.retrieveProjectList()).thenReturn(projects);
         jobPuller = new JobPuller(iJobHandlerMock, jwtService, projectsClient, jobAllocationStrategy, messageBroker);
+        ReflectionTestUtils.setField(jobPuller, "maxJobCapacity", 5, Integer.class);
+
     }
 
     @Test
@@ -109,14 +111,24 @@ public class JobPullerIT {
     @Test
     public void testPullJob() {
         Assertions.assertThat(jobPuller.getJobQueueList()).isEqualTo(null);
-        Mockito.when(messageBroker.getJob("project1")).thenReturn(1L);
+        final String projectName = "project1";
+        Mockito.when(messageBroker.getJob(projectName)).thenReturn(1L);
         jobPuller.pullJobs();
-        Mockito.verify(iJobHandlerMock).execute(1L);
+        Mockito.verify(iJobHandlerMock).execute(projectName, 1L);
         Assertions.assertThat(jobPuller.getJobQueueList().size()).isEqualTo(4);
         Assertions.assertThat(jobPuller.getJobQueueList().get(0).getCurrentSize()).isEqualTo(0);
         Assertions.assertThat(jobPuller.getJobQueueList().get(0).getMaxSize()).isEqualTo(2);
         Assertions.assertThat(jobPuller.getJobQueueList().get(1).getCurrentSize()).isEqualTo(0);
         Assertions.assertThat(jobPuller.getJobQueueList().get(1).getMaxSize()).isEqualTo(2);
+
+    }
+
+    @Test
+    public void testDomain() {
+        final List<Project> projects = new ArrayList<>();
+        projects.add(new Project());
+        jobPuller.setProjects(projects);
+        Assertions.assertThat(jobPuller.getProjects().size()).isEqualTo(1);
 
     }
 }

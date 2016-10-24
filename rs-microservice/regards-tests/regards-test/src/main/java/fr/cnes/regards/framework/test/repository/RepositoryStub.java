@@ -4,9 +4,7 @@
 package fr.cnes.regards.framework.test.repository;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -16,7 +14,7 @@ import org.springframework.hateoas.Identifiable;
 
 public class RepositoryStub<T extends Identifiable<Long>> implements CrudRepository<T, Long> {
 
-    protected Set<T> entities = new HashSet<>();
+    protected List<T> entities = new ArrayList<>();
 
     @Override
     public <S extends T> S save(final S pEntity) {
@@ -59,7 +57,7 @@ public class RepositoryStub<T extends Identifiable<Long>> implements CrudReposit
 
     @Override
     public void deleteAll() {
-        entities = new HashSet<>();
+        entities = new ArrayList<>();
     }
 
     @Override
@@ -90,7 +88,7 @@ public class RepositoryStub<T extends Identifiable<Long>> implements CrudReposit
      *
      * @return The list of entities
      */
-    protected Set<T> getEntities() {
+    protected List<T> getEntities() {
         return entities;
     }
 
@@ -100,7 +98,7 @@ public class RepositoryStub<T extends Identifiable<Long>> implements CrudReposit
      * @param pEntities
      *            The list of entities
      */
-    protected void setEntities(final Set<T> pEntities) {
+    protected void setEntities(final List<T> pEntities) {
         entities = pEntities;
     }
 

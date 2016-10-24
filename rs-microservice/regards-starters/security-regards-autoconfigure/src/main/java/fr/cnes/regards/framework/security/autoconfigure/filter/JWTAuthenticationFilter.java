@@ -19,7 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
-import fr.cnes.regards.framework.security.autoconfigure.HttpConstants;
+import fr.cnes.regards.framework.security.domain.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**

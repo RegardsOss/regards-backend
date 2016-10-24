@@ -17,7 +17,7 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 
 /***
- * {@link PluginParameter} unit testing domain persistence
+ * Unit testing of {@link PluginParameter} persistence.
  *
  * @author cmertz
  *

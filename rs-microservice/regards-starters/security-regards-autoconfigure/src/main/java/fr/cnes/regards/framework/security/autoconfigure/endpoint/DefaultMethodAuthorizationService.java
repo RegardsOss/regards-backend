@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,8 +30,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
 
 /**
  * Service MethodAutorizationServiceImpl<br/>
@@ -96,7 +98,7 @@ public class DefaultMethodAuthorizationService implements IMethodAuthorizationSe
 
                             setAuthorities(url, httpVerb, roles);
                         } catch (final IllegalArgumentException pIAE) {
-                            LOG.error("Cannot retrieve HTTP method from {}", verb);
+                            LOG.error("Cannot retrieve HTTP method from {}", pIAE);
                         }
                     }
                 }
@@ -122,7 +124,8 @@ public class DefaultMethodAuthorizationService implements IMethodAuthorizationSe
                 }
             } catch (final ClassNotFoundException e) {
                 LOG.error(String.format("Error getting resources from RestController classe : %s",
-                                        def.getBeanClassName()));
+                                        def.getBeanClassName()),
+                          e);
             }
         }
         return resources;
@@ -151,7 +154,7 @@ public class DefaultMethodAuthorizationService implements IMethodAuthorizationSe
         }
 
         final ResourceAccess resourceAccess = AnnotationUtils.findAnnotation(pMethod, ResourceAccess.class);
-        final RequestMapping requestMapping = AnnotationUtils.findAnnotation(pMethod, RequestMapping.class);
+        final RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(pMethod, RequestMapping.class);
 
         if ((resourceAccess != null) && (requestMapping != null)) {
             if ((!resourceAccess.plugin().equals(void.class)) && (pluginResourceManager != null)) {
@@ -159,9 +162,17 @@ public class DefaultMethodAuthorizationService implements IMethodAuthorizationSe
                 mappings.addAll(pluginResourceManager.manageMethodResource(path, resourceAccess, requestMapping));
             } else {
                 // Manage standard endpoint
-                final RequestMethod reqMethod = requestMapping.method()[0];
-                path += requestMapping.value()[0];
-                mappings.add(new ResourceMapping(resourceAccess, Optional.ofNullable(path), reqMethod));
+                RequestMethod reqMethod = RequestMethod.GET;
+                if (requestMapping.method().length > 0) {
+                    reqMethod = requestMapping.method()[0];
+                }
+                if (requestMapping.value().length > 0) {
+                    path += requestMapping.value()[0];
+                } else
+                    if (requestMapping.path().length > 0) {
+                        path += requestMapping.path()[0];
+                    }
+                mappings.add(new ResourceMapping(resourceAccess, path, reqMethod));
             }
         }
         return mappings;
@@ -207,7 +218,6 @@ public class DefaultMethodAuthorizationService implements IMethodAuthorizationSe
             newAuthorities.add(new RoleAuthority(role));
         }
 
-        setAuthorities(new ResourceMapping(Optional.of(pUrlPath), pMethod),
-                       newAuthorities.toArray(new GrantedAuthority[0]));
+        setAuthorities(new ResourceMapping(pUrlPath, pMethod), newAuthorities.toArray(new GrantedAuthority[0]));
     }
 }

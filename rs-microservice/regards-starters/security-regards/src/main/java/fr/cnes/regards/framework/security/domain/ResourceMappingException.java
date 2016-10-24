@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.security.autoconfigure.endpoint;
+package fr.cnes.regards.framework.security.domain;
 
 /**
  * This exception is thrown when resource have insufficient or inconsistent security configuration

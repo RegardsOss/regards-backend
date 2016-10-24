@@ -6,10 +6,12 @@ package fr.cnes.regards.modules.jobs.service.puller;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,9 +31,10 @@ import fr.cnes.regards.modules.project.domain.Project;
 public class JobPuller {
 
     /**
-     *
+     * Retrieve from the configuration file the number of thread for this microservice
      */
-    private static final int MAX_THREAD = 5;
+    @Value("${regards.microservice.job.max}")
+    private Integer maxJobCapacity;
 
     private static final Logger LOG = LoggerFactory.getLogger(JobPuller.class);
 
@@ -60,8 +63,8 @@ public class JobPuller {
     /**
      *
      */
-    public JobPuller(IJobHandler pJobHandler, JWTService pJwtService, IProjectsClient pProjectsClient,
-            IJobAllocationStrategy pJobAllocationStrategy, MessageBroker pMessageBroker) {
+    public JobPuller(final IJobHandler pJobHandler, final JWTService pJwtService, final IProjectsClient pProjectsClient,
+            final IJobAllocationStrategy pJobAllocationStrategy, final MessageBroker pMessageBroker) {
         jobHandler = pJobHandler;
         jwtService = pJwtService;
         projectsClient = pProjectsClient;
@@ -76,36 +79,38 @@ public class JobPuller {
     private void populateProjectList() {
         try {
             jwtService.injectToken("", MODULE_JOB_ROLE);
-        } catch (JwtException e1) {
+        } catch (final JwtException e1) {
             LOG.error(e1.getMessage(), e1);
         }
         try {
-            HttpEntity<List<Resource<Project>>> response = projectsClient.retrieveProjectList();
-            projects = StreamSupport.stream(response.getBody().spliterator(), true).map(a -> a.getContent())
-                    .collect(Collectors.toList());
+            final HttpEntity<List<Resource<Project>>> response = projectsClient.retrieveProjectList();
+            try (Stream<Resource<Project>> stream = StreamSupport.stream(response.getBody().spliterator(), true)) {
+                projects = stream.map(a -> a.getContent()).collect(Collectors.toList());
+            }
         } catch (final NoSuchElementException e) {
             LOG.error(e.getMessage(), e);
         }
     }
 
     /**
-     * Using the plugin job allocation strategy, it updates the jobQueueList and the project we can fectch job depending
-     * of the allocation strategy. Then it asks the JobHandler to execute the corresponding jobId
+     * Using the plugin job allocation strategy, it retrieve the updated jobQueueList and the project name that we can
+     * fetch one job. Then it asks the JobHandler to execute the corresponding jobId
      */
     @Scheduled(fixedDelay = 1000)
     public void pullJobs() {
-        if (projects.size() == 0) {
+        if (projects.isEmpty()) {
             LOG.error("Jobs are desactivated because there is currently no project");
             return;
         }
 
         // try to found a job
-        JobAllocationStrategyResponse response = jobAllocationStrategy.getNextQueue(projects, jobQueueList, MAX_THREAD);
-        String projectName = response.getProjectName();
+        final JobAllocationStrategyResponse response = jobAllocationStrategy.getNextQueue(projects, jobQueueList,
+                                                                                          maxJobCapacity);
+        final String projectName = response.getProjectName();
         if ((projectName != null) && (projectName.length() > 0)) {
-            Long jobId = messageBroker.getJob(projectName);
+            final Long jobId = messageBroker.getJob(projectName);
             if (jobId != null) {
-                jobHandler.execute(jobId);
+                jobHandler.execute(projectName, jobId);
             }
             jobQueueList = response.getJobQueueList();
         }
@@ -122,7 +127,7 @@ public class JobPuller {
      * @param pProjects
      *            the projects to set
      */
-    public void setProjects(List<Project> pProjects) {
+    public void setProjects(final List<Project> pProjects) {
         projects = pProjects;
     }
 

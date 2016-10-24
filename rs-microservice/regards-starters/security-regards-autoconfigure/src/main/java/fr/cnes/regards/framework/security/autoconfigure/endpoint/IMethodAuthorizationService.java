@@ -9,6 +9,8 @@ import java.util.Optional;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
+
 /**
  * Interface for method authorization access service
  *

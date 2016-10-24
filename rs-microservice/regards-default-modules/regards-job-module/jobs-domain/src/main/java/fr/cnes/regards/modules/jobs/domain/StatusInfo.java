@@ -11,7 +11,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
-import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -20,73 +19,69 @@ import fr.cnes.regards.modules.core.deserializer.LocalDateTimeDeserializer;
 import fr.cnes.regards.modules.core.serializer.LocalDateTimeSerializer;
 import fr.cnes.regards.modules.core.validation.PastOrNow;
 
+/**
+ * Store job status
+ */
 @Entity(name = "T_JOB_STATUS_INFO")
 @SequenceGenerator(name = "statusInfoSequence", initialValue = 1, sequenceName = "SEQ_JOB_STATUS_INFO")
 public class StatusInfo {
 
-    @NotNull
+    /**
+     * Job StatusInfo id
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "statusInfoSequence")
     @Column(name = "id")
     private Long id;
 
+    /**
+     * Job StatusInfo description
+     */
     @Column(name = "description")
     private String description;
 
+    /**
+     * Job StatusInfo estimated date to job completion
+     */
     @Column(name = "estimatedCompletion")
     private LocalDateTime estimatedCompletion;
 
+    /**
+     * Job StatusInfo specify the date when the job should be expired
+     */
     @Column(name = "expirationDate")
     private LocalDateTime expirationDate;
 
-    @Column(name = "nextPoll")
-    private LocalDateTime nextPoll;
-
+    /**
+     * the job advancement
+     */
     @Column(name = "percentCompleted")
     private int percentCompleted;
 
+    /**
+     * the job creation date
+     */
     @PastOrNow
     @Column(name = "startDate")
     private LocalDateTime startDate;
 
+    /**
+     * the job status
+     */
     @Column(name = "status")
     private JobStatus status;
 
+    /**
+     * the job end date
+     */
     @Column(name = "stopDate")
     private LocalDateTime stopDate;
-
-    public StatusInfo() {
-    }
-
-    /**
-     * @param pDescription
-     * @param pEstimatedCompletion
-     * @param pExpirationDate
-     * @param pNextPoll
-     * @param pPercentCompleted
-     * @param pStartDate
-     * @param pStatus
-     * @param pStopDate
-     */
-    public StatusInfo(String pDescription, LocalDateTime pEstimatedCompletion, LocalDateTime pExpirationDate,
-            LocalDateTime pNextPoll, int pPercentCompleted, LocalDateTime pStartDate, JobStatus pStatus,
-            LocalDateTime pStopDate) {
-        super();
-        description = pDescription;
-        estimatedCompletion = pEstimatedCompletion;
-        expirationDate = pExpirationDate;
-        nextPoll = pNextPoll;
-        percentCompleted = pPercentCompleted;
-        startDate = pStartDate;
-        status = pStatus;
-        stopDate = pStopDate;
-    }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String pDescription) {
+    public void setDescription(final String pDescription) {
         description = pDescription;
     }
 
@@ -94,7 +89,7 @@ public class StatusInfo {
         return estimatedCompletion;
     }
 
-    public void setEstimatedCompletion(LocalDateTime pEstimatedCompletion) {
+    public void setEstimatedCompletion(final LocalDateTime pEstimatedCompletion) {
         estimatedCompletion = pEstimatedCompletion;
     }
 
@@ -102,25 +97,15 @@ public class StatusInfo {
         return expirationDate;
     }
 
-    public void setExpirationDate(LocalDateTime pExpirationDate) {
+    public void setExpirationDate(final LocalDateTime pExpirationDate) {
         expirationDate = pExpirationDate;
-    }
-
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    public LocalDateTime getNextPoll() {
-        return nextPoll;
-    }
-
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public void setNextPoll(LocalDateTime pNextPoll) {
-        nextPoll = pNextPoll;
     }
 
     public int getPercentCompleted() {
         return percentCompleted;
     }
 
-    public void setPercentCompleted(int pPercentCompleted) {
+    public void setPercentCompleted(final int pPercentCompleted) {
         percentCompleted = pPercentCompleted;
     }
 
@@ -130,15 +115,15 @@ public class StatusInfo {
     }
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public void setStartDate(LocalDateTime pStartDate) {
+    public void setStartDate(final LocalDateTime pStartDate) {
         startDate = pStartDate;
     }
 
-    public JobStatus getStatus() {
+    public JobStatus getJobStatus() {
         return status;
     }
 
-    public void setStatus(JobStatus pStatus) {
+    public void setJobStatus(final JobStatus pStatus) {
         status = pStatus;
     }
 
@@ -148,7 +133,7 @@ public class StatusInfo {
     }
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public void setStopDate(LocalDateTime pStopDate) {
+    public void setStopDate(final LocalDateTime pStopDate) {
         stopDate = pStopDate;
     }
 }

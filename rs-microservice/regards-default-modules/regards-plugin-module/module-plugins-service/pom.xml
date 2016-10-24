@@ -24,6 +24,12 @@
 			<artifactId>module-plugins-dao</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.plugins</groupId>
+			<artifactId>module-plugins-test</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 		</dependency>

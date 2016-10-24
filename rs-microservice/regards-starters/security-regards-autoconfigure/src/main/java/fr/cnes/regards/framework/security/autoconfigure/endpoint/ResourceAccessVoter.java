@@ -28,8 +28,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.autoconfigure.MethodSecurityAutoConfiguration;
-import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.domain.ResourceMappingException;
 
 /**
  * REGARDS endpoint security voter to manage resource access dynamically at method level.
@@ -67,12 +69,12 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
      * @param pMethodAuthService
      *            the method authoization service
      */
-    public ResourceAccessVoter(IMethodAuthorizationService pMethodAuthService) {
+    public ResourceAccessVoter(final IMethodAuthorizationService pMethodAuthService) {
         this.methodAuthService = pMethodAuthService;
     }
 
     @Override
-    public boolean supports(ConfigAttribute pAttribute) {
+    public boolean supports(final ConfigAttribute pAttribute) {
         return true;
     }
 
@@ -85,12 +87,13 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
      * @return always <code>true</code>
      */
     @Override
-    public boolean supports(Class<?> pClazz) {
+    public boolean supports(final Class<?> pClazz) {
         return true;
     }
 
     @Override
-    public int vote(Authentication pAuthentication, Object pObject, Collection<ConfigAttribute> pAttributes) {
+    public int vote(final Authentication pAuthentication, final Object pObject,
+            final Collection<ConfigAttribute> pAttributes) {
 
         // Default behavior : deny access
         int access = ACCESS_DENIED;
@@ -119,7 +122,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
                         LOG.info("Access {} to resource {} for user {}.", decision, mapping.getResourceMappingId(),
                                  pAuthentication.getName());
                     }
-                } catch (ResourceMappingException e) {
+                } catch (final ResourceMappingException e) {
                     // Nothing to do : access will be denied
                 }
             }
@@ -141,7 +144,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
      * @throws ResourceMappingException
      *             if resource mapping cannot be built
      */
-    public static ResourceMapping buildResourceMapping(Method pMethod) throws ResourceMappingException {
+    public static ResourceMapping buildResourceMapping(final Method pMethod) throws ResourceMappingException {
         // Retrieve resource access annotation
         final ResourceAccess access = AnnotationUtils.findAnnotation(pMethod, ResourceAccess.class);
         if (access == null) {
@@ -168,7 +171,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
         // Join path mapping
         final String path = join(classMapping, methodMapping);
 
-        return new ResourceMapping(access, Optional.of(path), getSingleMethod(pMethod));
+        return new ResourceMapping(access, path, getSingleMethod(pMethod));
 
     }
 
@@ -183,7 +186,8 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
      * @throws ResourceMappingException
      *             if mapping contains more than one path
      */
-    private static String getMapping(AnnotatedElement pElement, String pElementName) throws ResourceMappingException {
+    private static String getMapping(final AnnotatedElement pElement, final String pElementName)
+            throws ResourceMappingException {
         String mapping = null;
         final RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(pElement,
                                                                                          RequestMapping.class);
@@ -217,7 +221,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
      *            method mapping
      * @return full path to method
      */
-    private static String join(String pClassMapping, String pMethodMapping) {
+    private static String join(final String pClassMapping, final String pMethodMapping) {
         final StringBuffer fullPath = new StringBuffer();
         if (pClassMapping != null) {
             fullPath.append(pClassMapping);
@@ -238,7 +242,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
      * @throws ResourceMappingException
      *             if no single method detected
      */
-    private static RequestMethod getSingleMethod(Method pMethod) throws ResourceMappingException {
+    private static RequestMethod getSingleMethod(final Method pMethod) throws ResourceMappingException {
 
         final RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(pMethod, RequestMapping.class);
 
@@ -278,11 +282,11 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
      * @return granted or denied access (default)
      */
     // CHECKSTYLE:OFF
-    private int checkAuthorities(List<GrantedAuthority> pMethodAutorities,
-            Collection<? extends GrantedAuthority> pUserAutorities) {
+    private int checkAuthorities(final List<GrantedAuthority> pMethodAutorities,
+            final Collection<? extends GrantedAuthority> pUserAutorities) {
 
-        for (GrantedAuthority userAuthority : pUserAutorities) {
-            for (GrantedAuthority resourceAuthority : pMethodAutorities) {
+        for (final GrantedAuthority userAuthority : pUserAutorities) {
+            for (final GrantedAuthority resourceAuthority : pMethodAutorities) {
                 if (userAuthority.getAuthority().equals(resourceAuthority.getAuthority())) {
                     return ACCESS_GRANTED;
                 }
@@ -298,7 +302,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
      *            method
      * @return full method path
      */
-    private static String getMethodFullPath(Method pMethod) {
+    private static String getMethodFullPath(final Method pMethod) {
         return pMethod.getDeclaringClass().getName() + "#" + pMethod.getName();
     }
 }

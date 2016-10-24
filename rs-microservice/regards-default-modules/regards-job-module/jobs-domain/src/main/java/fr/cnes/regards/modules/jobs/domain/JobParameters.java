@@ -17,11 +17,11 @@ import fr.cnes.regards.modules.jobs.domain.converters.JobParameterConverter;
 @Convert(converter = JobParameterConverter.class)
 public class JobParameters {
 
+    /**
+     * store jobInfo parameters
+     */
     private final Map<String, Object> parameters;
 
-    /**
-     *
-     */
     public JobParameters() {
         super();
         parameters = new HashMap<>();
@@ -32,17 +32,17 @@ public class JobParameters {
      *
      * @param pParamName
      *            The attribute name
-     * @param value
+     * @param pValue
      *            The attribute value
      */
-    public void add(String pParamName, Object value) {
-        parameters.put(pParamName, value);
+    public void add(final String pParamName, final Object pValue) {
+        parameters.put(pParamName, pValue);
     }
 
     /**
-     * @return
+     * @return job parameters
      */
-    public Map<String, Object> getMap() {
+    public Map<String, Object> getParameters() {
         return parameters;
     }
 

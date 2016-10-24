@@ -17,7 +17,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 
 /**
- * PluginUtilsTest
+ * Unit testing of {@link PluginUtils}.
  * 
  * @author cmertz
  *
@@ -210,7 +210,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN);
+        final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
+                                                         PluginUtilsTest.GREEN);
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
