@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
@@ -151,7 +152,8 @@ public class PluginServiceTest extends PluginDataUtility {
     @Test(expected = PluginUtilsException.class)
     public void deleteAPluginConfigurationUnknown() throws PluginUtilsException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        Mockito.doThrow(PluginUtilsException.class).when(pluginConfRepositoryMocked)
+        aPluginConfiguration.setId(AN_ID);
+        Mockito.doThrow(EmptyResultDataAccessException.class).when(pluginConfRepositoryMocked)
                 .delete(aPluginConfiguration.getId());
         pluginServiceMocked.deletePluginConfiguration(aPluginConfiguration.getId());
     }
@@ -176,6 +178,18 @@ public class PluginServiceTest extends PluginDataUtility {
         }
     }
 
+    /**
+     * Delete a {@link PluginConfiguration} without pluginId attribute
+     * 
+     * @throws PluginUtilsException
+     *             throw if an error occurs
+     */
+    @Test(expected = PluginUtilsException.class)
+    public void saveANullPluginConfiguration() throws PluginUtilsException {
+        pluginServiceMocked.savePluginConfiguration(null);
+        Assert.fail();
+    }
+    
     /**
      * Delete a {@link PluginConfiguration} without pluginId attribute
      * 

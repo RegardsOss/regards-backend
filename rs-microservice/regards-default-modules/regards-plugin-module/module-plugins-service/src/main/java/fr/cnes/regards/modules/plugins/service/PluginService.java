@@ -229,17 +229,9 @@ public class PluginService implements IPluginService {
     public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPlugin)
             throws PluginUtilsException {
         // Check if plugin configuration exists
-        PluginConfiguration conf = getPluginConfiguration(pPlugin.getId());
+        getPluginConfiguration(pPlugin.getId());
 
-        if (conf == null) {
-            final String message = "Error updating plugin configuration " + START_ID_LOG + pPlugin.getId() + END_ID_LOG
-                    + ". This plugin configuration does not exists.";
-            LOGGER.error(message);
-            throw new PluginUtilsException(message);
-        } else {
-            conf = savePluginConfiguration(pPlugin);
-        }
-        return conf;
+        return savePluginConfiguration(pPlugin);
     }
 
     @Override
