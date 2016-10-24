@@ -10,7 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
 
 /**
  *

@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.ResourceMapping;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -30,7 +30,7 @@ public class ResourcesControllerTest {
     /**
      *
      */
-    private final ResourcesController controller = new ResourcesController(new DefaultMethodAuthorizationService());
+    private final SecurityResourcesController controller = new SecurityResourcesController(new DefaultMethodAuthorizationService());
 
     /**
      *
@@ -48,9 +48,9 @@ public class ResourcesControllerTest {
         Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
         // CHECKSTYLE:OFF
         Assert.assertTrue("There should be 2 resources", response.getBody().size() == 2);
-        Assert.assertTrue(response.getBody().get(0).getFullPath().get().equals("/tests/endpoint"));
+        Assert.assertTrue(response.getBody().get(0).getFullPath().equals("/tests/endpoint"));
         Assert.assertTrue(response.getBody().get(0).getMethod().equals(RequestMethod.GET));
-        Assert.assertTrue(response.getBody().get(1).getFullPath().get().equals("/tests/endpoint/post"));
+        Assert.assertTrue(response.getBody().get(1).getFullPath().equals("/tests/endpoint/post"));
         Assert.assertTrue(response.getBody().get(1).getMethod().equals(RequestMethod.POST));
         // CHECKSTYLE:ON
     }

@@ -17,6 +17,10 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-regards-autoconfigure</artifactId>
 			<version>${project.version}</version>
 		</dependency>

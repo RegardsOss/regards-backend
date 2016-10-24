@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import fr.cnes.regards.framework.security.utils.endpoint.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
 
 /**
  *

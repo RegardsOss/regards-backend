@@ -26,8 +26,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.cnes.regards.framework.security.autoconfigure.HttpConstants;
 import fr.cnes.regards.framework.security.autoconfigure.endpoint.IMethodAuthorizationService;
+import fr.cnes.regards.framework.security.domain.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**

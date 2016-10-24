@@ -26,8 +26,8 @@ public class DefaultJobAllocationStrategy implements IJobAllocationStrategy {
      * @return the queue name
      */
     @Override
-    public JobAllocationStrategyResponse getNextQueue(List<Project> pProjects, List<IJobQueue> pPreviousQueueList,
-            int maxThread) {
+    public JobAllocationStrategyResponse getNextQueue(final List<Project> pProjects,
+            final List<IJobQueue> pPreviousQueueList, final int maxThread) {
         List<IJobQueue> nextQueueList;
         // Recreate the queueList on initialization / on projectList change
         if ((pPreviousQueueList == null) || (pProjects.size() != pPreviousQueueList.size())) {
@@ -39,7 +39,7 @@ public class DefaultJobAllocationStrategy implements IJobAllocationStrategy {
 
         // try to found a project that can accept a new job
         for (int i = 0; i < pProjects.size(); i++) {
-            Project project = pProjects.get(currentProjectQueue);
+            final Project project = pProjects.get(currentProjectQueue);
             for (int j = 0; j < nextQueueList.size(); j++) {
                 // Execute a job for that project only if there is still a place
                 if (nextQueueList.get(j).getName().equals(project.getName())
@@ -68,15 +68,17 @@ public class DefaultJobAllocationStrategy implements IJobAllocationStrategy {
      *            the number of thread slot for the current microservice
      * @return the new job queue
      */
-    protected List<IJobQueue> initializeQueueList(List<Project> pProjects, List<IJobQueue> pPreviousQueueList,
-            int pMaxThread) {
-        List<IJobQueue> queueList = new ArrayList<>();
-        int nbJobsPerProject = ((Double) Math.ceil(((double) pMaxThread) / ((double) pProjects.size()))).intValue();
+    protected List<IJobQueue> initializeQueueList(final List<Project> pProjects,
+            final List<IJobQueue> pPreviousQueueList, final int pMaxThread) {
+        final List<IJobQueue> queueList = new ArrayList<>();
+        final int nbJobsPerProject = ((Double) Math.ceil(((double) pMaxThread) / ((double) pProjects.size())))
+                .intValue();
         for (int i = 0; i < pProjects.size(); i++) {
             int projectNbJobs = 0;
             // If the previous queue list contained the project, then reuses the number of current jobs for that queue
-            String projectName = pProjects.get(i).getName();
+            final String projectName = pProjects.get(i).getName();
             if (pPreviousQueueList != null) {
+
                 for (int j = 0; j < pPreviousQueueList.size(); j++) {
                     if (pPreviousQueueList.get(j).getName().equals(projectName)) {
                         projectNbJobs = pPreviousQueueList.get(j).getCurrentSize();
