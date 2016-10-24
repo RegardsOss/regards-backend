@@ -6,6 +6,8 @@ package fr.cnes.regards.modules.emails.signature;
 import java.util.List;
 
 import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,12 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.modules.emails.domain.Email;
-import fr.cnes.regards.modules.emails.domain.EmailWithRecipientsDTO;
 
 /**
  * REST interface to define the entry points of the module.
  *
- * @author Xavier-Alexandre Brochard
+ * @author CS SI
  */
 @RequestMapping("/emails")
 public interface IEmailSignature {
@@ -32,6 +33,17 @@ public interface IEmailSignature {
     @GetMapping
     HttpEntity<List<Email>> retrieveEmails();
 
+    // /**
+    // * Define the endpoint for sending an email to recipients
+    // *
+    // * @param pEmail
+    // * The email in a simple representation.
+    // * @return The sent email as {@link Email} wrapped in an {@link HttpEntity}
+    // */
+    // @PostMapping
+    // @ResponseBody
+    // HttpEntity<Email> sendEmail(EmailWithRecipientsDTO pEmail);
+
     /**
      * Define the endpoint for sending an email to recipients
      *
@@ -41,7 +53,7 @@ public interface IEmailSignature {
      */
     @PostMapping
     @ResponseBody
-    HttpEntity<Email> sendEmail(EmailWithRecipientsDTO pEmail);
+    ResponseEntity<SimpleMailMessage> sendEmail(SimpleMailMessage pMessage);
 
     /**
      * Define the endpoint for retrieving an email

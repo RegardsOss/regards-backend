@@ -11,7 +11,7 @@ import javax.validation.Valid;
  * Data Transfer Object wrapping the {@link Email} and a list of recipients received.The point is to match the
  * two-parameters "sendEmail" endpoint requirement.
  *
- * @author xbrochard
+ * @author CS SI
  *
  */
 public class EmailWithRecipientsDTO {

@@ -75,6 +75,25 @@ public class EmailService implements IEmailService {
         return pEmail;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.emails.service.IEmailService#sendEmail(org.springframework.mail.SimpleMailMessage)
+     */
+    @Override
+    public SimpleMailMessage sendEmail(final SimpleMailMessage pMessage) {
+        // Create the savable DTO
+        final Email email = createEmailFromSimpleMailMessage(pMessage);
+
+        // Persist in DB
+        emailRepository.save(email);
+
+        // Send the mail
+        mailSender.send(pMessage);
+
+        return pMessage;
+    }
+
     @Override
     public Email retrieveEmail(final Long pId) {
         return emailRepository.findOne(pId);
@@ -115,6 +134,27 @@ public class EmailService implements IEmailService {
         message.setText(pEmail.getText());
         message.setTo(pEmail.getTo());
         return message;
+    }
+
+    /**
+     * Create a domain {@link Email} with same content as the passed {@link SimpleMailMessage} in order to save it in
+     * db.
+     *
+     * @param pMessage
+     *            The message
+     * @return The savable email
+     */
+    private Email createEmailFromSimpleMailMessage(final SimpleMailMessage pMessage) {
+        final Email email = new Email();
+        email.setBcc(pMessage.getBcc());
+        email.setCc(pMessage.getCc());
+        email.setFrom(pMessage.getFrom());
+        email.setReplyTo(pMessage.getReplyTo());
+        email.setSentDate(pMessage.getSentDate());
+        email.setSubject(pMessage.getSubject());
+        email.setText(pMessage.getText());
+        email.setTo(pMessage.getTo());
+        return email;
     }
 
 }
