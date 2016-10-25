@@ -17,17 +17,17 @@ public class RabbitMqVhostPermission {
     /**
      * fields required by RabbitMQ Http API, represents rights to configure the virtual host
      */
-    private String configure;
+    private final String configure;
 
     /**
      * fields required by RabbitMQ Http API, represents rights to write into the virtual host
      */
-    private String write;
+    private final String write;
 
     /**
      * fields required by RabbitMQ Http API, represents rights to read from the virtual host
      */
-    private String read;
+    private final String read;
 
     public RabbitMqVhostPermission() {
         configure = ALL_RIGHTS;
@@ -39,24 +39,12 @@ public class RabbitMqVhostPermission {
         return configure;
     }
 
-    public void setConfigure(String pConfigure) {
-        configure = pConfigure;
-    }
-
     public String getWrite() {
         return write;
     }
 
-    public void setWrite(String pWrite) {
-        write = pWrite;
-    }
-
     public String getRead() {
         return read;
-    }
-
-    public void setRead(String pRead) {
-        read = pRead;
     }
 
 }

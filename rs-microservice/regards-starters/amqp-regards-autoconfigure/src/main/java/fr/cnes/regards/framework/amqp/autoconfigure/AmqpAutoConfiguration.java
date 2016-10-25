@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,6 +24,8 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.connection.RegardsSimpleRoutingConnectionFactory;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
+import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 
 /**
  *
@@ -30,7 +33,7 @@ import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
  *
  */
 @Configuration
-// @AutoConfigureAfter(MultitenantA)
+@AutoConfigureAfter(MultitenantAutoConfiguration.class)
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties({ SpringRabbitMQProperties.class, AmqpManagementProperties.class,
         AmqpMicroserviceProperties.class })
@@ -111,8 +114,9 @@ public class AmqpAutoConfiguration {
 
     @Bean
     public Subscriber subscriber(RegardsAmqpAdmin pRegardsAmqpAdmin, IRabbitVirtualHostUtils pIRabbitVirtualHostUtils,
-            Jackson2JsonMessageConverter pJackson2JsonMessageConverter) {
-        return new Subscriber(pRegardsAmqpAdmin, pIRabbitVirtualHostUtils, pJackson2JsonMessageConverter);
+            Jackson2JsonMessageConverter pJackson2JsonMessageConverter, ITenantResolver pTenantResolver) {
+        return new Subscriber(pRegardsAmqpAdmin, pIRabbitVirtualHostUtils, pJackson2JsonMessageConverter,
+                pTenantResolver);
     }
 
     @Bean

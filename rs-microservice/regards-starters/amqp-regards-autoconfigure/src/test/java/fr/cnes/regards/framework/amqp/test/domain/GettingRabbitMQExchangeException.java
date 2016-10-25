@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.amqp.test;
+package fr.cnes.regards.framework.amqp.test.domain;
 
 /**
  * @author svissier

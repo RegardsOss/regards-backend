@@ -65,11 +65,14 @@ public class PollerIT {
     private Poller poller;
 
     /**
-     * configuration bean
+     * bean allowing us to know if the broker is running
      */
     @Autowired
     private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
 
+    /**
+     * bean completing AmqpAdmin and RabbitAdmin
+     */
     @Autowired
     private RegardsAmqpAdmin regardsAmqpAdmin;
 

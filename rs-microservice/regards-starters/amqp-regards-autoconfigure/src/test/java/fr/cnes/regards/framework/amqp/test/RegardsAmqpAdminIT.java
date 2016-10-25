@@ -31,6 +31,8 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.GettingRabbitMQBindingException;
+import fr.cnes.regards.framework.amqp.test.domain.GettingRabbitMQExchangeException;
+import fr.cnes.regards.framework.amqp.test.domain.GettingRabbitMQQueueException;
 import fr.cnes.regards.framework.amqp.test.domain.RestBinding;
 import fr.cnes.regards.framework.amqp.test.domain.RestExchange;
 import fr.cnes.regards.framework.amqp.test.domain.RestQueue;
@@ -237,8 +239,10 @@ public class RegardsAmqpAdminIT {
 
     /**
      * @param pTenant1
-     * @return
+     *            tenant we are interested in
+     * @return List of {@link RestBinding} to check the result of declareBinding
      * @throws GettingRabbitMQBindingException
+     *             any issue that could occur while GETting bindings
      */
     private List<RestBinding> retrieveBinding(String pTenant1) throws GettingRabbitMQBindingException {
         final HttpHeaders headers = new HttpHeaders();
@@ -432,8 +436,10 @@ public class RegardsAmqpAdminIT {
 
     /**
      * @param pTenant2
-     * @return
-     * @throws GettingRabbitMQBindingException
+     *            tenant we are interested in
+     * @return List of {@link RestExchange} to check the result of declareExchange
+     * @throws GettingRabbitMQExchangeException
+     *             any issue that could occur while GETting exchanges
      */
     private List<RestExchange> retrieveExchange(String pTenant2) throws GettingRabbitMQExchangeException {
         final HttpHeaders headers = new HttpHeaders();
@@ -587,8 +593,10 @@ public class RegardsAmqpAdminIT {
 
     /**
      * @param pTenant2
-     * @return
-     * @throws GettingRabbitMQBindingException
+     *            tenant we are interested in
+     * @return List of {@link RestQueue} to check the result of declareQueue
+     * @throws GettingRabbitMQQueueException
+     *             any issue that could occur while GETting queues
      */
     private List<RestQueue> retrieveQueues(String pTenant2) throws GettingRabbitMQQueueException {
         final HttpHeaders headers = new HttpHeaders();

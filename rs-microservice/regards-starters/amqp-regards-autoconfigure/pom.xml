@@ -31,8 +31,8 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.project</groupId>
-			<artifactId>project-client</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-utils</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>

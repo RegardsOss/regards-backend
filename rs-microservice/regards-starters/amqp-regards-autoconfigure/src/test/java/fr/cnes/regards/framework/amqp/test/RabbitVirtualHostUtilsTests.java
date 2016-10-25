@@ -35,20 +35,35 @@ public class RabbitVirtualHostUtilsTests {
      */
     private static final int THREE_HUNDRED = 300;
 
+    /**
+     * username
+     */
     private static final String RABBITMQ_USERNAME = "username";
 
+    /**
+     * password
+     */
     private static final String RABBITMQ_PASSWORD = "password";
 
-    private static final String AMQP_MANAGMENT_HOST = "127.0.0.1";
+    /**
+     * management host
+     */
+    private static final String AMQP_MANAGEMENT_HOST = "127.0.0.1";
 
-    private static final Integer AMQP_MANAGMENT_PORT = 15672;
+    /**
+     * management port
+     */
+    private static final Integer AMQP_MANAGEMENT_PORT = 15672;
 
+    /**
+     * bean to be tested
+     */
     private static IRabbitVirtualHostUtils rabbitVirtualHostUtils;
 
     @BeforeClass
     public static void init() {
-        rabbitVirtualHostUtils = new RabbitVirtualHostUtils(RABBITMQ_USERNAME, RABBITMQ_PASSWORD, AMQP_MANAGMENT_HOST,
-                AMQP_MANAGMENT_PORT, null, null);
+        rabbitVirtualHostUtils = new RabbitVirtualHostUtils(RABBITMQ_USERNAME, RABBITMQ_PASSWORD, AMQP_MANAGEMENT_HOST,
+                AMQP_MANAGEMENT_PORT, null, null);
     }
 
     /**

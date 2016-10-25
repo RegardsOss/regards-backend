@@ -96,6 +96,9 @@ public class PublisherIT {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    /**
+     * bean allowing us to know if the broker is running
+     */
     @Autowired
     private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
 

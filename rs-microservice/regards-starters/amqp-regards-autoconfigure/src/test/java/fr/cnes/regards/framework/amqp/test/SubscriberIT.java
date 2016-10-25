@@ -99,6 +99,9 @@ public class SubscriberIT {
     @Autowired
     private RegardsAmqpAdmin amqpConfiguration;
 
+    /**
+     * bean allowing us to know if the broker is running
+     */
     @Autowired
     private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
 
