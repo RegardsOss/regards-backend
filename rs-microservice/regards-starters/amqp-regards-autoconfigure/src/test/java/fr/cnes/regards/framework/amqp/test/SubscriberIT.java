@@ -5,7 +5,6 @@ package fr.cnes.regards.framework.amqp.test;
 
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -181,11 +180,6 @@ public class SubscriberIT {
         }
         LOGGER.info(RECEIVED + receiverOneToMany.getMessage());
         Assert.assertEquals(toSend, receiverOneToMany.getMessage());
-
-    }
-
-    @After
-    public void clean() {
         try {
             cleanRabbit(TENANT);
         } catch (CleaningRabbitMQVhostException e) {

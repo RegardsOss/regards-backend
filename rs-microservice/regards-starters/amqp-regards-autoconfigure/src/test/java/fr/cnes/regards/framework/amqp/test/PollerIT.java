@@ -5,7 +5,6 @@ package fr.cnes.regards.framework.amqp.test;
 
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -144,7 +143,11 @@ public class PollerIT {
             LOGGER.error(msg, e);
             Assert.fail(msg);
         }
-
+        try {
+            cleanRabbit(TENANT);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
+        }
     }
 
     /**
@@ -181,11 +184,6 @@ public class PollerIT {
             LOGGER.error(msg, e);
             Assert.fail(msg);
         }
-
-    }
-
-    @After
-    public void clean() {
         try {
             cleanRabbit(TENANT);
         } catch (CleaningRabbitMQVhostException e) {

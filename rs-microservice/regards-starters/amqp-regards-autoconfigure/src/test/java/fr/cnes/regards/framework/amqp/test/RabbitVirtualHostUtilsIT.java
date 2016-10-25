@@ -5,8 +5,9 @@ package fr.cnes.regards.framework.amqp.test;
 
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -64,6 +65,17 @@ public class RabbitVirtualHostUtilsIT {
     private RestTemplate restTemplate;
 
     /**
+     * create and start a message listener to receive the published event
+     *
+     * @throws RabbitMQVhostException
+     *             represent any error that could occur while handling RabbitMQ Vhosts
+     */
+    @Before
+    public void init() throws RabbitMQVhostException {
+        Assume.assumeTrue(rabbitVirtualHostUtils.brokerRunning());
+    }
+
+    /**
      * Test adding and retrieving vhost from the broker
      */
     @Test
@@ -79,10 +91,6 @@ public class RabbitVirtualHostUtilsIT {
             Assert.fail();
             LOGGER.error("Issue during adding the Vhost", e);
         }
-    }
-
-    @After
-    public void clean() {
         try {
             cleanRabbit(TEST_VHOST);
         } catch (CleaningRabbitMQVhostException e) {

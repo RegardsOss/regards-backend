@@ -8,7 +8,6 @@ package fr.cnes.regards.framework.amqp.test;
 
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -179,6 +178,11 @@ public class PublisherIT {
             LOGGER.error(INVALID_JWT);
             Assert.fail(INVALID_JWT);
         }
+        try {
+            cleanRabbit(TENANT);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
+        }
     }
 
     /**
@@ -231,10 +235,6 @@ public class PublisherIT {
             LOGGER.error(INVALID_JWT);
             Assert.fail(INVALID_JWT);
         }
-    }
-
-    @After
-    public void clean() {
         try {
             cleanRabbit(TENANT);
         } catch (CleaningRabbitMQVhostException e) {
