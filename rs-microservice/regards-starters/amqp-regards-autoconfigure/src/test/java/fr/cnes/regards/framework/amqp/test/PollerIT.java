@@ -22,12 +22,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.amqp.Poller;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
+import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -67,7 +68,10 @@ public class PollerIT {
      * configuration bean
      */
     @Autowired
-    private AmqpConfiguration amqpConfiguration;
+    private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
+
+    @Autowired
+    private RegardsAmqpAdmin regardsAmqpAdmin;
 
     /**
      *
@@ -76,9 +80,9 @@ public class PollerIT {
      */
     @Before
     public void init() throws RabbitMQVhostException {
-        Assume.assumeTrue(amqpConfiguration.brokerRunning());
-        final CachingConnectionFactory connectionFactory = amqpConfiguration.createConnectionFactory(TENANT);
-        amqpConfiguration.addVhost(TENANT, connectionFactory);
+        Assume.assumeTrue(rabbitVirtualHostUtils.brokerRunning());
+        final CachingConnectionFactory connectionFactory = regardsAmqpAdmin.createConnectionFactory(TENANT);
+        rabbitVirtualHostUtils.addVhost(TENANT, connectionFactory);
     }
 
     /**
@@ -88,12 +92,11 @@ public class PollerIT {
     @Purpose("test the polling ONE_TO_MANY to message broker")
     @Test
     public void testPollOneToManyExternal() {
-        final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
-                                                                    AmqpCommunicationMode.ONE_TO_MANY, TENANT,
-                                                                    AmqpCommunicationTarget.EXTERNAL);
-        final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT,
-                                                           AmqpCommunicationTarget.EXTERNAL);
-        amqpConfiguration.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT);
+        final Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
+                                                                   TENANT, AmqpCommunicationTarget.EXTERNAL);
+        final Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT,
+                                                          AmqpCommunicationTarget.EXTERNAL);
+        regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT);
 
         final TestEvent toSend = new TestEvent("test3");
         final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
@@ -124,12 +127,12 @@ public class PollerIT {
     @Purpose("test the polling ONE_TO_ONE to message broker")
     @Test
     public void testPollOneToOneExternal() {
-        final Exchange exchangeOneToOne = amqpConfiguration.declareExchange(TestEvent.class.getName(),
-                                                                            AmqpCommunicationMode.ONE_TO_ONE, TENANT,
-                                                                            AmqpCommunicationTarget.EXTERNAL);
-        final Queue queueOneToOne = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                                                   TENANT, AmqpCommunicationTarget.EXTERNAL);
-        amqpConfiguration.declareBinding(queueOneToOne, exchangeOneToOne, AmqpCommunicationMode.ONE_TO_ONE, TENANT);
+        final Exchange exchangeOneToOne = regardsAmqpAdmin.declareExchange(TestEvent.class,
+                                                                           AmqpCommunicationMode.ONE_TO_ONE, TENANT,
+                                                                           AmqpCommunicationTarget.EXTERNAL);
+        final Queue queueOneToOne = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
+                                                                  TENANT, AmqpCommunicationTarget.EXTERNAL);
+        regardsAmqpAdmin.declareBinding(queueOneToOne, exchangeOneToOne, AmqpCommunicationMode.ONE_TO_ONE, TENANT);
 
         final TestEvent toSend = new TestEvent("test4");
         final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
