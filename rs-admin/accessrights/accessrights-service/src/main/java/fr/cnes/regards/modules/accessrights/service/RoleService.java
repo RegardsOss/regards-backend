@@ -68,6 +68,11 @@ public class RoleService implements IRoleService {
     }
 
     @Override
+    public Role retrieveRole(final String pRoleName) {
+        return roleRepository.findOneByName(pRoleName);
+    }
+
+    @Override
     public void updateRole(final Long pRoleId, final Role pUpdatedRole)
             throws InvalidValueException, EntityNotFoundException {
         if (!pRoleId.equals(pUpdatedRole.getId())) {

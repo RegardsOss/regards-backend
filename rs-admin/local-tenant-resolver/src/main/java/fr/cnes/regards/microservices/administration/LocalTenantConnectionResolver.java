@@ -1,22 +1,20 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.administration.configuration;
+package fr.cnes.regards.microservices.administration;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
-import fr.cnes.regards.modules.project.service.ProjectService;
+import fr.cnes.regards.modules.project.service.IProjectService;
 
 /**
  *
@@ -28,24 +26,38 @@ import fr.cnes.regards.modules.project.service.ProjectService;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public class TenantConnectionResolver implements ITenantConnectionResolver {
+public class LocalTenantConnectionResolver implements ITenantConnectionResolver {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(TenantConnectionResolver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LocalTenantConnectionResolver.class);
 
     /**
      * Current microservice name
      */
-    @Value("${spring.application.name}")
-    private String microserviceName;
+    private final String microserviceName;
 
     /**
      * Administration project service
      */
-    @Autowired
-    private ProjectService projectService;
+    private final IProjectService projectService;
+
+    /**
+     *
+     * Constructor
+     *
+     * @param pMicroserviceName
+     *            name of the current microservice
+     * @param pProjectService
+     *            project service
+     * @since 1.0-SNAPSHOT
+     */
+    public LocalTenantConnectionResolver(final String pMicroserviceName, final IProjectService pProjectService) {
+        super();
+        microserviceName = pMicroserviceName;
+        projectService = pProjectService;
+    }
 
     @Override
     public List<TenantConnection> getTenantConnections() {

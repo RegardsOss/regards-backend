@@ -20,7 +20,8 @@
 		<module>accessrights</module>
 		<module>emails</module>
 		<module>notification</module>
-    	<module>admin-tenants-resolver</module>
+    	<module>remote-tenant-resolver</module>
+    	<module>local-tenant-resolver</module>
   </modules>
 
 </project>

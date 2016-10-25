@@ -10,10 +10,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +21,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
@@ -37,13 +36,18 @@ import fr.cnes.regards.modules.accessrights.service.IRoleService;
  * @author CS SI
  *
  */
-public class RolesControllerIT extends AbstractRegardsIntegrationTest {
+public class RolesControllerIT extends AbstractAdministrationIT {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(RolesControllerIT.class);
 
     @Autowired
     private JWTService jwtService;
 
     @Autowired
-    private DefaultMethodAuthorizationService authService;
+    private MethodAuthorizationService authService;
 
     private String jwt;
 
@@ -67,19 +71,19 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
     @Value("${root.admin.password:admin}")
     private String rootAdminPassword_;
 
-    @Before
+    @Override
     public void init() {
-        setLogger(LoggerFactory.getLogger(ProjectsControllerIT.class));
-        jwt = jwtService.generateToken("PROJECT", "email", "SVG", "USER");
-        authService.setAuthorities("/roles", RequestMethod.GET, "USER");
-        authService.setAuthorities("/roles", RequestMethod.POST, "USER");
-        authService.setAuthorities("/roles/{role_id}", RequestMethod.GET, "USER");
-        authService.setAuthorities("/roles/{role_id}", RequestMethod.PUT, "USER");
-        authService.setAuthorities("/roles/{role_id}", RequestMethod.DELETE, "USER");
-        authService.setAuthorities("/roles/{role_id}/permissions", RequestMethod.GET, "USER");
-        authService.setAuthorities("/roles/{role_id}/permissions", RequestMethod.PUT, "USER");
-        authService.setAuthorities("/roles/{role_id}/permissions", RequestMethod.DELETE, "USER");
-        authService.setAuthorities("/roles/{role_id}/users", RequestMethod.GET, "USER");
+        final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
+        jwt = jwtService.generateToken(tenant, "email", "SVG", "USER");
+        authService.setAuthorities(tenant, "/roles", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/roles", RequestMethod.POST, "USER");
+        authService.setAuthorities(tenant, "/roles/{role_id}", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/roles/{role_id}", RequestMethod.PUT, "USER");
+        authService.setAuthorities(tenant, "/roles/{role_id}", RequestMethod.DELETE, "USER");
+        authService.setAuthorities(tenant, "/roles/{role_id}/permissions", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/roles/{role_id}/permissions", RequestMethod.PUT, "USER");
+        authService.setAuthorities(tenant, "/roles/{role_id}/permissions", RequestMethod.DELETE, "USER");
+        authService.setAuthorities(tenant, "/roles/{role_id}/users", RequestMethod.GET, "USER");
         apiRoles = "/roles";
         apiRolesId = apiRoles + "/{role_id}";
         apiRolesPermissions = apiRolesId + "/permissions";
@@ -210,6 +214,11 @@ public class RolesControllerIT extends AbstractRegardsIntegrationTest {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiRolesUsers, jwt, expectations, "TODO Error message", roleId);
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOG;
     }
 
 }

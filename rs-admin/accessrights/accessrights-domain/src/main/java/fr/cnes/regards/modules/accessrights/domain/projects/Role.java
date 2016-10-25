@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 import java.util.List;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,7 +15,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.hateoas.Identifiable;
@@ -28,48 +28,86 @@ import org.springframework.hateoas.Identifiable;
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
 public class Role implements Identifiable<Long> {
 
-    @NotNull
+    /**
+     * Role indentifier
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "roleSequence")
     @Column(name = "id")
     private Long id;
 
+    /**
+     * Role name
+     */
     @NotBlank
     @Column(name = "name")
     private String name;
 
-    // TODO: Create a specific constraint => only role PUBLIC can have no parent
+    /**
+     * Role parent role
+     *
+     * TODO: Create a specific constraint => only role PUBLIC can have no parent
+     *
+     */
     @OneToOne
     private Role parentRole;
 
+    /**
+     * Role permissions
+     */
     @Valid
     @OneToMany
     @Column(name = "permissions")
     private List<ResourcesAccess> permissions;
 
+    /**
+     * Role associated project users
+     */
     @Valid
     @OneToMany
     @Column(name = "projectUsers")
     private List<ProjectUser> projectUsers;
 
+    /**
+     * Role associated authorized IP addresses
+     */
+    @Column(name = "authorizedAdresses")
+    @Convert(converter = RoleAuthorizedAdressesConverter.class)
+    private List<String> authorizedAddresses;
+
+    /**
+     * Is a default role ?
+     */
     @Column(name = "default")
     private boolean isDefault;
 
+    /**
+     * Is a native role ?
+     */
     @Column(name = "native")
     private boolean isNative;
 
-    public void setNative(final boolean pIsNative) {
-        isNative = pIsNative;
-    }
-
+    /**
+     *
+     * Constructor
+     *
+     * @since 1.0-SNAPSHOT
+     */
     public Role() {
         super();
         isDefault = false;
         isNative = false;
     }
 
+    /**
+     *
+     * Constructor
+     *
+     * @param pRoleId
+     *            Role identifier
+     * @since 1.0-SNAPSHOT
+     */
     public Role(final Long pRoleId) {
-        this();
         id = pRoleId;
     }
 
@@ -85,13 +123,12 @@ public class Role implements Identifiable<Long> {
     public Role(final Long pRoleId, final String pName, final Role pParentRole,
             final List<ResourcesAccess> pPermissions, final List<ProjectUser> pProjectUsers, final boolean pIsDefault,
             final boolean pIsNative) {
-        super();
-        id = pRoleId;
-        name = pName;
-        parentRole = pParentRole;
-        permissions = pPermissions;
-        projectUsers = pProjectUsers;
+        this(pRoleId, pName, pParentRole, pPermissions, pProjectUsers);
         isDefault = pIsDefault;
+        isNative = pIsNative;
+    }
+
+    public void setNative(final boolean pIsNative) {
         isNative = pIsNative;
     }
 
@@ -146,6 +183,14 @@ public class Role implements Identifiable<Long> {
 
     public void setProjectUsers(final List<ProjectUser> pProjectUsers) {
         projectUsers = pProjectUsers;
+    }
+
+    public List<String> getAuthorizedAddresses() {
+        return authorizedAddresses;
+    }
+
+    public void setAuthorizedAddresses(final List<String> pAuthorizedAddresses) {
+        authorizedAddresses = pAuthorizedAddresses;
     }
 
     @Override

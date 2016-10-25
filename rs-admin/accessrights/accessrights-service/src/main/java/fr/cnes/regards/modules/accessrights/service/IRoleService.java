@@ -47,6 +47,17 @@ public interface IRoleService {
     Role retrieveRole(Long pRoleId);
 
     /**
+     *
+     * Retrieve the {@link Role} of passed <code>name</code>.
+     *
+     * @param pRoleName
+     *            role name to retrieve
+     * @return The {@link Role}'s
+     * @since 1.0-SNAPSHOT
+     */
+    Role retrieveRole(String pRoleName);
+
+    /**
      * Update the {@link Role} of id <code>pRoleId</code>.
      *
      * @param pRoleId

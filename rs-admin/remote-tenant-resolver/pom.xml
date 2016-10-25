@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.microservices.administration</groupId>
-	<artifactId>admin-tenants-resolver</artifactId>
+	<artifactId>remote-tenant-resolver</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>

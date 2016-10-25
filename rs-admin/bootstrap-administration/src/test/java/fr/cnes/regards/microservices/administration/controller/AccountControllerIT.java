@@ -10,10 +10,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +21,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -36,13 +35,18 @@ import fr.cnes.regards.modules.accessrights.service.IAccountService;
  * @author svissier
  *
  */
-public class AccountControllerIT extends AbstractRegardsIntegrationTest {
+public class AccountControllerIT extends AbstractAdministrationIT {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(AccountControllerIT.class);
 
     @Autowired
     private JWTService jwtService;
 
     @Autowired
-    private DefaultMethodAuthorizationService authService;
+    private MethodAuthorizationService authService;
 
     private String jwt;
 
@@ -74,21 +78,21 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
 
     private String apiAccountCode;
 
-    @Before
+    @Override
     public void init() {
-        setLogger(LoggerFactory.getLogger(AccountControllerIT.class));
-        jwt = jwtService.generateToken("PROJECT", "email", "SVG", "USER");
-        authService.setAuthorities("/accounts", RequestMethod.GET, "USER");
-        authService.setAuthorities("/accounts", RequestMethod.POST, "USER");
-        authService.setAuthorities("/accounts/{account_id}", RequestMethod.GET, "USER");
-        authService.setAuthorities("/accounts/{account_id}", RequestMethod.PUT, "USER");
-        authService.setAuthorities("/accounts/{account_id}", RequestMethod.DELETE, "USER");
-        authService.setAuthorities("/accounts/code", RequestMethod.GET, "USER");
-        authService.setAuthorities("/accounts/{account_id}/password/{reset_code}", RequestMethod.PUT, "USER");
-        authService.setAuthorities("/accounts/{account_id}/unlock/{unlock_code}", RequestMethod.GET, "USER");
-        authService.setAuthorities("/accounts/settings", RequestMethod.GET, "USER");
-        authService.setAuthorities("/accounts/settings", RequestMethod.PUT, "USER");
-        authService.setAuthorities("/accounts/{account_login}/validate", RequestMethod.GET, "USER");
+        final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
+        jwt = jwtService.generateToken(tenant, "email", "SVG", "USER");
+        authService.setAuthorities(tenant, "/accounts", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/accounts", RequestMethod.POST, "USER");
+        authService.setAuthorities(tenant, "/accounts/{account_id}", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/accounts/{account_id}", RequestMethod.PUT, "USER");
+        authService.setAuthorities(tenant, "/accounts/{account_id}", RequestMethod.DELETE, "USER");
+        authService.setAuthorities(tenant, "/accounts/code", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/accounts/{account_id}/password/{reset_code}", RequestMethod.PUT, "USER");
+        authService.setAuthorities(tenant, "/accounts/{account_id}/unlock/{unlock_code}", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/accounts/settings", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/accounts/settings", RequestMethod.PUT, "USER");
+        authService.setAuthorities(tenant, "/accounts/{account_login}/validate", RequestMethod.GET, "USER");
         errorMessage = "Cannot reach model attributes";
         apiAccounts = "/accounts";
         apiAccountId = apiAccounts + "/{account_id}";
@@ -276,6 +280,11 @@ public class AccountControllerIT extends AbstractRegardsIntegrationTest {
         expectations.clear();
         expectations.add(status().isNotFound());
         performGet(apiValidatePassword, jwt, expectations, errorMessage, wrongLogin, rightPassword);
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOG;
     }
 
 }
