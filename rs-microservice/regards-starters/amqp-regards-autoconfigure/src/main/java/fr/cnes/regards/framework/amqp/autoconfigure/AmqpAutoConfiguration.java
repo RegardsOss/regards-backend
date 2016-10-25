@@ -93,9 +93,10 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(final RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory) {
+    public RabbitTemplate rabbitTemplate(final RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
+            final Jackson2JsonMessageConverter pJackson2JsonMessageConverter) {
         final RabbitTemplate rabbitTemplate = new RabbitTemplate(pSimpleRoutingConnectionFactory);
-        rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter());
+        rabbitTemplate.setMessageConverter(pJackson2JsonMessageConverter);
         return rabbitTemplate;
     }
 

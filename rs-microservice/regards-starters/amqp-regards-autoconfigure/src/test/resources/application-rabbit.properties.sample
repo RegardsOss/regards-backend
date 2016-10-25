@@ -7,3 +7,4 @@ regards.amqp.microservice.instanceIdentifier="TOTO_inst1"
 
 regards.amqp.management.host= 172.26.47.52
 regards.amqp.management.port= 15672
+
