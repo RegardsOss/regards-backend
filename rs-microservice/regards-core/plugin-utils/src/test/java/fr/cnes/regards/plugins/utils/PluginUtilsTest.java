@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
+import fr.cnes.regards.plugins.utils.PluginParameterUtils.PrimitiveObject;
 
 /**
  * Unit testing of {@link PluginUtils}.
@@ -266,6 +267,18 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         // instantiate plugin
         PluginUtilsWrapper.getPlugin(parameters, SampleErrorPlugin.class);
+    }
+    
+    @Test
+    public void testPluginParameterEnum() {
+        PrimitiveObject.valueOf(PrimitiveObject.BOOLEAN.name());
+        PrimitiveObject.valueOf(PrimitiveObject.INT.name());
+        PrimitiveObject.valueOf(PrimitiveObject.STRING.name());
+        PrimitiveObject.valueOf(PrimitiveObject.SHORT.name());
+        PrimitiveObject.valueOf(PrimitiveObject.FLOAT.name());
+        PrimitiveObject.valueOf(PrimitiveObject.LONG.name());
+        PrimitiveObject.valueOf(PrimitiveObject.DOUBLE.name());
+        PrimitiveObject.valueOf(PrimitiveObject.BYTE.name());
     }
 
 }
