@@ -32,6 +32,29 @@ public final class PluginParameterUtils {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginParameterUtils.class);
 
+    /**
+     * String to start log of plugin identifier
+     */
+    private static final String START_ID_LOG = " <";
+
+    /**
+     * String to end log of plugin identifier
+     */
+    private static final String END_ID_LOG = "> ";
+
+    /**
+     * String to log " --> "
+     */
+    private static final String ARROW = " --> ";
+
+    /**
+     * String to end log of plugin identifier
+     */
+    private static final String PARAM_VALUE_DEBUG = "parameter value";
+
+    /**
+     * Default constructor
+     */
     private PluginParameterUtils() {
 
     }
@@ -84,12 +107,13 @@ public final class PluginParameterUtils {
      */
     public static List<String> getParameters(final Class<?> pPluginClass) {
         List<String> parameters = null;
+        
         for (final Field field : pPluginClass.getDeclaredFields()) {
             if (field.isAnnotationPresent(PluginParameter.class)) {
 
                 if (isAPrimitiveType(field).isPresent() || isAnInterface(field)) {
                     if (parameters == null) {
-                        parameters = new ArrayList<String>();
+                        parameters = new ArrayList<>();
                     }
                     // Get annotation and add parameter
                     final PluginParameter pluginParameter = field.getAnnotation(PluginParameter.class);
@@ -140,7 +164,7 @@ public final class PluginParameterUtils {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("parameter interface :" + pField.toGenericString() + " -> " + isSupportedType);
+            LOGGER.debug("parameter interface :" + pField.toGenericString() + ARROW + isSupportedType);
         }
 
         return isSupportedType;
@@ -206,13 +230,13 @@ public final class PluginParameterUtils {
 
         if (typeWrapper.isPresent()) {
             // The parameter is a primitive type
-            LOGGER.debug("primitive parameter:" + pField.getName() + " -> " + pField.getType());
+            LOGGER.debug("primitive parameter:" + pField.getName() + ARROW + pField.getType());
 
             postProcessPrimitiveType(pPluginInstance, pPlgConf, pField, typeWrapper, pPlgParamAnnotation, pPlgParam);
         } else {
             if (isAnInterface(pField)) {
                 // The wrapper is an interface plugin type
-                LOGGER.debug("interface parameter:" + pField.getName() + " -> " + pField.getType());
+                LOGGER.debug("interface parameter:" + pField.getName() + ARROW + pField.getType());
 
                 postProcessInterface(pPluginInstance, pPlgConf, pField, pPlgParamAnnotation);
             } else {
@@ -270,7 +294,7 @@ public final class PluginParameterUtils {
             }
         }
 
-        LOGGER.debug("parameter value : " + paramValue);
+        LOGGER.debug(PARAM_VALUE_DEBUG + paramValue);
 
         try {
             final Object effectiveVal;
@@ -318,7 +342,7 @@ public final class PluginParameterUtils {
         // Get setup value
         final PluginConfiguration paramValue = pPlgConf.getParameterConfiguration(pPlgParamAnnotation.name());
 
-        LOGGER.debug("parameter value : " + paramValue);
+        LOGGER.debug(PARAM_VALUE_DEBUG + paramValue);
 
         try {
             final Object effectiveVal = PluginUtils.getPlugin(paramValue, paramValue.getPluginClassName());
@@ -352,23 +376,24 @@ public final class PluginParameterUtils {
             final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> pConfiguredPlgParam,
             final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> pDynamicPlgParam)
             throws PluginUtilsException {
-        String paramValue = pParamValue;
+        String paramValue;
 
-        LOGGER.debug("Starting postProcessDynamicValues :" + pDynamicPlgParam.get().getName() + " - init value= <"
-                + pParamValue + ">");
+        LOGGER.debug("Starting postProcessDynamicValues :" + pDynamicPlgParam.get().getName() + " - init value= "
+                + START_ID_LOG + pParamValue + END_ID_LOG);
 
         if ((pConfiguredPlgParam.get().getDynamicsValues() != null)
-                && (!pConfiguredPlgParam.get().getDynamicsValues().isEmpty())
-                && (!pConfiguredPlgParam.get().getDynamicsValuesAsString().contains(pDynamicPlgParam.get().getValue()))) {
+                && (!pConfiguredPlgParam.get().getDynamicsValues().isEmpty()) && (!pConfiguredPlgParam.get()
+                        .getDynamicsValuesAsString().contains(pDynamicPlgParam.get().getValue()))) {
             // The dynamic parameter value is not a possible value
-            throw new PluginUtilsException("The dynamic value <" + pDynamicPlgParam.get().getValue()
-                    + "> is not an authorized value for the parameter <" + pDynamicPlgParam.get().getName() + ">");
+            throw new PluginUtilsException("The dynamic value" + START_ID_LOG + pDynamicPlgParam.get().getValue()
+                    + END_ID_LOG + "is not an authorized value for the parameter" + START_ID_LOG
+                    + pDynamicPlgParam.get().getName() + END_ID_LOG);
         }
 
         paramValue = pDynamicPlgParam.get().getValue();
 
-        LOGGER.debug("Ending postProcessDynamicValues :" + pDynamicPlgParam.get().getName() + " - new value= <"
-                + pParamValue + ">");
+        LOGGER.debug("Ending postProcessDynamicValues :" + pDynamicPlgParam.get().getName() + " - new value="
+                + START_ID_LOG + pParamValue + END_ID_LOG);
 
         return paramValue;
     }

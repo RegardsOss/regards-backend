@@ -11,5 +11,16 @@ package fr.cnes.regards.framework.amqp.domain;
  *
  */
 public enum AmqpCommunicationMode {
-    ONE_TO_ONE, ONE_TO_MANY
+    /**
+     *
+     * It means the exchange that is associated with it is a direct exchange and determine how the system names the
+     * exchanges/queues/bindings
+     *
+     */
+    ONE_TO_ONE,
+    /**
+     * It means the exchange that is associated with it is a fanout exchange and determine how the system names the
+     * exchanges/queues/bindings
+     */
+    ONE_TO_MANY;
 }

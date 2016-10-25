@@ -17,7 +17,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
-import javax.validation.constraints.NotNull;
 
 import org.springframework.hateoas.Identifiable;
 
@@ -25,19 +24,30 @@ import fr.cnes.regards.modules.jobs.domain.converters.JobOuputConverter;
 import fr.cnes.regards.modules.jobs.domain.converters.JobParameterConverter;
 import fr.cnes.regards.modules.jobs.domain.converters.PathConverter;
 
+/**
+ * Store Job Information
+ */
 @Entity(name = "T_JOB_INFO")
 public class JobInfo implements Identifiable<Long> {
 
-    @NotNull
+    /**
+     * JobInfo id
+     */
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "job_sequence", strategy = GenerationType.SEQUENCE)
     @SequenceGenerator(name = "job_sequence", allocationSize = 10)
     private Long id;
 
+    /**
+     * Job priority
+     */
     @Column(name = "priority")
     private int priority;
 
+    /**
+     * Job workspace
+     */
     @Column(name = "workspace", columnDefinition = "LONGVARCHAR")
     @Convert(converter = PathConverter.class)
     private Path workspace;
@@ -49,13 +59,22 @@ public class JobInfo implements Identifiable<Long> {
     @Convert(converter = JobOuputConverter.class)
     private List<Output> result;
 
+    /**
+     * Job parameters
+     */
     @Column(name = "parameters", columnDefinition = "LONGVARCHAR")
     @Convert(converter = JobParameterConverter.class)
     private JobParameters parameters;
 
+    /**
+     * Job owner
+     */
     @Column(name = "owner")
     private String owner;
 
+    /**
+     * Job class to execute
+     */
     @Column(name = "className")
     private String className;
 
@@ -65,6 +84,12 @@ public class JobInfo implements Identifiable<Long> {
     @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "status_id", foreignKey = @ForeignKey(name = "FK_JOB_STATUS_INFO"))
     private StatusInfo status;
+
+    /**
+     * When true, the job is done, results deleted, job metadata archived
+     */
+    @Column(name = "archived")
+    private boolean archived;
 
     public JobInfo() {
         super();
@@ -125,7 +150,7 @@ public class JobInfo implements Identifiable<Long> {
      * @return the result
      */
     public List<Output> getResult() {
-        return null;
+        return result;
     }
 
     /**
@@ -133,7 +158,7 @@ public class JobInfo implements Identifiable<Long> {
      *            the result to set
      */
     public void setResult(final List<Output> pResult) {
-
+        result = pResult;
     }
 
     /**
@@ -196,7 +221,22 @@ public class JobInfo implements Identifiable<Long> {
     }
 
     public boolean needWorkspace() {
-        return false;
+        return workspace != null;
+    }
+
+    /**
+     * @return job is archived
+     */
+    public boolean isArchived() {
+        return archived;
+    }
+
+    /**
+     * @param pArchived
+     *            set if job archived
+     */
+    public void setArchived(final boolean pArchived) {
+        archived = pArchived;
     }
 
 }

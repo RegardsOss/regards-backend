@@ -15,10 +15,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 
 /***
- * {@link PluginParameter} unit testing domain persistence
+ * Unit testing of {@link PluginConfiguration} persistence.
  *
  * @author cmertz
  *

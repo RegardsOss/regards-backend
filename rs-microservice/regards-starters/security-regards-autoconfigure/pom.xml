@@ -16,6 +16,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 			<optional>true</optional>
@@ -23,16 +27,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-aspects</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<!-- Tests -->

@@ -30,6 +30,7 @@ public abstract class AbstractController {
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
     public void dataNotFound() {
+        // Nothing to do. Just throw the exception.
     }
 
     /**
@@ -38,6 +39,7 @@ public abstract class AbstractController {
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
     public void noSuchElement() {
+        // Nothing to do. Just throw the exception.
     }
 
     /**
@@ -46,6 +48,7 @@ public abstract class AbstractController {
     @ExceptionHandler(AlreadyExistingException.class)
     @ResponseStatus(value = HttpStatus.CONFLICT)
     public void dataAlreadyExisting() {
+        // Nothing to do. Just throw the exception.
     }
 
     /**
@@ -54,6 +57,7 @@ public abstract class AbstractController {
     @ExceptionHandler(InvalidValueException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public void invalidValue() {
+        // Nothing to do. Just throw the exception.
     }
 
     /**
@@ -62,6 +66,7 @@ public abstract class AbstractController {
     @ExceptionHandler(InvalidEntityException.class)
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "Data does not respect validation constrains")
     public void manualValidation() {
+        // Nothing to do. Just throw the exception.
     }
 
     /**
@@ -71,5 +76,6 @@ public abstract class AbstractController {
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "Data does not respect validation constraints")
     public void hibernateValidation() {
+        // Nothing to do. Just throw the exception.
     }
 }

@@ -19,10 +19,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
-import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConfiguration;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
-import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
  *
@@ -50,8 +48,8 @@ public class DataSourcesConfiguration {
     /**
      * Custom projects dao connection reader
      */
-    @Autowired(required = false)
-    private IMultitenantConnectionsReader customProjectsConnectionReader;
+    @Autowired
+    private ITenantConnectionResolver multitenantResolver;
 
     /**
      *
@@ -66,29 +64,28 @@ public class DataSourcesConfiguration {
         final Map<String, DataSource> datasources = new HashMap<>();
 
         // Add datasources from bean configuration
-        if (customProjectsConnectionReader != null) {
-            final List<ProjectConnection> connections = customProjectsConnectionReader.getTenantConnections();
-            datasources.putAll(createDataSourcesFromProjectConnection(connections));
+        if (multitenantResolver != null) {
+            final List<TenantConnection> connections = multitenantResolver.getTenantConnections();
+            datasources.putAll(createDataSourcesFromTenants(connections));
         } else {
             LOG.warn("No Custom tenant reader defined. Using only properties file to create datasources for MultitenantJpaAutoConfiguration");
         }
 
         // Add datasources configuration from properties file.
-        for (final TenantConfiguration tenant : daoProperties.getTenants()) {
+        for (final TenantConnection tenant : daoProperties.getTenants()) {
             DataSource datasource;
             if (daoProperties.getEmbedded()) {
                 datasource = DataSourceHelper.createEmbeddedDataSource(tenant.getName(),
                                                                        daoProperties.getEmbeddedPath());
 
             } else {
-                datasource = DataSourceHelper
-                        .createDataSource(tenant.getDatasource().getUrl(), tenant.getDatasource().getDriverClassName(),
-                                          tenant.getDatasource().getUsername(), tenant.getDatasource().getPassword());
+                datasource = DataSourceHelper.createDataSource(tenant.getUrl(), tenant.getDriverClassName(),
+                                                               tenant.getUserName(), tenant.getPassword());
             }
             if (!datasources.containsKey(tenant.getName())) {
                 datasources.put(tenant.getName(), datasource);
             } else {
-                LOG.warn(String.format("Datasource for project %s already defined.", tenant.getName()));
+                LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getName()));
             }
         }
 
@@ -97,32 +94,29 @@ public class DataSourcesConfiguration {
 
     /**
      *
-     * Create the datasources from the ProjectConnection list given
+     * Create the datasources from the TenantConfiguration list given
      *
-     * @param pProjectConnections
-     *            Project connections
+     * @param pTenants
+     *            pTenants tenants configuration
      * @return datasources created
      * @since 1.0-SNAPSHOT
      */
-    private Map<String, DataSource> createDataSourcesFromProjectConnection(
-            final List<ProjectConnection> pProjectConnections) {
+    private Map<String, DataSource> createDataSourcesFromTenants(final List<TenantConnection> pTenants) {
 
         final Map<String, DataSource> datasources = new HashMap<>();
 
-        for (final ProjectConnection connection : pProjectConnections) {
-            final Project project = connection.getProject();
-            if ((project != null) && !datasources.containsKey(project.getName())) {
+        for (final TenantConnection tenant : pTenants) {
+            if (!datasources.containsKey(tenant.getName())) {
                 if (daoProperties.getEmbedded()) {
-                    datasources.put(project.getName(), DataSourceHelper
-                            .createEmbeddedDataSource(project.getName(), daoProperties.getEmbeddedPath()));
+                    datasources.put(tenant.getName(), DataSourceHelper
+                            .createEmbeddedDataSource(tenant.getName(), daoProperties.getEmbeddedPath()));
                 } else {
-                    datasources.put(project.getName(),
-                                    DataSourceHelper
-                                            .createDataSource(connection.getUrl(), connection.getDriverClassName(),
-                                                              connection.getUserName(), connection.getPassword()));
+                    datasources.put(tenant.getName(),
+                                    DataSourceHelper.createDataSource(tenant.getUrl(), tenant.getDriverClassName(),
+                                                                      tenant.getUserName(), tenant.getPassword()));
                 }
             } else {
-                LOG.warn(String.format("Datasource for project %s already defined.", project.getName()));
+                LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getName()));
             }
         }
         return datasources;

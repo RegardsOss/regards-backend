@@ -99,7 +99,7 @@ public class JobRepositoryIT {
         // save the job and the corresponding jobStatusInfo
         JobInfo job = jobRepository.save(jobBeforeSave);
         LOG.info(job.toString());
-        Map<String, Object> parameterAfterSave = job.getParameters().getMap();
+        Map<String, Object> parameterAfterSave = job.getParameters().getParameters();
         JobInfo jobAsParameterToRunAfter = (JobInfo) parameterAfterSave.get(keyParam);
         Assertions.assertThat(jobAsParameterToRunAfter.getOwner()).as(owner_);
         Assertions.assertThat(jobAsParameterToRunAfter.getStatus().getDescription()).as("");

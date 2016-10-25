@@ -16,6 +16,7 @@ import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -32,6 +33,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.resolver.DefaultTenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
@@ -92,7 +94,7 @@ public class MultitenantJpaAutoConfiguration {
     /**
      *
      * Constructor. Check for classpath errors.
-     * 
+     *
      * @throws MultiDataBasesException
      *
      * @since 1.0-SNAPSHOT
@@ -152,5 +154,18 @@ public class MultitenantJpaAutoConfiguration {
 
         return pBuilder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
+    }
+
+    /**
+     *
+     * Create a default TenantConnection resolver if none defined.
+     *
+     * @return ITenantConnectionResolver
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public ITenantConnectionResolver defaultTenantConnectionResolver() {
+        return new DefaultTenantConnectionResolver();
     }
 }

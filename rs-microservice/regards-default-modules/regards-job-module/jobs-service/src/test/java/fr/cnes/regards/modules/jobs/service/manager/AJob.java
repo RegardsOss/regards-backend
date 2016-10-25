@@ -9,14 +9,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.modules.jobs.domain.IJob;
+import fr.cnes.regards.modules.jobs.domain.AbstractJob;
+import fr.cnes.regards.modules.jobs.domain.EventType;
 import fr.cnes.regards.modules.jobs.domain.Output;
 import fr.cnes.regards.modules.jobs.domain.StatusInfo;
 
 /**
  *
  */
-public class AJob implements IJob {
+public class AJob extends AbstractJob {
 
     private static final Logger LOG = LoggerFactory.getLogger(AJob.class);
 
@@ -26,8 +27,9 @@ public class AJob implements IJob {
             if (!Thread.currentThread().isInterrupted()) {
                 LOG.info("AJob: Waiting..");
                 try {
-                    Thread.sleep(4000);
-                } catch (InterruptedException e) {
+                    sendEvent(EventType.JOB_PERCENT_COMPLETED, i * 10);
+                    Thread.sleep(10);
+                } catch (final InterruptedException e) {
                     LOG.warn("Thread interrupted, closing", e);
                     return;
                 }
@@ -35,6 +37,11 @@ public class AJob implements IJob {
                 LOG.warn("Thread interrupted, closing");
                 return;
             }
+        }
+        try {
+            sendEvent(EventType.SUCCEEDED);
+        } catch (final InterruptedException e) {
+            LOG.error("Failed to send success to parent thread", e);
         }
     }
 
@@ -69,8 +76,9 @@ public class AJob implements IJob {
     }
 
     @Override
-    public void setWorkspace(Path pPath) {
+    public void setWorkspace(final Path pPath) {
         // TODO Auto-generated method stub
 
     }
+
 }

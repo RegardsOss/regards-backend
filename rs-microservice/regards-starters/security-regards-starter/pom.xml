@@ -17,6 +17,10 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-regards-autoconfigure</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -28,14 +32,5 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-aspects</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-		</dependency>
-
 	</dependencies>
 </project>

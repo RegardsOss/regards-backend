@@ -26,7 +26,7 @@ public class MultitenantDaoProperties {
     /**
      * Projects configurations
      */
-    private List<TenantConfiguration> tenants = new ArrayList<>();
+    private List<TenantConnection> tenants = new ArrayList<>();
 
     /**
      * Does the Multitenant dao is embedded ?
@@ -43,11 +43,11 @@ public class MultitenantDaoProperties {
      */
     private String dialect;
 
-    public List<TenantConfiguration> getTenants() {
+    public List<TenantConnection> getTenants() {
         return tenants;
     }
 
-    public void setTenants(final List<TenantConfiguration> pPTenants) {
+    public void setTenants(final List<TenantConnection> pPTenants) {
         tenants = pPTenants;
     }
 

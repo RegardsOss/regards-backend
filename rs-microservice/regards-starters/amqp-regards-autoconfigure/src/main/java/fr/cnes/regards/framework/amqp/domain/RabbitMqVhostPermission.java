@@ -9,46 +9,42 @@ package fr.cnes.regards.framework.amqp.domain;
  */
 public class RabbitMqVhostPermission {
 
-    private static final String DEFAULT_CONFIGURE_RIGHTS = ".*";
+    /**
+     * syntax allowing to give all rights
+     */
+    private static final String ALL_RIGHTS = ".*";
 
-    private static final String DEFAULT_WRITE_RIGHTS = ".*";
+    /**
+     * fields required by RabbitMQ Http API, represents rights to configure the virtual host
+     */
+    private final String configure;
 
-    private static final String DEFAULT_READ_RIGHTS = ".*";
+    /**
+     * fields required by RabbitMQ Http API, represents rights to write into the virtual host
+     */
+    private final String write;
 
-    private String configure;
-
-    private String write;
-
-    private String read;
+    /**
+     * fields required by RabbitMQ Http API, represents rights to read from the virtual host
+     */
+    private final String read;
 
     public RabbitMqVhostPermission() {
-        configure = DEFAULT_CONFIGURE_RIGHTS;
-        write = DEFAULT_WRITE_RIGHTS;
-        read = DEFAULT_READ_RIGHTS;
+        configure = ALL_RIGHTS;
+        write = ALL_RIGHTS;
+        read = ALL_RIGHTS;
     }
 
     public String getConfigure() {
         return configure;
     }
 
-    public void setConfigure(String pConfigure) {
-        configure = pConfigure;
-    }
-
     public String getWrite() {
         return write;
     }
 
-    public void setWrite(String pWrite) {
-        write = pWrite;
-    }
-
     public String getRead() {
         return read;
-    }
-
-    public void setRead(String pRead) {
-        read = pRead;
     }
 
 }

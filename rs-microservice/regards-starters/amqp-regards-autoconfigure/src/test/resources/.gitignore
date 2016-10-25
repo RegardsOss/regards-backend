@@ -1,2 +1,2 @@
-# properties that are environnement dependent
+#local rabbit configuration
 application-rabbit.properties

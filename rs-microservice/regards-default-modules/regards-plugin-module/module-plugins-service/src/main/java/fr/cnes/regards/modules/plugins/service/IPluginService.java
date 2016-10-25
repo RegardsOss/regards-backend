@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.plugins.service;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.plugins.domain.IPluginType;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
@@ -18,7 +17,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * @author cmertz
  */
 public interface IPluginService {
-
+    
     /**
      *
      * Return all plugin types available.
@@ -39,11 +38,11 @@ public interface IPluginService {
      *
      * Return all {@link PluginMetaData} available for a specific plugin type.
      *
-     * @param pPluginType
-     *            a specific plugin type
+     * @param pInterfacePluginType
+     *            a specific interface plugin type
      * @return list of {@link PluginMetaData}
      */
-    List<PluginMetaData> getPluginsByType(IPluginType pPluginType);
+    List<PluginMetaData> getPluginsByType(Class<?> pInterfacePluginType);
 
     /**
      *
@@ -68,15 +67,15 @@ public interface IPluginService {
      * 
      * @param <T>
      *            a plugin instance
-     * @param pType
-     *            the plugin type
-     * @param pReturnInterfaceType
+     * @param pInterfacePluginType
+     *            a specific interface plugin type
+     * @param pReturnPluginType
      *            the plugin's type to return
      * @return a plugin
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
-    <T> T getFirstPluginByType(IPluginType pType, Class<T> pReturnInterfaceType) throws PluginUtilsException;
+    <T> T getFirstPluginByType(Class<?> pInterfacePluginType, Class<T> pReturnPluginType) throws PluginUtilsException;
 
     /**
      *
@@ -116,11 +115,11 @@ public interface IPluginService {
      *
      * Get all plugin's configuration for a specific plugin type.
      *
-     * @param pType
-     *            a specific plugin's type
+     * @param pInterfacePluginType
+     *            a specific interface plugin type
      * @return all the {@link PluginConfiguration} for a specific plugin type.
      */
-    List<PluginConfiguration> getPluginConfigurationsByType(IPluginType pType);
+    List<PluginConfiguration> getPluginConfigurationsByType(Class<?> pInterfacePluginType);
 
     /**
      *
@@ -145,4 +144,10 @@ public interface IPluginService {
      *             throw if an error occurs
      */
     PluginConfiguration updatePluginConfiguration(PluginConfiguration pPlugin) throws PluginUtilsException;
+
+    
+
+    
+
+    
 }

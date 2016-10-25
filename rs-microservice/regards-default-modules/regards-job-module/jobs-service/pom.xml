@@ -31,8 +31,12 @@
 		</dependency>
 		<!-- Job dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules.project</groupId>
-			<artifactId>project-client</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-utils</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>multitenant-regards-starter</artifactId>
 		</dependency>
 		<!-- Spring dependencies -->
 		<dependency>

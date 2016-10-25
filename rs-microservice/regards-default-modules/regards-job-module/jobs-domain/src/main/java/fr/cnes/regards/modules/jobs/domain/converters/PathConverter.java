@@ -20,10 +20,13 @@ import org.slf4j.LoggerFactory;
 @Converter
 public class PathConverter implements AttributeConverter<Path, String> {
 
+    /**
+     * Logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(PathConverter.class);
 
     @Override
-    public String convertToDatabaseColumn(Path pAttribute) {
+    public String convertToDatabaseColumn(final Path pAttribute) {
         if (pAttribute == null) {
             return "";
         }
@@ -31,7 +34,7 @@ public class PathConverter implements AttributeConverter<Path, String> {
     }
 
     @Override
-    public Path convertToEntityAttribute(String pDbData) {
+    public Path convertToEntityAttribute(final String pDbData) {
         return Paths.get(pDbData);
     }
 

@@ -22,11 +22,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.amqp.Poller;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
+import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -51,41 +53,39 @@ public class PollerIT {
     private static final String TENANT = "PROJECT_POLLER_IT";
 
     /**
-     * 2000
+     * bean used to send message to the broker
      */
-    private static final int SLEEP_TIME = 2000;
-
-    /**
-     * SLEEP_FAIL
-     */
-    private static final String SLEEP_FAIL = "Sleep Failed";
-
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    /**
+     * bean to test
+     */
     @Autowired
     private Poller poller;
 
+    /**
+     * bean allowing us to know if the broker is running
+     */
     @Autowired
-    private AmqpConfiguration amqpConfiguration;
+    private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
 
+    /**
+     * bean completing AmqpAdmin and RabbitAdmin
+     */
+    @Autowired
+    private RegardsAmqpAdmin regardsAmqpAdmin;
+
+    /**
+     *
+     * @throws RabbitMQVhostException
+     *             represent any error that could occur while handling RabbitMQ Vhosts
+     */
     @Before
     public void init() throws RabbitMQVhostException {
-        Assume.assumeTrue(amqpConfiguration.brokerRunning());
-        final CachingConnectionFactory connectionFactory = amqpConfiguration.createConnectionFactory(TENANT);
-        amqpConfiguration.addVhost(TENANT, connectionFactory);
-        final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
-                                                                    AmqpCommunicationMode.ONE_TO_MANY, TENANT);
-        final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT);
-        amqpConfiguration.declareBinding(queue, exchange, TestEvent.class.getName(), AmqpCommunicationMode.ONE_TO_MANY,
-                                         TENANT);
-
-        final Exchange exchangeOneToOne = amqpConfiguration.declareExchange(TestEvent.class.getName(),
-                                                                            AmqpCommunicationMode.ONE_TO_ONE, TENANT);
-        final Queue queueOneToOne = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                                                   TENANT);
-        amqpConfiguration.declareBinding(queueOneToOne, exchangeOneToOne, TestEvent.class.getName(),
-                                         AmqpCommunicationMode.ONE_TO_ONE, TENANT);
+        Assume.assumeTrue(rabbitVirtualHostUtils.brokerRunning());
+        final CachingConnectionFactory connectionFactory = regardsAmqpAdmin.createConnectionFactory(TENANT);
+        rabbitVirtualHostUtils.addVhost(TENANT, connectionFactory);
     }
 
     /**
@@ -94,7 +94,13 @@ public class PollerIT {
     @Requirement("REGARDS_DSL_CMP_ARC_170")
     @Purpose("test the polling ONE_TO_MANY to message broker")
     @Test
-    public void testPollOneToMany() {
+    public void testPollOneToManyExternal() {
+        final Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
+                                                                   TENANT, AmqpCommunicationTarget.EXTERNAL);
+        final Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT,
+                                                          AmqpCommunicationTarget.EXTERNAL);
+        regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT);
+
         final TestEvent toSend = new TestEvent("test3");
         final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
         LOGGER.info("SENDED " + sended);
@@ -102,15 +108,10 @@ public class PollerIT {
         rabbitTemplate.convertAndSend(TestEvent.class.getName(), "", sended);
         SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
 
-        try {
-            Thread.sleep(SLEEP_TIME);
-        } catch (InterruptedException e) {
-            LOGGER.error(SLEEP_FAIL, e);
-            Assert.fail(SLEEP_FAIL);
-        }
         final TenantWrapper<TestEvent> wrapperReceived;
         try {
-            wrapperReceived = poller.poll(TENANT, TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY);
+            wrapperReceived = poller.poll(TENANT, TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
+                                          AmqpCommunicationTarget.EXTERNAL);
             LOGGER.info("=================RECEIVED " + wrapperReceived.getContent());
             final TestEvent received = wrapperReceived.getContent();
             Assert.assertEquals(toSend, received);
@@ -128,7 +129,14 @@ public class PollerIT {
     @Requirement("REGARDS_DSL_CMP_ARC_170")
     @Purpose("test the polling ONE_TO_ONE to message broker")
     @Test
-    public void testPollOneToOne() {
+    public void testPollOneToOneExternal() {
+        final Exchange exchangeOneToOne = regardsAmqpAdmin.declareExchange(TestEvent.class,
+                                                                           AmqpCommunicationMode.ONE_TO_ONE, TENANT,
+                                                                           AmqpCommunicationTarget.EXTERNAL);
+        final Queue queueOneToOne = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
+                                                                  TENANT, AmqpCommunicationTarget.EXTERNAL);
+        regardsAmqpAdmin.declareBinding(queueOneToOne, exchangeOneToOne, AmqpCommunicationMode.ONE_TO_ONE, TENANT);
+
         final TestEvent toSend = new TestEvent("test4");
         final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
         LOGGER.info("SENDED :" + sended);
@@ -137,15 +145,10 @@ public class PollerIT {
         rabbitTemplate.convertAndSend("REGARDS", TestEvent.class.getName(), sended);
         SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
 
-        try {
-            Thread.sleep(SLEEP_TIME);
-        } catch (InterruptedException e) {
-            LOGGER.error(SLEEP_FAIL, e);
-            Assert.fail(SLEEP_FAIL);
-        }
         final TenantWrapper<TestEvent> wrapperReceived;
         try {
-            wrapperReceived = poller.poll(TENANT, TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE);
+            wrapperReceived = poller.poll(TENANT, TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
+                                          AmqpCommunicationTarget.EXTERNAL);
             LOGGER.info("=================RECEIVED :" + wrapperReceived.getContent());
             final TestEvent received = wrapperReceived.getContent();
             Assert.assertEquals(toSend, received);

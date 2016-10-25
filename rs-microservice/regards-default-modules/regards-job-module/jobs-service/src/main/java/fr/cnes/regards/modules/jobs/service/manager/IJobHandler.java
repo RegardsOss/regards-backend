@@ -3,33 +3,63 @@
  */
 package fr.cnes.regards.modules.jobs.service.manager;
 
+import fr.cnes.regards.modules.jobs.domain.IEvent;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.StatusInfo;
 
+/**
+ * Provide a job pool
+ */
 public interface IJobHandler {
 
     /**
-     * Store the new job inside the database
+     * Store the JobInfo into the database
      *
-     * @param job
-     * @return
+     *
+     * @param pJobInfo
+     *            Store the new jobInfo in the database
+     * @return the status of the new jobInfo
      */
-    StatusInfo create(JobInfo job);
-
-    StatusInfo delete(JobInfo job);
+    StatusInfo create(JobInfo pJobInfo);
 
     /**
-     * @param pJobId
-     * @return
+     * Stop the thread pool in the next hours
+     *
      */
-    StatusInfo execute(Long pJobId);
+    void shutdown();
 
-    JobInfo getJob(Long jobId);
+    /**
+     * Stop the thread pool in few seconds
+     *
+     */
+    void shutdownNow();
 
-    StatusInfo handle(JobInfo job);
+    /**
+     * Delete a job: Ensure that the job will be interrupted if it was running and change its status to Aborted
+     *
+     * @param pJobInfoId
+     *            abort the corresponding pJobInfo id
+     * @return the updated status of that job
+     */
+    StatusInfo abort(final Long pJobInfoId);
 
-    StatusInfo restart(JobInfo job);
+    /**
+     * Retrieve the jobInfo, then execute that job.
+     *
+     * @param pTenantName
+     *            the project that the job belong
+     * @param pJobInfoId
+     *            the jobInfo id we are running
+     * @return the updated status of the jobInfo status
+     */
+    StatusInfo execute(String pTenantName, Long pJobInfoId);
 
-    StatusInfo stop(Long jobId);
+    /**
+     * Receive event from jobs (throw JobMonitor)
+     *
+     * @param pEvent
+     *            running jobs send events to JobHandler
+     */
+    void onEvent(IEvent pEvent);
 
 }
