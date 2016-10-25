@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microservices.administration.configuration;
 
 import java.util.ArrayList;
@@ -7,9 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.IMultitenantConnectionsReader;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.ITenantConnectionResolver;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -25,20 +28,28 @@ import fr.cnes.regards.modules.project.service.ProjectService;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@Component
-public class MultitenantConnectionsReader implements IMultitenantConnectionsReader {
+public class TenantConnectionResolver implements ITenantConnectionResolver {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MultitenantConnectionsReader.class);
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(TenantConnectionResolver.class);
 
-    @Value("${spring.application.name")
+    /**
+     * Current microservice name
+     */
+    @Value("${spring.application.name}")
     private String microserviceName;
 
+    /**
+     * Administration project service
+     */
     @Autowired
     private ProjectService projectService;
 
     @Override
-    public List<ProjectConnection> getTenantConnections() {
-        final List<ProjectConnection> connections = new ArrayList<>();
+    public List<TenantConnection> getTenantConnections() {
+        final List<TenantConnection> tenants = new ArrayList<>();
         final Iterable<Project> projects = projectService.retrieveProjectList();
 
         for (final Project project : projects) {
@@ -46,7 +57,9 @@ public class MultitenantConnectionsReader implements IMultitenantConnectionsRead
                 final ProjectConnection projectConnection = projectService.retreiveProjectConnection(project.getName(),
                                                                                                      microserviceName);
                 if (projectConnection != null) {
-                    connections.add(projectConnection);
+                    tenants.add(new TenantConnection(projectConnection.getProject().getName(),
+                            projectConnection.getUrl(), projectConnection.getUserName(),
+                            projectConnection.getPassword(), projectConnection.getDriverClassName()));
                 }
             } catch (final EntityNotFoundException e) {
                 LOG.error(e.getMessage(), e);
@@ -54,7 +67,7 @@ public class MultitenantConnectionsReader implements IMultitenantConnectionsRead
             }
         }
 
-        return connections;
+        return tenants;
 
     }
 

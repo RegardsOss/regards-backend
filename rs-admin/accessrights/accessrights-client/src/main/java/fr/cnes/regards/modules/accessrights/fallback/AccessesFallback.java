@@ -10,7 +10,6 @@ import javax.naming.OperationNotSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -42,44 +41,37 @@ public class AccessesFallback implements IAccessesClient {
     /**
      * Common error message to log
      */
-    private static final String fallBackErrorMessage = "RS-ADMIN /accesses request error. Fallback.";
+    private static final String FALLBACK_ERROR_MESSAGE = "RS-ADMIN /accesses request error. Fallback.";
 
     @Override
-    public HttpEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
-        LOG.error(fallBackErrorMessage);
-        final ResponseEntity<List<Resource<ProjectUser>>> response = new ResponseEntity<>(
-                HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+    public ResponseEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<Resource<AccessRequestDTO>> requestAccess(final AccessRequestDTO pAccessRequest)
+    public ResponseEntity<Resource<AccessRequestDTO>> requestAccess(final AccessRequestDTO pAccessRequest)
             throws AlreadyExistingException {
-        LOG.error(fallBackErrorMessage);
-        final ResponseEntity<Resource<AccessRequestDTO>> response = new ResponseEntity<>(
-                HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<Void> acceptAccessRequest(final Long pAccessId) throws OperationNotSupportedException {
-        LOG.error(fallBackErrorMessage);
-        final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+    public ResponseEntity<Void> acceptAccessRequest(final Long pAccessId) throws OperationNotSupportedException {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<Void> denyAccessRequest(final Long pAccessId) throws OperationNotSupportedException {
-        LOG.error(fallBackErrorMessage);
-        final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+    public ResponseEntity<Void> denyAccessRequest(final Long pAccessId) throws OperationNotSupportedException {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<Void> removeAccessRequest(final Long pAccessId) throws EntityNotFoundException {
-        LOG.error(fallBackErrorMessage);
-        final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+    public ResponseEntity<Void> removeAccessRequest(final Long pAccessId) throws EntityNotFoundException {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /*
@@ -90,10 +82,10 @@ public class AccessesFallback implements IAccessesClient {
      * accessrights.domain.projects.AccessSettings)
      */
     @Override
-    public HttpEntity<Void> updateAccessSettings(final AccessSettings pAccessSettings) throws EntityNotFoundException {
-        LOG.error(fallBackErrorMessage);
-        final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+    public ResponseEntity<Void> updateAccessSettings(final AccessSettings pAccessSettings)
+            throws EntityNotFoundException {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
 
     }
 
@@ -103,10 +95,9 @@ public class AccessesFallback implements IAccessesClient {
      * @see fr.cnes.regards.modules.accessrights.signature.IAccessesSignature#getAccessSettings()
      */
     @Override
-    public HttpEntity<Resource<AccessSettings>> getAccessSettings() {
-        LOG.error(fallBackErrorMessage);
-        final ResponseEntity<Resource<AccessSettings>> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-        return response;
+    public ResponseEntity<Resource<AccessSettings>> getAccessSettings() {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }

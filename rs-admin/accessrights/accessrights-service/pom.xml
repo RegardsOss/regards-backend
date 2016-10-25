@@ -15,6 +15,11 @@
 	</parent>
 
 	<dependencies>
+		<!-- REGARDS Framework -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
@@ -23,10 +28,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
 			<artifactId>accessrights-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>module-jobs</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>

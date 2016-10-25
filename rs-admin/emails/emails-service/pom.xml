@@ -21,10 +21,6 @@
 			<artifactId>emails-domain</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>module-jobs</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
 			<artifactId>emails-dao</artifactId>
 		</dependency>
