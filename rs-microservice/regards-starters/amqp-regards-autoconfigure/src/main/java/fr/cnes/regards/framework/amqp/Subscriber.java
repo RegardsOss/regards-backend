@@ -78,8 +78,8 @@ public class Subscriber {
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
-    public final <T> void subscribeTo(Class<T> pEvt, IHandler<T> pReceiver,
-            AmqpCommunicationMode pAmqpCommunicationMode, AmqpCommunicationTarget pAmqpCommunicationTarget)
+    public final <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver,
+            final AmqpCommunicationMode pAmqpCommunicationMode, final AmqpCommunicationTarget pAmqpCommunicationTarget)
             throws RabbitMQVhostException {
         final Set<String> tenants = tenantResolver.getAllTenants();
         jackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
@@ -143,7 +143,7 @@ public class Subscriber {
      * @param pContainer
      *            container to start
      */
-    public void startSimpleMessageListenerContainer(SimpleMessageListenerContainer pContainer) {
+    public void startSimpleMessageListenerContainer(final SimpleMessageListenerContainer pContainer) {
         pContainer.start();
     }
 

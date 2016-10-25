@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.security.autoconfigure.filter;
+package fr.cnes.regards.framework.security.filter;
 
 import java.io.IOException;
 

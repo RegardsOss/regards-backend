@@ -14,8 +14,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.Project;
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.IProjectRepository;
+import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.TestProject;
+import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.IProjectTestRepository;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -37,7 +37,7 @@ public class InstanceDaoTest {
      * JPA Project repository
      */
     @Autowired
-    private IProjectRepository projectRepository;
+    private IProjectTestRepository projectRepository;
 
     /**
      *
@@ -63,18 +63,18 @@ public class InstanceDaoTest {
     @Test
     public void multitenancyAccessTest() {
 
-        final List<Project> resultsP = new ArrayList<>();
+        final List<TestProject> resultsP = new ArrayList<>();
 
         // Delete all previous data if any
         projectRepository.deleteAll();
 
         // Add a new Project
-        final Project newProject = new Project();
+        final TestProject newProject = new TestProject();
         newProject.setName("Project 1");
         projectRepository.save(newProject);
 
         // Check results
-        final Iterable<Project> listP = projectRepository.findAll();
+        final Iterable<TestProject> listP = projectRepository.findAll();
         listP.forEach(project -> resultsP.add(project));
         Assert.assertTrue(String.format("Error, there must be 1 elements in database associated to instance (%d)",
                                         resultsP.size()),

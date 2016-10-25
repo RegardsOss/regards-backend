@@ -5,8 +5,6 @@ package fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.project.domain.Project;
-
 /**
  * Interface for plugin JobAllocationStrategy
  */
@@ -22,6 +20,6 @@ public interface IJobAllocationStrategy {
      *            the number of thread allowed on the same time
      * @return see JobAllocationStrategyResponse
      */
-    JobAllocationStrategyResponse getNextQueue(List<Project> pProjects, List<IJobQueue> pPreviousQueueList,
+    JobAllocationStrategyResponse getNextQueue(List<String> pProjects, List<IJobQueue> pPreviousQueueList,
             int pMaxThread);
 }

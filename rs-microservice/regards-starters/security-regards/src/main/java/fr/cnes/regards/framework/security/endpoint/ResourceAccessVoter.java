@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.security.autoconfigure.endpoint;
+package fr.cnes.regards.framework.security.endpoint;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
@@ -29,9 +29,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.autoconfigure.MethodSecurityAutoConfiguration;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.ResourceMappingException;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
  * REGARDS endpoint security voter to manage resource access dynamically at method level.
@@ -61,7 +61,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
     /**
      * Method authorization service
      */
-    private final IMethodAuthorizationService methodAuthService;
+    private final MethodAuthorizationService methodAuthService;
 
     /**
      * Constructor
@@ -69,7 +69,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
      * @param pMethodAuthService
      *            the method authoization service
      */
-    public ResourceAccessVoter(final IMethodAuthorizationService pMethodAuthService) {
+    public ResourceAccessVoter(final MethodAuthorizationService pMethodAuthService) {
         this.methodAuthService = pMethodAuthService;
     }
 
@@ -98,8 +98,10 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
         // Default behavior : deny access
         int access = ACCESS_DENIED;
 
+        final JWTAuthentication jwtAuth = (JWTAuthentication) pAuthentication;
+
         // If authentication do not contains authority, deny access
-        if ((pAuthentication.getAuthorities() != null) && !pAuthentication.getAuthorities().isEmpty()) {
+        if ((jwtAuth.getAuthorities() != null) && !jwtAuth.getAuthorities().isEmpty()) {
 
             if (pObject instanceof MethodInvocation) {
 
@@ -109,7 +111,8 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
                     // Retrieve resource mapping configuration
                     final ResourceMapping mapping = buildResourceMapping(mi.getMethod());
                     // Retrieve granted authorities
-                    final Optional<List<GrantedAuthority>> options = methodAuthService.getAuthorities(mapping);
+                    final Optional<List<GrantedAuthority>> options = methodAuthService
+                            .getAuthorities(jwtAuth.getTenant(), mapping);
                     if (options.isPresent()) {
                         access = checkAuthorities(options.get(), pAuthentication.getAuthorities());
 
@@ -123,6 +126,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
                                  pAuthentication.getName());
                     }
                 } catch (final ResourceMappingException e) {
+                    LOG.debug(e.getMessage(), e);
                     // Nothing to do : access will be denied
                 }
             }

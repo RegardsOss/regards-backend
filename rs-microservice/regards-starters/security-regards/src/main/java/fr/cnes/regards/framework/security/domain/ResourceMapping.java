@@ -3,9 +3,13 @@
  */
 package fr.cnes.regards.framework.security.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 
 /**
  *
@@ -35,6 +39,11 @@ public class ResourceMapping {
      * HTTP method
      */
     private final RequestMethod method;
+
+    /**
+     * Authorized roles to access the resource
+     */
+    private List<RoleAuthority> authorizedRoles = new ArrayList<>();
 
     /**
      * Constructor
@@ -99,4 +108,17 @@ public class ResourceMapping {
     public RequestMethod getMethod() {
         return method;
     }
+
+    public List<RoleAuthority> getAutorizedRoles() {
+        return authorizedRoles;
+    }
+
+    public void setAutorizedRoles(final List<RoleAuthority> pAuthorizedRoles) {
+        authorizedRoles = pAuthorizedRoles;
+    }
+
+    public void addAuthorizedRole(final RoleAuthority pRole) {
+        authorizedRoles.add(pRole);
+    }
+
 }

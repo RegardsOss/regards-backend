@@ -1,11 +1,10 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.security.autoconfigure.endpoint;
+package fr.cnes.regards.framework.security.endpoint;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -18,7 +17,6 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -30,9 +28,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 
 /**
  * Service MethodAutorizationServiceImpl<br/>
@@ -42,18 +43,12 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
  * @author CS SI
  *
  */
-public class DefaultMethodAuthorizationService implements IMethodAuthorizationService {
+public class MethodAuthorizationService {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultMethodAuthorizationService.class);
-
-    /**
-     * List of configurated authorities
-     */
-    @Value("${regards.security.authorities:#{null}}")
-    private String[] authorities;
+    private static final Logger LOG = LoggerFactory.getLogger(MethodAuthorizationService.class);
 
     /**
      * Plugin resource manager. To handle plugins endpoints specific resources.
@@ -62,51 +57,76 @@ public class DefaultMethodAuthorizationService implements IMethodAuthorizationSe
     private IPluginResourceManager pluginResourceManager;
 
     /**
-     * Authorities cache that provide granted authorities per resource
+     * Provider for authorities
      */
-    private final Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource;
+    @Autowired
+    private IAuthoritiesProvider authoritiesProvider;
 
-    public DefaultMethodAuthorizationService() {
-        grantedAuthoritiesByResource = new HashMap<>();
+    /**
+     * Tenant resolver
+     */
+    @Autowired
+    private ITenantResolver tenantResolver;
+
+    /**
+     * JWT Security service
+     */
+    @Autowired
+    private JWTService jwtService;
+
+    /**
+     * Authorities cache that provide granted authorities per tenant and per resource.<br/>
+     * Map<Tenant, Map<Resource, List<GrantedAuthority>>>
+     */
+    private final Map<String, Map<String, ArrayList<GrantedAuthority>>> grantedAuthoritiesByTenant;
+
+    /**
+     *
+     * Constructor
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    public MethodAuthorizationService() {
+        grantedAuthoritiesByTenant = new HashMap<>();
     }
 
     /**
-     * After bean contruction, read configurated authorities
+     * After bean contruction
      */
     @PostConstruct
     public void init() {
-        if (authorities != null) {
-            LOG.debug("Initializing granted authorities from property file");
-            for (final String auth : authorities) {
-                final String[] urlVerbRoles = auth.split("\\|");
-                if (urlVerbRoles.length > 1) {
-                    final String[] urlVerb = urlVerbRoles[0].split("@");
-                    if (urlVerb.length == 2) {
-                        // Url path
-                        final String url = urlVerb[0];
-                        // HTTP method
-                        final String verb = urlVerb[1];
+        refreshAuthorities();
+    }
 
-                        try {
-                            final RequestMethod httpVerb = RequestMethod.valueOf(verb);
-
-                            // Roles
-                            final String[] roles = new String[urlVerbRoles.length - 1];
-                            for (int i = 1; i < urlVerbRoles.length; i++) {
-                                roles[i - 1] = urlVerbRoles[i];
-                            }
-
-                            setAuthorities(url, httpVerb, roles);
-                        } catch (final IllegalArgumentException pIAE) {
-                            LOG.error("Cannot retrieve HTTP method from {}", pIAE);
-                        }
-                    }
+    /**
+     *
+     * Refresh all resources access authortities for all tenants.
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    public void refreshAuthorities() {
+        grantedAuthoritiesByTenant.clear();
+        for (final String tenant : tenantResolver.getAllTenants()) {
+            try {
+                jwtService.injectToken(tenant, RootResourceAccessVoter.ROOT_ADMIN_AUHTORITY);
+                final List<ResourceMapping> resources = authoritiesProvider.getResourcesAccessConfiguration();
+                for (final ResourceMapping resource : resources) {
+                    setAuthorities(tenant, resource);
                 }
+            } catch (final JwtException e) {
+                LOG.error(String.format("Error during resources access initialization for tenant %s", tenant));
+                LOG.error(e.getMessage(), e);
             }
         }
     }
 
-    @Override
+    /**
+     *
+     * Retrieve the resources of the current microservice
+     *
+     * @return List<ResourceMapping>
+     * @since 1.0-SNAPSHOT
+     */
     public List<ResourceMapping> getResources() {
 
         final List<ResourceMapping> resources = new ArrayList<>();
@@ -179,45 +199,90 @@ public class DefaultMethodAuthorizationService implements IMethodAuthorizationSe
     }
 
     /**
-     * Add a resource authorization
+     *
+     * Add resources authorization
+     *
+     * @param pTenant
+     *            tenant name
+     * @param pResourceMapping
+     *            resource to add
+     * @since 1.0-SNAPSHOT
      */
-    @Override
-    public void setAuthorities(final ResourceMapping pResourceMapping, final GrantedAuthority... pAuthorities) {
-        if ((pResourceMapping != null) && (pAuthorities != null)) {
+    public void setAuthorities(final String pTenant, final ResourceMapping pResourceMapping) {
+        Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource = grantedAuthoritiesByTenant.get(pTenant);
+        if (grantedAuthoritiesByResource == null) {
+            grantedAuthoritiesByResource = new HashMap<>();
+            grantedAuthoritiesByTenant.put(pTenant, grantedAuthoritiesByResource);
+        }
+        if ((pResourceMapping != null) && (pResourceMapping.getAutorizedRoles() != null)) {
             final String resourceId = pResourceMapping.getResourceMappingId();
             final ArrayList<GrantedAuthority> newAuthorities;
             if (grantedAuthoritiesByResource.containsKey(resourceId)) {
                 final Set<GrantedAuthority> set = new LinkedHashSet<>(grantedAuthoritiesByResource.get(resourceId));
-                for (final GrantedAuthority grant : pAuthorities) {
+                for (final GrantedAuthority grant : pResourceMapping.getAutorizedRoles()) {
                     set.add(grant);
                 }
                 newAuthorities = new ArrayList<>(set);
             } else {
                 newAuthorities = new ArrayList<>();
-                newAuthorities.addAll(Arrays.asList(pAuthorities));
+                newAuthorities.addAll(pResourceMapping.getAutorizedRoles());
             }
             grantedAuthoritiesByResource.put(resourceId, newAuthorities);
         }
     }
 
-    @Override
-    public Optional<List<GrantedAuthority>> getAuthorities(final ResourceMapping pResourceMapping) {
-        return Optional.ofNullable(grantedAuthoritiesByResource.get(pResourceMapping.getResourceMappingId()));
-    }
-
-    @Override
-    public void setAuthorities(final String pUrlPath, final RequestMethod pMethod, final String... pRoleNames) {
+    /**
+     *
+     * Add resources authorization
+     *
+     * @param pTenant
+     *            tenant name
+     * @param pUrlPath
+     *            resource path
+     * @param pMethod
+     *            resource Method
+     * @param pRoleNames
+     *            resource role names
+     * @since 1.0-SNAPSHOT
+     */
+    public void setAuthorities(final String pTenant, final String pUrlPath, final RequestMethod pMethod,
+            final String... pRoleNames) {
         // Validate
         Assert.notNull(pUrlPath, "Path to resource cannot be null.");
         Assert.notNull(pMethod, "HTTP method cannot be null.");
         Assert.notNull(pRoleNames, "At least one role is required.");
 
         // Build granted authorities
-        final List<GrantedAuthority> newAuthorities = new ArrayList<>();
+        final List<RoleAuthority> newAuthorities = new ArrayList<>();
         for (final String role : pRoleNames) {
             newAuthorities.add(new RoleAuthority(role));
         }
 
-        setAuthorities(new ResourceMapping(pUrlPath, pMethod), newAuthorities.toArray(new GrantedAuthority[0]));
+        final ResourceMapping resource = new ResourceMapping(pUrlPath, pMethod);
+        resource.setAutorizedRoles(newAuthorities);
+
+        setAuthorities(pTenant, resource);
+    }
+
+    /**
+     *
+     * Get authorities for the given resource and the current tenant.
+     *
+     * @param pTenant
+     *            tenant name
+     * @param pResourceMapping
+     *            resource to retrieve
+     * @return List<GrantedAuthority>>
+     * @since 1.0-SNAPSHOT
+     */
+    public Optional<List<GrantedAuthority>> getAuthorities(final String pTenant,
+            final ResourceMapping pResourceMapping) {
+        List<GrantedAuthority> result = null;
+        final Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource = grantedAuthoritiesByTenant
+                .get(pTenant);
+        if (grantedAuthoritiesByResource != null) {
+            result = grantedAuthoritiesByResource.get(pResourceMapping.getResourceMappingId());
+        }
+        return Optional.ofNullable(result);
     }
 }

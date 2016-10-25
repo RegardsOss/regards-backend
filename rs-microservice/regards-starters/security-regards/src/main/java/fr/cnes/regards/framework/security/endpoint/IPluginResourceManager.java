@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.security.autoconfigure.endpoint;
+package fr.cnes.regards.framework.security.endpoint;
 
 import java.util.List;
 

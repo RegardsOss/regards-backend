@@ -27,12 +27,12 @@ public class ResourceAccessAdapter extends TypeAdapter<ResourceAccess> {
     /**
      * Label for name field
      */
-    private static final String NAME_LABEL = "name";
+    public static final String NAME_LABEL = "name";
 
     /**
      * Label for description field
      */
-    private static final String DESCRIPTION_LABEL = "description";
+    public static final String DESCRIPTION_LABEL = "description";
 
     @Override
     public void write(final JsonWriter pOut, final ResourceAccess pValue) throws IOException {

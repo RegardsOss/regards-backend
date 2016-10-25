@@ -8,10 +8,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultPluginResourceManager;
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.IMethodAuthorizationService;
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.IPluginResourceManager;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
+import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
+import fr.cnes.regards.framework.security.endpoint.DefaultPluginResourceManager;
+import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.endpoint.IPluginResourceManager;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 
 /**
  * Method Authorization Service auto configuration
@@ -25,8 +28,20 @@ public class MethodAuthorizationServiceAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public IMethodAuthorizationService methodAuthorizationService() {
-        return new DefaultMethodAuthorizationService();
+    public IAuthoritiesProvider authoritiesProvider() {
+        return new DefaultAuthorityProvider();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ITenantResolver tenantResolver() {
+        return new LocalTenantResolver();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public MethodAuthorizationService methodAuthorizationService() {
+        return new MethodAuthorizationService();
     }
 
     @Bean

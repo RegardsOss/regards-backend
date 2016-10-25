@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.security.autoconfigure.controller;
+package fr.cnes.regards.framework.security.controller;
 
 import java.util.List;
 
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.IMethodAuthorizationService;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 
 /**
  *
@@ -30,7 +30,7 @@ public class SecurityResourcesController {
     /**
      * Authorization service
      */
-    private final IMethodAuthorizationService service;
+    private final MethodAuthorizationService service;
 
     /**
      *
@@ -40,7 +40,7 @@ public class SecurityResourcesController {
      *            MethodeAutorizationService autowired by spring
      * @since 1.0-SNAPSHOT
      */
-    public SecurityResourcesController(final IMethodAuthorizationService pService) {
+    public SecurityResourcesController(final MethodAuthorizationService pService) {
         service = pService;
     }
 

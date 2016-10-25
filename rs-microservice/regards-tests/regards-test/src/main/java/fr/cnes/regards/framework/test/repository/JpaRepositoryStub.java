@@ -26,8 +26,6 @@ import org.springframework.hateoas.Identifiable;
 public class JpaRepositoryStub<T extends Identifiable<Long>> extends RepositoryStub<T>
         implements JpaRepository<T, Long> {
 
-    protected List<T> entities = new ArrayList<>();
-
     @Override
     public List<T> findAll() {
         return entities;

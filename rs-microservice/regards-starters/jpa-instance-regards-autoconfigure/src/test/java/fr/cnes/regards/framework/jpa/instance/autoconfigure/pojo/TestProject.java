@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 @Entity(name = "T_PROJECT")
 @InstanceEntity
 @SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "SEQ_PROJECT")
-public class Project {
+public class TestProject {
 
     /**
      * Project identifier

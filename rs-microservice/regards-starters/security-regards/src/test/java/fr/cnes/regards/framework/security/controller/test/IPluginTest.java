@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.security.autoconfigure.controller.test;
+package fr.cnes.regards.framework.security.controller.test;
 
 /**
  *

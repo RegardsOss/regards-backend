@@ -4,4 +4,4 @@
 /**
  * Common security controllers for all microservices
  */
-package fr.cnes.regards.framework.security.autoconfigure.controller;
+package fr.cnes.regards.framework.security.controller;

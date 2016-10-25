@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.security.autoconfigure.filter;
+package fr.cnes.regards.framework.security.filter;
 
 import java.io.IOException;
 
@@ -37,12 +37,12 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
      */
     private final AuthenticationManager authenticationManager;
 
-    public JWTAuthenticationFilter(AuthenticationManager pAuthenticationManager) {
+    public JWTAuthenticationFilter(final AuthenticationManager pAuthenticationManager) {
         this.authenticationManager = pAuthenticationManager;
     }
 
     @Override
-    public void doFilter(ServletRequest pRequest, ServletResponse pResponse, FilterChain pFilterChain)
+    public void doFilter(final ServletRequest pRequest, final ServletResponse pResponse, final FilterChain pFilterChain)
             throws IOException, ServletException {
         final HttpServletRequest request = (HttpServletRequest) pRequest;
         final HttpServletResponse response = (HttpServletResponse) pResponse;

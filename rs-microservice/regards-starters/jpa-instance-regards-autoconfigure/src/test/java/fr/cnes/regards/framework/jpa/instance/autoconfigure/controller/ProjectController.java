@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.Project;
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.IProjectRepository;
+import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.TestProject;
+import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.IProjectTestRepository;
 
 /**
  *
@@ -41,7 +41,7 @@ public class ProjectController {
      * JPA User Repository. Access to Projects in database
      */
     @Autowired
-    private IProjectRepository projectRepo;
+    private IProjectTestRepository projectRepo;
 
     /**
      *
@@ -64,8 +64,8 @@ public class ProjectController {
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(value = "/projects", method = RequestMethod.GET)
-    public HttpEntity<List<Project>> getUsers() throws CannotCreateTransactionException {
-        final List<Project> projects = new ArrayList<>();
+    public HttpEntity<List<TestProject>> getUsers() throws CannotCreateTransactionException {
+        final List<TestProject> projects = new ArrayList<>();
         projectRepo.findAll().forEach(project -> projects.add(project));
         return new ResponseEntity<>(projects, HttpStatus.OK);
     }

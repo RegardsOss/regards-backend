@@ -3,27 +3,22 @@
  */
 package fr.cnes.regards.modules.jobs.service.puller;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobAllocationStrategy;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobQueue;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.JobAllocationStrategyResponse;
 import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
-import fr.cnes.regards.modules.project.client.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
 
 /**
  *
@@ -38,15 +33,18 @@ public class JobPuller {
 
     private static final Logger LOG = LoggerFactory.getLogger(JobPuller.class);
 
-    private final IProjectsClient projectsClient;
-
-    private List<Project> projects;
+    private List<String> projects = new ArrayList<>();
 
     private final IJobAllocationStrategy jobAllocationStrategy;
 
     private List<IJobQueue> jobQueueList;
 
     private final IJobHandler jobHandler;
+
+    /**
+     * Bean which allows to get the existing tenants.
+     */
+    private final ITenantResolver tenantResolver;
 
     private final MessageBroker messageBroker;
 
@@ -60,36 +58,24 @@ public class JobPuller {
      */
     private final JWTService jwtService;
 
-    /**
-     *
-     */
-    public JobPuller(final IJobHandler pJobHandler, final JWTService pJwtService, final IProjectsClient pProjectsClient,
+    public JobPuller(final IJobHandler pJobHandler, final JWTService pJwtService, final ITenantResolver pTenantResolver,
             final IJobAllocationStrategy pJobAllocationStrategy, final MessageBroker pMessageBroker) {
         jobHandler = pJobHandler;
         jwtService = pJwtService;
-        projectsClient = pProjectsClient;
+        tenantResolver = pTenantResolver;
         jobAllocationStrategy = pJobAllocationStrategy;
         messageBroker = pMessageBroker;
         populateProjectList();
     }
 
-    /**
-     *
-     */
     private void populateProjectList() {
         try {
             jwtService.injectToken("", MODULE_JOB_ROLE);
         } catch (final JwtException e1) {
             LOG.error(e1.getMessage(), e1);
         }
-        try {
-            final HttpEntity<List<Resource<Project>>> response = projectsClient.retrieveProjectList();
-            try (Stream<Resource<Project>> stream = StreamSupport.stream(response.getBody().spliterator(), true)) {
-                projects = stream.map(a -> a.getContent()).collect(Collectors.toList());
-            }
-        } catch (final NoSuchElementException e) {
-            LOG.error(e.getMessage(), e);
-        }
+        final Set<String> projectsSet = tenantResolver.getAllTenants();
+        projectsSet.forEach(project -> projects.add(project));
     }
 
     /**
@@ -119,7 +105,7 @@ public class JobPuller {
     /**
      * @return the projects
      */
-    public List<Project> getProjects() {
+    public List<String> getProjects() {
         return projects;
     }
 
@@ -127,7 +113,7 @@ public class JobPuller {
      * @param pProjects
      *            the projects to set
      */
-    public void setProjects(final List<Project> pProjects) {
+    public void setProjects(final List<String> pProjects) {
         projects = pProjects;
     }
 

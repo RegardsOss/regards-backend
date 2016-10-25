@@ -6,7 +6,7 @@ package fr.cnes.regards.framework.jpa.instance.autoconfigure.repository;
 import org.springframework.data.repository.CrudRepository;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.Project;
+import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.TestProject;
 
 /**
  *
@@ -18,6 +18,6 @@ import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.Project;
  * @since 1.0-SNAPSHOT
  */
 @InstanceEntity
-public interface IProjectRepository extends CrudRepository<Project, Long> {
+public interface IProjectTestRepository extends CrudRepository<TestProject, Long> {
 
 }
