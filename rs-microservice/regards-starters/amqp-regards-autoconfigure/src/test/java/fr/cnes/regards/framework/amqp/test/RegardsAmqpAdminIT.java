@@ -5,11 +5,14 @@ package fr.cnes.regards.framework.amqp.test;
 
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -22,6 +25,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
@@ -43,9 +47,15 @@ import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
  * @author svissier
  *
  */
+@ActiveProfiles("rabbit")
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 public class RegardsAmqpAdminIT {
+
+    /**
+     * Logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAdminIT.class);
 
     /**
      * Tenant_Test_1
@@ -588,6 +598,16 @@ public class RegardsAmqpAdminIT {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
+        }
+    }
+
+    @After
+    public void clean() {
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
         }
     }
 
