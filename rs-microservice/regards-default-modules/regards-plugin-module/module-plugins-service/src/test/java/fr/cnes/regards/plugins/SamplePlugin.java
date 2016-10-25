@@ -16,7 +16,7 @@ import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
  * @author cmertz
  *
  */
-@Plugin(author = "CSSI", description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1")
+@Plugin(author = "CSSI", description = "Sample plugin test", id = "aSamplePlugin", version = "12345-6789-11")
 public class SamplePlugin implements ISamplePlugin {
 
     /**

@@ -8,6 +8,7 @@ import java.util.List;
 
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
@@ -17,7 +18,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * @author cmertz
  */
 public interface IPluginService {
-    
+
     /**
      *
      * Return all plugin types available.
@@ -53,13 +54,14 @@ public interface IPluginService {
      *            a plugin instance
      * @param pPluginConfigurationId
      *            the id of a {@link PluginConfiguration}.
-     * @param pReturnInterfaceType
-     *            the plugin's type to return
+     * @param pPluginParameters
+     *            an optional list of {@link PluginParameter}
      * @return a plugin
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
-    <T> T getPlugin(Long pPluginConfigurationId, Class<T> pReturnInterfaceType) throws PluginUtilsException;
+    <T> T getPlugin(Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
+            throws PluginUtilsException;
 
     /**
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
@@ -69,13 +71,14 @@ public interface IPluginService {
      *            a plugin instance
      * @param pInterfacePluginType
      *            a specific interface plugin type
-     * @param pReturnPluginType
-     *            the plugin's type to return
+     * @param pPluginParameters
+     *            an optional list of {@link PluginParameter}
      * @return a plugin
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
-    <T> T getFirstPluginByType(Class<?> pInterfacePluginType, Class<T> pReturnPluginType) throws PluginUtilsException;
+    <T> T getFirstPluginByType(Class<?> pInterfacePluginType, final PluginParameter... pPluginParameters)
+            throws PluginUtilsException;
 
     /**
      *
@@ -145,9 +148,4 @@ public interface IPluginService {
      */
     PluginConfiguration updatePluginConfiguration(PluginConfiguration pPlugin) throws PluginUtilsException;
 
-    
-
-    
-
-    
 }

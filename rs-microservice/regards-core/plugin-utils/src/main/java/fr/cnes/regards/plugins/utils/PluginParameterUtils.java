@@ -50,7 +50,7 @@ public final class PluginParameterUtils {
     /**
      * String to end log of plugin identifier
      */
-    private static final String PARAM_VALUE_DEBUG = "parameter value";
+    private static final String PARAM_VALUE_DEBUG = "parameter value : ";
 
     /**
      * Default constructor
@@ -65,7 +65,7 @@ public final class PluginParameterUtils {
      * @author cmertz
      *
      */
-    private enum PrimitiveObject {
+    public enum PrimitiveObject {
         STRING(String.class), BYTE(Byte.class), SHORT(Short.class), INT(Integer.class), LONG(Long.class), FLOAT(
                 Float.class), DOUBLE(Double.class), BOOLEAN(Boolean.class);
 
@@ -376,7 +376,7 @@ public final class PluginParameterUtils {
             final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> pConfiguredPlgParam,
             final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> pDynamicPlgParam)
             throws PluginUtilsException {
-        String paramValue;
+        final String paramValue;
 
         LOGGER.debug("Starting postProcessDynamicValues :" + pDynamicPlgParam.get().getName() + " - init value= "
                 + START_ID_LOG + pParamValue + END_ID_LOG);
