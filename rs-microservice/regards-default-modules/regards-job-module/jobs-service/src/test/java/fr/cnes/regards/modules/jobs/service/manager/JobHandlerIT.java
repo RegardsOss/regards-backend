@@ -141,9 +141,35 @@ public class JobHandlerIT {
         Mockito.when(jobInfoSystemServiceMock.findJobInfo(tenantName, pJobInfo.getId())).thenReturn(pJobInfo);
 
         final StatusInfo statusInfo = jobHandler.execute(tenantName, pJobInfo.getId());
-        Mockito.verify(jobInfoSystemServiceMock).updateJobInfo(tenantName, pJobInfo);
         Assertions.assertThat(statusInfo).isNotNull();
         Assertions.assertThat(statusInfo.getJobStatus()).isEqualTo(JobStatus.FAILED);
+    }
+
+    @Test
+    public void testShutdown() {
+        final String tenantName = "project1";
+        Mockito.when(jobInfoSystemServiceMock.findJobInfo(tenantName, pJobInfo.getId())).thenReturn(pJobInfo);
+        final StatusInfo statusInfo = jobHandler.execute(tenantName, pJobInfo.getId());
+        jobHandler.shutdown();
+    }
+
+    @Test
+    public void testShutdownNow() {
+        final String tenantName = "project1";
+        Mockito.when(jobInfoSystemServiceMock.findJobInfo(tenantName, pJobInfo.getId())).thenReturn(pJobInfo);
+        final StatusInfo statusInfo = jobHandler.execute(tenantName, pJobInfo.getId());
+        jobHandler.shutdownNow();
+        final StatusInfo statusInfo2 = jobHandler.execute(tenantName, pJobInfo2.getId());
+    }
+
+    @Test
+    public void testAbort() {
+        final String tenantName = "project1";
+        Mockito.when(jobInfoSystemServiceMock.findJobInfo(tenantName, pJobInfo.getId())).thenReturn(pJobInfo);
+        Mockito.when(jobInfoSystemServiceMock.updateJobInfo(tenantName, pJobInfo)).thenReturn(pJobInfo);
+
+        final StatusInfo statusInfo = jobHandler.execute(tenantName, pJobInfo.getId());
+        final StatusInfo statusInfoAbort = jobHandler.abort(pJobInfo.getId());
     }
 
 }

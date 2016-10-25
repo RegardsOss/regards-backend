@@ -21,13 +21,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.amqp.Subscriber;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.amqp.test.domain.TestReceiver;
+import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -96,14 +97,17 @@ public class SubscriberIT {
      * bean used to know if the broker is running
      */
     @Autowired
-    private AmqpConfiguration amqpConfiguration;
+    private RegardsAmqpAdmin amqpConfiguration;
+
+    @Autowired
+    private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
 
     /**
      * initialization ran before each test case
      */
     @Before
     public void init() {
-        Assume.assumeTrue(amqpConfiguration.brokerRunning());
+        Assume.assumeTrue(rabbitVirtualHostUtils.brokerRunning());
         receiverOneToMany = new TestReceiver();
 
         try {

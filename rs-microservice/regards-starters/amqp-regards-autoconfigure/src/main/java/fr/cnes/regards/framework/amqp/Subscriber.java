@@ -12,21 +12,19 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 
 /**
  * @author svissier
  *
  */
-@Component
 public class Subscriber {
 
     /**
@@ -37,20 +35,30 @@ public class Subscriber {
     /**
      * configuration allowing us to declare virtual host using http api and get a unique name for the instance
      */
-    @Autowired
-    private AmqpConfiguration amqpConfiguration;
+    private final RegardsAmqpAdmin regardsAmqpAdmin;
+
+    /**
+     * bean assisting us to manipulate virtual hosts
+     */
+    private final IRabbitVirtualHostUtils rabbitVirtualHostUtils;
 
     /**
      * bean handling the conversion using {@link com.fasterxml.jackson} 2
      */
-    @Autowired
-    private Jackson2JsonMessageConverter jackson2JsonMessageConverter;
+    private final Jackson2JsonMessageConverter jackson2JsonMessageConverter;
 
     /**
      * provider of projects allowing us to listen to any necessary RabbitMQ Vhost
      */
-    @Autowired
     private ITenantResolver tenantResolver;
+
+    public Subscriber(final RegardsAmqpAdmin pRegardsAmqpAdmin, final IRabbitVirtualHostUtils pRabbitVirtualHostUtils,
+            final Jackson2JsonMessageConverter pJackson2JsonMessageConverter, final ITenantResolver tenantResolver) {
+        super();
+        regardsAmqpAdmin = pRegardsAmqpAdmin;
+        rabbitVirtualHostUtils = pRabbitVirtualHostUtils;
+        jackson2JsonMessageConverter = pJackson2JsonMessageConverter;
+    }
 
     /**
      *
@@ -112,14 +120,14 @@ public class Subscriber {
             final String pProject, final Jackson2JsonMessageConverter pJackson2JsonMessageConverter,
             final IHandler<T> pReceiver, final AmqpCommunicationMode pAmqpCommunicationMode,
             final AmqpCommunicationTarget pAmqpCommunicationTarget) throws RabbitMQVhostException {
-        final CachingConnectionFactory connectionFactory = amqpConfiguration.createConnectionFactory(pProject);
-        amqpConfiguration.addVhost(pProject, connectionFactory);
+        final CachingConnectionFactory connectionFactory = regardsAmqpAdmin.createConnectionFactory(pProject);
+        rabbitVirtualHostUtils.addVhost(pProject, connectionFactory);
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        final Exchange exchange = amqpConfiguration.declareExchange(pEvt.getName(), pAmqpCommunicationMode, pProject,
-                                                                    pAmqpCommunicationTarget);
-        final Queue queue = amqpConfiguration.declareQueue(pEvt, pAmqpCommunicationMode, pProject,
-                                                           pAmqpCommunicationTarget);
-        amqpConfiguration.declareBinding(queue, exchange, pAmqpCommunicationMode, pProject);
+        final Exchange exchange = regardsAmqpAdmin.declareExchange(pEvt, pAmqpCommunicationMode, pProject,
+                                                                   pAmqpCommunicationTarget);
+        final Queue queue = regardsAmqpAdmin.declareQueue(pEvt, pAmqpCommunicationMode, pProject,
+                                                          pAmqpCommunicationTarget);
+        regardsAmqpAdmin.declareBinding(queue, exchange, pAmqpCommunicationMode, pProject);
 
         container.setConnectionFactory(connectionFactory);
 

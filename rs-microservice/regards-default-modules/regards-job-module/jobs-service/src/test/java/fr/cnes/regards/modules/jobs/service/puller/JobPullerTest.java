@@ -3,7 +3,9 @@
  */
 package fr.cnes.regards.modules.jobs.service.puller;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.assertj.core.api.Assertions;
@@ -101,6 +103,15 @@ public class JobPullerTest {
         Assertions.assertThat(jobPuller.getJobQueueList().get(0).getMaxSize()).isEqualTo(2);
         Assertions.assertThat(jobPuller.getJobQueueList().get(1).getCurrentSize()).isEqualTo(0);
         Assertions.assertThat(jobPuller.getJobQueueList().get(1).getMaxSize()).isEqualTo(2);
+
+    }
+
+    @Test
+    public void testDomain() {
+        final List<String> projects = new ArrayList<>();
+        projects.add("test-project");
+        jobPuller.setProjects(projects);
+        Assertions.assertThat(jobPuller.getProjects().size()).isEqualTo(1);
 
     }
 }

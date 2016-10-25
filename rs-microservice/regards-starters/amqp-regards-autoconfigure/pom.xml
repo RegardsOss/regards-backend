@@ -44,6 +44,16 @@
 			<optional>true</optional>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>multitenant-regards-starter</artifactId>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 
 </project>
