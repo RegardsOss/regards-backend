@@ -33,6 +33,7 @@ public @interface ResourceAccess {
      *
      *
      * @return resource name.
+     * @since 1.0-SNAPSHOT
      */
     String name() default "";
 
@@ -40,6 +41,7 @@ public @interface ResourceAccess {
      * Describe the current feature should start with an action verb
      *
      * @return feature description
+     * @since 1.0-SNAPSHOT
      */
     String description();
 
@@ -47,7 +49,7 @@ public @interface ResourceAccess {
      *
      * If the resource access is a plugin implementation, this parameter allow to identify the plugin interface
      *
-     * @return
+     * @return Plugin interface class
      * @since 1.0-SNAPSHOT
      */
     Class<?> plugin() default void.class;

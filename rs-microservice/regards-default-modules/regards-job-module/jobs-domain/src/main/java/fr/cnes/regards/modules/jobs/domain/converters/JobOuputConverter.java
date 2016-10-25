@@ -22,18 +22,26 @@ import fr.cnes.regards.modules.jobs.domain.Output;
 @Converter(autoApply = true)
 public class JobOuputConverter implements AttributeConverter<List<Output>, String> {
 
+    /**
+     * Logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(JobOuputConverter.class);
 
+    /**
+     * Jackson mapper
+     */
     private final ObjectMapper mapper = new ObjectMapper(); // jackson's objectmapper
 
     @Override
     public String convertToDatabaseColumn(final List<Output> pOuput) {
         mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
         String json = "";
-        try {
-            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(pOuput);
-        } catch (final Exception e) {
-            LOG.error("Failed to convert JobOutput POJO to string", e);
+        if (pOuput != null) {
+            try {
+                json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(pOuput);
+            } catch (final Exception e) {
+                LOG.error("Failed to convert JobOutput POJO to string", e);
+            }
         }
         return json;
     }

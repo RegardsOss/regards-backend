@@ -10,10 +10,24 @@ import java.util.concurrent.BlockingQueue;
  */
 public abstract class AbstractJob implements IJob {
 
+    /**
+     * Share a queue between the job and the JobHandler
+     */
     private BlockingQueue<IEvent> queueEvent;
 
+    /**
+     * JobInfo id
+     */
     private Long jobInfoId;
 
+    /**
+     * Store the tenantName
+     */
+    private String tenantName;
+
+    /**
+     * Job parameters
+     */
     private JobParameters parameters;
 
     @Override
@@ -22,21 +36,25 @@ public abstract class AbstractJob implements IJob {
     }
 
     /**
+     * Send an event to the JobHandler
+     *
      * @param pEventType
+     *            the event type
      * @param pValue
+     *            data related to the event
      * @throws InterruptedException
      */
     protected void sendEvent(final EventType pEventType, final Object pValue) throws InterruptedException {
-        queueEvent.put(new Event(pEventType, pValue, jobInfoId));
+        queueEvent.put(new Event(pEventType, pValue, jobInfoId, tenantName));
     }
 
     /**
      * @param pEventType
-     * @param pValue
+     *            the event type
      * @throws InterruptedException
      */
     protected void sendEvent(final EventType pEventType) throws InterruptedException {
-        queueEvent.put(new Event(pEventType, null, jobInfoId));
+        queueEvent.put(new Event(pEventType, null, jobInfoId, tenantName));
     }
 
     /**
@@ -62,6 +80,14 @@ public abstract class AbstractJob implements IJob {
      */
     public JobParameters getParameters() {
         return parameters;
+    }
+
+    /**
+     * @param pTenantName
+     *            the tenantName to set
+     */
+    public void setTenantName(final String pTenantName) {
+        tenantName = pTenantName;
     }
 
 }

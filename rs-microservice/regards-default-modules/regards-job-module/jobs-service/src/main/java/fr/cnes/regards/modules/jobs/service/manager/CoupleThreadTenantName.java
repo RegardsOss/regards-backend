@@ -8,10 +8,23 @@ package fr.cnes.regards.modules.jobs.service.manager;
  */
 public class CoupleThreadTenantName {
 
-    public final Thread thread;
+    /**
+     * Store the running job
+     */
+    private final Thread thread;
 
-    public final String tenantName;
+    /**
+     * Store the tenant name for this job
+     */
+    private final String tenantName;
 
+    /**
+     *
+     * @param pTenantName
+     *            the tenant name
+     * @param pThread
+     *            the running job
+     */
     public CoupleThreadTenantName(final String pTenantName, final Thread pThread) {
         thread = pThread;
         tenantName = pTenantName;

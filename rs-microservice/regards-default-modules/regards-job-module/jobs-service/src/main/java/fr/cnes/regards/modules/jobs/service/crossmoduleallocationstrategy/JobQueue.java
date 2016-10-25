@@ -3,49 +3,44 @@
  */
 package fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy;
 
-import fr.cnes.regards.modules.jobs.domain.IEvent;
-
+/**
+ * Store tenant/number of active jobs/max number of jobs
+ */
 public class JobQueue implements IJobQueue {
 
+    /**
+     * the tenant name
+     */
     private final String name;
 
+    /**
+     * Number of current working job for that tenant
+     */
     private final int currentSize;
 
+    /**
+     * JobAllocationStrategy maintain the maximal number of thread
+     */
     private final int maxSize;
 
     /**
      *
      * @param pName
+     *            tenant name
      * @param pCurrentSize
+     *            number of working job for that tenant
      * @param pMaxSize
+     *            max number of job for that tenant
      */
-    public JobQueue(String pName, int pCurrentSize, int pMaxSize) {
+    public JobQueue(final String pName, final int pCurrentSize, final int pMaxSize) {
         super();
         name = pName;
         currentSize = pCurrentSize;
         maxSize = pMaxSize;
     }
 
-    @Override
-    public IEvent get() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void publish(IEvent pEvent) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void subscribe(IEvent pEvent) {
-        // TODO Auto-generated method stub
-
-    }
-
     /**
-     * @return the name
+     * @return the tenant name
      */
     @Override
     public String getName() {

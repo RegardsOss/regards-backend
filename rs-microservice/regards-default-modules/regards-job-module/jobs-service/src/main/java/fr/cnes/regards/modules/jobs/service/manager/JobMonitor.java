@@ -16,6 +16,9 @@ import fr.cnes.regards.modules.jobs.domain.IEvent;
  */
 public class JobMonitor implements Runnable {
 
+    /**
+     * Logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(JobMonitor.class);
 
     /**
@@ -23,8 +26,14 @@ public class JobMonitor implements Runnable {
      */
     private final BlockingQueue<IEvent> queueEvent;
 
+    /**
+     * Store jobHandler
+     */
     private final IJobHandler jobHandler;
 
+    /**
+     * Stop the jobMonitor on shutdown
+     */
     private boolean isRunning;
 
     /**

@@ -3,9 +3,35 @@
  */
 package fr.cnes.regards.modules.jobs.domain;
 
+/**
+ * JobInfo status
+ */
 public enum JobStatus {
 
-    QUEUD, RUNNING, SUCCEEDED, FAILED, PENDING, ABORTED, SUSPENDED, ARCHIVED;
+    /**
+     * Job waiting to get some resources allocated
+     */
+    QUEUED,
+    /**
+     * Job running
+     */
+    RUNNING,
+    /**
+     * Job finished without error
+     */
+    SUCCEEDED,
+    /**
+     * Job finished with error(s)
+     */
+    FAILED,
+    /**
+     * Job cancelled
+     */
+    ABORTED,
+    /**
+     * Unused state for job temporary suspended because requiring additional resources
+     */
+    SUSPENDED;
 
     @Override
     public String toString() {

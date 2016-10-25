@@ -25,12 +25,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.amqp.Publisher;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConfiguration;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
+import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -75,7 +76,7 @@ public class PublisherIT {
      * configuration
      */
     @Autowired
-    private AmqpConfiguration amqpConfiguration;
+    private RegardsAmqpAdmin amqpConfiguration;
 
     /**
      * bean used to generate and place JWT into the context
@@ -96,6 +97,12 @@ public class PublisherIT {
     private RabbitTemplate rabbitTemplate;
 
     /**
+     * bean allowing us to know if the broker is running
+     */
+    @Autowired
+    private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
+
+    /**
      * create and start a message listener to receive the published event
      *
      * @throws RabbitMQVhostException
@@ -103,9 +110,9 @@ public class PublisherIT {
      */
     @Before
     public void init() throws RabbitMQVhostException {
-        Assume.assumeTrue(amqpConfiguration.brokerRunning());
+        Assume.assumeTrue(rabbitVirtualHostUtils.brokerRunning());
         final CachingConnectionFactory connectionFactory = amqpConfiguration.createConnectionFactory(TENANT);
-        amqpConfiguration.addVhost(TENANT, connectionFactory);
+        rabbitVirtualHostUtils.addVhost(TENANT, connectionFactory);
     }
 
     /**
@@ -118,7 +125,7 @@ public class PublisherIT {
         try {
             jwtService.injectToken(TENANT, ROLE);
 
-            final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
+            final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class,
                                                                         AmqpCommunicationMode.ONE_TO_MANY, TENANT,
                                                                         AmqpCommunicationTarget.EXTERNAL);
             final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
@@ -160,7 +167,7 @@ public class PublisherIT {
         try {
             jwtService.injectToken(TENANT, ROLE);
 
-            final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class.getName(),
+            final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class,
                                                                         AmqpCommunicationMode.ONE_TO_ONE, TENANT,
                                                                         AmqpCommunicationTarget.EXTERNAL);
             final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
