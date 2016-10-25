@@ -13,7 +13,6 @@ import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobAl
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobQueue;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.JobAllocationStrategyResponse;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.JobQueue;
-import fr.cnes.regards.modules.project.domain.Project;
 
 /**
  *
@@ -22,13 +21,13 @@ public class DefaultJobAllocationStrategyTest {
 
     @Test
     public void testInitialisation() {
-        IJobAllocationStrategy defaultJobAllocationStrategy = new DefaultJobAllocationStrategy();
-        List<Project> pProjects = new ArrayList<>();
-        int nbProjects = 9;
+        final IJobAllocationStrategy defaultJobAllocationStrategy = new DefaultJobAllocationStrategy();
+        final List<String> pProjects = new ArrayList<>();
+        final int nbProjects = 9;
         for (int i = 0; i < nbProjects; i++) {
-            pProjects.add(new Project("description", "icon", true, String.format("project%d", i)));
+            pProjects.add(String.format("project%d", i));
         }
-        JobAllocationStrategyResponse jobAllocationStrategyResponse = defaultJobAllocationStrategy
+        final JobAllocationStrategyResponse jobAllocationStrategyResponse = defaultJobAllocationStrategy
                 .getNextQueue(pProjects, null, 100);
         Assertions.assertThat(jobAllocationStrategyResponse.getJobQueueList().size()).isEqualByComparingTo(nbProjects);
         Assertions.assertThat(jobAllocationStrategyResponse.getJobQueueList().get(0).getMaxSize())
@@ -37,22 +36,22 @@ public class DefaultJobAllocationStrategyTest {
 
     @Test
     public void testScaleWhenNewProjects() {
-        IJobAllocationStrategy defaultJobAllocationStrategy = new DefaultJobAllocationStrategy();
-        List<Project> projects = new ArrayList<>();
-        List<IJobQueue> jobQueueList = new ArrayList<>();
+        final IJobAllocationStrategy defaultJobAllocationStrategy = new DefaultJobAllocationStrategy();
+        final List<String> projects = new ArrayList<>();
+        final List<IJobQueue> jobQueueList = new ArrayList<>();
 
-        int nbPreviousQueues = 4;
-        int nbThreadForPreviousProject = 7;
+        final int nbPreviousQueues = 4;
+        final int nbThreadForPreviousProject = 7;
         for (int i = 0; i < nbPreviousQueues; i++) {
             jobQueueList.add(new JobQueue(String.format("project%d", i), nbThreadForPreviousProject, 25));
         }
 
-        int nbProjects = 1000;
+        final int nbProjects = 1000;
         for (int i = 0; i < nbProjects; i++) {
-            projects.add(new Project("description", "icon", true, String.format("project%d", i)));
+            projects.add(String.format("project%d", i));
         }
         Assertions.assertThat(jobQueueList.size()).isNotEqualTo(projects.size());
-        JobAllocationStrategyResponse jobAllocationStrategyResponse = defaultJobAllocationStrategy
+        final JobAllocationStrategyResponse jobAllocationStrategyResponse = defaultJobAllocationStrategy
                 .getNextQueue(projects, jobQueueList, 100);
         Assertions.assertThat(jobAllocationStrategyResponse.getJobQueueList().size()).isEqualByComparingTo(nbProjects);
         Assertions.assertThat(jobAllocationStrategyResponse.getJobQueueList().get(0).getMaxSize())
@@ -65,20 +64,20 @@ public class DefaultJobAllocationStrategyTest {
 
     @Test
     public void testReturnProjectOk() {
-        IJobAllocationStrategy defaultJobAllocationStrategy = new DefaultJobAllocationStrategy();
-        List<Project> projects = new ArrayList<>();
-        List<IJobQueue> jobQueueList = new ArrayList<>();
+        final IJobAllocationStrategy defaultJobAllocationStrategy = new DefaultJobAllocationStrategy();
+        final List<String> projects = new ArrayList<>();
+        final List<IJobQueue> jobQueueList = new ArrayList<>();
 
         jobQueueList.add(new JobQueue("project1", 25, 25));
         jobQueueList.add(new JobQueue("project2", 24, 25));
         jobQueueList.add(new JobQueue("project3", 25, 25));
         jobQueueList.add(new JobQueue("project4", 23, 25));
         jobQueueList.add(new JobQueue("project5", 21, 25));
-        projects.add(new Project("description", "icon", true, "project1"));
-        projects.add(new Project("description", "icon", true, "project2"));
-        projects.add(new Project("description", "icon", true, "project3"));
-        projects.add(new Project("description", "icon", true, "project4"));
-        projects.add(new Project("description", "icon", true, "project5"));
+        projects.add("project1");
+        projects.add("project2");
+        projects.add("project3");
+        projects.add("project4");
+        projects.add("project5");
 
         JobAllocationStrategyResponse jobAllocationStrategyResponse = defaultJobAllocationStrategy
                 .getNextQueue(projects, jobQueueList, 125);

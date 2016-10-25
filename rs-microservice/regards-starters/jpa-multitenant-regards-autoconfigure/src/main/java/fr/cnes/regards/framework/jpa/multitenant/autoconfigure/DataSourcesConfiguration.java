@@ -48,7 +48,7 @@ public class DataSourcesConfiguration {
     /**
      * Custom projects dao connection reader
      */
-    @Autowired(required = false)
+    @Autowired
     private ITenantConnectionResolver multitenantResolver;
 
     /**

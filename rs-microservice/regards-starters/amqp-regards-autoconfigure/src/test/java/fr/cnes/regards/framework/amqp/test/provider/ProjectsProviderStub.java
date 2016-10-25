@@ -3,13 +3,13 @@
  */
 package fr.cnes.regards.framework.amqp.test.provider;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.amqp.provider.IProjectsProvider;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 
 /**
  * @author svissier
@@ -17,11 +17,11 @@ import fr.cnes.regards.framework.amqp.provider.IProjectsProvider;
  */
 @Component
 @Primary
-public class ProjectsProviderStub implements IProjectsProvider {
+public class ProjectsProviderStub implements ITenantResolver {
 
     @Override
-    public List<String> retrieveProjectList() {
-        final List<String> projectListStub = new ArrayList<String>(2);
+    public Set<String> getAllTenants() {
+        final Set<String> projectListStub = new HashSet<>();
         projectListStub.add("PROJECT1");
         projectListStub.add("PROJECT2");
         return projectListStub;

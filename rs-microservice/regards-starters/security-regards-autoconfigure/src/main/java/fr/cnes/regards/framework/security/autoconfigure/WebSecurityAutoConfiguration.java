@@ -16,9 +16,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import fr.cnes.regards.framework.security.autoconfigure.filter.CorsFilter;
-import fr.cnes.regards.framework.security.autoconfigure.filter.JWTAuthenticationFilter;
-import fr.cnes.regards.framework.security.autoconfigure.filter.JWTAuthenticationProvider;
+import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
+import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.filter.CorsFilter;
+import fr.cnes.regards.framework.security.filter.IpFilter;
+import fr.cnes.regards.framework.security.filter.JWTAuthenticationFilter;
+import fr.cnes.regards.framework.security.filter.JWTAuthenticationProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
@@ -40,8 +44,20 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private JWTService jwtService;
 
+    /**
+     * Authorities provider
+     */
+    @Autowired
+    private IAuthoritiesProvider authoritiesProvider;
+
+    /**
+     * Authorization service
+     */
+    @Autowired
+    private MethodAuthorizationService authorizationService;
+
     @Override
-    protected void configure(HttpSecurity pHttp) throws Exception {
+    protected void configure(final HttpSecurity pHttp) throws Exception {
 
         // Disable CSRF
         // Force authentication for all requests
@@ -53,12 +69,20 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         // Add JWT Authentication filter
         pHttp.addFilterBefore(new JWTAuthenticationFilter(authenticationManager()),
                               UsernamePasswordAuthenticationFilter.class);
+
+        // Add Ip filter after Authentication filter
+        pHttp.addFilterAfter(new IpFilter(authoritiesProvider), JWTAuthenticationFilter.class);
     }
 
     @Override
-    public void configure(WebSecurity pWeb) throws Exception {
+    public void configure(final WebSecurity pWeb) throws Exception {
         pWeb.ignoring().antMatchers("/favicon", "/webjars/springfox-swagger-ui/**/*", "/swagger-resources",
                                     "/swagger-resources/**/*", "/v2/**/*", "/swagger-ui.html");
+    }
+
+    @Bean
+    public SecurityResourcesController securityController() {
+        return new SecurityResourcesController(authorizationService);
     }
 
     @Bean

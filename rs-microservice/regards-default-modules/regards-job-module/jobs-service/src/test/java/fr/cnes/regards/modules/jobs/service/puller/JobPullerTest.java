@@ -3,10 +3,8 @@
  */
 package fr.cnes.regards.modules.jobs.service.puller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -17,20 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.jobs.service.JobDaoTestConfiguration;
 import fr.cnes.regards.modules.jobs.service.allocationstrategy.DefaultJobAllocationStrategy;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobAllocationStrategy;
 import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
-import fr.cnes.regards.modules.project.client.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
 
 /**
  * This test run with spring in order to get the jwtService
@@ -48,7 +42,7 @@ public class JobPullerTest {
     @Autowired
     private JWTService jwtService;
 
-    private IProjectsClient projectsClient;
+    private ITenantResolver tenantResolver;
 
     private IJobHandler iJobHandlerMock;
 
@@ -57,7 +51,7 @@ public class JobPullerTest {
      */
     private JobPuller jobPuller;
 
-    private List<Project> projectList;
+    private Set<String> projectList;
 
     private IJobAllocationStrategy jobAllocationStrategy;
 
@@ -69,39 +63,26 @@ public class JobPullerTest {
     @Before
     public void setUp() {
         iJobHandlerMock = Mockito.mock(IJobHandler.class);
-        projectsClient = Mockito.mock(IProjectsClient.class);
+        tenantResolver = Mockito.mock(ITenantResolver.class);
         messageBroker = Mockito.mock(MessageBroker.class);
         jobAllocationStrategy = new DefaultJobAllocationStrategy();
 
-        projectList = new ArrayList<>();
-        projectList.add(new Project(1L, "description", "icon", true, "project1"));
-        projectList.add(new Project(2L, "description", "icon", true, "project2"));
-        projectList.add(new Project(3L, "description", "icon", true, "project3"));
-        projectList.add(new Project(4L, "description", "icon", true, "project4"));
-        final ResponseEntity<List<Resource<Project>>> projects = new ResponseEntity<>(
-                StreamSupport.stream(projectList.spliterator(), true).map(a -> new Resource<Project>(a))
-                        .collect(Collectors.toList()),
-                HttpStatus.OK);
+        projectList = new HashSet<>();
+        projectList.add("project1");
+        projectList.add("project2");
+        projectList.add("project3");
+        projectList.add("project4");
 
-        Mockito.when(projectsClient.retrieveProjectList()).thenReturn(projects);
-        jobPuller = new JobPuller(iJobHandlerMock, jwtService, projectsClient, jobAllocationStrategy, messageBroker);
+        Mockito.when(tenantResolver.getAllTenants()).thenReturn(projectList);
+        jobPuller = new JobPuller(iJobHandlerMock, jwtService, tenantResolver, jobAllocationStrategy, messageBroker);
         ReflectionTestUtils.setField(jobPuller, "maxJobCapacity", 5, Integer.class);
 
     }
 
     @Test
     public void testProjectList() {
-        final List<Project> projectList = new ArrayList<>();
-        projectList.add(new Project(1L, "description", "icon", true, "project1"));
-        projectList.add(new Project(2L, "description", "icon", true, "project2"));
-        projectList.add(new Project(3L, "description", "icon", true, "project3"));
-        projectList.add(new Project(4L, "description", "icon", true, "project4"));
-        final ResponseEntity<List<Resource<Project>>> projects = new ResponseEntity<>(
-                StreamSupport.stream(projectList.spliterator(), true).map(a -> new Resource<Project>(a))
-                        .collect(Collectors.toList()),
-                HttpStatus.OK);
-        ;
-        Mockito.when(projectsClient.retrieveProjectList()).thenReturn(projects);
+
+        Mockito.when(tenantResolver.getAllTenants()).thenReturn(projectList);
 
         Assertions.assertThat(jobPuller.getProjects()).containsAll(projectList);
         Assertions.assertThat(jobPuller.getProjects().size()).isEqualTo(projectList.size());
@@ -111,7 +92,7 @@ public class JobPullerTest {
     @Test
     public void testPullJob() {
         Assertions.assertThat(jobPuller.getJobQueueList()).isEqualTo(null);
-        final String projectName = "project1";
+        final String projectName = "project2";
         Mockito.when(messageBroker.getJob(projectName)).thenReturn(1L);
         jobPuller.pullJobs();
         Mockito.verify(iJobHandlerMock).execute(projectName, 1L);

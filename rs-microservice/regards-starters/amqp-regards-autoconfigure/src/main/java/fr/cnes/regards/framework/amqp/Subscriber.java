@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
@@ -20,7 +20,7 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.provider.IProjectsProvider;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 
 /**
  * @author svissier
@@ -50,7 +50,7 @@ public class Subscriber {
      * provider of projects allowing us to listen to any necessary RabbitMQ Vhost
      */
     @Autowired
-    private IProjectsProvider projectsProvider;
+    private ITenantResolver tenantResolver;
 
     /**
      *
@@ -69,13 +69,13 @@ public class Subscriber {
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
-    public final <T> void subscribeTo(Class<T> pEvt, IHandler<T> pReceiver,
-            AmqpCommunicationMode pAmqpCommunicationMode, AmqpCommunicationTarget pAmqpCommunicationTarget)
+    public final <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver,
+            final AmqpCommunicationMode pAmqpCommunicationMode, final AmqpCommunicationTarget pAmqpCommunicationTarget)
             throws RabbitMQVhostException {
-        final List<String> projects = projectsProvider.retrieveProjectList();
+        final Set<String> projects = tenantResolver.getAllTenants();
         jackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
 
-        for (String project : projects) {
+        for (final String project : projects) {
             // CHECKSTYLE:OFF
             final SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(pEvt, project,
                                                                                                       jackson2JsonMessageConverter,
@@ -108,10 +108,10 @@ public class Subscriber {
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
-    public <T> SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(Class<T> pEvt, String pProject,
-            Jackson2JsonMessageConverter pJackson2JsonMessageConverter, IHandler<T> pReceiver,
-            AmqpCommunicationMode pAmqpCommunicationMode, AmqpCommunicationTarget pAmqpCommunicationTarget)
-            throws RabbitMQVhostException {
+    public <T> SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(final Class<T> pEvt,
+            final String pProject, final Jackson2JsonMessageConverter pJackson2JsonMessageConverter,
+            final IHandler<T> pReceiver, final AmqpCommunicationMode pAmqpCommunicationMode,
+            final AmqpCommunicationTarget pAmqpCommunicationTarget) throws RabbitMQVhostException {
         final CachingConnectionFactory connectionFactory = amqpConfiguration.createConnectionFactory(pProject);
         amqpConfiguration.addVhost(pProject, connectionFactory);
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
@@ -135,7 +135,7 @@ public class Subscriber {
      * @param pContainer
      *            container to start
      */
-    public void startSimpleMessageListenerContainer(SimpleMessageListenerContainer pContainer) {
+    public void startSimpleMessageListenerContainer(final SimpleMessageListenerContainer pContainer) {
         pContainer.start();
     }
 

@@ -26,8 +26,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.IMethodAuthorizationService;
 import fr.cnes.regards.framework.security.domain.HttpConstants;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
@@ -54,7 +54,7 @@ public abstract class AbstractRegardsIT {
      * Authorization service method
      */
     @Autowired
-    protected IMethodAuthorizationService authService;
+    protected MethodAuthorizationService authService;
     // CHECKSTYLE:ON
 
     /**
@@ -65,25 +65,25 @@ public abstract class AbstractRegardsIT {
 
     protected abstract Logger getLogger();
 
-    protected void performGet(String pUrlTemplate, String pAuthenticationToken, List<ResultMatcher> pMatchers,
-            String pErrorMessage, Object... pUrlVariables) {
+    protected void performGet(final String pUrlTemplate, final String pAuthenticationToken,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         performRequest(pAuthenticationToken, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
     }
 
-    protected void performPost(String pUrlTemplate, String pAuthenticationToken, Object pContent,
-            List<ResultMatcher> pMatchers, String pErrorMessage, Object... pUrlVariables) {
+    protected void performPost(final String pUrlTemplate, final String pAuthenticationToken, final Object pContent,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
+        performRequest(pAuthenticationToken, HttpMethod.POST, pUrlTemplate, pContent, pMatchers, pErrorMessage,
+                       pUrlVariables);
+    }
+
+    protected void performPut(final String pUrlTemplate, final String pAuthenticationToken, final Object pContent,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         performRequest(pAuthenticationToken, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage,
                        pUrlVariables);
     }
 
-    protected void performPut(String pUrlTemplate, String pAuthenticationToken, Object pContent,
-            List<ResultMatcher> pMatchers, String pErrorMessage, Object... pUrlVariables) {
-        performRequest(pAuthenticationToken, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage,
-                       pUrlVariables);
-    }
-
-    protected void performDelete(String pUrlTemplate, String pAuthenticationToken, List<ResultMatcher> pMatchers,
-            String pErrorMessage, Object... pUrlVariables) {
+    protected void performDelete(final String pUrlTemplate, final String pAuthenticationToken,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         performRequest(pAuthenticationToken, HttpMethod.DELETE, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
     }
 
@@ -105,8 +105,9 @@ public abstract class AbstractRegardsIT {
      * @param pUrlVariables
      *            URL variables
      */
-    protected void performRequest(String pAuthenticationToken, HttpMethod pHttpMethod, String pUrlTemplate,
-            Object pContent, List<ResultMatcher> pMatchers, String pErrorMessage, Object... pUrlVariables) {
+    protected void performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
+            final String pUrlTemplate, final Object pContent, final List<ResultMatcher> pMatchers,
+            final String pErrorMessage, final Object... pUrlVariables) {
 
         Assert.assertTrue(HttpMethod.POST.equals(pHttpMethod) || HttpMethod.PUT.equals(pHttpMethod));
         try {
@@ -115,15 +116,16 @@ public abstract class AbstractRegardsIT {
             requestBuilder = requestBuilder.content(json(pContent)).header(HttpHeaders.CONTENT_TYPE,
                                                                            MediaType.APPLICATION_JSON_VALUE);
             performRequest(requestBuilder, pMatchers, pErrorMessage);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             final String message = "Cannot (de)serialize model";
             getLogger().error(message, e);
             Assert.fail(message);
         }
     }
 
-    protected void performRequest(String pAuthenticationToken, HttpMethod pHttpMethod, String pUrlTemplate,
-            List<ResultMatcher> pMatchers, String pErrorMessage, Object... pUrlVariables) {
+    protected void performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
+            final String pUrlTemplate, final List<ResultMatcher> pMatchers, final String pErrorMessage,
+            final Object... pUrlVariables) {
 
         Assert.assertTrue(HttpMethod.GET.equals(pHttpMethod) || HttpMethod.DELETE.equals(pHttpMethod));
         final MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(pAuthenticationToken, pHttpMethod,
@@ -140,28 +142,28 @@ public abstract class AbstractRegardsIT {
      * @param pErrorMessage
      *            message if error occurs
      */
-    protected void performRequest(MockHttpServletRequestBuilder pRequestBuilder, List<ResultMatcher> pMatchers,
-            String pErrorMessage) {
+    protected void performRequest(final MockHttpServletRequestBuilder pRequestBuilder,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage) {
         try {
             ResultActions request = mvc.perform(pRequestBuilder);
-            for (ResultMatcher matcher : pMatchers) {
+            for (final ResultMatcher matcher : pMatchers) {
                 request = request.andExpect(matcher);
             }
             // CHECKSTYLE:OFF
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // CHECKSTYLE:ON
             getLogger().error(pErrorMessage, e);
             Assert.fail(pErrorMessage);
         }
     }
 
-    protected MockHttpServletRequestBuilder getRequestBuilder(String pAuthToken, HttpMethod pHttpMethod,
-            String pUrlTemplate, Object... pUrlVars) {
+    protected MockHttpServletRequestBuilder getRequestBuilder(final String pAuthToken, final HttpMethod pHttpMethod,
+            final String pUrlTemplate, final Object... pUrlVars) {
         return MockMvcRequestBuilders.request(pHttpMethod, pUrlTemplate, pUrlVars)
                 .header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + pAuthToken);
     }
 
-    protected String json(Object pObject) throws IOException {
+    protected String json(final Object pObject) throws IOException {
         final String result;
         if (pObject instanceof String) {
             result = (String) pObject;
@@ -176,7 +178,7 @@ public abstract class AbstractRegardsIT {
         return jwtService;
     }
 
-    public IMethodAuthorizationService getAuthService() {
+    public MethodAuthorizationService getAuthService() {
         return authService;
     }
 }

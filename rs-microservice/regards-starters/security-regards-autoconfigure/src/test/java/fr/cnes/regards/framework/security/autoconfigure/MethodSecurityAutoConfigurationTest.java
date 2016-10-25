@@ -9,9 +9,11 @@ import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultPluginResourceManager;
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.IMethodAuthorizationService;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
+import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
+import fr.cnes.regards.framework.security.endpoint.DefaultPluginResourceManager;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
  * @author msordi
@@ -35,10 +37,11 @@ public class MethodSecurityAutoConfigurationTest {
     public void testMethodConfiguration() {
         this.context = new AnnotationConfigWebApplicationContext();
         this.context.setServletContext(new MockServletContext());
-        this.context.register(MethodSecurityAutoConfiguration.class, DefaultMethodAuthorizationService.class,
-                              DefaultPluginResourceManager.class);
+        this.context.register(MethodSecurityAutoConfiguration.class, MethodAuthorizationService.class,
+                              DefaultPluginResourceManager.class, DefaultAuthorityProvider.class,
+                              LocalTenantResolver.class, JWTService.class);
         this.context.refresh();
-        Assertions.assertThat(this.context.getBean(IMethodAuthorizationService.class)).isNotNull();
+        Assertions.assertThat(this.context.getBean(MethodAuthorizationService.class)).isNotNull();
     }
 
 }
