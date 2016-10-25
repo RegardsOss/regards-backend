@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
  * @author CS SI
  * @since 1.1-SNAPSHOT
  */
-public class Controller {
+public abstract class AbstractController {
 
     /**
      * Exception handler returning the code 404 when a requested entity does not exists.
@@ -69,8 +69,7 @@ public class Controller {
      * Thrown by Hibernate.
      */
     @ExceptionHandler(ValidationException.class)
-    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "Data does not respect validation constrains")
+    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "Data does not respect validation constraints")
     public void hibernateValidation() {
     }
-
 }
