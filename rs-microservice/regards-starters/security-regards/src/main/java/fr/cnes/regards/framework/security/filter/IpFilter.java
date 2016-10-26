@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  *
  * Spring MVC request filter by IP
  *
- * @author CS
+ * @author sbinda
  * @since 1.0-SNAPSHOT
  */
 public class IpFilter extends GenericFilterBean {

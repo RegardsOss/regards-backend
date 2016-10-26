@@ -21,13 +21,33 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 public class CorsFilter extends OncePerRequestFilter {
 
+    /**
+     * Http Request Header
+     */
+    public static final String ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+
+    /**
+     * Http Request Header
+     */
+    public static final String ALLOW_METHOD = "Access-Control-Allow-Methods";
+
+    /**
+     * Http Request Header
+     */
+    public static final String ALLOW_HEADER = "Access-Control-Allow-Headers";
+
+    /**
+     * Http Request Header
+     */
+    public static final String CONTROL_MAX_AGE = "Access-Control-Max-Age";
+
     @Override
-    protected void doFilterInternal(HttpServletRequest pRequest, HttpServletResponse pResponse,
-            FilterChain pFilterChain) throws ServletException, IOException {
-        pResponse.setHeader("Access-Control-Allow-Origin", "*");
-        pResponse.setHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
-        pResponse.setHeader("Access-Control-Allow-Headers", "authorization, content-type");
-        pResponse.setHeader("Access-Control-Max-Age", "3600");
+    protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
+            final FilterChain pFilterChain) throws ServletException, IOException {
+        pResponse.setHeader(ALLOW_ORIGIN, "*");
+        pResponse.setHeader(ALLOW_METHOD, "POST, PUT, GET, OPTIONS, DELETE");
+        pResponse.setHeader(ALLOW_HEADER, "authorization, content-type");
+        pResponse.setHeader(CONTROL_MAX_AGE, "3600");
 
         if (!"OPTIONS".equals(pRequest.getMethod())) {
             pFilterChain.doFilter(pRequest, pResponse);
