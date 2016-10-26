@@ -3,19 +3,15 @@
  */
 package fr.cnes.regards.framework.security.endpoint;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
 
 /**
  *
@@ -45,22 +41,8 @@ public class DefaultPluginManagementTest {
     @Test
     public void defaultPluginResourceManagerTest() {
 
-        final String nameLabel = "name";
-        final String descLabel = "description";
-
-        // Initiate test ResourceAccess to serialize
-        final Map<String, Object> attributs = new HashMap<>();
-        attributs.put(nameLabel, nameLabel);
-        attributs.put(descLabel, descLabel);
-        final ResourceAccess resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class,
-                                                                                   null);
-
-        attributs.clear();
-        final RequestMapping requestMapping = AnnotationUtils.synthesizeAnnotation(attributs, RequestMapping.class,
-                                                                                   null);
-        attributs.put(nameLabel, nameLabel);
-        attributs.put(descLabel, descLabel);
-        Assert.assertTrue(manager.manageMethodResource("resource/path", resourceAccess, requestMapping).isEmpty());
+        Assert.assertTrue(manager.manageMethodResource(new ResourceMapping("resource/path", RequestMethod.GET))
+                .isEmpty());
     }
 
 }
