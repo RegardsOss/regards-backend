@@ -3,20 +3,22 @@
  */
 package fr.cnes.regards.cloud.gateway.authentication.providers;
 
-import java.util.NoSuchElementException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 
+import com.netflix.hystrix.exception.HystrixRuntimeException;
+
 import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
-import fr.cnes.regards.modules.accessRights.client.AccountsClient;
-import fr.cnes.regards.modules.accessRights.domain.UserStatus;
-import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessRights.domain.projects.Role;
-import fr.cnes.regards.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 
 /**
  *
@@ -44,7 +46,7 @@ public class SimpleAuthentication implements IAuthenticationProvider {
      * rs-admin microservice client for accounts
      */
     @Autowired
-    private AccountsClient accountsClient;
+    private IAccountsClient accountsClient;
 
     /**
      * Security JWT service
@@ -58,10 +60,6 @@ public class SimpleAuthentication implements IAuthenticationProvider {
         final Role role = new Role();
         role.setName(GATEWAY_ROLE);
         user.setRole(role);
-        // final Account newAccount = new Account();
-        // newAccount.setLogin(pName);
-        // newAccount.setEmail("user@regards.c-s.fr");
-        // user.setAccount(newAccount);
         user.setEmail("user@regards.c-s.fr");
         return user;
     }
@@ -71,14 +69,18 @@ public class SimpleAuthentication implements IAuthenticationProvider {
         LOG.info("Trying to authenticate user " + pName + " with password=" + pPassword + " for project " + pScope);
 
         UserStatus status = UserStatus.ACCESS_DENIED;
-        jwtService.injectToken(pScope, GATEWAY_ROLE);
+
         try {
+            jwtService.injectToken(pScope, GATEWAY_ROLE);
             final HttpEntity<Boolean> results = accountsClient.validatePassword(pName, pPassword);
-            if (results.getBody()) {
+            if (results.getBody().equals(Boolean.TRUE)) {
                 status = UserStatus.ACCESS_GRANTED;
             }
-        } catch (final NoSuchElementException e) {
+        } catch (final HystrixRuntimeException | JwtException e) {
             LOG.error(e.getMessage(), e);
+        } catch (final EntityNotFoundException e) {
+            LOG.error(e.getMessage(), e);
+            LOG.error(String.format("Accound %s doesn't exists", pName));
         }
 
         return status;

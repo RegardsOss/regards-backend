@@ -14,10 +14,12 @@ import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
+// CHECKSTYLE:OFF
 @SpringBootApplication
+// CHECKSTYLE:ON
 @EnableDiscoveryClient
 @EnableEurekaServer
-public class Application {
+public class Application { // NOSONAR
 
     /**
      *
@@ -28,6 +30,6 @@ public class Application {
      * @since 1.0-SNAPSHOT
      */
     public static void main(final String[] pArgs) {
-        SpringApplication.run(Application.class, pArgs);
+        SpringApplication.run(Application.class, pArgs); // NOSONAR
     }
 }

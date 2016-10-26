@@ -11,8 +11,8 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 
-import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
-import fr.cnes.regards.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
  *

@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 
 import fr.cnes.regards.client.core.ClientRequestInterceptor;
 import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
+import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 
 /**
  *
@@ -21,10 +22,10 @@ import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@SpringBootApplication(scanBasePackages = "fr.cnes.regards")
-@EnableFeignClients(basePackages = "fr.cnes.regards", defaultConfiguration = { ClientRequestInterceptor.class })
+@SpringBootApplication
+@EnableFeignClients(clients = IAccountsClient.class, defaultConfiguration = { ClientRequestInterceptor.class })
 @EnableZuulProxy
-public class Application {
+public class Application { // NOSONAR
 
     /**
      *
@@ -35,7 +36,7 @@ public class Application {
      * @since 1.0-SNAPSHOT
      */
     public static void main(final String[] pArgs) {
-        SpringApplication.run(Application.class, pArgs);
+        SpringApplication.run(Application.class, pArgs); // NOSONAR
     }
 
     /**
@@ -49,4 +50,5 @@ public class Application {
     public ProxyLogFilter proxyLogFilter() {
         return new ProxyLogFilter();
     }
+
 }

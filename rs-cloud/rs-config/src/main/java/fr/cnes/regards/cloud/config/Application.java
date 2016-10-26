@@ -20,10 +20,9 @@ import org.springframework.cloud.config.server.EnableConfigServer;
 @SpringBootApplication
 // CHECKSTYLE:ON
 @EnableConfigServer
-public class Application {
+public class Application { // NOSONAR
 
     /**
-     * .
      *
      * Starter method
      *
@@ -32,6 +31,6 @@ public class Application {
      * @since 1.0-SNAPSHOT
      */
     public static void main(final String[] pArgs) {
-        SpringApplication.run(Application.class, pArgs);
+        SpringApplication.run(Application.class, pArgs); // NOSONAR
     }
 }

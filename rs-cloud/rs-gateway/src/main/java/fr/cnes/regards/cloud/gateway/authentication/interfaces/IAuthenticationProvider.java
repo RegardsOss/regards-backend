@@ -3,8 +3,8 @@
  */
 package fr.cnes.regards.cloud.gateway.authentication.interfaces;
 
-import fr.cnes.regards.modules.accessRights.domain.UserStatus;
-import fr.cnes.regards.modules.accessRights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
  *

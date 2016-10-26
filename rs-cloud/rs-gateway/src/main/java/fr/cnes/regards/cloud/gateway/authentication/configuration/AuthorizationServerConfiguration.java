@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -21,6 +22,9 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 
 /**
  *
@@ -116,8 +120,7 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     }
 
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer pEndpoints) throws Exception {
-
+    public void configure(final AuthorizationServerEndpointsConfigurer pEndpoints) throws Exception {
         final TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
         tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), accessTokenConverter()));
 
@@ -125,8 +128,38 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
                 .accessTokenConverter(accessTokenConverter()).tokenEnhancer(tokenEnhancerChain);
     }
 
+    /**
+     *
+     * Create transactionManager mandatory by DefaultTokenService
+     *
+     * @return PlatformTransactionManager
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public PlatformTransactionManager transactionManager() {
+        return new PlatformTransactionManager() {
+
+            @Override
+            public void rollback(final TransactionStatus pStatus) {
+                // Nothing to do. The JwtTokenStore does not persists tokens
+            }
+
+            @Override
+            public TransactionStatus getTransaction(final TransactionDefinition pDefinition) {
+                // Nothing to do. The JwtTokenStore does not persists tokens
+                return null;
+            }
+
+            @Override
+            public void commit(final TransactionStatus pStatus) {
+                // Nothing to do. The JwtTokenStore does not persists tokens
+            }
+        };
+    }
+
     @Override
-    public void configure(ClientDetailsServiceConfigurer pClients) throws Exception {
+    public void configure(final ClientDetailsServiceConfigurer pClients) throws Exception {
         pClients.inMemory().withClient(clientUser).authorizedGrantTypes(grantType).resourceIds(resourceId)
                 .secret(clientSecret);
     }
