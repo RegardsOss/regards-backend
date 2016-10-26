@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  *
  * Resources Access voter test class
  *
- * @author CS
+ * @author sbinda
  * @since 1.0-SNAPSHOT
  */
 public class ResourceAccessVoterTest {

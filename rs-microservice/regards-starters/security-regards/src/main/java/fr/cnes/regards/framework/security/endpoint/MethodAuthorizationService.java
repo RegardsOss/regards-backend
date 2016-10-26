@@ -285,4 +285,17 @@ public class MethodAuthorizationService {
         }
         return Optional.ofNullable(result);
     }
+
+    /**
+     *
+     * Retrieve all authority resources for the given tenant
+     *
+     * @param pTenant
+     *            tenant name
+     * @return Map<String, ArrayList<GrantedAuthority>>
+     * @since 1.0-SNAPSHOT
+     */
+    public Map<String, ArrayList<GrantedAuthority>> getTenantAuthorities(final String pTenant) {
+        return grantedAuthoritiesByTenant.get(pTenant);
+    }
 }
