@@ -8,7 +8,6 @@ import java.text.MessageFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
@@ -35,8 +34,11 @@ public class DefaultResourceService implements IResourceService {
     /**
      * Method authorization service
      */
-    @Autowired
-    private MethodAuthorizationService authorisationService;
+    private final MethodAuthorizationService authorisationService;
+
+    public DefaultResourceService(MethodAuthorizationService pMethodAuthorizationService) {
+        this.authorisationService = pMethodAuthorizationService;
+    }
 
     @Override
     public <T> void addLink(Resource<T> pResource, Class<?> pController, String pMethodName, String pRel,
@@ -52,7 +54,7 @@ public class DefaultResourceService implements IResourceService {
         Object[] parameterValues = null;
         if (pMethodParams != null) {
             parameterTypes = new Class<?>[pMethodParams.length];
-            parameterValues = new String[pMethodParams.length];
+            parameterValues = new Object[pMethodParams.length];
 
             for (int i = 0; i < pMethodParams.length; i++) {
                 parameterTypes[i] = pMethodParams[i].getParameterType();

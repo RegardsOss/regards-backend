@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import fr.cnes.regards.framework.hateoas.DefaultResourceService;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.security.autoconfigure.MethodAuthorizationServiceAutoConfiguration;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 
 /**
  *
@@ -27,7 +28,7 @@ public class HateoasAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public IResourceService resourceService() {
-        return new DefaultResourceService();
+    public IResourceService resourceService(MethodAuthorizationService pMethodAuthorizationService) {
+        return new DefaultResourceService(pMethodAuthorizationService);
     }
 }
