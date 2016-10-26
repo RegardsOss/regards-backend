@@ -10,6 +10,8 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -22,6 +24,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
@@ -43,9 +46,15 @@ import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
  * @author svissier
  *
  */
+@ActiveProfiles("rabbit")
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 public class RegardsAmqpAdminIT {
+
+    /**
+     * Logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAdminIT.class);
 
     /**
      * Tenant_Test_1
@@ -121,6 +130,12 @@ public class RegardsAmqpAdminIT {
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
         }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
+        }
     }
 
     @Test
@@ -158,6 +173,12 @@ public class RegardsAmqpAdminIT {
             Assert.fail("Failed to clean " + TENANT1);
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
+        }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
         }
     }
 
@@ -197,6 +218,12 @@ public class RegardsAmqpAdminIT {
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
         }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
+        }
     }
 
     @Test
@@ -234,6 +261,12 @@ public class RegardsAmqpAdminIT {
             Assert.fail("Failed to clean " + TENANT1);
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
+        }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
         }
     }
 
@@ -324,6 +357,12 @@ public class RegardsAmqpAdminIT {
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
         }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
+        }
     }
 
     @Test
@@ -359,6 +398,12 @@ public class RegardsAmqpAdminIT {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
+        }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
         }
     }
 
@@ -396,6 +441,12 @@ public class RegardsAmqpAdminIT {
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
         }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
+        }
     }
 
     @Test
@@ -431,6 +482,12 @@ public class RegardsAmqpAdminIT {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
+        }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
         }
     }
 
@@ -491,6 +548,12 @@ public class RegardsAmqpAdminIT {
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
         }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
+        }
     }
 
     @Test
@@ -525,6 +588,12 @@ public class RegardsAmqpAdminIT {
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
         }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
+        }
     }
 
     @Test
@@ -557,6 +626,12 @@ public class RegardsAmqpAdminIT {
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
         }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
+        }
     }
 
     @Test
@@ -588,6 +663,12 @@ public class RegardsAmqpAdminIT {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
+        }
+        try {
+            cleanRabbit(TENANT1);
+            cleanRabbit(TENANT2);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
         }
     }
 

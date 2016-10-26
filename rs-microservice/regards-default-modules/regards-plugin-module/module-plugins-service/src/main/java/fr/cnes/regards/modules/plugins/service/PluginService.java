@@ -18,6 +18,7 @@ import fr.cnes.regards.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
@@ -135,7 +136,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public <T> T getPlugin(final Long pPluginConfigurationId, final Class<T> pReturnInterfaceType)
+    public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
             throws PluginUtilsException {
 
         // Get last saved plugin configuration
@@ -146,10 +147,11 @@ public class PluginService implements IPluginService {
 
         // Check if plugin version has changed since the last saved configuration of the plugin
         if ((pluginConf.getVersion() != null) && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
-            LOGGER.warn("Warning plugin version changed since last configuration");
+            LOGGER.warn("Warning plugin version " + START_ID_LOG + pluginConf.getVersion() + END_ID_LOG
+                    + "changed since last configuration" + START_ID_LOG + pluginMetadata.getVersion() + END_ID_LOG);
         }
 
-        return PluginUtils.getPlugin(pluginConf, pluginMetadata);
+        return PluginUtils.getPlugin(pluginConf, pluginMetadata, pPluginParameters);
     }
 
     @Override
@@ -229,27 +231,19 @@ public class PluginService implements IPluginService {
     public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPlugin)
             throws PluginUtilsException {
         // Check if plugin configuration exists
-        PluginConfiguration conf = getPluginConfiguration(pPlugin.getId());
+        getPluginConfiguration(pPlugin.getId());
 
-        if (conf == null) {
-            final String message = "Error updating plugin configuration " + START_ID_LOG + pPlugin.getId() + END_ID_LOG
-                    + ". This plugin configuration does not exists.";
-            LOGGER.error(message);
-            throw new PluginUtilsException(message);
-        } else {
-            conf = savePluginConfiguration(pPlugin);
-        }
-        return conf;
+        return savePluginConfiguration(pPlugin);
     }
 
     @Override
-    public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final Class<T> pReturnPluginType)
+    public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final PluginParameter... pPluginParameters)
             throws PluginUtilsException {
 
         // Get plugins configuration for given type
         final List<PluginConfiguration> confs = getPluginConfigurationsByType(pInterfacePluginType);
 
-        if ((confs == null) || confs.isEmpty()) {
+        if (confs.isEmpty()) {
             final String message = "No plugin configuration defined for the type " + START_ID_LOG
                     + pInterfacePluginType.getName() + END_ID_LOG + DOT_LOG;
             LOGGER.error(message);
@@ -269,7 +263,7 @@ public class PluginService implements IPluginService {
         T resultPlugin = null;
 
         if (configuration != null) {
-            resultPlugin = getPlugin(configuration.getId(), pReturnPluginType);
+            resultPlugin = getPlugin(configuration.getId(), pPluginParameters);
         }
 
         return resultPlugin;

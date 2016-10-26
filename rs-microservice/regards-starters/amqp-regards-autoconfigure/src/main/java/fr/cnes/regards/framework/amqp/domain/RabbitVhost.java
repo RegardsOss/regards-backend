@@ -17,9 +17,6 @@ public class RabbitVhost {
      */
     private String name;
 
-    public RabbitVhost() {
-    }
-
     public String getName() {
         return name;
     }
@@ -28,4 +25,13 @@ public class RabbitVhost {
         name = pName;
     }
 
+    @Override
+    public boolean equals(Object pOther) {
+        return (pOther instanceof RabbitVhost) && ((RabbitVhost) pOther).name.equals(name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }
