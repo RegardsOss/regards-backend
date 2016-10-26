@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.vote.ConsensusBased;
@@ -19,7 +17,6 @@ import org.springframework.security.config.annotation.method.configuration.Globa
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.endpoint.ResourceAccessVoter;
 import fr.cnes.regards.framework.security.endpoint.RootResourceAccessVoter;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
  * This class allow to add a security filter on method access. Each time a method is called, the accessDecisionManager
@@ -51,11 +48,5 @@ public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfigu
         final ConsensusBased decision = new ConsensusBased(decisionVoters);
         decision.setAllowIfEqualGrantedDeniedDecisions(true);
         return decision;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public JWTService initJwtService() {
-        return new JWTService();
     }
 }

@@ -15,6 +15,7 @@ import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.endpoint.IPluginResourceManager;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.filter.JWTAuthenticationProvider;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
  * @author msordi
@@ -45,7 +46,7 @@ public class MethodSecurityAutoConfigurationTest {
         this.context = new AnnotationConfigWebApplicationContext();
         this.context.setServletContext(new MockServletContext());
         this.context.register(MethodSecurityAutoConfiguration.class, MethodAuthorizationServiceAutoConfiguration.class,
-                              WebSecurityAutoConfiguration.class);
+                              WebSecurityAutoConfiguration.class, JWTService.class);
         this.context.refresh();
         Assertions.assertThat(this.context.getBean(IAuthoritiesProvider.class)).isNotNull();
         Assertions.assertThat(this.context.getBean(ITenantResolver.class)).isNotNull();

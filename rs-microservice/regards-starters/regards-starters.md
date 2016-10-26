@@ -18,6 +18,47 @@ regards.amqp.management.port= 15672 # port of the managing plugin of the broker
 ```properties
 regards.cloud.name=false # Disable cloud support
 ```
+
+## HATEOAS starter
+
+If your controller manages a single POJO, implements **IResourceController<T>**.
+
+In its **toResource** method, define all links using an autowired **IResourceService** regardless security authorization. Only authorized links will be really exposed.
+
+Sample :
+```java
+@RestController
+@RequestMapping("/pojos")
+public class MyPojoController implements IResourceController<MyPojo> {
+	...	
+	@Autowired
+	private IResourceService resourceService;
+	...
+    @ResourceAccess(description = "List all pojos")
+    @GetMapping
+    public ResponseEntity<List<Resource<MyPojo>>> getPojos() {
+        final List<MyPojo> pojos = ...
+        return ResponseEntity.ok(toResources(pojos));
+    }
+	...
+    @ResourceAccess(description = "Get a pojo")
+    @GetMapping("/{pPojoId}")
+    public ResponseEntity<Resource<MyPojo>> getPojo(@PathVariable Long pPojoId) {
+        final MyPojo pojo = ...
+        return ResponseEntity.ok(toResource(pojo));
+    }
+	...
+	@Override
+    public Resource<MyPojo> toResource(MyPojo pPojo) {
+        final Resource<MyPojo> resource = resourceService.toResource(pPojo);
+        resourceService.addLink(resource, this.getClass(), "getPojo", LinkRels.SELF,
+                                MethodParamFactory.build(Long.class, pPojo.getId()));
+        ...
+        return resource;
+    }
+}
+```
+
 ## JPA instance starter
 
 ```properties
@@ -71,7 +112,7 @@ class CustomTenantResolver implements ITenantResolver {
 ## Security starter
 
 ```properties
-jwt.secret=MTIzNDU2Nzg5 # Base64 encoded secret
+jwt.secret=MTIzNDU2Nzg5 # Secret key
 ```
 
 ## Swagger starter
