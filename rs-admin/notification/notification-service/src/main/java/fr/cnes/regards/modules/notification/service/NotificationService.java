@@ -178,7 +178,6 @@ public class NotificationService implements INotificationService {
     public Stream<ProjectUser> findRecipients(final Notification pNotification) {
         try (final Stream<Role> rolesStream = pNotification.getRoleRecipients().parallelStream();
                 final Stream<ProjectUser> usersStream = pNotification.getProjectUserRecipients().parallelStream()) {
-
             return Stream.concat(usersStream, rolesStream.flatMap(r -> r.getProjectUsers().stream())).distinct();
         }
     }

@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -31,6 +30,36 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 public class CronTest {
 
     /**
+     * Current year
+     */
+    private static final int TWO_THOUSAND_AND_SIXTEEN = 2016;
+
+    /**
+     * 7
+     */
+    private static final int SEVEN = 7;
+
+    /**
+     * 11
+     */
+    private static final int ELEVEN = 11;
+
+    /**
+     * 12
+     */
+    private static final int TWELVE = 12;
+
+    /**
+     * 17
+     */
+    private static final int SEVENTEEN = 17;
+
+    /**
+     * 26
+     */
+    private static final int TWENTY_SIX = 26;
+
+    /**
      * Daily cron
      */
     @Value("${regards.notification.cron.daily}")
@@ -49,60 +78,169 @@ public class CronTest {
     private String monthlyCron;
 
     /**
-     * Check that the system triggers the daily cron at the right moments.
+     * Check that the system triggers the daily cron at the right moment when starting before 12h00.
      */
     @Test
-    @Requirement("?")
-    @Purpose("Check that the system triggers the daily cron at the right moments.")
-    public void testDailyCron() {
+    @Requirement("REGARDS_DSL_STO_CMD_140")
+    @Purpose("Check that the system triggers the daily cron at the right moment when starting before 12h00.")
+    public void testDailyCronStartStrictlyBefore12() {
         final CronTrigger trigger = new CronTrigger(dailyCron);
-        final Calendar today = Calendar.getInstance();
-        today.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY);
+        // Prepare a start instant
+        final Calendar startCalendar = Calendar.getInstance();
+        startCalendar.set(TWO_THOUSAND_AND_SIXTEEN, Calendar.OCTOBER, TWENTY_SIX, ELEVEN, 0, 0);
+        final Date startDate = startCalendar.getTime();
 
-        final SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss EEEE");
-        final Date yesterday = today.getTime();
-        final Date nextExecutionTime = trigger.nextExecutionTime(new TriggerContext() {
+        // Prepare next execution
+        final Date actualDate = getNextExecutionTime(trigger, startDate);
+        final Calendar actualCalendar = Calendar.getInstance();
+        actualCalendar.setTime(actualDate);
 
-            @Override
-            public Date lastScheduledExecutionTime() {
-                return yesterday;
-            }
+        // Check that the next execution happened SAME day
+        Assert.assertEquals(startCalendar.get(Calendar.DATE), actualCalendar.get(Calendar.DATE));
+        // At 12h00
+        Assert.assertEquals(TWELVE, actualCalendar.get(Calendar.HOUR_OF_DAY));
+        Assert.assertEquals(0, actualCalendar.get(Calendar.MINUTE));
+        Assert.assertEquals(0, actualCalendar.get(Calendar.SECOND));
+    }
 
-            @Override
-            public Date lastActualExecutionTime() {
-                return yesterday;
-            }
+    /**
+     * Check that the system triggers the daily cron at the right moment when starting at 12h00.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_STO_CMD_140")
+    @Purpose("Check that the system triggers the daily cron at the right moment when starting at 12h00.")
+    public void testDailyCronStartEqual12() {
+        final CronTrigger trigger = new CronTrigger(dailyCron);
+        // Prepare a start instant
+        final Calendar startCalendar = Calendar.getInstance();
+        startCalendar.set(TWO_THOUSAND_AND_SIXTEEN, Calendar.OCTOBER, TWENTY_SIX, TWELVE, 0, 0);
+        final Date startDate = startCalendar.getTime();
 
-            @Override
-            public Date lastCompletionTime() {
-                return yesterday;
-            }
-        });
+        // Prepare next execution
+        final Date actualDate = getNextExecutionTime(trigger, startDate);
+        final Calendar actualCalendar = Calendar.getInstance();
+        actualCalendar.setTime(actualDate);
 
-        final String message = "Next Execution date: " + df.format(nextExecutionTime);
-        System.out.println(message);
+        // Check that the next execution happened NEXT day
+        Assert.assertEquals(startCalendar.get(Calendar.DATE) + 1, actualCalendar.get(Calendar.DATE));
+        // At 12h00
+        Assert.assertEquals(TWELVE, actualCalendar.get(Calendar.HOUR_OF_DAY));
+        Assert.assertEquals(0, actualCalendar.get(Calendar.MINUTE));
+        Assert.assertEquals(0, actualCalendar.get(Calendar.SECOND));
+    }
+
+    /**
+     * Check that the system triggers the daily cron at the right moment when starting after 12h00.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_STO_CMD_140")
+    @Purpose("Check that the system triggers the daily cron at the right moment when starting after 12h00.")
+    public void testDailyCronStartStrictlyAfter12() {
+        final CronTrigger trigger = new CronTrigger(dailyCron);
+        // Prepare a start instant
+        final Calendar startCalendar = Calendar.getInstance();
+        startCalendar.set(TWO_THOUSAND_AND_SIXTEEN, Calendar.OCTOBER, TWENTY_SIX, SEVENTEEN, 0, 0);
+        final Date startDate = startCalendar.getTime();
+
+        // Prepare next execution
+        final Date actualDate = getNextExecutionTime(trigger, startDate);
+        final Calendar actualCalendar = Calendar.getInstance();
+        actualCalendar.setTime(actualDate);
+
+        // Check that the next execution happened NEXT day
+        Assert.assertEquals(startCalendar.get(Calendar.DATE) + 1, actualCalendar.get(Calendar.DATE));
+        // At 12h00
+        Assert.assertEquals(TWELVE, actualCalendar.get(Calendar.HOUR_OF_DAY));
+        Assert.assertEquals(0, actualCalendar.get(Calendar.MINUTE));
+        Assert.assertEquals(0, actualCalendar.get(Calendar.SECOND));
     }
 
     /**
      * Check that the system triggers the weekly cron at the right moments.
      */
     @Test
-    @Requirement("?")
+    @Requirement("REGARDS_DSL_STO_CMD_140")
     @Purpose("Check that the system triggers the weekly cron at the right moments.")
     public void testWeeklyCron() {
         final CronTrigger trigger = new CronTrigger(weeklyCron);
-        Assert.fail("TODO");
+
+        // Prepare a randomly chosen start instant (the 26th is a Wednesday)
+        final Calendar startCalendar = Calendar.getInstance();
+        startCalendar.set(TWO_THOUSAND_AND_SIXTEEN, Calendar.OCTOBER, TWENTY_SIX, TWELVE, 0, 0);
+        final Date startDate = startCalendar.getTime();
+
+        // Prepare next execution
+        final Date actualDate = getNextExecutionTime(trigger, startDate);
+        final Calendar actualCalendar = Calendar.getInstance();
+        actualCalendar.setTime(actualDate);
+
+        // Check the next execution happened the next week
+        Assert.assertEquals(actualCalendar.get(Calendar.WEEK_OF_YEAR), startCalendar.get(Calendar.WEEK_OF_YEAR) + 1);
+        // On monday
+        Assert.assertEquals(actualCalendar.get(Calendar.DAY_OF_WEEK), Calendar.MONDAY);
+        // At 12h00
+        Assert.assertEquals(actualCalendar.get(Calendar.HOUR_OF_DAY), TWELVE);
+        Assert.assertEquals(actualCalendar.get(Calendar.MINUTE), 0);
+        Assert.assertEquals(actualCalendar.get(Calendar.SECOND), 0);
     }
 
     /**
      * Check that the system triggers the monthly cron at the right moments.
      */
     @Test
-    @Requirement("?")
+    @Requirement("REGARDS_DSL_STO_CMD_140")
     @Purpose("Check that the system triggers the monthly cron at the right moments.")
     public void testMonthlyCron() {
         final CronTrigger trigger = new CronTrigger(monthlyCron);
-        Assert.fail("TODO");
+
+        // Prepare a randomly chosen start instant
+        final Calendar startCalendar = Calendar.getInstance();
+        startCalendar.set(TWO_THOUSAND_AND_SIXTEEN, Calendar.OCTOBER, TWENTY_SIX, TWELVE, 0, 0);
+        final Date startDate = startCalendar.getTime();
+
+        // Prepare next execution
+        final Date actualDate = getNextExecutionTime(trigger, startDate);
+        final Calendar actualCalendar = Calendar.getInstance();
+        actualCalendar.setTime(actualDate);
+
+        // Check the next execution happened the next month
+        Assert.assertEquals(actualCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.MONTH) + 1);
+        // On the first monday of the month
+        Assert.assertEquals(actualCalendar.get(Calendar.DAY_OF_WEEK), Calendar.MONDAY);
+        Assert.assertTrue(actualCalendar.get(Calendar.DAY_OF_MONTH) <= SEVEN);
+        // At 12h00
+        Assert.assertEquals(actualCalendar.get(Calendar.HOUR_OF_DAY), TWELVE);
+        Assert.assertEquals(actualCalendar.get(Calendar.MINUTE), 0);
+        Assert.assertEquals(actualCalendar.get(Calendar.SECOND), 0);
+    }
+
+    /**
+     * Get next execution time of passed {@link CronTrigger} with passed start time
+     *
+     * @param pTrigger
+     *            The cron trigger
+     * @param pPreviousExecutionTime
+     *            The start date
+     * @return The next execution time
+     */
+    private Date getNextExecutionTime(final CronTrigger pTrigger, final Date pPreviousExecutionTime) {
+        return pTrigger.nextExecutionTime(new TriggerContext() {
+
+            @Override
+            public Date lastScheduledExecutionTime() {
+                return pPreviousExecutionTime;
+            }
+
+            @Override
+            public Date lastActualExecutionTime() {
+                return pPreviousExecutionTime;
+            }
+
+            @Override
+            public Date lastCompletionTime() {
+                return pPreviousExecutionTime;
+            }
+        });
     }
 
 }

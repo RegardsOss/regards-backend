@@ -23,11 +23,36 @@ import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
- * Validate hibernate constraints on {@link Notification}.
+ * Validate getters/setters and hibernate constraints on {@link Notification}.
  *
  * @author CS SI
  */
-public class NotificationSettingsValidationTest {
+public class NotificationSettingsTest {
+
+    /**
+     * Id
+     */
+    private static final Long ID = 0L;
+
+    /**
+     * Days
+     */
+    private static final Integer DAYS = 1;
+
+    /**
+     * Hours
+     */
+    private static final Integer HOURS = 2;
+
+    /**
+     * Frequency
+     */
+    private static final NotificationFrequency FREQUENCY = NotificationFrequency.MONTHLY;
+
+    /**
+     * User
+     */
+    private static ProjectUser user;
 
     /**
      * Self expl
@@ -58,18 +83,35 @@ public class NotificationSettingsValidationTest {
      */
     @Before
     public void setUpNotification() {
+        user = new ProjectUser(0L, LocalDateTime.now().minusMonths(1), LocalDateTime.now().minusMonths(1),
+                UserStatus.ACCESS_GRANTED, new ArrayList<>(), null, new ArrayList<>(), "user@email.com");
+
         settings = new NotificationSettings();
-        settings.setDays(1);
-        settings.setHours(1);
-        settings.setFrequency(NotificationFrequency.MONTHLY);
-        settings.setUser(new ProjectUser(0L, LocalDateTime.now().minusMonths(1), LocalDateTime.now().minusMonths(1),
-                UserStatus.ACCESS_GRANTED, new ArrayList<>(), null, new ArrayList<>(), "user@email.com"));
+        settings.setId(ID);
+        settings.setDays(DAYS);
+        settings.setHours(HOURS);
+        settings.setFrequency(FREQUENCY);
+        settings.setUser(user);
 
         // Run the validator
         final Set<ConstraintViolation<NotificationSettings>> constraintViolations = validator.validate(settings);
 
         // Check no constraint violations so far
         Assert.assertEquals(0, constraintViolations.size());
+    }
+
+    /**
+     * Check the POJO getters/setters.
+     */
+    @Test
+    @Requirement("?")
+    @Purpose("Check the POJO getters/setters.")
+    public void testGettersSetters() {
+        Assert.assertTrue(settings.getId().equals(ID));
+        Assert.assertTrue(settings.getDays().equals(DAYS));
+        Assert.assertTrue(settings.getHours().equals(HOURS));
+        Assert.assertTrue(settings.getFrequency().equals(FREQUENCY));
+        Assert.assertTrue(settings.getUser().equals(user));
     }
 
     /**

@@ -72,11 +72,7 @@ public class NotificationSettingsService implements INotificationSettingsService
      */
     @Override
     public void updateNotificationSettings(final NotificationSettingsDTO pDto) {
-        NotificationSettings notificationSettings = retrieveNotificationSettings();
-        if (notificationSettings == null) {
-            final ProjectUser user = projectUserService.retrieveCurrentUser();
-            notificationSettings = createNotificationSettings(user);
-        }
+        final NotificationSettings notificationSettings = retrieveNotificationSettings();
 
         if (pDto.getDays() != null) {
             notificationSettings.setDays(pDto.getDays());

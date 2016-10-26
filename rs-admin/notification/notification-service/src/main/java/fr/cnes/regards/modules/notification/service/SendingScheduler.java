@@ -4,8 +4,9 @@
 package fr.cnes.regards.modules.notification.service;
 
 import java.time.Duration;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -96,14 +97,14 @@ public class SendingScheduler {
         // The filter for custom frequency
         final Predicate<NotificationUserSetting> filterOnCustom = createFrequencyFilter(NotificationFrequency.CUSTOM);
 
-        // The filter selecting only triplets (notif, user, setting) for which the duration between now and the (past)
-        // notif's sent date is longer than the setting's custom duration (means we should re-send the notif)
+        // Define a filter selecting only triplets (notif, user, setting) for which the duration between now and the
+        // (past) notif's sent date is longer than the setting's custom duration (means we should re-send the notif)
         final Predicate<NotificationUserSetting> filterOnPeriodExceeded = n -> {
-            final Duration effectiveGap = Duration.between(n.getNotification().getDate().toLocalDate(),
-                                                           LocalDate.now());
+            final Duration effectiveGap = Duration
+                    .between(n.getNotification().getDate().atZone(ZoneId.systemDefault()).toInstant(), Instant.now());
             final Duration settingGap = Duration.ofDays(n.getSettings().getDays())
                     .plus(Duration.ofHours(n.getSettings().getHours()));
-            return settingGap.compareTo(effectiveGap) >= 0;
+            return effectiveGap.compareTo(settingGap) >= 0;
         };
 
         filterAndSend(filterOnCustom.and(filterOnPeriodExceeded));

@@ -153,8 +153,6 @@ public class SendingSchedulerTest {
         role2.getProjectUsers().add(projectUser2);
         projectUser3.setRole(role1);
         role1.getProjectUsers().add(projectUser3);
-        projectUser4.setRole(role0);
-        role0.getProjectUsers().add(projectUser3);
 
         // Settings
         settings = new ArrayList<>();
@@ -310,6 +308,75 @@ public class SendingSchedulerTest {
         Mockito.verify(strategy).send(notifications.get(0),
                                       recipients.stream().map(r -> r.getEmail()).toArray(s -> new String[s]));
         Mockito.verify(strategy, Mockito.times(1)).send(Mockito.anyObject(), Mockito.anyObject());
+    }
+
+    /**
+     * Check that the system sends the right notifications monthly.
+     */
+    @Test
+    @Requirement("?")
+    @Purpose("Check that the system sends the right notifications with custom frequency.")
+    public void testSendCustomDateExpired() {
+        final Notification n = new Notification();
+        n.setId(ONE);
+        n.setDate(LocalDateTime.now().minusDays(THREE));
+        n.setMessage("message");
+        n.setProjectUserRecipients(new ArrayList<>());
+        n.getProjectUserRecipients().add(projectUsers.get(0));
+        n.getProjectUserRecipients().add(projectUsers.get(2));
+        n.getProjectUserRecipients().add(projectUsers.get(4));
+        n.setRoleRecipients(new ArrayList<>());
+
+        final List<Notification> toSend = new ArrayList<>();
+        toSend.add(n);
+
+        // Define the list of recipients for notif0 with monthly settings
+        final List<ProjectUser> recipients = projectUsers.subList(4, 5);
+
+        // Mock
+        Mockito.when(notificationService.retrieveNotificationsToSend()).thenReturn(toSend);
+        Mockito.when(notificationService.findRecipients(n)).thenReturn(recipients.stream());
+
+        // Call the tested metyhod
+        scheduler.sendCustom();
+
+        // Verify method call
+        Mockito.verify(strategy).send(n, recipients.stream().map(r -> r.getEmail()).toArray(s -> new String[s]));
+        Mockito.verify(strategy, Mockito.times(1)).send(Mockito.anyObject(), Mockito.anyObject());
+    }
+
+    /**
+     * Check that the system sends the right notifications monthly.
+     */
+    @Test
+    @Requirement("?")
+    @Purpose("Check that the system sends the right notifications with custom frequency.")
+    public void testSendCustomDateNotExpired() {
+        final Notification n = new Notification();
+        n.setId(ONE);
+        n.setDate(LocalDateTime.now().minusHours(2));
+        n.setMessage("message");
+        n.setProjectUserRecipients(new ArrayList<>());
+        n.getProjectUserRecipients().add(projectUsers.get(0));
+        n.getProjectUserRecipients().add(projectUsers.get(2));
+        n.getProjectUserRecipients().add(projectUsers.get(4));
+        n.setRoleRecipients(new ArrayList<>());
+
+        final List<Notification> toSend = new ArrayList<>();
+        toSend.add(n);
+
+        // Define the list of recipients for notif with custom settings
+        final List<ProjectUser> recipients = projectUsers.subList(4, 5);
+
+        // Mock
+        Mockito.when(notificationService.retrieveNotificationsToSend()).thenReturn(toSend);
+        Mockito.when(notificationService.findRecipients(n)).thenReturn(recipients.stream());
+
+        // Call the tested metyhod
+        scheduler.sendCustom();
+
+        // Verify method call. We expect no recipient (as the resend delay is not passed)
+        Mockito.verify(strategy, Mockito.never()).send(Mockito.anyObject(), Mockito.anyObject());
     }
 
 }

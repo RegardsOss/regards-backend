@@ -25,11 +25,51 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
- * Validate hibernate constraints on {@link Notification}.
+ * Validate getter/setters and hibernate constraints on {@link Notification}.
  *
  * @author CS SI
  */
-public class NotificationValidationTest {
+public class NotificationTest {
+
+    /**
+     * Id
+     */
+    private static final Long ID = 0L;
+
+    /**
+     * Date
+     */
+    private static final LocalDateTime DATE = LocalDateTime.now().minusDays(1);
+
+    /**
+     * Message
+     */
+    private static final String MESSAGE = "Message";
+
+    /**
+     * Title
+     */
+    private static final String TITLE = "Title";
+
+    /**
+     * Status
+     */
+    private static final NotificationStatus STATUS = NotificationStatus.UNREAD;
+
+    /**
+     * Role recipients
+     */
+    private static List<Role> roleRecipients;
+
+    /**
+     * User recipients
+     */
+    private static List<ProjectUser> projectUserRecipients;
+
+    /**
+     * Sender
+     */
+    private static String SENDER = "sender@email.com";
 
     /**
      * Javax validator
@@ -56,17 +96,18 @@ public class NotificationValidationTest {
     @Before
     public void setupNotification() {
         notification = new Notification();
-        notification.setId(0L);
-        notification.setDate(LocalDateTime.now().minusDays(1));
-        notification.setMessage("Message");
-        notification.setSender("sender@email.com");
-        notification.setStatus(NotificationStatus.UNREAD);
+        notification.setId(ID);
+        notification.setDate(DATE);
+        notification.setTitle(TITLE);
+        notification.setMessage(MESSAGE);
+        notification.setSender(SENDER);
+        notification.setStatus(STATUS);
 
-        final List<Role> roleRecipients = new ArrayList<>();
+        roleRecipients = new ArrayList<>();
         roleRecipients.add(new Role(0L, "name", null, new ArrayList<>(), new ArrayList<>(), false, true));
         notification.setRoleRecipients(roleRecipients);
 
-        final List<ProjectUser> projectUserRecipients = new ArrayList<>();
+        projectUserRecipients = new ArrayList<>();
         projectUserRecipients
                 .add(new ProjectUser(0L, LocalDateTime.now().minusMonths(1), LocalDateTime.now().minusMonths(1),
                         UserStatus.ACCESS_GRANTED, new ArrayList<>(), null, new ArrayList<>(), "user@email.com"));
@@ -77,6 +118,23 @@ public class NotificationValidationTest {
 
         // Check no constraint violations so far
         Assert.assertEquals(0, constraintViolations.size());
+    }
+
+    /**
+     * Check the POJO getters/setters.
+     */
+    @Test
+    @Requirement("?")
+    @Purpose("Check the POJO getters/setters.")
+    public void testGettersSetters() {
+        Assert.assertTrue(notification.getId().equals(ID));
+        Assert.assertTrue(notification.getMessage().equals(MESSAGE));
+        Assert.assertTrue(notification.getSender().equals(SENDER));
+        Assert.assertTrue(notification.getTitle().equals(TITLE));
+        Assert.assertTrue(notification.getDate().equals(DATE));
+        Assert.assertTrue(notification.getProjectUserRecipients().equals(projectUserRecipients));
+        Assert.assertTrue(notification.getRoleRecipients().equals(roleRecipients));
+        Assert.assertTrue(notification.getStatus().equals(STATUS));
     }
 
     /**
