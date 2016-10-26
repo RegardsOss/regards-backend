@@ -23,13 +23,8 @@ import javax.validation.constraints.Min;
 import org.hibernate.validator.constraints.Email;
 import org.springframework.hateoas.Identifiable;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import fr.cnes.regards.modules.accessrights.domain.PastOrNow;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.core.deserializer.LocalDateTimeDeserializer;
-import fr.cnes.regards.modules.core.serializer.LocalDateTimeSerializer;
 
 /**
  * Domain class representing a REGARDS project user.
@@ -179,7 +174,6 @@ public class ProjectUser implements Identifiable<Long> {
      *
      * @return The last connection date
      */
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
     public LocalDateTime getLastConnection() {
         return lastConnection;
     }
@@ -190,7 +184,7 @@ public class ProjectUser implements Identifiable<Long> {
      * @param pLastConnection
      *            The last connection date
      */
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+
     public void setLastConnection(final LocalDateTime pLastConnection) {
         lastConnection = pLastConnection;
     }
@@ -200,7 +194,6 @@ public class ProjectUser implements Identifiable<Long> {
      *
      * @return The last update date
      */
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
     public LocalDateTime getLastUpdate() {
         return lastUpdate;
     }
@@ -211,7 +204,6 @@ public class ProjectUser implements Identifiable<Long> {
      * @param pLastUpdate
      *            The last update date
      */
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     public void setLastUpdate(final LocalDateTime pLastUpdate) {
         lastUpdate = pLastUpdate;
         lastUpdate = LocalDateTime.now();

@@ -3,14 +3,12 @@
  */
 package fr.cnes.regards.microservices.administration.controller;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -18,9 +16,8 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
@@ -34,7 +31,12 @@ import fr.cnes.regards.modules.accessrights.service.IAccessSettingsService;
  *
  * @author xbrochar
  */
-public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
+public class AccessesControllerIT extends AbstractAdministrationIT {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(AccessesControllerIT.class);
 
     /**
      * The autowired service handling the jwt token.
@@ -46,7 +48,7 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
      * The autowired authorization service.
      */
     @Autowired
-    private DefaultMethodAuthorizationService authService;
+    private MethodAuthorizationService authService;
 
     /**
      * The jwt token
@@ -98,9 +100,8 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
     /**
      * Do some setup before each test
      */
-    @Before
+    @Override
     public void init() {
-        setLogger(LoggerFactory.getLogger(AccessesControllerIT.class));
 
         apiAccesses = "/accesses";
         apiAccessId = apiAccesses + "/{access_id}";
@@ -108,17 +109,18 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
         apiAccessDeny = apiAccessId + "/deny";
         apiAccessSettings = apiAccesses + "/settings";
 
+        final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
         final String roleName = "USER";
-        jwt = jwtService.generateToken("PROJECT", "email", "SVG", roleName);
+        jwt = jwtService.generateToken(tenant, "email", "SVG", roleName);
 
-        authService.setAuthorities(apiAccesses, RequestMethod.GET, roleName);
-        authService.setAuthorities(apiAccesses, RequestMethod.POST, roleName);
-        authService.setAuthorities(apiAccessId, RequestMethod.GET, roleName);
-        authService.setAuthorities(apiAccessAccept, RequestMethod.PUT, roleName);
-        authService.setAuthorities(apiAccessDeny, RequestMethod.PUT, roleName);
-        authService.setAuthorities(apiAccessId, RequestMethod.DELETE, roleName);
-        authService.setAuthorities(apiAccessSettings, RequestMethod.GET, roleName);
-        authService.setAuthorities(apiAccessSettings, RequestMethod.PUT, roleName);
+        authService.setAuthorities(tenant, apiAccesses, RequestMethod.GET, roleName);
+        authService.setAuthorities(tenant, apiAccesses, RequestMethod.POST, roleName);
+        authService.setAuthorities(tenant, apiAccessId, RequestMethod.GET, roleName);
+        authService.setAuthorities(tenant, apiAccessAccept, RequestMethod.PUT, roleName);
+        authService.setAuthorities(tenant, apiAccessDeny, RequestMethod.PUT, roleName);
+        authService.setAuthorities(tenant, apiAccessId, RequestMethod.DELETE, roleName);
+        authService.setAuthorities(tenant, apiAccessSettings, RequestMethod.GET, roleName);
+        authService.setAuthorities(tenant, apiAccessSettings, RequestMethod.PUT, roleName);
 
         errorMessage = "Cannot reach model attributes";
     }
@@ -258,7 +260,7 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
         settings.setId(999L);
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isNotFound());
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
         performPut(apiAccessSettings, jwt, settings, expectations, "TODO Error message");
     }
 
@@ -274,7 +276,12 @@ public class AccessesControllerIT extends AbstractRegardsIntegrationTest {
         settings.setId(0L);
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.status().isOk());
         performPut(apiAccessSettings, jwt, settings, expectations, "TODO Error message");
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOG;
     }
 }

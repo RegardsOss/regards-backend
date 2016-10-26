@@ -21,20 +21,17 @@ import fr.cnes.regards.microservices.core.annotation.MicroserviceInfo;
  * @author CS
  *
  */
+// CHECKSTYLE:OFF
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules" })
+// CHECKSTYLE:ON
 @MicroserviceInfo(name = "administration", version = "1.0-SNAPSHOT")
 @ImportResource({ "classpath*:defaultRoles.xml", "classpath*:mailSender.xml" })
 @EnableDiscoveryClient
 @EnableScheduling
-public class Application {
+public class Application { // NOSONAR
 
     public static void main(final String[] pArgs) {
         SpringApplication.run(Application.class, pArgs); // NOSONAR
-    }
-
-    @Bean
-    public ITenantConnectionResolver multitenantResolver() {
-        return new TenantConnectionResolver();
     }
 
 }

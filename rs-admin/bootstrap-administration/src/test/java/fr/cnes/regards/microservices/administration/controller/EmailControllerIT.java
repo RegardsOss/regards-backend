@@ -12,8 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -22,9 +22,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.domain.Email;
@@ -38,7 +37,12 @@ import fr.cnes.regards.modules.emails.service.IEmailService;
  * @author xbrochar
  *
  */
-public class EmailControllerIT extends AbstractRegardsIntegrationTest {
+public class EmailControllerIT extends AbstractAdministrationIT {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(EmailControllerIT.class);
 
     /**
      * Utility service for handling JWT. Autowired by Spring.
@@ -50,7 +54,7 @@ public class EmailControllerIT extends AbstractRegardsIntegrationTest {
      * Method authorization service.Autowired by Spring.
      */
     @Autowired
-    private DefaultMethodAuthorizationService authService;
+    private MethodAuthorizationService authService;
 
     /**
      * The jwt string
@@ -66,15 +70,15 @@ public class EmailControllerIT extends AbstractRegardsIntegrationTest {
     /**
      * Do some setup before each test
      */
-    @Before
-    public void setUp() {
-        setLogger(LoggerFactory.getLogger(EmailControllerIT.class));
-        jwt = jwtService.generateToken("PROJECT", "email", "SVG", "USER");
-        authService.setAuthorities("/emails", RequestMethod.GET, "USER");
-        authService.setAuthorities("/emails", RequestMethod.POST, "USER");
-        authService.setAuthorities("/emails/{mail_id}", RequestMethod.GET, "USER");
-        authService.setAuthorities("/emails/{mail_id}", RequestMethod.PUT, "USER");
-        authService.setAuthorities("/emails/{mail_id}", RequestMethod.DELETE, "USER");
+    @Override
+    public void init() {
+        final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
+        jwt = jwtService.generateToken(AbstractAdministrationIT.PROJECT_TEST_NAME, "email", "SVG", "USER");
+        authService.setAuthorities(tenant, "/emails", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/emails", RequestMethod.POST, "USER");
+        authService.setAuthorities(tenant, "/emails/{mail_id}", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/emails/{mail_id}", RequestMethod.PUT, "USER");
+        authService.setAuthorities(tenant, "/emails/{mail_id}", RequestMethod.DELETE, "USER");
     }
 
     /**
@@ -216,5 +220,10 @@ public class EmailControllerIT extends AbstractRegardsIntegrationTest {
         email.setText(body);
 
         return email;
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOG;
     }
 }

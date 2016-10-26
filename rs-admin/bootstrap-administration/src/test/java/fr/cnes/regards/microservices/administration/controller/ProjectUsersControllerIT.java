@@ -10,17 +10,16 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.autoconfigure.endpoint.DefaultMethodAuthorizationService;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIntegrationTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -37,13 +36,18 @@ import fr.cnes.regards.modules.accessrights.service.IRoleService;
 /**
  * @author svissier
  */
-public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
+public class ProjectUsersControllerIT extends AbstractAdministrationIT {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectUsersControllerIT.class);
 
     @Autowired
     private JWTService jwtService;
 
     @Autowired
-    private DefaultMethodAuthorizationService authService;
+    private MethodAuthorizationService authService;
 
     private String jwt;
 
@@ -73,21 +77,21 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
     @Autowired
     private IRoleService roleService;
 
-    @Before
+    @Override
     public void init() {
-        setLogger(LoggerFactory.getLogger(ProjectUsersControllerIT.class));
-        jwt = jwtService.generateToken("PROJECT", "email", "SVG", "USER");
-        authService.setAuthorities("/users", RequestMethod.GET, "USER");
-        authService.setAuthorities("/users", RequestMethod.POST, "USER");
-        authService.setAuthorities("/users/{user_id}", RequestMethod.GET, "USER");
-        authService.setAuthorities("/users/{user_id}", RequestMethod.PUT, "USER");
-        authService.setAuthorities("/users/{user_id}", RequestMethod.DELETE, "USER");
-        authService.setAuthorities("/users/{user_id}/metadata", RequestMethod.GET, "USER");
-        authService.setAuthorities("/users/{user_id}/metadata", RequestMethod.PUT, "USER");
-        authService.setAuthorities("/users/{user_id}/metadata", RequestMethod.DELETE, "USER");
-        authService.setAuthorities("/users/{user_login}/permissions", RequestMethod.GET, "USER");
-        authService.setAuthorities("/users/{user_login}/permissions", RequestMethod.PUT, "USER");
-        authService.setAuthorities("/users/{user_login}/permissions", RequestMethod.DELETE, "USER");
+        final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
+        jwt = jwtService.generateToken(tenant, "email", "SVG", "USER");
+        authService.setAuthorities(tenant, "/users", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/users", RequestMethod.POST, "USER");
+        authService.setAuthorities(tenant, "/users/{user_id}", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/users/{user_id}", RequestMethod.PUT, "USER");
+        authService.setAuthorities(tenant, "/users/{user_id}", RequestMethod.DELETE, "USER");
+        authService.setAuthorities(tenant, "/users/{user_id}/metadata", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/users/{user_id}/metadata", RequestMethod.PUT, "USER");
+        authService.setAuthorities(tenant, "/users/{user_id}/metadata", RequestMethod.DELETE, "USER");
+        authService.setAuthorities(tenant, "/users/{user_login}/permissions", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/users/{user_login}/permissions", RequestMethod.PUT, "USER");
+        authService.setAuthorities(tenant, "/users/{user_login}/permissions", RequestMethod.DELETE, "USER");
         apiUsers = "/users";
         apiUserId = apiUsers + "/{user_id}";
         apiUserLogin = apiUsers + "/{user_login}";
@@ -272,5 +276,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsIntegrationTest {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDelete(apiUserId, jwt, expectations, errorMessage, userId);
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOG;
     }
 }

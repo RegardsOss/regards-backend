@@ -4,4 +4,4 @@
 /**
  * Administration scpecific configurations
  */
-package fr.cnes.regards.microservices.administration.configuration;
+package fr.cnes.regards.microservices.administration;
