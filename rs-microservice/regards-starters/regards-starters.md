@@ -71,7 +71,7 @@ class CustomTenantResolver implements ITenantResolver {
 ## Security starter
 
 ```properties
-jwt.secret=MTIzNDU2Nzg5 # Base64 encoded secret
+jwt.secret=MTIzNDU2Nzg5 # Secret key
 ```
 
 ## Swagger starter
