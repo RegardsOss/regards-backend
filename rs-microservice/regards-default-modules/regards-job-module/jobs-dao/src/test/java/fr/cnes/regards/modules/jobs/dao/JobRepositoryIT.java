@@ -53,7 +53,7 @@ public class JobRepositoryIT {
     public void setUp() {
         try {
             jwtService.injectToken("test1", "USER");
-        } catch (JwtException e) {
+        } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);
         }
         jobRepository.deleteAll();
@@ -61,21 +61,21 @@ public class JobRepositoryIT {
 
     @Test
     public void testSaveJob() {
-        JobParameters parameters = new JobParameters();
+        final JobParameters parameters = new JobParameters();
         parameters.add("source", "/path/to/folder");
         parameters.add("answer", 42);
 
-        String description = "This is a simple job";
-        Path workspace = FileSystems.getDefault().getPath("some", "random", "path.xls");
-        JobConfiguration jobConfiguration = new JobConfiguration(description, parameters,
+        final String description = "This is a simple job";
+        final Path workspace = FileSystems.getDefault().getPath("some", "random", "path.xls");
+        final JobConfiguration jobConfiguration = new JobConfiguration(description, parameters,
                 "fr.cnes.regards.modules.MyCustomJob", LocalDateTime.now().plusDays(2),
                 LocalDateTime.now().plusDays(15), 1, workspace, "system");
-        JobInfo jobBeforeSave = new JobInfo(jobConfiguration);
+        final JobInfo jobBeforeSave = new JobInfo(jobConfiguration);
 
         // save the job and the corresponding jobStatusInfo
-        JobInfo job = jobRepository.save(jobBeforeSave);
+        final JobInfo job = jobRepository.save(jobBeforeSave);
 
-        Assertions.assertThat(job.getStatus().getDescription()).as(description);
+        Assertions.assertThat(job.getStatus().getDescription().equals(description)).isTrue();
         Assertions.assertThat(job.getId()).isEqualTo(jobBeforeSave.getId());
 
         jobRepository.delete(job.getId());
@@ -83,26 +83,27 @@ public class JobRepositoryIT {
 
     @Test
     public void testSaveJobWithPojoAsParameter() {
-        String owner_ = "john.doe@opensource";
-        JobConfiguration jobConfigurationToRunAfter = new JobConfiguration("", null, "", null, null, 5, null, owner_);
-        JobInfo jobToRunAfter = new JobInfo(jobConfigurationToRunAfter);
+        final String owner_ = "john.doe@opensource";
+        final JobConfiguration jobConfigurationToRunAfter = new JobConfiguration("", null, "", null, null, 5, null,
+                owner_);
+        final JobInfo jobToRunAfter = new JobInfo(jobConfigurationToRunAfter);
 
-        JobParameters parameters = new JobParameters();
-        String keyParam = "thenRun";
+        final JobParameters parameters = new JobParameters();
+        final String keyParam = "thenRun";
         parameters.add(keyParam, jobToRunAfter);
 
-        JobConfiguration jobConfiguration = new JobConfiguration("some description", parameters,
+        final JobConfiguration jobConfiguration = new JobConfiguration("some description", parameters,
                 "fr.cnes.regards.modules.MyCustomJob", LocalDateTime.now().plusDays(2),
                 LocalDateTime.now().plusDays(15), 1, null, "john.doe@cnes");
-        JobInfo jobBeforeSave = new JobInfo(jobConfiguration);
+        final JobInfo jobBeforeSave = new JobInfo(jobConfiguration);
 
         // save the job and the corresponding jobStatusInfo
-        JobInfo job = jobRepository.save(jobBeforeSave);
+        final JobInfo job = jobRepository.save(jobBeforeSave);
         LOG.info(job.toString());
-        Map<String, Object> parameterAfterSave = job.getParameters().getParameters();
-        JobInfo jobAsParameterToRunAfter = (JobInfo) parameterAfterSave.get(keyParam);
-        Assertions.assertThat(jobAsParameterToRunAfter.getOwner()).as(owner_);
-        Assertions.assertThat(jobAsParameterToRunAfter.getStatus().getDescription()).as("");
+        final Map<String, Object> parameterAfterSave = job.getParameters().getParameters();
+        final JobInfo jobAsParameterToRunAfter = (JobInfo) parameterAfterSave.get(keyParam);
+        Assertions.assertThat(jobAsParameterToRunAfter.getOwner().equals(owner_)).isTrue();
+        Assertions.assertThat(jobAsParameterToRunAfter.getStatus().getDescription().equals("")).isTrue();
 
     }
 
