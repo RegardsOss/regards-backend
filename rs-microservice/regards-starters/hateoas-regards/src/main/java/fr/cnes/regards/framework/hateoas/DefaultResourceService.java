@@ -8,67 +8,38 @@ import java.text.MessageFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.Assert;
+
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
  *
- * Resource utilities
+ * Default resource service based on security starter
  *
  * @author msordi
  *
  */
-public final class ResourceUtils {
+public class DefaultResourceService implements IResourceService {
 
     /**
      * Logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ResourceUtils.class);
-
-    private ResourceUtils() {
-    }
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultResourceService.class);
 
     /**
-     * Convert object to resource
-     *
-     * @param <T>
-     *            element to convert
-     * @param pObject
-     *            object
-     * @return {@link Resource}
+     * Method authorization servicve
      */
-    public static <T> Resource<T> toResource(T pObject) {
-        Assert.notNull(pObject);
-        return new Resource<T>(pObject);
-    }
+    @Autowired
+    private MethodAuthorizationService authorisationService;
 
-    /**
-     * Enable link support
-     *
-     * @return {@link ResourceSupport}
-     */
-    public static ResourceSupport getResourceSupport() {
-        return new ResourceSupport();
-    }
-
-    /**
-     * Add a link to a resource for a single method
-     *
-     * @param pResource
-     *            resource to manage
-     * @param pController
-     *            controller
-     * @param pMethodName
-     *            method name
-     * @param pRel
-     *            rel name
-     * @param pMethodParams
-     *            method parameters
-     */
-    public static void addLink(ResourceSupport pResource, Class<?> pController, String pMethodName, String pRel,
+    @Override
+    public <T> void addLink(Resource<T> pResource, Class<?> pController, String pMethodName, String pRel,
             MethodParam<?>... pMethodParams) {
 
         Assert.notNull(pResource);
@@ -90,7 +61,7 @@ public final class ResourceUtils {
         }
 
         try {
-            final Method method = ResourceUtils.getMethod(pController, pMethodName, parameterTypes);
+            final Method method = getMethod(pController, pMethodName, parameterTypes);
             final Link link = ControllerLinkBuilder.linkTo(method, parameterValues).withRel(pRel);
             pResource.add(link);
         } catch (MethodException e) {
@@ -111,10 +82,12 @@ public final class ResourceUtils {
      * @throws MethodException
      *             if method cannot be retrieved
      */
-    private static Method getMethod(Class<?> pController, String pMethodName, Class<?>... pParameterTypes)
+    private Method getMethod(Class<?> pController, String pMethodName, Class<?>... pParameterTypes)
             throws MethodException {
         try {
-            return pController.getMethod(pMethodName, pParameterTypes);
+            final Method method = pController.getMethod(pMethodName, pParameterTypes);
+            checkAuthorization(method);
+            return method;
         } catch (NoSuchMethodException e) {
             final String message = MessageFormat.format("No such method {0} in controller {1}.", pMethodName,
                                                         pController.getCanonicalName());
@@ -124,6 +97,23 @@ public final class ResourceUtils {
             final String message = MessageFormat.format("Security exception accessing method {0} in controller {1}.",
                                                         pMethodName, pController.getCanonicalName());
             LOG.error(message, e);
+            throw new MethodException(message);
+        }
+    }
+
+    /**
+     * Check if method is accessible regarding security authorities
+     *
+     * @param pMethod
+     *            method to check
+     * @throws MethodException
+     *             if method not authorized
+     */
+    private void checkAuthorization(Method pMethod) throws MethodException {
+        final JWTAuthentication auth = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        if (!authorisationService.hasAccess(auth, pMethod)) {
+            final String message = MessageFormat.format("Unauthorized method {0}", pMethod.getName());
+            LOG.error(message);
             throw new MethodException(message);
         }
     }

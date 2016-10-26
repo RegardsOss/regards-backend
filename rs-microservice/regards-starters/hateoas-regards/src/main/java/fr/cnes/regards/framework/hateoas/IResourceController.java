@@ -37,6 +37,6 @@ public interface IResourceController<T> {
      */
     default List<Resource<T>> toResources(List<T> pElements) {
         Assert.notNull(pElements);
-        return pElements.stream().map(item -> toResource(item)).collect(Collectors.toList());
+        return pElements.parallelStream().map(item -> toResource(item)).collect(Collectors.toList());
     }
 }

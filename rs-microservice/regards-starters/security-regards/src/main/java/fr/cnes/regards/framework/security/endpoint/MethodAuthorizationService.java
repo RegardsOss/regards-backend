@@ -19,19 +19,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.domain.ResourceMappingException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 
@@ -137,10 +135,10 @@ public class MethodAuthorizationService {
         scanner.addIncludeFilter(new AnnotationTypeFilter(RestController.class));
         for (final BeanDefinition def : scanner.findCandidateComponents("fr.cnes.regards")) {
             try {
-                final Class<?> classe = Class.forName(def.getBeanClassName());
+                final Class<?> controller = Class.forName(def.getBeanClassName());
                 // For each method get the method annotated with both @ResourceAccess and @RequestMapping
-                for (final Method method : classe.getMethods()) {
-                    resources.addAll(manageMethodResource(classe, method));
+                for (final Method method : controller.getMethods()) {
+                    resources.addAll(manageMethodResource(method));
                 }
             } catch (final ClassNotFoundException e) {
                 LOG.error(String.format("Error getting resources from RestController classe : %s",
@@ -156,44 +154,28 @@ public class MethodAuthorizationService {
      *
      * Create the resources associated to a Rest controller endpoint
      *
-     * @param pClass
-     *            class of the rest controller
      * @param pMethod
      *            method of the endpoint
      * @return List<ResourceMapping>
      * @since 1.0-SNAPSHOT
      */
-    private List<ResourceMapping> manageMethodResource(final Class<?> pClass, final Method pMethod) {
+    private List<ResourceMapping> manageMethodResource(final Method pMethod) {
 
         final List<ResourceMapping> mappings = new ArrayList<>();
-        // Get inital resource path if the class is annotated with @RequestMapping
-        String path = "";
-        final RequestMapping classRequestMapping = AnnotationUtils.findAnnotation(pClass, RequestMapping.class);
-        if (classRequestMapping != null) {
-            path = classRequestMapping.value()[0];
-        }
 
-        final ResourceAccess resourceAccess = AnnotationUtils.findAnnotation(pMethod, ResourceAccess.class);
-        final RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(pMethod, RequestMapping.class);
+        try {
+            final ResourceMapping mapping = MethodAuthorizationUtils.buildResourceMapping(pMethod);
 
-        if ((resourceAccess != null) && (requestMapping != null)) {
-            if ((!resourceAccess.plugin().equals(void.class)) && (pluginResourceManager != null)) {
-                // Manage specific plugin endpoint
-                mappings.addAll(pluginResourceManager.manageMethodResource(path, resourceAccess, requestMapping));
+            if (!mapping.getResourceAccess().plugin().equals(Void.class) && (pluginResourceManager != null)) {
+                // Manage specific plugin endpoints
+                mappings.addAll(pluginResourceManager.manageMethodResource(mapping));
             } else {
-                // Manage standard endpoint
-                RequestMethod reqMethod = RequestMethod.GET;
-                if (requestMapping.method().length > 0) {
-                    reqMethod = requestMapping.method()[0];
-                }
-                if (requestMapping.value().length > 0) {
-                    path += requestMapping.value()[0];
-                } else
-                    if (requestMapping.path().length > 0) {
-                        path += requestMapping.path()[0];
-                    }
-                mappings.add(new ResourceMapping(resourceAccess, path, reqMethod));
+                mappings.add(mapping);
             }
+        } catch (ResourceMappingException e) {
+            // Skip inconsistent resource management
+            LOG.warn("Skipping resource management for method \"{}\" on class \"{}\".", pMethod.getName(),
+                     pMethod.getDeclaringClass().getCanonicalName());
         }
         return mappings;
     }
@@ -284,5 +266,44 @@ public class MethodAuthorizationService {
             result = grantedAuthoritiesByResource.get(pResourceMapping.getResourceMappingId());
         }
         return Optional.ofNullable(result);
+    }
+
+    /**
+     * Check if a user can access an annotated method
+     *
+     * @param pJWTAuthentication
+     *            the user authentication object
+     * @param pMethod
+     *            the method to access
+     * @return {@link Boolean#TRUE} if user can access the method
+     */
+    public Boolean hasAccess(final JWTAuthentication pJWTAuthentication, final Method pMethod) {
+        Boolean access = Boolean.FALSE;
+
+        // If authentication do not contains authority, deny access
+        if ((pJWTAuthentication.getAuthorities() != null) && !pJWTAuthentication.getAuthorities().isEmpty()) {
+
+            try {
+                // Retrieve resource mapping configuration
+                final ResourceMapping mapping = MethodAuthorizationUtils.buildResourceMapping(pMethod);
+                // Retrieve granted authorities
+                final Optional<List<GrantedAuthority>> options = getAuthorities(pJWTAuthentication.getTenant(),
+                                                                                mapping);
+                if (options.isPresent()) {
+                    access = MethodAuthorizationUtils.hasAccess(options.get(), pJWTAuthentication.getAuthorities());
+                }
+
+                // CHECKSTYLE:OFF
+                final String decision = access ? "granted" : "denied";
+                // CHECKSTYLE:ON
+                LOG.info("Access {} to resource {} for user {}.", decision, mapping.getResourceMappingId(),
+                         pJWTAuthentication.getName());
+
+            } catch (final ResourceMappingException e) {
+                LOG.debug(e.getMessage(), e);
+                // Nothing to do : access will be denied
+            }
+        }
+        return access;
     }
 }
