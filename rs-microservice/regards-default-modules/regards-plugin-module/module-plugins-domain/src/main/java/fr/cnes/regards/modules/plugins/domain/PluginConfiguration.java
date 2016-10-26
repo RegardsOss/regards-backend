@@ -11,14 +11,16 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-import org.springframework.hateoas.Identifiable;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
  * Class PluginConfiguration
@@ -27,15 +29,13 @@ import org.springframework.hateoas.Identifiable;
  *
  */
 @Entity
-@Table(name = "T_PLUGIN_CONFIGURATION",
-        indexes = { @Index(name = "IDX_PLUGIN_CONFIGURATION", columnList = "pluginId") })
-public class PluginConfiguration implements Identifiable<Long> {
+@Table(name = "T_PLUGIN_CONFIGURATION", indexes = {
+        @Index(name = "IDX_PLUGIN_CONFIGURATION", columnList = "pluginId") })
+@SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_CONF")
+public class PluginConfiguration implements IIdentifiable<Long> {
 
-    /**
-     * Internal identifier
-     */
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginConfSequence")
     private Long id;
 
     /**
@@ -74,11 +74,9 @@ public class PluginConfiguration implements Identifiable<Long> {
      * Configuration parameters of the plugin
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE",
-            joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_ID")) },
-            inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMETER_ID")) })
+    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE", joinColumns = {
+            @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id", foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_ID")) }, inverseJoinColumns = {
+                    @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMETER_ID")) })
     private List<PluginParameter> parameters;
 
     /**
@@ -90,7 +88,7 @@ public class PluginConfiguration implements Identifiable<Long> {
 
     /**
      * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}
-     * 
+     *
      * @param pPluginMetaData
      *            the plugin's metadata
      * @param pLabel
@@ -122,7 +120,7 @@ public class PluginConfiguration implements Identifiable<Long> {
 
     /**
      * Return the value of a specific parameter
-     * 
+     *
      * @param pParameterName
      *            the parameter to get the value
      * @return the value of the parameter
@@ -141,7 +139,7 @@ public class PluginConfiguration implements Identifiable<Long> {
 
     /**
      * Return the value of a specific parameter {@link PluginConfiguration}
-     * 
+     *
      * @param pParameterName
      *            the parameter to get the value
      * @return the value of the parameter
@@ -212,11 +210,10 @@ public class PluginConfiguration implements Identifiable<Long> {
 
     @Override
     public Long getId() {
-        return this.id;
-    }
-    
-    public final void setId(Long pId) {
-        id = pId;
+        return id;
     }
 
+    public void setId(Long pId) {
+        id = pId;
+    }
 }

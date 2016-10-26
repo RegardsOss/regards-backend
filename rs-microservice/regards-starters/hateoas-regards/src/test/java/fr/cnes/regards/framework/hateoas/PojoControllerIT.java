@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.hateoas;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -21,6 +22,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
  * @author msordi
  *
  */
+@Ignore
 public class PojoControllerIT extends AbstractRegardsIT {
 
     /**
