@@ -57,7 +57,7 @@ public class NotificationSettingsValidationTest {
      * Setup a vaid notification before each test in order to unvalidate on by one
      */
     @Before
-    public void setupNotification() {
+    public void setUpNotification() {
         settings = new NotificationSettings();
         settings.setDays(1);
         settings.setHours(1);
@@ -95,7 +95,7 @@ public class NotificationSettingsValidationTest {
     @Test
     @Requirement("?")
     @Purpose("Check that the system fails when hours frequency is higher than 24.")
-    public void hourssIsLowerThan1() {
+    public void hoursIsLowerThan1() {
         // Init the malformed object
         settings.setHours(TWENTY_FIVE);
 

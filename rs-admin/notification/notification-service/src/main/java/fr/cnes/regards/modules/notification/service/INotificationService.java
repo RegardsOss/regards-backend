@@ -77,11 +77,11 @@ public interface INotificationService {
     List<Notification> retrieveNotificationsToSend();
 
     /**
-     * Gather the list of recipients on a notification as stream of email strings.
+     * Gather the list of recipients on a notification
      *
      * @param pNotification
      *            The notification
-     * @return The stream of project users' email as strings
+     * @return The stream of project users
      */
     Stream<ProjectUser> findRecipients(Notification pNotification);
 

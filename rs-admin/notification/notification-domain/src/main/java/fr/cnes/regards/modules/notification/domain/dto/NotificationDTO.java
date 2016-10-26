@@ -37,6 +37,11 @@ public class NotificationDTO {
     private String sender;
 
     /**
+     * The title
+     */
+    private String title;
+
+    /**
      * @return the message
      */
     public String getMessage() {
@@ -62,6 +67,13 @@ public class NotificationDTO {
      */
     public String getSender() {
         return sender;
+    }
+
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
     }
 
     /**
@@ -94,6 +106,14 @@ public class NotificationDTO {
      */
     public void setSender(final String pSender) {
         sender = pSender;
+    }
+
+    /**
+     * @param pTitle
+     *            the title to set
+     */
+    public void setTitle(final String pTitle) {
+        title = pTitle;
     }
 
 }

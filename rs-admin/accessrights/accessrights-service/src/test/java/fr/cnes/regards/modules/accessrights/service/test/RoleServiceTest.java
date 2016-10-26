@@ -53,6 +53,9 @@ public class RoleServiceTest {
         roleService = new RoleService(roleRepository);
     }
 
+    /**
+     * Check that the allows to retrieve roles.
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the allows to retrieve roles.")

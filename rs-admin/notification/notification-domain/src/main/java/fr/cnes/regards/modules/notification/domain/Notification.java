@@ -87,6 +87,12 @@ public class Notification implements Identifiable<Long> {
     private NotificationStatus status;
 
     /**
+     * The title
+     */
+    @Column(name = "title")
+    private String title;
+
+    /**
      * @return the date
      */
     public LocalDateTime getDate() {
@@ -131,6 +137,13 @@ public class Notification implements Identifiable<Long> {
      */
     public NotificationStatus getStatus() {
         return status;
+    }
+
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
     }
 
     /**
@@ -187,6 +200,14 @@ public class Notification implements Identifiable<Long> {
      */
     public void setStatus(final NotificationStatus pStatus) {
         status = pStatus;
+    }
+
+    /**
+     * @param pTitle
+     *            the title to set
+     */
+    public void setTitle(final String pTitle) {
+        title = pTitle;
     }
 
 }

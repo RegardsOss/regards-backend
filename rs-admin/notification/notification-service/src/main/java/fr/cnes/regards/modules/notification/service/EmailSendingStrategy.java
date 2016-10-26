@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.notification.service;
 
 import java.util.Date;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
@@ -24,8 +23,17 @@ public class EmailSendingStrategy implements ISendingStrategy {
     /**
      * Feign client from module Email
      */
-    @Autowired
-    private IEmailClient emailClient;
+    private final IEmailClient emailClient;
+
+    /**
+     * Creates new strategy with passed email client
+     *
+     * @param pEmailClient
+     *            The email feign client
+     */
+    public EmailSendingStrategy(final IEmailClient pEmailClient) {
+        emailClient = pEmailClient;
+    }
 
     /*
      * (non-Javadoc)
@@ -39,7 +47,7 @@ public class EmailSendingStrategy implements ISendingStrategy {
         final SimpleMailMessage email = new SimpleMailMessage();
         email.setFrom(pNotification.getSender());
         email.setSentDate(new Date());
-        email.setSubject("Subject");
+        email.setSubject(pNotification.getTitle());
         email.setText(pNotification.getMessage());
         email.setTo(pRecipients);
 

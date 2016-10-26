@@ -5,18 +5,16 @@ package fr.cnes.regards.modules.notification.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.IProjectUserService;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
@@ -34,14 +32,14 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 public class NotificationService implements INotificationService {
 
     /**
-     * The Spring security context. Autowired.
-     */
-    private final SecurityContext securityContext;
-
-    /**
      * CRUD repository managing notifications. Autowired by Spring.
      */
     private final INotificationRepository notificationRepository;
+
+    /**
+     * Service handle CRUD operations on {@link ProjectUser}s. Autowired by Spring.
+     */
+    private final IProjectUserService projectUserService;
 
     /**
      * CRUD repository managing project users. Autowired by Spring.
@@ -54,14 +52,9 @@ public class NotificationService implements INotificationService {
     private final IRoleRepository roleRepository;
 
     /**
-     * Role Feign client from module Accessrights
-     */
-    private final IRolesClient roleClient;
-
-    /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
      *
-     * @param pSecurityContext
+     * @param pProjectUserService
      *            Autowired by Spring. Must not be {@literal null}.
      * @param pNotificationRepository
      *            Autowired by Spring. Must not be {@literal null}.
@@ -69,18 +62,15 @@ public class NotificationService implements INotificationService {
      *            Autowired by Spring. Must not be {@literal null}.
      * @param pRoleRepository
      *            Autowired by Spring. Must not be {@literal null}.
-     * @param pRoleClient
-     *            Autowired by Spring. Must not be {@literal null}.
      */
-    public NotificationService(final SecurityContext pSecurityContext,
+    public NotificationService(final IProjectUserService pProjectUserService,
             final INotificationRepository pNotificationRepository, final IProjectUserRepository pProjectUserRepository,
-            final IRoleRepository pRoleRepository, final IRolesClient pRoleClient) {
+            final IRoleRepository pRoleRepository) {
         super();
-        securityContext = pSecurityContext;
+        projectUserService = pProjectUserService;
         notificationRepository = pNotificationRepository;
         projectUserRepository = pProjectUserRepository;
         roleRepository = pRoleRepository;
-        roleClient = pRoleClient;
     }
 
     /*
@@ -90,8 +80,7 @@ public class NotificationService implements INotificationService {
      */
     @Override
     public List<Notification> retrieveNotifications() {
-        final String email = securityContext.getAuthentication().getName();
-        final ProjectUser projectUser = projectUserRepository.findOneByEmail(email);
+        final ProjectUser projectUser = projectUserService.retrieveCurrentUser();
         final Role role = projectUser.getRole();
         return notificationRepository.findByRecipientsContaining(projectUser, role);
     }
@@ -107,6 +96,7 @@ public class NotificationService implements INotificationService {
         final Notification notification = new Notification();
         notification.setDate(LocalDateTime.now());
         notification.setMessage(pDto.getMessage());
+        notification.setTitle(pDto.getTitle());
         notification.setSender(pDto.getSender());
         notification.setStatus(NotificationStatus.UNREAD);
 
@@ -189,10 +179,7 @@ public class NotificationService implements INotificationService {
         try (final Stream<Role> rolesStream = pNotification.getRoleRecipients().parallelStream();
                 final Stream<ProjectUser> usersStream = pNotification.getProjectUserRecipients().parallelStream()) {
 
-            final Function<Role, Stream<ProjectUser>> mapper = r -> HateoasUtils
-                    .mapResponseToContent(roleClient.retrieveRoleProjectUserList(r.getId())).stream();
-
-            return Stream.concat(usersStream, rolesStream.flatMap(mapper));
+            return Stream.concat(usersStream, rolesStream.flatMap(r -> r.getProjectUsers().stream())).distinct();
         }
     }
 

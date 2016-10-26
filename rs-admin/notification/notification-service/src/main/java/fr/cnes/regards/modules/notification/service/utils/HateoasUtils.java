@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.notification.service;
+package fr.cnes.regards.modules.notification.service.utils;
 
 import java.util.List;
 import java.util.stream.Collectors;

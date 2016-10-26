@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
+import fr.cnes.regards.modules.notification.service.utils.NotificationUserSetting;
 
 /**
  * Service responsible for scheduling the sending of notifications to their recipients.<br>
@@ -64,7 +65,7 @@ public class SendingScheduler {
      * Find all notifications which should be sent daily and send them with the sending strategy
      */
     @Scheduled(cron = "${regards.notification.cron.daily}")
-    private void sendDaily() {
+    public void sendDaily() {
         final Predicate<NotificationUserSetting> filter = createFrequencyFilter(NotificationFrequency.DAILY);
         filterAndSend(filter);
     }
@@ -73,7 +74,7 @@ public class SendingScheduler {
      * Find all notifications which should be sent weekly and send them with the sending strategy
      */
     @Scheduled(cron = "${regards.notification.cron.weekly}")
-    private void sendWeekly() {
+    public void sendWeekly() {
         final Predicate<NotificationUserSetting> filter = createFrequencyFilter(NotificationFrequency.WEEKLY);
         filterAndSend(filter);
     }
@@ -82,7 +83,7 @@ public class SendingScheduler {
      * Find all notifications which should be sent weekly and send them with the sending strategy
      */
     @Scheduled(cron = "${regards.notification.cron.monthly}")
-    private void sendMonthly() {
+    public void sendMonthly() {
         final Predicate<NotificationUserSetting> filter = createFrequencyFilter(NotificationFrequency.MONTHLY);
         filterAndSend(filter);
     }
@@ -91,7 +92,7 @@ public class SendingScheduler {
      * Find all notifications which have a custom sending frequency and send them with the sending strategy if need be
      */
     @Scheduled(cron = "${regards.notification.cron.daily}")
-    private void sendCustom() {
+    public void sendCustom() {
         // The filter for custom frequency
         final Predicate<NotificationUserSetting> filterOnCustom = createFrequencyFilter(NotificationFrequency.CUSTOM);
 
@@ -125,10 +126,12 @@ public class SendingScheduler {
                 final String[] recipients = notificationService.findRecipients(notification)
                         .map(projectUser -> new NotificationUserSetting(notification, projectUser,
                                 notificationSettingsRepository.findOneByProjectUser(projectUser)))
-                        .filter(pFilter).map(n -> n.getProjectUser().getEmail()).toArray(s -> new String[s]);
+                        .filter(pFilter).map(n -> n.getProjectUser().getEmail()).distinct().toArray(s -> new String[s]);
 
                 // Send the notification to recipients
-                strategy.send(notification, recipients);
+                if (recipients.length > 0) {
+                    strategy.send(notification, recipients);
+                }
 
                 // Update sent date
                 notification.setDate(LocalDateTime.now());
