@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 import fr.cnes.regards.client.core.ClientRequestInterceptor;
 
@@ -23,6 +24,7 @@ import fr.cnes.regards.client.core.ClientRequestInterceptor;
 @ComponentScan
 @EnableFeignClients(defaultConfiguration = { ClientRequestInterceptor.class })
 @EnableAutoConfiguration
+@PropertySource("classpath:tests.properties")
 public class ProjectClientFallbacksTestsConfiguration {
 
 }
