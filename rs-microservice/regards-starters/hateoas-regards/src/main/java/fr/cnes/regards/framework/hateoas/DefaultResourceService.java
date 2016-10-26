@@ -33,7 +33,7 @@ public class DefaultResourceService implements IResourceService {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultResourceService.class);
 
     /**
-     * Method authorization servicve
+     * Method authorization service
      */
     @Autowired
     private MethodAuthorizationService authorisationService;

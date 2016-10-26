@@ -20,5 +20,10 @@
 			<artifactId>hateoas-regards-autoconfigure</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>hateoas-regards</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 </project>
