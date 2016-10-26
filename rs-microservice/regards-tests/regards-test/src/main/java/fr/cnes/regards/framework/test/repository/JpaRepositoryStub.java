@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.test.repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.springframework.data.domain.Example;
@@ -33,7 +34,9 @@ public class JpaRepositoryStub<T extends Identifiable<Long>> extends RepositoryS
 
     @Override
     public List<T> findAll(final Iterable<Long> pIds) {
-        return StreamSupport.stream(pIds.spliterator(), false).map(id -> findOne(id)).collect(Collectors.toList());
+        try (final Stream<Long> stream = StreamSupport.stream(pIds.spliterator(), false)) {
+            return stream.map(id -> findOne(id)).collect(Collectors.toList());
+        }
     }
 
     /**
