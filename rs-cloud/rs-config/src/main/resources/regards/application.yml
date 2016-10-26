@@ -15,3 +15,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+#Actuator properties
+endpoints:
+  shutdown:
+    enabled : true
