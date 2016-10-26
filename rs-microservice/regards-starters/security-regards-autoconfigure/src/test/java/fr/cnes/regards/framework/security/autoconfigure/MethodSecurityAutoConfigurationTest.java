@@ -9,10 +9,12 @@ import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
-import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
-import fr.cnes.regards.framework.security.endpoint.DefaultPluginResourceManager;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
+import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
+import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.endpoint.IPluginResourceManager;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.filter.JWTAuthenticationProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
@@ -33,15 +35,26 @@ public class MethodSecurityAutoConfigurationTest {
         }
     }
 
+    /**
+     *
+     * Check for security autoconfigure
+     *
+     * @since 1.0-SNAPSHOT
+     */
     @Test
     public void testMethodConfiguration() {
         this.context = new AnnotationConfigWebApplicationContext();
         this.context.setServletContext(new MockServletContext());
-        this.context.register(MethodSecurityAutoConfiguration.class, MethodAuthorizationService.class,
-                              DefaultPluginResourceManager.class, DefaultAuthorityProvider.class,
-                              LocalTenantResolver.class, JWTService.class);
+        this.context.register(MethodSecurityAutoConfiguration.class, MethodAuthorizationServiceAutoConfiguration.class,
+                              WebSecurityAutoConfiguration.class, JWTService.class);
         this.context.refresh();
+        Assertions.assertThat(this.context.getBean(IAuthoritiesProvider.class)).isNotNull();
+        Assertions.assertThat(this.context.getBean(ITenantResolver.class)).isNotNull();
         Assertions.assertThat(this.context.getBean(MethodAuthorizationService.class)).isNotNull();
+        Assertions.assertThat(this.context.getBean(IPluginResourceManager.class)).isNotNull();
+        Assertions.assertThat(this.context.getBean(SecurityResourcesController.class)).isNotNull();
+        Assertions.assertThat(this.context.getBean(JWTAuthenticationProvider.class)).isNotNull();
+
     }
 
 }

@@ -45,7 +45,7 @@ public class RootResourceAccessVoter implements AccessDecisionVoter<Object> {
         // If authentication do not contains authority, deny access
         if ((pAuthentication.getAuthorities() != null) && !pAuthentication.getAuthorities().isEmpty()) {
             for (final GrantedAuthority auth : pAuthentication.getAuthorities()) {
-                if (auth.getAuthority().equals(ROOT_ADMIN_AUHTORITY)) {
+                if (auth.getAuthority().equals("ROLE_" + ROOT_ADMIN_AUHTORITY)) {
                     access = ACCESS_GRANTED;
                     break;
                 }

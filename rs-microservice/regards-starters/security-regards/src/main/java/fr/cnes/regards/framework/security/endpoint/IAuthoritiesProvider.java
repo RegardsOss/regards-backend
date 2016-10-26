@@ -27,7 +27,9 @@ public interface IAuthoritiesProvider {
     /**
      *
      * Retrieve all the authorized address (IP) for the given Role
-     *
+     * 
+     * @param pRole
+     *            role
      * @return List<String>
      * @since 1.0-SNAPSHOT
      */

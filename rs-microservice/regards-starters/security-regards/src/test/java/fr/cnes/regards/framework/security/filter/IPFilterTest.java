@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.security.filter;
 
 import java.io.IOException;
@@ -29,7 +32,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  *
  * IP Filter tests
  *
- * @author CS
+ * @author sbinda
  * @since 1.0-SNAPSHOT
  */
 public class IPFilterTest {
@@ -50,6 +53,11 @@ public class IPFilterTest {
     private static final String AUTHORIZED_ADRESS_PATTERN = "127.0.0.*";
 
     /**
+     * Test user Role
+     */
+    private static final String ROLE_NAME = "USER";
+
+    /**
      *
      * Check security filter with ip adress for endpoints accesses
      *
@@ -60,8 +68,8 @@ public class IPFilterTest {
     @Test
     public void ipFilterTest() {
 
-        final JWTAuthentication token = new JWTAuthentication("plop");
-        token.setRole("USER");
+        final JWTAuthentication token = new JWTAuthentication("token");
+        token.setRole(ROLE_NAME);
         SecurityContextHolder.getContext().setAuthentication(token);
 
         final IpFilter filter = new IpFilter(new IAuthoritiesProvider() {
@@ -114,8 +122,8 @@ public class IPFilterTest {
     @Test
     public void subdomainIpFilterTest() {
 
-        final JWTAuthentication token = new JWTAuthentication("plop");
-        token.setRole("USER");
+        final JWTAuthentication token = new JWTAuthentication("token");
+        token.setRole(ROLE_NAME);
         SecurityContextHolder.getContext().setAuthentication(token);
 
         final IpFilter filter = new IpFilter(new IAuthoritiesProvider() {

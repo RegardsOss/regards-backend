@@ -24,6 +24,7 @@
 		<module>websocket-regards-starter</module>
 		<module>security-regards-autoconfigure</module>
 		<module>security-regards-starter</module>
+		<module>security-regards</module>
 		<module>cloud-regards-autoconfigure</module>
 		<module>cloud-regards-starter</module>
 		<module>jpa-multitenant-regards-autoconfigure</module>
@@ -32,8 +33,10 @@
 		<module>jpa-instance-regards-starter</module>
 		<module>multitenant-regards-autoconfigure</module>
 		<module>multitenant-regards-starter</module>
-    <module>security-regards</module>
-  </modules>
+		<module>hateoas-regards-autoconfigure</module>
+		<module>hateoas-regards-starter</module>
+		<module>hateoas-regards</module>
+	</modules>
 
 	<dependencies>
 		<dependency>

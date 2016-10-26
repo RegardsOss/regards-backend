@@ -52,5 +52,5 @@ public @interface ResourceAccess {
      * @return Plugin interface class
      * @since 1.0-SNAPSHOT
      */
-    Class<?> plugin() default void.class;
+    Class<?> plugin() default Void.class;
 }

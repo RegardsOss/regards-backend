@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -29,9 +28,10 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 public class ResourcesControllerTest {
 
     /**
-     *
+     * SecurityResourcesController
      */
-    private final SecurityResourcesController controller = new SecurityResourcesController(new MethodAuthorizationService());
+    private final SecurityResourcesController controller = new SecurityResourcesController(
+            new MethodAuthorizationService());
 
     /**
      *
