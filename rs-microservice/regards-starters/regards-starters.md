@@ -21,6 +21,8 @@ regards.cloud.name=false # Disable cloud support
 
 ## HATEOAS starter
 
+WARNING : at the moment, this starter only accepts **@RequestMapping** annotation to work fine.
+
 If your controller manages a single POJO, implements **IResourceController<T>**.
 
 In its **toResource** method, define all links using an autowired **IResourceService** regardless security authorization. Only authorized links will be really exposed.
