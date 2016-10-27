@@ -148,7 +148,7 @@ public interface IRolesSignature {
 
     /**
      * Define the endpoint for retrieving the {@link List} of {@link ProjectUser} for the {@link Role} of passed
-     * <code>id</code>.
+     * <code>id</code> by crawling through parents' hierarachy.
      *
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>

@@ -105,7 +105,9 @@ public class RolesController extends Controller implements IRolesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "Retrieve the list of project users of the role with role_id", name = "")
+    @ResourceAccess(
+            description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id",
+            name = "")
     public HttpEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(
             @PathVariable("role_id") final Long pRoleId) {
         List<ProjectUser> projectUserList = new ArrayList<>();

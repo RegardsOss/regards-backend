@@ -10,6 +10,7 @@ import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -78,7 +79,7 @@ public class ProjectUserService implements IProjectUserService {
      */
     @Override
     public ProjectUser retrieveCurrentUser() {
-        final String email = securityContext.getAuthentication().getName();
+        final String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return projectUserRepository.findOneByEmail(email);
     }
 

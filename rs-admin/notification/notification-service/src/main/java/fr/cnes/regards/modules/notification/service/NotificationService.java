@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -20,11 +21,12 @@ import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
+import fr.cnes.regards.modules.notification.service.utils.RestResponseUtils;
 
 /**
  * {@link INotificationService} implementation
  *
- * @author CS SI
+ * @author xbrochar
  *
  */
 @Service
@@ -52,6 +54,11 @@ public class NotificationService implements INotificationService {
     private final IRoleRepository roleRepository;
 
     /**
+     * Feign client for {@link Role}s. Autowired by Spring.
+     */
+    private final IRolesClient rolesClient;
+
+    /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
      *
      * @param pProjectUserService
@@ -62,15 +69,18 @@ public class NotificationService implements INotificationService {
      *            Autowired by Spring. Must not be {@literal null}.
      * @param pRoleRepository
      *            Autowired by Spring. Must not be {@literal null}.
+     * @param pRolesClient
+     *            Autowired by Spring. Must not be {@literal null}.
      */
     public NotificationService(final IProjectUserService pProjectUserService,
             final INotificationRepository pNotificationRepository, final IProjectUserRepository pProjectUserRepository,
-            final IRoleRepository pRoleRepository) {
+            final IRoleRepository pRoleRepository, final IRolesClient pRolesClient) {
         super();
         projectUserService = pProjectUserService;
         notificationRepository = pNotificationRepository;
         projectUserRepository = pProjectUserRepository;
         roleRepository = pRoleRepository;
+        rolesClient = pRolesClient;
     }
 
     /*
@@ -178,7 +188,12 @@ public class NotificationService implements INotificationService {
     public Stream<ProjectUser> findRecipients(final Notification pNotification) {
         try (final Stream<Role> rolesStream = pNotification.getRoleRecipients().parallelStream();
                 final Stream<ProjectUser> usersStream = pNotification.getProjectUserRecipients().parallelStream()) {
-            return Stream.concat(usersStream, rolesStream.flatMap(r -> r.getProjectUsers().stream())).distinct();
+
+            return Stream
+                    .concat(usersStream,
+                            rolesStream.flatMap(r -> RestResponseUtils
+                                    .unwrapList(rolesClient.retrieveRoleProjectUserList(r.getId())).stream()))
+                    .distinct();
         }
     }
 
