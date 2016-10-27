@@ -6,11 +6,6 @@ package fr.cnes.regards.modules.plugins.domain;
 
 import java.util.List;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-
-import org.springframework.hateoas.Identifiable;
-
 /**
  * Class Plugin
  *
@@ -18,14 +13,14 @@ import org.springframework.hateoas.Identifiable;
  *
  * @author cmertz
  */
-public class PluginMetaData implements Identifiable<Long> {
+public class PluginMetaData {
 
     /**
      * Internal identifier
      */
-    @Id
-    @GeneratedValue
-    private Long id;
+//    @Id
+//    @GeneratedValue
+//    private Long id;
 
     /**
      * The plugin identifier
@@ -57,13 +52,13 @@ public class PluginMetaData implements Identifiable<Long> {
      */
     private List<String> parameters;
 
-    public Long getId() {
-        return this.id;
-    }
-
-    public void setId(Long pId) {
-        this.id = pId;
-    }
+//    public Long getId() {
+//        return this.id;
+//    }
+//
+//    public void setId(Long pId) {
+//        this.id = pId;
+//    }
 
     public String getPluginId() {
         return this.pluginId;

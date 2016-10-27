@@ -42,7 +42,7 @@ public final class PluginUtilsWrapper {
      * @throws PluginUtilsException
      *             if problem occurs
      */
-    public static <T> T getPlugin(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
+    public static <T> T getPlugin0(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
             final PluginParameter... pPluginParameters) throws PluginUtilsException {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType);
@@ -66,7 +66,7 @@ public final class PluginUtilsWrapper {
      * @throws PluginUtilsException
      *             if problem occurs
      */
-    public static <T> PluginConfiguration getPluginConfiguration(final List<PluginParameter> pParameters,
+    public static <T> PluginConfiguration getPluginConfiguration0(final List<PluginParameter> pParameters,
             final Class<T> pReturnInterfaceType) throws PluginUtilsException {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType);

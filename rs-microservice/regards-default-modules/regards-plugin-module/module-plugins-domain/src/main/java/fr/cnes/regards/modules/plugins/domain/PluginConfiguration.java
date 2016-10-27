@@ -8,14 +8,17 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import org.springframework.hateoas.Identifiable;
@@ -29,13 +32,15 @@ import org.springframework.hateoas.Identifiable;
 @Entity
 @Table(name = "T_PLUGIN_CONFIGURATION",
         indexes = { @Index(name = "IDX_PLUGIN_CONFIGURATION", columnList = "pluginId") })
+@SequenceGenerator(name = "pluginConfigurationSequence", initialValue = 33, sequenceName = "SEQ_PLUGIN_CONFIGURATION")
 public class PluginConfiguration implements Identifiable<Long> {
 
     /**
      * Internal identifier
      */
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginConfigurationSequence")
+    @Column(name = "id")
     private Long id;
 
     /**

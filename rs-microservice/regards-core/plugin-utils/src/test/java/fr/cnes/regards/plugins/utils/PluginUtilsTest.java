@@ -73,7 +73,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.SUFFIXE, "chris_test_1").getParameters();
         try {
             // instantiate plugin
-            samplePlugin = PluginUtilsWrapper.getPlugin(parameters, SamplePlugin.class);
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class);
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -112,7 +112,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                     .addParameter(SamplePlugin.COEFF, "-1").getParameters().stream().findAny().get();
 
             // instantiate plugin
-            samplePlugin = PluginUtilsWrapper.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -152,7 +152,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                     .addParameter(SamplePlugin.SUFFIXE, PluginUtilsTest.BLUE).getParameters().stream().findAny().get();
 
             // instantiate plugin
-            samplePlugin = PluginUtilsWrapper.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -185,7 +185,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameterDynamic(SamplePlugin.SUFFIXE, PluginUtilsTest.RED, dynamicValues).getParameters();
         try {
             // instantiate plugin
-            samplePlugin = PluginUtilsWrapper.getPlugin(parameters, SamplePlugin.class);
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class);
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -223,7 +223,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.SUFFIXE, PluginUtilsTest.CINQ).getParameters().stream().findAny().get();
 
         // instantiate plugin
-        PluginUtilsWrapper.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
+        PluginUtils.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
     }
 
     /**
@@ -244,7 +244,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .getParameters();
 
         // instantiate plugin
-        PluginUtilsWrapper.getPlugin(parameters, SamplePlugin.class);
+        PluginUtils.getPlugin(parameters, SamplePlugin.class);
     }
 
     /**
@@ -266,7 +266,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.CINQ).getParameters();
 
         // instantiate plugin
-        PluginUtilsWrapper.getPlugin(parameters, SampleErrorPlugin.class);
+        PluginUtils.getPlugin(parameters, SampleErrorPlugin.class);
     }
     
     @Test

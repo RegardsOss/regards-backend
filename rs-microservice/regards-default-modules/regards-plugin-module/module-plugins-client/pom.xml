@@ -15,15 +15,21 @@
 	</parent>
 
 	<dependencies>
+		<!-- Microservice internal dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.modules.plugins</groupId>
+			<artifactId>module-plugins-signature</artifactId>
+		</dependency>
 		<!-- Regards client core -->
 		<dependency>
 			<groupId>fr.cnes.regards.client</groupId>
 			<artifactId>client-core</artifactId>
 		</dependency>
-		<!-- Module domain -->
+		<!-- Tests -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules.plugins</groupId>
-			<artifactId>module-plugins-domain</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
