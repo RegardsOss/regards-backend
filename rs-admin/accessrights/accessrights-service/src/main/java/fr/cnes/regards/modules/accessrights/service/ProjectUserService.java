@@ -6,16 +6,16 @@ import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.Couple;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -26,16 +26,10 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 /**
  * {@link IProjectUserService} implementation
  *
- * @author CS SI
+ * @author xbrochar
  */
 @Service
 public class ProjectUserService implements IProjectUserService {
-
-    /**
-     * The Spring security context. Autowired.
-     */
-    @Autowired
-    private SecurityContext securityContext;
 
     /**
      * CRUD repository managing {@link ProjectUser}s. Autowired by Spring.
@@ -57,14 +51,17 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public List<ProjectUser> retrieveUserList() {
-        try (Stream<ProjectUser> stream = StreamSupport.stream(projectUserRepository.findAll().spliterator(), true)) {
-            return stream.collect(Collectors.toList());
-        }
+        return projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED);
     }
 
     @Override
     public ProjectUser retrieveUser(final Long pUserId) {
-        return projectUserRepository.findOne(pUserId);
+        final ProjectUser user = projectUserRepository.findOne(pUserId);
+        // Filter out hidden meta data
+        try (Stream<MetaData> stream = user.getMetaData().stream()) {
+            stream.filter(m -> !UserVisibility.HIDDEN.equals(m.getVisibility()));
+        }
+        return user;
     }
 
     @Override
