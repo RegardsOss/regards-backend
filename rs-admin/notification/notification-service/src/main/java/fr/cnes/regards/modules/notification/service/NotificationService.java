@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.notification.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
@@ -21,7 +22,6 @@ import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
-import fr.cnes.regards.modules.notification.service.utils.RestResponseUtils;
 
 /**
  * {@link INotificationService} implementation
@@ -189,11 +189,10 @@ public class NotificationService implements INotificationService {
         try (final Stream<Role> rolesStream = pNotification.getRoleRecipients().parallelStream();
                 final Stream<ProjectUser> usersStream = pNotification.getProjectUserRecipients().parallelStream()) {
 
-            return Stream
-                    .concat(usersStream,
-                            rolesStream.flatMap(r -> RestResponseUtils
-                                    .unwrapList(rolesClient.retrieveRoleProjectUserList(r.getId())).stream()))
-                    .distinct();
+            final Function<Role, Stream<ProjectUser>> mapper = r -> rolesClient.retrieveRoleProjectUserList(r.getId())
+                    .getBody().toContents().stream();
+
+            return Stream.concat(usersStream, rolesStream.flatMap(mapper).distinct());
         }
     }
 
