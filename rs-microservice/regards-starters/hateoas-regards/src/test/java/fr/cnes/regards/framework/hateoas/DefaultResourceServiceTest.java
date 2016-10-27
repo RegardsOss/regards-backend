@@ -54,11 +54,6 @@ public class DefaultResourceServiceTest {
     private static final String SINGLE_METHOD_NAME = "getPojo";
 
     /**
-     * list method name
-     */
-    private static final String LIST_METHOD_NAME = "getPojos";
-
-    /**
      * Mocket authorization service
      */
     private MethodAuthorizationService authServiceMock;
