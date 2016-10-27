@@ -128,7 +128,7 @@ public interface IProjectsSignature {
      *            Project name
      * @param pMicroService
      *            Microservice name
-     * @return HttpEntity<Resource<ProjectConnection>>
+     * @return ResponseEntity<Resource<ProjectConnection>>
      * @throws EntityNotFoundException
      *             ProjectConnection doesn't exists
      * @since 1.0-SNAPSHOT

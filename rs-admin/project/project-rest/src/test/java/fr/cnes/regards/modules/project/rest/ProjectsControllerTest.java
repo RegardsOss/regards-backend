@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -129,7 +129,7 @@ public class ProjectsControllerTest {
     @Test
     public void retrieveAllProjectsTest() {
         try {
-            final HttpEntity<List<Resource<Project>>> results = projectsController.retrieveProjectList();
+            final ResponseEntity<List<Resource<Project>>> results = projectsController.retrieveProjectList();
             final List<Resource<Project>> resources = results.getBody();
             Assert.assertTrue("Error there must be project results", !resources.isEmpty());
             for (final Resource<Project> resource : resources) {
@@ -160,7 +160,7 @@ public class ProjectsControllerTest {
     @Test
     public void retrieveProjectTest() {
         try {
-            final HttpEntity<Resource<Project>> result = projectsController.retrieveProject(PROJECT_TEST_0);
+            final ResponseEntity<Resource<Project>> result = projectsController.retrieveProject(PROJECT_TEST_0);
             final Resource<Project> resource = result.getBody();
             final Project project = resource.getContent();
             Assert.assertNotNull("The project result shouldn't be null", project);
@@ -189,7 +189,7 @@ public class ProjectsControllerTest {
         final Project project = new Project(10L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true,
                 "create-project");
         try {
-            final HttpEntity<Resource<Project>> result = projectsController.createProject(project);
+            final ResponseEntity<Resource<Project>> result = projectsController.createProject(project);
             final Resource<Project> resource = result.getBody();
             final Project createdProject = resource.getContent();
             Assert.assertNotNull("Error during project creation.", createdProject);
@@ -215,8 +215,8 @@ public class ProjectsControllerTest {
     @Test
     public void updateProjectTest() {
         try {
-            final HttpEntity<Resource<Project>> result = projectsController.updateProject(existingProject.getName(),
-                                                                                          existingProject);
+            final ResponseEntity<Resource<Project>> result = projectsController.updateProject(existingProject.getName(),
+                                                                                              existingProject);
             final Resource<Project> resource = result.getBody();
             final Project createdProject = resource.getContent();
             Assert.assertNotNull("Error during project update.", createdProject);
@@ -242,7 +242,7 @@ public class ProjectsControllerTest {
     public void retrieveProjectConnection() {
 
         try {
-            final HttpEntity<Resource<ProjectConnection>> result = projectsController
+            final ResponseEntity<Resource<ProjectConnection>> result = projectsController
                     .retrieveProjectConnection(PROJECT_TEST_0, MICROSERVICE_TEST);
             final Resource<ProjectConnection> resource = result.getBody();
             final ProjectConnection connection = resource.getContent();
@@ -273,7 +273,7 @@ public class ProjectsControllerTest {
     @Test
     public void createProjectConnection() {
         try {
-            final HttpEntity<Resource<ProjectConnection>> result = projectsController
+            final ResponseEntity<Resource<ProjectConnection>> result = projectsController
                     .createProjectConnection(new ProjectConnection(2L, existingProject, "new description",
                             "newUserName", "newPassword", "newDriver", "newUrl"));
             final Resource<ProjectConnection> resource = result.getBody();
@@ -305,7 +305,7 @@ public class ProjectsControllerTest {
     @Test
     public void updateProjectConnection() {
         try {
-            final HttpEntity<Resource<ProjectConnection>> result = projectsController
+            final ResponseEntity<Resource<ProjectConnection>> result = projectsController
                     .updateProjectConnection(new ProjectConnection(0L, existingProject, "update description",
                             "updateUserName", "updatePassword", "updateDriver", "updateUrl"));
             final Resource<ProjectConnection> resource = result.getBody();
