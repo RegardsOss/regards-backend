@@ -8,8 +8,6 @@ package fr.cnes.regards.framework.amqp.test;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * @author svissier
@@ -18,11 +16,6 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.framework.security.utils.jwt",
         "fr.cnes.regards.framework.amqp", "fr.cnes.regards.modules.project" })
 public class Application {
-
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
 
     /**
      * main

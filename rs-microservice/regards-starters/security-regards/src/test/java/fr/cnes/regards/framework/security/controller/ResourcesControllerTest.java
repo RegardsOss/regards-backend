@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -29,9 +28,10 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 public class ResourcesControllerTest {
 
     /**
-     *
+     * SecurityResourcesController
      */
-    private final SecurityResourcesController controller = new SecurityResourcesController(new MethodAuthorizationService());
+    private final SecurityResourcesController controller = new SecurityResourcesController(
+            new MethodAuthorizationService());
 
     /**
      *
@@ -47,13 +47,16 @@ public class ResourcesControllerTest {
 
         final ResponseEntity<List<ResourceMapping>> response = controller.getAllResources();
         Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
-        // CHECKSTYLE:OFF
+
         Assert.assertTrue("There should be 2 resources", response.getBody().size() == 2);
-        Assert.assertTrue(response.getBody().get(0).getFullPath().equals("/tests/endpoint"));
-        Assert.assertTrue(response.getBody().get(0).getMethod().equals(RequestMethod.GET));
-        Assert.assertTrue(response.getBody().get(1).getFullPath().equals("/tests/endpoint/post"));
-        Assert.assertTrue(response.getBody().get(1).getMethod().equals(RequestMethod.POST));
-        // CHECKSTYLE:ON
+        for (ResourceMapping mapping : response.getBody()) {
+            if (RequestMethod.GET.equals(mapping.getMethod())) {
+                Assert.assertTrue(mapping.getFullPath().equals("/tests/endpoint"));
+            }
+            if (RequestMethod.POST.equals(mapping.getMethod())) {
+                Assert.assertTrue(mapping.getFullPath().equals("/tests/endpoint/post"));
+            }
+        }
     }
 
 }

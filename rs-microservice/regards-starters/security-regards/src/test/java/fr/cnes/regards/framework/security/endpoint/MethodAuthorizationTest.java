@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public class ResourceAccessVoterTest {
+public class MethodAuthorizationTest {
 
     /**
      * endpoint label
@@ -73,7 +73,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        ResourceAccessVoter.buildResourceMapping(method);
+        MethodAuthorizationUtils.buildResourceMapping(method);
     }
 
     /**
@@ -111,7 +111,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        ResourceAccessVoter.buildResourceMapping(method);
+        MethodAuthorizationUtils.buildResourceMapping(method);
     }
 
     /**
@@ -149,7 +149,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        ResourceAccessVoter.buildResourceMapping(method);
+        MethodAuthorizationUtils.buildResourceMapping(method);
     }
 
     /**
@@ -181,14 +181,13 @@ public class ResourceAccessVoterTest {
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @RequestMapping(value = "/method_level_mapping", path = "/other_method_level_mapping",
-                    method = RequestMethod.GET)
+            @RequestMapping(value = "/method_level_mapping", path = "/other_method_level_mapping", method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        ResourceAccessVoter.buildResourceMapping(method);
+        MethodAuthorizationUtils.buildResourceMapping(method);
     }
 
     /**
@@ -227,7 +226,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        final ResourceMapping result = ResourceAccessVoter.buildResourceMapping(method);
+        final ResourceMapping result = MethodAuthorizationUtils.buildResourceMapping(method);
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getResourceMappingId(), "class_level_mapping/method_level_mapping@GET");
     }
@@ -268,7 +267,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        final ResourceMapping result = ResourceAccessVoter.buildResourceMapping(method);
+        final ResourceMapping result = MethodAuthorizationUtils.buildResourceMapping(method);
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getResourceMappingId(), "class_level_mapping/method_level_mapping@PUT");
     }
@@ -309,7 +308,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        final ResourceMapping result = ResourceAccessVoter.buildResourceMapping(method);
+        final ResourceMapping result = MethodAuthorizationUtils.buildResourceMapping(method);
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getResourceMappingId(), "class_level_mapping/method_level_mapping@GET");
     }
@@ -350,7 +349,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        final ResourceMapping result = ResourceAccessVoter.buildResourceMapping(method);
+        final ResourceMapping result = MethodAuthorizationUtils.buildResourceMapping(method);
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getResourceMappingId(), "class_level_mapping/method_level_mapping@GET");
     }
@@ -385,14 +384,13 @@ public class ResourceAccessVoterTest {
         class Controller {
 
             @ResourceAccess(name = "the name", description = "the description")
-            @RequestMapping(value = "/method_level_mapping", path = "/different_method_level_mapping",
-                    method = RequestMethod.GET)
+            @RequestMapping(value = "/method_level_mapping", path = "/different_method_level_mapping", method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        ResourceAccessVoter.buildResourceMapping(method);
+        MethodAuthorizationUtils.buildResourceMapping(method);
     }
 
     /**
@@ -431,7 +429,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        final ResourceMapping result = ResourceAccessVoter.buildResourceMapping(method);
+        final ResourceMapping result = MethodAuthorizationUtils.buildResourceMapping(method);
         Assert.assertNotNull(result);
         Assert.assertEquals("class_level_mapping/method_level_mapping@GET", result.getResourceMappingId());
     }
@@ -472,7 +470,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        final ResourceMapping result = ResourceAccessVoter.buildResourceMapping(method);
+        final ResourceMapping result = MethodAuthorizationUtils.buildResourceMapping(method);
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getResourceMappingId(), "class_level_mapping/method_level_mapping@PUT");
     }
@@ -513,7 +511,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        final ResourceMapping result = ResourceAccessVoter.buildResourceMapping(method);
+        final ResourceMapping result = MethodAuthorizationUtils.buildResourceMapping(method);
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getResourceMappingId(), "class_level_mapping/method_level_mapping@POST");
     }
@@ -554,7 +552,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        final ResourceMapping result = ResourceAccessVoter.buildResourceMapping(method);
+        final ResourceMapping result = MethodAuthorizationUtils.buildResourceMapping(method);
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getResourceMappingId(), "class_level_mapping/method_level_mapping@DELETE");
     }
@@ -595,7 +593,7 @@ public class ResourceAccessVoterTest {
             }
         }
         final Method method = Controller.class.getMethod(ENDPOINT);
-        final ResourceMapping result = ResourceAccessVoter.buildResourceMapping(method);
+        final ResourceMapping result = MethodAuthorizationUtils.buildResourceMapping(method);
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getResourceMappingId(), "class_level_mapping/method_level_mapping@PATCH");
     }

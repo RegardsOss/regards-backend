@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.modules.core.rest.Controller;
+import fr.cnes.regards.modules.core.rest.AbstractController;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.service.IPluginService;
@@ -39,7 +39,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
 @RestController
 @ModuleInfo(name = "plugins", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class PluginController extends Controller implements IPluginsSignature {
+public class PluginController extends AbstractController implements IPluginsSignature {
 
     /**
      * Class logger
@@ -116,7 +116,7 @@ public class PluginController extends Controller implements IPluginsSignature {
         try {
             pluginConfiguration = pluginService.savePluginConfiguration(pPluginConfiguration);
         } catch (PluginUtilsException e) {
-            LOGGER.error("Cannot create the plugin configuration : <" + pPluginConfiguration.getPluginId() +">", e);
+            LOGGER.error("Cannot create the plugin configuration : <" + pPluginConfiguration.getPluginId() + ">", e);
             throw new InvalidValueException(e.getMessage());
         }
         final Resource<PluginConfiguration> resource = new Resource<>(pluginConfiguration);
@@ -132,7 +132,7 @@ public class PluginController extends Controller implements IPluginsSignature {
         try {
             pluginConfiguration = pluginService.getPluginConfiguration(pConfigId);
         } catch (PluginUtilsException e) {
-            LOGGER.error("Cannot get the plugin configuration : <" + pConfigId +">", e);
+            LOGGER.error("Cannot get the plugin configuration : <" + pConfigId + ">", e);
             throw new EntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
         }
         final Resource<PluginConfiguration> resource = new Resource<>(pluginConfiguration);
@@ -169,7 +169,7 @@ public class PluginController extends Controller implements IPluginsSignature {
         try {
             pluginService.deletePluginConfiguration(pConfigId);
         } catch (PluginUtilsException e) {
-            LOGGER.error("Cannot delete the plugin configuration : <" + pConfigId +">", e);
+            LOGGER.error("Cannot delete the plugin configuration : <" + pConfigId + ">", e);
             throw new EntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
         }
 

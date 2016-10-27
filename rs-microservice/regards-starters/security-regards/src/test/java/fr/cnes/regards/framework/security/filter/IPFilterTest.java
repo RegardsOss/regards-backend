@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.security.filter;
 
 import java.io.IOException;
@@ -13,7 +16,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockFilterChain;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -29,7 +34,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  *
  * IP Filter tests
  *
- * @author CS
+ * @author sbinda
  * @since 1.0-SNAPSHOT
  */
 public class IPFilterTest {
@@ -50,6 +55,11 @@ public class IPFilterTest {
     private static final String AUTHORIZED_ADRESS_PATTERN = "127.0.0.*";
 
     /**
+     * Test user Role
+     */
+    private static final String ROLE_NAME = "USER";
+
+    /**
      *
      * Check security filter with ip adress for endpoints accesses
      *
@@ -60,8 +70,11 @@ public class IPFilterTest {
     @Test
     public void ipFilterTest() {
 
-        final JWTAuthentication token = new JWTAuthentication("plop");
-        token.setRole("USER");
+        final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
+        final HttpServletResponse mockedResponse = new MockHttpServletResponse();
+
+        final JWTAuthentication token = new JWTAuthentication("token");
+        token.setRole(ROLE_NAME);
         SecurityContextHolder.getContext().setAuthentication(token);
 
         final IpFilter filter = new IpFilter(new IAuthoritiesProvider() {
@@ -77,16 +90,22 @@ public class IPFilterTest {
             public List<ResourceMapping> getResourcesAccessConfiguration() {
                 return null;
             }
-        });
 
-        final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
-        final HttpServletResponse mockedResponse = Mockito.mock(HttpServletResponse.class);
+            @Override
+            public boolean hasCorsRequestsAccess(final String pAuthority) {
+                return false;
+            }
+        });
 
         Mockito.when(mockedRequest.getRemoteAddr()).thenReturn(AUTHORIZED_ADRESS);
 
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
+            if (mockedResponse.getStatus() != HttpStatus.OK.value()) {
+                Assert.fail("Access should be granted for the given address");
+            }
         } catch (IOException | ServletException e) {
+
             Assert.fail(e.getMessage());
         }
 
@@ -94,7 +113,9 @@ public class IPFilterTest {
 
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
-            Assert.fail("There should be an error. Address not authorized");
+            if (mockedResponse.getStatus() == HttpStatus.OK.value()) {
+                Assert.fail("There should be an error. Address not authorized");
+            }
         } catch (final InsufficientAuthenticationException e) {
             LOG.info(e.getMessage());
         } catch (IOException | ServletException e) {
@@ -114,8 +135,11 @@ public class IPFilterTest {
     @Test
     public void subdomainIpFilterTest() {
 
-        final JWTAuthentication token = new JWTAuthentication("plop");
-        token.setRole("USER");
+        final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
+        final HttpServletResponse mockedResponse = new MockHttpServletResponse();
+
+        final JWTAuthentication token = new JWTAuthentication("token");
+        token.setRole(ROLE_NAME);
         SecurityContextHolder.getContext().setAuthentication(token);
 
         final IpFilter filter = new IpFilter(new IAuthoritiesProvider() {
@@ -131,15 +155,20 @@ public class IPFilterTest {
             public List<ResourceMapping> getResourcesAccessConfiguration() {
                 return null;
             }
-        });
 
-        final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
-        final HttpServletResponse mockedResponse = Mockito.mock(HttpServletResponse.class);
+            @Override
+            public boolean hasCorsRequestsAccess(final String pAuthority) {
+                return false;
+            }
+        });
 
         Mockito.when(mockedRequest.getRemoteAddr()).thenReturn(AUTHORIZED_ADRESS);
 
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
+            if (mockedResponse.getStatus() != HttpStatus.OK.value()) {
+                Assert.fail("Access should be granted for the given address");
+            }
         } catch (IOException | ServletException e) {
             Assert.fail(e.getMessage());
         }
@@ -148,7 +177,9 @@ public class IPFilterTest {
 
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
-            Assert.fail("There should be an error. Address not authorized");
+            if (mockedResponse.getStatus() == HttpStatus.OK.value()) {
+                Assert.fail("There should be an error. Address not authorized");
+            }
         } catch (final InsufficientAuthenticationException e) {
             LOG.info(e.getMessage());
         } catch (IOException | ServletException e) {

@@ -31,5 +31,9 @@
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>hateoas-regards-starter</artifactId>
+		</dependency>
 	</dependencies>
 </project>

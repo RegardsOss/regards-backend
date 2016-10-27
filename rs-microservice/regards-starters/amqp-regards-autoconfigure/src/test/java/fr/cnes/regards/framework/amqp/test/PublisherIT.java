@@ -6,6 +6,8 @@ package fr.cnes.regards.framework.amqp.test;
  * LICENSE_PLACEHOLDER
  */
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -20,9 +22,17 @@ import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
 
 import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
@@ -30,6 +40,7 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -41,6 +52,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @author svissier
  *
  */
+@ActiveProfiles("rabbit")
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AmqpTestsConfiguration.class })
 @SpringBootTest(classes = Application.class)
@@ -71,6 +83,17 @@ public class PublisherIT {
      * default message error
      */
     private static final String PUBLISH_TEST_FAILED = "Publish Test Failed";
+
+    /**
+     * \/
+     */
+    private static final String SLASH = "/";
+
+    /**
+     * bean used to clean the broker after tests
+     */
+    @Autowired
+    private RestTemplate restTemplate;
 
     /**
      * configuration
@@ -155,6 +178,11 @@ public class PublisherIT {
             LOGGER.error(INVALID_JWT);
             Assert.fail(INVALID_JWT);
         }
+        try {
+            cleanRabbit(TENANT);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
+        }
     }
 
     /**
@@ -206,6 +234,37 @@ public class PublisherIT {
         } catch (JwtException e) {
             LOGGER.error(INVALID_JWT);
             Assert.fail(INVALID_JWT);
+        }
+        try {
+            cleanRabbit(TENANT);
+        } catch (CleaningRabbitMQVhostException e) {
+            LOGGER.debug("Issue during cleaning the broker", e);
+        }
+    }
+
+    /**
+     * delete the virtual host if existing
+     *
+     * @param pTenant1
+     *            tenant to clean
+     * @throws CleaningRabbitMQVhostException
+     *             any issues that could occur
+     */
+    private void cleanRabbit(String pTenant1) throws CleaningRabbitMQVhostException {
+        final List<String> existingVhost = rabbitVirtualHostUtils.retrieveVhostList();
+        if (existingVhost.stream().filter(vhost -> vhost.equals(pTenant1)).findAny().isPresent()) {
+            final HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.add(HttpHeaders.AUTHORIZATION, rabbitVirtualHostUtils.setBasic());
+            final HttpEntity<Void> request = new HttpEntity<>(headers);
+            final ResponseEntity<String> response = restTemplate
+                    .exchange(rabbitVirtualHostUtils.getRabbitApiVhostEndpoint() + SLASH + pTenant1, HttpMethod.DELETE,
+                              request, String.class);
+            final int statusValue = response.getStatusCodeValue();
+            // if successful or 404 then the broker is clean
+            if (!(rabbitVirtualHostUtils.isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
+                throw new CleaningRabbitMQVhostException(response.getBody());
+            }
         }
     }
 }

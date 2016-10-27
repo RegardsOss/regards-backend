@@ -7,20 +7,11 @@ package fr.cnes.regards.modules.plugins.domain;
 import java.util.List;
 
 /**
- * Class Plugin
- *
  * Plugin meta-data representation
  *
  * @author cmertz
  */
 public class PluginMetaData {
-
-    /**
-     * Internal identifier
-     */
-//    @Id
-//    @GeneratedValue
-//    private Long id;
 
     /**
      * The plugin identifier
@@ -51,14 +42,6 @@ public class PluginMetaData {
      * The parameters of the plugin
      */
     private List<String> parameters;
-
-//    public Long getId() {
-//        return this.id;
-//    }
-//
-//    public void setId(Long pId) {
-//        this.id = pId;
-//    }
 
     public String getPluginId() {
         return this.pluginId;
@@ -107,5 +90,4 @@ public class PluginMetaData {
     public void setParameters(List<String> pParameters) {
         this.parameters = pParameters;
     }
-
 }

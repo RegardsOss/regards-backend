@@ -8,9 +8,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 
 /**
@@ -30,8 +28,7 @@ public class DefaultPluginResourceManager implements IPluginResourceManager {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultPluginResourceManager.class);
 
     @Override
-    public List<ResourceMapping> manageMethodResource(final String pResourceRootPath,
-            final ResourceAccess pResourceAccess, final RequestMapping pRequestMapping) {
+    public List<ResourceMapping> manageMethodResource(ResourceMapping pResourceMapping) {
         final List<ResourceMapping> mappings = new ArrayList<>();
         LOG.warn("There is no implementation fo plugin endpoints resource management");
         return mappings;
