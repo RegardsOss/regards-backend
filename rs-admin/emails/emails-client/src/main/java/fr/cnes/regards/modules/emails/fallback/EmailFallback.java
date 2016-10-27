@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.emails.fallback;
 
 import java.util.List;
 
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
@@ -24,20 +23,20 @@ import fr.cnes.regards.modules.emails.domain.Email;
 public class EmailFallback implements IEmailClient {
 
     @Override
-    public HttpEntity<List<Email>> retrieveEmails() {
+    public ResponseEntity<List<Email>> retrieveEmails() {
         // TODO Auto-generated method stub
         return null;
     }
 
     // @Override
-    // public HttpEntity<Email> sendEmail(final EmailWithRecipientsDTO pEmail) {
+    // public ResponseEntity<Email> sendEmail(final EmailWithRecipientsDTO pEmail) {
     // // TODO Auto-generated method stub
     // return null;
     // }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * fr.cnes.regards.modules.emails.signature.IEmailSignature#sendEmail(org.springframework.mail.SimpleMailMessage)
      */
@@ -48,7 +47,7 @@ public class EmailFallback implements IEmailClient {
     }
 
     @Override
-    public HttpEntity<Email> retrieveEmail(final Long pId) {
+    public ResponseEntity<Email> retrieveEmail(final Long pId) {
         // TODO Auto-generated method stub
         return null;
     }

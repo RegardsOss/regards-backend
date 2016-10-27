@@ -8,7 +8,6 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
@@ -42,14 +41,14 @@ public class EmailController extends Controller implements IEmailSignature {
 
     @Override
     @ResourceAccess(description = "Retrieve all emails", name = "email")
-    public HttpEntity<List<Email>> retrieveEmails() {
+    public ResponseEntity<List<Email>> retrieveEmails() {
         final List<Email> emails = emailService.retrieveEmails();
         return new ResponseEntity<>(emails, HttpStatus.OK);
     }
 
     // @Override
     // @ResourceAccess(description = "Send an email to recipients", name = "email")
-    // public HttpEntity<Email> sendEmail(@Valid @RequestBody final EmailWithRecipientsDTO pDto) {
+    // public ResponseEntity<Email> sendEmail(@Valid @RequestBody final EmailWithRecipientsDTO pDto) {
     // final Set<Recipient> recipients = pDto.getRecipients();
     // Email email = pDto.getEmail();
     // email = emailService.sendEmail(recipients, email);
@@ -71,7 +70,7 @@ public class EmailController extends Controller implements IEmailSignature {
 
     @Override
     @ResourceAccess(description = "Retrieve an email", name = "email")
-    public HttpEntity<Email> retrieveEmail(@PathVariable("mail_id") final Long pId) {
+    public ResponseEntity<Email> retrieveEmail(@PathVariable("mail_id") final Long pId) {
         final Email email = emailService.retrieveEmail(pId);
         return new ResponseEntity<>(email, HttpStatus.OK);
     }

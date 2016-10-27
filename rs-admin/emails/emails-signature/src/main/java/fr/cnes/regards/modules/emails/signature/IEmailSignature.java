@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.emails.signature;
 
 import java.util.List;
 
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,28 +27,28 @@ public interface IEmailSignature {
     /**
      * Define the endpoint for retrieving the list of sent emails
      *
-     * @return A {@link List} of emails as {@link Email} wrapped in an {@link HttpEntity}
+     * @return A {@link List} of emails as {@link Email} wrapped in an {@link ResponseEntity}
      */
     @GetMapping
-    HttpEntity<List<Email>> retrieveEmails();
+    ResponseEntity<List<Email>> retrieveEmails();
 
     // /**
     // * Define the endpoint for sending an email to recipients
     // *
     // * @param pEmail
     // * The email in a simple representation.
-    // * @return The sent email as {@link Email} wrapped in an {@link HttpEntity}
+    // * @return The sent email as {@link Email} wrapped in an {@link ResponseEntity}
     // */
     // @PostMapping
     // @ResponseBody
-    // HttpEntity<Email> sendEmail(EmailWithRecipientsDTO pEmail);
+    // ResponseEntity<Email> sendEmail(EmailWithRecipientsDTO pEmail);
 
     /**
      * Define the endpoint for sending an email to recipients
      *
      * @param pEmail
      *            The email in a simple representation.
-     * @return The sent email as {@link Email} wrapped in an {@link HttpEntity}
+     * @return The sent email as {@link Email} wrapped in an {@link ResponseEntity}
      */
     @PostMapping
     @ResponseBody
@@ -60,10 +59,10 @@ public interface IEmailSignature {
      *
      * @param pId
      *            The email id
-     * @return The email as a {@link Email} wrapped in an {@link HttpEntity}
+     * @return The email as a {@link Email} wrapped in an {@link ResponseEntity}
      */
     @GetMapping("/{mail_id}")
-    HttpEntity<Email> retrieveEmail(Long pId);
+    ResponseEntity<Email> retrieveEmail(Long pId);
 
     /**
      * Define the endpoint for re-sending an email
