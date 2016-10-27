@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  *
@@ -91,6 +93,8 @@ public class DefaultResourceServiceTest {
      * Test authorized link creation
      */
     @Test
+    @Requirement("REGARDS_DSL_SYS_ARC_020")
+    @Purpose("Test authorized link creation regarding security restriction.")
     public void testAuthorizedLinkCreation() {
 
         setMock(Boolean.TRUE);
@@ -105,6 +109,8 @@ public class DefaultResourceServiceTest {
      * Test not authorized link creation
      */
     @Test
+    @Requirement("REGARDS_DSL_SYS_ARC_020")
+    @Purpose("Test not authorized link creation regarding security restriction.")
     public void testNotAuthorizedLinkCreation() {
 
         setMock(Boolean.FALSE);
