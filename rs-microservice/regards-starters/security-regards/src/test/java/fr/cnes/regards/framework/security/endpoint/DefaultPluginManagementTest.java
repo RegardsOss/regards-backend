@@ -12,6 +12,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  *
@@ -38,6 +40,8 @@ public class DefaultPluginManagementTest {
      *
      * @since 1.0-SNAPSHOT
      */
+    @Requirement("REGARDS_DSL_SYS_SEC_200")
+    @Purpose("Verify access to plugin resources per microservice")
     @Test
     public void defaultPluginResourceManagerTest() {
 

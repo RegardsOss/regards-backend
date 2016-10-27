@@ -88,4 +88,9 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
         return result;
     }
 
+    @Override
+    public boolean hasCorsRequestsAccess(final String pAuthority) {
+        return true;
+    }
+
 }

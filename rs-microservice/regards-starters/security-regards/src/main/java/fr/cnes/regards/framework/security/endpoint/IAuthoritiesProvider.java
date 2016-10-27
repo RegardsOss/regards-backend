@@ -27,11 +27,22 @@ public interface IAuthoritiesProvider {
     /**
      *
      * Retrieve all the authorized address (IP) for the given Role
-     * 
+     *
      * @param pRole
      *            role
      * @return List<String>
      * @since 1.0-SNAPSHOT
      */
     List<String> getRoleAuthorizedAddress(String pRole);
+
+    /**
+     *
+     * Dertermine if the given role authority can use CORS requests
+     *
+     * @param pAuthority
+     *            User role name
+     * @return [true|false]
+     * @since 1.0-SNAPSHOT
+     */
+    boolean hasCorsRequestsAccess(String pAuthority);
 }
