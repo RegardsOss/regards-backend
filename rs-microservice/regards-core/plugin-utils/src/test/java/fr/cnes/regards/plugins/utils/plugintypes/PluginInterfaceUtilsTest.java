@@ -17,7 +17,6 @@ import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 import fr.cnes.regards.plugins.utils.PluginUtilsTestConstants;
-import fr.cnes.regards.plugins.utils.PluginUtilsWrapper;
 
 /**
  * Unit testing of {@link PluginInterfaceUtils}.
