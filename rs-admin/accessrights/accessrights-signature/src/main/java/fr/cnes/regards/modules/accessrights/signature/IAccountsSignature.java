@@ -8,8 +8,8 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,17 +34,17 @@ public interface IAccountsSignature {
 
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<List<Resource<Account>>> retrieveAccountList();
+    ResponseEntity<List<Resource<Account>>> retrieveAccountList();
 
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Resource<Account>> createAccount(@Valid @RequestBody Account pNewAccount)
+    ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody Account pNewAccount)
             throws AlreadyExistingException, InvalidEntityException;
 
     @RequestMapping(value = "/{account_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") Long pAccountId)
+    ResponseEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") Long pAccountId)
             throws EntityNotFoundException;
 
     /**
@@ -62,12 +62,12 @@ public interface IAccountsSignature {
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> updateAccount(@PathVariable("account_id") Long pAccountId,
+    ResponseEntity<Void> updateAccount(@PathVariable("account_id") Long pAccountId,
             @Valid @RequestBody Account pUpdatedAccount) throws EntityNotFoundException, InvalidValueException;
 
     @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> removeAccount(@PathVariable("account_id") Long pAccountId);
+    ResponseEntity<Void> removeAccount(@PathVariable("account_id") Long pAccountId);
 
     /**
      * Do not respect REST architecture because the request comes from a mail client, ideally should be a PUT
@@ -82,7 +82,7 @@ public interface IAccountsSignature {
     @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> unlockAccount(@PathVariable("account_id") Long pAccountId,
+    ResponseEntity<Void> unlockAccount(@PathVariable("account_id") Long pAccountId,
             @PathVariable("unlock_code") String pUnlockCode) throws InvalidValueException, EntityNotFoundException;
 
     /**
@@ -102,27 +102,27 @@ public interface IAccountsSignature {
     @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> changeAccountPassword(@PathVariable("account_id") Long pAccountId,
+    ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") Long pAccountId,
             @PathVariable("reset_code") String pResetCode, @Valid @RequestBody String pNewPassword)
             throws InvalidValueException, EntityNotFoundException;
 
     @RequestMapping(value = "/code", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> codeForAccount(@RequestParam("email") String pEmail, @RequestParam("type") CodeType pType);
+    ResponseEntity<Void> codeForAccount(@RequestParam("email") String pEmail, @RequestParam("type") CodeType pType);
 
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<List<Resource<String>>> retrieveAccountSettings();
+    ResponseEntity<List<Resource<String>>> retrieveAccountSettings();
 
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting)
+    ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting)
             throws InvalidValueException;
 
     @RequestMapping(value = "/{account_login}/validate", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Boolean> validatePassword(@PathVariable("account_login") String pLogin,
+    ResponseEntity<Boolean> validatePassword(@PathVariable("account_login") String pLogin,
             @RequestParam("password") String pPassword) throws EntityNotFoundException;
 }

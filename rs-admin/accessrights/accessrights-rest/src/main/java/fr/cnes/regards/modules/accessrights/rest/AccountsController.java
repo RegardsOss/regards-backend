@@ -10,7 +10,6 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,7 +38,7 @@ public class AccountsController extends Controller implements IAccountsSignature
 
     @Override
     @ResourceAccess(description = "retrieve the list of account in the instance", name = "")
-    public HttpEntity<List<Resource<Account>>> retrieveAccountList() {
+    public ResponseEntity<List<Resource<Account>>> retrieveAccountList() {
         final List<Account> accounts = accountService.retrieveAccountList();
         final List<Resource<Account>> resources = accounts.stream().map(a -> new Resource<>(a))
                 .collect(Collectors.toList());
@@ -48,7 +47,7 @@ public class AccountsController extends Controller implements IAccountsSignature
 
     @Override
     @ResourceAccess(description = "create an new account", name = "")
-    public HttpEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount)
+    public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount)
             throws AlreadyExistingException {
         final Account created = accountService.createAccount(pNewAccount);
         final Resource<Account> resource = new Resource<>(created);
@@ -57,7 +56,7 @@ public class AccountsController extends Controller implements IAccountsSignature
 
     @Override
     @ResourceAccess(description = "retrieve the account account_id", name = "")
-    public HttpEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") final Long accountId)
+    public ResponseEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") final Long accountId)
             throws EntityNotFoundException {
         final Account account = accountService.retrieveAccount(accountId);
         final Resource<Account> resource = new Resource<>(account);
@@ -66,7 +65,7 @@ public class AccountsController extends Controller implements IAccountsSignature
 
     @Override
     @ResourceAccess(description = "update the account account_id according to the body specified", name = "")
-    public HttpEntity<Void> updateAccount(@PathVariable("account_id") final Long accountId,
+    public ResponseEntity<Void> updateAccount(@PathVariable("account_id") final Long accountId,
             @Valid @RequestBody final Account pUpdatedAccount) throws EntityNotFoundException, InvalidValueException {
         accountService.updateAccount(accountId, pUpdatedAccount);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -74,14 +73,14 @@ public class AccountsController extends Controller implements IAccountsSignature
 
     @Override
     @ResourceAccess(description = "remove the account account_id", name = "")
-    public HttpEntity<Void> removeAccount(@PathVariable("account_id") final Long accountId) {
+    public ResponseEntity<Void> removeAccount(@PathVariable("account_id") final Long accountId) {
         accountService.removeAccount(accountId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "unlock the account account_id according to the code unlock_code", name = "")
-    public HttpEntity<Void> unlockAccount(@PathVariable("account_id") final Long accountId,
+    public ResponseEntity<Void> unlockAccount(@PathVariable("account_id") final Long accountId,
             @PathVariable("unlock_code") final String unlockCode)
             throws InvalidValueException, EntityNotFoundException {
         accountService.unlockAccount(accountId, unlockCode);
@@ -91,7 +90,7 @@ public class AccountsController extends Controller implements IAccountsSignature
     @Override
     @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code",
             name = "")
-    public HttpEntity<Void> changeAccountPassword(@PathVariable("account_id") final Long accountId,
+    public ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") final Long accountId,
             @PathVariable("reset_code") final String resetCode, @Valid @RequestBody final String pNewPassword)
             throws EntityNotFoundException, InvalidValueException {
         accountService.changeAccountPassword(accountId, resetCode, pNewPassword);
@@ -100,7 +99,7 @@ public class AccountsController extends Controller implements IAccountsSignature
 
     @Override
     @ResourceAccess(description = "send a code of type type to the email specified", name = "")
-    public HttpEntity<Void> codeForAccount(@RequestParam("email") final String email,
+    public ResponseEntity<Void> codeForAccount(@RequestParam("email") final String email,
             @RequestParam("type") final CodeType type) {
         accountService.codeForAccount(email, type);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -108,7 +107,7 @@ public class AccountsController extends Controller implements IAccountsSignature
 
     @Override
     @ResourceAccess(description = "retrieve the list of setting managing the accounts", name = "")
-    public HttpEntity<List<Resource<String>>> retrieveAccountSettings() {
+    public ResponseEntity<List<Resource<String>>> retrieveAccountSettings() {
         final List<String> accountSettings = accountService.retrieveAccountSettings();
         final List<Resource<String>> resources = accountSettings.stream().map(a -> new Resource<>(a))
                 .collect(Collectors.toList());
@@ -117,7 +116,7 @@ public class AccountsController extends Controller implements IAccountsSignature
 
     @Override
     @ResourceAccess(description = "update the setting managing the account", name = "")
-    public HttpEntity<Void> updateAccountSetting(@Valid @RequestBody final String pUpdatedAccountSetting)
+    public ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody final String pUpdatedAccountSetting)
             throws InvalidValueException {
         accountService.updateAccountSetting(pUpdatedAccountSetting);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -125,7 +124,7 @@ public class AccountsController extends Controller implements IAccountsSignature
 
     @Override
     @ResourceAccess(description = "Validate the account password", name = "")
-    public HttpEntity<Boolean> validatePassword(@PathVariable("account_login") final String pLogin,
+    public ResponseEntity<Boolean> validatePassword(@PathVariable("account_login") final String pLogin,
             @RequestParam("password") final String pPassword) throws EntityNotFoundException {
         final Boolean valid = accountService.validatePassword(pLogin, pPassword);
         return new ResponseEntity<>(valid, HttpStatus.OK);

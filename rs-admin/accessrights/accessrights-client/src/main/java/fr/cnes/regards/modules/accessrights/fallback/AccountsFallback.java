@@ -8,7 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
@@ -41,70 +41,70 @@ public class AccountsFallback implements IAccountsClient {
     private static final String fallBackErrorMessage = "RS-ADMIN /accounts request error. Fallback.";
 
     @Override
-    public HttpEntity<List<Resource<Account>>> retrieveAccountList() {
+    public ResponseEntity<List<Resource<Account>>> retrieveAccountList() {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<Account>> createAccount(final Account pNewAccount) throws AlreadyExistingException {
+    public ResponseEntity<Resource<Account>> createAccount(final Account pNewAccount) throws AlreadyExistingException {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<Account>> retrieveAccount(final Long pAccountId) {
+    public ResponseEntity<Resource<Account>> retrieveAccount(final Long pAccountId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateAccount(final Long pAccountId, final Account pUpdatedAccount)
+    public ResponseEntity<Void> updateAccount(final Long pAccountId, final Account pUpdatedAccount)
             throws EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> removeAccount(final Long pAccountId) {
+    public ResponseEntity<Void> removeAccount(final Long pAccountId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> unlockAccount(final Long pAccountId, final String pUnlockCode)
+    public ResponseEntity<Void> unlockAccount(final Long pAccountId, final String pUnlockCode)
             throws InvalidValueException {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> changeAccountPassword(final Long pAccountId, final String pResetCode,
+    public ResponseEntity<Void> changeAccountPassword(final Long pAccountId, final String pResetCode,
             final String pNewPassword) throws InvalidValueException {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> codeForAccount(final String pEmail, final CodeType pType) {
+    public ResponseEntity<Void> codeForAccount(final String pEmail, final CodeType pType) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<List<Resource<String>>> retrieveAccountSettings() {
+    public ResponseEntity<List<Resource<String>>> retrieveAccountSettings() {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateAccountSetting(final String pUpdatedAccountSetting) throws InvalidValueException {
+    public ResponseEntity<Void> updateAccountSetting(final String pUpdatedAccountSetting) throws InvalidValueException {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Boolean> validatePassword(final String pLogin, final String pPassword)
+    public ResponseEntity<Boolean> validatePassword(final String pLogin, final String pPassword)
             throws EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
         return null;

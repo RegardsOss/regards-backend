@@ -8,8 +8,8 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,7 +41,7 @@ public interface IProjectUsersSignature {
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<List<Resource<ProjectUser>>> retrieveProjectUserList();
+    ResponseEntity<List<Resource<ProjectUser>>> retrieveProjectUserList();
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
@@ -51,7 +51,7 @@ public interface IProjectUsersSignature {
      */
     @RequestMapping(value = "/{user_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long pUserId);
+    ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long pUserId);
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.
@@ -67,7 +67,7 @@ public interface IProjectUsersSignature {
      */
     @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> updateProjectUser(@PathVariable("user_id") Long pUserId,
+    ResponseEntity<Void> updateProjectUser(@PathVariable("user_id") Long pUserId,
             @RequestBody ProjectUser pUpdatedProjectUser) throws InvalidValueException, EntityNotFoundException;
 
     /**
@@ -78,7 +78,7 @@ public interface IProjectUsersSignature {
      */
     @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> removeProjectUser(@PathVariable("user_id") Long pUserId);
+    ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long pUserId);
 
     /**
      * Return the {@link List} of {@link MetaData} on the {@link ProjectUser} of passed <code>id</code>.
@@ -92,7 +92,7 @@ public interface IProjectUsersSignature {
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(@PathVariable("user_id") Long pUserId)
+    ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(@PathVariable("user_id") Long pUserId)
             throws EntityNotFoundException;
 
     /**
@@ -106,7 +106,7 @@ public interface IProjectUsersSignature {
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") Long pUserId,
+    ResponseEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") Long pUserId,
             @Valid @RequestBody List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException;
 
     /**
@@ -120,7 +120,8 @@ public interface IProjectUsersSignature {
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") Long pUserId) throws EntityNotFoundException;
+    ResponseEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") Long pUserId)
+            throws EntityNotFoundException;
 
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
@@ -137,7 +138,7 @@ public interface IProjectUsersSignature {
     @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Resource<Couple<List<ResourcesAccess>, Role>>> retrieveProjectUserAccessRights(
+    ResponseEntity<Resource<Couple<List<ResourcesAccess>, Role>>> retrieveProjectUserAccessRights(
             @PathVariable("user_login") String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) String pBorrowedRoleName)
             throws InvalidValueException;
@@ -155,7 +156,7 @@ public interface IProjectUsersSignature {
     @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> updateProjectUserAccessRights(@PathVariable("user_login") String pLogin,
+    ResponseEntity<Void> updateProjectUserAccessRights(@PathVariable("user_login") String pLogin,
             @Valid @RequestBody List<ResourcesAccess> pUpdatedUserAccessRights) throws EntityNotFoundException;
 
     /**
@@ -169,6 +170,6 @@ public interface IProjectUsersSignature {
     @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> removeProjectUserAccessRights(@PathVariable("user_login") String pUserLogin)
+    ResponseEntity<Void> removeProjectUserAccessRights(@PathVariable("user_login") String pUserLogin)
             throws EntityNotFoundException;
 }

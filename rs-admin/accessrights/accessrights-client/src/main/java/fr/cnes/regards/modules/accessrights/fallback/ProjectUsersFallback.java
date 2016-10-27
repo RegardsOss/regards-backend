@@ -8,7 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -41,63 +41,64 @@ public class ProjectUsersFallback implements IProjectUsersClient {
     private static final String fallBackErrorMessage = "RS-ADMIN /users request error. Fallback.";
 
     @Override
-    public HttpEntity<List<Resource<ProjectUser>>> retrieveProjectUserList() {
+    public ResponseEntity<List<Resource<ProjectUser>>> retrieveProjectUserList() {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<ProjectUser>> retrieveProjectUser(final Long pUserId) {
+    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(final Long pUserId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateProjectUser(final Long pUserId, final ProjectUser pUpdatedProjectUser) {
+    public ResponseEntity<Void> updateProjectUser(final Long pUserId, final ProjectUser pUpdatedProjectUser) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> removeProjectUser(final Long pUserId) {
+    public ResponseEntity<Void> removeProjectUser(final Long pUserId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(final Long pUserId) {
+    public ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(final Long pUserId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateProjectUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData) {
+    public ResponseEntity<Void> updateProjectUserMetaData(final Long pUserId,
+            final List<MetaData> pUpdatedUserMetaData) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> removeProjectUserMetaData(final Long pUserId) {
+    public ResponseEntity<Void> removeProjectUserMetaData(final Long pUserId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<Couple<List<ResourcesAccess>, Role>>> retrieveProjectUserAccessRights(
+    public ResponseEntity<Resource<Couple<List<ResourcesAccess>, Role>>> retrieveProjectUserAccessRights(
             final String pUserLogin, final String pBorrowedRoleName) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateProjectUserAccessRights(final String pLogin,
+    public ResponseEntity<Void> updateProjectUserAccessRights(final String pLogin,
             final List<ResourcesAccess> pUpdatedUserAccessRights) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> removeProjectUserAccessRights(final String pUserLogin) {
+    public ResponseEntity<Void> removeProjectUserAccessRights(final String pUserLogin) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
