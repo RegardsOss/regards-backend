@@ -7,19 +7,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -34,7 +33,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  * @author sbinda
  * @since 1.0-SNAPSHOT
  */
-public class IpFilter extends GenericFilterBean {
+public class IpFilter extends OncePerRequestFilter {
 
     /**
      * Class logger
@@ -60,8 +59,8 @@ public class IpFilter extends GenericFilterBean {
     }
 
     @Override
-    public void doFilter(final ServletRequest pRequest, final ServletResponse pResponse, final FilterChain pFilterChain)
-            throws IOException, ServletException {
+    protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
+            final FilterChain pFilterChain) throws ServletException, IOException {
 
         LOG.info(String.format("[REGARDS IP FILTER] Request sent from %s", pRequest.getRemoteAddr()));
 
@@ -77,27 +76,31 @@ public class IpFilter extends GenericFilterBean {
             for (final RoleAuthority role : roles) {
                 authorizedAddresses.addAll(authoritiesProvider.getRoleAuthorizedAddress(role.getAuthority()));
             }
+            if (!checkAccessByAddress(authorizedAddresses, pRequest.getRemoteAddr())) {
+                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), String
+                        .format("[REGARDS IP FILTER] - %s -Authorization denied", pRequest.getRemoteAddr()));
+            } else {
+                LOG.info(String.format("[REGARDS IP FILTER] - %s -Authorization granted", pRequest.getRemoteAddr()));
 
-        } else {
-            throw new InsufficientAuthenticationException("No role defined");
-        }
-
-        if (!authorizedAddresses.isEmpty()) {
-            for (final String authorizedAddress : authorizedAddresses) {
-                final Pattern pattern = Pattern.compile(authorizedAddress);
-                final Matcher matcher = pattern.matcher(pRequest.getRemoteAddr());
-                if (!matcher.matches()) {
-                    throw new InsufficientAuthenticationException(
-                            String.format("[REGARDS IP FILTER] - %s -Authorization denied", pRequest.getRemoteAddr()));
-                }
+                // Continue the filtering chain
+                pFilterChain.doFilter(pRequest, pResponse);
             }
-
+        } else {
+            pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "No Authority Role defined");
         }
-        LOG.info(String.format("[REGARDS IP FILTER] - %s -Authorization granted", pRequest.getRemoteAddr()));
 
-        // Continue the filtering chain
-        pFilterChain.doFilter(pRequest, pResponse);
+    }
 
+    private boolean checkAccessByAddress(final List<String> pAuthorizedAddress, final String pUserAdress) {
+        boolean accessAuthorized = false;
+        if ((pAuthorizedAddress != null) && !pAuthorizedAddress.isEmpty() && (pUserAdress != null)
+                && !pUserAdress.isEmpty()) {
+            for (final String authorizedAddress : pAuthorizedAddress) {
+                final Pattern pattern = Pattern.compile(authorizedAddress);
+                accessAuthorized |= pattern.matcher(pUserAdress).matches();
+            }
+        }
+        return accessAuthorized;
     }
 
 }

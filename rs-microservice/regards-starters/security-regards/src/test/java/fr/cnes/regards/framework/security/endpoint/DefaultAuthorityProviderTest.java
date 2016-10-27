@@ -13,6 +13,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  *
@@ -39,6 +41,8 @@ public class DefaultAuthorityProviderTest {
      *
      * @since 1.0-SNAPSHOT
      */
+    @Requirement("REGARDS_DSL_SYS_SEC_200")
+    @Purpose("Verify access to all resources access per microservice")
     @Test
     public void defaultAuthorityProviderTest() {
 

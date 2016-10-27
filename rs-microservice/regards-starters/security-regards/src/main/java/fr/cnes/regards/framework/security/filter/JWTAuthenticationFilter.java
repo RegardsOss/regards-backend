@@ -7,17 +7,17 @@ import java.io.IOException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import fr.cnes.regards.framework.security.domain.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -30,44 +30,61 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  * @author msordi
  *
  */
-public class JWTAuthenticationFilter extends GenericFilterBean {
+public class JWTAuthenticationFilter extends OncePerRequestFilter {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
 
     /**
      * Default security authentication manager
      */
     private final AuthenticationManager authenticationManager;
 
+    /**
+     *
+     * Constructor
+     *
+     * @param pAuthenticationManager
+     *            Authentication manager
+     * @since 1.0-SNAPSHOT
+     */
     public JWTAuthenticationFilter(final AuthenticationManager pAuthenticationManager) {
         this.authenticationManager = pAuthenticationManager;
     }
 
     @Override
-    public void doFilter(final ServletRequest pRequest, final ServletResponse pResponse, final FilterChain pFilterChain)
-            throws IOException, ServletException {
-        final HttpServletRequest request = (HttpServletRequest) pRequest;
-        final HttpServletResponse response = (HttpServletResponse) pResponse;
+    protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
+            final FilterChain pFilterChain) throws ServletException, IOException {
+        final HttpServletRequest request = pRequest;
+        final HttpServletResponse response = pResponse;
 
         // Retrieve authentication header
         String jwt = request.getHeader(HttpConstants.AUTHORIZATION);
         if (jwt == null) {
-            throw new InsufficientAuthenticationException("Authorization header not found");
+            response.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS JWT FILER] Authentication token missing");
+        } else {
+
+            // Extract JWT from retrieved header
+            if (!jwt.startsWith(HttpConstants.BEARER)) {
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS JWT FILER] Invalid authentication token");
+            } else {
+                jwt = jwt.substring(HttpConstants.BEARER.length()).trim();
+
+                // Init authentication object
+                final Authentication jwtAuthentication = new JWTAuthentication(jwt);
+                // Authenticate user with JWT
+                final Authentication authentication = authenticationManager.authenticate(jwtAuthentication);
+                // Set security context
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                LOG.info("[REGARDS JWT FILER] Access granted");
+
+                // Continue the filtering chain
+                pFilterChain.doFilter(request, response);
+            }
         }
-
-        // Extract JWT from retrieved header
-        if (!jwt.startsWith(HttpConstants.BEARER)) {
-            throw new InsufficientAuthenticationException("Authorization schema not found");
-        }
-        jwt = jwt.substring(HttpConstants.BEARER.length()).trim();
-
-        // Init authentication object
-        final Authentication jwtAuthentication = new JWTAuthentication(jwt);
-        // Authenticate user with JWT
-        final Authentication authentication = authenticationManager.authenticate(jwtAuthentication);
-        // Set security context
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        // Continue the filtering chain
-        pFilterChain.doFilter(request, response);
     }
 
 }

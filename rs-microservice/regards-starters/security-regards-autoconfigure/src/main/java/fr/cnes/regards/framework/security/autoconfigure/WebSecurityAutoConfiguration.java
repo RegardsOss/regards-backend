@@ -13,7 +13,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
@@ -63,15 +62,15 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         // Force authentication for all requests
         pHttp.csrf().disable().authorizeRequests().anyRequest().authenticated();
 
-        // Add CORS filter
-        pHttp.addFilterBefore(new CorsFilter(), ChannelProcessingFilter.class);
-
         // Add JWT Authentication filter
         pHttp.addFilterBefore(new JWTAuthenticationFilter(authenticationManager()),
                               UsernamePasswordAuthenticationFilter.class);
 
         // Add Ip filter after Authentication filter
         pHttp.addFilterAfter(new IpFilter(authoritiesProvider), JWTAuthenticationFilter.class);
+
+        // Add CORS filter
+        pHttp.addFilterAfter(new CorsFilter(authoritiesProvider), IpFilter.class);
     }
 
     @Override
