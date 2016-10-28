@@ -33,9 +33,9 @@ public class JobInfoServiceTest {
     }
 
     @Test
-    public void testUpdate() {
+    public void testSave() {
         final JobInfo jobInfo = new JobInfo();
-        jobInfoService.updateJobInfo(jobInfo);
+        jobInfoService.save(jobInfo);
         Mockito.verify(jobInfoRepository).save(jobInfo);
     }
 }

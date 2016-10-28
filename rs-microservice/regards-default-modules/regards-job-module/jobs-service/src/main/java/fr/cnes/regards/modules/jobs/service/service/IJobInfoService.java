@@ -15,8 +15,6 @@ public interface IJobInfoService {
 
     JobInfo createJobInfo(final JobInfo pJobInfo);
 
-    JobInfo updateJobInfo(final JobInfo pJobInfo);
-
     List<JobInfo> retrieveJobInfoList();
 
     /**
@@ -30,4 +28,10 @@ public interface IJobInfoService {
      * @return
      */
     JobInfo retrieveJobInfoById(Long pJobInfoId);
+
+    /**
+     * @param pJobInfo
+     * @return
+     */
+    JobInfo save(JobInfo pJobInfo);
 }

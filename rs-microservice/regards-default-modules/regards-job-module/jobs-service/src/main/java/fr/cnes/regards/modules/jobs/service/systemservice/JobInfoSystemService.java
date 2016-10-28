@@ -63,14 +63,12 @@ public class JobInfoSystemService implements IJobInfoSystemService {
 
     @Override
     public JobInfo findJobInfo(final String pTenantId, final Long pJobInfoId) {
-        // TODO Auto-generated method stub
-        return null;
+        return jobInfoRepository.findOne(pJobInfoId);
     }
 
     @Override
     public JobInfo updateJobInfo(final String pTenantId, final JobInfo pJobInfo) {
-        // TODO Auto-generated method stub
-        return null;
+        return jobInfoRepository.save(pJobInfo);
     }
 
 }

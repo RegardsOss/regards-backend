@@ -28,7 +28,7 @@ public class AJob extends AbstractJob {
                 LOG.info("AJob: Waiting..");
                 try {
                     sendEvent(EventType.JOB_PERCENT_COMPLETED, i * 10);
-                    Thread.sleep(10);
+                    Thread.sleep(200);
                 } catch (final InterruptedException e) {
                     LOG.warn("Thread interrupted, closing", e);
                     return;

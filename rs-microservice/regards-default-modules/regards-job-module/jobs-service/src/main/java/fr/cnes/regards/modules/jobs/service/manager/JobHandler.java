@@ -18,11 +18,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.modules.jobs.domain.IEvent;
 import fr.cnes.regards.modules.jobs.domain.IJob;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.jobs.domain.StatusInfo;
+import fr.cnes.regards.modules.jobs.service.communication.INewJobPublisherMessageBroker;
 import fr.cnes.regards.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.modules.jobs.service.systemservice.IJobInfoSystemService;
 
@@ -85,11 +87,15 @@ public class JobHandler implements IJobHandler {
      */
     private final JobMonitor jobMonitor;
 
-    public JobHandler(final IJobInfoService pJobInfoService, final IJobInfoSystemService pJobInfoSystemService) {
+    private final INewJobPublisherMessageBroker newJobPublisher;
+
+    public JobHandler(final IJobInfoService pJobInfoService, final IJobInfoSystemService pJobInfoSystemService,
+            final INewJobPublisherMessageBroker pNewJobPublisher) {
         threads = new HashMap<>();
         jobInfoService = pJobInfoService;
         jobInfoSystemService = pJobInfoSystemService;
         jobMonitor = new JobMonitor(this);
+        newJobPublisher = pNewJobPublisher;
     }
 
     /**
@@ -113,8 +119,18 @@ public class JobHandler implements IJobHandler {
     @Override
     public StatusInfo create(final JobInfo pJobInfo) {
         final JobInfo jobInfo = jobInfoService.createJobInfo(pJobInfo);
-
-        return jobInfo.getStatus();
+        StatusInfo status = null;
+        if (jobInfo != null) {
+            try {
+                newJobPublisher.sendJob(jobInfo.getId());
+            } catch (final RabbitMQVhostException e) {
+                jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
+                jobInfoService.save(jobInfo);
+                LOG.error("Failed to submit the new jobInfo to rabbit", e);
+            }
+            status = jobInfo.getStatus();
+        }
+        return status;
     }
 
     @Override

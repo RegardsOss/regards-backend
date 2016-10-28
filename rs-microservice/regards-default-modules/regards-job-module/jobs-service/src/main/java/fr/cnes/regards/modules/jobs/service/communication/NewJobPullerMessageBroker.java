@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.jobs.service.communication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
@@ -18,17 +17,29 @@ import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
  */
 public class NewJobPullerMessageBroker implements INewJobPullerMessageBroker {
 
+    /**
+     * Logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(NewJobPullerMessageBroker.class);
 
-    @Autowired
-    private Poller poller;
+    /**
+     * Poller instance
+     */
+    private final Poller poller;
+
+    /**
+     * @param pPoller
+     *            poller instance
+     */
+    public NewJobPullerMessageBroker(final Poller pPoller) {
+        super();
+        poller = pPoller;
+    }
 
     /**
      * @param pProjectName
      *            the project name
      * @return a new jobInfo id
-     * @throws RabbitMQVhostException
-     *             message broker exceptions
      */
     @Override
     public Long getJob(final String pProjectName) {
@@ -40,11 +51,9 @@ public class NewJobPullerMessageBroker implements INewJobPullerMessageBroker {
             tenantWrapper = poller.poll(pProjectName, NewJobEvent.class, pAmqpCommunicationMode,
                                         pAmqpCommunicationTarget);
             final NewJobEvent newJobEvent = tenantWrapper.getContent();
-            jobInfoId = newJobEvent.getJobId();
+            jobInfoId = newJobEvent.getJobInfoId();
         } catch (final RabbitMQVhostException e) {
             LOG.error(String.format("Failed to fetch a jobInfo for tenant [%s]", pProjectName), e);
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
         return jobInfoId;
     }
