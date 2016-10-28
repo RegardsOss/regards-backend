@@ -22,7 +22,7 @@ import org.springframework.hateoas.Identifiable;
 /**
  * Models a user's role.
  *
- * @author Xaver-Alexandre Brochard
+ * @author xbrochar
  */
 @Entity(name = "T_ROLE")
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")

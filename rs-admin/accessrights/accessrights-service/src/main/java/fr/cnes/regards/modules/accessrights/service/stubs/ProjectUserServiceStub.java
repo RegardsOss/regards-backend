@@ -94,11 +94,6 @@ public class ProjectUserServiceStub implements IProjectUserService {
     }
 
     @Override
-    public ProjectUser retrieveUser(final String pLogin) {
-        return projectUserRepository.findOneByEmail(pLogin);
-    }
-
-    @Override
     public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
             throws InvalidValueException, EntityNotFoundException {
         if (!existUser(pUserId)) {
@@ -173,7 +168,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
         if (!existUser(pLogin)) {
             throw new NoSuchElementException("ProjectUser of given login (" + pLogin + ") could not be found");
         }
-        final ProjectUser user = retrieveUser(pLogin);
+        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin);
 
         // Finder method
         // Pass the id and the list to search, returns the element with passed id
@@ -190,7 +185,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
 
     @Override
     public void removeUserAccessRights(final String pLogin) {
-        final ProjectUser user = retrieveUser(pLogin);
+        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin);
         user.setPermissions(new ArrayList<>());
     }
 

@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -132,6 +133,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         performGet(apiRolesId, jwt, expectations, "TODO Error message", wrongRoleId);
     }
 
+    @Ignore
     @Test
     @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_210")

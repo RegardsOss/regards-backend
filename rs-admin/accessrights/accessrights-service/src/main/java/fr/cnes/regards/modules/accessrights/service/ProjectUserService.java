@@ -2,12 +2,13 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -34,20 +35,41 @@ public class ProjectUserService implements IProjectUserService {
     /**
      * CRUD repository managing {@link ProjectUser}s. Autowired by Spring.
      */
-    @Autowired
-    private IProjectUserRepository projectUserRepository;
+    private final IProjectUserRepository projectUserRepository;
 
     /**
      * Service handling CRUD operation on {@link Role}s
      */
-    @Autowired
-    private IRoleService roleService;
+    private final IRoleService roleService;
 
     /**
      * CRUD repository managing {@link Role}s. Autowired by Spring.
      */
-    @Autowired
-    private IRoleRepository roleRepository;
+    private final IRoleRepository roleRepository;
+
+    /**
+     * A filter on meta data to keep visible ones only
+     */
+    private final Predicate<? super MetaData> visibleMetaDataFilter = m -> !UserVisibility.HIDDEN
+            .equals(m.getVisibility());
+
+    /**
+     * Creates a new instance of the service with passed services/repos
+     *
+     * @param pProjectUserRepository
+     *            The project user repo
+     * @param pRoleService
+     *            The role service
+     * @param pRoleRepository
+     *            The role repo
+     */
+    public ProjectUserService(final IProjectUserRepository pProjectUserRepository, final IRoleService pRoleService,
+            final IRoleRepository pRoleRepository) {
+        super();
+        projectUserRepository = pProjectUserRepository;
+        roleService = pRoleService;
+        roleRepository = pRoleRepository;
+    }
 
     @Override
     public List<ProjectUser> retrieveUserList() {
@@ -58,15 +80,10 @@ public class ProjectUserService implements IProjectUserService {
     public ProjectUser retrieveUser(final Long pUserId) {
         final ProjectUser user = projectUserRepository.findOne(pUserId);
         // Filter out hidden meta data
-        try (Stream<MetaData> stream = user.getMetaData().stream()) {
-            stream.filter(m -> !UserVisibility.HIDDEN.equals(m.getVisibility()));
+        try (final Stream<MetaData> stream = user.getMetaData().stream()) {
+            stream.filter(visibleMetaDataFilter);
         }
         return user;
-    }
-
-    @Override
-    public ProjectUser retrieveUser(final String pLogin) {
-        return projectUserRepository.findOneByEmail(pLogin);
     }
 
     /*
@@ -83,14 +100,13 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
             throws InvalidValueException, EntityNotFoundException {
-        if (existUser(pUserId)) {
-            if (pUpdatedProjectUser.getId() == pUserId) {
-                projectUserRepository.save(pUpdatedProjectUser);
-            }
+        if (pUpdatedProjectUser.getId() != pUserId) {
             throw new InvalidValueException("Account id specified differs from updated account id");
         }
-        throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
-
+        if (!existUser(pUserId)) {
+            throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
+        }
+        projectUserRepository.save(pUpdatedProjectUser);
     }
 
     @Override
@@ -99,28 +115,25 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public void updateUserAccessRights(final String pLogin, final List<ResourcesAccess> pUpdatedUserAccessRights) {
+    public void updateUserAccessRights(final String pLogin, final List<ResourcesAccess> pUpdatedUserAccessRights)
+            throws EntityNotFoundException {
         if (!existUser(pLogin)) {
-            throw new NoSuchElementException("ProjectUser of given login (" + pLogin + ") could not be found");
+            throw new EntityNotFoundException(pLogin, ProjectUser.class);
         }
-        final ProjectUser user = retrieveUser(pLogin);
+        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin);
 
-        // Finder method
-        // Pass the id and the list to search, returns the element with passed id
-        final Function<Long, List<ResourcesAccess>> find = id -> pUpdatedUserAccessRights.stream()
-                .filter(e -> e.getId().equals(id)).collect(Collectors.toList());
-        final Function<Long, Boolean> contains = id -> !find.apply(id).isEmpty();
+        try (Stream<ResourcesAccess> previous = user.getPermissions().stream();
+                Stream<ResourcesAccess> updated = pUpdatedUserAccessRights.stream()) {
+            user.setPermissions(Stream.concat(updated, previous).filter(distinctByKey(r -> r.getId()))
+                    .collect(Collectors.toList()));
+        }
 
-        final List<ResourcesAccess> permissions = user.getPermissions();
-        // If an element with the same id is found in the pResourcesAccessList list, replace with it
-        // Else keep the old element
-        permissions.replaceAll(p -> contains.apply(p.getId()) ? find.apply(p.getId()).get(0) : p);
         projectUserRepository.save(user);
     }
 
     @Override
     public void removeUserAccessRights(final String pLogin) {
-        final ProjectUser user = retrieveUser(pLogin);
+        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin);
         user.setPermissions(new ArrayList<>());
         projectUserRepository.save(user);
     }
@@ -177,4 +190,25 @@ public class ProjectUserService implements IProjectUserService {
         return projectUserRepository.exists(pId);
     }
 
+    /**
+     * Filter in order to remove doubles (same as distinct) but with custom key extraction.
+     * <p>
+     * Warning: Keeps the first seen, so the order does matter!
+     *
+     * For example use as: persons.stream().filter(distinctByKey(p -> p.getName());
+     *
+     * Removes doubles based on person.name attribute.
+     *
+     *
+     * @param pKeyExtractor
+     *            The
+     * @param <T>
+     *            The type
+     * @return A predicate
+     * @see http://stackoverflow.com/questions/23699371/java-8-distinct-by-property
+     */
+    private static <T> Predicate<T> distinctByKey(final Function<? super T, ?> pKeyExtractor) {
+        final Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+        return t -> seen.putIfAbsent(pKeyExtractor.apply(t), Boolean.TRUE) == null;
+    }
 }

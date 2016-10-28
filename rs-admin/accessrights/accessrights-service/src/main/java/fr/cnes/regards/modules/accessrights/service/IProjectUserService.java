@@ -37,15 +37,6 @@ public interface IProjectUserService {
     ProjectUser retrieveUser(Long pUserId);
 
     /**
-     * Retrieve the {@link ProjectUser} of passed <code>login</code>.
-     *
-     * @param pLogin
-     *            The {@link ProjectUser}'s <code>login</code>
-     * @return The project user
-     */
-    ProjectUser retrieveUser(String pLogin);
-
-    /**
      * Retrieve the current {@link ProjectUser}.
      *
      * @return The project user
