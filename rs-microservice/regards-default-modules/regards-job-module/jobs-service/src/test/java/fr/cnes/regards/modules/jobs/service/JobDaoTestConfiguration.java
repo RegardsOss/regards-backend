@@ -10,6 +10,7 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @EnableAutoConfiguration
 @PropertySource("classpath:tests.properties")
+@PropertySource("classpath:application-rabbit.properties")
 public class JobDaoTestConfiguration {
 
 }

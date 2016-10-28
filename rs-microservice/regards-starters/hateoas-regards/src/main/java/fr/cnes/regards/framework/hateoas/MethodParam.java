@@ -26,7 +26,7 @@ public class MethodParam<T> {
      */
     private final T value;
 
-    public MethodParam(Class<T> pParameterType, T pValue) {
+    public MethodParam(final Class<T> pParameterType, final T pValue) {
         Assert.notNull(pParameterType);
         Assert.notNull(pValue);
         this.parameterType = pParameterType;

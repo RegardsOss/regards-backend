@@ -49,6 +49,10 @@
 			<artifactId>feign-core</artifactId>
 		</dependency>
 		<!-- amqp service -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>amqp-regards-starter</artifactId>
+		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

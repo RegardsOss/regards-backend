@@ -10,21 +10,12 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 
 /***
- * Constants and datas for unit testing of plugin's DAO.
+ * Constants and datas for unit testing of plugin's Service.
  * 
  * @author cmertz
  *
  */
-public final class PluginServiceUtility {
-
-    private PluginServiceUtility() {
-    }
-    
-    private static PluginServiceUtility INSTANCE = new PluginServiceUtility();
-    
-    public static PluginServiceUtility getInstance()
-    {   return INSTANCE;
-    }
+public class PluginServiceUtility {
 
     /**
      * Project used for test
@@ -94,19 +85,19 @@ public final class PluginServiceUtility {
     /**
      * A {@link List} of values
      */
-    static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
+    protected static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
 
     /**
      * A {@link PluginParameter}
      */
-    static final List<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
-            .addParameterDynamic("suffix", RED, DYNAMICVALUES).addParameterDynamic("coeff", "0")
-            .addParameter("param11", "value11").addParameter("isActive", "true").getParameters();
+    protected static final List<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
+            .addParameter("param11", "value11").addParameterDynamic("coeff", "0").addParameter("isActive", "true")
+            .addParameterDynamic("suffix", RED, DYNAMICVALUES).getParameters();
 
     /**
      * A list of {@link PluginParameter}
      */
-    static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
+    protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
             .addParameter("param34", "value34").addParameter("param35", "value35").addParameterDynamic("coeff", "3")
             .addParameter("isActive", "true").addParameter("suffix", "Toulouse").getParameters();
@@ -114,16 +105,16 @@ public final class PluginServiceUtility {
     /**
      * A {@link PluginConfiguration}
      */
-    private PluginConfiguration pluginConfiguration1 = new PluginConfiguration(getPluginMetaData(), "a configuration",
-            INTERFACEPARAMETERS, 0);
+    private PluginConfiguration pluginConfiguration1 = new PluginConfiguration(this.getPluginMetaData(),
+            "a configuration", INTERFACEPARAMETERS, 0);
 
     /**
-     * A {@link PluginParameter} with a dynamic {@link PluginParameter}
+     * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
      */
-    private PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
+    private PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
             "second configuration", DYNAMICPARAMETERS, 0);
 
-    private PluginMetaData getPluginMetaData() {
+    protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setClass(Integer.class);
         pluginMetaData.setPluginId("aSamplePlugin");
@@ -132,17 +123,17 @@ public final class PluginServiceUtility {
         return pluginMetaData;
     }
 
-    public PluginConfiguration getPluginConfigurationWithParameters() {
+    protected PluginConfiguration getPluginConfigurationWithParameters() {
         pluginConfiguration1.setIsActive(true);
         return pluginConfiguration1;
     }
 
-    public PluginConfiguration getPluginConfigurationWithDynamicParameter() {
+    protected PluginConfiguration getPluginConfigurationWithDynamicParameter() {
         pluginConfiguration2.setIsActive(true);
         return pluginConfiguration2;
     }
 
-    public void resetId() {
+    protected void resetId() {
         getPluginConfigurationWithDynamicParameter().setId(null);
         getPluginConfigurationWithDynamicParameter().getParameters().forEach(p -> p.setId(null));
         getPluginConfigurationWithParameters().setId(null);

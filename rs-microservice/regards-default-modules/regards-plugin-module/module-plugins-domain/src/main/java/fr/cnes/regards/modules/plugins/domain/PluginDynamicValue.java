@@ -39,6 +39,12 @@ public class PluginDynamicValue {
         super();
     }
 
+    /**
+     * Constructor
+     * 
+     * @param pValue
+     *            a value to set
+     */
     public PluginDynamicValue(String pValue) {
         super();
         this.value = pValue;
@@ -51,10 +57,9 @@ public class PluginDynamicValue {
     public void setValue(String pValue) {
         this.value = pValue;
     }
-    
+
     public final void setId(Long pId) {
         id = pId;
     }
-
 
 }

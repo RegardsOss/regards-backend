@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.jobs.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -10,6 +11,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.modules.jobs.service.communication.INewJobPublisherMessageBroker;
+import fr.cnes.regards.modules.jobs.service.communication.NewJobPublisherMessageBroker;
 import fr.cnes.regards.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.modules.jobs.service.stub.JobInfoServiceStub;
 import fr.cnes.regards.modules.jobs.service.stub.JobInfoSystemServiceStub;
@@ -34,5 +38,14 @@ public class JobHandlerTestConfiguration {
     @Primary
     public IJobInfoService getJobInfoService() {
         return new JobInfoServiceStub();
+    }
+
+    @Autowired
+    public IPublisher publisher;
+
+    @Bean
+    @Primary
+    public INewJobPublisherMessageBroker getNewJobPublisher() {
+        return new NewJobPublisherMessageBroker(publisher);
     }
 }

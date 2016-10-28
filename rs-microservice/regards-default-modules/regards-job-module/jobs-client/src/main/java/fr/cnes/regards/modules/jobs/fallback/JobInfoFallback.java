@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.jobs.fallback;
 import java.util.List;
 
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.jobs.client.JobInfoClient;
@@ -24,31 +24,31 @@ import fr.cnes.regards.modules.jobs.domain.Output;
 public class JobInfoFallback implements JobInfoClient {
 
     @Override
-    public HttpEntity<List<Resource<JobInfo>>> retrieveJobs() {
+    public ResponseEntity<List<Resource<JobInfo>>> retrieveJobs() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<List<Resource<JobInfo>>> retrieveJobsByState(final JobStatus pState) {
+    public ResponseEntity<List<Resource<JobInfo>>> retrieveJobsByState(final JobStatus pState) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<JobInfo>> retrieveJobInfo(final Long pJobInfoId) {
+    public ResponseEntity<Resource<JobInfo>> retrieveJobInfo(final Long pJobInfoId) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<JobInfo>> stopJob(final Long pJobInfoId) {
+    public ResponseEntity<Resource<JobInfo>> stopJob(final Long pJobInfoId) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public HttpEntity<List<Output>> getJobResults(final Long pJobInfoId) {
+    public ResponseEntity<List<Output>> getJobResults(final Long pJobInfoId) {
         // TODO Auto-generated method stub
         return null;
     }

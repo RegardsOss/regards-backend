@@ -36,13 +36,22 @@ public class DefaultResourceService implements IResourceService {
      */
     private final MethodAuthorizationService authorisationService;
 
-    public DefaultResourceService(MethodAuthorizationService pMethodAuthorizationService) {
-        this.authorisationService = pMethodAuthorizationService;
+    /**
+     *
+     * Constructor
+     *
+     * @param pAuthorisationService
+     *            {@link MethodAuthorizationService} Service for method access authorization management
+     * @since 1.0-SNAPSHOT
+     */
+    public DefaultResourceService(final MethodAuthorizationService pAuthorisationService) {
+        super();
+        authorisationService = pAuthorisationService;
     }
 
     @Override
-    public <T> void addLink(Resource<T> pResource, Class<?> pController, String pMethodName, String pRel,
-            MethodParam<?>... pMethodParams) {
+    public <T> void addLink(final Resource<T> pResource, final Class<?> pController, final String pMethodName,
+            final String pRel, final MethodParam<?>... pMethodParams) {
 
         Assert.notNull(pResource);
         Assert.notNull(pController);
@@ -66,8 +75,9 @@ public class DefaultResourceService implements IResourceService {
             final Method method = getMethod(pController, pMethodName, parameterTypes);
             final Link link = buildLink(method, pRel, parameterValues);
             pResource.add(link);
-        } catch (MethodException e) {
+        } catch (final MethodException e) {
             // Do not insert link
+            LOG.debug(e.getMessage(), e);
         }
     }
 
@@ -88,18 +98,18 @@ public class DefaultResourceService implements IResourceService {
      * @throws MethodException
      *             if method cannot be retrieved
      */
-    private Method getMethod(Class<?> pController, String pMethodName, Class<?>... pParameterTypes)
+    private Method getMethod(final Class<?> pController, final String pMethodName, final Class<?>... pParameterTypes)
             throws MethodException {
         try {
             final Method method = pController.getMethod(pMethodName, pParameterTypes);
             checkAuthorization(method);
             return method;
-        } catch (NoSuchMethodException e) {
+        } catch (final NoSuchMethodException e) {
             final String message = MessageFormat.format("No such method {0} in controller {1}.", pMethodName,
                                                         pController.getCanonicalName());
             LOG.error(message, e);
             throw new MethodException(message);
-        } catch (SecurityException e) {
+        } catch (final SecurityException e) {
             final String message = MessageFormat.format("Security exception accessing method {0} in controller {1}.",
                                                         pMethodName, pController.getCanonicalName());
             LOG.error(message, e);
@@ -115,7 +125,7 @@ public class DefaultResourceService implements IResourceService {
      * @throws MethodException
      *             if method not authorized
      */
-    private void checkAuthorization(Method pMethod) throws MethodException {
+    private void checkAuthorization(final Method pMethod) throws MethodException {
         final JWTAuthentication auth = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
         if (!authorisationService.hasAccess(auth, pMethod)) {
             final String message = MessageFormat.format("Unauthorized method {0}", pMethod.getName());

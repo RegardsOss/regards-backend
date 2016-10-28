@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
  * @author cmertz
  *
  */
-public final class PluginDaoUtility {
+public class PluginDaoUtility {
 
     /**
      * Project used for test
@@ -93,13 +93,6 @@ public final class PluginDaoUtility {
      */
     private PluginParameter pluginParameter4 = new PluginParameter("param41", getPluginConfigurationWithParameters());
 
-    /**
-     * Private default constructor
-     */
-    private PluginDaoUtility() {
-
-    }
-    
     static PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setClass(Integer.class);

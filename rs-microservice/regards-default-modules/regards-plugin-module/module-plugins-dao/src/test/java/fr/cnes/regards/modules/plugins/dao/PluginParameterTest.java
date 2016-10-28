@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { PluginDaoTestConfig.class })
 @DirtiesContext
-public class PluginParameterTest {
+public class PluginParameterTest extends PluginDaoUtility {
 
     /**
      * Class logger
@@ -63,14 +63,14 @@ public class PluginParameterTest {
     @Test
     public void createPluginParameter() {
         try {
-            jwtService.injectToken(PluginDaoUtility.PROJECT, PluginDaoUtility.USERROLE);
+            jwtService.injectToken(PROJECT, USERROLE);
 
             deleteAllFromRepository();
 
             final long nPluginParameter = pluginParameterRepository.count();
 
-            pluginParameterRepository.save(PluginDaoUtility.PARAMETER1);
-            pluginParameterRepository.save(PluginDaoUtility.PARAMETER2);
+            pluginParameterRepository.save(PARAMETER1);
+            pluginParameterRepository.save(PARAMETER2);
 
             Assert.assertEquals(nPluginParameter + 2, pluginParameterRepository.count());
 
@@ -85,13 +85,13 @@ public class PluginParameterTest {
     @Test
     public void updatePluginParameter() {
         try {
-            jwtService.injectToken(PluginDaoUtility.PROJECT, PluginDaoUtility.USERROLE);
+            jwtService.injectToken(PROJECT, USERROLE);
 
             deleteAllFromRepository();
 
-            pluginParameterRepository.save(PluginDaoUtility.INTERFACEPARAMETERS.get(0));
-            final PluginParameter paramJpa = pluginParameterRepository.save(PluginDaoUtility.PARAMETER2);
-            Assert.assertEquals(paramJpa.getName(), PluginDaoUtility.PARAMETER2.getName());
+            pluginParameterRepository.save(INTERFACEPARAMETERS.get(0));
+            final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
+            Assert.assertEquals(paramJpa.getName(), PARAMETER2.getName());
 
             pluginParameterRepository.findAll().forEach(p -> LOGGER.info(p.getName()));
 
@@ -111,13 +111,13 @@ public class PluginParameterTest {
     @Test
     public void deletePluginParameter() {
         try {
-            jwtService.injectToken(PluginDaoUtility.PROJECT, PluginDaoUtility.USERROLE);
+            jwtService.injectToken(PROJECT, USERROLE);
 
             deleteAllFromRepository();
 
-            pluginParameterRepository.save(PluginDaoUtility.PARAMETER1);
+            pluginParameterRepository.save(PARAMETER1);
             final long n = pluginParameterRepository.count();
-            final PluginParameter paramJpa = pluginParameterRepository.save(PluginDaoUtility.PARAMETER2);
+            final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
             Assert.assertEquals(n + 1, pluginParameterRepository.count());
 
             pluginParameterRepository.delete(paramJpa);
@@ -135,15 +135,15 @@ public class PluginParameterTest {
     @Test
     public void controlPluginParameterDynamicValues() {
         try {
-            jwtService.injectToken(PluginDaoUtility.PROJECT, PluginDaoUtility.USERROLE);
+            jwtService.injectToken(PROJECT, USERROLE);
 
             deleteAllFromRepository();
 
             // first pluginb parameter
-            pluginParameterRepository.save(PluginDaoUtility.PARAMETER1);
+            pluginParameterRepository.save(PARAMETER1);
 
             // second plugin parameter with dynamic values
-            final PluginParameter paramJpa = pluginParameterRepository.save(PluginDaoUtility.PARAMETER2);
+            final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
 
             // search the second plugin parameter
             final PluginParameter paramFound = pluginParameterRepository.findOne(paramJpa.getId());
@@ -159,7 +159,7 @@ public class PluginParameterTest {
     }
 
     private void deleteAllFromRepository() {
-        PluginDaoUtility.resetId();
+        resetId();
     }
 
 }

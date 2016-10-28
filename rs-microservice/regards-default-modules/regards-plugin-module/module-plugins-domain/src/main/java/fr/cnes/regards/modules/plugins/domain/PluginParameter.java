@@ -143,7 +143,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     }
 
     public List<String> getDynamicsValuesAsString() {
-        final List<String> result = new ArrayList<String>();
+        final List<String> result = new ArrayList<>();
         if ((dynamicsValues != null) && !dynamicsValues.isEmpty()) {
             dynamicsValues.forEach(d -> result.add(d.getValue()));
         }

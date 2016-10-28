@@ -77,8 +77,10 @@ public class IpFilter extends OncePerRequestFilter {
                 authorizedAddresses.addAll(authoritiesProvider.getRoleAuthorizedAddress(role.getAuthority()));
             }
             if (!checkAccessByAddress(authorizedAddresses, pRequest.getRemoteAddr())) {
-                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), String
-                        .format("[REGARDS IP FILTER] - %s -Authorization denied", pRequest.getRemoteAddr()));
+                final String message = String.format("[REGARDS IP FILTER] - %s -Authorization denied",
+                                                     pRequest.getRemoteAddr());
+                LOG.error(message);
+                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             } else {
                 LOG.info(String.format("[REGARDS IP FILTER] - %s -Authorization granted", pRequest.getRemoteAddr()));
 
@@ -91,14 +93,28 @@ public class IpFilter extends OncePerRequestFilter {
 
     }
 
+    /**
+     *
+     * Check if the user adress match ones of the role authorized addresses.
+     *
+     * @param pAuthorizedAddress
+     *            Role authorized addresses
+     * @param pUserAdress
+     *            user address
+     * @return [true|false]
+     * @since 1.0-SNAPSHOT
+     */
     private boolean checkAccessByAddress(final List<String> pAuthorizedAddress, final String pUserAdress) {
         boolean accessAuthorized = false;
-        if ((pAuthorizedAddress != null) && !pAuthorizedAddress.isEmpty() && (pUserAdress != null)
-                && !pUserAdress.isEmpty()) {
-            for (final String authorizedAddress : pAuthorizedAddress) {
-                final Pattern pattern = Pattern.compile(authorizedAddress);
-                accessAuthorized |= pattern.matcher(pUserAdress).matches();
+        if ((pAuthorizedAddress != null) && !pAuthorizedAddress.isEmpty()) {
+            if ((pUserAdress != null) && !pUserAdress.isEmpty()) {
+                for (final String authorizedAddress : pAuthorizedAddress) {
+                    final Pattern pattern = Pattern.compile(authorizedAddress);
+                    accessAuthorized |= pattern.matcher(pUserAdress).matches();
+                }
             }
+        } else {
+            accessAuthorized = true;
         }
         return accessAuthorized;
     }

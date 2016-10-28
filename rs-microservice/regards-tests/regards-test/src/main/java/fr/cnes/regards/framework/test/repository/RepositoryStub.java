@@ -13,8 +13,20 @@ import org.springframework.data.repository.CrudRepository;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
+/**
+ *
+ * Class RepositoryStub
+ *
+ * STUB for all JPA crud repository
+ *
+ * @author sbinda
+ * @since 1.0-SNAPSHOT
+ */
 public class RepositoryStub<T extends IIdentifiable<Long>> implements CrudRepository<T, Long> {
 
+    /**
+     * Internal storage
+     */
     protected List<T> entities = new ArrayList<>();
 
     @Override

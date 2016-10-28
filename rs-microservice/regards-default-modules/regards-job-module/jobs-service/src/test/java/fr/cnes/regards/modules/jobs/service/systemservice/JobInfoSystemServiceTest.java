@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.jobs.service.systemservice;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -10,6 +11,7 @@ import org.mockito.Mockito;
 import fr.cnes.regards.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.modules.jobs.domain.StatusInfo;
 
 /**
  *
@@ -42,8 +44,23 @@ public class JobInfoSystemServiceTest {
 
     @Test
     public void testUpdateToDone() {
+        final String pTenantId = "project1";
+        final JobInfo jobInfo = new JobInfo();
+        jobInfo.setStatus(new StatusInfo());
+        final long jobInfoId = 1L;
+        Mockito.when(jobInfoRepository.findOne(jobInfoId)).thenReturn(jobInfo);
+
+        jobInfoSystemService.updateJobInfoToDone(1L, JobStatus.QUEUED, pTenantId);
+        Mockito.verify(jobInfoRepository).save(jobInfo);
+    }
+
+    @Test
+    public void testUpdateUnexistantEntityToDone() {
         final JobInfo jobInfo = new JobInfo();
         final String pTenantId = "project1";
-        jobInfoSystemService.updateJobInfoToDone(1L, JobStatus.QUEUED, pTenantId);
+        final long jobInfoId = 1L;
+        Mockito.when(jobInfoRepository.findOne(jobInfoId)).thenReturn(null);
+        final JobInfo updatedJobInfo = jobInfoSystemService.updateJobInfoToDone(jobInfoId, JobStatus.QUEUED, pTenantId);
+        Assertions.assertThat(updatedJobInfo).isNull();
     }
 }
