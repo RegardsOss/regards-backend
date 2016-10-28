@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -17,7 +18,8 @@ import javax.persistence.SequenceGenerator;
 import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.hateoas.Identifiable;
+
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
  * Models a user's role.
@@ -26,7 +28,7 @@ import org.springframework.hateoas.Identifiable;
  */
 @Entity(name = "T_ROLE")
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
-public class Role implements Identifiable<Long> {
+public class Role implements IIdentifiable<Long> {
 
     /**
      * Role indentifier
@@ -74,6 +76,18 @@ public class Role implements Identifiable<Long> {
     @Column(name = "authorizedAdresses")
     @Convert(converter = RoleAuthorizedAdressesConverter.class)
     private List<String> authorizedAddresses;
+
+    /**
+     * Are the cors requests authorized for this role ?
+     */
+    @Column(name = "corsRequestsAuthorized")
+    private boolean isCorsRequestsAuthorized = false;
+
+    /**
+     * If CORS requests are authorized for this role, this parameter indicates the limit date of the authorization
+     */
+    @Column(name = "corsRequestsAuthEndDate")
+    private LocalDateTime corsRequestsAuthorizationEndDate;
 
     /**
      * Is a default role ?
@@ -126,6 +140,18 @@ public class Role implements Identifiable<Long> {
         this(pRoleId, pName, pParentRole, pPermissions, pProjectUsers);
         isDefault = pIsDefault;
         isNative = pIsNative;
+    }
+
+    public Role(final Long pRoleId, final String pName, final Role pParentRole,
+            final List<ResourcesAccess> pPermissions, final List<String> pAuthorizedAddresses,
+            final List<ProjectUser> pProjectUsers, final boolean pIsDefault, final boolean pIsNative,
+            final boolean pIsCorsRequestsAuthorized, final LocalDateTime pCorsRequestsEndDate) {
+        this(pRoleId, pName, pParentRole, pPermissions, pProjectUsers);
+        isDefault = pIsDefault;
+        isNative = pIsNative;
+        isCorsRequestsAuthorized = pIsCorsRequestsAuthorized;
+        corsRequestsAuthorizationEndDate = pCorsRequestsEndDate;
+        authorizedAddresses = pAuthorizedAddresses;
     }
 
     public void setNative(final boolean pIsNative) {
@@ -191,6 +217,22 @@ public class Role implements Identifiable<Long> {
 
     public void setAuthorizedAddresses(final List<String> pAuthorizedAddresses) {
         authorizedAddresses = pAuthorizedAddresses;
+    }
+
+    public boolean isCorsRequestsAuthorized() {
+        return isCorsRequestsAuthorized;
+    }
+
+    public void setCorsRequestsAuthorized(final boolean pIsCorsRequestsAuthorized) {
+        isCorsRequestsAuthorized = pIsCorsRequestsAuthorized;
+    }
+
+    public LocalDateTime getCorsRequestsAuthorizationEndDate() {
+        return corsRequestsAuthorizationEndDate;
+    }
+
+    public void setCorsRequestsAuthorizationEndDate(final LocalDateTime pCorsRequestsAuthorizationEndDate) {
+        corsRequestsAuthorizationEndDate = pCorsRequestsAuthorizationEndDate;
     }
 
     @Override

@@ -27,12 +27,12 @@ import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.modules.core.rest.Controller;
+import fr.cnes.regards.modules.core.rest.AbstractController;
 
 @RestController
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class AccountsController extends Controller implements IAccountsSignature {
+public class AccountsController extends AbstractController implements IAccountsSignature {
 
     @Autowired
     private IAccountService accountService;

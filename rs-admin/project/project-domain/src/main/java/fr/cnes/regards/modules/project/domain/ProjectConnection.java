@@ -16,8 +16,7 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.executable.ValidateOnExecution;
 
-import org.springframework.hateoas.Identifiable;
-
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
 /**
@@ -34,7 +33,7 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 @Entity(name = "T_PROJECT_CONNECTION")
 @SequenceGenerator(name = "projectConnectionSequence", initialValue = 1, sequenceName = "SEQ_PROJECT_CONNECTION")
 @Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "project_id", "microservice" }) })
-public class ProjectConnection implements Identifiable<Long> {
+public class ProjectConnection implements IIdentifiable<Long> {
 
     /**
      * Identifier

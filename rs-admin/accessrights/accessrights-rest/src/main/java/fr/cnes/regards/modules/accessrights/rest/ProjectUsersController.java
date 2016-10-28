@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.accessrights.signature.IProjectUsersSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.modules.core.rest.Controller;
+import fr.cnes.regards.modules.core.rest.AbstractController;
 
 /**
  *
@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.core.rest.Controller;
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class ProjectUsersController extends Controller implements IProjectUsersSignature {
+public class ProjectUsersController extends AbstractController implements IProjectUsersSignature {
 
     @Autowired
     private IProjectUserService projectUserService;

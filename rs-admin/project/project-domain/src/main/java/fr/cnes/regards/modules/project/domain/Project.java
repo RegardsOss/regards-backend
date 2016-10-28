@@ -12,8 +12,7 @@ import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
 import javax.validation.executable.ValidateOnExecution;
 
-import org.springframework.hateoas.Identifiable;
-
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
 /**
@@ -29,7 +28,7 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 @InstanceEntity
 @Entity(name = "T_PROJECT")
 @SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "SEQ_PROJECT")
-public class Project implements Identifiable<Long> {
+public class Project implements IIdentifiable<Long> {
 
     /**
      * Project Unique Identifier

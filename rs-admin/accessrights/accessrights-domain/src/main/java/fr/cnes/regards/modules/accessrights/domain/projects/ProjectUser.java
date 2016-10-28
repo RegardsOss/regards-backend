@@ -21,10 +21,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.Email;
-import org.springframework.hateoas.Identifiable;
 
-import fr.cnes.regards.modules.accessrights.domain.PastOrNow;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.core.validation.PastOrNow;
 
 /**
  * Domain class representing a REGARDS project user.
@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.accessrights.domain.UserStatus;
  */
 @Entity(name = "T_PROJECT_USER")
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "SEQ_PROJECT_USER")
-public class ProjectUser implements Identifiable<Long> {
+public class ProjectUser implements IIdentifiable<Long> {
 
     /**
      * Temporary value to automatically manage ids

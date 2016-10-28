@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.accessrights.rest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +31,15 @@ import fr.cnes.regards.modules.core.annotation.ModuleInfo;
         documentation = "http://test")
 public class ResourcesController implements IResourcesSignature {
 
-    @Autowired
-    private IResourcesService service;
+    /**
+     * Business service
+     */
+    private final IResourcesService service;
+
+    public ResourcesController(final IResourcesService pService) {
+        super();
+        service = pService;
+    }
 
     @Override
     public ResponseEntity<List<ResourceMapping>> collectResources() {

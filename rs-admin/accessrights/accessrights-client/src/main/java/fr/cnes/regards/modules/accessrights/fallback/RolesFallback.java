@@ -8,7 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
@@ -39,56 +39,56 @@ public class RolesFallback implements IRolesClient {
     private static final String fallBackErrorMessage = "RS-ADMIN /roles request error. Fallback.";
 
     @Override
-    public HttpEntity<List<Resource<Role>>> retrieveRoleList() {
+    public ResponseEntity<List<Resource<Role>>> retrieveRoleList() {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<Role>> createRole(final Role pNewRole) {
+    public ResponseEntity<Resource<Role>> createRole(final Role pNewRole) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Resource<Role>> retrieveRole(final Long pRoleId) {
+    public ResponseEntity<Resource<Role>> retrieveRole(final String pRoleName) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateRole(final Long pRoleId, final Role pUpdatedRole) {
+    public ResponseEntity<Void> updateRole(final Long pRoleId, final Role pUpdatedRole) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> removeRole(final Long pRoleId) {
+    public ResponseEntity<Void> removeRole(final Long pRoleId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(final Long pRoleId) {
+    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(final Long pRoleId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> updateRoleResourcesAccess(final Long pRoleId,
+    public ResponseEntity<Void> updateRoleResourcesAccess(final Long pRoleId,
             final List<ResourcesAccess> pResourcesAccessList) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<Void> clearRoleResourcesAccess(final Long pRoleId) {
+    public ResponseEntity<Void> clearRoleResourcesAccess(final Long pRoleId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
 
     @Override
-    public HttpEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId) {
+    public ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId) {
         LOG.error(fallBackErrorMessage);
         return null;
     }

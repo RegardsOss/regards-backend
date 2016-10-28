@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.project.signature.IProjectsSignature;
  *
  * Feign client allowing access to the module with REST requests.
  *
- * @author CS
+ * @author sbinda
  * @since 1.0-SNAPSHOT
  */
 @FeignClient(name = "rs-admin", fallback = ProjectsFallback.class)

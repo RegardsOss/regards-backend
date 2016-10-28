@@ -16,7 +16,6 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.project.client.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
  *
@@ -67,33 +66,6 @@ public class ProjectsFallback implements IProjectsClient {
 
     @Override
     public ResponseEntity<Void> deleteProject(final String pProjectId) {
-        LOG.error(FALLBACK_ERROR_MESSAGE);
-        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-    }
-
-    @Override
-    public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(final String pProjectId,
-            final String pMicroService) {
-        LOG.error(FALLBACK_ERROR_MESSAGE);
-        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-    }
-
-    @Override
-    public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
-            final ProjectConnection pProjectConnection) throws AlreadyExistingException {
-        LOG.error(FALLBACK_ERROR_MESSAGE);
-        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-    }
-
-    @Override
-    public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
-            final ProjectConnection pProjectConnection) {
-        LOG.error(FALLBACK_ERROR_MESSAGE);
-        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-    }
-
-    @Override
-    public ResponseEntity<Void> deleteProjectConnection(final String pProjectName, final String pMicroservice) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }

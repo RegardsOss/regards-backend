@@ -11,11 +11,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.core.exception.EntityException;
+import fr.cnes.regards.modules.project.client.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.client.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -29,7 +30,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@RunWith(RegardsSpringRunner.class)
+@RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration(classes = { ProjectClientFallbacksTestsConfiguration.class })
 public class ProjectClientFallbacksTests {
@@ -39,6 +40,12 @@ public class ProjectClientFallbacksTests {
      */
     @Autowired
     private IProjectsClient projectsClient;
+
+    /**
+     * Client to test
+     */
+    @Autowired
+    private IProjectConnectionClient projectConnectionClient;
 
     /**
      *
@@ -75,19 +82,20 @@ public class ProjectClientFallbacksTests {
             status = results.getStatusCode();
             Assert.assertTrue(errorMessage, status.equals(HttpStatus.SERVICE_UNAVAILABLE));
 
-            results = projectsClient.retrieveProjectConnection(project.getName(), connection.getMicroservice());
+            results = projectConnectionClient.retrieveProjectConnection(project.getName(),
+                                                                        connection.getMicroservice());
             status = results.getStatusCode();
             Assert.assertTrue(errorMessage, status.equals(HttpStatus.SERVICE_UNAVAILABLE));
 
-            results = projectsClient.createProjectConnection(connection);
+            results = projectConnectionClient.createProjectConnection(connection);
             status = results.getStatusCode();
             Assert.assertTrue(errorMessage, status.equals(HttpStatus.SERVICE_UNAVAILABLE));
 
-            results = projectsClient.updateProjectConnection(connection);
+            results = projectConnectionClient.updateProjectConnection(connection);
             status = results.getStatusCode();
             Assert.assertTrue(errorMessage, status.equals(HttpStatus.SERVICE_UNAVAILABLE));
 
-            results = projectsClient.deleteProjectConnection(project.getName(), connection.getMicroservice());
+            results = projectConnectionClient.deleteProjectConnection(project.getName(), connection.getMicroservice());
             status = results.getStatusCode();
             Assert.assertTrue(errorMessage, status.equals(HttpStatus.SERVICE_UNAVAILABLE));
 

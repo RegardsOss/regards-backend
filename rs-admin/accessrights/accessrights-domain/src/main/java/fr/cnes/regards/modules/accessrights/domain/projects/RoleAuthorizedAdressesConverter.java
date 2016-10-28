@@ -29,8 +29,10 @@ public class RoleAuthorizedAdressesConverter implements AttributeConverter<List<
     @Override
     public String convertToDatabaseColumn(final List<String> pValues) {
         String result = "";
-        for (final String value : pValues) {
-            result += value + SPLIT_CAR;
+        if (pValues != null) {
+            for (final String value : pValues) {
+                result += value + SPLIT_CAR;
+            }
         }
         return result;
     }
