@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { PluginDaoTestConfig.class })
 @DirtiesContext
-public class PluginParameterTest extends PluginDaoTestDataUtility {
+public class PluginParameterTest {
 
     /**
      * Class logger
@@ -63,14 +63,14 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
     @Test
     public void createPluginParameter() {
         try {
-            jwtService.injectToken(PROJECT, USERROLE);
+            jwtService.injectToken(PluginDaoUtility.PROJECT, PluginDaoUtility.USERROLE);
 
             deleteAllFromRepository();
 
             final long nPluginParameter = pluginParameterRepository.count();
 
-            pluginParameterRepository.save(PARAMETER1);
-            pluginParameterRepository.save(PARAMETER2);
+            pluginParameterRepository.save(PluginDaoUtility.PARAMETER1);
+            pluginParameterRepository.save(PluginDaoUtility.PARAMETER2);
 
             Assert.assertEquals(nPluginParameter + 2, pluginParameterRepository.count());
 
@@ -85,13 +85,13 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
     @Test
     public void updatePluginParameter() {
         try {
-            jwtService.injectToken(PROJECT, USERROLE);
+            jwtService.injectToken(PluginDaoUtility.PROJECT, PluginDaoUtility.USERROLE);
 
             deleteAllFromRepository();
 
-            pluginParameterRepository.save(PARAMETER1);
-            final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
-            Assert.assertEquals(paramJpa.getName(), PARAMETER2.getName());
+            pluginParameterRepository.save(PluginDaoUtility.INTERFACEPARAMETERS.get(0));
+            final PluginParameter paramJpa = pluginParameterRepository.save(PluginDaoUtility.PARAMETER2);
+            Assert.assertEquals(paramJpa.getName(), PluginDaoUtility.PARAMETER2.getName());
 
             pluginParameterRepository.findAll().forEach(p -> LOGGER.info(p.getName()));
 
@@ -111,13 +111,13 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
     @Test
     public void deletePluginParameter() {
         try {
-            jwtService.injectToken(PROJECT, USERROLE);
+            jwtService.injectToken(PluginDaoUtility.PROJECT, PluginDaoUtility.USERROLE);
 
             deleteAllFromRepository();
 
-            pluginParameterRepository.save(PARAMETER1);
+            pluginParameterRepository.save(PluginDaoUtility.PARAMETER1);
             final long n = pluginParameterRepository.count();
-            final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
+            final PluginParameter paramJpa = pluginParameterRepository.save(PluginDaoUtility.PARAMETER2);
             Assert.assertEquals(n + 1, pluginParameterRepository.count());
 
             pluginParameterRepository.delete(paramJpa);
@@ -135,22 +135,22 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
     @Test
     public void controlPluginParameterDynamicValues() {
         try {
-            jwtService.injectToken(PROJECT, USERROLE);
+            jwtService.injectToken(PluginDaoUtility.PROJECT, PluginDaoUtility.USERROLE);
 
             deleteAllFromRepository();
 
             // first pluginb parameter
-            pluginParameterRepository.save(PARAMETER1);
+            pluginParameterRepository.save(PluginDaoUtility.PARAMETER1);
 
             // second plugin parameter with dynamic values
-            final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
+            final PluginParameter paramJpa = pluginParameterRepository.save(PluginDaoUtility.PARAMETER2);
 
             // search the second plugin parameter
             final PluginParameter paramFound = pluginParameterRepository.findOne(paramJpa.getId());
             paramFound.getDynamicsValues().stream().forEach(p -> LOGGER.info(p.getValue()));
 
             // test dynamics values of the second parameter
-            Assert.assertEquals(paramJpa.getIsDynamic(), paramJpa.getIsDynamic());
+            Assert.assertEquals(paramJpa.getIsDynamic(), paramFound.getIsDynamic());
             Assert.assertEquals(paramJpa.getDynamicsValues().size(), paramFound.getDynamicsValues().size());
 
         } catch (JwtException e) {
@@ -159,9 +159,7 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
     }
 
     private void deleteAllFromRepository() {
-        // pluginParameterRepository.findAll().forEach(p -> pluginParameterRepository.delete(p));
-
-        resetId();
+        PluginDaoUtility.resetId();
     }
 
 }

@@ -15,7 +15,6 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
  * @author cmertz
  *
  */
-
 public interface IPluginConfigurationRepository extends CrudRepository<PluginConfiguration, Long> {
 
     /**

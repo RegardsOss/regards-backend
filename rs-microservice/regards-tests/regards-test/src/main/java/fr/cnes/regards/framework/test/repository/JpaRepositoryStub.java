@@ -17,6 +17,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.hateoas.Identifiable;
 
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+
 /**
  * Generic implementation a of {@link JpaRepository}.<br>
  * <h1>This is a <strong>stubbed, incorrect and incomplete</strong> implementation, yet wrong! Only use this class for
@@ -24,7 +26,7 @@ import org.springframework.hateoas.Identifiable;
  *
  * @author CS SI
  */
-public class JpaRepositoryStub<T extends Identifiable<Long>> extends RepositoryStub<T>
+public class JpaRepositoryStub<T extends IIdentifiable<Long>> extends RepositoryStub<T>
         implements JpaRepository<T, Long> {
 
     @Override

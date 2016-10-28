@@ -34,6 +34,9 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_CONF")
 public class PluginConfiguration implements IIdentifiable<Long> {
 
+    /**
+     * Parameter unique id
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginConfSequence")
     private Long id;

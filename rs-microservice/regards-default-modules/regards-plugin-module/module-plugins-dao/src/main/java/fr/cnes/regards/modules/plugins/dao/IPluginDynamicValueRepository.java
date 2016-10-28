@@ -13,7 +13,6 @@ import fr.cnes.regards.modules.plugins.domain.PluginDynamicValue;
  * @author cmertz
  *
  */
-
 public interface IPluginDynamicValueRepository extends CrudRepository<PluginDynamicValue, Long> {
 
 }
