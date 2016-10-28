@@ -17,6 +17,7 @@ import org.springframework.util.Assert;
  * @author msordi
  *
  */
+@FunctionalInterface
 public interface IResourceController<T> {
 
     /**
@@ -35,8 +36,8 @@ public interface IResourceController<T> {
      *            list of elements to convert
      * @return a list of {@link Resource}
      */
-    default List<Resource<T>> toResources(List<T> pElements) {
+    default List<Resource<T>> toResources(final List<T> pElements) {
         Assert.notNull(pElements);
-        return pElements.stream().map(item -> toResource(item)).collect(Collectors.toList());
+        return pElements.stream().map(this::toResource).collect(Collectors.toList());
     }
 }
