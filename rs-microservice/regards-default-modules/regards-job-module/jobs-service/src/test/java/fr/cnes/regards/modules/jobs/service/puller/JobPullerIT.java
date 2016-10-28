@@ -3,10 +3,8 @@
  */
 package fr.cnes.regards.modules.jobs.service.puller;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -28,12 +26,13 @@ import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobAl
 import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
 
 /**
- * This test run with spring in order to get the jwtService
+ * @author lmieulet
+ *
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration(classes = { JobDaoTestConfiguration.class })
-public class JobPullerTest {
+public class JobPullerIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(JobPullerTest.class);
 
@@ -64,12 +63,13 @@ public class JobPullerTest {
     @Before
     public void setUp() {
         iJobHandlerMock = Mockito.mock(IJobHandler.class);
+        Mockito.when((iJobHandlerMock).getMaxJobCapacity()).thenReturn(5);
+
         tenantResolver = Mockito.mock(ITenantResolver.class);
         messageBroker = Mockito.mock(MessageBroker.class);
         jobAllocationStrategy = new DefaultJobAllocationStrategy();
-        Mockito.when((iJobHandlerMock).getMaxJobCapacity()).thenReturn(5);
 
-        projectList = new HashSet<>();
+        projectList = new TreeSet<>();
         projectList.add("project1");
         projectList.add("project2");
         projectList.add("project3");
@@ -82,9 +82,6 @@ public class JobPullerTest {
 
     @Test
     public void testProjectList() {
-
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(projectList);
-
         Assertions.assertThat(jobPuller.getProjects()).containsAll(projectList);
         Assertions.assertThat(jobPuller.getProjects().size()).isEqualTo(projectList.size());
 
@@ -93,7 +90,7 @@ public class JobPullerTest {
     @Test
     public void testPullJob() {
         Assertions.assertThat(jobPuller.getJobQueueList()).isEqualTo(null);
-        final String projectName = "project2";
+        final String projectName = "project1";
         Mockito.when(messageBroker.getJob(projectName)).thenReturn(1L);
         jobPuller.pullJobs();
         Mockito.verify(iJobHandlerMock).execute(projectName, 1L);
@@ -102,15 +99,6 @@ public class JobPullerTest {
         Assertions.assertThat(jobPuller.getJobQueueList().get(0).getMaxSize()).isEqualTo(2);
         Assertions.assertThat(jobPuller.getJobQueueList().get(1).getCurrentSize()).isEqualTo(0);
         Assertions.assertThat(jobPuller.getJobQueueList().get(1).getMaxSize()).isEqualTo(2);
-
-    }
-
-    @Test
-    public void testDomain() {
-        final List<String> projects = new ArrayList<>();
-        projects.add("test-project");
-        jobPuller.setProjects(projects);
-        Assertions.assertThat(jobPuller.getProjects().size()).isEqualTo(1);
 
     }
 }

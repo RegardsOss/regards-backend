@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -26,7 +27,7 @@ public interface IJobInfoSignature {
      * @return A {@link List} of jobInfo as {@link JobInfo} wrapped in an {@link HttpEntity}
      */
     @GetMapping("/jobs")
-    HttpEntity<List<Resource<JobInfo>>> retrieveJobs();
+    ResponseEntity<List<Resource<JobInfo>>> retrieveJobs();
 
     /**
      * Define the endpoint to retrieve the list of JobInfo depending of their state
@@ -36,7 +37,7 @@ public interface IJobInfoSignature {
      * @return job list
      */
     @GetMapping("/jobs/state/{state}")
-    HttpEntity<List<Resource<JobInfo>>> retrieveJobsByState(JobStatus state);
+    ResponseEntity<List<Resource<JobInfo>>> retrieveJobsByState(JobStatus state);
 
     /**
      * Define the endpoint to retrieve an JobInfo
@@ -46,7 +47,7 @@ public interface IJobInfoSignature {
      * @return the corresponding jobInfo
      */
     @GetMapping("/jobs/{job_id}")
-    HttpEntity<Resource<JobInfo>> retrieveJobInfo(Long pJobInfoId);
+    ResponseEntity<Resource<JobInfo>> retrieveJobInfo(Long pJobInfoId);
 
     /**
      * Define the endpoint to stop a job
@@ -56,7 +57,7 @@ public interface IJobInfoSignature {
      * @return jobInfo
      */
     @DeleteMapping("/jobs/{job_id}")
-    HttpEntity<Resource<JobInfo>> stopJob(Long pJobInfoId);
+    ResponseEntity<Resource<JobInfo>> stopJob(Long pJobInfoId);
 
     /**
      * Define the endpoint to retrieve job results
@@ -66,6 +67,6 @@ public interface IJobInfoSignature {
      * @return the list of result for that JobInfo
      */
     @GetMapping("/jobs/{job_id}/results}")
-    HttpEntity<List<Output>> getJobResults(Long pJobInfoId);
+    ResponseEntity<List<Output>> getJobResults(Long pJobInfoId);
 
 }

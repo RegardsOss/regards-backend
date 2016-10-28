@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
@@ -24,12 +23,6 @@ import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
  *
  */
 public class JobPuller {
-
-    /**
-     * Retrieve from the configuration file the number of thread for this microservice
-     */
-    @Value("${regards.microservice.job.max}")
-    private Integer maxJobCapacity;
 
     private static final Logger LOG = LoggerFactory.getLogger(JobPuller.class);
 
@@ -90,8 +83,8 @@ public class JobPuller {
         }
 
         // try to found a job
-        final JobAllocationStrategyResponse response = jobAllocationStrategy.getNextQueue(projects, jobQueueList,
-                                                                                          maxJobCapacity);
+        final JobAllocationStrategyResponse response = jobAllocationStrategy
+                .getNextQueue(projects, jobQueueList, jobHandler.getMaxJobCapacity());
         final String projectName = response.getProjectName();
         if ((projectName != null) && (projectName.length() > 0)) {
             final Long jobId = messageBroker.getJob(projectName);

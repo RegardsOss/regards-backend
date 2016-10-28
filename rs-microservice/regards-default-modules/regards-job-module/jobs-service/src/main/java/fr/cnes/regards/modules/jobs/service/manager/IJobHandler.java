@@ -62,4 +62,9 @@ public interface IJobHandler {
      */
     void onEvent(IEvent pEvent);
 
+    /**
+     * @return
+     */
+    Integer getMaxJobCapacity();
+
 }

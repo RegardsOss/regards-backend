@@ -217,6 +217,14 @@ public class JobHandler implements IJobHandler {
     }
 
     /**
+     * @return the maxJobCapacity
+     */
+    @Override
+    public Integer getMaxJobCapacity() {
+        return maxJobCapacity;
+    }
+
+    /**
      *
      * @param pTimeout
      *            let threads survive during pTimeout
@@ -281,4 +289,5 @@ public class JobHandler implements IJobHandler {
             LOG.error(String.format("Job not found %d", pJobInfoId));
         }
     }
+
 }
