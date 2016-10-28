@@ -14,7 +14,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
@@ -29,7 +31,6 @@ import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
-import fr.cnes.regards.modules.notification.service.utils.RestResponseUtils;
 
 /**
  * Test class for {@link NotificationService}.
@@ -467,11 +468,14 @@ public class NotificationServiceTest {
 
     /**
      * Check that the system properly aggregates the list of notification recipients.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown when no role with passed id could be found
      */
     @Test
     @Requirement("?")
     @Purpose("Check that the system properly aggregates the list of notification recipients.")
-    public void findRecipients() {
+    public void findRecipients() throws EntityNotFoundException {
         // Define expected
         final List<ProjectUser> expected = new ArrayList<>();
         expected.add(projectUser0); // Expected from the notif roleRecipients attribute
@@ -480,7 +484,7 @@ public class NotificationServiceTest {
 
         // Mock
         Mockito.when(rolesClient.retrieveRoleProjectUserList(role1.getId()))
-                .thenReturn(RestResponseUtils.wrapList(expected, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(HateoasUtils.wrapList(expected), HttpStatus.OK));
 
         // Result
         final List<ProjectUser> actual = notificationService.findRecipients(notification).collect(Collectors.toList());

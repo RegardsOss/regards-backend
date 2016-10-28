@@ -8,9 +8,7 @@ import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,11 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import com.icegreen.greenmail.util.GreenMailUtil;
 
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -32,8 +29,6 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.domain.Email;
-import fr.cnes.regards.modules.emails.domain.EmailWithRecipientsDTO;
-import fr.cnes.regards.modules.emails.domain.Recipient;
 import fr.cnes.regards.modules.emails.service.IEmailService;
 
 /**
@@ -110,23 +105,10 @@ public class EmailControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to send an email to a list of recipients.")
     public void sendEmail() {
-        // Create dummy email
-        final Email email = createDummyEmail();
-        email.setId(3543L);
-        // Create recipients
-        final Set<Recipient> recipients = new HashSet<>();
-        final Recipient recipient = new Recipient();
-        recipient.setAddress("xavier-alexandre.brochard@c-s.fr");
-        recipients.add(recipient);
-
-        // Generate the associated dto
-        final EmailWithRecipientsDTO dto = new EmailWithRecipientsDTO();
-        dto.setRecipients(recipients);
-        dto.setEmail(email);
-
+        final SimpleMailMessage message = createDummyMessage();
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
-        performPost("/emails", jwt, dto, expectations, "Unable to send the email");
+        performPost("/emails", jwt, message, expectations, "Unable to send the email");
     }
 
     /**
@@ -160,26 +142,11 @@ public class EmailControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to re-send an email and handles fail cases.")
     public void resendEmail() {
-        final Long id = 555l;
-
-        // First send an email to ensure it was sent
-        final Email email = createDummyEmail();
-        email.setId(id);
-        // Create recipients
-        final Set<Recipient> recipients = new HashSet<>();
-        final Recipient recipient = new Recipient();
-        recipient.setAddress("xavier-alexandre.brochard@c-s.fr");
-        recipients.add(recipient);
-
-        // Generate the associated dto
-        final EmailWithRecipientsDTO dto = new EmailWithRecipientsDTO();
-        dto.setRecipients(recipients);
-        dto.setEmail(email);
-
-        emailService.sendEmail(recipients, email);
+        // Retrieve an sent email from the db
+        final Email email = emailService.retrieveEmails().get(0);
+        final Long id = email.getId();
 
         // Then re-send it
-        assertTrue(emailService.exists(id));
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performPut("/emails/{mail_id}", jwt, null, expectations, "Unable to resend the email", id);
@@ -209,24 +176,17 @@ public class EmailControllerIT extends AbstractRegardsIT {
     }
 
     /**
-     * Creates a {@link Email} with some random values initialized.
+     * Creates a {@link SimpleMailMessage} with some random values initialized.
      *
      * @return The mail
      */
-    private Email createDummyEmail() {
-        // Create an empty message
-        final Email email = new Email();
-
-        // With random content to avoid potential residual lingering problems
-        final String subject = GreenMailUtil.random();
-        final String body = GreenMailUtil.random();
-
-        // Set content on the mail
-        email.setSubject(subject);
-        email.setFrom("sender@test.com");
-        email.setText(body);
-
-        return email;
+    private SimpleMailMessage createDummyMessage() {
+        final SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("sender@test.com");
+        message.setSubject("subject");
+        message.setText("message");
+        message.setTo("xavier-alexandre.brochard@c-s.fr");
+        return message;
     }
 
     @Override

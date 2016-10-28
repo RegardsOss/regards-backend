@@ -5,8 +5,12 @@ package fr.cnes.regards.modules.notification.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +25,6 @@ import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
-import fr.cnes.regards.modules.notification.service.utils.RestResponseUtils;
 
 /**
  * {@link INotificationService} implementation
@@ -32,6 +35,11 @@ import fr.cnes.regards.modules.notification.service.utils.RestResponseUtils;
 @Service
 @Transactional
 public class NotificationService implements INotificationService {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(NotificationService.class);
 
     /**
      * CRUD repository managing notifications. Autowired by Spring.
@@ -186,14 +194,25 @@ public class NotificationService implements INotificationService {
      */
     @Override
     public Stream<ProjectUser> findRecipients(final Notification pNotification) {
-        try (final Stream<Role> rolesStream = pNotification.getRoleRecipients().parallelStream();
-                final Stream<ProjectUser> usersStream = pNotification.getProjectUserRecipients().parallelStream()) {
+        // With the stream of role recipients and project users recipients
+        try (final Stream<Role> rolesStream = pNotification.getRoleRecipients().stream();
+                final Stream<ProjectUser> usersStream = pNotification.getProjectUserRecipients().stream()) {
 
-            return Stream
-                    .concat(usersStream,
-                            rolesStream.flatMap(r -> RestResponseUtils
-                                    .unwrapList(rolesClient.retrieveRoleProjectUserList(r.getId())).stream()))
-                    .distinct();
+            // Map each role to its project users by calling the roles client
+            final Function<Role, Stream<Resource<ProjectUser>>> toProjectUsers = r -> {
+                Stream<Resource<ProjectUser>> result;
+                try (Stream<Resource<ProjectUser>> stream = rolesClient.retrieveRoleProjectUserList(r.getId()).getBody()
+                        .stream()) {
+                    result = rolesClient.retrieveRoleProjectUserList(r.getId()).getBody().stream();
+                } catch (final EntityNotFoundException e) {
+                    LOG.warn(e.getMessage(), e);
+                    result = Stream.empty();
+                }
+                return result;
+            };
+
+            // Merge the two streams
+            return Stream.concat(usersStream, rolesStream.flatMap(toProjectUsers).map(Resource::getContent).distinct());
         }
     }
 
