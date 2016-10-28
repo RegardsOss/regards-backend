@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.framework.hateoas.autoconfigure;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import fr.cnes.regards.framework.hateoas.DefaultResourceService;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.security.autoconfigure.MethodAuthorizationServiceAutoConfiguration;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 
 /**
  *
@@ -25,9 +27,15 @@ import fr.cnes.regards.framework.security.autoconfigure.MethodAuthorizationServi
 @ConditionalOnWebApplication
 public class HateoasAutoConfiguration {
 
+    /**
+     * Service for method access authorization management
+     */
+    @Autowired
+    MethodAuthorizationService authService;
+
     @Bean
     @ConditionalOnMissingBean
     public IResourceService resourceService() {
-        return new DefaultResourceService();
+        return new DefaultResourceService(authService);
     }
 }

@@ -23,10 +23,5 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-regards-starter</artifactId>
 		</dependency>
-		<!-- TESTS -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
-		</dependency>
 	</dependencies>
 </project>
