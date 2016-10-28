@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  * @author lmieulet
  *
  */
-public class Publisher {
+public class Publisher implements IPublisher {
 
     /**
      * bean allowing us to send message to the broker
@@ -61,6 +61,7 @@ public class Publisher {
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
+    @Override
     public final <T> void publish(final T pEvt, final AmqpCommunicationMode pAmqpCommunicationMode,
             final AmqpCommunicationTarget pAmqpCommunicationTarget) throws RabbitMQVhostException {
         publish(pEvt, pAmqpCommunicationMode, pAmqpCommunicationTarget, 0);
@@ -80,6 +81,7 @@ public class Publisher {
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
+    @Override
     public final <T> void publish(final T pEvt, final AmqpCommunicationMode pAmqpCommunicationMode,
             final AmqpCommunicationTarget pAmqpCommunicationTarget, final int pPriority) throws RabbitMQVhostException {
         final String tenant = ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication()).getTenant();
@@ -100,6 +102,7 @@ public class Publisher {
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
+    @Override
     public final <T> void publish(final String pTenant, final T pEvt,
             final AmqpCommunicationMode pAmqpCommunicationMode, final AmqpCommunicationTarget pAmqpCommunicationTarget)
             throws RabbitMQVhostException {
@@ -122,6 +125,7 @@ public class Publisher {
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
+    @Override
     public final <T> void publish(final String pTenant, final T pEvt,
             final AmqpCommunicationMode pAmqpCommunicationMode, final AmqpCommunicationTarget pAmqpCommunicationTarget,
             final int pPriority) throws RabbitMQVhostException {

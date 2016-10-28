@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.amqp.Subscriber;
@@ -106,7 +107,7 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public Publisher publisher(final IRabbitVirtualHostUtils pIRabbitVirtualHostUtils,
+    public IPublisher publisher(final IRabbitVirtualHostUtils pIRabbitVirtualHostUtils,
             final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin) {
         return new Publisher(pRabbitTemplate, pRegardsAmqpAdmin, pIRabbitVirtualHostUtils);
     }
