@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 
 /*
@@ -17,7 +18,7 @@ import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
  */
 @Entity(name = "T_META_DATA")
 @SequenceGenerator(name = "metaDataSequence", initialValue = 1, sequenceName = "SEQ_META_DATA")
-public class MetaData {
+public class MetaData implements IIdentifiable<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "metaDataSequence")
@@ -37,6 +38,7 @@ public class MetaData {
         super();
     }
 
+    @Override
     public Long getId() {
         return id;
     }

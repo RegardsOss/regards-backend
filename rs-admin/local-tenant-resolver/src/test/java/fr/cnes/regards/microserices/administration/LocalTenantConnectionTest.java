@@ -23,14 +23,13 @@ import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolve
  *
  * Test with jpa multitenant starter database creation.
  *
- * @author CS
+ * @author sbinda
  * @since 1.0-SNAPSHOT
  */
 @RunWith(RegardsSpringRunner.class)
 @SpringBootTest
 @EnableAutoConfiguration
-@ContextConfiguration(
-        classes = { LocalTenantConnectionConfiguration.class, LocalTenantConnectionResolverAutoConfigure.class })
+@ContextConfiguration(classes = { TestConfiguration.class, LocalTenantConnectionResolverAutoConfigure.class })
 public class LocalTenantConnectionTest {
 
     /**
@@ -44,7 +43,7 @@ public class LocalTenantConnectionTest {
     @Test
     public void checkJpaTenants() {
 
-        File resourcesDirectory = new File("target/" + LocalTenantConnectionConfiguration.PROJECT_NAME);
+        File resourcesDirectory = new File("target/" + TestConfiguration.PROJECT_NAME);
         Assert.assertTrue(resourcesDirectory.exists());
 
         resourcesDirectory = new File("target/test1");

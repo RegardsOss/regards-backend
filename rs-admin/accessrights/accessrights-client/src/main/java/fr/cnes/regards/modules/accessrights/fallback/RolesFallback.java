@@ -51,7 +51,7 @@ public class RolesFallback implements IRolesClient {
     }
 
     @Override
-    public ResponseEntity<Resource<Role>> retrieveRole(final Long pRoleId) {
+    public ResponseEntity<Resource<Role>> retrieveRole(final String pRoleName) {
         LOG.error(fallBackErrorMessage);
         return null;
     }

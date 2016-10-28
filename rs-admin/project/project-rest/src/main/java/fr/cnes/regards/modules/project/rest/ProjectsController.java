@@ -4,28 +4,27 @@
 package fr.cnes.regards.modules.project.rest;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.hateoas.HateoasKeyWords;
-import fr.cnes.regards.modules.core.rest.Controller;
+import fr.cnes.regards.modules.core.rest.AbstractController;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectService;
 import fr.cnes.regards.modules.project.signature.IProjectsSignature;
 
@@ -41,7 +40,7 @@ import fr.cnes.regards.modules.project.signature.IProjectsSignature;
 @RestController
 @ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class ProjectsController extends Controller implements IProjectsSignature {
+public class ProjectsController extends AbstractController implements IResourceController<Project>, IProjectsSignature {
 
     /**
      * Class logger
@@ -53,9 +52,15 @@ public class ProjectsController extends Controller implements IProjectsSignature
      */
     private final IProjectService projectService;
 
-    public ProjectsController(final IProjectService pProjectService) {
+    /**
+     * Resource service to manage visibles hateoas links
+     */
+    private final IResourceService resourceService;
+
+    public ProjectsController(final IProjectService pProjectService, final IResourceService pResourceService) {
         super();
         projectService = pProjectService;
+        resourceService = pResourceService;
     }
 
     @Override
@@ -63,10 +68,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
     public ResponseEntity<List<Resource<Project>>> retrieveProjectList() {
 
         final List<Project> projects = projectService.retrieveProjectList();
-        final List<Resource<Project>> resources = projects.stream().map(p -> new Resource<>(p))
-                .collect(Collectors.toList());
-        addLinksToProjects(resources);
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+        return ResponseEntity.ok(toResources(projects));
     }
 
     @Override
@@ -75,9 +77,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
             throws EntityException {
 
         final Project project = projectService.createProject(pNewProject);
-        final Resource<Project> resource = new Resource<Project>(project);
-        addLinksToProject(resource);
-        return new ResponseEntity<>(resource, HttpStatus.CREATED);
+        return new ResponseEntity<>(toResource(project), HttpStatus.CREATED);
     }
 
     @Override
@@ -86,9 +86,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
             throws EntityException {
 
         final Project project = projectService.retrieveProject(pProjectName);
-        final Resource<Project> resource = new Resource<Project>(project);
-        addLinksToProject(resource);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        return ResponseEntity.ok(toResource(project));
     }
 
     @Override
@@ -97,9 +95,7 @@ public class ProjectsController extends Controller implements IProjectsSignature
             @RequestBody final Project pProjectToUpdate) throws EntityException {
 
         final Project project = projectService.updateProject(pProjectName, pProjectToUpdate);
-        final Resource<Project> resource = new Resource<Project>(project);
-        addLinksToProject(resource);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        return ResponseEntity.ok(toResource(project));
     }
 
     @Override
@@ -112,141 +108,23 @@ public class ProjectsController extends Controller implements IProjectsSignature
     }
 
     @Override
-    @ResourceAccess(
-            description = "retrieve a project connection associated to a given project and a given microservice")
-    public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
-            @PathVariable("project_name") final String pProjectName,
-            @PathVariable("microservice") final String pMicroService) throws EntityNotFoundException {
+    public Resource<Project> toResource(final Project pElement) {
 
-        final ResponseEntity<Resource<ProjectConnection>> response;
-        final ProjectConnection pConn = projectService.retreiveProjectConnection(pProjectName, pMicroService);
-
-        if (pConn != null) {
-            final Resource<ProjectConnection> resource = new Resource<ProjectConnection>(pConn);
-            addLinksToProjectConnection(resource);
-            response = new ResponseEntity<>(resource, HttpStatus.OK);
+        Resource<Project> resource = null;
+        if ((pElement != null) && (pElement.getName() != null)) {
+            resource = resourceService.toResource(pElement);
+            resourceService.addLink(resource, this.getClass(), "retrieveProject", LinkRels.SELF,
+                                    MethodParamFactory.build(String.class, pElement.getName()));
+            resourceService.addLink(resource, this.getClass(), "deleteProject", LinkRels.DELETE,
+                                    MethodParamFactory.build(String.class, pElement.getName()));
+            resourceService.addLink(resource, this.getClass(), "updateProject", LinkRels.UPDATE,
+                                    MethodParamFactory.build(String.class, pElement.getName()),
+                                    MethodParamFactory.build(Project.class, pElement));
+            resourceService.addLink(resource, this.getClass(), "createProject", LinkRels.CREATE,
+                                    MethodParamFactory.build(Project.class, pElement));
         } else {
-            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            LOG.warn(String.format("Invalid %s entity. Cannot create hateoas resources", this.getClass().getName()));
         }
-        return response;
-    }
-
-    @Override
-    @ResourceAccess(description = "create a new project connection")
-    public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
-            @Valid @RequestBody final ProjectConnection pProjectConnection) throws EntityException {
-        final ProjectConnection pConn = projectService.createProjectConnection(pProjectConnection);
-        final Resource<ProjectConnection> resource = new Resource<ProjectConnection>(pConn);
-        addLinksToProjectConnection(resource);
-        return new ResponseEntity<>(resource, HttpStatus.CREATED);
-    }
-
-    @Override
-    @ResourceAccess(description = "update a project connection")
-    public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
-            @Valid @RequestBody final ProjectConnection pProjectConnection) throws EntityException {
-        final ProjectConnection pConn = projectService.updateProjectConnection(pProjectConnection);
-        final Resource<ProjectConnection> resource = new Resource<ProjectConnection>(pConn);
-        addLinksToProjectConnection(resource);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
-    }
-
-    @Override
-    @ResourceAccess(description = "delete a project connection")
-    public ResponseEntity<Void> deleteProjectConnection(@PathVariable("project_name") final String pProjectName,
-            @PathVariable("microservice") final String pMicroservice) throws EntityException {
-
-        final ResponseEntity<Void> response;
-        final ProjectConnection pConn = projectService.retreiveProjectConnection(pProjectName, pMicroservice);
-        if (pConn != null) {
-            projectService.deleteProjectConnection(pConn.getId());
-            response = new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return response;
-    }
-
-    /**
-     *
-     * Add Hateoas links to a ProjectConnection resource.
-     *
-     * @param pProjectConnection
-     *            Resource<ProjectConnection> resource
-     * @since 1.0-SNAPSHOT
-     */
-    private static void addLinksToProjectConnection(final Resource<ProjectConnection> pProjectConnection) {
-        if (pProjectConnection.getLinks().isEmpty()) {
-            try {
-                // Add self link
-                pProjectConnection
-                        .add(ControllerLinkBuilder
-                                .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
-                                        .retrieveProjectConnection(pProjectConnection.getContent().getProject()
-                                                .getName(), pProjectConnection.getContent().getMicroservice()))
-                                .withSelfRel());
-                // Add delete link
-                pProjectConnection.add(ControllerLinkBuilder
-                        .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
-                                .deleteProjectConnection(pProjectConnection.getContent().getProject().getName(),
-                                                         pProjectConnection.getContent().getMicroservice()))
-                        .withRel(HateoasKeyWords.DELETE.getValue()));
-
-                // Add update link
-                pProjectConnection.add(ControllerLinkBuilder
-                        .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
-                                .updateProjectConnection(pProjectConnection.getContent()))
-                        .withRel(HateoasKeyWords.UPDATE.getValue()));
-                // Add create link
-
-                pProjectConnection.add(ControllerLinkBuilder
-                        .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
-                                .createProjectConnection(pProjectConnection.getContent()))
-                        .withRel(HateoasKeyWords.CREATE.getValue()));
-            } catch (final EntityException e) {
-                // Nothing to do. Method is not called
-                LOG.warn(e.getMessage(), e);
-            }
-        }
-    }
-
-    /**
-     *
-     * Add Hateoas links to a Project resource.
-     *
-     * @param pProject
-     *            Resource<Project> resource
-     * @since 1.0-SNAPSHOT
-     */
-    private static void addLinksToProject(final Resource<Project> pProject) {
-        if (pProject.getLinks().isEmpty()) {
-            try {
-                pProject.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
-                        .retrieveProject(pProject.getContent().getName())).withSelfRel());
-                // project.add(linkTo(methodOn(ProjectsController.class).modifyProject(project.getName(), project))
-                // .withRel("update"));
-                pProject.add(ControllerLinkBuilder
-                        .linkTo(ControllerLinkBuilder.methodOn(ProjectsController.class)
-                                .deleteProject(pProject.getContent().getName()))
-                        .withRel(HateoasKeyWords.DELETE.getValue()));
-            } catch (final EntityException e) {
-                // Nothing to do. Method is not called
-                LOG.warn(e.getMessage(), e);
-            }
-        }
-    }
-
-    /**
-     *
-     * Add Hateoas links to a list of Project resources.
-     *
-     * @param pProjects
-     *            List<Resource<Project>> resources
-     * @since 1.0-SNAPSHOT
-     */
-    private static void addLinksToProjects(final List<Resource<Project>> pProjects) {
-        for (final Resource<Project> project : pProjects) {
-            addLinksToProject(project);
-        }
+        return resource;
     }
 }

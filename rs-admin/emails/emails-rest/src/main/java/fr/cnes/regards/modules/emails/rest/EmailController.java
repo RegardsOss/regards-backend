@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
-import fr.cnes.regards.modules.core.rest.Controller;
+import fr.cnes.regards.modules.core.rest.AbstractController;
 import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.emails.signature.IEmailSignature;
@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.emails.signature.IEmailSignature;
 @RestController
 @ModuleInfo(name = "emails", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class EmailController extends Controller implements IEmailSignature {
+public class EmailController extends AbstractController implements IEmailSignature {
 
     /**
      * The service responsible for handling CRUD and mailing operations

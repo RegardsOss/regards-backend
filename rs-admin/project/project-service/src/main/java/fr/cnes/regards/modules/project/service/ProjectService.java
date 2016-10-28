@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.project.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
@@ -15,10 +16,8 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidEntityException;
-import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
  *
@@ -42,16 +41,9 @@ public class ProjectService implements IProjectService {
      */
     private final IProjectRepository projectRepository;
 
-    /**
-     * JPA Repository to query projectConnection from database
-     */
-    private final IProjectConnectionRepository projectConnectionRepository;
-
-    public ProjectService(final IProjectRepository pProjectRepository,
-            final IProjectConnectionRepository pProjectConnectionRepository) {
+    public ProjectService(final IProjectRepository pProjectRepository) {
         super();
         projectRepository = pProjectRepository;
-        projectConnectionRepository = pProjectConnectionRepository;
     }
 
     @Override
@@ -87,7 +79,9 @@ public class ProjectService implements IProjectService {
 
     @Override
     public List<Project> retrieveProjectList() {
-        return StreamSupport.stream(projectRepository.findAll().spliterator(), false).collect(Collectors.toList());
+        try (Stream<Project> stream = StreamSupport.stream(projectRepository.findAll().spliterator(), false)) {
+            return stream.collect(Collectors.toList());
+        }
     }
 
     @Override
@@ -100,79 +94,17 @@ public class ProjectService implements IProjectService {
 
     @Override
     public boolean existProject(final String pProjectId) {
-        return StreamSupport.stream(projectRepository.findAll().spliterator(), false)
-                .filter(p -> p.getName().equals(pProjectId)).findFirst().isPresent();
+        try (Stream<Project> stream = StreamSupport.stream(projectRepository.findAll().spliterator(), false)) {
+            return stream.filter(p -> p.getName().equals(pProjectId)).findFirst().isPresent();
+        }
     }
 
     @Override
     public boolean notDeletedProject(final String pProjectId) {
-        return StreamSupport.stream(projectRepository.findAll().spliterator(), false).filter(p -> !p.isDeleted())
-                .filter(p -> p.getName().equals(pProjectId)).findFirst().isPresent();
-    }
-
-    @Override
-    public ProjectConnection retreiveProjectConnection(final String pProjectName, final String pMicroService)
-            throws EntityNotFoundException {
-        final ProjectConnection connection = projectConnectionRepository
-                .findOneByProjectNameAndMicroservice(pProjectName, pMicroService);
-        if (connection == null) {
-            throw new EntityNotFoundException(String.format("%s:%s", pProjectName, pMicroService),
-                    ProjectConnection.class);
+        try (Stream<Project> stream = StreamSupport.stream(projectRepository.findAll().spliterator(), false)) {
+            return stream.filter(p -> !p.isDeleted()).filter(p -> p.getName().equals(pProjectId)).findFirst()
+                    .isPresent();
         }
-        return connection;
-    }
-
-    @Override
-    public ProjectConnection createProjectConnection(final ProjectConnection pProjectConnection)
-            throws AlreadyExistingException, EntityNotFoundException {
-        final ProjectConnection connection;
-        final Project project = pProjectConnection.getProject();
-        // Check referenced project exists
-        if ((project.getId() != null) && projectRepository.exists(project.getId())) {
-            // Check project connection to create doesn't already exists
-            if (projectConnectionRepository
-                    .findOneByProjectNameAndMicroservice(project.getName(),
-                                                         pProjectConnection.getMicroservice()) == null) {
-                connection = projectConnectionRepository.save(pProjectConnection);
-            } else {
-                throw new AlreadyExistingException(project.getName());
-            }
-        } else {
-            throw new EntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
-        }
-
-        return connection;
-    }
-
-    @Override
-    public void deleteProjectConnection(final Long pProjectConnectionId) throws EntityNotFoundException {
-        if (projectConnectionRepository.exists(pProjectConnectionId)) {
-            projectConnectionRepository.delete(pProjectConnectionId);
-        } else {
-            final String message = "Invalid entity <ProjectConnection> for deletion. Entity (id=%d) does not exists";
-            LOG.error(String.format(message, pProjectConnectionId));
-            throw new EntityNotFoundException(pProjectConnectionId.toString(), ProjectConnection.class);
-        }
-    }
-
-    @Override
-    public ProjectConnection updateProjectConnection(final ProjectConnection pProjectConnection)
-            throws EntityNotFoundException {
-        final ProjectConnection connection;
-        // Check that entity to update exists
-        if ((pProjectConnection.getId() != null) && projectConnectionRepository.exists(pProjectConnection.getId())) {
-            final Project project = pProjectConnection.getProject();
-            // Check that the referenced project exists
-            if ((project.getId() != null) && projectRepository.exists(project.getId())) {
-                // Update entity
-                connection = projectConnectionRepository.save(pProjectConnection);
-            } else {
-                throw new EntityNotFoundException(project.getName(), Project.class);
-            }
-        } else {
-            throw new EntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
-        }
-        return connection;
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.administration.controller;
+package fr.cnes.regards.modules.accessrights.rest;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -30,12 +32,16 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.service.IAccountService;
 
 /**
+ *
+ * Class AccountControllerIT
+ *
  * Just Test the REST API so status code. Correction is left to others.
  *
  * @author svissier
- * @author xbrochar
- *
+ * @authot sbinda
+ * @since 1.0-SNAPSHOT
  */
+@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class AccountControllerIT extends AbstractAdministrationIT {
 
     /**
@@ -81,6 +87,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
     @Override
     public void init() {
+
         final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
         jwt = jwtService.generateToken(tenant, "email", "SVG", "USER");
         authService.setAuthorities(tenant, "/accounts", RequestMethod.GET, "USER");

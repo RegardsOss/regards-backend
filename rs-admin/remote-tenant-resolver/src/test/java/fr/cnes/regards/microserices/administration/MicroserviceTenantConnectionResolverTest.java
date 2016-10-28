@@ -10,6 +10,8 @@ import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.ITenantConnection
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
+import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
 import fr.cnes.regards.microservices.administration.MicroserviceTenantConnectionResolver;
 
 /**
@@ -18,7 +20,7 @@ import fr.cnes.regards.microservices.administration.MicroserviceTenantConnection
  *
  * MultitenantResolver test
  *
- * @author CS
+ * @author sbinda
  * @since 1.0-SNAPSHOT
  */
 public class MicroserviceTenantConnectionResolverTest {
@@ -30,7 +32,8 @@ public class MicroserviceTenantConnectionResolverTest {
 
     @Before
     public void init() {
-        resovler = new MicroserviceTenantConnectionResolver(new ProjectClientStub(), "test-microservice");
+        resovler = new MicroserviceTenantConnectionResolver(new ProjectConnectionClientStub(), new ProjectClientStub(),
+                "test-microservice");
     }
 
     /**

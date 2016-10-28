@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.administration.controller;
+package fr.cnes.regards.modules.accessrights.rest;
 
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +18,10 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * Abstract class for all administration integration tets.
  *
- * @author CS
+ * @author sbinda
  * @since 1.0-SNAPSHOT
  */
-@ImportResource({ "classpath*:defaultRoles.xml", "classpath*:mailSender.xml" })
+@ImportResource({ "classpath*:defaultRoles.xml" })
 public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
 
     /**

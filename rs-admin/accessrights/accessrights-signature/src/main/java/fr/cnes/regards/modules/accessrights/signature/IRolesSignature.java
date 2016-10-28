@@ -61,9 +61,9 @@ public interface IRolesSignature {
      *            The {@link Role}'s <code>id</code>
      * @return The {@link Role} wrapped in an {@link ResponseEntity}
      */
-    @RequestMapping(value = "/{role_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{role_name}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_id") Long pRoleId);
+    ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") String pRoleName);
 
     /**
      * Define the endpoint for updating the {@link Role} of id <code>pRoleId</code>.
@@ -158,5 +158,6 @@ public interface IRolesSignature {
      */
     @RequestMapping(value = "/{role_id}/users", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(@PathVariable("role_id") Long pRoleId);
+    ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(@PathVariable("role_id") Long pRoleId)
+            throws EntityNotFoundException;
 }

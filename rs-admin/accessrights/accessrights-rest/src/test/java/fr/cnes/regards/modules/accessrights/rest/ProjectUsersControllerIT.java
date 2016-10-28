@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.administration.controller;
+package fr.cnes.regards.modules.accessrights.rest;
 
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -34,9 +36,16 @@ import fr.cnes.regards.modules.accessrights.service.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.IRoleService;
 
 /**
+ *
+ * Class ProjectUsersControllerIT
+ *
+ * Integration tests for ProjectUsers REST Controller.
+ *
  * @author svissier
- * @author xbrochar
+ * @author sbinda
+ * @since 1.0-SNAPSHOT
  */
+@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class ProjectUsersControllerIT extends AbstractAdministrationIT {
 
     /**

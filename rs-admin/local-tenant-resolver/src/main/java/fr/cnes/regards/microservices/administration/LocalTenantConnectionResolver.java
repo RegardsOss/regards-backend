@@ -14,6 +14,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 import fr.cnes.regards.modules.project.service.IProjectService;
 
 /**
@@ -44,6 +45,11 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
     private final IProjectService projectService;
 
     /**
+     * Administration project service
+     */
+    private final IProjectConnectionService projectConnectionService;
+
+    /**
      *
      * Constructor
      *
@@ -53,10 +59,12 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
      *            project service
      * @since 1.0-SNAPSHOT
      */
-    public LocalTenantConnectionResolver(final String pMicroserviceName, final IProjectService pProjectService) {
+    public LocalTenantConnectionResolver(final String pMicroserviceName, final IProjectService pProjectService,
+            final IProjectConnectionService pProjectConnectionService) {
         super();
         microserviceName = pMicroserviceName;
         projectService = pProjectService;
+        projectConnectionService = pProjectConnectionService;
     }
 
     @Override
@@ -66,8 +74,8 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
 
         for (final Project project : projects) {
             try {
-                final ProjectConnection projectConnection = projectService.retreiveProjectConnection(project.getName(),
-                                                                                                     microserviceName);
+                final ProjectConnection projectConnection = projectConnectionService
+                        .retreiveProjectConnection(project.getName(), microserviceName);
                 if (projectConnection != null) {
                     tenants.add(new TenantConnection(projectConnection.getProject().getName(),
                             projectConnection.getUrl(), projectConnection.getUserName(),

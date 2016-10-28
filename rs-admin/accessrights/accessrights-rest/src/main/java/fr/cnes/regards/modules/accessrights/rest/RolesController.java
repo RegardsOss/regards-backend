@@ -27,12 +27,12 @@ import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.modules.core.rest.Controller;
+import fr.cnes.regards.modules.core.rest.AbstractController;
 
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class RolesController extends Controller implements IRolesSignature {
+public class RolesController extends AbstractController implements IRolesSignature {
 
     @Autowired
     private IRoleService roleService;
@@ -56,8 +56,8 @@ public class RolesController extends Controller implements IRolesSignature {
 
     @Override
     @ResourceAccess(description = "Retrieve a role by id", name = "")
-    public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_id") final Long pRoleId) {
-        final Role role = roleService.retrieveRole(pRoleId);
+    public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName) {
+        final Role role = roleService.retrieveRole(pRoleName);
         final Resource<Role> resource = new Resource<>(role);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }

@@ -21,7 +21,7 @@ import fr.cnes.regards.client.core.ClientRequestInterceptor;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@ComponentScan
+@ComponentScan("fr.cnes.regards.modules")
 @EnableFeignClients(defaultConfiguration = { ClientRequestInterceptor.class })
 @EnableAutoConfiguration
 @PropertySource("classpath:tests.properties")

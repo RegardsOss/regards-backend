@@ -11,10 +11,10 @@ import javax.persistence.SequenceGenerator;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.hateoas.Identifiable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.util.ObjectUtils;
 
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.core.validation.PastOrNow;
 
 /**
@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.core.validation.PastOrNow;
  */
 @Entity(name = "T_EMAIL")
 @SequenceGenerator(name = "emailSequence", initialValue = 1, sequenceName = "SEQ_EMAIL")
-public class Email implements Identifiable<Long> {
+public class Email implements IIdentifiable<Long> {
 
     /**
      * Array of bcc recipients' email address

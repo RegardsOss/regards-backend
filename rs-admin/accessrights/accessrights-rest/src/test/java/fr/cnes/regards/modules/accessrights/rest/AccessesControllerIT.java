@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.administration.controller;
+package fr.cnes.regards.modules.accessrights.rest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +11,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -24,18 +26,42 @@ import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.IAccessRequestService;
+import fr.cnes.regards.modules.project.dao.IProjectRepository;
 
 /**
+ *
+ * Class AccessesControllerIT
+ *
  * Integration tests for the accesses functionalities.
  *
  * @author xbrochar
+ * @author sbinda
+ * @since 1.0-SNAPSHOT
  */
+@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class AccessesControllerIT extends AbstractAdministrationIT {
 
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(AccessesControllerIT.class);
+
+    /**
+     * Test project name
+     */
+    public static final String PROJECT_TEST_NAME = "test-1";
+
+    /**
+     * Project Repository STUB
+     */
+    @Autowired
+    private IProjectRepository projectRepository;
+
+    /**
+     * Method authorization service.
+     */
+    @Autowired
+    private MethodAuthorizationService methodAuthorizationService;
 
     /**
      * The autowired service handling the jwt token.
@@ -102,7 +128,7 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
         apiAccessDeny = apiAccessId + "/deny";
         apiAccessSettings = apiAccesses + "/settings";
 
-        final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
+        final String tenant = PROJECT_TEST_NAME;
         final String roleName = "USER";
         jwt = jwtService.generateToken(tenant, "email", "SVG", roleName);
 
