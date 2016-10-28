@@ -13,7 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.modules.jobs.service.communication.INewJobPullerMessageBroker;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobAllocationStrategy;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobQueue;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.JobAllocationStrategyResponse;
@@ -24,22 +24,15 @@ import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
  */
 public class JobPuller {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JobPuller.class);
-
-    private List<String> projects = new ArrayList<>();
-
-    private final IJobAllocationStrategy jobAllocationStrategy;
-
-    private List<IJobQueue> jobQueueList;
-
-    private final IJobHandler jobHandler;
+    /**
+     * Time to wait between each pullJob
+     */
+    private static final int PULL_JOB_DELAY = 1000;
 
     /**
-     * Bean which allows to get the existing tenants.
+     * Logger
      */
-    private final ITenantResolver tenantResolver;
-
-    private final MessageBroker messageBroker;
+    private static final Logger LOG = LoggerFactory.getLogger(JobPuller.class);
 
     /**
      * Gateway role
@@ -47,38 +40,59 @@ public class JobPuller {
     private static final String MODULE_JOB_ROLE = "USER";
 
     /**
+     * Plugin that manages the allocation strategy. Returns the tenant name that is autorized to fetch a job
+     */
+    private final IJobAllocationStrategy jobAllocationStrategy;
+
+    /**
+     * Store by tenant the number of current active jobs and the max number of job for this tenant
+     */
+    private List<IJobQueue> jobQueueList;
+
+    /**
+     * Job runner
+     */
+    private final IJobHandler jobHandler;
+
+    /**
+     * Bean which allows to get the existing tenants.
+     */
+    private final ITenantResolver tenantResolver;
+
+    /**
+     * Allows to fetch one job from AMQP
+     */
+    private final INewJobPullerMessageBroker newJobPuller;
+
+    /**
      * Security JWT service
      */
     private final JWTService jwtService;
 
     public JobPuller(final IJobHandler pJobHandler, final JWTService pJwtService, final ITenantResolver pTenantResolver,
-            final IJobAllocationStrategy pJobAllocationStrategy, final MessageBroker pMessageBroker) {
+            final IJobAllocationStrategy pJobAllocationStrategy, final INewJobPullerMessageBroker pNewJobPuller) {
         jobHandler = pJobHandler;
         jwtService = pJwtService;
         tenantResolver = pTenantResolver;
         jobAllocationStrategy = pJobAllocationStrategy;
-        messageBroker = pMessageBroker;
-        populateProjectList();
-    }
-
-    private void populateProjectList() {
-        try {
-            jwtService.injectToken("", MODULE_JOB_ROLE);
-        } catch (final JwtException e1) {
-            LOG.error(e1.getMessage(), e1);
-        }
-        final Set<String> projectsSet = tenantResolver.getAllTenants();
-        projectsSet.forEach(project -> projects.add(project));
+        newJobPuller = pNewJobPuller;
     }
 
     /**
      * Using the plugin job allocation strategy, it retrieve the updated jobQueueList and the project name that we can
      * fetch one job. Then it asks the JobHandler to execute the corresponding jobId
      */
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = PULL_JOB_DELAY)
     public void pullJobs() {
-        if (projects.isEmpty()) {
-            LOG.error("Jobs are desactivated because there is currently no project");
+        final List<String> projects;
+        try {
+            jwtService.injectToken("", MODULE_JOB_ROLE);
+            projects = getTenants();
+            if (projects.isEmpty()) {
+                throw new Exception("Jobs are desactivated because there is currently no project");
+            }
+        } catch (final Exception e1) {
+            LOG.error(e1.getMessage(), e1);
             return;
         }
 
@@ -87,7 +101,7 @@ public class JobPuller {
                 .getNextQueue(projects, jobQueueList, jobHandler.getMaxJobCapacity());
         final String projectName = response.getProjectName();
         if ((projectName != null) && (projectName.length() > 0)) {
-            final Long jobId = messageBroker.getJob(projectName);
+            final Long jobId = newJobPuller.getJob(projectName);
             if (jobId != null) {
                 jobHandler.execute(projectName, jobId);
             }
@@ -96,25 +110,17 @@ public class JobPuller {
     }
 
     /**
-     * @return the projects
-     */
-    public List<String> getProjects() {
-        return projects;
-    }
-
-    /**
-     * @param pProjects
-     *            the projects to set
-     */
-    public void setProjects(final List<String> pProjects) {
-        projects = pProjects;
-    }
-
-    /**
      * @return the jobQueueList
      */
     public List<IJobQueue> getJobQueueList() {
         return jobQueueList;
+    }
+
+    private List<String> getTenants() {
+        final List<String> projects = new ArrayList<>();
+        final Set<String> projectsSet = tenantResolver.getAllTenants();
+        projectsSet.forEach(project -> projects.add(project));
+        return projects;
     }
 
 }

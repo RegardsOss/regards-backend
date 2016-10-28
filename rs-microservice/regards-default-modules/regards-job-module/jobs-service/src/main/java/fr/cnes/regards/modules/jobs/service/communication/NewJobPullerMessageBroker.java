@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.jobs.service.communication;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.amqp.Poller;
@@ -14,7 +16,9 @@ import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 /**
  *
  */
-public class NewJobPullerMessageBroker {
+public class NewJobPullerMessageBroker implements INewJobPullerMessageBroker {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NewJobPullerMessageBroker.class);
 
     @Autowired
     private Poller poller;
@@ -26,13 +30,23 @@ public class NewJobPullerMessageBroker {
      * @throws RabbitMQVhostException
      *             message broker exceptions
      */
-    public Long getJob(final String pProjectName) throws RabbitMQVhostException {
+    @Override
+    public Long getJob(final String pProjectName) {
+        Long jobInfoId = null;
         final AmqpCommunicationMode pAmqpCommunicationMode = AmqpCommunicationMode.ONE_TO_ONE;
         final AmqpCommunicationTarget pAmqpCommunicationTarget = AmqpCommunicationTarget.INTERNAL;
-        final TenantWrapper<NewJobEvent> tenantWrapper = poller.poll(pProjectName, NewJobEvent.class,
-                                                                     pAmqpCommunicationMode, pAmqpCommunicationTarget);
-        final NewJobEvent content = tenantWrapper.getContent();
-        return null;
+        TenantWrapper<NewJobEvent> tenantWrapper;
+        try {
+            tenantWrapper = poller.poll(pProjectName, NewJobEvent.class, pAmqpCommunicationMode,
+                                        pAmqpCommunicationTarget);
+            final NewJobEvent newJobEvent = tenantWrapper.getContent();
+            jobInfoId = newJobEvent.getJobId();
+        } catch (final RabbitMQVhostException e) {
+            LOG.error(String.format("Failed to fetch a jobInfo for tenant [%s]", pProjectName), e);
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return jobInfoId;
     }
 
 }
