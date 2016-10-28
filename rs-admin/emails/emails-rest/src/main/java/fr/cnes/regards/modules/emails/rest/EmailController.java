@@ -4,7 +4,6 @@
 package fr.cnes.regards.modules.emails.rest;
 
 import java.util.List;
-import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -12,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,8 +20,6 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.rest.AbstractController;
 import fr.cnes.regards.modules.emails.domain.Email;
-import fr.cnes.regards.modules.emails.domain.EmailWithRecipientsDTO;
-import fr.cnes.regards.modules.emails.domain.Recipient;
 import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.emails.signature.IEmailSignature;
 
@@ -49,13 +47,26 @@ public class EmailController extends AbstractController implements IEmailSignatu
         return new ResponseEntity<>(emails, HttpStatus.OK);
     }
 
+    // @Override
+    // @ResourceAccess(description = "Send an email to recipients", name = "email")
+    // public HttpEntity<Email> sendEmail(@Valid @RequestBody final EmailWithRecipientsDTO pDto) {
+    // final Set<Recipient> recipients = pDto.getRecipients();
+    // Email email = pDto.getEmail();
+    // email = emailService.sendEmail(recipients, email);
+    // return new ResponseEntity<>(email, HttpStatus.CREATED);
+    // }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.emails.signature.IEmailSignature#sendEmail1(org.springframework.mail.SimpleMailMessage)
+     */
     @Override
     @ResourceAccess(description = "Send an email to recipients", name = "email")
-    public HttpEntity<Email> sendEmail(@Valid @RequestBody final EmailWithRecipientsDTO pDto) {
-        final Set<Recipient> recipients = pDto.getRecipients();
-        Email email = pDto.getEmail();
-        email = emailService.sendEmail(recipients, email);
-        return new ResponseEntity<>(email, HttpStatus.CREATED);
+    public ResponseEntity<SimpleMailMessage> sendEmail(@Valid @RequestBody final SimpleMailMessage pMessage) {
+        final SimpleMailMessage created = emailService.sendEmail(pMessage);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @Override

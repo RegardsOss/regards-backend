@@ -6,6 +6,8 @@ package fr.cnes.regards.modules.emails.service;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.mail.SimpleMailMessage;
+
 import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.domain.Recipient;
 
@@ -24,7 +26,7 @@ public interface IEmailService {
     List<Email> retrieveEmails();
 
     /**
-     * Sends the passed email to the passed recipients
+     * Sends the passed email to the passed recipients and save it in DB.
      *
      * @param pRecipients
      *            The set of recipients. Must not be <code>null</code>.
@@ -33,6 +35,15 @@ public interface IEmailService {
      * @return The sent email as {@link Email}
      */
     Email sendEmail(Set<Recipient> pRecipients, Email pEmail);
+
+    /**
+     * Sends the passed email to the passed recipients and save a representation in DB.
+     *
+     * @param pEmail
+     *            The ready-to-send email. Must not be <code>null</code>.
+     * @return The sent email
+     */
+    SimpleMailMessage sendEmail(SimpleMailMessage pEmail);
 
     /**
      * Retrieves the email of passed id

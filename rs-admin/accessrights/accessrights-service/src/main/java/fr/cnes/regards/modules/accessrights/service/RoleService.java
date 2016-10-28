@@ -22,11 +22,23 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
+/**
+ * {@link IRoleService} implementation
+ *
+ * @author xbrochar
+ *
+ */
 @Service
 public class RoleService implements IRoleService {
 
+    /**
+     * CRUD repository managing {@link Role}s. Autowired by Spring.
+     */
     private final IRoleRepository roleRepository;
 
+    /**
+     * The default roles. Autowired by Spring.
+     */
     @Resource
     private List<Role> defaultRoles;
 
@@ -145,8 +157,17 @@ public class RoleService implements IRoleService {
         if (!existRole(pRoleId)) {
             throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
+        final List<Role> roleAndHisAncestors = new ArrayList<>();
+
         final Role role = roleRepository.findOne(pRoleId);
-        return role.getProjectUsers();
+        roleAndHisAncestors.add(role);
+
+        final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
+        roleAndHisAncestors.addAll(roleLineageAssembler.of(role).get());
+
+        try (final Stream<Role> stream = roleAndHisAncestors.stream()) {
+            return stream.map(r -> r.getProjectUsers()).flatMap(l -> l.stream()).collect(Collectors.toList());
+        }
     }
 
     @Override

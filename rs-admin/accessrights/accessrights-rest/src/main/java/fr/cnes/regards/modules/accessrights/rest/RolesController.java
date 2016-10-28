@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -103,10 +104,18 @@ public class RolesController extends AbstractController implements IRolesSignatu
     }
 
     @Override
-    @ResourceAccess(description = "Retrieve the list of project users of the role with role_id", name = "")
+    @ResourceAccess(
+            description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id",
+            name = "")
     public ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(
-            @PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
-        final List<ProjectUser> projectUserList = roleService.retrieveRoleProjectUserList(pRoleId);
+            @PathVariable("role_id") final Long pRoleId) {
+        List<ProjectUser> projectUserList = new ArrayList<>();
+        try {
+            projectUserList = roleService.retrieveRoleProjectUserList(pRoleId);
+        } catch (final EntityNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         final List<Resource<ProjectUser>> resources = projectUserList.stream().map(pu -> new Resource<>(pu))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(resources, HttpStatus.OK);

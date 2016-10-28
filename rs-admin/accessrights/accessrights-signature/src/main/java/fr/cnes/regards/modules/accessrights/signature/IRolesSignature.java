@@ -148,7 +148,7 @@ public interface IRolesSignature {
 
     /**
      * Define the endpoint for retrieving the {@link List} of {@link ProjectUser} for the {@link Role} of passed
-     * <code>id</code>.
+     * <code>id</code> by crawling through parents' hierarachy.
      *
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
@@ -158,6 +158,10 @@ public interface IRolesSignature {
      */
     @RequestMapping(value = "/{role_id}/users", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+<<<<<<< HEAD
     ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(@PathVariable("role_id") Long pRoleId)
             throws EntityNotFoundException;
+=======
+    HttpEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(@PathVariable("role_id") Long pRoleId);
+>>>>>>> branch 'master' of https://sbinda@thor.si.c-s.fr/git/rs-admin
 }

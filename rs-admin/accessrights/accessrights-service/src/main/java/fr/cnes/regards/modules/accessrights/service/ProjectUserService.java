@@ -9,6 +9,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -28,6 +30,12 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
  */
 @Service
 public class ProjectUserService implements IProjectUserService {
+
+    /**
+     * The Spring security context. Autowired.
+     */
+    @Autowired
+    private SecurityContext securityContext;
 
     /**
      * CRUD repository managing {@link ProjectUser}s. Autowired by Spring.
@@ -62,6 +70,17 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public ProjectUser retrieveUser(final String pLogin) {
         return projectUserRepository.findOneByEmail(pLogin);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveCurrentUser()
+     */
+    @Override
+    public ProjectUser retrieveCurrentUser() {
+        final String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return projectUserRepository.findOneByEmail(email);
     }
 
     @Override

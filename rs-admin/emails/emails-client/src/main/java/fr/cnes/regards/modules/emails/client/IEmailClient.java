@@ -8,10 +8,10 @@ import fr.cnes.regards.modules.emails.signature.IEmailSignature;
 /**
  * Feign client exposing the emails module endpoints to other microservices plugged through Eureka.
  *
- * @author Xavier-Alexandre Brochard
+ * @author CS SI
  */
 @FeignClient(value = "rs-admin")
 @Headers({ "Accept: application/json", "Content-Type: application/json" })
-public interface EmailClient extends IEmailSignature {
+public interface IEmailClient extends IEmailSignature {
 
 }
