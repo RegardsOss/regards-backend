@@ -267,7 +267,7 @@ public class JobHandler implements IJobHandler {
                     jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
                 }
             } else {
-                LOG.error(String.format("Unknow jobInfoId [%ld] while shutting down threads", jobInfoId));
+                LOG.error(String.format("Unknow jobInfoId [%d] while shutting down threads", jobInfoId));
             }
         }
         LOG.info("All threads stopped correctly: ", doneCorrectly);
