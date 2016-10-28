@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.IAccessRequestService;
-import fr.cnes.regards.modules.accessrights.service.IAccessSettingsService;
 
 /**
  * Integration tests for the accesses functionalities.
@@ -90,12 +89,6 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
      */
     @Autowired
     private IAccessRequestService accessRequestService;
-
-    /**
-     * The autowired {@link IAccessSettingsService} implementation.
-     */
-    @Autowired
-    private IAccessSettingsService accessSettingsService;
 
     /**
      * Do some setup before each test

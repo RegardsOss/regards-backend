@@ -19,8 +19,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.icegreen.greenmail.util.GreenMailUtil;
-
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -182,27 +180,6 @@ public class EmailControllerIT extends AbstractAdministrationIT {
         message.setText("message");
         message.setTo("xavier-alexandre.brochard@c-s.fr");
         return message;
-    }
-
-    /**
-     * Creates a {@link Email} with some random values initialized.
-     *
-     * @return The mail
-     */
-    private Email createDummyEmail() {
-        // Create an empty message
-        final Email email = new Email();
-
-        // With random content to avoid potential residual lingering problems
-        final String subject = GreenMailUtil.random();
-        final String body = GreenMailUtil.random();
-
-        // Set content on the mail
-        email.setSubject(subject);
-        email.setFrom("sender@test.com");
-        email.setText(body);
-
-        return email;
     }
 
     @Override

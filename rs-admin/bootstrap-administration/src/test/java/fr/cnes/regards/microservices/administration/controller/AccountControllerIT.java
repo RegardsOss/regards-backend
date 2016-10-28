@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.accessrights.service.IAccountService;
  * Just Test the REST API so status code. Correction is left to others.
  *
  * @author svissier
+ * @author xbrochar
  *
  */
 public class AccountControllerIT extends AbstractAdministrationIT {

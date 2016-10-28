@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.accessrights.service.IRoleService;
 /**
  * Just Test the REST API so status code. Correction is left to others.
  *
- * @author CS SI
+ * @author xbrochar
  *
  */
 public class RolesControllerIT extends AbstractAdministrationIT {

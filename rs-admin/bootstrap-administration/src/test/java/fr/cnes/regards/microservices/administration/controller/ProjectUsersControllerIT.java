@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.accessrights.service.IRoleService;
 
 /**
  * @author svissier
+ * @author xbrochar
  */
 public class ProjectUsersControllerIT extends AbstractAdministrationIT {
 
