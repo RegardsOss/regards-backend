@@ -46,15 +46,6 @@ public class EmailController extends Controller implements IEmailSignature {
         return new ResponseEntity<>(emails, HttpStatus.OK);
     }
 
-    // @Override
-    // @ResourceAccess(description = "Send an email to recipients", name = "email")
-    // public ResponseEntity<Email> sendEmail(@Valid @RequestBody final EmailWithRecipientsDTO pDto) {
-    // final Set<Recipient> recipients = pDto.getRecipients();
-    // Email email = pDto.getEmail();
-    // email = emailService.sendEmail(recipients, email);
-    // return new ResponseEntity<>(email, HttpStatus.CREATED);
-    // }
-
     /*
      * (non-Javadoc)
      *

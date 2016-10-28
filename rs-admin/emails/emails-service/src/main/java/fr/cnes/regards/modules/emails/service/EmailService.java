@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.emails.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
-import fr.cnes.regards.modules.emails.domain.Recipient;
 
 /**
  * {@link IEmailService} implementation
@@ -56,23 +54,6 @@ public class EmailService implements IEmailService {
             results.forEach(r -> emails.add(r));
         }
         return emails;
-    }
-
-    @Override
-    public Email sendEmail(final Set<Recipient> pRecipients, final Email pEmail) {
-        final SimpleMailMessage message = createSimpleMailMessageFromEmail(pEmail);
-
-        // Set the recipients
-        final String[] asArray = pRecipients.stream().map(r -> r.getAddress()).toArray(size -> new String[size]);
-        pEmail.setTo(asArray);
-        message.setTo(asArray);
-        // Send the mail
-        mailSender.send(message);
-
-        // Persist in DB
-        emailRepository.save(pEmail);
-
-        return pEmail;
     }
 
     /*

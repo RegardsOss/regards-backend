@@ -12,12 +12,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.mail.Address;
@@ -40,7 +37,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
-import fr.cnes.regards.modules.emails.domain.Recipient;
 
 /**
  * Test class for {@link EmailService}.
@@ -146,16 +142,11 @@ public class EmailServiceTest {
     @Purpose("Check that the system allows to send an email to a list of recipients.")
     public void sendEmail() throws MessagingException {
         // Create dummy email with random subject and content
-        final Email expected = createDummyEmail();
-
-        // Create recipients
-        final Set<Recipient> recipients = new HashSet<>();
-        final Recipient recipient = new Recipient();
-        recipient.setAddress("recipient@test.com");
-        recipients.add(recipient);
+        final SimpleMailMessage expected = createDummyMessage();
 
         // Send the email. It will be sent to the Green Mail SMTP server started by the @Rule GreenMailRule
-        emailService.sendEmail(recipients, expected);
+        // emailService.sendEmail(recipients, expected);
+        emailService.sendEmail(expected);
 
         // Retrieve the mail
         final MimeMessage[] emails = greenMail.getReceivedMessages();
@@ -163,7 +154,7 @@ public class EmailServiceTest {
 
         // Check that the received mail is the same as the sent mail
         final MimeMessage result = emails[0];
-        checkEmailVsMimeMessage(expected, result);
+        checkSMMVsMimeMessage(expected, result);
     }
 
     /**
@@ -214,7 +205,6 @@ public class EmailServiceTest {
      *
      * @throws MessagingException
      *             Exception thrown by getters of {@link MimeMessage}
-     * @throws IOException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_440")
@@ -261,6 +251,20 @@ public class EmailServiceTest {
     }
 
     /**
+     * Creates a {@link SimpleMailMessage} with some random values initialized.
+     *
+     * @return The mail
+     */
+    private SimpleMailMessage createDummyMessage() {
+        final SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("sender@test.com");
+        message.setSubject("subject");
+        message.setText("message");
+        message.setTo("xavier-alexandre.brochard@c-s.fr");
+        return message;
+    }
+
+    /**
      * Creates a {@link Email} with some random values initialized.
      *
      * @return The mail
@@ -294,6 +298,36 @@ public class EmailServiceTest {
      *             Exception thrown by getters of {@link MimeMessage}
      */
     private void checkEmailVsMimeMessage(final Email pExpected, final MimeMessage pResult) throws MessagingException {
+        // Check subject
+        assertThat("Expected and actual subjects are different", pExpected.getSubject(),
+                   is(equalTo(pResult.getSubject())));
+        // Check mail body
+        assertThat("Expected and actual bodies are different", pExpected.getText(),
+                   is(equalTo(GreenMailUtil.getBody(pResult))));
+        // Check mail sender address
+        assertThat("Expected and actual From are different", pExpected.getFrom(),
+                   is(equalTo(pResult.getFrom()[0].toString())));
+        // Check mail recipients
+        final List<String> expectedRecipients = Arrays.asList(pExpected.getTo());
+        final List<Address> resultAddresses = Arrays.asList(pResult.getRecipients(RecipientType.TO));
+        final List<String> resultRecipients = resultAddresses.stream().map(a -> a.toString())
+                .collect(Collectors.toList());
+        assertThat(expectedRecipients, is(equalTo(resultRecipients)));
+    }
+
+    /**
+     * Check that the passed {@link SimpleMailMessage} has same subject, body and recipients as the passed
+     * {@link MimeMessage}. We then consider them equal.
+     *
+     * @param pExpected
+     *            The expected email as {@code Email}
+     * @param pResult
+     *            The compared email as {@code MimeMessage}
+     * @throws MessagingException
+     *             Exception thrown by getters of {@link MimeMessage}
+     */
+    private void checkSMMVsMimeMessage(final SimpleMailMessage pExpected, final MimeMessage pResult)
+            throws MessagingException {
         // Check subject
         assertThat("Expected and actual subjects are different", pExpected.getSubject(),
                    is(equalTo(pResult.getSubject())));
