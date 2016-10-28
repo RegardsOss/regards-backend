@@ -27,15 +27,9 @@ import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 @ConditionalOnWebApplication
 public class HateoasAutoConfiguration {
 
-    /**
-     * Service for method access authorization management
-     */
-    @Autowired
-    MethodAuthorizationService authService;
-
     @Bean
     @ConditionalOnMissingBean
-    public IResourceService resourceService() {
-        return new DefaultResourceService(authService);
+    public IResourceService resourceService(MethodAuthorizationService pMethodAuthorizationService) {
+        return new DefaultResourceService(pMethodAuthorizationService);
     }
 }

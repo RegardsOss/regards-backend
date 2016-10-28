@@ -73,12 +73,16 @@ public class DefaultResourceService implements IResourceService {
 
         try {
             final Method method = getMethod(pController, pMethodName, parameterTypes);
-            final Link link = ControllerLinkBuilder.linkTo(method, parameterValues).withRel(pRel);
+            final Link link = buildLink(method, pRel, parameterValues);
             pResource.add(link);
         } catch (final MethodException e) {
             // Do not insert link
             LOG.debug(e.getMessage(), e);
         }
+    }
+
+    protected Link buildLink(Method pMethod, String pRel, Object... pParameterValues) {
+        return ControllerLinkBuilder.linkTo(pMethod, pParameterValues).withRel(pRel);
     }
 
     /**
