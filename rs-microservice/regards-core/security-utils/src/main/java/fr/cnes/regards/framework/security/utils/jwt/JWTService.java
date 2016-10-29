@@ -73,27 +73,27 @@ public class JWTService {
     @Value("${jwt.secret}")
     private String secret;
 
-    /**
-     *
-     * Inject an auto generated token into the curent SecurityContext
-     *
-     * @param pProject
-     *            project name
-     * @param pRole
-     *            role name
-     * @throws MissingClaimException
-     * @throws InvalidJwtException
-     * @since 1.0-SNAPSHOT
-     */
-    public void injectToken(final String pProject, final String pRole) throws JwtException {
+    public void injectToken(final String pTenant, final String pRole) throws JwtException {
         String token = null;
-        if (scopesTokensMap_.get(pProject) != null) {
-            token = scopesTokensMap_.get(pProject);
+        if (scopesTokensMap_.get(pTenant) != null) {
+            token = scopesTokensMap_.get(pTenant);
         } else {
-            token = generateToken(pProject, "", "", pRole);
+            token = generateToken(pTenant, "", "", pRole);
         }
         final JWTAuthentication auth = parseToken(new JWTAuthentication(token));
         SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
+    public void injectMockToken(final String pTenant, final String pRole) {
+        final JWTAuthentication jwt = new JWTAuthentication("mockJWT"); // Unparseable token
+        final UserDetails details = new UserDetails();
+        details.setTenant(pTenant);
+        details.setName("MockName");
+        details.setName("Mock@mail");
+        jwt.setUser(details);
+        jwt.setRole(pRole);
+        jwt.setAuthenticated(Boolean.TRUE);
+        SecurityContextHolder.getContext().setAuthentication(jwt);
     }
 
     /**
@@ -153,7 +153,7 @@ public class JWTService {
     }
 
     // FIXME : creation must be moved in another place!
-    // JWT should be complete with :
+    // JWT should be completed with :
     // - expiration date
     // - data access groups
     public String generateToken(final String pProject, final String pEmail, final String pName, final String pRole) {
