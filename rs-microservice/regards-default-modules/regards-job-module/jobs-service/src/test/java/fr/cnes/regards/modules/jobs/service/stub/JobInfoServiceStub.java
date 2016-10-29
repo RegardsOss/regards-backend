@@ -24,12 +24,6 @@ public class JobInfoServiceStub implements IJobInfoService {
     }
 
     @Override
-    public JobInfo updateJobInfo(final JobInfo pJobInfo) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public List<JobInfo> retrieveJobInfoList() {
         // TODO Auto-generated method stub
         return null;
@@ -43,6 +37,12 @@ public class JobInfoServiceStub implements IJobInfoService {
 
     @Override
     public JobInfo retrieveJobInfoById(final Long pJobInfoId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public JobInfo save(final JobInfo pJobInfo) {
         // TODO Auto-generated method stub
         return null;
     }

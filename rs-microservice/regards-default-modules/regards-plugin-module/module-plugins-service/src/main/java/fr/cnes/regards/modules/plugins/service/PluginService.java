@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
@@ -60,7 +59,6 @@ public class PluginService implements IPluginService {
     /**
      * {@link PluginConfiguration} JPA Repository
      */
-    @Autowired
     private IPluginConfigurationRepository pluginConfRepository;
 
     /**
@@ -68,17 +66,6 @@ public class PluginService implements IPluginService {
      * implementation class.
      */
     private Map<String, PluginMetaData> plugins;
-
-    /**
-     * The default constructor.
-     * 
-     * @throws PluginUtilsException
-     *             Error when loading the plugins
-     */
-    public PluginService() throws PluginUtilsException {
-        super();
-        this.loadPlugins();
-    }
 
     /**
      * A constructor with the {@link IPluginConfigurationRepository}.
@@ -104,7 +91,6 @@ public class PluginService implements IPluginService {
      *             Error when loading the plugins
      */
     private void loadPlugins() throws PluginUtilsException {
-
         // Scan class path for plugins implementations only once
         if (plugins == null) {
             plugins = PluginUtils.getPlugins(PLUGINS_PACKAGE);
@@ -112,13 +98,13 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public List<PluginMetaData> getPlugins() {
-        return getPluginsByType(null);
+    public List<String> getPluginTypes() {
+        return PluginInterfaceUtils.getInterfaces(PLUGINS_PACKAGE);
     }
 
     @Override
-    public List<String> getPluginTypes() {
-        return PluginInterfaceUtils.getInterfaces(PLUGINS_PACKAGE);
+    public List<PluginMetaData> getPlugins() {
+        return getPluginsByType(null);
     }
 
     @Override
@@ -133,25 +119,6 @@ public class PluginService implements IPluginService {
         });
 
         return pluginAvailables;
-    }
-
-    @Override
-    public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
-            throws PluginUtilsException {
-
-        // Get last saved plugin configuration
-        final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
-
-        // Get the plugin implementation associated
-        final PluginMetaData pluginMetadata = plugins.get(pluginConf.getPluginId());
-
-        // Check if plugin version has changed since the last saved configuration of the plugin
-        if ((pluginConf.getVersion() != null) && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
-            LOGGER.warn("Warning plugin version " + START_ID_LOG + pluginConf.getVersion() + END_ID_LOG
-                    + "changed since last configuration" + START_ID_LOG + pluginMetadata.getVersion() + END_ID_LOG);
-        }
-
-        return PluginUtils.getPlugin(pluginConf, pluginMetadata, pPluginParameters);
     }
 
     @Override
@@ -201,6 +168,15 @@ public class PluginService implements IPluginService {
     }
 
     @Override
+    public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPlugin)
+            throws PluginUtilsException {
+        // Check if plugin configuration exists
+        getPluginConfiguration(pPlugin.getId());
+
+        return savePluginConfiguration(pPlugin);
+    }
+
+    @Override
     public void deletePluginConfiguration(final Long pPluginId) throws PluginUtilsException {
         try {
             pluginConfRepository.delete(pPluginId);
@@ -223,17 +199,13 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public PluginMetaData getPluginMetaDataById(final String pPluginImplId) {
-        return plugins.get(pPluginImplId);
+    public List<PluginConfiguration> getPluginConfigurationsByType(String pPluginId) {
+        return pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pPluginId);
     }
 
     @Override
-    public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPlugin)
-            throws PluginUtilsException {
-        // Check if plugin configuration exists
-        getPluginConfiguration(pPlugin.getId());
-
-        return savePluginConfiguration(pPlugin);
+    public PluginMetaData getPluginMetaDataById(final String pPluginImplId) {
+        return plugins.get(pPluginImplId);
     }
 
     @Override
@@ -267,6 +239,25 @@ public class PluginService implements IPluginService {
         }
 
         return resultPlugin;
+    }
+
+    @Override
+    public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
+            throws PluginUtilsException {
+
+        // Get last saved plugin configuration
+        final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
+
+        // Get the plugin implementation associated
+        final PluginMetaData pluginMetadata = plugins.get(pluginConf.getPluginId());
+
+        // Check if plugin version has changed since the last saved configuration of the plugin
+        if ((pluginConf.getVersion() != null) && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
+            LOGGER.warn("Warning plugin version " + START_ID_LOG + pluginConf.getVersion() + END_ID_LOG
+                    + "changed since last configuration" + START_ID_LOG + pluginMetadata.getVersion() + END_ID_LOG);
+        }
+
+        return PluginUtils.getPlugin(pluginConf, pluginMetadata, pPluginParameters);
     }
 
 }

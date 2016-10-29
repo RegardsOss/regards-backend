@@ -6,7 +6,6 @@
 
 	<groupId>fr.cnes.regards.modules.plugins</groupId>
 	<artifactId>module-plugins-rest</artifactId>
-	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
@@ -29,7 +28,16 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.plugins</groupId>
+			<artifactId>module-plugins-signature</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.plugins</groupId>
 			<artifactId>module-plugins-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

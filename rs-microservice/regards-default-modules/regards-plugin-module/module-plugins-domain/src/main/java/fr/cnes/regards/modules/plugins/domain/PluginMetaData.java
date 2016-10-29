@@ -7,8 +7,6 @@ package fr.cnes.regards.modules.plugins.domain;
 import java.util.List;
 
 /**
- * Class Plugin
- *
  * Plugin meta-data representation
  *
  * @author cmertz

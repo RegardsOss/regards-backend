@@ -25,7 +25,7 @@ public class PluginParametersFactory {
      *
      */
     public PluginParametersFactory() {
-        parameters = new ArrayList<PluginParameter>();
+        parameters = new ArrayList<>();
     }
 
     /**

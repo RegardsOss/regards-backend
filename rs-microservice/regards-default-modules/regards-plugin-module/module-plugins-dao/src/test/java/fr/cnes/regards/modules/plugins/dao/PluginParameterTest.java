@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { PluginDaoTestConfig.class })
 @DirtiesContext
-public class PluginParameterTest extends PluginDaoTestDataUtility {
+public class PluginParameterTest extends PluginDaoUtility {
 
     /**
      * Class logger
@@ -89,7 +89,7 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
 
             deleteAllFromRepository();
 
-            pluginParameterRepository.save(PARAMETER1);
+            pluginParameterRepository.save(INTERFACEPARAMETERS.get(0));
             final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
             Assert.assertEquals(paramJpa.getName(), PARAMETER2.getName());
 
@@ -150,7 +150,7 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
             paramFound.getDynamicsValues().stream().forEach(p -> LOGGER.info(p.getValue()));
 
             // test dynamics values of the second parameter
-            Assert.assertEquals(paramJpa.getIsDynamic(), paramJpa.getIsDynamic());
+            Assert.assertEquals(paramJpa.getIsDynamic(), paramFound.getIsDynamic());
             Assert.assertEquals(paramJpa.getDynamicsValues().size(), paramFound.getDynamicsValues().size());
 
         } catch (JwtException e) {
@@ -159,8 +159,6 @@ public class PluginParameterTest extends PluginDaoTestDataUtility {
     }
 
     private void deleteAllFromRepository() {
-        // pluginParameterRepository.findAll().forEach(p -> pluginParameterRepository.delete(p));
-
         resetId();
     }
 

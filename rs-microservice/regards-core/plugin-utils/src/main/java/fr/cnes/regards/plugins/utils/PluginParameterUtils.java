@@ -267,7 +267,7 @@ public final class PluginParameterUtils {
      * @throws PluginUtilsException
      *             if any error occurs
      */
-    public static <T> void postProcessPrimitiveType(T pPluginInstance, PluginConfiguration pPlgConf, Field pField,
+    private static <T> void postProcessPrimitiveType(T pPluginInstance, PluginConfiguration pPlgConf, Field pField,
             final Optional<PrimitiveObject> pTypeWrapper, PluginParameter pPlgParamAnnotation,
             fr.cnes.regards.modules.plugins.domain.PluginParameter... pPlgParameters) throws PluginUtilsException {
 
@@ -334,7 +334,7 @@ public final class PluginParameterUtils {
      * @throws PluginUtilsException
      *             if any error occurs
      */
-    public static <T> void postProcessInterface(T pPluginInstance, PluginConfiguration pPlgConf, Field pField,
+    private static <T> void postProcessInterface(T pPluginInstance, PluginConfiguration pPlgConf, Field pField,
             PluginParameter pPlgParamAnnotation) throws PluginUtilsException {
 
         LOGGER.debug("Starting postProcessInterface :" + pPlgParamAnnotation.name());
@@ -372,7 +372,7 @@ public final class PluginParameterUtils {
      * @throws PluginUtilsException
      *             if any error occurs
      */
-    public static String postProcessDynamicValues(final String pParamValue,
+    private static String postProcessDynamicValues(final String pParamValue,
             final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> pConfiguredPlgParam,
             final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> pDynamicPlgParam)
             throws PluginUtilsException {

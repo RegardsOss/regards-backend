@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,7 +36,7 @@ public class JobController implements IJobInfoSignature {
     }
 
     @Override
-    public HttpEntity<List<Resource<JobInfo>>> retrieveJobs() {
+    public ResponseEntity<List<Resource<JobInfo>>> retrieveJobs() {
         final List<JobInfo> jobInfoList = jobInfoService.retrieveJobInfoList();
         final List<Resource<JobInfo>> resources = jobInfoList.stream().map(u -> new Resource<>(u))
                 .collect(Collectors.toList());
@@ -46,7 +45,7 @@ public class JobController implements IJobInfoSignature {
     }
 
     @Override
-    public HttpEntity<List<Resource<JobInfo>>> retrieveJobsByState(final JobStatus pState) {
+    public ResponseEntity<List<Resource<JobInfo>>> retrieveJobsByState(final JobStatus pState) {
         final List<JobInfo> jobInfoList = jobInfoService.retrieveJobInfoListByState(pState);
         final List<Resource<JobInfo>> resources = jobInfoList.stream().map(u -> new Resource<>(u))
                 .collect(Collectors.toList());
@@ -54,19 +53,19 @@ public class JobController implements IJobInfoSignature {
     }
 
     @Override
-    public HttpEntity<Resource<JobInfo>> retrieveJobInfo(final Long pJobInfoId) {
+    public ResponseEntity<Resource<JobInfo>> retrieveJobInfo(final Long pJobInfoId) {
         final JobInfo jobInfoList = jobInfoService.retrieveJobInfoById(pJobInfoId);
         final Resource<JobInfo> resource = new Resource<>(jobInfoList);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override
-    public HttpEntity<Resource<JobInfo>> stopJob(final Long pJobInfoId) {
+    public ResponseEntity<Resource<JobInfo>> stopJob(final Long pJobInfoId) {
         return null;
     }
 
     @Override
-    public HttpEntity<List<Output>> getJobResults(final Long pJobInfoId) {
+    public ResponseEntity<List<Output>> getJobResults(final Long pJobInfoId) {
         return null;
     }
 

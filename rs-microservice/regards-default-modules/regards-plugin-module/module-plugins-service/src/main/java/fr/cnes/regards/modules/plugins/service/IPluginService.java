@@ -104,6 +104,30 @@ public interface IPluginService {
 
     /**
      *
+     * Delete a {@link PluginConfiguration}.
+     *
+     * @param pPluginId
+     *            a specific configuration
+     * @return
+     * @throws PluginUtilsException
+     *             throw if an error occurs
+     */
+    void deletePluginConfiguration(Long pPluginId) throws PluginUtilsException;
+
+    /**
+     *
+     * Update a {@link PluginConfiguration}.
+     *
+     * @param pPlugin
+     *            the {@link PluginConfiguration} to update
+     * @return the updated {@link PluginConfiguration}
+     * @throws PluginUtilsException
+     *             throw if an error occurs
+     */
+    PluginConfiguration updatePluginConfiguration(PluginConfiguration pPlugin) throws PluginUtilsException;
+
+    /**
+     *
      * Get the {@link PluginConfiguration}.
      *
      * @param pId
@@ -126,26 +150,12 @@ public interface IPluginService {
 
     /**
      *
-     * Delete a {@link PluginConfiguration}.
+     * Get all plugin's configuration for a specific plugin Id.
      *
      * @param pPluginId
-     *            a specific configuration
-     * @return
-     * @throws PluginUtilsException
-     *             throw if an error occurs
+     *            a specific plugin Id
+     * @return all the {@link PluginConfiguration} for a specific plugin Id
      */
-    void deletePluginConfiguration(Long pPluginId) throws PluginUtilsException;
-
-    /**
-     *
-     * Update a {@link PluginConfiguration}.
-     *
-     * @param pPlugin
-     *            the {@link PluginConfiguration} to update
-     * @return the updated {@link PluginConfiguration}
-     * @throws PluginUtilsException
-     *             throw if an error occurs
-     */
-    PluginConfiguration updatePluginConfiguration(PluginConfiguration pPlugin) throws PluginUtilsException;
+    List<PluginConfiguration> getPluginConfigurationsByType(String pPluginId);
 
 }

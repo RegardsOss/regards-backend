@@ -14,9 +14,9 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
+import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 import fr.cnes.regards.plugins.utils.PluginUtilsTestConstants;
-import fr.cnes.regards.plugins.utils.PluginUtilsWrapper;
 
 /**
  * Unit testing of {@link PluginInterfaceUtils}.
@@ -63,7 +63,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
             final List<PluginParameter> interfaceParameters = PluginParametersFactory.build()
                     .addParameter(AParameterPluginImplementation.LONG_PARAM, PluginInterfaceUtilsTest.LONG_STR_VALUE)
                     .getParameters();
-            final PluginConfiguration pluginConfigurationInterface = PluginUtilsWrapper
+            final PluginConfiguration pluginConfigurationInterface = PluginUtils
                     .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class);
             Assert.assertNotNull(pluginConfigurationInterface);
 
@@ -78,7 +78,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
             /*
              * Instantiate the parent plugin
              */
-            complexPlugin = PluginUtilsWrapper.getPlugin(complexParameters, ComplexPlugin.class);
+            complexPlugin = PluginUtils.getPlugin(complexParameters, ComplexPlugin.class);
             Assert.assertNotNull(complexPlugin);
 
             Assert.assertTrue(complexPlugin.add(Integer.parseInt(PluginInterfaceUtilsTest.CINQ),
@@ -112,7 +112,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "coucou").getParameters();
 
         // instantiate plugin
-        PluginUtilsWrapper.getPlugin(complexParameters, ComplexErrorPlugin.class);
+        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class);
     }
 
     /**
@@ -131,7 +131,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "lorem ipsum").getParameters();
 
         // instantiate plugin
-        PluginUtilsWrapper.getPlugin(complexParameters, ComplexErrorPlugin.class);
+        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class);
     }
 
 }

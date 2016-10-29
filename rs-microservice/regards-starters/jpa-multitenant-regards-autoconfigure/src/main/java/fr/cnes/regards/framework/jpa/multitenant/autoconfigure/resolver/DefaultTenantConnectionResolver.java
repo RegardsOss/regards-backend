@@ -30,7 +30,7 @@ public class DefaultTenantConnectionResolver implements ITenantConnectionResolve
 
     @Override
     public List<TenantConnection> getTenantConnections() {
-        LOG.warn("No Tentant connections resolver defined. Default one used.");
+        LOG.warn("No Tenant connections resolver defined. Default one used.");
         return new ArrayList<>();
     }
 

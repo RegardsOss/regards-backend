@@ -29,11 +29,14 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  *
  */
 @Entity
-@Table(name = "T_PLUGIN_CONFIGURATION", indexes = {
-        @Index(name = "IDX_PLUGIN_CONFIGURATION", columnList = "pluginId") })
+@Table(name = "T_PLUGIN_CONFIGURATION",
+        indexes = { @Index(name = "IDX_PLUGIN_CONFIGURATION", columnList = "pluginId") })
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_CONF")
 public class PluginConfiguration implements IIdentifiable<Long> {
 
+    /**
+     * Parameter unique id
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginConfSequence")
     private Long id;
@@ -74,9 +77,11 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Configuration parameters of the plugin
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE", joinColumns = {
-            @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id", foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_ID")) }, inverseJoinColumns = {
-                    @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMETER_ID")) })
+    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE",
+            joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_ID")) },
+            inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMETER_ID")) })
     private List<PluginParameter> parameters;
 
     /**
@@ -87,7 +92,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     /**
-     * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}
+     * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}.
      *
      * @param pPluginMetaData
      *            the plugin's metadata
@@ -109,6 +114,16 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         label = pLabel;
     }
 
+    /**
+     * A constructor with {@link PluginMetaData}.
+     * 
+     * @param pPluginMetaData
+     *            the plugin's metadata
+     * @param pLabel
+     *            the label
+     * @param pOrder
+     *            the order
+     */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel, final int pOrder) {
         super();
         pluginId = pPluginMetaData.getPluginId();

@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { PluginDaoTestConfig.class })
 @DirtiesContext
-public class PluginConfigurationTest extends PluginDaoTestDataUtility {
+public class PluginConfigurationTest extends PluginDaoUtility {
 
     /**
      * IPluginConfigurationRepository
@@ -70,10 +70,13 @@ public class PluginConfigurationTest extends PluginDaoTestDataUtility {
             Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
                                 pluginParameterRepository.count());
             Assert.assertEquals(getPluginConfigurationWithParameters().getPriorityOrder(), jpaConf.getPriorityOrder());
-            getPluginConfigurationWithParameters().getParameters()
-                    .forEach(p -> Assert
-                            .assertEquals(getPluginConfigurationWithParameters().getParameterConfiguration(p.getName()),
-                                          jpaConf.getParameterConfiguration(p.getName())));
+            getPluginConfigurationWithParameters().getParameters().forEach(p -> Assert.assertEquals(
+
+                                                                                                    getPluginConfigurationWithParameters()
+                                                                                                            .getParameterConfiguration(p
+                                                                                                                    .getName()),
+                                                                                                    jpaConf.getParameterConfiguration(p
+                                                                                                            .getName())));
         } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
@@ -130,7 +133,7 @@ public class PluginConfigurationTest extends PluginDaoTestDataUtility {
                     .save(getPluginConfigurationWithParameters());
 
             // set two new parameters to the plugin configuration
-            aPluginConf.setParameters(Arrays.asList(PARAMETER1, PARAMETER2));
+            aPluginConf.setParameters(Arrays.asList(PARAMETER2));
 
             // update the plugin configuration
             final PluginConfiguration jpaConf = pluginConfigurationRepository.save(aPluginConf);

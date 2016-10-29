@@ -34,11 +34,6 @@ public class JobInfoService implements IJobInfoService {
     }
 
     @Override
-    public JobInfo updateJobInfo(final JobInfo pJobInfo) {
-        return jobInfoRepository.save(pJobInfo);
-    }
-
-    @Override
     public List<JobInfo> retrieveJobInfoList() {
         return jobInfoRepository.findAll();
     }
@@ -51,6 +46,12 @@ public class JobInfoService implements IJobInfoService {
     @Override
     public JobInfo retrieveJobInfoById(final Long pJobInfoId) {
         return jobInfoRepository.findOne(pJobInfoId);
+    }
+
+    @Override
+    public JobInfo save(final JobInfo pJobInfo) {
+        return jobInfoRepository.save(pJobInfo);
+
     }
 
 }

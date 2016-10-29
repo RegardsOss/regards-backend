@@ -3,10 +3,8 @@
  */
 package fr.cnes.regards.modules.jobs.service.puller;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -15,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -23,13 +20,16 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.jobs.service.JobDaoTestConfiguration;
 import fr.cnes.regards.modules.jobs.service.allocationstrategy.DefaultJobAllocationStrategy;
+import fr.cnes.regards.modules.jobs.service.communication.INewJobPullerMessageBroker;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobAllocationStrategy;
 import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
 
 /**
- * This test run with spring in order to get the jwtService
+ * @author lmieulet
+ *
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -41,8 +41,7 @@ public class JobPullerTest {
     /**
      * Utility service for handling JWT. Autowired by Spring.
      */
-    @Autowired
-    private JWTService jwtService;
+    private JWTService jwtServiceMocked;
 
     private ITenantResolver tenantResolver;
 
@@ -57,7 +56,7 @@ public class JobPullerTest {
 
     private IJobAllocationStrategy jobAllocationStrategy;
 
-    private MessageBroker messageBroker;
+    private INewJobPullerMessageBroker newJobPuller;
 
     /**
      * Do some setup before each test
@@ -65,37 +64,30 @@ public class JobPullerTest {
     @Before
     public void setUp() {
         iJobHandlerMock = Mockito.mock(IJobHandler.class);
+        Mockito.when((iJobHandlerMock).getMaxJobCapacity()).thenReturn(5);
+
+        jwtServiceMocked = Mockito.mock(JWTService.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
-        messageBroker = Mockito.mock(MessageBroker.class);
+        newJobPuller = Mockito.mock(INewJobPullerMessageBroker.class);
         jobAllocationStrategy = new DefaultJobAllocationStrategy();
 
-        projectList = new HashSet<>();
+        projectList = new TreeSet<>();
         projectList.add("project1");
         projectList.add("project2");
         projectList.add("project3");
         projectList.add("project4");
 
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(projectList);
-        jobPuller = new JobPuller(iJobHandlerMock, jwtService, tenantResolver, jobAllocationStrategy, messageBroker);
-        ReflectionTestUtils.setField(jobPuller, "maxJobCapacity", 5, Integer.class);
-
-    }
-
-    @Test
-    public void testProjectList() {
-
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(projectList);
-
-        Assertions.assertThat(jobPuller.getProjects()).containsAll(projectList);
-        Assertions.assertThat(jobPuller.getProjects().size()).isEqualTo(projectList.size());
+        jobPuller = new JobPuller(iJobHandlerMock, jwtServiceMocked, tenantResolver, jobAllocationStrategy,
+                newJobPuller);
 
     }
 
     @Test
     public void testPullJob() {
         Assertions.assertThat(jobPuller.getJobQueueList()).isEqualTo(null);
-        final String projectName = "project2";
-        Mockito.when(messageBroker.getJob(projectName)).thenReturn(1L);
+        final String projectName = "project1";
+        Mockito.when(newJobPuller.getJob(projectName)).thenReturn(1L);
         jobPuller.pullJobs();
         Mockito.verify(iJobHandlerMock).execute(projectName, 1L);
         Assertions.assertThat(jobPuller.getJobQueueList().size()).isEqualTo(4);
@@ -103,15 +95,22 @@ public class JobPullerTest {
         Assertions.assertThat(jobPuller.getJobQueueList().get(0).getMaxSize()).isEqualTo(2);
         Assertions.assertThat(jobPuller.getJobQueueList().get(1).getCurrentSize()).isEqualTo(0);
         Assertions.assertThat(jobPuller.getJobQueueList().get(1).getMaxSize()).isEqualTo(2);
+    }
+
+    @Test
+    public void testPullJobWhenNoTenant() {
+        Mockito.when(tenantResolver.getAllTenants()).thenReturn(new TreeSet<>());
+        jobPuller.pullJobs();
+        Mockito.verifyZeroInteractions(iJobHandlerMock);
 
     }
 
     @Test
-    public void testDomain() {
-        final List<String> projects = new ArrayList<>();
-        projects.add("test-project");
-        jobPuller.setProjects(projects);
-        Assertions.assertThat(jobPuller.getProjects().size()).isEqualTo(1);
+    public void testPullJobWhenJWTTokenFail() throws JwtException {
+        final String moduleJobRole = (String) ReflectionTestUtils.getField(jobPuller, "MODULE_JOB_ROLE");
+        Mockito.doThrow(new JwtException("some exception")).when(jwtServiceMocked).injectToken("", moduleJobRole);
+        jobPuller.pullJobs();
+        Mockito.verifyZeroInteractions(iJobHandlerMock);
 
     }
 }

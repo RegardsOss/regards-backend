@@ -14,10 +14,8 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.modules.plugins.dao.stubs.PluginDataUtility;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
@@ -33,8 +31,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  *
  * @author cmertz
  */
-@Service
-public class PluginServiceTest extends PluginDataUtility {
+public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * Class logger
@@ -89,13 +86,31 @@ public class PluginServiceTest extends PluginDataUtility {
 
     @Test
     public void getPluginTypes() {
-        final List<PluginMetaData> types = pluginServiceMocked.getPluginsByType(IComplexInterfacePlugin.class);
+        final List<PluginMetaData> plugins = pluginServiceMocked.getPluginsByType(IComplexInterfacePlugin.class);
 
-        Assert.assertNotNull(types);
-        Assert.assertFalse(types.isEmpty());
+        Assert.assertNotNull(plugins);
+        Assert.assertFalse(plugins.isEmpty());
 
         LOGGER.debug("List all plugins of type <IComplexInterfacePlugin.class> :");
-        types.forEach(p -> LOGGER.debug(p.getPluginId()));
+        plugins.forEach(p -> LOGGER.debug(p.getPluginId()));
+    }
+
+    @Test
+    public void getPluginTypesByString() {
+        final String aClass = "fr.cnes.regards.plugins.IComplexInterfacePlugin";
+        List<PluginMetaData> plugins = null;
+
+        try {
+            plugins = pluginServiceMocked.getPluginsByType(Class.forName(aClass));
+        } catch (ClassNotFoundException e) {
+            Assert.fail();
+        }
+
+        Assert.assertNotNull(plugins);
+        Assert.assertFalse(plugins.isEmpty());
+
+        LOGGER.debug("List all plugins of type <IComplexInterfacePlugin.class> :");
+        plugins.forEach(p -> LOGGER.debug(p.getPluginId()));
     }
 
     /**
@@ -283,14 +298,28 @@ public class PluginServiceTest extends PluginDataUtility {
     }
 
     @Test
-    public void getPluginConfigurationsByType() {
+    public void getPluginConfigurationsByTypeWithClass() {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         pluginConfs.add(getPluginConfigurationWithParameters());
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc((pluginParameterId)))
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         final List<PluginConfiguration> results = pluginServiceMocked
                 .getPluginConfigurationsByType(IComplexInterfacePlugin.class);
+
+        Assert.assertNotNull(results);
+        Assert.assertEquals(pluginConfs.size(), results.size());
+    }
+
+    @Test
+    public void getPluginConfigurationsByTypeWithPluginId() {
+        final List<PluginConfiguration> pluginConfs = new ArrayList<>();
+        pluginConfs.add(getPluginConfigurationWithParameters());
+        pluginConfs.add(getPluginConfigurationWithDynamicParameter());
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+                .thenReturn(pluginConfs);
+        final List<PluginConfiguration> results = pluginServiceMocked
+                .getPluginConfigurationsByType(PLUGIN_PARAMETER_ID);
 
         Assert.assertNotNull(results);
         Assert.assertEquals(pluginConfs.size(), results.size());
@@ -317,7 +346,7 @@ public class PluginServiceTest extends PluginDataUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc((pluginParameterId)))
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
@@ -346,7 +375,7 @@ public class PluginServiceTest extends PluginDataUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc((pluginParameterId)))
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
@@ -382,7 +411,7 @@ public class PluginServiceTest extends PluginDataUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithParameters());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc((pluginParameterId)))
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
@@ -408,7 +437,7 @@ public class PluginServiceTest extends PluginDataUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithParameters());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc((pluginParameterId)))
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
@@ -423,8 +452,6 @@ public class PluginServiceTest extends PluginDataUtility {
 
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(BLUE));
     }
-
-    
 
     /**
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
@@ -443,7 +470,7 @@ public class PluginServiceTest extends PluginDataUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithParameters());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc((pluginParameterId)))
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
@@ -453,7 +480,7 @@ public class PluginServiceTest extends PluginDataUtility {
 
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(RED));
     }
-    
+
     /**
      * Get the first plugin with the configuration the most priority.
      * 
@@ -463,19 +490,19 @@ public class PluginServiceTest extends PluginDataUtility {
     @Test
     public void getFirstPluginTheMostPrioritary() throws PluginUtilsException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
-        
+
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         // this conf is the most priority
         aPluginConfiguration.setPriorityOrder(1);
         aPluginConfiguration.setId(AN_ID);
-        
+
         final PluginConfiguration bPluginConfiguration = getPluginConfigurationWithParameters();
         bPluginConfiguration.setPriorityOrder(10);
 
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(bPluginConfiguration);
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc((pluginParameterId)))
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
@@ -485,7 +512,7 @@ public class PluginServiceTest extends PluginDataUtility {
 
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(RED));
     }
-    
+
     /**
      * Error to get a plugin with a configuration that is not the most priority.
      * 
@@ -495,21 +522,22 @@ public class PluginServiceTest extends PluginDataUtility {
     @Test(expected = PluginUtilsException.class)
     public void getFirstPluginTheMostPrioritaryError() throws PluginUtilsException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
-        
+
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setPriorityOrder(11);
         aPluginConfiguration.setId(AN_ID);
-        
+
         final PluginConfiguration bPluginConfiguration = getPluginConfigurationWithParameters();
         // this conf is the most priority
         bPluginConfiguration.setPriorityOrder(1);
+        aPluginConfiguration.setId(1 + AN_ID);
 
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(bPluginConfiguration);
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc((pluginParameterId)))
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.findOne(bPluginConfiguration.getId())).thenReturn(null);
 
         pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
     }
