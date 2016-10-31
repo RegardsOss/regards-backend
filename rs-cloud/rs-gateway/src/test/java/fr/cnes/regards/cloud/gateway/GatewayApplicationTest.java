@@ -116,7 +116,7 @@ public class GatewayApplicationTest {
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Test the Oauth2 authentication process. Test unauthorized for basic authentication fail.")
     @Test
-    public void testAuthenticateBadicError() {
+    public void testAuthenticateBasicError() {
         try {
             String invalidBasicString = "invalid:invalid";
             invalidBasicString = Base64.getEncoder().encodeToString(invalidBasicString.getBytes());
