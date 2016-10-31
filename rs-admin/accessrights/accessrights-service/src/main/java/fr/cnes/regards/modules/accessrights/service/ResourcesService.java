@@ -32,12 +32,12 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * @since 1.0-SNAPSHOT
  */
 @Service
-public class ResourceService implements IResourcesService {
+public class ResourcesService implements IResourcesService {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ResourceService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ResourcesService.class);
 
     /**
      * Eureka discovery client to access other microservices.
