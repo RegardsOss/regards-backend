@@ -202,36 +202,6 @@ public final class PluginUtils {
 
     /**
      *
-     * Look for {@link PluginInit} annotation and launch corresponding method if found.
-     *
-     * @param <T>
-     *            a plugin instance
-     * @param pPluginInstance
-     *            the plugin instance
-     * @throws PluginUtilsException
-     *             if problem occurs
-     */
-    private static <T> void doInitPlugin(final T pPluginInstance) throws PluginUtilsException {
-        final Method[] allMethods = pPluginInstance.getClass().getDeclaredMethods();
-        for (final Method method : allMethods) {
-            if (method.isAnnotationPresent(PluginInit.class)) {
-                // Invoke method
-                ReflectionUtils.makeAccessible(method);
-
-                try {
-                    method.invoke(pPluginInstance);
-                } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    LOGGER.error(String.format("Exception while invoking init method on plugin class \"%s\".",
-                                               pPluginInstance.getClass()),
-                                 e);
-                    throw new PluginUtilsException(e);
-                }
-            }
-        }
-    }
-
-    /**
-     *
      * Create an instance of plugin based on its configuration and metadata
      *
      * @param <T>
@@ -254,6 +224,36 @@ public final class PluginUtils {
 
         final PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", pParameters, 0);
         return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, pPluginParameters);
+    }
+
+    /**
+     *
+     * Look for {@link PluginInit} annotation and launch corresponding method if found.
+     *
+     * @param <T>
+     *            a plugin instance
+     * @param pPluginInstance
+     *            the plugin instance
+     * @throws PluginUtilsException
+     *             if problem occurs
+     */
+    private static <T> void doInitPlugin(final T pPluginInstance) throws PluginUtilsException {
+        final Method[] allMethods = pPluginInstance.getClass().getDeclaredMethods();
+        for (final Method method : allMethods) {
+            if (method.isAnnotationPresent(PluginInit.class)) {
+                // Invoke method
+                ReflectionUtils.makeAccessible(method);
+    
+                try {
+                    method.invoke(pPluginInstance);
+                } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                    LOGGER.error(String.format("Exception while invoking init method on plugin class \"%s\".",
+                                               pPluginInstance.getClass()),
+                                 e);
+                    throw new PluginUtilsException(e);
+                }
+            }
+        }
     }
 
     /**

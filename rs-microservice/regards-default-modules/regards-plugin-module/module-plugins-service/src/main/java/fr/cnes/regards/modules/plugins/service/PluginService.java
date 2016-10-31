@@ -37,21 +37,6 @@ public class PluginService implements IPluginService {
     public static final String PLUGINS_PACKAGE = "fr.cnes.regards.plugins";
 
     /**
-     * String to start log of plugin identifier
-     */
-    private static final String START_ID_LOG = " <";
-
-    /**
-     * String to end log of plugin identifier
-     */
-    private static final String END_ID_LOG = "> ";
-
-    /**
-     * Dot to end log message
-     */
-    private static final String DOT_LOG = ".";
-
-    /**
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
@@ -138,16 +123,15 @@ public class PluginService implements IPluginService {
             throwError = true;
         }
         if (!throwError && pPluginConfiguration.getPriorityOrder() == null) {
-            message += START_ID_LOG + pPluginConfiguration.getPluginId() + END_ID_LOG + "without priority order.";
+            message += String.format(" <%s> without priority order.", pPluginConfiguration.getPluginId());
             throwError = true;
         }
         if (!throwError && pPluginConfiguration.getVersion() == null) {
-            message += START_ID_LOG + pPluginConfiguration.getPluginId() + END_ID_LOG + "without version.";
+            message = String.format(" <%s> without version.", pPluginConfiguration.getPluginId());
             throwError = true;
         }
 
         if (throwError) {
-            LOGGER.error(message);
             throw new PluginUtilsException(message);
         }
 
@@ -160,9 +144,7 @@ public class PluginService implements IPluginService {
         final PluginConfiguration conf = pluginConfRepository.findOne(pId);
 
         if (conf == null) {
-            final String message = "Error getting plugin configuration " + START_ID_LOG + pId + END_ID_LOG + DOT_LOG;
-            LOGGER.error(message);
-            throw new PluginUtilsException(message);
+            throw new PluginUtilsException(String.format("Error while getting the plugin configuration <%s>.", pId));
         }
         return conf;
     }
@@ -182,7 +164,7 @@ public class PluginService implements IPluginService {
             pluginConfRepository.delete(pPluginId);
         } catch (final EmptyResultDataAccessException e) {
             throw new PluginUtilsException(
-                    "Error deleting plugin configuration " + START_ID_LOG + pPluginId + END_ID_LOG + DOT_LOG, e);
+                    String.format("Error while deleting the plugin configuration <%s>.", pPluginId), e);
         }
     }
 
@@ -216,10 +198,9 @@ public class PluginService implements IPluginService {
         final List<PluginConfiguration> confs = getPluginConfigurationsByType(pInterfacePluginType);
 
         if (confs.isEmpty()) {
-            final String message = "No plugin configuration defined for the type " + START_ID_LOG
-                    + pInterfacePluginType.getName() + END_ID_LOG + DOT_LOG;
-            LOGGER.error(message);
-            throw new PluginUtilsException(message);
+
+            throw new PluginUtilsException(String.format("No plugin configuration defined for the type <%s>.",
+                                                         pInterfacePluginType.getName()));
         }
 
         // Search the configuration the most priority
@@ -253,8 +234,8 @@ public class PluginService implements IPluginService {
 
         // Check if plugin version has changed since the last saved configuration of the plugin
         if ((pluginConf.getVersion() != null) && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
-            LOGGER.warn("Warning plugin version " + START_ID_LOG + pluginConf.getVersion() + END_ID_LOG
-                    + "changed since last configuration" + START_ID_LOG + pluginMetadata.getVersion() + END_ID_LOG);
+            LOGGER.warn(String.format("Plugin version <%s> changed since last configuration <%s>.",
+                                      pluginConf.getVersion(), pluginMetadata.getVersion()));
         }
 
         return PluginUtils.getPlugin(pluginConf, pluginMetadata, pPluginParameters);

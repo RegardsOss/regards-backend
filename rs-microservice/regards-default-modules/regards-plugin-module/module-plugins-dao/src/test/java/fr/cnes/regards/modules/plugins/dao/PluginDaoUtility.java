@@ -88,11 +88,6 @@ public class PluginDaoUtility {
     private static PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
             "second configuration", Arrays.asList(PARAMETER1, PARAMETER2), 0);
 
-    /**
-     * A {@link PluginParameter} with a reference to a {@link PluginConfiguration}
-     */
-    private PluginParameter pluginParameter4 = new PluginParameter("param41", getPluginConfigurationWithParameters());
-
     static PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setClass(Integer.class);
@@ -103,17 +98,11 @@ public class PluginDaoUtility {
     }
 
     public static PluginConfiguration getPluginConfigurationWithParameters() {
-        pluginConfiguration1.setIsActive(true);
         return pluginConfiguration1;
     }
 
     public static PluginConfiguration getPluginConfigurationWithDynamicParameter() {
-        pluginConfiguration2.setIsActive(true);
         return pluginConfiguration2;
-    }
-
-    public PluginParameter getPluginParameterWithPluginConfiguration() {
-        return pluginParameter4;
     }
 
     public static void resetId() {
