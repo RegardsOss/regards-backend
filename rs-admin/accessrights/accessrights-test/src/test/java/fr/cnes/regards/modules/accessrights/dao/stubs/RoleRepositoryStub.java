@@ -25,6 +25,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 @Primary
 public class RoleRepositoryStub extends RepositoryStub<Role> implements IRoleRepository {
 
+    public static final String PUBLIC_ROLE_NAME = "Public";
+
     public RoleRepositoryStub() {
         final List<ResourcesAccess> permissionList_ = new ArrayList<ResourcesAccess>();
         permissionList_.add(new ResourcesAccess(0L, "ra 0", "Microservice 0", "Resource 0", HttpVerb.GET));
@@ -40,7 +42,8 @@ public class RoleRepositoryStub extends RepositoryStub<Role> implements IRoleRep
         projectUsers_.add(new ProjectUser());
 
         // Init default roles
-        final Role rolePublic = new Role(0L, "Public", null, permissionList_, projectUsers_.subList(0, 2), true, true);
+        final Role rolePublic = new Role(0L, PUBLIC_ROLE_NAME, null, permissionList_, projectUsers_.subList(0, 2), true,
+                true);
         final Role roleRegisteredUser = new Role(1L, "Registered User", rolePublic, null, projectUsers_.subList(2, 4),
                 false, true);
         final Role roleAdmin = new Role(2L, "Admin", roleRegisteredUser, permissionList_.subList(1, 2),

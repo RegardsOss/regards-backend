@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.dao.stubs.RoleRepositoryStub;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -62,6 +63,8 @@ public class RolesControllerIT extends AbstractAdministrationIT {
 
     private String apiRolesId;
 
+    private String apiRolesName;
+
     private String apiRolesPermissions;
 
     private String apiRolesUsers;
@@ -81,10 +84,10 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Override
     public void init() {
         final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
-        jwt = jwtService.generateToken(tenant, "email", "SVG", "USER");
+        jwt = jwtService.generateToken(tenant, "email", RoleRepositoryStub.PUBLIC_ROLE_NAME, "USER");
         authService.setAuthorities(tenant, "/roles", RequestMethod.GET, "USER");
         authService.setAuthorities(tenant, "/roles", RequestMethod.POST, "USER");
-        authService.setAuthorities(tenant, "/roles/{role_id}", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/roles/{role_name}", RequestMethod.GET, "USER");
         authService.setAuthorities(tenant, "/roles/{role_id}", RequestMethod.PUT, "USER");
         authService.setAuthorities(tenant, "/roles/{role_id}", RequestMethod.DELETE, "USER");
         authService.setAuthorities(tenant, "/roles/{role_id}/permissions", RequestMethod.GET, "USER");
@@ -93,6 +96,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         authService.setAuthorities(tenant, "/roles/{role_id}/users", RequestMethod.GET, "USER");
         apiRoles = "/roles";
         apiRolesId = apiRoles + "/{role_id}";
+        apiRolesName = apiRoles + "/{role_name}";
         apiRolesPermissions = apiRolesId + "/permissions";
         apiRolesUsers = apiRolesId + "/users";
     }
@@ -130,13 +134,14 @@ public class RolesControllerIT extends AbstractAdministrationIT {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRolesId, jwt, expectations, "TODO Error message", roleId);
+        performGet(apiRolesName, jwt, expectations, "TODO Error message", RoleRepositoryStub.PUBLIC_ROLE_NAME);
 
         final Long wrongRoleId = 46453L;
+        final String wrongRoleName = "WRONG_ROLE";
         assertFalse(roleService.existRole(wrongRoleId));
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
-        performGet(apiRolesId, jwt, expectations, "TODO Error message", wrongRoleId);
+        performGet(apiRolesName, jwt, expectations, "TODO Error message", wrongRoleName);
     }
 
     @Test
