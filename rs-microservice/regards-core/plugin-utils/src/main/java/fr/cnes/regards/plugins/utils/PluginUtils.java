@@ -104,7 +104,6 @@ public final class PluginUtils {
         pluginMetaData.setClass(pPluginClass);
 
         // Manage plugin id
-        // TODO CMZ pourquoi pas systématiquement mettre le nom de la classe ?
         if ("".equals(plugin.id())) {
             pluginMetaData.setPluginId(pPluginClass.getCanonicalName());
         } else {

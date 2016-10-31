@@ -140,8 +140,7 @@ public class PluginDomainUtility {
         getPluginConfigurationWithDynamicParameter().setId(null);
         getPluginConfigurationWithDynamicParameter().getParameters().forEach(p -> p.setId(null));
         getPluginConfigurationWithParameters().setId(null);
-        getPluginConfigurationWithParameters().getParameters().forEach(p -> p.setId(null)); // DYNAMICPARAMETERS.get(0).getDynamicsValues().forEach(p
-                                                                                            // -> p.setId(null));
+        getPluginConfigurationWithParameters().getParameters().forEach(p -> p.setId(null)); 
     }
 
 }

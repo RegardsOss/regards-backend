@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.plugins.domain;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -37,6 +39,8 @@ public class PluginDomainTest extends PluginDomainUtility {
     public void pluginConfigurationWithoutParameters() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
         Assert.assertNotNull(aPluginConfiguration);
+
+        PluginParametersFactory.build().addParameterDynamic("param", RED, new ArrayList<String>()).getParameters();
     }
 
     /**
@@ -78,12 +82,58 @@ public class PluginDomainTest extends PluginDomainUtility {
         pluginConfigurationParameter.setParameters(parameters);
 
         final PluginConfiguration plgConf = pluginConfigurationParameter.getParameterConfiguration(parameterName);
-        
+
         Assert.assertNotNull(plgConf);
-        Assert.assertEquals(plgConf.getPluginId(),aPluginConfiguration.getPluginId());
-        Assert.assertEquals(plgConf.getIsActive(),aPluginConfiguration.getIsActive());
-        Assert.assertEquals(plgConf.getLabel(),aPluginConfiguration.getLabel());
-        Assert.assertEquals(plgConf.getVersion(),aPluginConfiguration.getVersion());
+        Assert.assertEquals(plgConf.getPluginId(), aPluginConfiguration.getPluginId());
+        Assert.assertEquals(plgConf.getIsActive(), aPluginConfiguration.getIsActive());
+        Assert.assertEquals(plgConf.getLabel(), aPluginConfiguration.getLabel());
+        Assert.assertEquals(plgConf.getVersion(), aPluginConfiguration.getVersion());
+    }
+
+    /**
+     * Test domain {@link PluginMetaData}
+     */
+    @Test
+    public void pluginMetaData() {
+        final PluginMetaData plgMetaData = getPluginMetaData();
+        final String anAuthor = GREEN;
+        plgMetaData.setAuthor(anAuthor);
+        final String aDescription = USERROLE + BLUE + RED;
+        plgMetaData.setDescription(aDescription);
+        final List<String> parameters = Arrays.asList(RED, BLUE, GREEN);
+        plgMetaData.setParameters(parameters);
+
+        Assert.assertEquals(anAuthor, plgMetaData.getAuthor());
+        Assert.assertEquals(aDescription, plgMetaData.getDescription());
+        Assert.assertEquals(parameters, plgMetaData.getParameters());
+    }
+
+    /**
+     * Test domain {@link PluginParameter}
+     */
+    @Test
+    public void pluginParameter() {
+        final PluginParameter plgParam = new PluginParameter();
+        plgParam.setName(RED);
+        plgParam.setValue(GREEN);
+        plgParam.setIsDynamic(Boolean.FALSE);
+
+        Assert.assertEquals(RED, plgParam.getName());
+        Assert.assertEquals(GREEN, plgParam.getValue());
+        Assert.assertEquals(false, plgParam.getIsDynamic().booleanValue());
+
+        final List<PluginDynamicValue> dynValues = new ArrayList<>();
+        dynValues.add(new PluginDynamicValue(BLUE));
+        dynValues.add(new PluginDynamicValue(GREEN));
+        final PluginDynamicValue plgDynValue = new PluginDynamicValue();
+        plgDynValue.setValue(BLUE);
+        plgDynValue.setId(AN_ID);
+        dynValues.add(plgDynValue);
+
+        plgParam.setDynamicsValues(dynValues);
+
+        Assert.assertEquals(plgParam.getDynamicsValues().size(), dynValues.size());
+
     }
 
 }

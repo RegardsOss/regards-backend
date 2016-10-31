@@ -4,36 +4,39 @@ package fr.cnes.regards.modules.plugins.dao.stubs;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.framework.test.repository.RepositoryStub;
+import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 
 /***
- * {@link PluginParameter} Repository stub
+ * {@link PluginConfiguration} Repository stub.
  * 
  * @author cmertz
  *
  */
-
+@Repository
 @Profile("test")
-public class PluginParameterRepositoryStub {
+@Primary
+public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConfiguration>
+        implements IPluginConfigurationRepository {
 
-    private PluginParameterRepositoryStub() {
-        super();
+    public PluginConfigurationRepositoryStub() {
+        getEntities().add(getPluginConfigurationWithDynamicParameter());
+        getEntities().add(getPluginConfigurationWithParameters());
     }
 
-    private static PluginParameterRepositoryStub INSTANCE = null;
-
-    public static PluginParameterRepositoryStub getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new PluginParameterRepositoryStub();
-        }
-        return INSTANCE;
-    }
-
+    /**
+     * An id constant {@link String}
+     */
+    static final Long AN_ID = new Long(33);
+    
     /**
      * Version
      */
@@ -100,19 +103,18 @@ public class PluginParameterRepositoryStub {
     }
 
     public PluginConfiguration getPluginConfigurationWithParameters() {
+        pluginConfiguration1.setId(AN_ID);
         return pluginConfiguration1;
     }
 
     public PluginConfiguration getPluginConfigurationWithDynamicParameter() {
+        pluginConfiguration2.setId(new Long(AN_ID.longValue()+1));
         return pluginConfiguration2;
     }
 
-    public void resetId() {
-        getPluginConfigurationWithDynamicParameter().setId(null);
-        getPluginConfigurationWithDynamicParameter().getParameters().forEach(p -> p.setId(null));
-        getPluginConfigurationWithParameters().setId(null);
-        getPluginConfigurationWithParameters().getParameters().forEach(p -> p.setId(null));
-        PARAMETER2.getDynamicsValues().forEach(p -> p.setId(null));
+    @Override
+    public List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pPluginId) {
+        return Arrays.asList(pluginConfiguration1, pluginConfiguration2);
     }
 
 }
