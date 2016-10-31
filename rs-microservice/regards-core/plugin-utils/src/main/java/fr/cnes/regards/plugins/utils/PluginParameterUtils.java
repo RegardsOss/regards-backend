@@ -276,7 +276,7 @@ public final class PluginParameterUtils {
             }
         }
 
-        LOGGER.debug(String.format("primitive parameter value : ", paramValue));
+        LOGGER.debug(String.format("primitive parameter value : %s", paramValue));
 
         try {
             final Object effectiveVal;
@@ -323,7 +323,7 @@ public final class PluginParameterUtils {
         // Get setup value
         final PluginConfiguration paramValue = pPlgConf.getParameterConfiguration(pPlgParamAnnotation.name());
 
-        LOGGER.debug(String.format("interface parameter value : ", paramValue));
+        LOGGER.debug(String.format("interface parameter value : %s", paramValue));
 
         try {
             final Object effectiveVal = PluginUtils.getPlugin(paramValue, paramValue.getPluginClassName());
