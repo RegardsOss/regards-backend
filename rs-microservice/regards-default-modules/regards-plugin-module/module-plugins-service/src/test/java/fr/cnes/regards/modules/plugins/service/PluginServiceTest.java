@@ -114,7 +114,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
-     * Get a {@link PluginConfiguration}
+     * Get a {@link PluginConfiguration}.
      */
     @Test
     public void getAPluginConfiguration() {
@@ -132,7 +132,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
-     * Get an unsaved {@link PluginConfiguration}
+     * Get an unsaved {@link PluginConfiguration}.
      * 
      * @throws PluginUtilsException
      *             throw if an error occurs
@@ -146,7 +146,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
-     * Delete a {@link PluginConfiguration}
+     * Delete a {@link PluginConfiguration}.
      */
     @Test
     public void deleteAPluginConfiguration() {
@@ -161,7 +161,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
-     * Delete an unsaved {@link PluginConfiguration}
+     * Delete an unsaved {@link PluginConfiguration}.
      * 
      * @throws PluginUtilsException
      *             throw if an error occurs
@@ -176,7 +176,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
-     * Delete a {@link PluginConfiguration}
+     * Save a {@link PluginConfiguration}.
      */
     @Test
     public void saveAPluginConfiguration() {
@@ -189,14 +189,16 @@ public class PluginServiceTest extends PluginServiceUtility {
                     .savePluginConfiguration(aPluginConfiguration);
             Assert.assertEquals(aPluginConfiguration.getLabel(), savedPluginConfiguration.getLabel());
             Assert.assertEquals(aPluginConfiguration.getPluginId(), savedPluginConfiguration.getPluginId());
-
+            Assert.assertEquals(aPluginConfiguration.getIsActive(), savedPluginConfiguration.getIsActive());
+            Assert.assertEquals(aPluginConfiguration.getParameters().size(),
+                                savedPluginConfiguration.getParameters().size());
         } catch (PluginUtilsException e) {
             Assert.fail();
         }
     }
 
     /**
-     * Delete a {@link PluginConfiguration} without pluginId attribute
+     * Save a null {@link PluginConfiguration}.
      * 
      * @throws PluginUtilsException
      *             throw if an error occurs
@@ -208,7 +210,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
-     * Delete a {@link PluginConfiguration} without pluginId attribute
+     * Save a {@link PluginConfiguration} without pluginId attribute.
      * 
      * @throws PluginUtilsException
      *             throw if an error occurs
@@ -222,7 +224,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
-     * Delete a {@link PluginConfiguration} without priorityOrder attribute
+     * Save a {@link PluginConfiguration} without priorityOrder attribute.
      * 
      * @throws PluginUtilsException
      *             throw if an error occurs
@@ -236,7 +238,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
-     * Delete a {@link PluginConfiguration} without priorityOrder attribute
+     * Save a {@link PluginConfiguration} without priorityOrder attribute.
      * 
      * @throws PluginUtilsException
      *             throw if an error occurs
@@ -250,7 +252,25 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
-     * Update a {@link PluginConfiguration}
+     * Save a {@link PluginConfiguration} without parameters.
+     * 
+     * @throws PluginUtilsException
+     *             throw if an error occurs
+     */
+    public void saveAPluginConfigurationWithoutParameters() throws PluginUtilsException {
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
+        PluginConfiguration savedPluginConfiguration = pluginServiceMocked
+                .savePluginConfiguration(aPluginConfiguration);
+        Assert.assertNotNull(savedPluginConfiguration);
+        Assert.assertEquals(aPluginConfiguration.getLabel(), savedPluginConfiguration.getLabel());
+        Assert.assertEquals(aPluginConfiguration.getPluginId(), savedPluginConfiguration.getPluginId());
+        Assert.assertEquals(aPluginConfiguration.getIsActive(), savedPluginConfiguration.getIsActive());
+        Assert.assertEquals(aPluginConfiguration.getParameters().size(),
+                            savedPluginConfiguration.getParameters().size());
+    }
+
+    /**
+     * Update a {@link PluginConfiguration}.
      */
     @Test
     public void updateAPluginConfiguration() {
@@ -328,7 +348,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Test(expected = PluginUtilsException.class)
     public void getFirstPluginByTypeNullPluginConf() throws PluginUtilsException {
         pluginServiceMocked.getFirstPluginByType(INotInterfacePlugin.class);
-        Assert.assertTrue(true);
+        Assert.fail();
     }
 
     /**
@@ -390,8 +410,8 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         final int result = aSamplePlugin.add(QUATRE, CINQ);
         LOGGER.debug(RESULT + result);
+        
         Assert.assertTrue(result < 0);
-
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(HELLO));
     }
 
@@ -418,7 +438,6 @@ public class PluginServiceTest extends PluginServiceUtility {
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
 
         Assert.assertNotNull(aSamplePlugin);
-
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(RED));
     }
 
@@ -449,7 +468,6 @@ public class PluginServiceTest extends PluginServiceUtility {
                                                                                     aDynamicPlgParam);
 
         Assert.assertNotNull(aSamplePlugin);
-
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(BLUE));
     }
 
@@ -477,7 +495,6 @@ public class PluginServiceTest extends PluginServiceUtility {
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
 
         Assert.assertNotNull(aSamplePlugin);
-
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(RED));
     }
 
@@ -509,7 +526,6 @@ public class PluginServiceTest extends PluginServiceUtility {
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
 
         Assert.assertNotNull(aSamplePlugin);
-
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(RED));
     }
 
@@ -540,6 +556,48 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findOne(bPluginConfiguration.getId())).thenReturn(null);
 
         pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
+        
+        Assert.fail();
     }
+    
+    /**
+     * Error to get a plugin with a configuration that is not active.
+     * 
+     * @throws PluginUtilsException
+     *             throw if an error occurs
+     */
+    @Test(expected = PluginUtilsException.class)
+    public void getPluginNotActiveConfiguration() throws PluginUtilsException {
+
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
+        aPluginConfiguration.setIsActive(Boolean.FALSE);
+        aPluginConfiguration.setId(AN_ID);
+
+        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+
+        pluginServiceMocked.getPlugin(AN_ID);
+        
+        Assert.fail();
+    }
+    
+    /**
+     * Error to get a plugin with a configuration that is not active.
+     * 
+     * @throws PluginUtilsException
+     *             throw if an error occurs
+     */
+    public void getPluginNotActiveConfigurationModified() throws PluginUtilsException {
+
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
+        aPluginConfiguration.setIsActive(Boolean.FALSE);
+        aPluginConfiguration.setId(AN_ID);
+
+        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+
+        pluginServiceMocked.getPlugin(AN_ID);
+        
+        Assert.fail();
+    }
+
 
 }

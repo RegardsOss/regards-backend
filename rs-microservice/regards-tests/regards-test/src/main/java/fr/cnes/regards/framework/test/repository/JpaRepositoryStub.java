@@ -18,8 +18,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-
 /**
  * Generic implementation a of {@link JpaRepository}.<br>
  * <h1>This is a <strong>stubbed, incorrect and incomplete</strong> implementation, yet wrong! Only use this class for

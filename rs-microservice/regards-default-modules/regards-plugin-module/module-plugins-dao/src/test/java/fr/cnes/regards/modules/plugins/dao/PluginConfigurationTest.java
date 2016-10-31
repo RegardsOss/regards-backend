@@ -70,13 +70,10 @@ public class PluginConfigurationTest extends PluginDaoUtility {
             Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
                                 pluginParameterRepository.count());
             Assert.assertEquals(getPluginConfigurationWithParameters().getPriorityOrder(), jpaConf.getPriorityOrder());
-            getPluginConfigurationWithParameters().getParameters().forEach(p -> Assert.assertEquals(
-
-                                                                                                    getPluginConfigurationWithParameters()
-                                                                                                            .getParameterConfiguration(p
-                                                                                                                    .getName()),
-                                                                                                    jpaConf.getParameterConfiguration(p
-                                                                                                            .getName())));
+            getPluginConfigurationWithParameters().getParameters()
+                    .forEach(p -> Assert
+                            .assertEquals(getPluginConfigurationWithParameters().getParameterConfiguration(p.getName()),
+                                          jpaConf.getParameterConfiguration(p.getName())));
         } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }

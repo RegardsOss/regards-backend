@@ -119,12 +119,10 @@ public class PluginDomainUtility {
     }
 
     protected PluginConfiguration getPluginConfigurationWithParameters() {
-        pluginConfiguration1.setIsActive(true);
         return pluginConfiguration1;
     }
 
     protected PluginConfiguration getPluginConfigurationWithDynamicParameter() {
-        pluginConfiguration2.setIsActive(true);
         return pluginConfiguration2;
     }
 

@@ -90,11 +90,6 @@ public class PluginParameterRepositoryStub {
     private PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
             "second configuration", Arrays.asList(PARAMETER1, PARAMETER2), 0);
 
-    /**
-     * A {@link PluginParameter} with a reference to a {@link PluginConfiguration}
-     */
-    private PluginParameter pluginParameter4 = new PluginParameter("param41", getPluginConfigurationWithParameters());
-
     public PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setClass(Integer.class);
@@ -105,17 +100,11 @@ public class PluginParameterRepositoryStub {
     }
 
     public PluginConfiguration getPluginConfigurationWithParameters() {
-        pluginConfiguration1.setIsActive(true);
         return pluginConfiguration1;
     }
 
     public PluginConfiguration getPluginConfigurationWithDynamicParameter() {
-        pluginConfiguration2.setIsActive(true);
         return pluginConfiguration2;
-    }
-
-    public PluginParameter getPluginParameterWithPluginConfiguration() {
-        return pluginParameter4;
     }
 
     public void resetId() {
