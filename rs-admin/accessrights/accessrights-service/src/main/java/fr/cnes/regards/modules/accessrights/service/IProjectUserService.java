@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.accessrights.domain.Couple;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -73,12 +72,12 @@ public interface IProjectUserService {
      *            The {@link ProjectUser}'s <code>id</code>
      * @param pBorrowedRoleName
      *            The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
-     * @return The list of resources access and the role, wrapped as a {@link Couple}
+     * @return The list of resources access
      * @throws InvalidValueException
      *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
      *             <code>role</code>.
      */
-    Couple<List<ResourcesAccess>, Role> retrieveProjectUserAccessRights(String pLogin, String pBorrowedRoleName)
+    List<ResourcesAccess> retrieveProjectUserAccessRights(String pLogin, String pBorrowedRoleName)
             throws InvalidValueException;
 
     /**

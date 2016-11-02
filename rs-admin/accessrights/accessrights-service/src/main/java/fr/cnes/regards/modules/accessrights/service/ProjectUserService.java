@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.Couple;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
@@ -159,8 +158,8 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public Couple<List<ResourcesAccess>, Role> retrieveProjectUserAccessRights(final String pLogin,
-            final String pBorrowedRoleName) throws InvalidValueException {
+    public List<ResourcesAccess> retrieveProjectUserAccessRights(final String pLogin, final String pBorrowedRoleName)
+            throws InvalidValueException {
         final ProjectUser projectUser = projectUserRepository.findOneByEmail(pLogin);
         final Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
@@ -175,8 +174,17 @@ public class ProjectUserService implements IProjectUserService {
             }
         }
 
-        return new Couple<>(projectUser.getPermissions(), returnedRole);
+        // Merge permissions from the project user and from the role
+        List<ResourcesAccess> permissions;
+        try (Stream<ResourcesAccess> fromUser = projectUser.getPermissions().stream();
+                Stream<ResourcesAccess> fromRole = roleService.retrieveRoleResourcesAccessList(returnedRole.getId())
+                        .stream()) {
+            permissions = Stream.concat(fromUser, fromRole).distinct().collect(Collectors.toList());
+        } catch (final EntityNotFoundException e) {
+            permissions = projectUser.getPermissions();
+        }
 
+        return permissions;
     }
 
     @Override

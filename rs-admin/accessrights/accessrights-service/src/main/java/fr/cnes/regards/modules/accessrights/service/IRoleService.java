@@ -101,7 +101,7 @@ public interface IRoleService {
      *            The {@link List} of {@link ResourcesAccess} to set
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
-     * @returns The updated {@link Role}
+     * @return The updated {@link Role}
      */
     Role updateRoleResourcesAccess(Long pRoleId, List<ResourcesAccess> pResourcesAccessList)
             throws EntityNotFoundException;

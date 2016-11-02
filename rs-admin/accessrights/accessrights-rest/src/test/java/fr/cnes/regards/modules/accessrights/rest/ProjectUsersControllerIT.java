@@ -43,6 +43,7 @@ import fr.cnes.regards.modules.accessrights.service.IRoleService;
  *
  * @author svissier
  * @author sbinda
+ * @author xbrochar
  * @since 1.0-SNAPSHOT
  */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
