@@ -20,7 +20,7 @@ public class StoppingJobSubscriber implements IHandler<StoppingJobEvent> {
     /**
      * Logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(StoppingJobSubscriberTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StoppingJobSubscriber.class);
 
     /**
      * the job handler
