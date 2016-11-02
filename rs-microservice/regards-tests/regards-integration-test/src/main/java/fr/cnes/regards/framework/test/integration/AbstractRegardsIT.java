@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.framework.test.integration;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.junit.Assert;
@@ -24,7 +23,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.security.domain.HttpConstants;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
@@ -110,17 +109,12 @@ public abstract class AbstractRegardsIT {
             final String pErrorMessage, final Object... pUrlVariables) {
 
         Assert.assertTrue(HttpMethod.POST.equals(pHttpMethod) || HttpMethod.PUT.equals(pHttpMethod));
-        try {
-            MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(pAuthenticationToken, pHttpMethod,
-                                                                             pUrlTemplate, pUrlVariables);
-            requestBuilder = requestBuilder.content(json(pContent)).header(HttpHeaders.CONTENT_TYPE,
-                                                                           MediaType.APPLICATION_JSON_VALUE);
-            performRequest(requestBuilder, pMatchers, pErrorMessage);
-        } catch (final IOException e) {
-            final String message = "Cannot (de)serialize model";
-            getLogger().error(message, e);
-            Assert.fail(message);
-        }
+        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(pAuthenticationToken, pHttpMethod,
+                                                                         pUrlTemplate, pUrlVariables);
+        final String content = gson(pContent);
+        requestBuilder = requestBuilder.content(content).header(HttpHeaders.CONTENT_TYPE,
+                                                                MediaType.APPLICATION_JSON_VALUE);
+        performRequest(requestBuilder, pMatchers, pErrorMessage);
     }
 
     protected void performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
@@ -163,15 +157,9 @@ public abstract class AbstractRegardsIT {
                 .header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + pAuthToken);
     }
 
-    protected String json(final Object pObject) throws IOException {
-        final String result;
-        if (pObject instanceof String) {
-            result = (String) pObject;
-        } else {
-            final ObjectMapper mapper = new ObjectMapper();
-            result = mapper.writeValueAsString(pObject);
-        }
-        return result;
+    protected String gson(final Object pObject) {
+        final Gson gson = new Gson();
+        return gson.toJson(pObject);
     }
 
     public JWTService getJwtService() {

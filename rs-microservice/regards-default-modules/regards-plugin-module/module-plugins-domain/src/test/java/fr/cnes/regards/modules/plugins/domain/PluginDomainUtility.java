@@ -109,6 +109,12 @@ public class PluginDomainUtility {
     private PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
             "second configuration", DYNAMICPARAMETERS, 0);
 
+    /**
+     * A list of {@link PluginParameter} without parameters.
+     */
+    private PluginConfiguration pluginConfiguration3 = new PluginConfiguration(this.getPluginMetaData(),
+            "third configuration", 99);
+    
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setClass(Integer.class);
@@ -119,21 +125,22 @@ public class PluginDomainUtility {
     }
 
     protected PluginConfiguration getPluginConfigurationWithParameters() {
-        pluginConfiguration1.setIsActive(true);
         return pluginConfiguration1;
     }
 
     protected PluginConfiguration getPluginConfigurationWithDynamicParameter() {
-        pluginConfiguration2.setIsActive(true);
         return pluginConfiguration2;
+    }
+    
+    protected PluginConfiguration getPluginConfigurationWithoutParameters() {
+        return pluginConfiguration3;
     }
 
     protected void resetId() {
         getPluginConfigurationWithDynamicParameter().setId(null);
         getPluginConfigurationWithDynamicParameter().getParameters().forEach(p -> p.setId(null));
         getPluginConfigurationWithParameters().setId(null);
-        getPluginConfigurationWithParameters().getParameters().forEach(p -> p.setId(null)); // DYNAMICPARAMETERS.get(0).getDynamicsValues().forEach(p
-                                                                                            // -> p.setId(null));
+        getPluginConfigurationWithParameters().getParameters().forEach(p -> p.setId(null)); 
     }
 
 }

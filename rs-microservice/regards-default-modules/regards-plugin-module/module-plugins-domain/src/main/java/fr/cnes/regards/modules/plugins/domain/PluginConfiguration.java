@@ -112,6 +112,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         parameters = pParameters;
         priorityOrder = pOrder;
         label = pLabel;
+        isActive = Boolean.TRUE;
     }
 
     /**
@@ -131,6 +132,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         pluginClassName = pPluginMetaData.getPluginClass().getName();
         priorityOrder = pOrder;
         label = pLabel;
+        isActive = Boolean.TRUE;
     }
 
     /**
