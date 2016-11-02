@@ -54,14 +54,16 @@ public class JobController implements IJobInfoSignature {
 
     @Override
     public ResponseEntity<Resource<JobInfo>> retrieveJobInfo(final Long pJobInfoId) {
-        final JobInfo jobInfoList = jobInfoService.retrieveJobInfoById(pJobInfoId);
-        final Resource<JobInfo> resource = new Resource<>(jobInfoList);
+        final JobInfo jobInfo = jobInfoService.retrieveJobInfoById(pJobInfoId);
+        final Resource<JobInfo> resource = new Resource<>(jobInfo);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Resource<JobInfo>> stopJob(final Long pJobInfoId) {
-        return null;
+        final JobInfo jobInfo = jobInfoService.stopJob(pJobInfoId);
+        final Resource<JobInfo> resource = new Resource<>(jobInfo);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override

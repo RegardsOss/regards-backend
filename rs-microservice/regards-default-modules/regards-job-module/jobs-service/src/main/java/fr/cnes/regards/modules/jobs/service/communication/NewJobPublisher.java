@@ -9,9 +9,9 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 
 /**
- *
+ * @author lmieulet
  */
-public class NewJobPublisherMessageBroker implements INewJobPublisherMessageBroker {
+public class NewJobPublisher implements INewJobPublisher {
 
     /**
      * Allows to publish an event in that queue
@@ -22,7 +22,7 @@ public class NewJobPublisherMessageBroker implements INewJobPublisherMessageBrok
      * @param pPublisher
      *            Rabit queue publisher
      */
-    public NewJobPublisherMessageBroker(final IPublisher pPublisher) {
+    public NewJobPublisher(final IPublisher pPublisher) {
         super();
         publisher = pPublisher;
     }

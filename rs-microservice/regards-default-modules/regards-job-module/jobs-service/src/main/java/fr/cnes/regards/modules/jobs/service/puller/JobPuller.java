@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.jobs.service.puller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -13,14 +15,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.modules.jobs.service.communication.INewJobPullerMessageBroker;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.modules.jobs.service.communication.INewJobPuller;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobAllocationStrategy;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobQueue;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.JobAllocationStrategyResponse;
 import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
 
 /**
- *
+ * @author lmieulet
  */
 public class JobPuller {
 
@@ -62,7 +65,7 @@ public class JobPuller {
     /**
      * Allows to fetch one job from AMQP
      */
-    private final INewJobPullerMessageBroker newJobPuller;
+    private final INewJobPuller newJobPuller;
 
     /**
      * Security JWT service
@@ -70,7 +73,7 @@ public class JobPuller {
     private final JWTService jwtService;
 
     public JobPuller(final IJobHandler pJobHandler, final JWTService pJwtService, final ITenantResolver pTenantResolver,
-            final IJobAllocationStrategy pJobAllocationStrategy, final INewJobPullerMessageBroker pNewJobPuller) {
+            final IJobAllocationStrategy pJobAllocationStrategy, final INewJobPuller pNewJobPuller) {
         jobHandler = pJobHandler;
         jwtService = pJwtService;
         tenantResolver = pTenantResolver;
@@ -89,11 +92,23 @@ public class JobPuller {
             jwtService.injectToken("", MODULE_JOB_ROLE);
             projects = getTenants();
             if (projects.isEmpty()) {
-                throw new Exception("Jobs are desactivated because there is currently no project");
+                LOG.warn("Jobs are desactivated because there is currently no project");
+                return;
             }
-        } catch (final Exception e1) {
+        } catch (final JwtException e1) {
             LOG.error(e1.getMessage(), e1);
             return;
+        }
+
+        // Do not run any job if the microservice has already reached maxJobCapacity
+        if (jobHandler.isThreadPoolFull()) {
+            LOG.info("This microservice has reach his max number of active jobs");
+            return;
+        }
+
+        // Update the current number of active thread inside the jobQueueList
+        if (jobQueueList != null) {
+            updateJobQueueList();
         }
 
         // try to found a job
@@ -106,6 +121,20 @@ public class JobPuller {
                 jobHandler.execute(projectName, jobId);
             }
             jobQueueList = response.getJobQueueList();
+        }
+    }
+
+    /**
+     * Update the jobQueueList with current number of active job
+     */
+    private void updateJobQueueList() {
+        final Map<String, Integer> nbActiveThreadByTenant = jobHandler.getNbActiveThreadByTenant();
+        for (final Entry<String, Integer> activeThreadEntry : nbActiveThreadByTenant.entrySet()) {
+            for (final IJobQueue jobQueue : jobQueueList) {
+                if (jobQueue.getName().equals(activeThreadEntry.getKey())) {
+                    jobQueue.setCurrentSize(activeThreadEntry.getValue());
+                }
+            }
         }
     }
 

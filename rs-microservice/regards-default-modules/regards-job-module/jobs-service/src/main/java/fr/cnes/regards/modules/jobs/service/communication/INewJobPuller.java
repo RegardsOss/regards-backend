@@ -4,9 +4,10 @@
 package fr.cnes.regards.modules.jobs.service.communication;
 
 /**
- *
+ * @author lmieulet
  */
-public interface INewJobPullerMessageBroker {
+@FunctionalInterface
+public interface INewJobPuller {
 
     public Long getJob(final String pProjectName);
 }

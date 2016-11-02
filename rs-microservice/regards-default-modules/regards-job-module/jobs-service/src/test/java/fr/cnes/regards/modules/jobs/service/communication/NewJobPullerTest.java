@@ -17,9 +17,9 @@ import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 /**
  *
  */
-public class NewJobPullerMessageBrokerTest {
+public class NewJobPullerTest {
 
-    private INewJobPullerMessageBroker newJobPullerMessageBroker;
+    private INewJobPuller newJobPullerMessageBroker;
 
     private Poller pollerMock;
 
@@ -35,7 +35,7 @@ public class NewJobPullerMessageBrokerTest {
     public void setUp() {
         pollerMock = Mockito.mock(Poller.class);
         pollerMock.toString();
-        newJobPullerMessageBroker = new NewJobPullerMessageBroker(pollerMock);
+        newJobPullerMessageBroker = new NewJobPuller(pollerMock);
         pAmqpCommunicationMode = AmqpCommunicationMode.ONE_TO_ONE;
         pAmqpCommunicationTarget = AmqpCommunicationTarget.INTERNAL;
         newJobEvent = new NewJobEvent(1L);

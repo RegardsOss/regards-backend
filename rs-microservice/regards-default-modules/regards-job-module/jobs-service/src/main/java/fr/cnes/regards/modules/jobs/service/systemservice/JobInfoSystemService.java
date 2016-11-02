@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.jobs.service.manager.JobMonitor;
 
 /**
- *
+ * @author lmieulet
  */
 public class JobInfoSystemService implements IJobInfoSystemService {
 
@@ -39,15 +39,6 @@ public class JobInfoSystemService implements IJobInfoSystemService {
         jobInfoRepository = pJobInfoRepository;
     }
 
-    /**
-     * @param pJobInfoId
-     *            the jobInfo id
-     * @param pJobStatus
-     *            the new jobStatus
-     * @param pTenantName
-     *            the project name
-     * @return
-     */
     @Override
     public JobInfo updateJobInfoToDone(final Long pJobInfoId, final JobStatus pJobStatus, final String pTenantName) {
         final JobInfo jobInfo = findJobInfo(pTenantName, pJobInfoId);

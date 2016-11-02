@@ -13,14 +13,14 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 
 /**
- *
+ * @author lmieulet
  */
-public class NewJobPullerMessageBroker implements INewJobPullerMessageBroker {
+public class NewJobPuller implements INewJobPuller {
 
     /**
      * Logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(NewJobPullerMessageBroker.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NewJobPuller.class);
 
     /**
      * Poller instance
@@ -31,7 +31,7 @@ public class NewJobPullerMessageBroker implements INewJobPullerMessageBroker {
      * @param pPoller
      *            poller instance
      */
-    public NewJobPullerMessageBroker(final Poller pPoller) {
+    public NewJobPuller(final Poller pPoller) {
         super();
         poller = pPoller;
     }
@@ -46,10 +46,9 @@ public class NewJobPullerMessageBroker implements INewJobPullerMessageBroker {
         Long jobInfoId = null;
         final AmqpCommunicationMode pAmqpCommunicationMode = AmqpCommunicationMode.ONE_TO_ONE;
         final AmqpCommunicationTarget pAmqpCommunicationTarget = AmqpCommunicationTarget.INTERNAL;
-        TenantWrapper<NewJobEvent> tenantWrapper;
         try {
-            tenantWrapper = poller.poll(pProjectName, NewJobEvent.class, pAmqpCommunicationMode,
-                                        pAmqpCommunicationTarget);
+            final TenantWrapper<NewJobEvent> tenantWrapper = poller
+                    .poll(pProjectName, NewJobEvent.class, pAmqpCommunicationMode, pAmqpCommunicationTarget);
             final NewJobEvent newJobEvent = tenantWrapper.getContent();
             jobInfoId = newJobEvent.getJobInfoId();
         } catch (final RabbitMQVhostException e) {

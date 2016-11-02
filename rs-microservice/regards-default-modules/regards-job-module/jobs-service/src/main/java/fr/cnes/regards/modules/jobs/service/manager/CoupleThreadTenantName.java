@@ -4,7 +4,7 @@
 package fr.cnes.regards.modules.jobs.service.manager;
 
 /**
- *
+ * @author lmieulet
  */
 public class CoupleThreadTenantName {
 
