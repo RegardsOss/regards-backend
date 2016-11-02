@@ -62,13 +62,13 @@ public class Project implements IIdentifiable<Long> {
      * IS the project public ?
      */
     @NotNull
-    @Column(name = "public")
+    @Column(name = "ispublic")
     private boolean isPublic;
 
     /**
      * Is the project deleted ?
      */
-    @Column(name = "deleted")
+    @Column(name = "isdeleted")
     private boolean isDeleted;
 
     public Project() {
