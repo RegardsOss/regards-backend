@@ -168,7 +168,7 @@ public class ProjectConnectionServiceTest {
     public void deleteProjectConnection() {
         ProjectConnection connection = null;
         try {
-            connection = projectConnectionService.retreiveProjectConnection(PROJECT_TEST_2, MS_TEST_2);
+            connection = projectConnectionService.retrieveProjectConnection(PROJECT_TEST_2, MS_TEST_2);
         } catch (final EntityNotFoundException e) {
             Assert.fail(e.getMessage());
         }
@@ -179,7 +179,7 @@ public class ProjectConnectionServiceTest {
         }
 
         try {
-            connection = projectConnectionService.retreiveProjectConnection(PROJECT_TEST_2, MS_TEST_1);
+            connection = projectConnectionService.retrieveProjectConnection(PROJECT_TEST_2, MS_TEST_1);
             Assert.fail("Deletion error. Project connection always exists.");
         } catch (final EntityNotFoundException e1) {
             // Nothing to do
@@ -210,7 +210,7 @@ public class ProjectConnectionServiceTest {
         final String errorUpdate = "Error the update should be in error. The entity doest not exists.";
         ProjectConnection connection = null;
         try {
-            connection = projectConnectionService.retreiveProjectConnection(PROJECT_TEST_1, MS_TEST_1);
+            connection = projectConnectionService.retrieveProjectConnection(PROJECT_TEST_1, MS_TEST_1);
         } catch (final EntityNotFoundException e) {
             Assert.fail(e.getMessage());
         }

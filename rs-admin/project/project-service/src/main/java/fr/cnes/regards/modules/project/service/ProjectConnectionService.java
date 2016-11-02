@@ -49,7 +49,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public ProjectConnection retreiveProjectConnection(final String pProjectName, final String pMicroService)
+    public ProjectConnection retrieveProjectConnection(final String pProjectName, final String pMicroService)
             throws EntityNotFoundException {
         final ProjectConnection connection = projectConnectionRepository
                 .findOneByProjectNameAndMicroservice(pProjectName, pMicroService);
