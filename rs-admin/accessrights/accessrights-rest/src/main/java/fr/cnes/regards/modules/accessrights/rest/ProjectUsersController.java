@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,11 +20,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.accessrights.domain.Couple;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.signature.IProjectUsersSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
@@ -106,14 +105,18 @@ public class ProjectUsersController extends AbstractController implements IProje
 
     @Override
     @ResourceAccess(description = "retrieve the list of specific access rights and the role of the project user")
-    public ResponseEntity<Resource<Couple<List<ResourcesAccess>, Role>>> retrieveProjectUserAccessRights(
+    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(
             @PathVariable("user_login") final String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) final String pBorrowedRoleName)
             throws InvalidValueException {
-        final Couple<List<ResourcesAccess>, Role> couple = projectUserService
-                .retrieveProjectUserAccessRights(pUserLogin, pBorrowedRoleName);
-        final Resource<Couple<List<ResourcesAccess>, Role>> resource = new Resource<>(couple);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        final List<ResourcesAccess> permissions = projectUserService.retrieveProjectUserAccessRights(pUserLogin,
+                                                                                                     pBorrowedRoleName);
+
+        final List<Resource<ResourcesAccess>> result = new ArrayList<>();
+        for (final ResourcesAccess item : permissions) {
+            result.add(new Resource<>(item));
+        }
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @Override

@@ -44,7 +44,7 @@ public class ProjectUser implements IIdentifiable<Long> {
     private static Long maxProjectUserId_ = 0L;
 
     /**
-     * Te id
+     * The id
      */
     @Min(0L)
     @Id
@@ -330,29 +330,6 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     public void setEmail(final String pEmail) {
         email = pEmail;
-    }
-
-    @Override
-    public boolean equals(final Object pObject) {
-        return (pObject instanceof ProjectUser) && (((ProjectUser) pObject).getId() == id);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        final int prime = 37;
-        int result = 1;
-
-        result = (prime * result);
-        if (id != null) {
-            result += id.hashCode();
-        }
-
-        return result;
     }
 
 }

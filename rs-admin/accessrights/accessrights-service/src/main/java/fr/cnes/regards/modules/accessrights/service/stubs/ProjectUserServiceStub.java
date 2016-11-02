@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.Couple;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
@@ -144,8 +143,8 @@ public class ProjectUserServiceStub implements IProjectUserService {
     }
 
     @Override
-    public Couple<List<ResourcesAccess>, Role> retrieveProjectUserAccessRights(final String pLogin,
-            final String pBorrowedRoleName) throws InvalidValueException {
+    public List<ResourcesAccess> retrieveProjectUserAccessRights(final String pLogin, final String pBorrowedRoleName)
+            throws InvalidValueException {
         final ProjectUser projectUser = projectUserRepository.findOneByEmail(pLogin);
         final Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
@@ -160,7 +159,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
             }
         }
 
-        return new Couple<>(projectUser.getPermissions(), returnedRole);
+        return projectUser.getPermissions();
     }
 
     @Override

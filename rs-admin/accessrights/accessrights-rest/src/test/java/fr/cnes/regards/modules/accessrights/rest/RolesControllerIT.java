@@ -21,6 +21,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
@@ -162,7 +163,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         final Role notUpdated = new Role(notSameID, null, null, null, null);
 
         expectations = new ArrayList<>(1);
-        expectations.add(status().isBadRequest());
+        expectations.add(MockMvcResultMatchers.status().isBadRequest());
         performPut(apiRolesId, jwt, notUpdated, expectations, "TODO Error message", roleId);
     }
 

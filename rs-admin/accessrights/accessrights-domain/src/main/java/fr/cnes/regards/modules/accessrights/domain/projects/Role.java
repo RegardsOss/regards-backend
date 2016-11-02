@@ -235,14 +235,4 @@ public class Role implements IIdentifiable<Long> {
         corsRequestsAuthorizationEndDate = pCorsRequestsAuthorizationEndDate;
     }
 
-    @Override
-    public boolean equals(final Object pObj) {
-        return (pObj instanceof Role) && ((Role) pObj).getId().equals(id);
-    }
-
-    @Override
-    public int hashCode() {
-        return (int) (long) id;
-    }
-
 }
