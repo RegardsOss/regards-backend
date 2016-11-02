@@ -158,6 +158,9 @@ public abstract class AbstractRegardsIT {
     }
 
     protected String gson(final Object pObject) {
+        if (pObject instanceof String) {
+            return (String) pObject;
+        }
         final Gson gson = new Gson();
         return gson.toJson(pObject);
     }
