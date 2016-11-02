@@ -169,16 +169,17 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to retrieve a specific user without exposing hidden meta data.")
     public void retrieveUser() {
         // Define user as in db
-        final ProjectUser inital = projectUser;
+        // final ProjectUser inital = projectUser;
+        // inital.setLastUpdate(null);
         final MetaData metaData0 = new MetaData();
         metaData0.setVisibility(UserVisibility.HIDDEN);
-        inital.getMetaData().add(metaData0);
+        projectUser.getMetaData().add(metaData0);
         final MetaData metaData1 = new MetaData();
         metaData1.setVisibility(UserVisibility.READABLE);
-        inital.getMetaData().add(metaData1);
+        projectUser.getMetaData().add(metaData1);
         final MetaData metaData2 = new MetaData();
         metaData2.setVisibility(UserVisibility.WRITEABLE);
-        inital.getMetaData().add(metaData2);
+        projectUser.getMetaData().add(metaData2);
 
         // Define user as expected
         final ProjectUser expected = new ProjectUser();
@@ -187,20 +188,21 @@ public class ProjectUserServiceTest {
         visibleMetaData.add(metaData2);
         expected.setId(ID);
         expected.setEmail(EMAIL);
-        expected.setLastConnection(LAST_CONNECTION);
         expected.setLastUpdate(LAST_UPDATE);
+        expected.setLastConnection(LAST_CONNECTION);
         expected.setStatus(STATUS);
         expected.setPermissions(PERMISSIONS);
         expected.setRole(ROLE);
         expected.setMetaData(visibleMetaData);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOne(ID)).thenReturn(inital);
+        Mockito.when(projectUserRepository.findOne(ID)).thenReturn(projectUser);
 
         // Retrieve actual value
         final ProjectUser actual = projectUserService.retrieveUser(ID);
 
-        Assert.assertThat(actual, Matchers.is(Matchers.equalTo(expected)));
+        // Check same values
+        Assert.assertThat(actual, Matchers.samePropertyValuesAs(expected));
 
         // Check that the repository's method was called with right arguments
         Mockito.verify(projectUserRepository).findOne(ID);

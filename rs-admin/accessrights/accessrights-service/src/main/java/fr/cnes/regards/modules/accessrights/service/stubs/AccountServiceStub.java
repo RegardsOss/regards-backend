@@ -193,9 +193,9 @@ public class AccountServiceStub implements IAccountService {
         if ("manual".equalsIgnoreCase(pUpdatedAccountSetting)
                 || "auto-accept".equalsIgnoreCase(pUpdatedAccountSetting)) {
             accountSetting = pUpdatedAccountSetting.toLowerCase();
-            return;
+        } else {
+            throw new InvalidValueException("Only value accepted : manual or auto-accept");
         }
-        throw new InvalidValueException("Only value accepted : manual or auto-accept");
     }
 
     @Override

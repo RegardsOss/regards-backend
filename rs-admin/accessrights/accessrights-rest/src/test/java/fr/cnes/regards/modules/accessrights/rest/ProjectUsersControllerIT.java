@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.accessrights.rest;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -258,11 +257,11 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     @Test
     @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_310")
-    @Purpose("Check that the system allows to update a project user and handle fail cases.")
+    @Purpose("Check that the system allows to update a project user and handles fail cases.")
     public void updateUser() {
         final Long userId = projectUserService.retrieveUserList().get(0).getId();
         final ProjectUser updated = projectUserService.retrieveUser(userId);
-        updated.setLastConnection(LocalDateTime.now());
+        updated.setEmail("new@email.com");
 
         // if that's the same functional ID and the parameter is valid:
         final List<ResultMatcher> expectations = new ArrayList<>(1);

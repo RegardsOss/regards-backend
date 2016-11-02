@@ -38,7 +38,8 @@ import fr.cnes.regards.modules.accessrights.service.IAccountService;
  * Just Test the REST API so status code. Correction is left to others.
  *
  * @author svissier
- * @authot sbinda
+ * @author sbinda
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)

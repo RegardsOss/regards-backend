@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 /**
  * Test class for {@link RoleService}.
  *
- * @author CS SI
+ * @author xbrochar
  */
 public class RoleServiceTest {
 
@@ -74,6 +74,9 @@ public class RoleServiceTest {
         Mockito.verify(roleRepository).findAll();
     }
 
+    /**
+     * Check that the allows to retrieve a single role.
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the allows to retrieve a single role.")
@@ -90,6 +93,12 @@ public class RoleServiceTest {
         Mockito.verify(roleRepository).findOne(id);
     }
 
+    /**
+     * Check that the system fails when trying to create an already existing role.
+     *
+     * @throws AlreadyExistingException
+     *             Thrown if a role with passed id already exists
+     */
     @Test(expected = AlreadyExistingException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to create an already existing role.")
@@ -101,6 +110,12 @@ public class RoleServiceTest {
         roleService.createRole(duplicate);
     }
 
+    /**
+     * Check that the system allows to create a role in a regular case.
+     *
+     * @throws AlreadyExistingException
+     *             Thrown if a role with passed id already exists
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to create a role in a regular case.")
@@ -119,6 +134,14 @@ public class RoleServiceTest {
         Mockito.verify(roleRepository).save(expected);
     }
 
+    /**
+     * Check that the system fails when trying to update a role which does not exist.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown if no role with passed id could be found
+     * @throws InvalidValueException
+     *             Thrown if passed role id differs from the id of the passed role
+     */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to update a role which does not exist.")
@@ -130,6 +153,14 @@ public class RoleServiceTest {
         roleService.updateRole(id, notExistent);
     }
 
+    /**
+     * Check that the system fails when trying to update a role which id is different from the passed one.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown if no role with passed id could be found
+     * @throws InvalidValueException
+     *             Thrown if passed role id differs from the id of the passed role
+     */
     @Test(expected = InvalidValueException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to update a role which id is different from the passed one.")
@@ -141,6 +172,14 @@ public class RoleServiceTest {
         roleService.updateRole(id, role);
     }
 
+    /**
+     * Check that the system allows to update a role in a regular case.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown if no role with passed id could be found
+     * @throws InvalidValueException
+     *             Thrown if passed role id differs from the id of the passed role
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update a role in a regular case.")
@@ -171,6 +210,12 @@ public class RoleServiceTest {
         Mockito.verify(roleRepository).save(passedRole);
     }
 
+    /**
+     * Check that the system allows to delete a role in a regular case.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown if no role with passed id could be found
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to delete a role in a regular case.")
@@ -190,6 +235,12 @@ public class RoleServiceTest {
         Mockito.verify(roleRepository).delete(id);
     }
 
+    /**
+     * Check that the system fails when trying to update permissions of a role which does not exist.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown if no role with passed id could be found
+     */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to update permissions of a role which does not exist.")
@@ -203,6 +254,12 @@ public class RoleServiceTest {
         roleService.updateRoleResourcesAccess(id, resourcesAccesses);
     }
 
+    /**
+     * Check that the system allows to add resources accesses on a role.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown if no role with passed id could be found
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to add resources accesses on a role.")
@@ -219,9 +276,10 @@ public class RoleServiceTest {
         final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", HttpVerb.PATCH);
         resourcesAccesses.add(addedResourcesAccess);
 
+        // Perform the update
         roleService.updateRoleResourcesAccess(id, resourcesAccesses);
 
-        // Prepare the result
+        // Prepare the expected result
         final Role expected = new Role(id, "name", null, resourcesAccesses, new ArrayList<>());
         Mockito.when(roleRepository.findOne(id)).thenReturn(expected);
 
@@ -229,9 +287,15 @@ public class RoleServiceTest {
         Assert.assertTrue(roleService.retrieveRole(id).getPermissions().contains(addedResourcesAccess));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(roleRepository).save(expected);
+        Mockito.verify(roleRepository).save(Mockito.refEq(expected));
     }
 
+    /**
+     * Check that the system allows to update resources accesses of a role.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown if no role with passed id could be found
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update resources accesses of a role.")
@@ -254,13 +318,12 @@ public class RoleServiceTest {
         Assert.assertTrue(!passedRAs.get(0).getResource().equals(initRAs.get(0).getResource()));
         Assert.assertTrue(!passedRAs.get(0).getVerb().equals(initRAs.get(0).getVerb()));
 
-        // roleService.updateRoleResourcesAccess(roleId, passedRAs);
+        // Perform the update
         Role updatedRole = new Role(0L, "name", null, passedRAs, new ArrayList<>());
         Mockito.when(roleRepository.save(updatedRole)).thenReturn(updatedRole);
         updatedRole = roleService.updateRoleResourcesAccess(roleId, passedRAs);
 
         // Ensure they are now equal
-        // final Role updatedRole = roleService.retrieveRole(roleId);
         final List<ResourcesAccess> updatedRAs = updatedRole.getPermissions();
         Assert.assertTrue(updatedRAs.get(0).getDescription().equals(passedRAs.get(0).getDescription()));
         Assert.assertTrue(updatedRAs.get(0).getMicroservice().equals(passedRAs.get(0).getMicroservice()));
@@ -268,6 +331,12 @@ public class RoleServiceTest {
         Assert.assertTrue(updatedRAs.get(0).getVerb().equals(passedRAs.get(0).getVerb()));
     }
 
+    /**
+     * Check that the system allows to remove all resources accesses of a role.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown if no role with passed id could be found
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to remove all resources accesses of a role.")

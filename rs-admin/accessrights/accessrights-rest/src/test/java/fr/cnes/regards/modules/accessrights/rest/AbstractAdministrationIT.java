@@ -19,6 +19,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * Abstract class for all administration integration tets.
  *
  * @author sbinda
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
 @ImportResource({ "classpath*:defaultRoles.xml" })

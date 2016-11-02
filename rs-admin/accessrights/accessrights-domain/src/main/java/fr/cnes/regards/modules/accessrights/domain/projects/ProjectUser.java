@@ -22,6 +22,8 @@ import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.Email;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.core.validation.PastOrNow;
@@ -60,21 +62,23 @@ public class ProjectUser implements IIdentifiable<Long> {
     private String email;
 
     /**
-     * The last connection date
+     * The last connection date. Is json ignored because this date is handled by the system and not the client.
      */
+    @JsonIgnore
     @PastOrNow
     @Column(name = "lastConnection")
     private LocalDateTime lastConnection;
 
     /**
-     * The last update date
+     * The last update date. Is json ignored because this date is handled by the system and not the client.
      */
+    @JsonIgnore
     @PastOrNow
     @Column(name = "lastUpdate")
     private LocalDateTime lastUpdate;
 
     /**
-     * The status of the user
+     * The status of the user.
      */
     @Column(name = "status")
     private UserStatus status;
@@ -206,7 +210,6 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     public void setLastUpdate(final LocalDateTime pLastUpdate) {
         lastUpdate = pLastUpdate;
-        lastUpdate = LocalDateTime.now();
     }
 
     /**
@@ -226,7 +229,6 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     public void setStatus(final UserStatus pStatus) {
         status = pStatus;
-        lastUpdate = LocalDateTime.now();
     }
 
     /**
@@ -246,7 +248,6 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     public void setMetaData(final List<MetaData> pMetaData) {
         metaData = pMetaData;
-        lastUpdate = LocalDateTime.now();
     }
 
     /**

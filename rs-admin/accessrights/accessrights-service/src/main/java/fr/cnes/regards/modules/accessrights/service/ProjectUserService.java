@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.accessrights.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,7 @@ public class ProjectUserService implements IProjectUserService {
         final ProjectUser user = projectUserRepository.findOne(pUserId);
         // Filter out hidden meta data
         try (final Stream<MetaData> stream = user.getMetaData().stream()) {
-            stream.filter(visibleMetaDataFilter);
+            user.setMetaData(stream.filter(visibleMetaDataFilter).collect(Collectors.toList()));
         }
         return user;
     }
@@ -105,7 +106,7 @@ public class ProjectUserService implements IProjectUserService {
         if (!existUser(pUserId)) {
             throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
         }
-        projectUserRepository.save(pUpdatedProjectUser);
+        save(pUpdatedProjectUser);
     }
 
     @Override
@@ -127,14 +128,14 @@ public class ProjectUserService implements IProjectUserService {
                     .collect(Collectors.toList()));
         }
 
-        projectUserRepository.save(user);
+        save(user);
     }
 
     @Override
     public void removeUserAccessRights(final String pLogin) {
         final ProjectUser user = projectUserRepository.findOneByEmail(pLogin);
         user.setPermissions(new ArrayList<>());
-        projectUserRepository.save(user);
+        save(user);
     }
 
     @Override
@@ -147,14 +148,14 @@ public class ProjectUserService implements IProjectUserService {
     public void updateUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData) {
         final ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(pUpdatedUserMetaData);
-        projectUserRepository.save(user);
+        save(user);
     }
 
     @Override
     public void removeUserMetaData(final Long pUserId) {
         final ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(new ArrayList<>());
-        projectUserRepository.save(user);
+        save(user);
     }
 
     @Override
@@ -196,6 +197,17 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public boolean existUser(final Long pId) {
         return projectUserRepository.exists(pId);
+    }
+
+    /**
+     * Specific on-save operations
+     *
+     * @param pProjectUser
+     *            The user to save
+     */
+    private void save(final ProjectUser pProjectUser) {
+        pProjectUser.setLastUpdate(LocalDateTime.now());
+        projectUserRepository.save(pProjectUser);
     }
 
     /**
