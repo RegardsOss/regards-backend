@@ -10,7 +10,7 @@ import org.junit.Test;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 
 /**
- *
+ * Unit test for {@link Account}
  */
 public class AccountTest {
 
@@ -74,6 +74,15 @@ public class AccountTest {
     @Test
     public void testAccount() {
         Account account = new Account();
+
+        Assert.assertEquals(null, account.getId());
+        Assert.assertEquals(null, account.getEmail());
+        Assert.assertEquals(null, account.getFirstName());
+        Assert.assertEquals(null, account.getLastName());
+        Assert.assertEquals(null, account.getLogin());
+        Assert.assertEquals(null, account.getPassword());
+        Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
+        Assert.assertEquals(null, account.getCode());
     }
 
     /**
@@ -82,6 +91,14 @@ public class AccountTest {
     @Test
     public void testAccountEmail() {
         Account account = new Account(email);
+
+        Assert.assertEquals(email, account.getEmail());
+        Assert.assertEquals(null, account.getFirstName());
+        Assert.assertEquals(null, account.getLastName());
+        Assert.assertEquals(email, account.getLogin());
+        Assert.assertEquals(null, account.getPassword());
+        Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
+        Assert.assertEquals(null, account.getCode());
     }
 
     /**
@@ -91,6 +108,14 @@ public class AccountTest {
     @Test
     public void testAccountWithoutLogin() {
         Account account = new Account(email, firstName, lastName, password);
+
+        Assert.assertEquals(email, account.getEmail());
+        Assert.assertEquals(firstName, account.getFirstName());
+        Assert.assertEquals(lastName, account.getLastName());
+        Assert.assertEquals(email, account.getLogin());
+        Assert.assertEquals(password, account.getPassword());
+        Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
+        Assert.assertEquals(null, account.getCode());
     }
 
     /**
@@ -100,6 +125,14 @@ public class AccountTest {
     @Test
     public void testAccountWithLogin() {
         Account account = new Account(email, firstName, lastName, login, password);
+
+        Assert.assertEquals(email, account.getEmail());
+        Assert.assertEquals(firstName, account.getFirstName());
+        Assert.assertEquals(lastName, account.getLastName());
+        Assert.assertEquals(login, account.getLogin());
+        Assert.assertEquals(password, account.getPassword());
+        Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
+        Assert.assertEquals(null, account.getCode());
     }
 
     /**
@@ -109,6 +142,15 @@ public class AccountTest {
     @Test
     public void testAccountFull() {
         Account account = new Account(id, email, firstName, lastName, login, password, status, code);
+
+        Assert.assertEquals(id, account.getId());
+        Assert.assertEquals(email, account.getEmail());
+        Assert.assertEquals(firstName, account.getFirstName());
+        Assert.assertEquals(lastName, account.getLastName());
+        Assert.assertEquals(login, account.getLogin());
+        Assert.assertEquals(password, account.getPassword());
+        Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
+        Assert.assertEquals(code, account.getCode());
     }
 
     /**
