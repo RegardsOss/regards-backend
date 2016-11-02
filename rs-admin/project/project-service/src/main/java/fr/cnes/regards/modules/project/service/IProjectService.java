@@ -20,7 +20,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * Interface for ProjectService. Allow to query projects entities.
  *
- * @author Sylvain Vissiere-Gueriner
+ * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
  * 
  * @since 1.0-SNAPSHOT
