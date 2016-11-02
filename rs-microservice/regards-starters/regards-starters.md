@@ -89,6 +89,13 @@ regards.jpa.multitenant.tenants[<x>].datasource.driverClassName=org.postgresql.D
 <x> : Integer value for tenant index starting with 0.
 ```
 
+### Use transaction with multitenant
+
+You can annotated your service or test with the following meta annotation to manage transaction:
+```java
+@MultitenantTransactional
+```
+
 ## Multitenant starter
 
 ### Default configuration
