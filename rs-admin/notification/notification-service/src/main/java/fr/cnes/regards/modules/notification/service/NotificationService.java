@@ -14,6 +14,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -198,7 +199,7 @@ public class NotificationService implements INotificationService {
         try (final Stream<Role> rolesStream = pNotification.getRoleRecipients().stream();
                 final Stream<ProjectUser> usersStream = pNotification.getProjectUserRecipients().stream()) {
 
-            // Map each role to its project users by calling the roles client
+            // final Map each role final to its project final users by calling final the roles client
             final Function<Role, Stream<Resource<ProjectUser>>> toProjectUsers = r -> {
                 Stream<Resource<ProjectUser>> result;
                 try (Stream<Resource<ProjectUser>> stream = rolesClient.retrieveRoleProjectUserList(r.getId()).getBody()
@@ -212,7 +213,7 @@ public class NotificationService implements INotificationService {
             };
 
             // Merge the two streams
-            return Stream.concat(usersStream, rolesStream.flatMap(toProjectUsers).map(Resource::getContent).distinct());
+            return Stream.concat(usersStream, rolesStream.flatMap(toProjectUsers).map(HateoasUtils::unwrap).distinct());
         }
     }
 
