@@ -78,7 +78,7 @@ public interface IProjectConnectionService {
      *             ProjectConnection doesn't exists
      * @since 1.0-SNAPSHOT
      */
-    ProjectConnection retreiveProjectConnection(final String pProjectName, String pMicroService)
+    ProjectConnection retrieveProjectConnection(final String pProjectName, String pMicroService)
             throws EntityNotFoundException;
 
 }

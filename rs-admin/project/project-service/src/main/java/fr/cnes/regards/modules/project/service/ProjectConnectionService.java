@@ -16,11 +16,11 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
  *
- * Class ProjectService
- *
  * Service class to manage REGARDS projects.
  *
- * @author CS
+ * @author Sylvain Vissiere-Guerinet
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 @Service
@@ -41,6 +41,14 @@ public class ProjectConnectionService implements IProjectConnectionService {
      */
     private final IProjectConnectionRepository projectConnectionRepository;
 
+    /**
+     * The constructor.
+     * 
+     * @param pProjectRepository
+     *            The JPA {@link Project} repository.
+     * @param pProjectConnectionRepository
+     *            The JPA {@link ProjectConnection} repository.
+     */
     public ProjectConnectionService(final IProjectRepository pProjectRepository,
             final IProjectConnectionRepository pProjectConnectionRepository) {
         super();
@@ -49,7 +57,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public ProjectConnection retreiveProjectConnection(final String pProjectName, final String pMicroService)
+    public ProjectConnection retrieveProjectConnection(final String pProjectName, final String pMicroService)
             throws EntityNotFoundException {
         final ProjectConnection connection = projectConnectionRepository
                 .findOneByProjectNameAndMicroservice(pProjectName, pMicroService);

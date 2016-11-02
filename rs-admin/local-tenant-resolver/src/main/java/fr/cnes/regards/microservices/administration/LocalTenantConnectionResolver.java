@@ -16,13 +16,13 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 import fr.cnes.regards.modules.project.service.IProjectService;
+import fr.cnes.regards.modules.project.service.ProjectConnectionService;
+import fr.cnes.regards.modules.project.service.ProjectService;
 
 /**
  *
- * Class MultitenantConnectionsReader
- *
- * Overides the default method to initiate the liste of connections for the multinants database. The project connections
- * are read from the instance database throught the ProjectService.
+ * Overrides the default method to initiate the list of connections for the multitenants database. The project
+ * connections are read from the instance database through the ProjectService.
  *
  * @author CS
  * @since 1.0-SNAPSHOT
@@ -40,12 +40,12 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
     private final String microserviceName;
 
     /**
-     * Administration project service
+     * The {@link ProjectService} management.
      */
     private final IProjectService projectService;
 
     /**
-     * Administration project service
+     * The {@link ProjectConnectionService} management.
      */
     private final IProjectConnectionService projectConnectionService;
 
@@ -56,7 +56,9 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
      * @param pMicroserviceName
      *            name of the current microservice
      * @param pProjectService
-     *            project service
+     *            the {@link ProjectService}
+     * @param pProjectConnectionService
+     *            the  {@link ProjectConnectionService}
      * @since 1.0-SNAPSHOT
      */
     public LocalTenantConnectionResolver(final String pMicroserviceName, final IProjectService pProjectService,
@@ -75,7 +77,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
         for (final Project project : projects) {
             try {
                 final ProjectConnection projectConnection = projectConnectionService
-                        .retreiveProjectConnection(project.getName(), microserviceName);
+                        .retrieveProjectConnection(project.getName(), microserviceName);
                 if (projectConnection != null) {
                     tenants.add(new TenantConnection(projectConnection.getProject().getName(),
                             projectConnection.getUrl(), projectConnection.getUserName(),
@@ -88,7 +90,6 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
         }
 
         return tenants;
-
     }
 
 }

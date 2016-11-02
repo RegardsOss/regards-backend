@@ -20,7 +20,9 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * Interface for ProjectService. Allow to query projects entities.
  *
- * @author CS
+ * @author Sylvain Vissiere-Guerinet
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 public interface IProjectService {
@@ -91,27 +93,5 @@ public interface IProjectService {
      * @since 1.0-SNAPSHOT
      */
     Project createProject(Project pNewProject) throws EntityException;
-
-    /**
-     *
-     * Check if given project exists.
-     *
-     * @param pProjectName
-     *            Project to check for existance
-     * @return [true|false]
-     * @since 1.0-SNAPSHOT
-     */
-    boolean existProject(String pProjectName);
-
-    /**
-     *
-     * Check that the given project isn't deleted
-     *
-     * @param pProjectName
-     *            Project to check
-     * @return [true|false]
-     * @since 1.0-SNAPSHOT
-     */
-    boolean notDeletedProject(String pProjectName);
 
 }

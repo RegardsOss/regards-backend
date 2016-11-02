@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
@@ -21,26 +19,27 @@ import fr.cnes.regards.modules.project.domain.Project;
 
 /**
  *
- * Class ProjectService
- *
  * Service class to manage REGARDS projects.
  *
- * @author CS
+ * @author Sylvain Vissiere-Guerinet
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 @Service
 public class ProjectService implements IProjectService {
 
     /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ProjectService.class);
-
-    /**
      * JPA Repository to query projects from database
      */
     private final IProjectRepository projectRepository;
 
+    /**
+     * The constructor.
+     * 
+     * @param pProjectRepository
+     *            The JPA repository.
+     */
     public ProjectService(final IProjectRepository pProjectRepository) {
         super();
         projectRepository = pProjectRepository;
@@ -65,14 +64,15 @@ public class ProjectService implements IProjectService {
 
     @Override
     public Project updateProject(final String pProjectName, final Project pProject) throws EntityException {
-        if (!existProject(pProjectName)) {
+        Project theProject = projectRepository.findOneByName(pProjectName);
+        if (theProject == null) {
             throw new EntityNotFoundException(pProjectName, Project.class);
         }
-        if (!notDeletedProject(pProjectName)) {
-            throw new IllegalStateException("This project is deleted");
+        if (theProject.isDeleted()) {
+            throw new IllegalStateException("This project is deleted.");
         }
         if (!pProject.getName().equals(pProjectName)) {
-            throw new InvalidEntityException("projectId and updated project does not match");
+            throw new InvalidEntityException("projectId and updated project does not match.");
         }
         return projectRepository.save(pProject);
     }
@@ -86,25 +86,11 @@ public class ProjectService implements IProjectService {
 
     @Override
     public Project createProject(final Project pNewProject) throws AlreadyExistingException {
-        if (existProject(pNewProject.getName())) {
+        Project theProject = projectRepository.findOneByName(pNewProject.getName());
+        if (theProject != null) {
             throw new AlreadyExistingException(pNewProject.getName());
         }
         return projectRepository.save(pNewProject);
-    }
-
-    @Override
-    public boolean existProject(final String pProjectId) {
-        try (Stream<Project> stream = StreamSupport.stream(projectRepository.findAll().spliterator(), false)) {
-            return stream.filter(p -> p.getName().equals(pProjectId)).findFirst().isPresent();
-        }
-    }
-
-    @Override
-    public boolean notDeletedProject(final String pProjectId) {
-        try (Stream<Project> stream = StreamSupport.stream(projectRepository.findAll().spliterator(), false)) {
-            return stream.filter(p -> !p.isDeleted()).filter(p -> p.getName().equals(pProjectId)).findFirst()
-                    .isPresent();
-        }
     }
 
 }

@@ -72,7 +72,7 @@ public class ProjectConnectionController extends AbstractController
             @PathVariable("microservice") final String pMicroService) throws EntityNotFoundException {
 
         final ResponseEntity<Resource<ProjectConnection>> response;
-        final ProjectConnection pConn = projectConnectionService.retreiveProjectConnection(pProjectName, pMicroService);
+        final ProjectConnection pConn = projectConnectionService.retrieveProjectConnection(pProjectName, pMicroService);
 
         if (pConn != null) {
             response = ResponseEntity.ok(toResource(pConn));
@@ -104,7 +104,7 @@ public class ProjectConnectionController extends AbstractController
             @PathVariable("microservice") final String pMicroservice) throws EntityException {
 
         final ResponseEntity<Void> response;
-        final ProjectConnection pConn = projectConnectionService.retreiveProjectConnection(pProjectName, pMicroservice);
+        final ProjectConnection pConn = projectConnectionService.retrieveProjectConnection(pProjectName, pMicroservice);
         if (pConn != null) {
             projectConnectionService.deleteProjectConnection(pConn.getId());
             response = new ResponseEntity<>(HttpStatus.OK);
