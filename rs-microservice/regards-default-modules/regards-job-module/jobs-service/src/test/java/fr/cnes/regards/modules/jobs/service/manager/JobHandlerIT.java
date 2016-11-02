@@ -28,7 +28,6 @@ import fr.cnes.regards.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.jobs.domain.StatusInfo;
 import fr.cnes.regards.modules.jobs.service.Application;
 import fr.cnes.regards.modules.jobs.service.JobHandlerTestConfiguration;
-import fr.cnes.regards.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.modules.jobs.service.systemservice.IJobInfoSystemService;
 
 @RunWith(SpringRunner.class)
@@ -40,8 +39,6 @@ public class JobHandlerIT {
 
     @Autowired
     private JobHandler jobHandler;
-
-    private IJobInfoService jobInfoServiceMock;
 
     private IJobInfoSystemService jobInfoSystemServiceMock;
 
@@ -64,11 +61,9 @@ public class JobHandlerIT {
      */
     @Before
     public void setUp() throws JwtException {
-        jobInfoServiceMock = Mockito.mock(IJobInfoService.class);
         jobInfoSystemServiceMock = Mockito.mock(IJobInfoSystemService.class);
 
         // Replace stubs by mocks
-        ReflectionTestUtils.setField(jobHandler, "jobInfoService", jobInfoServiceMock, IJobInfoService.class);
         ReflectionTestUtils.setField(jobHandler, "jobInfoSystemService", jobInfoSystemServiceMock,
                                      IJobInfoSystemService.class);
 

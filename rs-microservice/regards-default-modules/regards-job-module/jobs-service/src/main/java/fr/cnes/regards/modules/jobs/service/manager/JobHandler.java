@@ -23,7 +23,6 @@ import fr.cnes.regards.modules.jobs.domain.IJob;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.jobs.domain.StatusInfo;
-import fr.cnes.regards.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.modules.jobs.service.systemservice.IJobInfoSystemService;
 
 /**
@@ -38,11 +37,6 @@ public class JobHandler implements IJobHandler {
      * logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(JobHandler.class);
-
-    /**
-     * Service used when user token available
-     */
-    private final IJobInfoService jobInfoService;
 
     /**
      * Service used when user token unavailable
@@ -87,9 +81,8 @@ public class JobHandler implements IJobHandler {
      */
     private final JobMonitor jobMonitor;
 
-    public JobHandler(final IJobInfoService pJobInfoService, final IJobInfoSystemService pJobInfoSystemService) {
+    public JobHandler(final IJobInfoSystemService pJobInfoSystemService) {
         threads = new HashMap<>();
-        jobInfoService = pJobInfoService;
         jobInfoSystemService = pJobInfoSystemService;
         jobMonitor = new JobMonitor(this);
     }
