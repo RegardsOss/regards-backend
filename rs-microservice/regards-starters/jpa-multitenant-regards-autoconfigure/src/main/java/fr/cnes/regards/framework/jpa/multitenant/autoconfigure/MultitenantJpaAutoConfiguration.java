@@ -46,14 +46,17 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(
-        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
-        basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
-        transactionManagerRef = "multitenantsJpaTransactionManager")
+@EnableJpaRepositories(excludeFilters = {
+        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "multitenantsEntityManagerFactory", transactionManagerRef = MultitenantJpaAutoConfiguration.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties(JpaProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
+
+    /**
+     * Multitenant transaction manager
+     */
+    public static final String MULTITENANT_TRANSACTION_MANAGER = "multitenantsJpaTransactionManager";
 
     /**
      * JPA Persistence unit name. Used to separate multiples databases.
@@ -112,7 +115,7 @@ public class MultitenantJpaAutoConfiguration {
      * @return PlatformTransactionManager
      * @since 1.0-SNAPSHOT
      */
-    @Bean(name = "multitenantsJpaTransactionManager")
+    @Bean(name = MULTITENANT_TRANSACTION_MANAGER)
     public PlatformTransactionManager multitenantsJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
         final JpaTransactionManager jtm = new JpaTransactionManager();
         jtm.setEntityManagerFactory(multitenantsEntityManagerFactory(pBuilder).getObject());
