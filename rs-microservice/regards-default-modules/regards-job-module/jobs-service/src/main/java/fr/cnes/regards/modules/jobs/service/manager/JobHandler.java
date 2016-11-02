@@ -18,18 +18,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.modules.jobs.domain.IEvent;
 import fr.cnes.regards.modules.jobs.domain.IJob;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.jobs.domain.StatusInfo;
-import fr.cnes.regards.modules.jobs.service.communication.INewJobPublisherMessageBroker;
 import fr.cnes.regards.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.modules.jobs.service.systemservice.IJobInfoSystemService;
 
 /**
  * Service to manipulate Job and JobInfo Contains a threadPool to manage the lifecycle of our jobs
+ *
+ * @author lmieulet
  */
 @Component
 public class JobHandler implements IJobHandler {
@@ -87,15 +87,11 @@ public class JobHandler implements IJobHandler {
      */
     private final JobMonitor jobMonitor;
 
-    private final INewJobPublisherMessageBroker newJobPublisher;
-
-    public JobHandler(final IJobInfoService pJobInfoService, final IJobInfoSystemService pJobInfoSystemService,
-            final INewJobPublisherMessageBroker pNewJobPublisher) {
+    public JobHandler(final IJobInfoService pJobInfoService, final IJobInfoSystemService pJobInfoSystemService) {
         threads = new HashMap<>();
         jobInfoService = pJobInfoService;
         jobInfoSystemService = pJobInfoSystemService;
         jobMonitor = new JobMonitor(this);
-        newJobPublisher = pNewJobPublisher;
     }
 
     /**
@@ -114,23 +110,6 @@ public class JobHandler implements IJobHandler {
         executorService = Executors.newFixedThreadPool(maxThreadCapacity, threadPoolExecutorFactoryBean);
         final Thread jobMonitorThread = threadPoolExecutorFactoryBean.createThread(jobMonitor);
         jobMonitorThread.start();
-    }
-
-    @Override
-    public StatusInfo create(final JobInfo pJobInfo) {
-        final JobInfo jobInfo = jobInfoService.createJobInfo(pJobInfo);
-        StatusInfo status = null;
-        if (jobInfo != null) {
-            try {
-                newJobPublisher.sendJob(jobInfo.getId());
-            } catch (final RabbitMQVhostException e) {
-                jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
-                jobInfoService.save(jobInfo);
-                LOG.error("Failed to submit the new jobInfo to rabbit", e);
-            }
-            status = jobInfo.getStatus();
-        }
-        return status;
     }
 
     @Override
@@ -153,7 +132,7 @@ public class JobHandler implements IJobHandler {
                     jobInfo.getStatus().setJobStatus(JobStatus.ABORTED);
                 } catch (final InterruptedException e) {
                     jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
-                    LOG.error(String.format("Failed to interumpt the thread for thread %s", jobInfo.toString()), e);
+                    LOG.error(String.format("Failed to interumpt the thread for jobInfo %s", jobInfo.toString()), e);
                     Thread.currentThread().interrupt();
                 }
                 jobInfo = jobInfoSystemService.updateJobInfo(tenantName, jobInfo);
@@ -238,6 +217,30 @@ public class JobHandler implements IJobHandler {
     @Override
     public Integer getMaxJobCapacity() {
         return maxJobCapacity;
+    }
+
+    @Override
+    public Map<String, Integer> getNbActiveThreadByTenant() {
+        final Map<String, Integer> result = new HashMap<>();
+        synchronized (threads) {
+            for (final CoupleThreadTenantName threadTenant : threads.values()) {
+                if (!result.containsKey(threadTenant.getTenantName())) {
+                    result.put(threadTenant.getTenantName(), 0);
+                }
+                result.put(threadTenant.getTenantName(), result.get(threadTenant.getTenantName()) + 1);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isThreadPoolFull() {
+        final Map<String, Integer> nbActiveThreadByTenant = getNbActiveThreadByTenant();
+        int nbActiveThread = 0;
+        for (final Integer nbThread : nbActiveThreadByTenant.values()) {
+            nbActiveThread += nbThread;
+        }
+        return nbActiveThread >= getMaxJobCapacity();
     }
 
     /**

@@ -18,11 +18,11 @@ import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
  *
  */
 
-public class NewJobPublisherMessageBrokerTest {
+public class StoppingJobPublisherTest {
 
     private IPublisher publisherMock;
 
-    private INewJobPublisherMessageBroker newJobPublisherMessageBroker;
+    private StoppingJobPublisher stoppingJobPublisher;
 
     private String projectName;
 
@@ -30,31 +30,31 @@ public class NewJobPublisherMessageBrokerTest {
 
     private AmqpCommunicationMode mode;
 
-    private NewJobEvent newJobEvent;
+    private StoppingJobEvent stoppingJobEvent;
 
     private long jobInfoId;
 
     @Before
     public void setUp() {
         publisherMock = Mockito.mock(IPublisher.class);
-        newJobPublisherMessageBroker = new NewJobPublisherMessageBroker(publisherMock);
-        mode = AmqpCommunicationMode.ONE_TO_ONE;
+        stoppingJobPublisher = new StoppingJobPublisher(publisherMock);
+        mode = AmqpCommunicationMode.ONE_TO_MANY;
         target = AmqpCommunicationTarget.INTERNAL;
         jobInfoId = 5L;
-        newJobEvent = new NewJobEvent(jobInfoId);
+        stoppingJobEvent = new StoppingJobEvent(jobInfoId);
     }
 
     @Test
-    public void testPublishJob() throws RabbitMQVhostException {
+    public void testPublishStoppingJob() throws RabbitMQVhostException {
         // Create ArgumentCaptor to capture the argument value
-        final ArgumentCaptor<NewJobEvent> argumentNewJobEvent = ArgumentCaptor.forClass(NewJobEvent.class);
+        final ArgumentCaptor<StoppingJobEvent> argumentNewJobEvent = ArgumentCaptor.forClass(StoppingJobEvent.class);
         final ArgumentCaptor<String> argumentString = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<AmqpCommunicationTarget> argumentCommunicationTarget = ArgumentCaptor
                 .forClass(AmqpCommunicationTarget.class);
         final ArgumentCaptor<AmqpCommunicationMode> argumentCommunicationMode = ArgumentCaptor
                 .forClass(AmqpCommunicationMode.class);
 
-        newJobPublisherMessageBroker.sendJob(jobInfoId);
+        stoppingJobPublisher.send(jobInfoId);
 
         // check if the function have been called once, and save its attributes
         Mockito.verify(publisherMock).publish(argumentNewJobEvent.capture(), argumentCommunicationMode.capture(),

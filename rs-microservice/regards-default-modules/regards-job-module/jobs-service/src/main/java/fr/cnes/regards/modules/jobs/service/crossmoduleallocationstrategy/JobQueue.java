@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy;
 
 /**
  * Store tenant/number of active jobs/max number of jobs
+ * 
+ * @author lmieulet
  */
 public class JobQueue implements IJobQueue {
 
@@ -16,7 +18,7 @@ public class JobQueue implements IJobQueue {
     /**
      * Number of current working job for that tenant
      */
-    private final int currentSize;
+    private int currentSize;
 
     /**
      * JobAllocationStrategy maintain the maximal number of thread
@@ -61,6 +63,15 @@ public class JobQueue implements IJobQueue {
     @Override
     public int getMaxSize() {
         return maxSize;
+    }
+
+    /**
+     * @param pCurrentSize
+     *            the currentSize to set
+     */
+    @Override
+    public void setCurrentSize(final int pCurrentSize) {
+        currentSize = pCurrentSize;
     }
 
 }

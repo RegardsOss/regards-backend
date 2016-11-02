@@ -4,18 +4,22 @@
 package fr.cnes.regards.modules.jobs.service.communication;
 
 /**
- *
+ * @author lmieulet
  */
 public class NewJobEvent {
 
+    /**
+     * the jobInfo id
+     */
     private long jobInfoId;
 
     /**
-     * @param pJobId
+     * @param pJobInfoId
+     *            the jobInfo id
      */
-    public NewJobEvent(final long pJobId) {
+    public NewJobEvent(final long pJobInfoId) {
         super();
-        jobInfoId = pJobId;
+        jobInfoId = pJobInfoId;
     }
 
     /**

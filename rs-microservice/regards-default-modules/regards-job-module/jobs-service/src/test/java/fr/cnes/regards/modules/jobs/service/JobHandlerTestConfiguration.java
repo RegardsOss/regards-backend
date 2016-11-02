@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.modules.jobs.service.communication.INewJobPublisherMessageBroker;
-import fr.cnes.regards.modules.jobs.service.communication.NewJobPublisherMessageBroker;
+import fr.cnes.regards.modules.jobs.service.communication.INewJobPublisher;
+import fr.cnes.regards.modules.jobs.service.communication.NewJobPublisher;
 import fr.cnes.regards.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.modules.jobs.service.stub.JobInfoServiceStub;
 import fr.cnes.regards.modules.jobs.service.stub.JobInfoSystemServiceStub;
@@ -45,7 +45,7 @@ public class JobHandlerTestConfiguration {
 
     @Bean
     @Primary
-    public INewJobPublisherMessageBroker getNewJobPublisher() {
-        return new NewJobPublisherMessageBroker(publisher);
+    public INewJobPublisher getNewJobPublisher() {
+        return new NewJobPublisher(publisher);
     }
 }

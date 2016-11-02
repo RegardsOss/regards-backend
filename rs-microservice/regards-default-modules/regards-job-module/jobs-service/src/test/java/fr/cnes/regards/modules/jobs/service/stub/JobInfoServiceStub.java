@@ -47,4 +47,10 @@ public class JobInfoServiceStub implements IJobInfoService {
         return null;
     }
 
+    @Override
+    public JobInfo stopJob(final Long pJobInfoId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }
