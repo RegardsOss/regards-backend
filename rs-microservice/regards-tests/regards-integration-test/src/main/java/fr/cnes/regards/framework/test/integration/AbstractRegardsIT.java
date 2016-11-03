@@ -48,6 +48,21 @@ public abstract class AbstractRegardsIT {
      */
     protected static final String DEFAULT_TENANT = "PROJECT";
 
+    /**
+     * Default user
+     */
+    protected static final String DEFAULT_USER = "default_user";
+
+    /**
+     * Default user email
+     */
+    protected static final String DEFAULT_USER_EMAIL = "default_user@regards.fr";
+
+    /**
+     * Default user role
+     */
+    protected static final String DEFAULT_ROLE = "ROLE_DEFAULT";
+
     // CHECKSTYLE:OFF
     /**
      * JWT service
@@ -90,6 +105,32 @@ public abstract class AbstractRegardsIT {
     protected void performDelete(final String pUrlTemplate, final String pAuthenticationToken,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         performRequest(pAuthenticationToken, HttpMethod.DELETE, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
+    }
+
+    // Automatic default security management methods
+
+    protected void performDefaultGet(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
+            final String pErrorMessage, final Object... pUrlVariables) {
+        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.GET);
+        performRequest(jwt, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
+    }
+
+    protected void performDefaultPost(final String pUrlTemplate, final Object pContent,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
+        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
+        performRequest(jwt, HttpMethod.POST, pUrlTemplate, pContent, pMatchers, pErrorMessage, pUrlVariables);
+    }
+
+    protected void performDefaultPut(final String pUrlTemplate, final Object pContent,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
+        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.PUT);
+        performRequest(jwt, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage, pUrlVariables);
+    }
+
+    protected void performDefaultDelete(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
+            final String pErrorMessage, final Object... pUrlVariables) {
+        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.DELETE);
+        performRequest(jwt, HttpMethod.DELETE, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
     }
 
     /**
@@ -163,6 +204,7 @@ public abstract class AbstractRegardsIT {
                 .header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + pAuthToken);
     }
 
+    // CHECKSTYLE:OFF
     protected String gson(final Object pObject) {
         if (pObject instanceof String) {
             return (String) pObject;
@@ -170,6 +212,7 @@ public abstract class AbstractRegardsIT {
         final Gson gson = new Gson();
         return gson.toJson(pObject);
     }
+    // CHECKSTYLE:ON
 
     /**
      * Generate token for default tenant
@@ -200,11 +243,24 @@ public abstract class AbstractRegardsIT {
         authService.setAuthorities(DEFAULT_TENANT, pUrlPath, pMethod, pRoleNames);
     }
 
-    public JWTService getJwtService() {
-        return jwtService;
-    }
-
-    public MethodAuthorizationService getAuthService() {
-        return authService;
+    /**
+     * Helper method to manage default security with :
+     * <ul>
+     * <li>a default user</li>
+     * <li>a default role</li>
+     * </ul>
+     * The helper generates a JWT using its default configuration and grants access to the endpoint for the default
+     * role.
+     *
+     * @param pUrlPath
+     *            target endpoint
+     * @param pMethod
+     *            target HTTP method
+     * @return security token to authenticate user
+     */
+    protected String manageDefaultSecurity(final String pUrlPath, final RequestMethod pMethod) {
+        final String jwt = generateToken(DEFAULT_USER_EMAIL, DEFAULT_USER, DEFAULT_ROLE);
+        setAuthorities(pUrlPath, pMethod, DEFAULT_ROLE);
+        return jwt;
     }
 }
