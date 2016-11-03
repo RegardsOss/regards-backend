@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +16,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -53,23 +49,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
             .getParameters();
 
     /**
-     * Utility service for handling JWT. Autowired by Spring.
-     */
-    @Autowired
-    private JWTService jwtService;
-
-    /**
-     * Method authorization service.Autowired by Spring.
-     */
-    @Autowired
-    private MethodAuthorizationService authService;
-
-    /**
-     * The jwt string
-     */
-    private String jwt;
-
-    /**
      * 
      */
     @Autowired
@@ -82,19 +61,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
     private final String apiPluginsConfig = apiPluginsRoot + "/{pluginId}" + "/config";
 
     private final String apiPluginsConfigId = apiPluginsConfig + "/{configId}";
-
-    /**
-     * Do some setup before each test
-     */
-    @Before
-    public void init() {
-        final String tenant = "test-1";
-        jwt = jwtService.generateToken(tenant, "cmz@c-s.fr", "CMZ", "ADMIN");
-        authService.setAuthorities(tenant, apiPluginsRoot, RequestMethod.GET, "ADMIN");
-        authService.setAuthorities(tenant, apiPluginTypes, RequestMethod.GET, "ADMIN");
-        authService.setAuthorities(tenant, apiPluginsConfig, RequestMethod.GET, "ADMIN");
-        authService.setAuthorities(tenant, apiPluginsConfigId, RequestMethod.GET, "ADMIN");
-    }
 
     // @Test
     // public void getAllPluginsRest() {
@@ -110,7 +76,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         expectations
                 .add(MockMvcResultMatchers.jsonPath("$.*", Matchers.hasSize(pluginService.getPluginTypes().size())));
-        performGet(apiPluginTypes, jwt, expectations, "unable to load all plugin types");
+        performDefaultGet(apiPluginTypes, expectations, "unable to load all plugin types");
     }
 
     @Test
@@ -131,8 +97,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         expectations.add(MockMvcResultMatchers.jsonPath("$.[0].pluginId", Matchers.hasToString(pluginId)));
-        performGet(apiPluginsConfig, jwt, expectations, "unable to load all plugin configuration of a specific type",
-                   pluginId);
+        performDefaultGet(apiPluginsConfig, expectations, "unable to load all plugin configuration of a specific type",
+                          pluginId);
     }
 
     @Test
@@ -154,11 +120,13 @@ public class PluginControllerIT extends AbstractRegardsIT {
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         expectations.add(MockMvcResultMatchers.jsonPath("$.id", Matchers.hasToString(configId)));
-        performGet(apiPluginsConfigId, jwt, expectations, "unable to load a plugin configuration", pluginId, configId);
+        performDefaultGet(apiPluginsConfigId, expectations, "unable to load a plugin configuration", pluginId,
+                          configId);
     }
 
     @Test
     public void updatePluginConfiguration() {
+        // Add a PluginConfiguration with the PluginService
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL, PARAMETERS,
                 0);
         try {
@@ -167,16 +135,19 @@ public class PluginControllerIT extends AbstractRegardsIT {
         } catch (PluginUtilsException e) {
             Assert.fail();
         }
-        performPut(apiPluginsConfigId, jwt, aPluginConfiguration, getExpectations(),
-                   "unable to update a plugin configuration", PLUGIN_ID, aPluginConfiguration.getId().toString());
+
+        // Update the added PluginConfiguration
+        performDefaultPut(apiPluginsConfigId, aPluginConfiguration, getExpectations(),
+                          "unable to update a plugin configuration", PLUGIN_ID,
+                          aPluginConfiguration.getId().toString());
     }
 
     @Test
     public void savePluginConfiguration() {
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 PARAMETERS, 0);
-        performPost(apiPluginsConfig, jwt, aPluginConfiguration, getExpectations(),
-                    "unable to save a plugin configuration", PLUGIN_ID);
+        performDefaultPost(apiPluginsConfig, aPluginConfiguration, getExpectations(),
+                           "unable to save a plugin configuration", PLUGIN_ID);
     }
 
     @Test
@@ -191,8 +162,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
         }
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
-        performDelete(apiPluginsConfigId, jwt, expectations, "unable to delete a plugin configuration", PLUGIN_ID,
-                      aPluginConfiguration.getId().toString());
+        performDefaultDelete(apiPluginsConfigId, expectations, "unable to delete a plugin configuration", PLUGIN_ID,
+                             aPluginConfiguration.getId().toString());
     }
 
     private List<ResultMatcher> getExpectations() {
