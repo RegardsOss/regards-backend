@@ -169,8 +169,6 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to retrieve a specific user without exposing hidden meta data.")
     public void retrieveUser() {
         // Define user as in db
-        // final ProjectUser inital = projectUser;
-        // inital.setLastUpdate(null);
         final MetaData metaData0 = new MetaData();
         metaData0.setVisibility(UserVisibility.HIDDEN);
         projectUser.getMetaData().add(metaData0);
@@ -206,6 +204,50 @@ public class ProjectUserServiceTest {
 
         // Check that the repository's method was called with right arguments
         Mockito.verify(projectUserRepository).findOne(ID);
+    }
+
+    /**
+     * Check that the system allows to retrieve a specific user by email.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_300")
+    @Requirement("REGARDS_DSL_ADM_ADM_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_320")
+    @Purpose("Check that the system allows to retrieve a specific user by email.")
+    public void retrieveOneByEmail() throws EntityNotFoundException {
+        // Mock the repository returned value
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(projectUser);
+
+        // Retrieve actual value
+        final ProjectUser actual = projectUserService.retrieveOneByEmail(EMAIL);
+
+        // Check same values
+        Assert.assertThat(actual, Matchers.samePropertyValuesAs(projectUser));
+
+        // Check that the repository's method was called with right arguments
+        Mockito.verify(projectUserRepository).findOneByEmail(EMAIL);
+    }
+
+    /**
+     * Check that the system fails when trying to retrieve a user with unknown email.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     */
+    @Test(expected = EntityNotFoundException.class)
+    @Requirement("REGARDS_DSL_ADM_ADM_300")
+    @Requirement("REGARDS_DSL_ADM_ADM_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_320")
+    @Purpose("Check that the system fails when trying to retrieve a user with unknown email.")
+    public void retrieveOneByEmailNotFound() throws EntityNotFoundException {
+        // Mock the repository returned value
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(null);
+
+        // Trigger the exception
+        projectUserService.retrieveOneByEmail(EMAIL);
     }
 
     /**

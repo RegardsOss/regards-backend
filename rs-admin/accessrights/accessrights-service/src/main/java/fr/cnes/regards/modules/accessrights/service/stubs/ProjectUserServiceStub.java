@@ -217,4 +217,19 @@ public class ProjectUserServiceStub implements IProjectUserService {
         return retrieveUserList().get(0);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveOneByEmail(java.lang.String)
+     */
+    @Override
+    public ProjectUser retrieveOneByEmail(final String pEmail) throws EntityNotFoundException {
+        for (final ProjectUser projectUser : projectUsers) {
+            if (projectUser.getEmail().equals(pEmail)) {
+                return projectUser;
+            }
+        }
+        throw new EntityNotFoundException(pEmail, ProjectUser.class);
+    }
+
 }

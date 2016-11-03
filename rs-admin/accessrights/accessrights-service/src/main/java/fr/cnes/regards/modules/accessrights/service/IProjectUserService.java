@@ -36,6 +36,17 @@ public interface IProjectUserService {
     ProjectUser retrieveUser(Long pUserId);
 
     /**
+     * Retrieve the {@link ProjectUser} of passed <code>email</code>.
+     *
+     * @param pEmail
+     *            The {@link ProjectUser}'s <code>email</code>
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     * @return The project user
+     */
+    ProjectUser retrieveOneByEmail(String pEmail) throws EntityNotFoundException;
+
+    /**
      * Retrieve the current {@link ProjectUser}.
      *
      * @return The project user

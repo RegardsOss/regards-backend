@@ -4,14 +4,22 @@
 package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
-import javax.naming.OperationNotSupportedException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -19,17 +27,45 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
+/**
+ * {@link IAccountService} implementation.
+ *
+ * @author Xavier-Alexandre Brochard
+ */
 @Service
 public class AccountService implements IAccountService {
 
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
+
+    /**
+     * Root admin user login
+     */
     @Value("${regards.accounts.root.user.login}")
     private String rootAdminUserLogin;
 
+    /**
+     * Root admin user password
+     */
     @Value("${regards.accounts.root.user.password}")
     private String rootAdminUserPassword;
 
+    /**
+     * CRUD repository handling {@link Account}s
+     */
     @Autowired
     private IAccountRepository accountRepository;
+
+    @Autowired
+    private IProjectUserService projectUserService;
+
+    @Autowired
+    private ITenantResolver tenantResolver;
+
+    @Autowired
+    private JWTService jwtService;
 
     @PostConstruct
     public void initialize() throws AlreadyExistingException {
@@ -86,8 +122,35 @@ public class AccountService implements IAccountService {
 
     @Override
     public void removeAccount(final Long pAccountId) {
-        // TODO Auto-generated method stub
+        final Account account = accountRepository.findOne(pAccountId);
+        final Set<String> tenants = tenantResolver.getAllTenants();
 
+        // Define inject tenant consumer
+        final Consumer<? super String> injectTenant = t -> {
+            try {
+                // TODO: User role system
+                jwtService.injectToken(t, "");
+            } catch (final JwtException e) {
+                LOG.info("Could not inject tenant " + t, e);
+            }
+        };
+
+        // Predicate: is there a project user associated to the account on this tenant?
+        final Predicate<? super String> hasProjectUser = t -> {
+            boolean result = false;
+            try {
+                result = projectUserService.retrieveOneByEmail(account.getEmail()) != null;
+            } catch (final EntityNotFoundException e) {
+                LOG.info("No user with email " + account.getEmail() + "for tenant " + t, e);
+            }
+            return result;
+        };
+
+        try (Stream<String> stream = tenants.stream()) {
+            if (stream.peek(injectTenant).anyMatch(hasProjectUser)) {
+                accountRepository.delete(pAccountId);
+            }
+        }
     }
 
     @Override

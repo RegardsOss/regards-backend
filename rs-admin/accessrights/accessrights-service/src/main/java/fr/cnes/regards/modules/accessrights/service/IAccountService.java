@@ -99,9 +99,11 @@ public interface IAccountService {
     void updateAccount(Long pAccountId, Account pUpdatedAccount) throws InvalidValueException, EntityNotFoundException;
 
     /**
-     * Remove on {@link Account} from db.
+     * Remove on {@link Account} from db.<br>
+     * Only remove if no project user for any tenant.
      *
      * @param pAccountId
+     *            The account <code>id</code>
      */
     void removeAccount(Long pAccountId);
 
