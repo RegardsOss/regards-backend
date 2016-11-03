@@ -21,7 +21,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 
 /**
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 @Component

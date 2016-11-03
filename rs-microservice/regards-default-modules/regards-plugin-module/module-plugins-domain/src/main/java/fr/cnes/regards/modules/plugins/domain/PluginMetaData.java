@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Plugin meta-data representation
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 public class PluginMetaData {
 

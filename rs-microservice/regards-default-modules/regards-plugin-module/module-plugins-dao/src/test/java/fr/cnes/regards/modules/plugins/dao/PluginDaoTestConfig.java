@@ -10,7 +10,7 @@ import org.springframework.context.annotation.PropertySource;
 /**
  * Configuration class for unit testing of plugin's DAO.
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 @Configuration
 @EnableAutoConfiguration

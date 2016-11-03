@@ -12,7 +12,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 /**
  * {@link PluginConfiguration} repository
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public interface IPluginConfigurationRepository extends CrudRepository<PluginConfiguration, Long> {

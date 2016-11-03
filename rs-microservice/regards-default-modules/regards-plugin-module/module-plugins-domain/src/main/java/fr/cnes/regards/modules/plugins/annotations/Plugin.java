@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  *
  * Main representation of plugin meta-data.
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)

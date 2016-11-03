@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 /**
  * Signature interface for Plugins module.
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public interface IPluginsSignature {

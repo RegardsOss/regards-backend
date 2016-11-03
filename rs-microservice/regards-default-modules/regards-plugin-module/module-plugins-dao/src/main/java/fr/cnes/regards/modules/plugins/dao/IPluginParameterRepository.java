@@ -10,7 +10,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 /**
  * {@link PluginParameter} repository
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 

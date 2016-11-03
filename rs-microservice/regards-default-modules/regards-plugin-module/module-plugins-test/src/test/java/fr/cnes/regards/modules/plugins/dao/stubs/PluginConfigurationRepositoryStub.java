@@ -18,7 +18,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 /***
  * {@link PluginConfiguration} Repository stub.
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 @Repository

@@ -15,7 +15,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  *
  * Plugin management service.
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 public interface IPluginService {
 

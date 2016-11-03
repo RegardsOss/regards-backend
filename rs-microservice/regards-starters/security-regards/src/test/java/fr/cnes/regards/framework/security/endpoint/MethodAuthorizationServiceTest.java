@@ -87,7 +87,7 @@ public class MethodAuthorizationServiceTest {
                 return null;
             }
         }
-        final MethodInvocation methodIvoncation = MethodInvocationUtils.create(new Controller(), "endpoint", null);
+        final MethodInvocation methodIvoncation = MethodInvocationUtils.create(new Controller(), "endpoint");
 
         final JWTAuthentication authenticationMock = Mockito.mock(JWTAuthentication.class);
 
@@ -140,7 +140,7 @@ public class MethodAuthorizationServiceTest {
                 return null;
             }
         }
-        final MethodInvocation methodIvoncation = MethodInvocationUtils.create(new Controller(), "endpoint", null);
+        final MethodInvocation methodIvoncation = MethodInvocationUtils.create(new Controller(), "endpoint");
 
         final JWTAuthentication authenticationMock = Mockito.mock(JWTAuthentication.class);
 

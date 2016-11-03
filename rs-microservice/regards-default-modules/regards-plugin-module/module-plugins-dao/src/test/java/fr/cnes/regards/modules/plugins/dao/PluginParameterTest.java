@@ -2,6 +2,7 @@
 package fr.cnes.regards.modules.plugins.dao;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -19,7 +20,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 /***
  * Unit testing of {@link PluginParameter} persistence.
  *
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 
@@ -46,12 +47,6 @@ public class PluginParameterTest extends PluginDaoUtility {
     private IPluginParameterRepository pluginParameterRepository;
 
     /**
-     * IPluginDynamicValueRepository
-     */
-    @Autowired
-    private IPluginDynamicValueRepository pluginDynamicValueRepository;
-
-    /**
      * Security service to generate tokens.
      */
     @Autowired
@@ -64,8 +59,6 @@ public class PluginParameterTest extends PluginDaoUtility {
     public void createPluginParameter() {
         try {
             jwtService.injectToken(PROJECT, USERROLE);
-
-            deleteAllFromRepository();
 
             final long nPluginParameter = pluginParameterRepository.count();
 
@@ -86,8 +79,6 @@ public class PluginParameterTest extends PluginDaoUtility {
     public void updatePluginParameter() {
         try {
             jwtService.injectToken(PROJECT, USERROLE);
-
-            deleteAllFromRepository();
 
             pluginParameterRepository.save(INTERFACEPARAMETERS.get(0));
             final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
@@ -113,8 +104,6 @@ public class PluginParameterTest extends PluginDaoUtility {
         try {
             jwtService.injectToken(PROJECT, USERROLE);
 
-            deleteAllFromRepository();
-
             pluginParameterRepository.save(PARAMETER1);
             final long n = pluginParameterRepository.count();
             final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
@@ -137,9 +126,7 @@ public class PluginParameterTest extends PluginDaoUtility {
         try {
             jwtService.injectToken(PROJECT, USERROLE);
 
-            deleteAllFromRepository();
-
-            // first pluginb parameter
+            // first plugin parameter
             pluginParameterRepository.save(PARAMETER1);
 
             // second plugin parameter with dynamic values
@@ -158,7 +145,8 @@ public class PluginParameterTest extends PluginDaoUtility {
         }
     }
 
-    private void deleteAllFromRepository() {
+    @Before
+    public void deleteAllFromRepository() {
         resetId();
     }
 

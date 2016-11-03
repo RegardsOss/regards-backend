@@ -12,7 +12,7 @@ import javax.persistence.Id;
 /**
  * Class PluginDynamicValue
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 @Entity(name = "T_PLUGIN_DYN_VALUE")

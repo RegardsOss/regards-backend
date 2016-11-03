@@ -168,9 +168,9 @@ public final class PluginParameterUtils {
         LOGGER.debug("Starting postProcess :" + pReturnPlugin.getClass().getSimpleName());
 
         // Test if the plugin configuration is active
-        if (!pPlgConf.getIsActive()) {
-            throw new PluginUtilsException(
-                    String.format("The plugin configuration <%s-%s> is not active.", pPlgConf.getId(),pPlgConf.getLabel()));
+        if (!pPlgConf.isActive()) {
+            throw new PluginUtilsException(String.format("The plugin configuration <%s-%s> is not active.",
+                                                         pPlgConf.getId(), pPlgConf.getLabel()));
         }
 
         // Look for annotated fields

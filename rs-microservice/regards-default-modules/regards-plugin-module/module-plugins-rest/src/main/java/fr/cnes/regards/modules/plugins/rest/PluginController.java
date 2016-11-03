@@ -31,9 +31,9 @@ import fr.cnes.regards.modules.plugins.signature.IPluginsSignature;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
- * Controller for REST Access to Puugin entities
+ * Controller for REST Access to Plugin entities
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 @RestController

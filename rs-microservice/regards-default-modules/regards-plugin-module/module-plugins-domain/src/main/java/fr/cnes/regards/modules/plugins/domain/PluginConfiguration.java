@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
-     * Parameter unique id
+     * Unique id
      */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginConfSequence")
@@ -213,7 +213,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         parameters = pParameters;
     }
 
-    public Boolean getIsActive() {
+    public Boolean isActive() {
         return isActive;
     }
 

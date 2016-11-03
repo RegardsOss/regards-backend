@@ -26,7 +26,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  *
  * The implementation of {@link IPluginService}.
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 @Service
 public class PluginService implements IPluginService {
