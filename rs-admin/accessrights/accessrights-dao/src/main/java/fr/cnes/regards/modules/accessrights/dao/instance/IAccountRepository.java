@@ -3,14 +3,31 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.instance;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Example;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
+/**
+ * Interface for a JPA auto-generated CRUD repository managing {@link Account}s.<br>
+ * Embeds paging/sorting abilities by entending {@link PagingAndSortingRepository}.<br>
+ * Allows execution of Query by Example {@link Example} instances.
+ *
+ * @author Xavier-Alexandre Brochard
+ */
 @InstanceEntity
-public interface IAccountRepository extends CrudRepository<Account, Long> {
+public interface IAccountRepository extends JpaRepository<Account, Long> {
 
+    /**
+     * Find the single {@link Account} with passed <code>email</code>.<br>
+     * Custom query auto-implemented by JPA thanks to the method naming convention.
+     *
+     * @param pEmail
+     *            The {@link Account}'s <code>email</code>
+     * @return The single {@link Account} with passed <code>email</code>
+     */
     Account findOneByEmail(String pEmail);
 
 }

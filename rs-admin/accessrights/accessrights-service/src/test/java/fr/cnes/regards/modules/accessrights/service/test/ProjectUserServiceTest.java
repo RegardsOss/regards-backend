@@ -283,7 +283,7 @@ public class ProjectUserServiceTest {
      * Check that the system fails when trying to update a non existing project user.
      *
      * @throws EntityNotFoundException
-     *             Thrown when an {@link AccessSettings} with passed id could not be found
+     *             Thrown when an {@link AccountSettings} with passed id could not be found
      * @throws InvalidValueException
      *             Thrown when user id differs from the passed id
      */
@@ -304,7 +304,7 @@ public class ProjectUserServiceTest {
      * Check that the system fails when user id differs from the passe id.
      *
      * @throws EntityNotFoundException
-     *             Thrown when an {@link AccessSettings} with passed id could not be found
+     *             Thrown when an {@link AccountSettings} with passed id could not be found
      * @throws InvalidValueException
      *             Thrown when user id differs from the passed id
      */
@@ -325,7 +325,7 @@ public class ProjectUserServiceTest {
      * Check that the system allows to update a project user.
      *
      * @throws EntityNotFoundException
-     *             Thrown when an {@link AccessSettings} with passed id could not be found
+     *             Thrown when an {@link AccountSettings} with passed id could not be found
      * @throws InvalidValueException
      *             Thrown when user id differs from the passed id
      */

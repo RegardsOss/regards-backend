@@ -13,7 +13,6 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +22,11 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
@@ -53,19 +55,45 @@ public class AccountService implements IAccountService {
     private String rootAdminUserPassword;
 
     /**
-     * CRUD repository handling {@link Account}s
+     * CRUD repository handling {@link Account}s. Autowired by Spring.
      */
-    @Autowired
-    private IAccountRepository accountRepository;
+    private final IAccountRepository accountRepository;
 
-    @Autowired
-    private IProjectUserService projectUserService;
+    /**
+     * Service managing {@link ProjectUser}s. Autowired by Spring.
+     */
+    private final IProjectUserService projectUserService;
 
-    @Autowired
-    private ITenantResolver tenantResolver;
+    /**
+     * Tenant resolver. Autowired by Spring.
+     */
+    private final ITenantResolver tenantResolver;
 
-    @Autowired
-    private JWTService jwtService;
+    /**
+     * JWT Service. Autowired by Spring.
+     */
+    private final JWTService jwtService;
+
+    /**
+     * Creates a new instance with passed deps
+     *
+     * @param pAccountRepository
+     *            The account repository
+     * @param pProjectUserService
+     *            The project user service
+     * @param pTenantResolver
+     *            The tenant resolver
+     * @param pJwtService
+     *            The jwt service
+     */
+    public AccountService(final IAccountRepository pAccountRepository, final IProjectUserService pProjectUserService,
+            final ITenantResolver pTenantResolver, final JWTService pJwtService) {
+        super();
+        accountRepository = pAccountRepository;
+        projectUserService = pProjectUserService;
+        tenantResolver = pTenantResolver;
+        jwtService = pJwtService;
+    }
 
     @PostConstruct
     public void initialize() throws AlreadyExistingException {
@@ -77,8 +105,7 @@ public class AccountService implements IAccountService {
 
     @Override
     public List<Account> retrieveAccountList() {
-        // TODO Auto-generated method stub
-        return null;
+        return accountRepository.findAll();
     }
 
     @Override
@@ -90,39 +117,37 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public List<String> retrieveAccountSettings() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void updateAccountSetting(final String pUpdatedAccountSetting) throws InvalidValueException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public boolean existAccount(final Long pId) {
-        // TODO Auto-generated method stub
-        return false;
+        return accountRepository.exists(pId);
     }
 
     @Override
-    public Account retrieveAccount(final Long pAccountId) {
-        // TODO Auto-generated method stub
-        return null;
+    public Account retrieveAccount(final Long pAccountId) throws EntityNotFoundException {
+        return accountRepository.findOne(pAccountId);
     }
 
     @Override
-    public void updateAccount(final Long pAccountId, final Account pUpdatedAccount)
-            throws InvalidValueException, EntityNotFoundException {
-        // TODO Auto-generated method stub
-
+    public void updateAccount(final Long pAccountId, final Account pUpdatedAccount) throws EntityException {
+        if (!existAccount(pAccountId)) {
+            throw new EntityNotFoundException(pAccountId.toString(), Account.class);
+        }
+        if (!pUpdatedAccount.getId().equals(pAccountId)) {
+            throw new InvalidEntityException("Account id specified differs from updated account id");
+        }
+        save(pUpdatedAccount);
     }
 
     @Override
-    public void removeAccount(final Long pAccountId) {
+    public void removeAccount(final Long pAccountId) throws EntityException {
         final Account account = accountRepository.findOne(pAccountId);
+
+        // Silently fail + shortcut if the account does not exist
+        if (account == null) {
+            LOG.info("Tried to remove a not existing account of id " + pAccountId);
+            return;
+        }
+
+        // Get all tenants
         final Set<String> tenants = tenantResolver.getAllTenants();
 
         // Define inject tenant consumer
@@ -130,6 +155,7 @@ public class AccountService implements IAccountService {
             try {
                 // TODO: User role system
                 jwtService.injectToken(t, "");
+                LOG.info("Injected tenant " + t);
             } catch (final JwtException e) {
                 LOG.info("Could not inject tenant " + t, e);
             }
@@ -137,18 +163,16 @@ public class AccountService implements IAccountService {
 
         // Predicate: is there a project user associated to the account on this tenant?
         final Predicate<? super String> hasProjectUser = t -> {
-            boolean result = false;
-            try {
-                result = projectUserService.retrieveOneByEmail(account.getEmail()) != null;
-            } catch (final EntityNotFoundException e) {
-                LOG.info("No user with email " + account.getEmail() + "for tenant " + t, e);
-            }
-            return result;
+            LOG.info("Evaluated predicate with tenant " + t);
+            return projectUserService.existUser(account.getEmail());
         };
 
         try (Stream<String> stream = tenants.stream()) {
             if (stream.peek(injectTenant).anyMatch(hasProjectUser)) {
                 accountRepository.delete(pAccountId);
+            } else {
+                throw new EntityException(
+                        "Cannot remove account of id " + pAccountId + " because it is linked to project users.");
             }
         }
     }
@@ -209,4 +233,13 @@ public class AccountService implements IAccountService {
         return null;
     }
 
+    /**
+     * Save the account
+     *
+     * @param pAccount
+     *            The account to save
+     */
+    private void save(final Account pAccount) {
+        accountRepository.save(pAccount);
+    }
 }

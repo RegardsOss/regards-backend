@@ -21,7 +21,9 @@ import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.service.IAccountService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
@@ -125,13 +127,12 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public void updateAccount(final Long pAccountId, final Account pUpdatedAccount)
-            throws InvalidValueException, EntityNotFoundException {
+    public void updateAccount(final Long pAccountId, final Account pUpdatedAccount) throws EntityException {
         if (!existAccount(pAccountId)) {
             throw new EntityNotFoundException(pAccountId.toString(), Account.class);
         }
         if (!pUpdatedAccount.getId().equals(pAccountId)) {
-            throw new InvalidValueException("Account id specified differs from updated account id");
+            throw new InvalidEntityException("Account id specified differs from updated account id");
         }
 
         final Function<Account, Account> replaceWithUpdatedIfRightId = a -> {
@@ -181,22 +182,22 @@ public class AccountServiceStub implements IAccountService {
         account.setPassword(pNewPassword);
     }
 
-    @Override
-    public List<String> retrieveAccountSettings() {
-        final List<String> accountSettings = new ArrayList<>();
-        accountSettings.add(accountSetting);
-        return accountSettings;
-    }
+    // @Override
+    // public List<String> retrieveAccountSettings() {
+    // final List<String> accountSettings = new ArrayList<>();
+    // accountSettings.add(accountSetting);
+    // return accountSettings;
+    // }
 
-    @Override
-    public void updateAccountSetting(final String pUpdatedAccountSetting) throws InvalidValueException {
-        if ("manual".equalsIgnoreCase(pUpdatedAccountSetting)
-                || "auto-accept".equalsIgnoreCase(pUpdatedAccountSetting)) {
-            accountSetting = pUpdatedAccountSetting.toLowerCase();
-        } else {
-            throw new InvalidValueException("Only value accepted : manual or auto-accept");
-        }
-    }
+    // @Override
+    // public void updateAccountSetting(final String pUpdatedAccountSetting) throws InvalidValueException {
+    // if ("manual".equalsIgnoreCase(pUpdatedAccountSetting)
+    // || "auto-accept".equalsIgnoreCase(pUpdatedAccountSetting)) {
+    // accountSetting = pUpdatedAccountSetting.toLowerCase();
+    // } else {
+    // throw new InvalidValueException("Only value accepted : manual or auto-accept");
+    // }
+    // }
 
     @Override
     public boolean existAccount(final Long pId) {
