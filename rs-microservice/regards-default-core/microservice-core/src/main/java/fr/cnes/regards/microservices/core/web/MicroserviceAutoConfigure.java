@@ -4,7 +4,6 @@
 package fr.cnes.regards.microservices.core.web;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.context.ApplicationContext;
@@ -30,13 +29,12 @@ import fr.cnes.regards.microservices.core.manage.ApplicationManager;
 public class MicroserviceAutoConfigure {
 
     @Bean
-    @ConditionalOnMissingBean(WebMvcConfigurerAdapter.class)
     public WebMvcConfigurerAdapter configure() {
         return new MicroserviceWebConfiguration();
     }
 
     @Bean
-    public ApplicationManager applicationManager(ApplicationContext pApplicationContext) {
+    public ApplicationManager applicationManager(final ApplicationContext pApplicationContext) {
         return new ApplicationManager(pApplicationContext);
     }
 
