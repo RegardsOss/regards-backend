@@ -7,6 +7,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,7 +56,12 @@ public class DefaultResourceServiceTest {
     /**
      * Single method name
      */
-    private static final String SINGLE_METHOD_NAME = "getPojo";
+    private static final String GET_METHOD_NAME = "getPojo";
+
+    /**
+     * Update method name
+     */
+    private static final String UPDATE_METHOD_NAME = "updatePojo";
 
     /**
      * Mocket authorization service
@@ -97,12 +105,13 @@ public class DefaultResourceServiceTest {
     @Purpose("Test authorized link creation regarding security restriction.")
     public void testAuthorizedLinkCreation() {
 
-        setMock(Boolean.TRUE);
+        setMock(GET_METHOD_NAME, Long.class, Boolean.TRUE);
+        setMock(UPDATE_METHOD_NAME, Pojo.class, Boolean.TRUE);
 
         final PojoController pojoController = new PojoController(resourceServiceMock);
         final List<Resource<Pojo>> pojos = pojoController.getPojos();
         Assert.assertEquals(2, pojos.size());
-        Assert.assertEquals(1, pojos.get(0).getLinks().size());
+        Assert.assertEquals(2, pojos.get(0).getLinks().size());
     }
 
     /**
@@ -113,7 +122,8 @@ public class DefaultResourceServiceTest {
     @Purpose("Test not authorized link creation regarding security restriction.")
     public void testNotAuthorizedLinkCreation() {
 
-        setMock(Boolean.FALSE);
+        setMock(GET_METHOD_NAME, Long.class, Boolean.FALSE);
+        setMock(UPDATE_METHOD_NAME, Pojo.class, Boolean.FALSE);
 
         final PojoController pojoController = new PojoController(resourceServiceMock);
         final List<Resource<Pojo>> pojos = pojoController.getPojos();
@@ -121,10 +131,10 @@ public class DefaultResourceServiceTest {
         Assert.assertEquals(0, pojos.get(0).getLinks().size());
     }
 
-    private void setMock(Boolean pIsAuthorized) {
+    private <T> void setMock(String pMethodName, Class<T> pParameterType, Boolean pIsAuthorized) {
         final Method single;
         try {
-            single = PojoController.class.getMethod(SINGLE_METHOD_NAME, Long.class);
+            single = PojoController.class.getMethod(pMethodName, pParameterType);
             Mockito.when(authServiceMock.hasAccess(jwtAuth, single)).thenReturn(pIsAuthorized);
         } catch (NoSuchMethodException | SecurityException e) {
             LOG.error("Cannot retrieve method", e);
@@ -207,11 +217,20 @@ public class DefaultResourceServiceTest {
             return toResource(pojo);
         }
 
+        @ResourceAccess(description = "Update pojo")
+        @RequestMapping(method = RequestMethod.PUT)
+        public Resource<Pojo> updatePojo(@Valid @RequestBody Pojo pPojo) {
+            final Pojo pojo = new Pojo(4L, "fourth");
+            return toResource(pojo);
+        }
+
         @Override
         public Resource<Pojo> toResource(Pojo pElement) {
             final Resource<Pojo> resource = resourceService.toResource(pElement);
-            resourceService.addLink(resource, PojoController.class, SINGLE_METHOD_NAME, LinkRels.SELF,
+            resourceService.addLink(resource, PojoController.class, GET_METHOD_NAME, LinkRels.SELF,
                                     MethodParamFactory.build(Long.class, pElement.getId()));
+            resourceService.addLink(resource, PojoController.class, UPDATE_METHOD_NAME, LinkRels.UPDATE,
+                                    MethodParamFactory.build(Pojo.class));
             return resource;
         }
     }
