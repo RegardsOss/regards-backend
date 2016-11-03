@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -209,6 +210,31 @@ public abstract class AbstractRegardsIT {
             final String pUrlTemplate, final Object... pUrlVars) {
         return MockMvcRequestBuilders.request(pHttpMethod, pUrlTemplate, pUrlVars)
                 .header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + pAuthToken);
+    }
+
+    /**
+     * Extract payload data from response
+     *
+     * @param pResultActions
+     *            results
+     * @return payload data
+     */
+    protected String payload(ResultActions pResultActions) {
+        Assert.assertNotNull(pResultActions);
+        final MockHttpServletResponse response = pResultActions.andReturn().getResponse();
+        try {
+            final MediaType current = MediaType.parseMediaType(response.getContentType());
+            if (current.getSubtype().contains("json")) {
+                return response.getContentAsString();
+            } else {
+                throw new AssertionError("Invalid media type " + current);
+            }
+            // CHECKSTYLE:OFF
+        } catch (Exception e) {
+            // CHECKSTYLE:ON
+            getLogger().error("Cannot parse payload data");
+            throw new AssertionError(e);
+        }
     }
 
     // CHECKSTYLE:OFF
