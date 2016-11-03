@@ -20,10 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.service.IAccountService;
+import fr.cnes.regards.modules.accessrights.service.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.signature.IAccountsSignature;
 import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 import fr.cnes.regards.modules.core.rest.AbstractController;
@@ -35,6 +38,9 @@ public class AccountsController extends AbstractController implements IAccountsS
 
     @Autowired
     private IAccountService accountService;
+
+    @Autowired
+    private IAccountSettingsService accountSettingsService;
 
     @Override
     @ResourceAccess(description = "retrieve the list of account in the instance", name = "")
@@ -66,14 +72,14 @@ public class AccountsController extends AbstractController implements IAccountsS
     @Override
     @ResourceAccess(description = "update the account account_id according to the body specified", name = "")
     public ResponseEntity<Void> updateAccount(@PathVariable("account_id") final Long accountId,
-            @Valid @RequestBody final Account pUpdatedAccount) throws EntityNotFoundException, InvalidValueException {
+            @Valid @RequestBody final Account pUpdatedAccount) throws EntityException {
         accountService.updateAccount(accountId, pUpdatedAccount);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "remove the account account_id", name = "")
-    public ResponseEntity<Void> removeAccount(@PathVariable("account_id") final Long accountId) {
+    public ResponseEntity<Void> removeAccount(@PathVariable("account_id") final Long accountId) throws EntityException {
         accountService.removeAccount(accountId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -107,18 +113,16 @@ public class AccountsController extends AbstractController implements IAccountsS
 
     @Override
     @ResourceAccess(description = "retrieve the list of setting managing the accounts", name = "")
-    public ResponseEntity<List<Resource<String>>> retrieveAccountSettings() {
-        final List<String> accountSettings = accountService.retrieveAccountSettings();
-        final List<Resource<String>> resources = accountSettings.stream().map(a -> new Resource<>(a))
-                .collect(Collectors.toList());
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+    public ResponseEntity<Resource<AccountSettings>> retrieveAccountSettings() {
+        final AccountSettings settings = accountSettingsService.retrieve();
+        return new ResponseEntity<>(new Resource<>(settings), HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "update the setting managing the account", name = "")
-    public ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody final String pUpdatedAccountSetting)
-            throws InvalidValueException {
-        accountService.updateAccountSetting(pUpdatedAccountSetting);
+    public ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody final AccountSettings pUpdatedAccountSetting)
+            throws EntityException {
+        accountSettingsService.update(pUpdatedAccountSetting);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

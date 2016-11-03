@@ -12,7 +12,7 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsReposito
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 
 /**
- * Stub {@link AccessSettings} jpa repository for test purposes.
+ * Stub {@link AccountSettings} jpa repository for test purposes.
  *
  * @author CS SI
  */

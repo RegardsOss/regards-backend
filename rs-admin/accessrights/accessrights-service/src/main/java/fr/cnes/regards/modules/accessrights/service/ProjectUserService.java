@@ -89,6 +89,20 @@ public class ProjectUserService implements IProjectUserService {
     /*
      * (non-Javadoc)
      *
+     * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveOneByEmail(java.lang.String)
+     */
+    @Override
+    public ProjectUser retrieveOneByEmail(final String pEmail) throws EntityNotFoundException {
+        final ProjectUser result = projectUserRepository.findOneByEmail(pEmail);
+        if (result == null) {
+            throw new EntityNotFoundException(pEmail, ProjectUser.class);
+        }
+        return result;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
      * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveCurrentUser()
      */
     @Override
@@ -231,4 +245,5 @@ public class ProjectUserService implements IProjectUserService {
         final Map<Object, Boolean> seen = new ConcurrentHashMap<>();
         return t -> seen.putIfAbsent(pKeyExtractor.apply(t), Boolean.TRUE) == null;
     }
+
 }

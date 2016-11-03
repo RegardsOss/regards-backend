@@ -36,6 +36,17 @@ public interface IProjectUserService {
     ProjectUser retrieveUser(Long pUserId);
 
     /**
+     * Retrieve the {@link ProjectUser} of passed <code>email</code>.
+     *
+     * @param pEmail
+     *            The {@link ProjectUser}'s <code>email</code>
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     * @return The project user
+     */
+    ProjectUser retrieveOneByEmail(String pEmail) throws EntityNotFoundException;
+
+    /**
      * Retrieve the current {@link ProjectUser}.
      *
      * @return The project user
@@ -146,11 +157,11 @@ public interface IProjectUserService {
     boolean existUser(Long pId);
 
     /**
-     * Return true when {@link ProjectUser} of passed <code>login</code> exists in db.
+     * Return true when {@link ProjectUser} of passed <code>email</code> exists in db.
      *
-     * @param pLogin
-     *            The {@link ProjectUser}'s <code>login</code>
+     * @param pEmail
+     *            The {@link ProjectUser}'s <code>email</code>
      * @return <code>True</code> exists, else <code>False</code>
      */
-    boolean existUser(String pLogin);
+    boolean existUser(String pEmail);
 }
