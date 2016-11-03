@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.gson.Gson;
 
@@ -41,6 +42,11 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public abstract class AbstractRegardsIT {
+
+    /**
+     * Default tenant configured in application properties
+     */
+    protected static final String DEFAULT_TENANT = "PROJECT";
 
     // CHECKSTYLE:OFF
     /**
@@ -163,6 +169,35 @@ public abstract class AbstractRegardsIT {
         }
         final Gson gson = new Gson();
         return gson.toJson(pObject);
+    }
+
+    /**
+     * Generate token for default tenant
+     *
+     * @param pEmail
+     *            user email
+     * @param pName
+     *            user name
+     * @param pRole
+     *            user role
+     * @return JWT
+     */
+    protected String generateToken(final String pEmail, final String pName, final String pRole) {
+        return jwtService.generateToken(DEFAULT_TENANT, pEmail, pName, pRole);
+    }
+
+    /**
+     * Set authorities for default tenant
+     *
+     * @param pUrlPath
+     *            endpoint
+     * @param pMethod
+     *            HTTP method
+     * @param pRoleNames
+     *            list of roles
+     */
+    protected void setAuthorities(final String pUrlPath, final RequestMethod pMethod, final String... pRoleNames) {
+        authService.setAuthorities(DEFAULT_TENANT, pUrlPath, pMethod, pRoleNames);
     }
 
     public JWTService getJwtService() {
