@@ -145,9 +145,8 @@ public class PluginController extends AbstractController implements IPluginsSign
             @PathVariable("pluginId") String pPluginId, @PathVariable("configId") Long pConfigId,
             @Valid @RequestBody PluginConfiguration pPluginConfiguration)
             throws EntityNotFoundException, InvalidValueException {
-        PluginConfiguration pluginConfiguration;
-        if (pPluginId != pPluginConfiguration.getPluginId() || pConfigId != pPluginConfiguration.getId()) {
-            LOGGER.error("coucou");
+        final PluginConfiguration pluginConfiguration;
+        if (!pPluginId.equals(pPluginConfiguration.getPluginId()) || pConfigId != pPluginConfiguration.getId()) {
             throw new InvalidValueException(
                     "The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
                             + ">- config id= <" + pConfigId + ">");
@@ -164,8 +163,8 @@ public class PluginController extends AbstractController implements IPluginsSign
     }
 
     @Override
-    public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("configId") String pPluginId,
-            @PathVariable("pluginId") Long pConfigId) throws EntityNotFoundException {
+    public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") String pPluginId,
+            @PathVariable("configId") Long pConfigId) throws EntityNotFoundException {
         try {
             pluginService.deletePluginConfiguration(pConfigId);
         } catch (PluginUtilsException e) {

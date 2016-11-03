@@ -1,6 +1,7 @@
 /**LICENSE_PLACEHOLDER*/
 package fr.cnes.regards.modules.plugins.dao.stubs;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,11 +33,6 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
         getEntities().add(getPluginConfigurationWithParameters());
     }
 
-    /**
-     * An id constant {@link String}
-     */
-    static final Long AN_ID = new Long(33);
-    
     /**
      * Version
      */
@@ -103,18 +99,22 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
     }
 
     public PluginConfiguration getPluginConfigurationWithParameters() {
-        pluginConfiguration1.setId(AN_ID);
+        pluginConfiguration1.setId(01L);
         return pluginConfiguration1;
     }
 
     public PluginConfiguration getPluginConfigurationWithDynamicParameter() {
-        pluginConfiguration2.setId(new Long(AN_ID.longValue()+1));
+        pluginConfiguration2.setId(02L);
         return pluginConfiguration2;
     }
 
     @Override
     public List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pPluginId) {
-        return Arrays.asList(pluginConfiguration1, pluginConfiguration2);
+        List<PluginConfiguration> plgConfs = new ArrayList<>();
+
+        entities.stream().filter(p -> p.getPluginId().equals(pPluginId)).forEach(p -> plgConfs.add(p));
+
+        return plgConfs;
     }
 
 }
