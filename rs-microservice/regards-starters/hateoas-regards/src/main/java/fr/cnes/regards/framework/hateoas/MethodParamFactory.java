@@ -18,4 +18,8 @@ public final class MethodParamFactory {
         return new MethodParam<T>(pParameterType, pValue);
     }
 
+    public static <T> MethodParam<T> build(Class<T> pParameterType) {
+        return new MethodParam<T>(pParameterType, null);
+    }
+
 }

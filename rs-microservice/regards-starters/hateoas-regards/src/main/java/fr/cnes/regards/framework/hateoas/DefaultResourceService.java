@@ -5,6 +5,8 @@ package fr.cnes.regards.framework.hateoas;
 
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,20 +62,21 @@ public class DefaultResourceService implements IResourceService {
 
         // Prepare method parameters
         Class<?>[] parameterTypes = null;
-        Object[] parameterValues = null;
+        List<Object> parameterValues = null;
         if (pMethodParams != null) {
             parameterTypes = new Class<?>[pMethodParams.length];
-            parameterValues = new Object[pMethodParams.length];
-
+            parameterValues = new ArrayList<>();
             for (int i = 0; i < pMethodParams.length; i++) {
                 parameterTypes[i] = pMethodParams[i].getParameterType();
-                parameterValues[i] = pMethodParams[i].getValue();
+                if (pMethodParams[i].getValue() != null) {
+                    parameterValues.add(pMethodParams[i].getValue());
+                }
             }
         }
 
         try {
             final Method method = getMethod(pController, pMethodName, parameterTypes);
-            final Link link = buildLink(method, pRel, parameterValues);
+            final Link link = buildLink(method, pRel, parameterValues.toArray());
             pResource.add(link);
         } catch (final MethodException e) {
             // Do not insert link
