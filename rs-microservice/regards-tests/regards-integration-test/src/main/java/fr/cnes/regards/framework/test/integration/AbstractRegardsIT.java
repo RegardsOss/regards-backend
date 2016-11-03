@@ -85,52 +85,56 @@ public abstract class AbstractRegardsIT {
 
     protected abstract Logger getLogger();
 
-    protected void performGet(final String pUrlTemplate, final String pAuthenticationToken,
+    protected ResultActions performGet(final String pUrlTemplate, final String pAuthenticationToken,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        performRequest(pAuthenticationToken, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
+        return performRequest(pAuthenticationToken, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage,
+                              pUrlVariables);
     }
 
-    protected void performPost(final String pUrlTemplate, final String pAuthenticationToken, final Object pContent,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        performRequest(pAuthenticationToken, HttpMethod.POST, pUrlTemplate, pContent, pMatchers, pErrorMessage,
-                       pUrlVariables);
+    protected ResultActions performPost(final String pUrlTemplate, final String pAuthenticationToken,
+            final Object pContent, final List<ResultMatcher> pMatchers, final String pErrorMessage,
+            final Object... pUrlVariables) {
+        return performRequest(pAuthenticationToken, HttpMethod.POST, pUrlTemplate, pContent, pMatchers, pErrorMessage,
+                              pUrlVariables);
     }
 
-    protected void performPut(final String pUrlTemplate, final String pAuthenticationToken, final Object pContent,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        performRequest(pAuthenticationToken, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage,
-                       pUrlVariables);
+    protected ResultActions performPut(final String pUrlTemplate, final String pAuthenticationToken,
+            final Object pContent, final List<ResultMatcher> pMatchers, final String pErrorMessage,
+            final Object... pUrlVariables) {
+        return performRequest(pAuthenticationToken, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage,
+                              pUrlVariables);
     }
 
-    protected void performDelete(final String pUrlTemplate, final String pAuthenticationToken,
+    protected ResultActions performDelete(final String pUrlTemplate, final String pAuthenticationToken,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        performRequest(pAuthenticationToken, HttpMethod.DELETE, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
+        return performRequest(pAuthenticationToken, HttpMethod.DELETE, pUrlTemplate, pMatchers, pErrorMessage,
+                              pUrlVariables);
     }
 
     // Automatic default security management methods
 
-    protected void performDefaultGet(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
+    protected ResultActions performDefaultGet(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
             final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.GET);
-        performRequest(jwt, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
+        return performRequest(jwt, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
     }
 
-    protected void performDefaultPost(final String pUrlTemplate, final Object pContent,
+    protected ResultActions performDefaultPost(final String pUrlTemplate, final Object pContent,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
-        performRequest(jwt, HttpMethod.POST, pUrlTemplate, pContent, pMatchers, pErrorMessage, pUrlVariables);
+        return performRequest(jwt, HttpMethod.POST, pUrlTemplate, pContent, pMatchers, pErrorMessage, pUrlVariables);
     }
 
-    protected void performDefaultPut(final String pUrlTemplate, final Object pContent,
+    protected ResultActions performDefaultPut(final String pUrlTemplate, final Object pContent,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.PUT);
-        performRequest(jwt, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage, pUrlVariables);
+        return performRequest(jwt, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage, pUrlVariables);
     }
 
-    protected void performDefaultDelete(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
+    protected ResultActions performDefaultDelete(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
             final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.DELETE);
-        performRequest(jwt, HttpMethod.DELETE, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
+        return performRequest(jwt, HttpMethod.DELETE, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
     }
 
     /**
@@ -150,8 +154,9 @@ public abstract class AbstractRegardsIT {
      *            message if error occurs
      * @param pUrlVariables
      *            URL variables
+     * @return result
      */
-    protected void performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
+    protected ResultActions performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
             final String pUrlTemplate, final Object pContent, final List<ResultMatcher> pMatchers,
             final String pErrorMessage, final Object... pUrlVariables) {
 
@@ -161,17 +166,17 @@ public abstract class AbstractRegardsIT {
         final String content = gson(pContent);
         requestBuilder = requestBuilder.content(content).header(HttpHeaders.CONTENT_TYPE,
                                                                 MediaType.APPLICATION_JSON_VALUE);
-        performRequest(requestBuilder, pMatchers, pErrorMessage);
+        return performRequest(requestBuilder, pMatchers, pErrorMessage);
     }
 
-    protected void performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
+    protected ResultActions performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
             final String pUrlTemplate, final List<ResultMatcher> pMatchers, final String pErrorMessage,
             final Object... pUrlVariables) {
 
         Assert.assertTrue(HttpMethod.GET.equals(pHttpMethod) || HttpMethod.DELETE.equals(pHttpMethod));
         final MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(pAuthenticationToken, pHttpMethod,
                                                                                pUrlTemplate, pUrlVariables);
-        performRequest(requestBuilder, pMatchers, pErrorMessage);
+        return performRequest(requestBuilder, pMatchers, pErrorMessage);
     }
 
     /**
@@ -182,19 +187,21 @@ public abstract class AbstractRegardsIT {
      *            expectations
      * @param pErrorMessage
      *            message if error occurs
+     * @return result
      */
-    protected void performRequest(final MockHttpServletRequestBuilder pRequestBuilder,
+    protected ResultActions performRequest(final MockHttpServletRequestBuilder pRequestBuilder,
             final List<ResultMatcher> pMatchers, final String pErrorMessage) {
         try {
             ResultActions request = mvc.perform(pRequestBuilder);
             for (final ResultMatcher matcher : pMatchers) {
                 request = request.andExpect(matcher);
             }
+            return request;
             // CHECKSTYLE:OFF
         } catch (final Exception e) {
             // CHECKSTYLE:ON
             getLogger().error(pErrorMessage, e);
-            Assert.fail(pErrorMessage);
+            throw new AssertionError(pErrorMessage);
         }
     }
 
