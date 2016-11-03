@@ -1,9 +1,7 @@
 /**LICENSE_PLACEHOLDER*/
 package fr.cnes.regards.modules.plugins.dao;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;

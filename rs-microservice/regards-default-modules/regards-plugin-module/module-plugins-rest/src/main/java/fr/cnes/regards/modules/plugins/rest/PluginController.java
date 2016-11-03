@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.core.rest.AbstractController;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.plugins.service.PluginService;
 import fr.cnes.regards.modules.plugins.signature.IPluginsSignature;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
@@ -47,7 +48,7 @@ public class PluginController extends AbstractController implements IPluginsSign
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginController.class);
 
     /**
-     * Business service for Project entities. Autowired.
+     * Business service for Project entities.
      */
     private IPluginService pluginService;
 
@@ -55,6 +56,7 @@ public class PluginController extends AbstractController implements IPluginsSign
      * Constructor to specify a particular {@link IPluginService}.
      * 
      * @param pPluginService
+     *            The {@link PluginService} used
      */
     public PluginController(final IPluginService pPluginService) {
         super();
@@ -65,7 +67,6 @@ public class PluginController extends AbstractController implements IPluginsSign
     public ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
             @RequestParam(value = "pluginType", required = false) final String pPluginType) throws EntityException {
         final List<PluginMetaData> metadaDatas;
-        List<Resource<PluginMetaData>> resources;
 
         if (pPluginType == null) {
             // No plugintypes is specify, return all the plugins
@@ -81,21 +82,23 @@ public class PluginController extends AbstractController implements IPluginsSign
             }
         }
 
-        resources = metadaDatas.stream().map(p -> new Resource<>(p)).collect(Collectors.toList());
+        final List<Resource<PluginMetaData>> resources = metadaDatas.stream().map(p -> new Resource<>(p))
+                .collect(Collectors.toList());
 
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<List<Resource<String>>> getPluginTypes() {
-        List<String> types = pluginService.getPluginTypes();
-        List<Resource<String>> resources = types.stream().map(p -> new Resource<>(p)).collect(Collectors.toList());
+        final List<String> types = pluginService.getPluginTypes();
+        final List<Resource<String>> resources = types.stream().map(p -> new Resource<>(p))
+                .collect(Collectors.toList());
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(@PathVariable("pluginId") String pPluginId) {
-        PluginMetaData metaData = pluginService.getPluginMetaDataById(pPluginId);
+        final PluginMetaData metaData = pluginService.getPluginMetaDataById(pPluginId);
         final Resource<PluginMetaData> resource = new Resource<>(metaData);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -104,7 +107,7 @@ public class PluginController extends AbstractController implements IPluginsSign
     public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurations(
             @PathVariable("pluginId") String pPluginId) {
         final List<PluginConfiguration> pluginConfs = pluginService.getPluginConfigurationsByType(pPluginId);
-        List<Resource<PluginConfiguration>> resources = pluginConfs.stream().map(p -> new Resource<>(p))
+        final List<Resource<PluginConfiguration>> resources = pluginConfs.stream().map(p -> new Resource<>(p))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
@@ -112,7 +115,7 @@ public class PluginController extends AbstractController implements IPluginsSign
     @Override
     public ResponseEntity<Resource<PluginConfiguration>> savePluginConfiguration(
             @Valid @RequestBody PluginConfiguration pPluginConfiguration) throws InvalidValueException {
-        PluginConfiguration pluginConfiguration;
+        final PluginConfiguration pluginConfiguration;
         try {
             pluginConfiguration = pluginService.savePluginConfiguration(pPluginConfiguration);
         } catch (PluginUtilsException e) {
@@ -128,7 +131,7 @@ public class PluginController extends AbstractController implements IPluginsSign
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
             @PathVariable("pluginId") String pPluginId, @PathVariable("configId") Long pConfigId)
             throws EntityNotFoundException {
-        PluginConfiguration pluginConfiguration;
+        final PluginConfiguration pluginConfiguration;
         try {
             pluginConfiguration = pluginService.getPluginConfiguration(pConfigId);
         } catch (PluginUtilsException e) {

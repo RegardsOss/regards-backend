@@ -33,17 +33,17 @@ public class PluginControllerIT extends AbstractRegardsIT {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginControllerIT.class);
 
-    static final String VERSION = "12345-6789-11";
+    private static final String VERSION = "12345-6789-11";
 
-    static final String PLUGIN_ID = "a-plugin-id";
+    private static final String PLUGIN_ID = "a-plugin-id";
 
-    static final String AUTHOR = "CS-SI-DEV";
+    private static final String AUTHOR = "CS-SI-DEV";
 
-    static final Long AN_ID = 050L;
+    private static final Long AN_ID = 050L;
 
-    static final String LABEL = "a plugin configuraion for the test";
+    private static final String LABEL = "a plugin configuraion for the test";
 
-    static final List<PluginParameter> PARAMETERS = PluginParametersFactory.build()
+    private static final List<PluginParameter> PARAMETERS = PluginParametersFactory.build()
             .addParameterDynamic("param31", "value31").addParameter("param32", "value32")
             .addParameter("param33", "value33").addParameter("param34", "value34").addParameter("param35", "value35")
             .getParameters();
@@ -62,12 +62,12 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     private final String apiPluginsConfigId = apiPluginsConfig + "/{configId}";
 
-    // @Test
-    // public void getAllPluginsRest() {
-    // final List<ResultMatcher> expectations = new ArrayList<>(1);
-    // expectations.add(status().isOk());
-    // performGet("/plugins", jwt, expectations, "unable to load all plugins");
-    // }
+    @Test
+    public void getAllPluginsRest() {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performDefaultGet("/plugins", expectations, "unable to load all plugins");
+    }
 
     @Test
     public void getAllPluginTypesRest() {
