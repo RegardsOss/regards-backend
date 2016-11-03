@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.jobs.service.puller;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -23,7 +25,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.jobs.service.JobDaoTestConfiguration;
 import fr.cnes.regards.modules.jobs.service.allocationstrategy.DefaultJobAllocationStrategy;
-import fr.cnes.regards.modules.jobs.service.communication.INewJobPullerMessageBroker;
+import fr.cnes.regards.modules.jobs.service.communication.INewJobPuller;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobAllocationStrategy;
 import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
 
@@ -45,7 +47,7 @@ public class JobPullerTest {
 
     private ITenantResolver tenantResolver;
 
-    private IJobHandler iJobHandlerMock;
+    private IJobHandler jobHandlerMock;
 
     /**
      * The class we test
@@ -56,19 +58,19 @@ public class JobPullerTest {
 
     private IJobAllocationStrategy jobAllocationStrategy;
 
-    private INewJobPullerMessageBroker newJobPuller;
+    private INewJobPuller newJobPuller;
 
     /**
      * Do some setup before each test
      */
     @Before
     public void setUp() {
-        iJobHandlerMock = Mockito.mock(IJobHandler.class);
-        Mockito.when((iJobHandlerMock).getMaxJobCapacity()).thenReturn(5);
+        jobHandlerMock = Mockito.mock(IJobHandler.class);
+        Mockito.when((jobHandlerMock).getMaxJobCapacity()).thenReturn(5);
 
         jwtServiceMocked = Mockito.mock(JWTService.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
-        newJobPuller = Mockito.mock(INewJobPullerMessageBroker.class);
+        newJobPuller = Mockito.mock(INewJobPuller.class);
         jobAllocationStrategy = new DefaultJobAllocationStrategy();
 
         projectList = new TreeSet<>();
@@ -78,7 +80,7 @@ public class JobPullerTest {
         projectList.add("project4");
 
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(projectList);
-        jobPuller = new JobPuller(iJobHandlerMock, jwtServiceMocked, tenantResolver, jobAllocationStrategy,
+        jobPuller = new JobPuller(jobHandlerMock, jwtServiceMocked, tenantResolver, jobAllocationStrategy,
                 newJobPuller);
 
     }
@@ -89,19 +91,26 @@ public class JobPullerTest {
         final String projectName = "project1";
         Mockito.when(newJobPuller.getJob(projectName)).thenReturn(1L);
         jobPuller.pullJobs();
-        Mockito.verify(iJobHandlerMock).execute(projectName, 1L);
+        Mockito.verify(jobHandlerMock).execute(projectName, 1L);
         Assertions.assertThat(jobPuller.getJobQueueList().size()).isEqualTo(4);
         Assertions.assertThat(jobPuller.getJobQueueList().get(0).getCurrentSize()).isEqualTo(0);
         Assertions.assertThat(jobPuller.getJobQueueList().get(0).getMaxSize()).isEqualTo(2);
         Assertions.assertThat(jobPuller.getJobQueueList().get(1).getCurrentSize()).isEqualTo(0);
         Assertions.assertThat(jobPuller.getJobQueueList().get(1).getMaxSize()).isEqualTo(2);
+
+        final Map<String, Integer> nbActivbeThreadByTenant = new HashMap<>();
+        nbActivbeThreadByTenant.put(projectName, 1);
+        Mockito.when(jobHandlerMock.getNbActiveThreadByTenant()).thenReturn(nbActivbeThreadByTenant);
+
+        jobPuller.pullJobs();
+
     }
 
     @Test
     public void testPullJobWhenNoTenant() {
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(new TreeSet<>());
         jobPuller.pullJobs();
-        Mockito.verifyZeroInteractions(iJobHandlerMock);
+        Mockito.verifyZeroInteractions(jobHandlerMock);
 
     }
 
@@ -110,7 +119,14 @@ public class JobPullerTest {
         final String moduleJobRole = (String) ReflectionTestUtils.getField(jobPuller, "MODULE_JOB_ROLE");
         Mockito.doThrow(new JwtException("some exception")).when(jwtServiceMocked).injectToken("", moduleJobRole);
         jobPuller.pullJobs();
-        Mockito.verifyZeroInteractions(iJobHandlerMock);
+        Mockito.verifyZeroInteractions(jobHandlerMock);
+    }
+
+    @Test
+    public void testPullJobWhenThreadPoolFull() {
+        Mockito.when(jobHandlerMock.isThreadPoolFull()).thenReturn(true);
+        jobPuller.pullJobs();
+        Mockito.verifyZeroInteractions(newJobPuller);
 
     }
 }

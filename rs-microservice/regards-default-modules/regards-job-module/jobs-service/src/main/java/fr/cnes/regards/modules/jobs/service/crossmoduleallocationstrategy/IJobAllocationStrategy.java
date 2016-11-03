@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * Interface for plugin JobAllocationStrategy
+ * 
+ * @author lmieulet
  */
 @FunctionalInterface
 public interface IJobAllocationStrategy {

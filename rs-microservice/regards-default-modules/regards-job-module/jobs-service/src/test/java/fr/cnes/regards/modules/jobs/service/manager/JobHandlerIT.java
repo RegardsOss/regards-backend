@@ -28,7 +28,6 @@ import fr.cnes.regards.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.jobs.domain.StatusInfo;
 import fr.cnes.regards.modules.jobs.service.Application;
 import fr.cnes.regards.modules.jobs.service.JobHandlerTestConfiguration;
-import fr.cnes.regards.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.modules.jobs.service.systemservice.IJobInfoSystemService;
 
 @RunWith(SpringRunner.class)
@@ -40,8 +39,6 @@ public class JobHandlerIT {
 
     @Autowired
     private JobHandler jobHandler;
-
-    private IJobInfoService jobInfoServiceMock;
 
     private IJobInfoSystemService jobInfoSystemServiceMock;
 
@@ -64,10 +61,9 @@ public class JobHandlerIT {
      */
     @Before
     public void setUp() throws JwtException {
-        jobInfoServiceMock = Mockito.mock(IJobInfoService.class);
         jobInfoSystemServiceMock = Mockito.mock(IJobInfoSystemService.class);
+
         // Replace stubs by mocks
-        ReflectionTestUtils.setField(jobHandler, "jobInfoService", jobInfoServiceMock, IJobInfoService.class);
         ReflectionTestUtils.setField(jobHandler, "jobInfoSystemService", jobInfoSystemServiceMock,
                                      IJobInfoSystemService.class);
 
@@ -97,18 +93,6 @@ public class JobHandlerIT {
         jwtService.injectToken("project1", "USER");
     }
 
-    // TODO: create a new JobHandlerUT
-    //
-    // @Test
-    // public void testCreateJobInfo() {
-    // // mock the service that saves the jobInfo
-    // Mockito.when(jobInfoServiceMock.createJobInfo(pJobInfo)).thenReturn(pJobInfo);
-    //
-    // final StatusInfo statusJobInfo = jobHandler.create(pJobInfo);
-    //
-    // Assertions.assertThat(statusJobInfo).isEqualTo(pJobInfo.getStatus());
-    // }
-
     @Test
     public void testExecuteJob() throws InterruptedException {
         final String tenantName = "project1";
@@ -117,19 +101,19 @@ public class JobHandlerIT {
                 .getField(jobHandler, "threads");
         Mockito.when(jobInfoSystemServiceMock.findJobInfo(tenantName, pJobInfo.getId())).thenReturn(pJobInfo);
         final StatusInfo statusInfo = jobHandler.execute(tenantName, pJobInfo.getId());
+        final Thread thread1 = threads.get(pJobInfo.getId()).getThread();
 
         Mockito.when(jobInfoSystemServiceMock.findJobInfo(tenantName, pJobInfo2.getId())).thenReturn(pJobInfo2);
         final StatusInfo statusInfo2 = jobHandler.execute(tenantName, pJobInfo2.getId());
+        final Thread thread2 = threads.get(pJobInfo2.getId()).getThread();
 
         Mockito.when(jobInfoSystemServiceMock.findJobInfo(tenantName, pJobInfo3.getId())).thenReturn(pJobInfo3);
         final StatusInfo statusInfo3 = jobHandler.execute(tenantName, pJobInfo3.getId());
+        final Thread thread3 = threads.get(pJobInfo3.getId()).getThread();
 
         Mockito.when(jobInfoSystemServiceMock.findJobInfo(tenantName, pJobInfo4.getId())).thenReturn(pJobInfo4);
         final StatusInfo statusInfo4 = jobHandler.execute(tenantName, pJobInfo4.getId());
         Assertions.assertThat(threads.size()).isGreaterThan(0);
-        final Thread thread1 = threads.get(pJobInfo.getId()).getThread();
-        final Thread thread2 = threads.get(pJobInfo2.getId()).getThread();
-        final Thread thread3 = threads.get(pJobInfo3.getId()).getThread();
         final Thread thread4 = threads.get(pJobInfo4.getId()).getThread();
 
         Assertions.assertThat(statusInfo).isNotNull();
@@ -181,6 +165,25 @@ public class JobHandlerIT {
 
         final StatusInfo statusInfo = jobHandler.execute(tenantName, pJobInfo.getId());
         final StatusInfo statusInfoAbort = jobHandler.abort(pJobInfo.getId());
+    }
+
+    @Test
+    public void testNbActiveThreadByTenant() {
+        final String tenantName = "project1";
+        Mockito.when(jobInfoSystemServiceMock.findJobInfo(tenantName, pJobInfo.getId())).thenReturn(pJobInfo);
+        final StatusInfo statusInfo = jobHandler.execute(tenantName, pJobInfo.getId());
+        final Map<String, Integer> nbActiveThreadByTenant = jobHandler.getNbActiveThreadByTenant();
+        Assertions.assertThat(nbActiveThreadByTenant.size()).isEqualTo(1);
+        Assertions.assertThat(nbActiveThreadByTenant.get(tenantName)).isEqualTo(1);
+    }
+
+    @Test
+    public void testIsThreadPoolFull() {
+        ReflectionTestUtils.setField(jobHandler, "maxJobCapacity", 0);
+        Assertions.assertThat(jobHandler.isThreadPoolFull()).isEqualTo(true);
+        ReflectionTestUtils.setField(jobHandler, "maxJobCapacity", 5);
+        Assertions.assertThat(jobHandler.isThreadPoolFull()).isEqualTo(false);
+
     }
 
 }
