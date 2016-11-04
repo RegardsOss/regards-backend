@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.accessrights.service.IProjectUserService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidEntityException;
+import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
  * Test class for {@link IAccountService}.
@@ -254,15 +254,15 @@ public class AccountServiceTest {
     /**
      * Check that the system fails when trying to update a not existing account
      *
-     * @throws EntityException
-     *             <br>
-     *             {@link InvalidEntityException} Thrown when passed id is different from the id of passed account<br>
-     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Account} with passed if could be found
+     * @throws InvalidValueException
+     *             Thrown when passed id is different from the id of passed account
      */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("?")
     @Purpose("Check that the system allows to create a new account.")
-    public void updateAccountNotFound() throws EntityException {
+    public void updateAccountNotFound() throws EntityNotFoundException, InvalidValueException {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(false);
 
@@ -273,15 +273,15 @@ public class AccountServiceTest {
     /**
      * Check that the system fails when trying to update a account with different id thant the passed one.
      *
-     * @throws EntityException
-     *             <br>
-     *             {@link InvalidEntityException} Thrown when passed id is different from the id of passed account<br>
-     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Account} with passed if could be found
+     * @throws InvalidValueException
+     *             Thrown when passed id is different from the id of passed account
      */
-    @Test(expected = InvalidEntityException.class)
+    @Test(expected = InvalidValueException.class)
     @Requirement("?")
     @Purpose("Check that the system fails when trying to update a account with different id thant the passed one.")
-    public void updateAccountDifferentId() throws EntityException {
+    public void updateAccountDifferentId() throws EntityNotFoundException, InvalidValueException {
         final Long wrongId = 1L;
 
         // Mock
@@ -295,15 +295,15 @@ public class AccountServiceTest {
     /**
      * Check that the system allows to update an account.
      *
-     * @throws EntityException
-     *             <br>
-     *             {@link InvalidEntityException} Thrown when passed id is different from the id of passed account<br>
-     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Account} with passed if could be found
+     * @throws InvalidValueException
+     *             Thrown when passed id is different from the id of passed account
      */
     @Test
     @Requirement("?")
     @Purpose("Check that the system allows to update an account.")
-    public void updateAccount() throws EntityException {
+    public void updateAccount() throws EntityNotFoundException, InvalidValueException {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
@@ -316,4 +316,74 @@ public class AccountServiceTest {
         Mockito.verify(accountRepository).save(Mockito.refEq(account));
     }
 
+    /**
+     * Check that the system does unlock not locked accounts and feedbacks the caller.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Account} with passed if could be found
+     * @throws InvalidValueException
+     *             Thrown when passed id is different from the id of passed account
+     */
+    @Test(expected = InvalidValueException.class)
+    @Requirement("REGARDS_DSL_ADM_ADM_450")
+    @Purpose("Check that the system does unlock not locked accounts and feedbacks the caller.")
+    public void unlockAccountNotLocked() throws EntityNotFoundException, InvalidValueException {
+        // Mock
+        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
+        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+
+        // Prepare the error case
+        account.setStatus(AccountStatus.ACTIVE);
+
+        // Trigger exception
+        accountService.unlockAccount(ID, CODE);
+    }
+
+    /**
+     * Check that the system does not unlock a locked account if the wrong code is passed.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Account} with passed if could be found
+     * @throws InvalidValueException
+     *             Thrown when passed id is different from the id of passed account
+     */
+    @Test(expected = InvalidValueException.class)
+    @Requirement("REGARDS_DSL_ADM_ADM_450")
+    @Purpose("Check that the system does not unlock a locked account if the wrong code is passed.")
+    public void unlockAccountWrongCode() throws EntityNotFoundException, InvalidValueException {
+        // Mock
+        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
+        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+
+        // Trigger exception
+        accountService.unlockAccount(ID, "wrongCode");
+    }
+
+    /**
+     * Check that the system allows a user to unlock its account with a code.
+     *
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Account} with passed if could be found
+     * @throws InvalidValueException
+     *             Thrown when passed id is different from the id of passed account
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_450")
+    @Purpose("Check that the system allows a user to unlock its account with a code.")
+    public void unlockAccountRightCode() throws EntityNotFoundException, InvalidValueException {
+        // Mock
+        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
+        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+
+        // Prepare the case
+        account.setStatus(AccountStatus.LOCKED);
+
+        // Call tested method
+        accountService.unlockAccount(ID, CODE);
+
+        // Check
+        final Account actual = accountService.retrieveAccount(ID);
+        Assert.assertEquals(AccountStatus.ACTIVE, actual.getStatus());
+        Mockito.verify(accountRepository).save(Mockito.refEq(account));
+    }
 }
