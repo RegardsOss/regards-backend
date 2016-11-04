@@ -11,7 +11,7 @@ import java.util.List;
  *
  * Utility class to manage a list of plugin parameters.
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 public class PluginParametersFactory {
 

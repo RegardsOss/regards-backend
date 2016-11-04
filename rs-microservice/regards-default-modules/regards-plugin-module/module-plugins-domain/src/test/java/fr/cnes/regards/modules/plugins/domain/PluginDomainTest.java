@@ -9,7 +9,7 @@ import org.junit.Test;
 
 /**
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public class PluginDomainTest extends PluginDomainUtility {
@@ -47,7 +47,7 @@ public class PluginDomainTest extends PluginDomainUtility {
      * Test all setter/getter of {@link PluginConfiguration}
      */
     @Test
-    public void pluginConfigurationGetSetattributes() {
+    public void pluginConfigurationGetSetAttributes() {
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration();
         final long anId = 1234567;
         aPluginConfiguration.setId(new Long(anId));
@@ -63,7 +63,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         aPluginConfiguration.setVersion(versionNumber);
 
         Assert.assertEquals(aPluginConfiguration.getId().longValue(), anId);
-        Assert.assertEquals(aPluginConfiguration.getIsActive(), isActive);
+        Assert.assertEquals(aPluginConfiguration.isActive(), isActive);
         Assert.assertEquals(aPluginConfiguration.getLabel(), aLabel);
         Assert.assertEquals(aPluginConfiguration.getPluginId(), aPluginId);
         Assert.assertEquals(aPluginConfiguration.getPriorityOrder().intValue(), priorityOrder);
@@ -77,6 +77,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameterPluginConfiguration(parameterName, aPluginConfiguration)
                 .addParameter("paramIdentifier", BLUE).getParameters();
+        parameters.get(0).setId(AN_ID);
 
         final PluginConfiguration pluginConfigurationParameter = new PluginConfiguration();
         pluginConfigurationParameter.setParameters(parameters);
@@ -85,9 +86,11 @@ public class PluginDomainTest extends PluginDomainUtility {
 
         Assert.assertNotNull(plgConf);
         Assert.assertEquals(plgConf.getPluginId(), aPluginConfiguration.getPluginId());
-        Assert.assertEquals(plgConf.getIsActive(), aPluginConfiguration.getIsActive());
+        Assert.assertEquals(plgConf.isActive(), aPluginConfiguration.isActive());
         Assert.assertEquals(plgConf.getLabel(), aPluginConfiguration.getLabel());
         Assert.assertEquals(plgConf.getVersion(), aPluginConfiguration.getVersion());
+        Assert.assertEquals(plgConf.getParameters().get(0).getId(),
+                            aPluginConfiguration.getParameters().get(0).getId());
     }
 
     /**
@@ -120,9 +123,16 @@ public class PluginDomainTest extends PluginDomainUtility {
 
         Assert.assertEquals(RED, plgParam.getName());
         Assert.assertEquals(GREEN, plgParam.getValue());
-        Assert.assertEquals(false, plgParam.getIsDynamic().booleanValue());
+        Assert.assertEquals(false, plgParam.isDynamic().booleanValue());
+        
+        // test dynamics==null
+        Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), 0);
 
+        // test dynamics!=null && dynamics.isEmpty
         final List<PluginDynamicValue> dynValues = new ArrayList<>();
+        plgParam.setDynamicsValues(dynValues);
+        Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), dynValues.size());
+        
         dynValues.add(new PluginDynamicValue(BLUE));
         dynValues.add(new PluginDynamicValue(GREEN));
         final PluginDynamicValue plgDynValue = new PluginDynamicValue();
@@ -133,7 +143,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         plgParam.setDynamicsValues(dynValues);
 
         Assert.assertEquals(plgParam.getDynamicsValues().size(), dynValues.size());
-
+        Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), dynValues.size());
     }
 
 }

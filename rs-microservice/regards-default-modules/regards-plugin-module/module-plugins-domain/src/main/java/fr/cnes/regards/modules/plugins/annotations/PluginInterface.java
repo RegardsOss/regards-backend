@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  *
  * Annotate a plugin type.
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)

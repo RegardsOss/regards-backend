@@ -12,7 +12,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 /***
  * Constants and datas for unit testing of plugin's DAO.
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public class PluginDaoUtility {

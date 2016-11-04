@@ -29,7 +29,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  *
  * Unit testing of {@link PluginService}.
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 public class PluginServiceTest extends PluginServiceUtility {
 
@@ -109,7 +109,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Assert.assertNotNull(plugins);
         Assert.assertFalse(plugins.isEmpty());
 
-        LOGGER.debug("List all plugins of type <IComplexInterfacePlugin.class> :");
+        LOGGER.debug(String.format("List all plugins of type <%s> :", aClass));
         plugins.forEach(p -> LOGGER.debug(p.getPluginId()));
     }
 
@@ -189,7 +189,7 @@ public class PluginServiceTest extends PluginServiceUtility {
                     .savePluginConfiguration(aPluginConfiguration);
             Assert.assertEquals(aPluginConfiguration.getLabel(), savedPluginConfiguration.getLabel());
             Assert.assertEquals(aPluginConfiguration.getPluginId(), savedPluginConfiguration.getPluginId());
-            Assert.assertEquals(aPluginConfiguration.getIsActive(), savedPluginConfiguration.getIsActive());
+            Assert.assertEquals(aPluginConfiguration.isActive(), savedPluginConfiguration.isActive());
             Assert.assertEquals(aPluginConfiguration.getParameters().size(),
                                 savedPluginConfiguration.getParameters().size());
         } catch (PluginUtilsException e) {
@@ -259,12 +259,12 @@ public class PluginServiceTest extends PluginServiceUtility {
      */
     public void saveAPluginConfigurationWithoutParameters() throws PluginUtilsException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
-        PluginConfiguration savedPluginConfiguration = pluginServiceMocked
+        final PluginConfiguration savedPluginConfiguration = pluginServiceMocked
                 .savePluginConfiguration(aPluginConfiguration);
         Assert.assertNotNull(savedPluginConfiguration);
         Assert.assertEquals(aPluginConfiguration.getLabel(), savedPluginConfiguration.getLabel());
         Assert.assertEquals(aPluginConfiguration.getPluginId(), savedPluginConfiguration.getPluginId());
-        Assert.assertEquals(aPluginConfiguration.getIsActive(), savedPluginConfiguration.getIsActive());
+        Assert.assertEquals(aPluginConfiguration.isActive(), savedPluginConfiguration.isActive());
         Assert.assertEquals(aPluginConfiguration.getParameters().size(),
                             savedPluginConfiguration.getParameters().size());
     }
@@ -275,8 +275,9 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Test
     public void updateAPluginConfiguration() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        aPluginConfiguration.setId(AN_ID);
+        aPluginConfiguration.setId(899L);
         try {
+            Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
             Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
@@ -298,8 +299,8 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Test(expected = PluginUtilsException.class)
     public void updateAPluginConfigurationUnknown() throws PluginUtilsException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        aPluginConfiguration.setId(AN_ID);
-        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(null);
+        aPluginConfiguration.setId(999L);
+        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(false);
 
         pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
         Assert.fail();
@@ -514,7 +515,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         aPluginConfiguration.setId(AN_ID);
 
         final PluginConfiguration bPluginConfiguration = getPluginConfigurationWithParameters();
-        bPluginConfiguration.setPriorityOrder(10);
+        bPluginConfiguration.setPriorityOrder(2);
 
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(bPluginConfiguration);
@@ -540,7 +541,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
 
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
-        aPluginConfiguration.setPriorityOrder(11);
+        aPluginConfiguration.setPriorityOrder(2);
         aPluginConfiguration.setId(AN_ID);
 
         final PluginConfiguration bPluginConfiguration = getPluginConfigurationWithParameters();

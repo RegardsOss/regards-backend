@@ -12,7 +12,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 /***
  * Constants and datas for unit testing of plugin's Service.
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public class PluginServiceUtility {
@@ -83,6 +83,21 @@ public class PluginServiceUtility {
     protected static final String PLUGIN_PARAMETER_ID = "aParameterPlugin";
 
     /**
+     * isActive constant {@link String}
+     */
+    protected static final String PARAM_IS_ACTIVE = "isActive";
+
+    /**
+     * coeff constant {@link String}
+     */
+    protected static final String PARAM_COEFF = "coeff";
+
+    /**
+     * suffix constant {@link String}
+     */
+    protected static final String PARAM_SUFFIX = "suffix";
+
+    /**
      * A {@link List} of values
      */
     protected static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
@@ -91,16 +106,18 @@ public class PluginServiceUtility {
      * A {@link PluginParameter}
      */
     protected static final List<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
-            .addParameter("param11", "value11").addParameterDynamic("coeff", "0").addParameter("isActive", "true")
-            .addParameterDynamic("suffix", RED, DYNAMICVALUES).getParameters();
+            .addParameter("param11", "value11").addParameterDynamic(PARAM_COEFF, "0")
+            .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString())
+            .addParameterDynamic(PARAM_SUFFIX, RED, DYNAMICVALUES).getParameters();
 
     /**
      * A list of {@link PluginParameter}
      */
     protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
-            .addParameter("param34", "value34").addParameter("param35", "value35").addParameterDynamic("coeff", "3")
-            .addParameter("isActive", "true").addParameter("suffix", "Toulouse").getParameters();
+            .addParameter("param34", "value34").addParameter("param35", "value35").addParameterDynamic(PARAM_COEFF, "3")
+            .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString()).addParameter(PARAM_SUFFIX, "Toulouse")
+            .getParameters();
 
     /**
      * A {@link PluginConfiguration}
@@ -113,12 +130,12 @@ public class PluginServiceUtility {
      */
     private PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
             "second configuration", DYNAMICPARAMETERS, 0);
-    
+
     /**
      * A list of {@link PluginParameter} without parameters.
      */
     private PluginConfiguration pluginConfiguration3 = new PluginConfiguration(this.getPluginMetaData(),
-            "third configuration", 99);
+            "third configuration", CINQ);
 
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
@@ -136,7 +153,7 @@ public class PluginServiceUtility {
     protected PluginConfiguration getPluginConfigurationWithDynamicParameter() {
         return pluginConfiguration2;
     }
-    
+
     protected PluginConfiguration getPluginConfigurationWithoutParameters() {
         return pluginConfiguration3;
     }

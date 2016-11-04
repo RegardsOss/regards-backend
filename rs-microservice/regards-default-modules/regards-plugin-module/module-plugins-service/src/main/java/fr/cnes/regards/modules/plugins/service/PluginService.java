@@ -26,7 +26,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  *
  * The implementation of {@link IPluginService}.
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 @Service
 public class PluginService implements IPluginService {
@@ -153,7 +153,10 @@ public class PluginService implements IPluginService {
     public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPlugin)
             throws PluginUtilsException {
         // Check if plugin configuration exists
-        getPluginConfiguration(pPlugin.getId());
+        if (!pluginConfRepository.exists(pPlugin.getId())) {
+            throw new PluginUtilsException(
+                    String.format("Error while updating the plugin configuration <%s>.", pPlugin.getId()));
+        }
 
         return savePluginConfiguration(pPlugin);
     }
@@ -198,7 +201,6 @@ public class PluginService implements IPluginService {
         final List<PluginConfiguration> confs = getPluginConfigurationsByType(pInterfacePluginType);
 
         if (confs.isEmpty()) {
-
             throw new PluginUtilsException(String.format("No plugin configuration defined for the type <%s>.",
                                                          pInterfacePluginType.getName()));
         }

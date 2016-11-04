@@ -6,7 +6,7 @@ package fr.cnes.regards.plugins;
 /**
  * ISamplePlugin
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public interface ISamplePlugin {

@@ -66,7 +66,7 @@ public class RegardsStreamUtilsTest {
     }
 
     /**
-     * Simple POJO reprensenting a person. Add getters and setters if needed.
+     * Simple POJO representing a person. Add getters and setters if needed.
      *
      * @author xbrochar
      */
