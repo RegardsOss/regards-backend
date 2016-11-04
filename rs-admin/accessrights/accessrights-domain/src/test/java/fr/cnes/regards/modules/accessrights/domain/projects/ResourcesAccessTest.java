@@ -11,6 +11,8 @@ import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 
 /**
  * Unit testing of {@link ResourcesAccess}
+ *
+ * @author Maxime Bouveron
  */
 public class ResourcesAccessTest {
 
@@ -44,11 +46,8 @@ public class ResourcesAccessTest {
      */
     private final HttpVerb verb = HttpVerb.HEAD;
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         resourcesAccess = new ResourcesAccess(id, description, microservice, resource, verb);
     }
 
@@ -57,7 +56,7 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testResourcesAccess() {
-        ResourcesAccess testResources = new ResourcesAccess();
+        final ResourcesAccess testResources = new ResourcesAccess();
 
         Assert.assertEquals(null, testResources.getId());
         Assert.assertEquals(null, testResources.getDescription());
@@ -72,7 +71,7 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testResourcesAccessId() {
-        ResourcesAccess testResources = new ResourcesAccess(id);
+        final ResourcesAccess testResources = new ResourcesAccess(id);
 
         Assert.assertEquals(id, testResources.getId());
         Assert.assertEquals(null, testResources.getDescription());
@@ -82,12 +81,11 @@ public class ResourcesAccessTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess#ResourcesAccess(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, fr.cnes.regards.modules.accessrights.domain.HttpVerb)}.
+     * Test method for {@link ResourcesAccess#ResourcesAccess(Long, String, String, String, HttpVerb)}.
      */
     @Test
     public void testResourcesAccessWithEverything() {
-        ResourcesAccess testResources = new ResourcesAccess(id, description, microservice, resource, verb);
+        final ResourcesAccess testResources = new ResourcesAccess(id, description, microservice, resource, verb);
 
         Assert.assertEquals(id, testResources.getId());
         Assert.assertEquals(description, testResources.getDescription());
@@ -97,12 +95,11 @@ public class ResourcesAccessTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess#ResourcesAccess(java.lang.String, java.lang.String, java.lang.String, fr.cnes.regards.modules.accessrights.domain.HttpVerb)}.
+     * Test method for {@link ResourcesAccess#ResourcesAccess(String, String, String, HttpVerb)}.
      */
     @Test
     public void testResourcesAccessWithoutID() {
-        ResourcesAccess testResources = new ResourcesAccess(description, microservice, resource, verb);
+        final ResourcesAccess testResources = new ResourcesAccess(description, microservice, resource, verb);
 
         Assert.assertEquals(null, testResources.getId());
         Assert.assertEquals(description, testResources.getDescription());
@@ -125,7 +122,7 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testSetId() {
-        Long newId = 4L;
+        final Long newId = 4L;
         resourcesAccess.setId(newId);
         Assert.assertEquals(newId, resourcesAccess.getId());
     }
@@ -144,7 +141,7 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testSetDescription() {
-        String newDescription = "newDescription";
+        final String newDescription = "newDescription";
         resourcesAccess.setDescription(newDescription);
         Assert.assertEquals(newDescription, resourcesAccess.getDescription());
     }
@@ -163,7 +160,7 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testSetMicroservice() {
-        String newMicroservice = "newMicroservice";
+        final String newMicroservice = "newMicroservice";
         resourcesAccess.setMicroservice(newMicroservice);
         Assert.assertEquals(newMicroservice, resourcesAccess.getMicroservice());
     }
@@ -182,7 +179,7 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testSetResource() {
-        String newResource = "newResource";
+        final String newResource = "newResource";
         resourcesAccess.setResource(newResource);
         Assert.assertEquals(newResource, resourcesAccess.getResource());
     }
@@ -196,12 +193,11 @@ public class ResourcesAccessTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess#setVerb(fr.cnes.regards.modules.accessrights.domain.HttpVerb)}.
+     * Test method for {@link ResourcesAccess#setVerb(fr.cnes.regards.modules.accessrights.domain.HttpVerb)}.
      */
     @Test
     public void testSetVerb() {
-        HttpVerb newVerb = HttpVerb.DELETE;
+        final HttpVerb newVerb = HttpVerb.DELETE;
         resourcesAccess.setVerb(newVerb);
         Assert.assertEquals(newVerb, resourcesAccess.getVerb());
     }

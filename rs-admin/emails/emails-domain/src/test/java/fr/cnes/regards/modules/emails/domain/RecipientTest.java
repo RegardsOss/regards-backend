@@ -9,24 +9,26 @@ import org.junit.Test;
 
 /**
  * Unit testing of {@link Recipient}
+ *
+ * @author Maxime Bouveron
  */
 public class RecipientTest {
 
     /**
      * Test recipient
      */
-    Recipient recipient = new Recipient();
+    private final Recipient recipient = new Recipient();
 
     /**
      * Test address
      */
-    String address = "adress";
+    private final String address = "adress";
 
     /**
      * @throws java.lang.Exception
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         recipient.setAddress(address);
     }
 
@@ -43,7 +45,7 @@ public class RecipientTest {
      */
     @Test
     public void testSetAddress() {
-        String newAddress = "newAddress";
+        final String newAddress = "newAddress";
         recipient.setAddress(newAddress);
         Assert.assertEquals(newAddress, recipient.getAddress());
     }

@@ -11,6 +11,8 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 
 /**
  * Unit test for {@link Account}
+ *
+ * @author Maxime Bouveron
  */
 public class AccountTest {
 
@@ -59,11 +61,8 @@ public class AccountTest {
      */
     private final String code = "code";
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         status = AccountStatus.PENDING;
         accountTest = new Account(id, email, firstName, lastName, login, password, status, code);
     }
@@ -73,7 +72,7 @@ public class AccountTest {
      */
     @Test
     public void testAccount() {
-        Account account = new Account();
+        final Account account = new Account();
 
         Assert.assertEquals(null, account.getId());
         Assert.assertEquals(null, account.getEmail());
@@ -90,7 +89,7 @@ public class AccountTest {
      */
     @Test
     public void testAccountEmail() {
-        Account account = new Account(email);
+        final Account account = new Account(email);
 
         Assert.assertEquals(email, account.getEmail());
         Assert.assertEquals(null, account.getFirstName());
@@ -102,12 +101,11 @@ public class AccountTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#Account(java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+     * Test method for {@link Account#Account(java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
      */
     @Test
     public void testAccountWithoutLogin() {
-        Account account = new Account(email, firstName, lastName, password);
+        final Account account = new Account(email, firstName, lastName, password);
 
         Assert.assertEquals(email, account.getEmail());
         Assert.assertEquals(firstName, account.getFirstName());
@@ -120,11 +118,11 @@ public class AccountTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#Account(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+     * {@link Account#Account(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}
      */
     @Test
     public void testAccountWithLogin() {
-        Account account = new Account(email, firstName, lastName, login, password);
+        final Account account = new Account(email, firstName, lastName, login, password);
 
         Assert.assertEquals(email, account.getEmail());
         Assert.assertEquals(firstName, account.getFirstName());
@@ -136,12 +134,11 @@ public class AccountTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#Account(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, fr.cnes.regards.modules.accessrights.domain.AccountStatus, java.lang.String)}.
+     * Test method for {@link Account#Account(Long, String, String, String, String, jString, AccountStatus, String)}.
      */
     @Test
     public void testAccountFull() {
-        Account account = new Account(id, email, firstName, lastName, login, password, status, code);
+        final Account account = new Account(id, email, firstName, lastName, login, password, status, code);
 
         Assert.assertEquals(id, account.getId());
         Assert.assertEquals(email, account.getEmail());
@@ -166,7 +163,7 @@ public class AccountTest {
      */
     @Test
     public void testSetEmail() {
-        String newEmail = "newMail";
+        final String newEmail = "newMail";
         accountTest.setEmail(newEmail);
         Assert.assertEquals(newEmail, accountTest.getEmail());
     }
@@ -185,7 +182,7 @@ public class AccountTest {
      */
     @Test
     public void testSetFirstName() {
-        String newFirstName = "newFirstName";
+        final String newFirstName = "newFirstName";
         accountTest.setFirstName(newFirstName);
         Assert.assertEquals(newFirstName, accountTest.getFirstName());
     }
@@ -204,7 +201,7 @@ public class AccountTest {
      */
     @Test
     public void testSetLastName() {
-        String newLastName = "newLastName";
+        final String newLastName = "newLastName";
         accountTest.setLastName(newLastName);
         Assert.assertEquals(newLastName, accountTest.getLastName());
     }
@@ -222,7 +219,7 @@ public class AccountTest {
      */
     @Test
     public void testSetLogin() {
-        String newLogin = "newLogin";
+        final String newLogin = "newLogin";
         accountTest.setLogin(newLogin);
         Assert.assertEquals(newLogin, accountTest.getLogin());
     }
@@ -241,7 +238,7 @@ public class AccountTest {
      */
     @Test
     public void testSetPassword() {
-        String newPassword = "newPassword";
+        final String newPassword = "newPassword";
         accountTest.setPassword(newPassword);
         Assert.assertEquals(newPassword, accountTest.getPassword());
     }
@@ -255,8 +252,7 @@ public class AccountTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#setStatus(fr.cnes.regards.modules.accessrights.domain.AccountStatus)}.
+     * Test method for {@link Account#setStatus(fr.cnes.regards.modules.accessrights.domain.AccountStatus)}.
      */
     @Test
     public void testSetStatus() {
@@ -292,7 +288,7 @@ public class AccountTest {
      */
     @Test
     public void testSetId() {
-        Long newId = 4L;
+        final Long newId = 4L;
         accountTest.setId(newId);
         Assert.assertEquals(newId, accountTest.getId());
     }
@@ -310,7 +306,7 @@ public class AccountTest {
      */
     @Test
     public void testSetCode() {
-        String newCode = "newCode";
+        final String newCode = "newCode";
         accountTest.setCode(newCode);
         Assert.assertEquals(newCode, accountTest.getCode());
     }
@@ -323,8 +319,9 @@ public class AccountTest {
         Account otherAccount = new Account(id, email, firstName, lastName, login, password, status, code);
         Assert.assertTrue(accountTest.equals(otherAccount));
 
-        otherAccount = new Account(4L, "otherMail", "otherFirstName", "otherLastName", "otherLogin", "otherPassword",
-                AccountStatus.INACTIVE, "otherCode");
+        final Long localId = 4L;
+        otherAccount = new Account(localId, "otherMail", "otherFirstName", "otherLastName", "otherLogin",
+                "otherPassword", AccountStatus.INACTIVE, "otherCode");
         Assert.assertFalse(accountTest.equals(otherAccount));
     }
 

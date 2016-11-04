@@ -9,6 +9,8 @@ import org.junit.Test;
 
 /**
  * Unit testing of {@link AccessSettings}
+ *
+ * @author Maxime Bouveron
  */
 public class AccessSettingsTest {
 
@@ -27,11 +29,8 @@ public class AccessSettingsTest {
      */
     private final String mode = "mode";
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         accessSettings = new AccessSettings();
         accessSettings.setId(id);
         accessSettings.setMode(mode);
@@ -42,7 +41,7 @@ public class AccessSettingsTest {
      */
     @Test
     public void testHashCode() {
-        AccessSettings testAccess = new AccessSettings();
+        final AccessSettings testAccess = new AccessSettings();
         Assert.assertFalse(testAccess.hashCode() == accessSettings.hashCode());
     }
 
@@ -51,7 +50,7 @@ public class AccessSettingsTest {
      */
     @Test
     public void testAccessSettings() {
-        AccessSettings accessTest = new AccessSettings();
+        final AccessSettings accessTest = new AccessSettings();
         Assert.assertEquals(null, accessTest.getId());
         Assert.assertEquals(null, accessTest.getMode());
     }
@@ -78,7 +77,7 @@ public class AccessSettingsTest {
      */
     @Test
     public void testSetId() {
-        Long newId = 4L;
+        final Long newId = 4L;
         accessSettings.setId(newId);
         Assert.assertEquals(newId, accessSettings.getId());
     }
@@ -89,7 +88,7 @@ public class AccessSettingsTest {
      */
     @Test
     public void testSetMode() {
-        String newMode = "newMode";
+        final String newMode = "newMode";
         accessSettings.setMode(newMode);
         Assert.assertEquals(newMode, accessSettings.getMode());
     }
@@ -100,7 +99,7 @@ public class AccessSettingsTest {
      */
     @Test
     public void testEqualsObject() {
-        AccessSettings testAccess = new AccessSettings();
+        final AccessSettings testAccess = new AccessSettings();
         Assert.assertFalse(accessSettings.equals(testAccess));
         Assert.assertTrue(testAccess.equals(testAccess));
     }
