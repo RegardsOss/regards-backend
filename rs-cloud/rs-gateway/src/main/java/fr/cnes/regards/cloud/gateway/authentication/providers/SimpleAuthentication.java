@@ -6,18 +6,22 @@ package fr.cnes.regards.cloud.gateway.authentication.providers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import com.netflix.hystrix.exception.HystrixRuntimeException;
 
 import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 
 /**
@@ -33,20 +37,27 @@ import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 public class SimpleAuthentication implements IAuthenticationProvider {
 
     /**
-     * Gateway role
-     */
-    private static final String GATEWAY_ROLE = "USER";
-
-    /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(SimpleAuthentication.class);
+
+    /**
+     * Current microservice name
+     */
+    @Value("${spring.application.name")
+    private String microserviceName;
 
     /**
      * rs-admin microservice client for accounts
      */
     @Autowired
     private IAccountsClient accountsClient;
+
+    /**
+     * rs-admin microservice client for accounts
+     */
+    @Autowired
+    private IProjectUsersClient projectUsersClient;
 
     /**
      * Security JWT service
@@ -56,11 +67,22 @@ public class SimpleAuthentication implements IAuthenticationProvider {
 
     @Override
     public ProjectUser retreiveUser(final String pName, final String pScope) {
-        final ProjectUser user = new ProjectUser();
-        final Role role = new Role();
-        role.setName(GATEWAY_ROLE);
-        user.setRole(role);
-        user.setEmail("user@regards.c-s.fr");
+        ProjectUser user = null;
+        try {
+            jwtService.injectToken(pScope, RoleAuthority.getSysRole(microserviceName));
+
+            final ResponseEntity<Resource<ProjectUser>> response = projectUsersClient.retrieveProjectUser(pName);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                user = response.getBody().getContent();
+            } else {
+                LOG.error(String.format("Remote administration request error. Returned code %s",
+                                        response.getStatusCode()));
+            }
+        } catch (final JwtException e) {
+            LOG.error(e.getMessage(), e);
+        } catch (final EntityNotFoundException e) {
+            LOG.info(e.getMessage(), e);
+        }
         return user;
     }
 
@@ -71,10 +93,13 @@ public class SimpleAuthentication implements IAuthenticationProvider {
         UserStatus status = UserStatus.ACCESS_DENIED;
 
         try {
-            jwtService.injectToken(pScope, GATEWAY_ROLE);
-            final HttpEntity<Boolean> results = accountsClient.validatePassword(pName, pPassword);
-            if (results.getBody().equals(Boolean.TRUE)) {
+            jwtService.injectToken(pScope, RoleAuthority.getSysRole(microserviceName));
+            final ResponseEntity<Void> response = accountsClient.validatePassword(pName, pPassword);
+            if (response.getStatusCode() == HttpStatus.OK) {
                 status = UserStatus.ACCESS_GRANTED;
+            } else {
+                LOG.error(String.format("Remote administration request error. Returned code %s",
+                                        response.getStatusCode()));
             }
         } catch (final HystrixRuntimeException | JwtException e) {
             LOG.error(e.getMessage(), e);

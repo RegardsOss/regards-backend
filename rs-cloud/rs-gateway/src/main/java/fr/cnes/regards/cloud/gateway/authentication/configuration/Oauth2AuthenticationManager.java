@@ -71,6 +71,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager {
         // Retrieve account
         final ProjectUser user = authProvider.retreiveUser(name, scope);
 
+        if (user == null) {
+            throw new BadCredentialsException(String.format("User %s does not exists ", name));
+        }
         final List<GrantedAuthority> grantedAuths = new ArrayList<>();
         grantedAuths.add(new SimpleGrantedAuthority(user.getRole().getName()));
 

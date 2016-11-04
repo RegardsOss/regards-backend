@@ -62,6 +62,10 @@
 			<artifactId>accessrights-client</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.project</groupId>
+			<artifactId>project-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
 		</dependency>

@@ -14,7 +14,12 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.filter.IpFilter;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
  *
@@ -37,10 +42,16 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
     private String resourceId;
 
     /**
-     * JWT Secret key
+     * Provider to access authorities resources and roles informations.
      */
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    @Autowired
+    private IAuthoritiesProvider authoritiesProvider;
+
+    /**
+     * Security service
+     */
+    @Autowired
+    private JWTService jwtService;
 
     /**
      * token services
@@ -49,15 +60,21 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
     private DefaultTokenServices tokenServices;
 
     @Override
-    public void configure(ResourceServerSecurityConfigurer pResources) {
-        pResources.resourceId(resourceId).tokenServices(tokenServices);
+    public void configure(final ResourceServerSecurityConfigurer pResources) {
+        pResources.resourceId(resourceId).tokenExtractor(new JwtTokenExtractor(jwtService)).tokenServices(tokenServices)
+                .authenticationManager(new ResourceServerAuthenticationManager(jwtService));
     }
 
     @Override
-    public void configure(HttpSecurity pHttp) throws Exception {
+    public void configure(final HttpSecurity pHttp) throws Exception {
         pHttp.requestMatcher(new OAuthRequestedMatcher()).authorizeRequests().antMatchers(HttpMethod.OPTIONS)
-                .permitAll()
-                .anyRequest().authenticated();
+                .permitAll().anyRequest().authenticated();
+
+        // Add Ip filter after Authentication filter
+        pHttp.addFilterAfter(new IpFilter(authoritiesProvider), AbstractPreAuthenticatedProcessingFilter.class);
+
+        // Add CORS filter
+        pHttp.addFilterAfter(new RoleSysFilter(), IpFilter.class);
     }
 
     /**
@@ -72,7 +89,7 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
     private static class OAuthRequestedMatcher implements RequestMatcher {
 
         @Override
-        public boolean matches(HttpServletRequest pRequest) {
+        public boolean matches(final HttpServletRequest pRequest) {
             final String auth = pRequest.getHeader("Authorization");
             final boolean haveOauth2Token = (auth != null) && auth.startsWith("Bearer");
             final boolean haveAccessToken = pRequest.getParameter("access_token") != null;
