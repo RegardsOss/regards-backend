@@ -6,8 +6,6 @@ package fr.cnes.regards.modules.accessrights.client;
 import org.springframework.cloud.netflix.feign.FeignClient;
 
 import feign.Headers;
-import fr.cnes.regards.framework.hateoas.IResourceClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.fallback.RolesFallback;
 import fr.cnes.regards.modules.accessrights.signature.IRolesSignature;
 
@@ -22,6 +20,6 @@ import fr.cnes.regards.modules.accessrights.signature.IRolesSignature;
  */
 @FeignClient(value = "rs-admin", fallback = RolesFallback.class)
 @Headers({ "Accept: application/json", "Content-Type: application/json" })
-public interface IRolesClient extends IRolesSignature, IResourceClient<Role> {
+public interface IRolesClient extends IRolesSignature {
 
 }
