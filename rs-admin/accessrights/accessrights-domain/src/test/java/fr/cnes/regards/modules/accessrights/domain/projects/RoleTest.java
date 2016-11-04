@@ -13,6 +13,8 @@ import org.junit.Test;
 
 /**
  * Unit testing of {@link Role}
+ *
+ * @author Maxime Bouveron
  */
 public class RoleTest {
 
@@ -71,11 +73,8 @@ public class RoleTest {
      */
     private final boolean isNative = true;
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         permissions.add(new ResourcesAccess());
         projectUsers.add(new ProjectUser());
         authorizedAddresses.add("authorizedAddress");
@@ -89,7 +88,7 @@ public class RoleTest {
      */
     @Test
     public void testRole() {
-        Role testRole = new Role();
+        final Role testRole = new Role();
         Assert.assertEquals(null, testRole.getId());
         Assert.assertEquals(null, testRole.getName());
         Assert.assertEquals(false, testRole.isNative());
@@ -107,7 +106,7 @@ public class RoleTest {
      */
     @Test
     public void testRoleWithId() {
-        Role testRole = new Role(id);
+        final Role testRole = new Role(id);
         Assert.assertEquals(id, testRole.getId());
         Assert.assertEquals(null, testRole.getName());
         Assert.assertEquals(false, testRole.isNative());
@@ -121,12 +120,11 @@ public class RoleTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#Role(java.lang.Long, java.lang.String, fr.cnes.regards.modules.accessrights.domain.projects.Role, java.util.List, java.util.List)}.
+     * Test method for {@link Role#Role(Long, String, Role, List, List)}.
      */
     @Test
     public void testRoleWithParams() {
-        Role testRole = new Role(id, name, parentRole, permissions, projectUsers);
+        final Role testRole = new Role(id, name, parentRole, permissions, projectUsers);
         Assert.assertEquals(id, testRole.getId());
         Assert.assertEquals(name, testRole.getName());
         Assert.assertEquals(false, testRole.isNative());
@@ -140,12 +138,11 @@ public class RoleTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#Role(java.lang.Long, java.lang.String, fr.cnes.regards.modules.accessrights.domain.projects.Role, java.util.List, java.util.List, boolean, boolean)}.
+     * Test method for {@link Role#Role(Long, String, Role, List, List, boolean, boolean)}.
      */
     @Test
     public void testRoleWithoutCORS() {
-        Role testRole = new Role(id, name, parentRole, permissions, projectUsers, isDefault, isNative);
+        final Role testRole = new Role(id, name, parentRole, permissions, projectUsers, isDefault, isNative);
         Assert.assertEquals(id, testRole.getId());
         Assert.assertEquals(name, testRole.getName());
         Assert.assertEquals(isNative, testRole.isNative());
@@ -160,11 +157,11 @@ public class RoleTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#Role(java.lang.Long, java.lang.String, fr.cnes.regards.modules.accessrights.domain.projects.Role, java.util.List, java.util.List, java.util.List, boolean, boolean, boolean, java.time.LocalDateTime)}.
+     * {@link Role#Role(Long, String, Role, List, List, List, boolean, boolean, boolean, LocalDateTime)}.
      */
     @Test
     public void testRoleFull() {
-        Role testRole = new Role(id, name, parentRole, permissions, authorizedAddresses, projectUsers, isDefault,
+        final Role testRole = new Role(id, name, parentRole, permissions, authorizedAddresses, projectUsers, isDefault,
                 isNative, isCorsRequestsAuthorized, corsRequestsAuthorizationEndDate);
         Assert.assertEquals(id, testRole.getId());
         Assert.assertEquals(name, testRole.getName());
@@ -201,7 +198,7 @@ public class RoleTest {
      */
     @Test
     public void testSetId() {
-        Long newId = 4L;
+        final Long newId = 4L;
         role.setId(newId);
         Assert.assertEquals(newId, role.getId());
     }
@@ -268,18 +265,17 @@ public class RoleTest {
      */
     @Test
     public void testSetName() {
-        String newName = "newName";
+        final String newName = "newName";
         role.setName(newName);
         Assert.assertEquals(newName, role.getName());
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#setParentRole(fr.cnes.regards.modules.accessrights.domain.projects.Role)}.
+     * Test method for {@link Role#setParentRole(Role)}.
      */
     @Test
     public void testSetParentRole() {
-        Role newParentRole = new Role(8L);
+        final Role newParentRole = new Role(8L);
         role.setParentRole(newParentRole);
         Assert.assertEquals(newParentRole, role.getParentRole());
     }
@@ -289,8 +285,9 @@ public class RoleTest {
      */
     @Test
     public void testSetPermissions() {
-        List<ResourcesAccess> newPermissions = new ArrayList<ResourcesAccess>();
-        newPermissions.add(new ResourcesAccess(8L));
+        final List<ResourcesAccess> newPermissions = new ArrayList<ResourcesAccess>();
+        final Long localId = 8L;
+        newPermissions.add(new ResourcesAccess(localId));
         role.setPermissions(newPermissions);
         Assert.assertEquals(newPermissions, role.getPermissions());
     }
@@ -301,7 +298,7 @@ public class RoleTest {
      */
     @Test
     public void testSetProjectUsers() {
-        List<ProjectUser> newProjectUsers = new ArrayList<ProjectUser>();
+        final List<ProjectUser> newProjectUsers = new ArrayList<ProjectUser>();
         newProjectUsers.add(new ProjectUser());
         role.setProjectUsers(newProjectUsers);
         Assert.assertEquals(newProjectUsers, role.getProjectUsers());
@@ -321,7 +318,7 @@ public class RoleTest {
      */
     @Test
     public void testSetAuthorizedAddresses() {
-        List<String> newAuthorizedAddresses = new ArrayList<String>();
+        final List<String> newAuthorizedAddresses = new ArrayList<String>();
         newAuthorizedAddresses.add("newAddress");
         role.setAuthorizedAddresses(newAuthorizedAddresses);
         Assert.assertEquals(newAuthorizedAddresses, role.getAuthorizedAddresses());
@@ -355,12 +352,11 @@ public class RoleTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#setCorsRequestsAuthorizationEndDate(java.time.LocalDateTime)}.
+     * Test method for {@link Role#setCorsRequestsAuthorizationEndDate(LocalDateTime)}.
      */
     @Test
     public void testSetCorsRequestsAuthorizationEndDate() {
-        LocalDateTime newCorsRequestsAuthorizationEndDate = LocalDateTime.now();
+        final LocalDateTime newCorsRequestsAuthorizationEndDate = LocalDateTime.now();
         role.setCorsRequestsAuthorizationEndDate(newCorsRequestsAuthorizationEndDate);
         Assert.assertEquals(newCorsRequestsAuthorizationEndDate, role.getCorsRequestsAuthorizationEndDate());
     }

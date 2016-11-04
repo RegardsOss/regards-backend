@@ -11,6 +11,8 @@ import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 
 /**
  * Unit testing of {@link MetaData}
+ *
+ * @author Maxime Bouveron
  */
 public class MetaDataTest {
 
@@ -39,9 +41,6 @@ public class MetaDataTest {
      */
     private final UserVisibility visibility = UserVisibility.READABLE;
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
     public void setUp() {
         metaData = new MetaData();
@@ -126,8 +125,7 @@ public class MetaDataTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.MetaData#setVisibility(fr.cnes.regards.modules.accessrights.domain.UserVisibility)}.
+     * Test method for {@link MetaData#setVisibility(UserVisibility)}.
      */
     @Test
     public void testSetVisibility() {

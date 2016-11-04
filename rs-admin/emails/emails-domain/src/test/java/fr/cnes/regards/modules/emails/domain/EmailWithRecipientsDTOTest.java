@@ -12,6 +12,8 @@ import org.junit.Test;
 
 /**
  * Unit testing of {@link EmailWithRecipientsDTO}
+ *
+ * @author Maxime Bouveron
  */
 public class EmailWithRecipientsDTOTest {
 
@@ -30,13 +32,11 @@ public class EmailWithRecipientsDTOTest {
      */
     private final Email email = new Email();
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         recipients.add(new Recipient());
-        email.setId(4L);
+        final Long localId = 4L;
+        email.setId(localId);
         emailDTO.setRecipients(recipients);
         emailDTO.setEmail(email);
     }
@@ -55,7 +55,7 @@ public class EmailWithRecipientsDTOTest {
      */
     @Test
     public void testSetRecipients() {
-        Set<Recipient> newRecipients = new HashSet<>();
+        final Set<Recipient> newRecipients = new HashSet<>();
         newRecipients.add(new Recipient());
         newRecipients.add(new Recipient());
         emailDTO.setRecipients(newRecipients);
@@ -71,13 +71,13 @@ public class EmailWithRecipientsDTOTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.emails.domain.EmailWithRecipientsDTO#setEmail(fr.cnes.regards.modules.emails.domain.Email)}.
+     * Test method for {@link EmailWithRecipientsDTO#setEmail(Email)}.
      */
     @Test
     public void testSetEmail() {
-        Email newEmail = new Email();
-        newEmail.setId(3L);
+        final Email newEmail = new Email();
+        final Long localId = 3L;
+        newEmail.setId(localId);
         emailDTO.setEmail(newEmail);
         Assert.assertEquals(newEmail, emailDTO.getEmail());
     }

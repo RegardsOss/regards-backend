@@ -9,20 +9,31 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link Couple}
+ *
+ * @author Maxime Bouveron
  */
 public class CoupleTest {
 
-    Couple<String, Long> couple;
+    /**
+     * Test Couple
+     */
+    private Couple<String, Long> couple;
 
-    String first = "Test";
+    /**
+     * Test first element
+     */
+    private final String first = "Test";
 
-    Long second = 0L;
+    /**
+     * Test second element
+     */
+    private final Long second = 0L;
 
     /**
      * @throws java.lang.Exception
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         couple = new Couple<String, Long>(first, second);
     }
 
@@ -31,7 +42,7 @@ public class CoupleTest {
      */
     @Test
     public void testCouple() {
-        Couple testCouple = new Couple();
+        final Couple<String, String> testCouple = new Couple<String, String>();
         Assert.assertEquals(null, testCouple.getFirst());
         Assert.assertEquals(null, testCouple.getSecond());
     }
@@ -42,8 +53,8 @@ public class CoupleTest {
      */
     @Test
     public void testCoupleParams() {
-        String testfirst = "test", testsecond = "test2";
-        Couple<String, String> testCouple = new Couple<String, String>(testfirst, testsecond);
+        final String testfirst = "test", testsecond = "test2";
+        final Couple<String, String> testCouple = new Couple<String, String>(testfirst, testsecond);
         Assert.assertEquals(testfirst, testCouple.getFirst());
         Assert.assertEquals(testsecond, testCouple.getSecond());
     }
@@ -61,7 +72,7 @@ public class CoupleTest {
      */
     @Test
     public void testSetFirst() {
-        String newFirst = "newFirst";
+        final String newFirst = "newFirst";
         couple.setFirst(newFirst);
         Assert.assertEquals(newFirst, couple.getFirst());
     }
@@ -79,7 +90,7 @@ public class CoupleTest {
      */
     @Test
     public void testSetSecond() {
-        Long newSecond = 2L;
+        final Long newSecond = 2L;
         couple.setSecond(newSecond);
         Assert.assertEquals(newSecond, couple.getSecond());
     }

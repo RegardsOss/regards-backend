@@ -16,10 +16,15 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * Unit test for {@link AccessRequestDTO}
+ *
+ * @author Maxime Bouveron
  */
 public class AccessRequestDTOTest {
 
-    AccessRequestDTO access;
+    /**
+     * Test AccessRequestDTO
+     */
+    private AccessRequestDTO access;
 
     /**
      * Test email
@@ -62,10 +67,10 @@ public class AccessRequestDTOTest {
     private Role role;
 
     /**
-     * @throws java.lang.Exception
+     * Setup
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         access = new AccessRequestDTO();
         metaDatas = new ArrayList<MetaData>();
         metaDatas.add(new MetaData());
@@ -154,7 +159,7 @@ public class AccessRequestDTOTest {
      */
     @Test
     public void testSetEmail() {
-        String newEmail = "newEmail";
+        final String newEmail = "newEmail";
         access.setEmail(newEmail);
         Assert.assertEquals(newEmail, access.getEmail());
     }
@@ -165,7 +170,7 @@ public class AccessRequestDTOTest {
      */
     @Test
     public void testSetFirstName() {
-        String newFirstName = "newFirstName";
+        final String newFirstName = "newFirstName";
         access.setFirstName(newFirstName);
         Assert.assertEquals(newFirstName, access.getFirstName());
     }
@@ -176,7 +181,7 @@ public class AccessRequestDTOTest {
      */
     @Test
     public void testSetLastName() {
-        String newLastName = "newLastName";
+        final String newLastName = "newLastName";
         access.setLastName(newLastName);
         Assert.assertEquals(newLastName, access.getLastName());
     }
@@ -186,7 +191,7 @@ public class AccessRequestDTOTest {
      */
     @Test
     public void testSetLogin() {
-        String newLogin = "newLogin";
+        final String newLogin = "newLogin";
         access.setLogin(newLogin);
         Assert.assertEquals(newLogin, access.getLogin());
     }
@@ -196,7 +201,7 @@ public class AccessRequestDTOTest {
      */
     @Test
     public void testSetMetaData() {
-        List<MetaData> newMetaData = new ArrayList<MetaData>();
+        final List<MetaData> newMetaData = new ArrayList<MetaData>();
         newMetaData.add(new MetaData());
         access.setMetaData(newMetaData);
         Assert.assertEquals(newMetaData, access.getMetaData());
@@ -208,7 +213,7 @@ public class AccessRequestDTOTest {
      */
     @Test
     public void testSetPassword() {
-        String newPassword = "newPassword";
+        final String newPassword = "newPassword";
         access.setPassword(newPassword);
         Assert.assertEquals(newPassword, access.getPassword());
     }
@@ -219,19 +224,18 @@ public class AccessRequestDTOTest {
      */
     @Test
     public void testSetPermissions() {
-        List<ResourcesAccess> newPermissions = new ArrayList<ResourcesAccess>();
+        final List<ResourcesAccess> newPermissions = new ArrayList<ResourcesAccess>();
         newPermissions.add(new ResourcesAccess());
         access.setPermissions(newPermissions);
         Assert.assertEquals(newPermissions, access.getPermissions());
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#setRole(fr.cnes.regards.modules.accessrights.domain.projects.Role)}.
+     * Test method for {@link AccessRequestDTO#setRole(Role)}.
      */
     @Test
     public void testSetRole() {
-        Role newRole = new Role(1L);
+        final Role newRole = new Role(1L);
         access.setRole(newRole);
         Assert.assertEquals(newRole, access.getRole());
     }
