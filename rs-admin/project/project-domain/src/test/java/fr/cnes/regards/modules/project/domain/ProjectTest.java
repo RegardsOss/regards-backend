@@ -18,6 +18,9 @@ import org.junit.Test;
  *
  * Unit testing of {@link ProjectTest}
  *
+ * @author Sebastien Binda
+ * @author Maxime Bouveron
+ *
  */
 public class ProjectTest {
 
@@ -56,11 +59,8 @@ public class ProjectTest {
      */
     private final Long id = 0L;
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
 
@@ -85,8 +85,7 @@ public class ProjectTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.project.domain.Project#Project(java.lang.Long, java.lang.String, java.lang.String, boolean, java.lang.String)}.
+     * Test method for {@link Project#Project(Long, String, String, boolean, String)}.
      */
     @Test
     public void testProjectWithId() {
@@ -113,8 +112,7 @@ public class ProjectTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.project.domain.Project#Project(java.lang.String, java.lang.String, boolean, java.lang.String)}.
+     * Test method for {@link Project#Project(String, String, boolean, String)}.
      */
     @Test
     public void testProjectWithoutId() {

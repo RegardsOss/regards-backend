@@ -18,6 +18,9 @@ import org.junit.Test;
  *
  * Unit testing of {@link ProjectConnection}
  *
+ * @author Sebastien Binda
+ * @author Maxime Bouveron
+ *
  */
 public class ProjectConnectionTest {
 
@@ -66,11 +69,8 @@ public class ProjectConnectionTest {
      */
     private ProjectConnection connection;
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
 
@@ -83,7 +83,7 @@ public class ProjectConnectionTest {
      */
     @Test
     public void testProjectConnection() {
-        ProjectConnection projectConn = new ProjectConnection();
+        final ProjectConnection projectConn = new ProjectConnection();
 
         Assert.assertEquals(null, projectConn.getId());
         Assert.assertEquals(null, projectConn.getProject());
@@ -93,13 +93,13 @@ public class ProjectConnectionTest {
         Assert.assertEquals(null, projectConn.getDriverClassName());
         Assert.assertEquals(null, projectConn.getUrl());
 
-        Set<ConstraintViolation<ProjectConnection>> constraintViolations = validator.validate(projectConn);
+        final Set<ConstraintViolation<ProjectConnection>> constraintViolations = validator.validate(projectConn);
         Assert.assertEquals(2, constraintViolations.size());
     }
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.project.domain.ProjectConnection#ProjectConnection(java.lang.Long, fr.cnes.regards.modules.project.domain.Project, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+     * {@link ProjectConnection#ProjectConnection(Long, Project, String, String, String, String, String)}.
      */
     @Test
     public void testProjectConnectionWithId() {
@@ -126,8 +126,7 @@ public class ProjectConnectionTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.project.domain.ProjectConnection#ProjectConnection(fr.cnes.regards.modules.project.domain.Project, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+     * Test method for {@link ProjectConnection#ProjectConnection(Project, String, String, String, String, String)}.
      */
     @Test
     public void testProjectConnectionWithoutId() {
@@ -165,7 +164,7 @@ public class ProjectConnectionTest {
      */
     @Test
     public void testSetId() {
-        Long newId = 2L;
+        final Long newId = 2L;
         connection.setId(newId);
         Assert.assertEquals(newId, connection.getId());
     }
@@ -179,12 +178,11 @@ public class ProjectConnectionTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.project.domain.ProjectConnection#setProject(fr.cnes.regards.modules.project.domain.Project)}.
+     * Test method for {@link ProjectConnection#setProject(Project)}.
      */
     @Test
     public void testSetProject() {
-        Project newProject = new Project(2L, "desc2", "icon2", true, "name2");
+        final Project newProject = new Project(2L, "desc2", "icon2", true, "name2");
         connection.setProject(newProject);
         Assert.assertEquals(newProject, connection.getProject());
     }
@@ -203,7 +201,7 @@ public class ProjectConnectionTest {
      */
     @Test
     public void testSetMicroservice() {
-        String newMicroservice = "newMS";
+        final String newMicroservice = "newMS";
         connection.setMicroservice(newMicroservice);
         Assert.assertEquals(newMicroservice, connection.getMicroservice());
     }
@@ -221,7 +219,7 @@ public class ProjectConnectionTest {
      */
     @Test
     public void testSetUserName() {
-        String newUser = "newUser";
+        final String newUser = "newUser";
         connection.setUserName(newUser);
         Assert.assertEquals(newUser, connection.getUserName());
     }
@@ -239,7 +237,7 @@ public class ProjectConnectionTest {
      */
     @Test
     public void testSetPassword() {
-        String newPwd = "newPwd";
+        final String newPwd = "newPwd";
         connection.setPassword(newPwd);
         Assert.assertEquals(newPwd, connection.getPassword());
     }
@@ -258,7 +256,7 @@ public class ProjectConnectionTest {
      */
     @Test
     public void testSetDriverClassName() {
-        String newDriver = "newDriver";
+        final String newDriver = "newDriver";
         connection.setDriverClassName(newDriver);
         Assert.assertEquals(newDriver, connection.getDriverClassName());
     }
@@ -276,7 +274,7 @@ public class ProjectConnectionTest {
      */
     @Test
     public void testSetUrl() {
-        String newURL = "newUrl";
+        final String newURL = "newUrl";
         connection.setUrl(newURL);
         Assert.assertEquals(newURL, connection.getUrl());
     }

@@ -11,6 +11,8 @@ import org.junit.Test;
 
 /**
  * Unit testing of {@link RoleAuthorizedAdressesConverter}
+ *
+ * @author Maxime Bouveron
  */
 public class RoleAuthorizedAdressesConverterTest {
 
@@ -29,11 +31,8 @@ public class RoleAuthorizedAdressesConverterTest {
      */
     private final String string = "value1;value2 ; value3;value 4;value5;value6;";
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         strings.add("value1");
         strings.add("value2 ");
         strings.add(" value3");
@@ -43,8 +42,7 @@ public class RoleAuthorizedAdressesConverterTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.RoleAuthorizedAdressesConverter#convertToDatabaseColumn(java.util.List)}.
+     * Test method for {@link RoleAuthorizedAdressesConverter#convertToDatabaseColumn(java.util.List)}.
      */
     @Test
     public void testConvertToDatabaseColumn() {
@@ -53,8 +51,7 @@ public class RoleAuthorizedAdressesConverterTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.RoleAuthorizedAdressesConverter#convertToEntityAttribute(java.lang.String)}.
+     * Test method for {@link RoleAuthorizedAdressesConverter#convertToEntityAttribute(java.lang.String)}.
      */
     @Test
     public void testConvertToEntityAttribute() {

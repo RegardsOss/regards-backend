@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import static org.junit.Assert.fail;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +15,8 @@ import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 
 /**
  * Unit testing of {@link ProjectUser}
+ *
+ * @author Maxime Bouveron
  */
 public class ProjectUserTest {
 
@@ -65,11 +65,8 @@ public class ProjectUserTest {
      */
     private final List<ResourcesAccess> permissions = new ArrayList<ResourcesAccess>();
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         metaData.add(new MetaData());
         permissions.add(new ResourcesAccess());
         projectUser = new ProjectUser(id, lastConnection, lastUpdate, status, metaData, role, permissions, email);
@@ -80,8 +77,8 @@ public class ProjectUserTest {
      */
     @Test
     public void testProjectUser() {
-        LocalDateTime now = LocalDateTime.now();
-        ProjectUser testUser = new ProjectUser();
+        final LocalDateTime now = LocalDateTime.now();
+        final ProjectUser testUser = new ProjectUser();
         Assert.assertEquals(id, testUser.getId());
         Assert.assertEquals(new ArrayList<>(), testUser.getPermissions());
         Assert.assertEquals(new ArrayList<>(), testUser.getMetaData());
@@ -94,12 +91,12 @@ public class ProjectUserTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#ProjectUser(java.lang.Long, java.time.LocalDateTime, java.time.LocalDateTime, fr.cnes.regards.modules.accessrights.domain.UserStatus, java.util.List, fr.cnes.regards.modules.accessrights.domain.projects.Role, java.util.List, java.lang.String)}.
+     * {@link ProjectUser#ProjectUser(Long, LocalDateTime, LocalDateTime, UserStatus, List, Role, List, String)}.
      */
     @Test
     public void testProjectUserWithParams() {
-        ProjectUser testUser = new ProjectUser(id, lastConnection, lastUpdate, status, metaData, role, permissions,
-                email);
+        final ProjectUser testUser = new ProjectUser(id, lastConnection, lastUpdate, status, metaData, role,
+                permissions, email);
         Assert.assertEquals(id, testUser.getId());
         Assert.assertEquals(lastConnection, testUser.getLastConnection());
         Assert.assertEquals(lastUpdate, testUser.getLastUpdate());
@@ -123,7 +120,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetId() {
-        Long newId = 4L;
+        final Long newId = 4L;
         projectUser.setId(newId);
         Assert.assertEquals(newId, projectUser.getId());
     }
@@ -137,12 +134,11 @@ public class ProjectUserTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#setLastConnection(java.time.LocalDateTime)}.
+     * Test method for {@link ProjectUser#setLastConnection(java.time.LocalDateTime)}.
      */
     @Test
     public void testSetLastConnection() {
-        LocalDateTime newLastConnection = LocalDateTime.now();
+        final LocalDateTime newLastConnection = LocalDateTime.now();
         projectUser.setLastConnection(newLastConnection);
         Assert.assertEquals(newLastConnection, projectUser.getLastConnection());
     }
@@ -161,7 +157,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetLastUpdate() {
-        LocalDateTime newLastUpdate = LocalDateTime.now();
+        final LocalDateTime newLastUpdate = LocalDateTime.now();
         projectUser.setLastUpdate(newLastUpdate);
         Assert.assertEquals(newLastUpdate, projectUser.getLastUpdate());
     }
@@ -175,8 +171,7 @@ public class ProjectUserTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#setStatus(fr.cnes.regards.modules.accessrights.domain.UserStatus)}.
+     * Test method for {@link ProjectUser#setStatus(fr.cnes.regards.modules.accessrights.domain.UserStatus)}.
      */
     @Test
     public void testSetStatus() {
@@ -198,7 +193,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetMetaData() {
-        List<MetaData> newMetaData = new ArrayList<MetaData>();
+        final List<MetaData> newMetaData = new ArrayList<MetaData>();
         projectUser.setMetaData(newMetaData);
         Assert.assertEquals(newMetaData, projectUser.getMetaData());
     }
@@ -213,7 +208,7 @@ public class ProjectUserTest {
 
         try {
             projectUser.accept();
-            fail("Expected IllegalStateException");
+            Assert.fail("Expected IllegalStateException");
         } catch (IllegalStateException e) {
 
         }
@@ -229,7 +224,7 @@ public class ProjectUserTest {
 
         try {
             projectUser.deny();
-            fail("Expected IllegalStateException");
+            Assert.fail("Expected IllegalStateException ");
         } catch (IllegalStateException e) {
 
         }
@@ -244,12 +239,11 @@ public class ProjectUserTest {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#setRole(fr.cnes.regards.modules.accessrights.domain.projects.Role)}.
+     * Test method for {@link ProjectUser#setRole(fr.cnes.regards.modules.accessrights.domain.projects.Role)}.
      */
     @Test
     public void testSetRole() {
-        Role newRole = new Role(4L);
+        final Role newRole = new Role(4L);
         projectUser.setRole(newRole);
         Assert.assertEquals(newRole, projectUser.getRole());
     }
@@ -268,7 +262,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetPermissions() {
-        List<ResourcesAccess> newPermissions = new ArrayList<ResourcesAccess>();
+        final List<ResourcesAccess> newPermissions = new ArrayList<ResourcesAccess>();
         projectUser.setPermissions(newPermissions);
         Assert.assertEquals(newPermissions, projectUser.getPermissions());
     }
@@ -287,7 +281,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetEmail() {
-        String newEmail = "newMail";
+        final String newEmail = "newMail";
         projectUser.setEmail(newEmail);
         Assert.assertEquals(newEmail, projectUser.getEmail());
     }

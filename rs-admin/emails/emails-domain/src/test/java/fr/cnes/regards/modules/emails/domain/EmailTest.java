@@ -11,6 +11,8 @@ import org.junit.Test;
 
 /**
  * Unit testing of {@link Email}
+ *
+ * @author Maxime Bouveron
  */
 public class EmailTest {
 
@@ -64,11 +66,8 @@ public class EmailTest {
      */
     private final String[] to = { "to", "to2" };
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         email = new Email();
         email.setBcc(bcc);
         email.setCc(cc);
@@ -86,7 +85,7 @@ public class EmailTest {
      */
     @Test
     public void testHashCode() {
-        Email testMail = new Email();
+        final Email testMail = new Email();
         Assert.assertNotEquals(email.hashCode(), testMail.hashCode());
     }
 
@@ -95,7 +94,7 @@ public class EmailTest {
      */
     @Test
     public void testEmail() {
-        Email testMail = new Email();
+        final Email testMail = new Email();
         Assert.assertArrayEquals(null, testMail.getBcc());
         Assert.assertArrayEquals(null, testMail.getCc());
         Assert.assertEquals(null, testMail.getFrom());
@@ -184,7 +183,7 @@ public class EmailTest {
      */
     @Test
     public void testSetBcc() {
-        String[] newBcc = { "newbcc", "newbcc2" };
+        final String[] newBcc = { "newbcc", "newbcc2" };
         email.setBcc(newBcc);
         Assert.assertArrayEquals(newBcc, email.getBcc());
     }
@@ -194,7 +193,7 @@ public class EmailTest {
      */
     @Test
     public void testSetCc() {
-        String[] newCc = { "newcc", "newcc2" };
+        final String[] newCc = { "newcc", "newcc2" };
         email.setCc(newCc);
         Assert.assertArrayEquals(newCc, email.getCc());
     }
@@ -204,7 +203,7 @@ public class EmailTest {
      */
     @Test
     public void testSetFrom() {
-        String newFrom = "newfrom";
+        final String newFrom = "newfrom";
         email.setFrom(newFrom);
         Assert.assertEquals(newFrom, email.getFrom());
     }
@@ -214,7 +213,7 @@ public class EmailTest {
      */
     @Test
     public void testSetId() {
-        Long newId = 4L;
+        final Long newId = 4L;
         email.setId(newId);
         Assert.assertEquals(newId, email.getId());
     }
@@ -224,7 +223,7 @@ public class EmailTest {
      */
     @Test
     public void testSetReplyTo() {
-        String newReplyTo = "newreplyTo";
+        final String newReplyTo = "newreplyTo";
         email.setReplyTo(newReplyTo);
         Assert.assertEquals(newReplyTo, email.getReplyTo());
     }
@@ -234,7 +233,7 @@ public class EmailTest {
      */
     @Test
     public void testSetSentDate() {
-        Date newSentDate = new Date();
+        final Date newSentDate = new Date();
         email.setSentDate(newSentDate);
         Assert.assertEquals(newSentDate, email.getSentDate());
     }
@@ -244,7 +243,7 @@ public class EmailTest {
      */
     @Test
     public void testSetSubject() {
-        String newSubject = "newsubject";
+        final String newSubject = "newsubject";
         email.setSubject(newSubject);
         Assert.assertEquals(newSubject, email.getSubject());
     }
@@ -254,7 +253,7 @@ public class EmailTest {
      */
     @Test
     public void testSetText() {
-        String newText = "newtext";
+        final String newText = "newtext";
         email.setText(newText);
         Assert.assertEquals(newText, email.getText());
     }
@@ -264,7 +263,7 @@ public class EmailTest {
      */
     @Test
     public void testSetTo() {
-        String[] newTo = { "newto", "newto2" };
+        final String[] newTo = { "newto", "newto2" };
         email.setTo(newTo);
         Assert.assertArrayEquals(newTo, email.getTo());
     }
@@ -274,10 +273,10 @@ public class EmailTest {
      */
     @Test
     public void testEqualsObject() {
-        Email testMail = new Email();
+        final Email testMail = new Email();
         Assert.assertFalse(email.equals(testMail));
 
-        Email testMail2 = new Email();
+        final Email testMail2 = new Email();
         Assert.assertTrue(testMail2.equals(testMail));
 
         Assert.assertTrue(testMail.equals(testMail));
