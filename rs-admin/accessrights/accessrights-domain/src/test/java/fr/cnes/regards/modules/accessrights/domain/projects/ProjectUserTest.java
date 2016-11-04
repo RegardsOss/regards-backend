@@ -80,9 +80,9 @@ public class ProjectUserTest {
      */
     @Test
     public void testProjectUser() {
-        LocalDateTime now = LocalDateTime.now();
-        ProjectUser testUser = new ProjectUser();
-        Assert.assertEquals(id, testUser.getId());
+        final LocalDateTime now = LocalDateTime.now();
+        final ProjectUser testUser = new ProjectUser();
+        Assert.assertEquals(null, testUser.getId());
         Assert.assertEquals(new ArrayList<>(), testUser.getPermissions());
         Assert.assertEquals(new ArrayList<>(), testUser.getMetaData());
         Assert.assertEquals(UserStatus.WAITING_ACCESS, testUser.getStatus());
@@ -98,8 +98,8 @@ public class ProjectUserTest {
      */
     @Test
     public void testProjectUserWithParams() {
-        ProjectUser testUser = new ProjectUser(id, lastConnection, lastUpdate, status, metaData, role, permissions,
-                email);
+        final ProjectUser testUser = new ProjectUser(id, lastConnection, lastUpdate, status, metaData, role,
+                permissions, email);
         Assert.assertEquals(id, testUser.getId());
         Assert.assertEquals(lastConnection, testUser.getLastConnection());
         Assert.assertEquals(lastUpdate, testUser.getLastUpdate());
@@ -123,7 +123,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetId() {
-        Long newId = 4L;
+        final Long newId = 4L;
         projectUser.setId(newId);
         Assert.assertEquals(newId, projectUser.getId());
     }
@@ -142,7 +142,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetLastConnection() {
-        LocalDateTime newLastConnection = LocalDateTime.now();
+        final LocalDateTime newLastConnection = LocalDateTime.now();
         projectUser.setLastConnection(newLastConnection);
         Assert.assertEquals(newLastConnection, projectUser.getLastConnection());
     }
@@ -161,7 +161,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetLastUpdate() {
-        LocalDateTime newLastUpdate = LocalDateTime.now();
+        final LocalDateTime newLastUpdate = LocalDateTime.now();
         projectUser.setLastUpdate(newLastUpdate);
         Assert.assertEquals(newLastUpdate, projectUser.getLastUpdate());
     }
@@ -198,7 +198,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetMetaData() {
-        List<MetaData> newMetaData = new ArrayList<MetaData>();
+        final List<MetaData> newMetaData = new ArrayList<MetaData>();
         projectUser.setMetaData(newMetaData);
         Assert.assertEquals(newMetaData, projectUser.getMetaData());
     }
@@ -214,7 +214,7 @@ public class ProjectUserTest {
         try {
             projectUser.accept();
             fail("Expected IllegalStateException");
-        } catch (IllegalStateException e) {
+        } catch (final IllegalStateException e) {
 
         }
     }
@@ -230,7 +230,7 @@ public class ProjectUserTest {
         try {
             projectUser.deny();
             fail("Expected IllegalStateException");
-        } catch (IllegalStateException e) {
+        } catch (final IllegalStateException e) {
 
         }
     }
@@ -249,7 +249,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetRole() {
-        Role newRole = new Role(4L);
+        final Role newRole = new Role(4L);
         projectUser.setRole(newRole);
         Assert.assertEquals(newRole, projectUser.getRole());
     }
@@ -268,7 +268,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetPermissions() {
-        List<ResourcesAccess> newPermissions = new ArrayList<ResourcesAccess>();
+        final List<ResourcesAccess> newPermissions = new ArrayList<ResourcesAccess>();
         projectUser.setPermissions(newPermissions);
         Assert.assertEquals(newPermissions, projectUser.getPermissions());
     }
@@ -287,7 +287,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetEmail() {
-        String newEmail = "newMail";
+        final String newEmail = "newMail";
         projectUser.setEmail(newEmail);
         Assert.assertEquals(newEmail, projectUser.getEmail());
     }
