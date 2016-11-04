@@ -16,7 +16,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
 /**
- * Models the different access settings.<br>
+ * Models the different account settings.<br>
  * Instead of using a list of values, each field of this POJO defines a specific setting.
  *
  * @author Xavier-Alexandre Brochard

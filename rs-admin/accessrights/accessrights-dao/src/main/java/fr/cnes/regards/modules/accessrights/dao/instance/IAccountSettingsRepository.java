@@ -7,6 +7,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 
 /**
@@ -16,6 +17,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
  *
  * @author Xavier-Alexandre Brochard
  */
+@InstanceEntity
 public interface IAccountSettingsRepository extends JpaRepository<AccountSettings, Long> {
 
 }
