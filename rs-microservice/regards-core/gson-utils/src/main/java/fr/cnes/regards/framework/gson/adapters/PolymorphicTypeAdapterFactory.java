@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -87,8 +86,8 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
      *            field value
      */
     protected void registerSubtype(Class<? extends E> pType, String pDiscriminatorFieldValue) {
-        Assert.notNull(pType);
-        Assert.notNull(pDiscriminatorFieldValue);
+        assertNotNull(pType, "Sub type is required.");
+        assertNotNull(pDiscriminatorFieldValue, "Discriminator field value is required.");
 
         // Check if map not already contains value
         if (discriminatorToSubtype.containsKey(pDiscriminatorFieldValue)) {
@@ -170,4 +169,10 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
         }.nullSafe();
     }
     // CHECKSTYLE:ON
+
+    private void assertNotNull(Object pObject, String pErrorMessage) {
+        if (pObject == null) {
+            throw new IllegalArgumentException(pErrorMessage);
+        }
+    }
 }

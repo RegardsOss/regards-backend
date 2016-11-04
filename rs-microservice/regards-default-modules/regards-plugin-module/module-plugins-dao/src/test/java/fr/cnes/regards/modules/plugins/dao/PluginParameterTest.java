@@ -137,7 +137,7 @@ public class PluginParameterTest extends PluginDaoUtility {
             paramFound.getDynamicsValues().stream().forEach(p -> LOGGER.info(p.getValue()));
 
             // test dynamics values of the second parameter
-            Assert.assertEquals(paramJpa.getIsDynamic(), paramFound.getIsDynamic());
+            Assert.assertEquals(paramJpa.isDynamic(), paramFound.isDynamic());
             Assert.assertEquals(paramJpa.getDynamicsValues().size(), paramFound.getDynamicsValues().size());
 
         } catch (JwtException e) {

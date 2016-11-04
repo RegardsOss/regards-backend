@@ -123,7 +123,7 @@ public class PluginDomainTest extends PluginDomainUtility {
 
         Assert.assertEquals(RED, plgParam.getName());
         Assert.assertEquals(GREEN, plgParam.getValue());
-        Assert.assertEquals(false, plgParam.getIsDynamic().booleanValue());
+        Assert.assertEquals(false, plgParam.isDynamic().booleanValue());
         
         // test dynamics==null
         Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), 0);

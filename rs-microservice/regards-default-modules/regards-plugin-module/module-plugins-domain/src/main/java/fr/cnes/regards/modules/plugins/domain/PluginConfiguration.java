@@ -66,7 +66,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * The plugin configuration is active.
      */
-    private Boolean isActive;
+    private Boolean active;
 
     /**
      * The plugin class name
@@ -112,7 +112,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         parameters = pParameters;
         priorityOrder = pOrder;
         label = pLabel;
-        isActive = Boolean.TRUE;
+        active = Boolean.TRUE;
     }
 
     /**
@@ -132,7 +132,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         pluginClassName = pPluginMetaData.getPluginClass().getName();
         priorityOrder = pOrder;
         label = pLabel;
-        isActive = Boolean.TRUE;
+        active = Boolean.TRUE;
     }
 
     /**
@@ -214,15 +214,15 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     public Boolean isActive() {
-        return isActive;
+        return active;
+    }
+
+    public void setIsActive(Boolean pIsActive) {
+        this.active = pIsActive;
     }
 
     public String getPluginClassName() {
         return pluginClassName;
-    }
-
-    public void setIsActive(Boolean pIsActive) {
-        this.isActive = pIsActive;
     }
 
     @Override

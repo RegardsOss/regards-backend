@@ -19,11 +19,11 @@
 			<artifactId>gson</artifactId>
 		</dependency>
 		<!-- Tests -->
-		<dependency>
+<!-- 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
-		</dependency>
+		</dependency> -->
 	</dependencies>
 
 </project>

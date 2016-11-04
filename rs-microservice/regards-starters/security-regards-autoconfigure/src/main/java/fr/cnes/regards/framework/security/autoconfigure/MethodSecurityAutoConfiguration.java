@@ -10,13 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
-import org.springframework.security.access.vote.ConsensusBased;
+import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.endpoint.ResourceAccessVoter;
-import fr.cnes.regards.framework.security.endpoint.RootResourceAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IRoleSysAccessVoter;
 
 /**
  * This class allow to add a security filter on method access. Each time a method is called, the accessDecisionManager
@@ -39,14 +40,34 @@ public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfigu
     @Autowired
     private MethodAuthorizationService methodAuthService;
 
+    /**
+     * Access voter for internal SYS roles.
+     */
+    @Autowired(required = false)
+    private IRoleSysAccessVoter roleSysAccessVoter;
+
+    /**
+     * Access voter for specific instance admin user
+     */
+    @Autowired(required = false)
+    private IInstanceAdminAccessVoter instanceAdminAccessVoter;
+
     @Override
     protected AccessDecisionManager accessDecisionManager() {
         final List<AccessDecisionVoter<? extends Object>> decisionVoters = new ArrayList<>();
+
+        if (roleSysAccessVoter != null) {
+            decisionVoters.add(roleSysAccessVoter);
+        }
+        if (instanceAdminAccessVoter != null) {
+            decisionVoters.add(instanceAdminAccessVoter);
+        }
+
         decisionVoters.add(new ResourceAccessVoter(methodAuthService));
-        decisionVoters.add(new RootResourceAccessVoter());
+
         // Access granted if one of the two voter return access granted
-        final ConsensusBased decision = new ConsensusBased(decisionVoters);
-        decision.setAllowIfEqualGrantedDeniedDecisions(true);
+        final AffirmativeBased decision = new AffirmativeBased(decisionVoters);
+        // decision.setAllowIfEqualGrantedDeniedDecisions(true);
         return decision;
     }
 }
