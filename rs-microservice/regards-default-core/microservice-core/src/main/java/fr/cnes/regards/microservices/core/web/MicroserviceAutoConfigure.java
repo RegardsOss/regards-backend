@@ -9,7 +9,6 @@ import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import fr.cnes.regards.microservices.core.manage.ApplicationManager;
 
@@ -29,13 +28,20 @@ import fr.cnes.regards.microservices.core.manage.ApplicationManager;
 public class MicroserviceAutoConfigure {
 
     @Bean
-    public WebMvcConfigurerAdapter configure() {
-        return new MicroserviceWebConfiguration();
-    }
-
-    @Bean
     public ApplicationManager applicationManager(final ApplicationContext pApplicationContext) {
         return new ApplicationManager(pApplicationContext);
+    }
+
+    /**
+     *
+     * Allow to configure specific web MVC properties for incoming and out-going requests.
+     *
+     * @return MicroserviceWebConfiguration
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    public MicroserviceWebConfiguration webConfig() {
+        return new MicroserviceWebConfiguration();
     }
 
 }

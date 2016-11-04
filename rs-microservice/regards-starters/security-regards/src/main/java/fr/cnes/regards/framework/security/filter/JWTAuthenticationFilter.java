@@ -63,12 +63,16 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         // Retrieve authentication header
         String jwt = request.getHeader(HttpConstants.AUTHORIZATION);
         if (jwt == null) {
-            response.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS JWT FILER] Authentication token missing");
+            final String message = "[REGARDS JWT FILER] Authentication token missing";
+            LOG.error(message);
+            response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
         } else {
 
             // Extract JWT from retrieved header
             if (!jwt.startsWith(HttpConstants.BEARER)) {
-                response.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS JWT FILER] Invalid authentication token");
+                final String message = "[REGARDS JWT FILER] Invalid authentication token";
+                LOG.error(message);
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             } else {
                 jwt = jwt.substring(HttpConstants.BEARER.length()).trim();
 
