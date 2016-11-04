@@ -3,12 +3,12 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -171,9 +172,8 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     @Purpose("Check that the system allows a user to connect using a hierarchically inferior role to its own and handle fail cases.")
     public void getUserPermissionsWithBorrowedRole() {
         // Initiate a specific project user for the test
-        final String adminRoleName = "Admin";
-        assertTrue(roleRepository.findOneByName(adminRoleName) != null);
-        final Role role = roleRepository.findOneByName("Admin");
+        Assert.assertTrue(roleRepository.findOneByName(DefaultRoleNames.ADMIN.toString()) != null);
+        final Role role = roleRepository.findOneByName(DefaultRoleNames.ADMIN.toString());
         final ProjectUser projectUser = new ProjectUser(4824L, null, null, UserStatus.ACCESS_GRANTED, new ArrayList<>(),
                 role, new ArrayList<>(), "email@test.com");
         // Save it
@@ -183,19 +183,19 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
 
         // Borrowing a hierarchically inferior role
-        String borrowedRoleName = "Registered User";
-        assertTrue(roleRepository.findOneByName(borrowedRoleName) != null);
+        String borrowedRoleName = DefaultRoleNames.REGISTERED_USER.toString();
+        Assert.assertTrue(roleRepository.findOneByName(borrowedRoleName) != null);
         Role borrowedRole = roleRepository.findOneByName(borrowedRoleName);
-        assertTrue(roleService.isHierarchicallyInferior(borrowedRole, role));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(borrowedRole, role));
         expectations.add(status().isOk());
         performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, jwt, expectations, errorMessage,
                    projectUser.getEmail());
 
         // Borrowing a hierarchically superior role
-        borrowedRoleName = "Instance Admin";
-        assertTrue(roleRepository.findOneByName(borrowedRoleName) != null);
+        borrowedRoleName = DefaultRoleNames.INSTANCE_ADMIN.toString();
+        Assert.assertTrue(roleRepository.findOneByName(borrowedRoleName) != null);
         borrowedRole = roleRepository.findOneByName(borrowedRoleName);
-        assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, role));
+        Assert.assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, role));
         expectations.clear();
         expectations.add(status().isBadRequest());
         performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, jwt, expectations, errorMessage,

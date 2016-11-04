@@ -62,21 +62,25 @@ public class AccessRequestServiceStub implements IAccessRequestService {
         roleService = new RoleService(pRoleRepository);
 
         String login = "login0@test.com";
-        ProjectUser projectUser = new ProjectUser();
-        projectUser.setEmail(login);
-        projectUsers.add(projectUser);
+        final ProjectUser projectUser0 = new ProjectUser();
+        projectUser0.setId(0L);
+        projectUser0.setEmail(login);
+        projectUser0.setStatus(UserStatus.WAITING_ACCESS);
+        projectUsers.add(projectUser0);
 
         login = "login1@test.com";
-        projectUser = new ProjectUser();
-        projectUser.setEmail(login);
-        projectUser.setStatus(UserStatus.ACCESS_GRANTED);
-        projectUsers.add(projectUser);
+        final ProjectUser projectUser1 = new ProjectUser();
+        projectUser1.setId(1L);
+        projectUser1.setEmail(login);
+        projectUser1.setStatus(UserStatus.ACCESS_GRANTED);
+        projectUsers.add(projectUser1);
 
         login = "login2@test.com";
-        projectUser = new ProjectUser();
-        projectUser.setEmail(login);
-        projectUser.setStatus(UserStatus.ACCESS_DENIED);
-        projectUsers.add(projectUser);
+        final ProjectUser projectUser2 = new ProjectUser();
+        projectUser2.setId(2L);
+        projectUser2.setEmail(login);
+        projectUser2.setStatus(UserStatus.ACCESS_DENIED);
+        projectUsers.add(projectUser2);
 
     }
 
