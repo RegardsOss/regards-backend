@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.project.client.IProjectConnectionClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**

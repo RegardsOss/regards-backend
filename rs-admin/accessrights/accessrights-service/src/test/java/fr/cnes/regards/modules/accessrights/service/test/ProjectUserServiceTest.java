@@ -129,7 +129,8 @@ public class ProjectUserServiceTest {
         roleRepository = Mockito.mock(IRoleRepository.class);
 
         // Construct the tested service
-        projectUserService = new ProjectUserService(projectUserRepository, roleService, roleRepository);
+        projectUserService = new ProjectUserService(projectUserRepository, roleService, roleRepository,
+                "instance_admin@regards.fr");
     }
 
     /**

@@ -92,6 +92,21 @@ public class ProjectUserServiceStub implements IProjectUserService {
                 visible, wanted.getRole(), wanted.getPermissions(), wanted.getEmail());
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveOneByEmail(java.lang.String)
+     */
+    @Override
+    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
+        for (final ProjectUser projectUser : projectUsers) {
+            if (projectUser.getEmail().equals(pUserEmail)) {
+                return projectUser;
+            }
+        }
+        throw new EntityNotFoundException(pUserEmail, ProjectUser.class);
+    }
+
     @Override
     public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
             throws InvalidValueException, EntityNotFoundException {
@@ -215,21 +230,6 @@ public class ProjectUserServiceStub implements IProjectUserService {
     @Override
     public ProjectUser retrieveCurrentUser() {
         return retrieveUserList().get(0);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveOneByEmail(java.lang.String)
-     */
-    @Override
-    public ProjectUser retrieveOneByEmail(final String pEmail) throws EntityNotFoundException {
-        for (final ProjectUser projectUser : projectUsers) {
-            if (projectUser.getEmail().equals(pEmail)) {
-                return projectUser;
-            }
-        }
-        throw new EntityNotFoundException(pEmail, ProjectUser.class);
     }
 
 }

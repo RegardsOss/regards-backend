@@ -15,8 +15,8 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.project.client.IProjectConnectionClient;
-import fr.cnes.regards.modules.project.client.IProjectsClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 

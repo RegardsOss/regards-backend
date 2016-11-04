@@ -8,6 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  *
  * Administration microservice Resources client
  *
- * @author sbinda
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Component
@@ -35,18 +36,18 @@ public class ResourcesFallback implements IResourcesClient {
     /**
      * Common error message to log
      */
-    private static final String fallBackErrorMessage = "RS-ADMIN /users request error. Fallback.";
+    private static final String FALLBACK_ERROR_MESSAGE = "RS-ADMIN /users request error. Fallback.";
 
     @Override
     public ResponseEntity<List<ResourceMapping>> collectResources() {
-        LOG.error(fallBackErrorMessage);
-        return null;
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<List<Resource<ResourcesAccess>>> getResourceAccessList() {
-        LOG.error(fallBackErrorMessage);
-        return null;
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }

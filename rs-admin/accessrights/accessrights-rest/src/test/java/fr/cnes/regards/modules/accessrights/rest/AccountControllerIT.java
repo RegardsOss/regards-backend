@@ -290,7 +290,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         performGet(apiValidatePassword, jwt, expectations, errorMessage, login, rightPassword);
 
         expectations.clear();
-        expectations.add(status().isOk());
+        expectations.add(status().isUnauthorized());
         performGet(apiValidatePassword, jwt, expectations, errorMessage, login, wrongPassword);
 
         final String wrongLogin = "wrongLogin";

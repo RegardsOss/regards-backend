@@ -160,8 +160,7 @@ public class AccountsFallback implements IAccountsClient {
      * accessrights.domain.instance.AccountSettings)
      */
     @Override
-    public ResponseEntity<Void> updateAccountSetting(final AccountSettings pUpdatedAccountSetting)
-            throws EntityException {
+    public ResponseEntity<Void> updateAccountSetting(final AccountSettings pUpdatedAccountSetting) {
         LOG.error(fallBackErrorMessage);
         return null;
     }
@@ -173,7 +172,7 @@ public class AccountsFallback implements IAccountsClient {
      * java.lang.String)
      */
     @Override
-    public ResponseEntity<Boolean> validatePassword(final String pLogin, final String pPassword)
+    public ResponseEntity<Void> validatePassword(final String pLogin, final String pPassword)
             throws EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
         return null;

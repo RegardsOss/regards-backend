@@ -151,6 +151,6 @@ public interface IAccountsSignature {
     @ResponseBody
     @RequestMapping(value = "/{account_login}/validate", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Boolean> validatePassword(@PathVariable("account_login") String pLogin,
+    ResponseEntity<Void> validatePassword(@PathVariable("account_login") String pLogin,
             @RequestParam("password") String pPassword) throws EntityNotFoundException;
 }

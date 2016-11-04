@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.microserices.administration.stubs;
 
 import java.util.ArrayList;
@@ -8,9 +11,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.project.client.IProjectsClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
+/**
+ *
+ * Class ProjectClientStub
+ *
+ * Stub to get a test implementation for IProjectsClient
+ *
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
+ */
 public class ProjectClientStub implements IProjectsClient {
 
     /**
@@ -32,27 +44,23 @@ public class ProjectClientStub implements IProjectsClient {
 
     @Override
     public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) throws EntityException {
-        // TODO Auto-generated method stub
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Resource<Project>> retrieveProject(final String pProjectName) throws EntityException {
-        // TODO Auto-generated method stub
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Resource<Project>> updateProject(final String pProjectName, final Project pProjectToUpdate)
             throws EntityException {
-        // TODO Auto-generated method stub
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Void> deleteProject(final String pProjectName) throws EntityException {
-        // TODO Auto-generated method stub
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }

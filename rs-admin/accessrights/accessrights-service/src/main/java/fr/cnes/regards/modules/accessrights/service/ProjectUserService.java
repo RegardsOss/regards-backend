@@ -10,9 +10,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -54,6 +56,11 @@ public class ProjectUserService implements IProjectUserService {
             .equals(m.getVisibility());
 
     /**
+     * Configured instance administrator user email/login
+     */
+    private final String instanceAdminUserEmail;
+
+    /**
      * Creates a new instance of the service with passed services/repos
      *
      * @param pProjectUserRepository
@@ -64,11 +71,13 @@ public class ProjectUserService implements IProjectUserService {
      *            The role repo
      */
     public ProjectUserService(final IProjectUserRepository pProjectUserRepository, final IRoleService pRoleService,
-            final IRoleRepository pRoleRepository) {
+            final IRoleRepository pRoleRepository,
+            @Value("${regards.accounts.root.user.login}") final String pInstanceAdminUserEmail) {
         super();
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         roleRepository = pRoleRepository;
+        instanceAdminUserEmail = pInstanceAdminUserEmail;
     }
 
     @Override
@@ -92,12 +101,23 @@ public class ProjectUserService implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveOneByEmail(java.lang.String)
      */
     @Override
-    public ProjectUser retrieveOneByEmail(final String pEmail) throws EntityNotFoundException {
-        final ProjectUser result = projectUserRepository.findOneByEmail(pEmail);
-        if (result == null) {
-            throw new EntityNotFoundException(pEmail, ProjectUser.class);
+    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
+        ProjectUser user;
+        if (instanceAdminUserEmail.equals(pUserEmail)) {
+            user = new ProjectUser(0L, null, null, UserStatus.ACCESS_GRANTED, new ArrayList<>(),
+                    new Role(0L, RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null, new ArrayList<>(), new ArrayList<>()),
+                    new ArrayList<>(), pUserEmail);
+        } else {
+            user = projectUserRepository.findOneByEmail(pUserEmail);
+            if (user == null) {
+                throw new EntityNotFoundException(pUserEmail, ProjectUser.class);
+            }
+            // Filter out hidden meta data
+            try (final Stream<MetaData> stream = user.getMetaData().stream()) {
+                stream.filter(visibleMetaDataFilter);
+            }
         }
-        return result;
+        return user;
     }
 
     /*

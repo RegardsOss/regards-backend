@@ -72,16 +72,16 @@ public class ProjectTest {
      */
     @Test
     public void testProject() {
-        Project project = new Project();
+        final Project project = new Project();
 
         Assert.assertEquals(null, project.getId());
-        Assert.assertEquals(null, project.getDescription());
+        Assert.assertNotEquals(null, project.getDescription());
         Assert.assertEquals(null, project.getIcon());
         Assert.assertEquals(false, project.isPublic());
-        Assert.assertEquals(null, project.getName());
+        Assert.assertNotEquals(null, project.getName());
 
-        Set<ConstraintViolation<Project>> constraintViolations = validator.validate(project);
-        Assert.assertEquals(2, constraintViolations.size());
+        final Set<ConstraintViolation<Project>> constraintViolations = validator.validate(project);
+        Assert.assertEquals(0, constraintViolations.size());
     }
 
     /**
@@ -152,7 +152,7 @@ public class ProjectTest {
      */
     @Test
     public void testSetId() {
-        Long newId = 2L;
+        final Long newId = 2L;
         projectTest.setId(newId);
         Assert.assertEquals(newId, projectTest.getId());
     }
@@ -170,7 +170,7 @@ public class ProjectTest {
      */
     @Test
     public void testSetName() {
-        String newName = "newName";
+        final String newName = "newName";
         projectTest.setName(newName);
         Assert.assertEquals(newName, projectTest.getName());
     }
@@ -188,7 +188,7 @@ public class ProjectTest {
      */
     @Test
     public void testSetDescription() {
-        String newDescription = "newDescription";
+        final String newDescription = "newDescription";
         projectTest.setDescription(newDescription);
         Assert.assertEquals(newDescription, projectTest.getDescription());
     }
@@ -206,7 +206,7 @@ public class ProjectTest {
      */
     @Test
     public void testSetIcon() {
-        String newIcon = "newIcon";
+        final String newIcon = "newIcon";
         projectTest.setIcon(newIcon);
         Assert.assertEquals(newIcon, projectTest.getIcon());
     }
@@ -233,7 +233,7 @@ public class ProjectTest {
      */
     @Test
     public void testEqualsObjectTrue() {
-        Project project = new Project(id, description, icon, ispublic, name);
+        final Project project = new Project(id, description, icon, ispublic, name);
         Assert.assertTrue(projectTest.equals(project));
     }
 
@@ -242,7 +242,7 @@ public class ProjectTest {
      */
     @Test
     public void testEqualsObjectFalse() {
-        Project project = new Project(3L, description, icon, ispublic, name);
+        final Project project = new Project(3L, description, icon, ispublic, name);
         Assert.assertFalse(projectTest.equals(project));
     }
 
@@ -259,7 +259,7 @@ public class ProjectTest {
      */
     @Test
     public void testSetDeleted() {
-        boolean deleted = !projectTest.isDeleted();
+        final boolean deleted = !projectTest.isDeleted();
         projectTest.setDeleted(deleted);
         Assert.assertEquals(deleted, projectTest.isDeleted());
     }
