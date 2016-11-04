@@ -8,6 +8,9 @@ import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+
 /**
  *
  * Class ProjectClientFallbacksTestsConfiguration
@@ -18,7 +21,7 @@ import org.springframework.context.annotation.PropertySource;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableFeignClients
+@EnableFeignClients(clients = { IProjectsClient.class, IProjectConnectionClient.class })
 @EnableAutoConfiguration
 @PropertySource("classpath:tests.properties")
 public class ProjectClientFallbacksTestsConfiguration {

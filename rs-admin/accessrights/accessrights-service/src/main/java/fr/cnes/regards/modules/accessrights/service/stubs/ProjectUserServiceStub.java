@@ -92,16 +92,19 @@ public class ProjectUserServiceStub implements IProjectUserService {
                 visible, wanted.getRole(), wanted.getPermissions(), wanted.getEmail());
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveOneByEmail(java.lang.String)
+     */
     @Override
-    public ProjectUser retrieveUser(final String pUserEmail) {
-        final List<ProjectUser> notWaitingAccess = projectUsers.stream()
-                .filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCESS)).collect(Collectors.toList());
-        final ProjectUser wanted = notWaitingAccess.stream().filter(p -> p.getEmail().equals(pUserEmail)).findFirst()
-                .get();
-        final List<MetaData> visible = wanted.getMetaData().stream()
-                .filter(m -> !m.getVisibility().equals(UserVisibility.HIDDEN)).collect(Collectors.toList());
-        return new ProjectUser(wanted.getId(), wanted.getLastConnection(), wanted.getLastUpdate(), wanted.getStatus(),
-                visible, wanted.getRole(), wanted.getPermissions(), wanted.getEmail());
+    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
+        for (final ProjectUser projectUser : projectUsers) {
+            if (projectUser.getEmail().equals(pUserEmail)) {
+                return projectUser;
+            }
+        }
+        throw new EntityNotFoundException(pUserEmail, ProjectUser.class);
     }
 
     @Override

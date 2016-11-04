@@ -41,7 +41,7 @@ public class AccessesController extends AbstractController implements IAccessesS
     private IAccessRequestService accessRequestService;
 
     /**
-     * Service handling CRUD operation on {@link AccessSettings}. Autowired by Spring. Must no be <code>null</code>.
+     * Service handling CRUD operation on {@link AccountSettings}. Autowired by Spring. Must no be <code>null</code>.
      */
     @Autowired
     private IAccessSettingsService accessSettingsService;

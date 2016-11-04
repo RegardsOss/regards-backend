@@ -56,9 +56,9 @@ public class ProjectUsersController extends AbstractController implements IProje
 
     @Override
     @ResourceAccess(description = "retrieve the project user and only display  metadata")
-    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(
-            @PathVariable("user_email") final String userEmail) {
-        final ProjectUser user = projectUserService.retrieveUser(userEmail);
+    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") final String userEmail)
+            throws EntityNotFoundException {
+        final ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
         final Resource<ProjectUser> resource = new Resource<>(user);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }

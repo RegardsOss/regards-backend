@@ -95,8 +95,13 @@ public class ProjectUserService implements IProjectUserService {
         return user;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveOneByEmail(java.lang.String)
+     */
     @Override
-    public ProjectUser retrieveUser(final String pUserEmail) {
+    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
         ProjectUser user;
         if (instanceAdminUserEmail.equals(pUserEmail)) {
             user = new ProjectUser(0L, null, null, UserStatus.ACCESS_GRANTED, new ArrayList<>(),
@@ -104,6 +109,9 @@ public class ProjectUserService implements IProjectUserService {
                     new ArrayList<>(), pUserEmail);
         } else {
             user = projectUserRepository.findOneByEmail(pUserEmail);
+            if (user == null) {
+                throw new EntityNotFoundException(pUserEmail, ProjectUser.class);
+            }
             // Filter out hidden meta data
             try (final Stream<MetaData> stream = user.getMetaData().stream()) {
                 stream.filter(visibleMetaDataFilter);
@@ -257,4 +265,5 @@ public class ProjectUserService implements IProjectUserService {
         final Map<Object, Boolean> seen = new ConcurrentHashMap<>();
         return t -> seen.putIfAbsent(pKeyExtractor.apply(t), Boolean.TRUE) == null;
     }
+
 }

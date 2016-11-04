@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
@@ -54,20 +56,29 @@ public interface IAccountsSignature {
      *            The <code>id</code> of the {@link Account} to update
      * @param pUpdatedAccount
      *            The new values to set
-     * @throws InvalidValueException
-     *             Thrown when <code>pAccountId</code> is different from the id of <code>pUpdatedAccount</code>
      * @throws EntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
+     * @throws InvalidValueException
+     *             Thrown when <code>pAccountId</code> is different from the id of <code>pUpdatedAccount</code><br>
      */
+    @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     ResponseEntity<Void> updateAccount(@PathVariable("account_id") Long pAccountId,
             @Valid @RequestBody Account pUpdatedAccount) throws EntityNotFoundException, InvalidValueException;
 
-    @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * Remove on {@link Account} from db.<br>
+     * Only remove if no project user for any tenant.
+     *
+     * @param pAccountId
+     *            The account <code>id</code>
+     * @throws EntityException
+     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
+     */
     @ResponseBody
-    ResponseEntity<Void> removeAccount(@PathVariable("account_id") Long pAccountId);
+    @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Void> removeAccount(@PathVariable("account_id") Long pAccountId) throws EntityException;
 
     /**
      * Do not respect REST architecture because the request comes from a mail client, ideally should be a PUT
@@ -99,30 +110,48 @@ public interface IAccountsSignature {
      * @throws EntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
      */
+    @ResponseBody
     @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") Long pAccountId,
             @PathVariable("reset_code") String pResetCode, @Valid @RequestBody String pNewPassword)
             throws InvalidValueException, EntityNotFoundException;
 
+    /**
+     * Send to the user an email containing a code:<br>
+     * - to reset password<br>
+     * - to unlock the account
+     *
+     * @param pEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pType
+     *            The type of code
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Account} with passed <code>email</code> could be found
+     */
+    @ResponseBody
     @RequestMapping(value = "/code", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    ResponseEntity<Void> codeForAccount(@RequestParam("email") String pEmail, @RequestParam("type") CodeType pType);
+    ResponseEntity<Void> sendAccountCode(@RequestParam("email") String pEmail, @RequestParam("type") CodeType pType)
+            throws EntityNotFoundException;
 
+    /**
+     * Retrieve the {@link AccountSettings} for the instance.
+     *
+     * @return The {@link AccountSettings} wrapped in a {@link Resource} and a {@link ResponseEntity}
+     */
+    @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    ResponseEntity<List<Resource<String>>> retrieveAccountSettings();
+    ResponseEntity<Resource<AccountSettings>> retrieveAccountSettings();
 
+    @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody String pUpdatedAccountSetting)
-            throws InvalidValueException;
+    ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody AccountSettings pUpdatedAccountSetting)
+            throws EntityException;
 
+    @ResponseBody
     @RequestMapping(value = "/{account_login}/validate", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     ResponseEntity<Void> validatePassword(@PathVariable("account_login") String pLogin,
             @RequestParam("password") String pPassword) throws EntityNotFoundException;
 }

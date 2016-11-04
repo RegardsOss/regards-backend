@@ -47,10 +47,12 @@ public interface IProjectUsersSignature {
      *
      * @param pUserId
      *            The {@link ProjectUser}'s <code>email</code>
+     * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{user_email}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") String pUserEmail);
+    ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") String pUserEmail)
+            throws EntityNotFoundException;
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.

@@ -12,44 +12,48 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublic;
 
 /**
  * Models a user's role.
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  */
-@Entity(name = "T_ROLE")
+@Entity
+@Table(name = "T_ROLE", indexes = { @Index(name = "IDX_ROLE_NAME", columnList = "name") })
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
+@HasParentOrPublic
 public class Role implements IIdentifiable<Long> {
 
     /**
      * Role indentifier
      */
     @Id
+    @Column
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "roleSequence")
-    @Column(name = "id")
     private Long id;
 
     /**
      * Role name
      */
     @NotBlank
-    @Column(name = "name")
+    @Column(unique = true)
     private String name;
 
     /**
-     * Role parent role
-     *
-     * TODO: Create a specific constraint => only role PUBLIC can have no parent
-     *
+     * The parent role.
+     * <p/>
+     * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasParentOrPublic} annotation.
      */
     @OneToOne
     private Role parentRole;
@@ -59,34 +63,32 @@ public class Role implements IIdentifiable<Long> {
      */
     @Valid
     @OneToMany
-    @Column(name = "permissions")
     private List<ResourcesAccess> permissions;
 
     /**
      * Role associated project users
      */
     @Valid
-    @OneToMany
-    @Column(name = "projectUsers")
+    @OneToMany(mappedBy = "role")
     private List<ProjectUser> projectUsers;
 
     /**
      * Role associated authorized IP addresses
      */
-    @Column(name = "authorizedAdresses")
+    @Column(name = "authorized_addresses")
     @Convert(converter = RoleAuthorizedAdressesConverter.class)
     private List<String> authorizedAddresses;
 
     /**
      * Are the cors requests authorized for this role ?
      */
-    @Column(name = "corsRequestsAuthorized")
+    @Column(name = "cors_requests_authorized")
     private boolean isCorsRequestsAuthorized = false;
 
     /**
      * If CORS requests are authorized for this role, this parameter indicates the limit date of the authorization
      */
-    @Column(name = "corsRequestsAuthEndDate")
+    @Column(name = "cors_requests_auth_end_date")
     private LocalDateTime corsRequestsAuthorizationEndDate;
 
     /**
