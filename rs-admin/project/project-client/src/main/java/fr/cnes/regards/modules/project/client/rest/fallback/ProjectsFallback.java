@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.project.fallback;
+package fr.cnes.regards.modules.project.client.rest.fallback;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.project.client.IProjectsClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**

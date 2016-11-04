@@ -104,7 +104,7 @@ public class AccountsFallback implements IAccountsClient {
     }
 
     @Override
-    public ResponseEntity<Boolean> validatePassword(final String pLogin, final String pPassword)
+    public ResponseEntity<Void> validatePassword(final String pLogin, final String pPassword)
             throws EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
         return null;

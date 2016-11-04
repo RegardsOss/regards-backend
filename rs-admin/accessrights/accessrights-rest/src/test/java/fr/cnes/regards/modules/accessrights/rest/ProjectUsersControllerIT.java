@@ -65,6 +65,8 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
 
     private String apiUserId;
 
+    private String apiUserEmail;
+
     private String apiUserLogin;
 
     private String apiUserPermissions;
@@ -93,7 +95,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         jwt = jwtService.generateToken(tenant, "email", "SVG", "USER");
         authService.setAuthorities(tenant, "/users", RequestMethod.GET, "USER");
         authService.setAuthorities(tenant, "/users", RequestMethod.POST, "USER");
-        authService.setAuthorities(tenant, "/users/{user_id}", RequestMethod.GET, "USER");
+        authService.setAuthorities(tenant, "/users/{user_email}", RequestMethod.GET, "USER");
         authService.setAuthorities(tenant, "/users/{user_id}", RequestMethod.PUT, "USER");
         authService.setAuthorities(tenant, "/users/{user_id}", RequestMethod.DELETE, "USER");
         authService.setAuthorities(tenant, "/users/{user_id}/metadata", RequestMethod.GET, "USER");
@@ -104,6 +106,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         authService.setAuthorities(tenant, "/users/{user_login}/permissions", RequestMethod.DELETE, "USER");
         apiUsers = "/users";
         apiUserId = apiUsers + "/{user_id}";
+        apiUserEmail = apiUsers + "/{user_email}";
         apiUserLogin = apiUsers + "/{user_login}";
         apiUserPermissions = apiUserLogin + "/permissions";
         apiUserPermissionsBorrowedRole = apiUserPermissions + "?borrowedRoleName=";
@@ -125,15 +128,15 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve a single user on a project.")
     public void getUser() {
-        final Long userId = projectUserService.retrieveUserList().get(0).getId();
+        final String userMail = projectUserService.retrieveUserList().get(0).getEmail();
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiUserId, jwt, expectations, errorMessage, userId);
+        performGet(apiUserEmail, jwt, expectations, errorMessage, userMail);
 
         expectations.clear();
         expectations.add(status().isNotFound());
-        performGet(apiUserId, jwt, expectations, errorMessage, Long.MAX_VALUE);
+        performGet(apiUserEmail, jwt, expectations, errorMessage, "user@invalid.fr");
 
     }
 

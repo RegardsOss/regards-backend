@@ -61,17 +61,23 @@ public class Project implements IIdentifiable<Long> {
     /**
      * IS the project public ?
      */
-    @NotNull
     @Column(name = "ispublic")
-    private boolean isPublic;
+    @NotNull
+    private Boolean isPublic;
 
     /**
      * Is the project deleted ?
      */
     @Column(name = "isdeleted")
-    private boolean isDeleted;
+    @NotNull
+    private Boolean isDeleted;
 
     public Project() {
+        super();
+        name = "undefined";
+        description = "";
+        isDeleted = false;
+        isPublic = false;
     }
 
     public Project(final Long pId, final String pDesc, final String pIcon, final boolean pIsPublic,
@@ -82,6 +88,7 @@ public class Project implements IIdentifiable<Long> {
         icon = pIcon;
         isPublic = pIsPublic;
         name = pName;
+        isDeleted = false;
     }
 
     public Project(final String pDesc, final String pIcon, final boolean pIsPublic, final String pName) {
@@ -90,6 +97,7 @@ public class Project implements IIdentifiable<Long> {
         icon = pIcon;
         isPublic = pIsPublic;
         name = pName;
+        isDeleted = false;
     }
 
     @Override

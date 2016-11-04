@@ -37,7 +37,7 @@ public interface IEmailSignature {
      * @return The sent email as {@link Email} wrapped in an {@link ResponseEntity}
      */
     @ResponseBody
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     ResponseEntity<SimpleMailMessage> sendEmail(SimpleMailMessage pMessage);
 
     /**

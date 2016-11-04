@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -32,6 +34,8 @@ import fr.cnes.regards.modules.core.rest.AbstractController;
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
 public class AccountsController extends AbstractController implements IAccountsSignature {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AccountsController.class);
 
     @Autowired
     private IAccountService accountService;
@@ -124,9 +128,12 @@ public class AccountsController extends AbstractController implements IAccountsS
 
     @Override
     @ResourceAccess(description = "Validate the account password", name = "")
-    public ResponseEntity<Boolean> validatePassword(@PathVariable("account_login") final String pLogin,
+    public ResponseEntity<Void> validatePassword(@PathVariable("account_login") final String pLogin,
             @RequestParam("password") final String pPassword) throws EntityNotFoundException {
-        final Boolean valid = accountService.validatePassword(pLogin, pPassword);
-        return new ResponseEntity<>(valid, HttpStatus.OK);
+        if (accountService.validatePassword(pLogin, pPassword)) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
     }
 }

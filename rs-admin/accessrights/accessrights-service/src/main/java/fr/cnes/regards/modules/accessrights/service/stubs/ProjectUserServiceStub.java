@@ -93,6 +93,18 @@ public class ProjectUserServiceStub implements IProjectUserService {
     }
 
     @Override
+    public ProjectUser retrieveUser(final String pUserEmail) {
+        final List<ProjectUser> notWaitingAccess = projectUsers.stream()
+                .filter(p -> !p.getStatus().equals(UserStatus.WAITING_ACCESS)).collect(Collectors.toList());
+        final ProjectUser wanted = notWaitingAccess.stream().filter(p -> p.getEmail().equals(pUserEmail)).findFirst()
+                .get();
+        final List<MetaData> visible = wanted.getMetaData().stream()
+                .filter(m -> !m.getVisibility().equals(UserVisibility.HIDDEN)).collect(Collectors.toList());
+        return new ProjectUser(wanted.getId(), wanted.getLastConnection(), wanted.getLastUpdate(), wanted.getStatus(),
+                visible, wanted.getRole(), wanted.getPermissions(), wanted.getEmail());
+    }
+
+    @Override
     public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
             throws InvalidValueException, EntityNotFoundException {
         if (!existUser(pUserId)) {

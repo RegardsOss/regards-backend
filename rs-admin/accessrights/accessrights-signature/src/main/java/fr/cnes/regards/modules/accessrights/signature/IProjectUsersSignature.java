@@ -43,14 +43,14 @@ public interface IProjectUsersSignature {
     ResponseEntity<List<Resource<ProjectUser>>> retrieveProjectUserList();
 
     /**
-     * Retrieve the {@link ProjectUser} of passed <code>id</code>.
+     * Retrieve the {@link ProjectUser} of passed <code>email</code>.
      *
      * @param pUserId
-     *            The {@link ProjectUser}'s <code>id</code>
+     *            The {@link ProjectUser}'s <code>email</code>
      */
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{user_email}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long pUserId);
+    ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") String pUserEmail);
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.

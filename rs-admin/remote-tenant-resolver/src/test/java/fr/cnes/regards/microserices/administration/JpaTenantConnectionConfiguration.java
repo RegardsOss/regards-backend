@@ -14,8 +14,8 @@ import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.fallback.ResourcesFallback;
 import fr.cnes.regards.modules.accessrights.fallback.RolesFallback;
-import fr.cnes.regards.modules.project.client.IProjectConnectionClient;
-import fr.cnes.regards.modules.project.client.IProjectsClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  *

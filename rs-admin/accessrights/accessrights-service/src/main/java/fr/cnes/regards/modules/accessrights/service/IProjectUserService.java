@@ -36,6 +36,15 @@ public interface IProjectUserService {
     ProjectUser retrieveUser(Long pUserId);
 
     /**
+     * Retrieve the {@link ProjectUser} of passed <code>email</code>.
+     *
+     * @param pUserEmail
+     *            The {@link ProjectUser}'s <code>email</code>
+     * @return The project user
+     */
+    ProjectUser retrieveUser(String pUserEmail);
+
+    /**
      * Retrieve the current {@link ProjectUser}.
      *
      * @return The project user

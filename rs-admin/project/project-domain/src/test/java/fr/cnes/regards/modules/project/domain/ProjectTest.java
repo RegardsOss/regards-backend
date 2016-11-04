@@ -49,18 +49,14 @@ public class ProjectTest {
         final boolean ispublic = true;
         final String name = "name";
         final Long id = 0L;
-        // Check empty project
-        Project project = new Project();
-        Set<ConstraintViolation<Project>> constraintViolations = validator.validate(project);
-        Assert.assertEquals(2, constraintViolations.size());
 
-        project = new Project(id, description, icon, ispublic, name);
+        Project project = new Project(id, description, icon, ispublic, name);
         Assert.assertTrue(project.getDescription().equals(description));
         Assert.assertTrue(project.getName().equals(name));
         Assert.assertTrue(project.getId().equals(id));
         Assert.assertTrue(!project.isDeleted());
         Assert.assertTrue(project.isPublic() == ispublic);
-        constraintViolations = validator.validate(project);
+        Set<ConstraintViolation<Project>> constraintViolations = validator.validate(project);
         Assert.assertEquals(0, constraintViolations.size());
 
         project = new Project(0L, description, icon, ispublic, null);

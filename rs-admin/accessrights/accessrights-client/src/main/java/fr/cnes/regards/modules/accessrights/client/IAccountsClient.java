@@ -3,11 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import org.springframework.cloud.netflix.feign.FeignClient;
-
-import feign.Headers;
+import fr.cnes.regards.client.core.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.signature.IAccountsSignature;
-import fr.cnes.regards.modules.accessrights.fallback.AccountsFallback;
 
 /**
  *
@@ -18,8 +15,7 @@ import fr.cnes.regards.modules.accessrights.fallback.AccountsFallback;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@FeignClient(name = "rs-admin", fallback = AccountsFallback.class)
-@Headers({ "Accept: application/json", "Content-Type: application/json" })
+@RestClient(name = "rs-admin")
 public interface IAccountsClient extends IAccountsSignature {
 
 }
