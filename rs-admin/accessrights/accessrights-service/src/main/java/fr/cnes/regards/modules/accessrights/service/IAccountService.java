@@ -10,7 +10,6 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
@@ -92,14 +91,12 @@ public interface IAccountService {
      *            The <code>id</code> of the {@link Account} to update
      * @param pUpdatedAccount
      *            The new values to set
-     * @throws EntityException
-     *             <br>
-     *             {@link InvalidEntityException} Thrown when <code>pAccountId</code> is different from the id of
-     *             <code>pUpdatedAccount</code><br>
-     *             {@link EntityNotFoundException} Thrown when no {@link Account} could be found with id
-     *             <code>pAccountId</code>
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
+     * @throws InvalidValueException
+     *             Thrown when <code>pAccountId</code> is different from the id of <code>pUpdatedAccount</code>
      */
-    void updateAccount(Long pAccountId, Account pUpdatedAccount) throws EntityException;
+    void updateAccount(Long pAccountId, Account pUpdatedAccount) throws EntityNotFoundException, InvalidValueException;
 
     /**
      * Remove on {@link Account} from db.<br>
@@ -115,12 +112,14 @@ public interface IAccountService {
     /**
      * Send a code of type <code>pType</code> to the specified recipient.
      *
-     * @param pAccountEmail
-     *            The recipient's email address
+     * @param pEmail
+     *            recipient's email address
      * @param pType
      *            The type of code
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Account} with passed <code>email</code> could be found
      */
-    void codeForAccount(String pAccountEmail, CodeType pType);
+    void sendAccountCode(String pEmail, CodeType pType) throws EntityNotFoundException;
 
     /**
      * Unlock the {@link Account} of passed <code>id</code>.
@@ -165,28 +164,17 @@ public interface IAccountService {
     Account retrieveAccountByEmail(String pEmail) throws EntityNotFoundException;
 
     /**
-     * Retrieve the {@link Account} of passed <code>login</code>
+     * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of
+     * passed <code>login</code>
      *
-     * @param pLogin
-     *            The {@link Account}'s <code>login</code>
-     * @return The account
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
-     */
-    Account retrieveAccountByLogin(String pLogin) throws EntityNotFoundException;
-
-    /**
-     * Return true if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of passed
-     * <code>login</code>
-     *
-     * @param pLogin
-     *            The {@link Account}'s <code>login</code>
+     * @param pEmail
+     *            The {@link Account}'s <code>email</code>
      * @param pPassword
      *            The password to check
      * @throws EntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
-     * @return <code>True</code> if the password is valid, else <code>false</code>
+     * @return <code>true</code> if the password is valid, else <code>false</code>
      */
-    boolean validatePassword(String pLogin, String pPassword) throws EntityNotFoundException;
+    boolean validatePassword(String pEmail, String pPassword) throws EntityNotFoundException;
 
 }

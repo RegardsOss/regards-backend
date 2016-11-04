@@ -72,7 +72,7 @@ public class AccountsController extends AbstractController implements IAccountsS
     @Override
     @ResourceAccess(description = "update the account account_id according to the body specified", name = "")
     public ResponseEntity<Void> updateAccount(@PathVariable("account_id") final Long accountId,
-            @Valid @RequestBody final Account pUpdatedAccount) throws EntityException {
+            @Valid @RequestBody final Account pUpdatedAccount) throws EntityNotFoundException, InvalidValueException {
         accountService.updateAccount(accountId, pUpdatedAccount);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -105,9 +105,9 @@ public class AccountsController extends AbstractController implements IAccountsS
 
     @Override
     @ResourceAccess(description = "send a code of type type to the email specified", name = "")
-    public ResponseEntity<Void> codeForAccount(@RequestParam("email") final String email,
-            @RequestParam("type") final CodeType type) {
-        accountService.codeForAccount(email, type);
+    public ResponseEntity<Void> sendAccountCode(@RequestParam("email") final String email,
+            @RequestParam("type") final CodeType type) throws EntityNotFoundException {
+        accountService.sendAccountCode(email, type);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

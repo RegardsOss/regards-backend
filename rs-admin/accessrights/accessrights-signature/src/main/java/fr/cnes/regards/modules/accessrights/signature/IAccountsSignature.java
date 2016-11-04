@@ -56,18 +56,16 @@ public interface IAccountsSignature {
      *            The <code>id</code> of the {@link Account} to update
      * @param pUpdatedAccount
      *            The new values to set
-     * @throws EntityException
-     *             <br>
-     *             {@link InvalidEntityException} Thrown when <code>pAccountId</code> is different from the id of
-     *             <code>pUpdatedAccount</code><br>
-     *             {@link EntityNotFoundException} Thrown when no {@link Account} could be found with id
-     *             <code>pAccountId</code>
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
+     * @throws InvalidValueException
+     *             Thrown when <code>pAccountId</code> is different from the id of <code>pUpdatedAccount</code><br>
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> updateAccount(@PathVariable("account_id") Long pAccountId,
-            @Valid @RequestBody Account pUpdatedAccount) throws EntityException;
+            @Valid @RequestBody Account pUpdatedAccount) throws EntityNotFoundException, InvalidValueException;
 
     /**
      * Remove on {@link Account} from db.<br>
@@ -112,16 +110,29 @@ public interface IAccountsSignature {
      * @throws EntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
      */
+    @ResponseBody
     @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") Long pAccountId,
             @PathVariable("reset_code") String pResetCode, @Valid @RequestBody String pNewPassword)
             throws InvalidValueException, EntityNotFoundException;
 
-    @RequestMapping(value = "/code", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * Send to the user an email containing a code:<br>
+     * - to reset password<br>
+     * - to unlock the account
+     *
+     * @param pEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pType
+     *            The type of code
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Account} with passed <code>email</code> could be found
+     */
     @ResponseBody
-    ResponseEntity<Void> codeForAccount(@RequestParam("email") String pEmail, @RequestParam("type") CodeType pType);
+    @RequestMapping(value = "/code", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Void> sendAccountCode(@RequestParam("email") String pEmail, @RequestParam("type") CodeType pType)
+            throws EntityNotFoundException;
 
     /**
      * Retrieve the {@link AccountSettings} for the instance.
