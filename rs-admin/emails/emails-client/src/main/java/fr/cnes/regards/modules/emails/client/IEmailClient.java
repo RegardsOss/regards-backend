@@ -1,10 +1,6 @@
 package fr.cnes.regards.modules.emails.client;
 
-import org.springframework.cloud.netflix.feign.FeignClient;
-
-import feign.Headers;
-import fr.cnes.regards.framework.hateoas.IResourceClient;
-import fr.cnes.regards.modules.emails.domain.Email;
+import fr.cnes.regards.client.core.annotation.RestClient;
 import fr.cnes.regards.modules.emails.signature.IEmailSignature;
 
 /**
@@ -12,8 +8,7 @@ import fr.cnes.regards.modules.emails.signature.IEmailSignature;
  *
  * @author CS SI
  */
-@FeignClient(value = "rs-admin")
-@Headers({ "Accept: application/json", "Content-Type: application/json" })
-public interface IEmailClient extends IEmailSignature, IResourceClient<Email> {
+@RestClient(name = "rs-admin")
+public interface IEmailClient extends IEmailSignature {
 
 }
