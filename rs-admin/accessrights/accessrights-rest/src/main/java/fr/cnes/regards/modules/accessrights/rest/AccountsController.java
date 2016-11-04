@@ -120,8 +120,7 @@ public class AccountsController extends AbstractController implements IAccountsS
 
     @Override
     @ResourceAccess(description = "update the setting managing the account", name = "")
-    public ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody final AccountSettings pUpdatedAccountSetting)
-            throws EntityException {
+    public ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody final AccountSettings pUpdatedAccountSetting) {
         accountSettingsService.update(pUpdatedAccountSetting);
         return new ResponseEntity<>(HttpStatus.OK);
     }

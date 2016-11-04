@@ -146,8 +146,7 @@ public interface IAccountsSignature {
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody AccountSettings pUpdatedAccountSetting)
-            throws EntityException;
+    ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody AccountSettings pUpdatedAccountSetting);
 
     @ResponseBody
     @RequestMapping(value = "/{account_login}/validate", method = RequestMethod.GET,

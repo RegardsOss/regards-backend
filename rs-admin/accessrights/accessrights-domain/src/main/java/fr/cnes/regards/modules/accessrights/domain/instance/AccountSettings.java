@@ -40,7 +40,7 @@ public class AccountSettings implements IIdentifiable<Long> {
      */
     @Pattern(regexp = "manual|auto-accept", flags = Pattern.Flag.CASE_INSENSITIVE)
     @Column(name = "mode")
-    private String mode;
+    private String mode = "manual";
 
     @Override
     public Long getId() {

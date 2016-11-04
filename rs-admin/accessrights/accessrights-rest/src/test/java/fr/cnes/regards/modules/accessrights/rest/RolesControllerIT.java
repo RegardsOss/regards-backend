@@ -28,11 +28,12 @@ import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.dao.stubs.RoleRepositoryStub;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
+import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.IRoleService;
+import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
 /**
  *
@@ -51,6 +52,11 @@ public class RolesControllerIT extends AbstractAdministrationIT {
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(RolesControllerIT.class);
+
+    /**
+     * The role PUBLIC, usefull for creating new roles
+     */
+    private static Role rolePublic;
 
     @Autowired
     private JWTService jwtService;
@@ -85,7 +91,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Override
     public void init() {
         final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
-        jwt = jwtService.generateToken(tenant, "email", RoleRepositoryStub.PUBLIC_ROLE_NAME, "USER");
+        jwt = jwtService.generateToken(tenant, "email", DefaultRoleNames.PUBLIC.toString(), "USER");
         authService.setAuthorities(tenant, "/roles", RequestMethod.GET, "USER");
         authService.setAuthorities(tenant, "/roles", RequestMethod.POST, "USER");
         authService.setAuthorities(tenant, "/roles/{role_name}", RequestMethod.GET, "USER");
@@ -100,6 +106,8 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         apiRolesName = apiRoles + "/{role_name}";
         apiRolesPermissions = apiRolesId + "/permissions";
         apiRolesUsers = apiRolesId + "/users";
+
+        rolePublic = roleService.retrieveRole(DefaultRoleNames.PUBLIC.toString());
     }
 
     @Test
@@ -115,7 +123,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to create a role and handle fail cases.")
     public void createRole() {
-        final Role newRole = new Role(15464L, "new role", null, null, null);
+        final Role newRole = new Role(15464L, "NEW_ROLE", rolePublic, null, null);
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
@@ -135,7 +143,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRolesName, jwt, expectations, "TODO Error message", RoleRepositoryStub.PUBLIC_ROLE_NAME);
+        performGet(apiRolesName, jwt, expectations, "TODO Error message", DefaultRoleNames.REGISTERED_USER);
 
         final Long wrongRoleId = 46453L;
         final String wrongRoleName = "WRONG_ROLE";
@@ -149,22 +157,32 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update a role and handle fail cases.")
-    public void updateRole() {
-        final Long roleId = 0L;
-        assertTrue(roleService.existRole(roleId));
-        final Role updated = roleService.retrieveRole(roleId);
-        updated.setName("newName");
+    public void updateRole() throws AlreadyExistingException {
+        // Create a new role in order to update it later
+        final Long id = 99L;
+        final Role toUpdate = new Role();
+        toUpdate.setId(id);
+        toUpdate.setName("NAME_TO_UPDATE");
+        toUpdate.setDefault(false);
+        toUpdate.setNative(false);
+        toUpdate.setParentRole(rolePublic);
+        toUpdate.setPermissions(new ArrayList<>());
+        toUpdate.setProjectUsers(new ArrayList<>());
+        roleService.createRole(toUpdate);
+
+        // Update the role
+        toUpdate.setName("UPDATED_NAME");
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiRolesId, jwt, updated, expectations, "TODO Error message", roleId);
+        performPut(apiRolesId, jwt, toUpdate, expectations, "TODO Error message", id);
 
         final Long notSameID = 41554L;
         final Role notUpdated = new Role(notSameID, null, null, null, null);
 
         expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isBadRequest());
-        performPut(apiRolesId, jwt, notUpdated, expectations, "TODO Error message", roleId);
+        performPut(apiRolesId, jwt, notUpdated, expectations, "TODO Error message", id);
     }
 
     @Test

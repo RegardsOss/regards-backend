@@ -29,7 +29,9 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.service.IAccountService;
+import fr.cnes.regards.modules.accessrights.service.IAccountSettingsService;
 
 /**
  *
@@ -74,6 +76,9 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
     @Autowired
     private IAccountService accountService;
+
+    @Autowired
+    private IAccountSettingsService settingsService;
 
     @Value("${root.admin.login:admin}")
     private String rootAdminLogin;
@@ -122,7 +127,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
     @Test
     @Requirement("?")
-    @Purpose("?")
+    @Purpose("Check that the system allows to retrieve account settings for an instance.")
     public void getSettings() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -174,15 +179,19 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     public void updateAccountSetting() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiAccountSetting, jwt, "manual", expectations, errorMessage);
+        final AccountSettings toUpdate = settingsService.retrieve();
+        toUpdate.setMode("manual");
+        performPut(apiAccountSetting, jwt, toUpdate, expectations, errorMessage);
 
         expectations.clear();
         expectations.add(status().isOk());
-        performPut(apiAccountSetting, jwt, "auto-accept", expectations, errorMessage);
+        toUpdate.setMode("auto-accept");
+        performPut(apiAccountSetting, jwt, toUpdate, expectations, errorMessage);
 
         expectations.clear();
         expectations.add(status().isBadRequest());
-        performPut(apiAccountSetting, jwt, "sdfqjkmfsdq", expectations, errorMessage);
+        toUpdate.setMode("sdfqjkmfsdq");
+        performPut(apiAccountSetting, jwt, toUpdate, expectations, errorMessage);
     }
 
     @Test

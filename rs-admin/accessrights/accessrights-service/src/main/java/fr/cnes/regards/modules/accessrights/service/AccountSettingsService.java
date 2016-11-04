@@ -3,11 +3,12 @@
  */
 package fr.cnes.regards.modules.accessrights.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountSettingsRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 
 /**
  * {@link IAccountSettingsService} implementation
@@ -40,7 +41,16 @@ public class AccountSettingsService implements IAccountSettingsService {
      */
     @Override
     public AccountSettings retrieve() {
-        return accountSettingsRepository.findAll().get(0);
+        final List<AccountSettings> settings = accountSettingsRepository.findAll();
+        AccountSettings result = null;
+        if (!settings.isEmpty()) {
+            result = settings.get(0);
+        } else {
+            result = new AccountSettings();
+            result.setId(0L);
+            accountSettingsRepository.save(result);
+        }
+        return result;
     }
 
     /*
@@ -49,10 +59,8 @@ public class AccountSettingsService implements IAccountSettingsService {
      * @see fr.cnes.regards.modules.accessrights.service.IAccountSettingsService#update()
      */
     @Override
-    public AccountSettings update(final AccountSettings pAccessSettings) throws EntityNotFoundException {
-        if (!accountSettingsRepository.exists(pAccessSettings.getId())) {
-            throw new EntityNotFoundException(pAccessSettings.getId().toString(), AccountSettings.class);
-        }
+    public AccountSettings update(final AccountSettings pAccessSettings) {
+        pAccessSettings.setId(0L);
         return accountSettingsRepository.save(pAccessSettings);
     }
 
