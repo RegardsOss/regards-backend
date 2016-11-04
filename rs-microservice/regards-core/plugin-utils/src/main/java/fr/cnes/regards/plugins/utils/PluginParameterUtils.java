@@ -269,7 +269,7 @@ public final class PluginParameterUtils {
              * Test if this parameter is set as dynamic in the plugin configuration
              */
             final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> cfd = pPlgConf.getParameters()
-                    .stream().filter(s -> s.getName().equals(aDynamicPlgParam.get().getName()) && s.getIsDynamic())
+                    .stream().filter(s -> s.getName().equals(aDynamicPlgParam.get().getName()) && s.isDynamic())
                     .findFirst();
             if (cfd.isPresent()) {
                 paramValue = postProcessDynamicValues(paramValue, cfd, aDynamicPlgParam);

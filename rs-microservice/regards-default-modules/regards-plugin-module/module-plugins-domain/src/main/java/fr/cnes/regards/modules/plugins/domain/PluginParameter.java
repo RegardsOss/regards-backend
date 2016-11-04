@@ -70,7 +70,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     /**
      * The parameter is dynamic
      */
-    private Boolean isDynamic = false;
+    private Boolean dynamic = false;
 
     /**
      * The list of values for a dynamic parameters
@@ -133,12 +133,12 @@ public class PluginParameter implements IIdentifiable<Long> {
         value = pValue;
     }
 
-    public final Boolean getIsDynamic() {
-        return isDynamic;
+    public final Boolean isDynamic() {
+        return dynamic;
     }
 
     public final void setIsDynamic(Boolean pIsDynamic) {
-        this.isDynamic = pIsDynamic;
+        this.dynamic = pIsDynamic;
     }
 
     public final PluginConfiguration getPluginConfiguration() {
