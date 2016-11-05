@@ -48,7 +48,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
+			<artifactId>security-regards</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.cloud.gateway</groupId>

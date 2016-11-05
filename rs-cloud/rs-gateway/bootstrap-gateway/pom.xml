@@ -45,6 +45,10 @@
 			<artifactId>authentication-starter</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards-starter</artifactId>
+		</dependency>
 	</dependencies>
 </project>
 
