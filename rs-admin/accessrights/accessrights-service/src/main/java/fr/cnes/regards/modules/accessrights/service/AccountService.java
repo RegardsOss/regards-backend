@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
  * @author Xavier-Alexandre Brochard
  */
 @Service
-@Transactional
+@Transactional(transactionManager = "instanceJpaTransactionManager")
 public class AccountService implements IAccountService {
 
     /**
