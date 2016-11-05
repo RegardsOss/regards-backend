@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Bean;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.SimpleAuthentication;
 import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
+import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
+import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -55,6 +57,26 @@ public class Application { // NOSONAR
         return new ProxyLogFilter();
     }
 
+    /**
+     * TODO : Replace with remote-tenant-resolver admin Authorities provider
+     * 
+     * @return
+     */
+    @Bean
+    public IAuthoritiesProvider authProvider() {
+        return new DefaultAuthorityProvider();
+    }
+
+    /**
+     *
+     * TODO : Replace with real plugin system
+     *
+     * @param pMicorserviceName
+     * @param pAccountsClient
+     * @param pProjectUsersClient
+     * @param pJwtService
+     * @return
+     */
     @Bean
     public IAuthenticationPlugin plugin(@Value("${spring.application.name") String pMicorserviceName,
             IAccountsClient pAccountsClient, IProjectUsersClient pProjectUsersClient, JWTService pJwtService) {
