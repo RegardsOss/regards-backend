@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -33,10 +34,10 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @since 1.0-SNAPSHOT
  */
 @RunWith(RegardsSpringRunner.class)
-// @SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = AuthenticationTestConfiguration.class)
 @AutoConfigureMockMvc
 @PropertySource("classpath:test.properties")
-public class GatewayApplicationTest {
+public class AuthenticationTestIT {
 
     /**
      * Token endpoint

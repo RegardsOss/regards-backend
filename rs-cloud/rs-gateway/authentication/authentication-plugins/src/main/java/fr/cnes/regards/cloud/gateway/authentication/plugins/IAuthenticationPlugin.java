@@ -1,10 +1,9 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.cloud.gateway.authentication.interfaces;
+package fr.cnes.regards.cloud.gateway.authentication.plugins;
 
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 
 /**
  *
@@ -15,7 +14,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public interface IAuthenticationProvider {
+public interface IAuthenticationPlugin {
 
     /**
      *
@@ -30,19 +29,19 @@ public interface IAuthenticationProvider {
      * @return Authentication status UserStatus
      * @since 1.0-SNAPSHOT
      */
-    UserStatus authenticate(String pName, String pPassword, String pScope);
+    AuthenticateStatus authenticate(String pName, String pPassword, String pScope);
 
     /**
      *
-     * Retrieve user accounts informations.
+     * Retrieve user role
      *
      * @param pName
      *            user login
      * @param pScope
      *            user project
-     * @return ProjectUser
+     * @return Project User role
      * @since 1.0-SNAPSHOT
      */
-    ProjectUser retreiveUser(String pName, String pScope);
+    UserDetails retreiveUserDetails(String pName, String pScope) throws UserNotFoundException;
 
 }

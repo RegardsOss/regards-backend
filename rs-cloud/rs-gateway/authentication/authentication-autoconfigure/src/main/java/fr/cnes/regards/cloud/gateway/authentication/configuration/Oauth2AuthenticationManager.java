@@ -18,9 +18,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.cloud.gateway.authentication.interfaces.IAuthenticationProvider;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.cloud.gateway.authentication.plugins.AuthenticateStatus;
+import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
+import fr.cnes.regards.cloud.gateway.authentication.plugins.UserNotFoundException;
+import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 
 /**
  *
@@ -44,7 +45,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager {
      * Custom authentication provider.
      */
     @Autowired
-    private IAuthenticationProvider authProvider;
+    private IAuthenticationPlugin authProvider;
 
     @Override
     public Authentication authenticate(final Authentication pAuthentication) {
@@ -64,20 +65,22 @@ public class Oauth2AuthenticationManager implements AuthenticationManager {
         }
 
         // Check user/password
-        if (!authProvider.authenticate(name, password, scope).equals(UserStatus.ACCESS_GRANTED)) {
+        if (!authProvider.authenticate(name, password, scope).equals(AuthenticateStatus.ACCESS_GRANTED)) {
             throw new BadCredentialsException("Access denied for user " + name);
         }
 
         // Retrieve account
-        final ProjectUser user = authProvider.retreiveUser(name, scope);
-
-        if (user == null) {
+        UserDetails userDetails;
+        try {
+            userDetails = authProvider.retreiveUserDetails(name, scope);
+        } catch (final UserNotFoundException e) {
             throw new BadCredentialsException(String.format("User %s does not exists ", name));
         }
-        final List<GrantedAuthority> grantedAuths = new ArrayList<>();
-        grantedAuths.add(new SimpleGrantedAuthority(user.getRole().getName()));
 
-        return new UsernamePasswordAuthenticationToken(user, password, grantedAuths);
+        final List<GrantedAuthority> grantedAuths = new ArrayList<>();
+        grantedAuths.add(new SimpleGrantedAuthority(userDetails.getRole()));
+
+        return new UsernamePasswordAuthenticationToken(userDetails, password, grantedAuths);
 
     }
 

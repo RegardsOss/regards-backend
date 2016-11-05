@@ -13,13 +13,13 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-boot-parent</artifactId>
+		<artifactId>regards-parent</artifactId>
 		<version>0.0.6-SNAPSHOT</version>
 		<relativePath></relativePath>
 	</parent>
 
 	<dependencies>
-		<!-- Spring security dependencies -->
+		<!-- Spring dependencies -->
 		<dependency>
 			<groupId>org.springframework.security.oauth</groupId>
 			<artifactId>spring-security-oauth2</artifactId>
@@ -27,6 +27,15 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-jwt</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+			<optional>true</optional>
 		</dependency>
 		<!-- Regards dependencies -->
 		<dependency>
@@ -40,6 +49,11 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.cloud.gateway</groupId>
+			<artifactId>authentication-plugins</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- Tests -->
 		<dependency>

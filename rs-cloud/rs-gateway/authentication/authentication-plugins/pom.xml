@@ -13,12 +13,16 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-boot-parent</artifactId>
+		<artifactId>regards-parent</artifactId>
 		<version>0.0.6-SNAPSHOT</version>
 		<relativePath></relativePath>
 	</parent>
 
 	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-utils</artifactId>
+		</dependency>
 	</dependencies>
 </project>
 

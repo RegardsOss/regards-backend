@@ -8,6 +8,7 @@ import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -26,6 +27,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
+import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+
 /**
  *
  * Class AuthorizationServerConfiguration
@@ -37,6 +41,7 @@ import org.springframework.transaction.TransactionStatus;
  */
 @Configuration
 @EnableAuthorizationServer
+@EnableFeignClients(clients = { IAccountsClient.class, IProjectUsersClient.class })
 public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
     /**
