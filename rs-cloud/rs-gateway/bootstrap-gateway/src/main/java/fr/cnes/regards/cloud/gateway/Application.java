@@ -5,15 +5,10 @@ package fr.cnes.regards.cloud.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
 
 import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
-import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
-import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 
 /**
  *
@@ -25,7 +20,6 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
  * @since 1.0-SNAPSHOT
  */
 @SpringBootApplication
-@EnableFeignClients(clients = { IAccountsClient.class, IProjectUsersClient.class })
 @EnableZuulProxy
 public class Application { // NOSONAR
 
@@ -51,11 +45,6 @@ public class Application { // NOSONAR
     @Bean
     public ProxyLogFilter proxyLogFilter() {
         return new ProxyLogFilter();
-    }
-
-    @Bean
-    public IAuthoritiesProvider authoritiesProvider() {
-        return new DefaultAuthorityProvider();
     }
 
 }
