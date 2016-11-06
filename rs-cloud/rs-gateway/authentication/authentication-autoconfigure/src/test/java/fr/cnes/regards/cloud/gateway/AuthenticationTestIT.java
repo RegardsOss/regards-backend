@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  *
  * Test class for the Gateway application
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @RunWith(RegardsSpringRunner.class)
@@ -72,13 +72,13 @@ public class AuthenticationTestIT {
     /**
      * Basic authentication username
      */
-    @Value("${authentication.client.user}")
+    @Value("${regards.authentication.client.user}")
     private String basicUserName;
 
     /**
      * Basic authentication secret
      */
-    @Value("${authentication.client.secret}")
+    @Value("${regards.authentication.client.secret}")
     private String basicPassword;
 
     /**

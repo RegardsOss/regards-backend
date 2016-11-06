@@ -12,7 +12,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
  *
  * Configuration class for spring context tests
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @RunWith(SpringRunner.class)

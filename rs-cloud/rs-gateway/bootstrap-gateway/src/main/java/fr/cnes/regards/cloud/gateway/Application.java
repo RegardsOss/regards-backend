@@ -25,7 +25,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
  *
  * Spring boot starter class for Regards Gateway component
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @SpringBootApplication

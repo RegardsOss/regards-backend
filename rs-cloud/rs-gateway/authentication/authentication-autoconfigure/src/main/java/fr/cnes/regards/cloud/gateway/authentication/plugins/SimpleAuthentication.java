@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
  *
  * TODO : This class should be a REGARDS authentication plugin.
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public class SimpleAuthentication implements IAuthenticationPlugin {

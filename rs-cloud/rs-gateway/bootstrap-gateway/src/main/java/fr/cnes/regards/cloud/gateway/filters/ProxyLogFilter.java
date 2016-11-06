@@ -16,7 +16,7 @@ import com.netflix.zuul.context.RequestContext;
  *
  * Zuul proxy filter to log request redirections.
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public class ProxyLogFilter extends ZuulFilter {

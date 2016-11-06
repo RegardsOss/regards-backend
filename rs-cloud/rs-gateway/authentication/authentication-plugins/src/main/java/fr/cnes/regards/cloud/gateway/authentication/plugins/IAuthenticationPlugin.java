@@ -11,7 +11,7 @@ import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
  *
  * Authentication Provider interface. TODO : Should be replace with the REGARDS Plugins system.
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public interface IAuthenticationPlugin {

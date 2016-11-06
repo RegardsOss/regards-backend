@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
  * Authentication Manager. This class provide the authentication process to check user/password and retrieve user
  * account.
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNPASHOT
  */
 @Component

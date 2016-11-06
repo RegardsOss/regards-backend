@@ -16,7 +16,7 @@ import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
  *
  * Stub to test for authentication and gettin JwtToken
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Component

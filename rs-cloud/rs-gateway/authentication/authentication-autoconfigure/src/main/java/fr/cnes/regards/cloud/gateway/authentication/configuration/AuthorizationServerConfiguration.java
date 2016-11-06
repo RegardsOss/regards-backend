@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
  *
  * Spring Oauth2 Authorization server configuration. Configuration to authenticate users and get tokens.
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNPASHOT
  */
 @Configuration
@@ -65,19 +65,19 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     /**
      * Client login
      */
-    @Value("${authentication.client.user}")
+    @Value("${regards.authentication.client.user}")
     private String clientUser;
 
     /**
      * Client secret
      */
-    @Value("${authentication.client.secret}")
+    @Value("${regards.authentication.client.secret}")
     private String clientSecret;
 
     /**
      * Grant type
      */
-    @Value("${authentication.granttype}")
+    @Value("${regards.authentication.granttype}")
     private String grantType;
 
     /**

@@ -13,7 +13,7 @@ import org.springframework.cloud.config.server.EnableConfigServer;
  *
  * Boostrap for Spring Configuration Server
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 // CHECKSTYLE:OFF
