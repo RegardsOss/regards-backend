@@ -20,6 +20,7 @@ import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.plugins.annotations.Plugin;
 
 /**
  *
@@ -31,6 +32,8 @@ import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
  * @since 1.0-SNAPSHOT
  */
 @Component
+@Plugin(author = "CSSI", description = "Regards internal authentication plugin",
+        id = "RegardsInternalAuthenticationPlugin", version = "1.0")
 public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**
