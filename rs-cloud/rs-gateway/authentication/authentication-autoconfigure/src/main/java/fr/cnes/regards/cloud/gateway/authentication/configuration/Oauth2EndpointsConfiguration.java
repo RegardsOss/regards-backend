@@ -95,6 +95,9 @@ public class Oauth2EndpointsConfiguration implements ICustomWebSecurityConfigura
             // Assume we are in an Authorization Server
             pHttp.requestMatcher(new NotOAuthRequestMatcher(endpoints.oauth2EndpointHandlerMapping()));
         }
+
+        // Deny access to all SYS roles
+        pHttp.addFilter(new RoleSysFilter());
     }
 
 }
