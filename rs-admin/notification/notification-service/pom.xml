@@ -15,6 +15,11 @@
 	</parent>
 
 	<dependencies>
+		<!-- REGARDS Frameworf -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-multitenant-regards</artifactId>
+		</dependency>
 		<!-- Microservice internal dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.notification</groupId>

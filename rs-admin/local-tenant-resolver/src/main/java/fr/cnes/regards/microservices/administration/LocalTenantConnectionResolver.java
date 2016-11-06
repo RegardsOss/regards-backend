@@ -9,8 +9,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.project.service.ProjectService;
  * Overrides the default method to initiate the list of connections for the multitenants database. The project
  * connections are read from the instance database through the ProjectService.
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public class LocalTenantConnectionResolver implements ITenantConnectionResolver {
