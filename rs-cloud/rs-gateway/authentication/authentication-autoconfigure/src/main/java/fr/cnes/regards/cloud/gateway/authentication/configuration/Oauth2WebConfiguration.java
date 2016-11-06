@@ -8,7 +8,6 @@ import java.util.List;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.core.Ordered;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
@@ -22,12 +21,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * @since 1.0-SNAPSHOT
  */
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
-public class OAuth2WebConfiguration extends WebMvcConfigurerAdapter {
+public class Oauth2WebConfiguration extends WebMvcConfigurerAdapter {
 
     @Override
     public void configureMessageConverters(final List<HttpMessageConverter<?>> pConverters) {
         pConverters.add(new Oauth2DefaultTokenMessageConverter());
         super.configureMessageConverters(pConverters);
     }
-
 }

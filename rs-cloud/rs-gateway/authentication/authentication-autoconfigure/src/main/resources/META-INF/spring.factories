@@ -1,5 +1,5 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.cloud.gateway.authentication.configuration.OAuth2WebConfiguration,\
+fr.cnes.regards.cloud.gateway.authentication.configuration.Oauth2WebConfiguration,\
 fr.cnes.regards.cloud.gateway.authentication.configuration.Oauth2AuthenticationManager,\
 fr.cnes.regards.cloud.gateway.authentication.configuration.AuthorizationServerConfiguration,\
 fr.cnes.regards.cloud.gateway.authentication.configuration.Oauth2EndpointsConfiguration,\
