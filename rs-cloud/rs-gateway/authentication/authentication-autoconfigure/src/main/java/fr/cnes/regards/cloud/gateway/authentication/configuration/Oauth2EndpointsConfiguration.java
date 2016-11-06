@@ -15,6 +15,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
+import fr.cnes.regards.framework.security.filter.IpFilter;
 
 /**
  *
@@ -97,7 +98,7 @@ public class Oauth2EndpointsConfiguration implements ICustomWebSecurityConfigura
         }
 
         // Deny access to all SYS roles
-        pHttp.addFilter(new RoleSysFilter());
+        pHttp.addFilterAfter(new RoleSysFilter(), IpFilter.class);
     }
 
 }
