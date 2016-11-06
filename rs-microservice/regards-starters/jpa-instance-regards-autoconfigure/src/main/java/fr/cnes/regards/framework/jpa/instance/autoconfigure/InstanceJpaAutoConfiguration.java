@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 /**
  *
  * Class InstanceJpaAutoConfiguration
- * 
+ *
  * Configuration class to define hibernate/jpa instance database strategy
  *
  * @author Sébastien Binda
@@ -47,16 +47,11 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 @EnableJpaRepositories(
         includeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
         basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory",
-        transactionManagerRef = InstanceJpaAutoConfiguration.INSTANCE_TRANSACTION_MANAGER)
+        transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties(InstanceDaoProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "instance.enabled", matchIfMissing = true)
 public class InstanceJpaAutoConfiguration {
-
-    /**
-     * Instance transactions manager identifier
-     */
-    public static final String INSTANCE_TRANSACTION_MANAGER = "instanceJpaTransactionManager";
 
     /**
      * JPA Persistence unit name. Used to separate multiples databases
@@ -103,7 +98,7 @@ public class InstanceJpaAutoConfiguration {
      * @return PlatformTransactionManager
      * @since 1.0-SNAPSHOT
      */
-    @Bean
+    @Bean(name = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
     public PlatformTransactionManager instanceJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
         final JpaTransactionManager jtm = new JpaTransactionManager();
         jtm.setEntityManagerFactory(instanceEntityManagerFactory(pBuilder).getObject());

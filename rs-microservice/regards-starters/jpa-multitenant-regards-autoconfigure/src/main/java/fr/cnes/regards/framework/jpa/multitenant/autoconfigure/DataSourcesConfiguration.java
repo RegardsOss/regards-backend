@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 
 /**

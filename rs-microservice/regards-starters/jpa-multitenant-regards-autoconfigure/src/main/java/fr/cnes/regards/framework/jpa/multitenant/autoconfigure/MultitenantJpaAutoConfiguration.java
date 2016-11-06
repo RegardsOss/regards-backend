@@ -33,8 +33,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.resolver.DefaultTenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectionResolver;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 
@@ -42,21 +43,18 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  *
  * Configuration class to define hibernate/jpa multitenancy databases strategy
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(excludeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "multitenantsEntityManagerFactory", transactionManagerRef = MultitenantJpaAutoConfiguration.MULTITENANT_TRANSACTION_MANAGER)
+@EnableJpaRepositories(
+        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+        basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
+        transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties(JpaProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
-
-    /**
-     * Multitenant transaction manager
-     */
-    public static final String MULTITENANT_TRANSACTION_MANAGER = "multitenantsJpaTransactionManager";
 
     /**
      * JPA Persistence unit name. Used to separate multiples databases.
@@ -115,7 +113,7 @@ public class MultitenantJpaAutoConfiguration {
      * @return PlatformTransactionManager
      * @since 1.0-SNAPSHOT
      */
-    @Bean(name = MULTITENANT_TRANSACTION_MANAGER)
+    @Bean(name = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
     public PlatformTransactionManager multitenantsJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
         final JpaTransactionManager jtm = new JpaTransactionManager();
         jtm.setEntityManagerFactory(multitenantsEntityManagerFactory(pBuilder).getObject());
