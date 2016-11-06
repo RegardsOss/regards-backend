@@ -24,6 +24,16 @@
 			<artifactId>authentication-autoconfigure</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- Framework Starters dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-multitenant-regards-starter</artifactId>
+		</dependency>
+		<!-- Embedded database -->
+		<dependency>
+			<groupId>hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+		</dependency>
 	</dependencies>
 	
 </project>

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.cloud.gateway.authentication.provider;
+package fr.cnes.regards.cloud.gateway.authentication.stub;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,7 @@ import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
  */
 @Component
 @Primary
-public class AuthenticationProviderStub implements IAuthenticationPlugin {
+public class AuthenticationPluginStub implements IAuthenticationPlugin {
 
     /**
      * Invalid password for test

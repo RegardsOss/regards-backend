@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import fr.cnes.regards.cloud.gateway.authentication.provider.AuthenticationProviderStub;
+import fr.cnes.regards.cloud.gateway.authentication.stub.AuthenticationPluginStub;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -157,7 +157,7 @@ public class AuthenticationTestIT {
                     .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
                     .param(SCOPE, "scope2").param(USER_NAME, "name2")
-                    .param(PASSWORD, AuthenticationProviderStub.INVALID_PASSWORD))
+                    .param(PASSWORD, AuthenticationPluginStub.INVALID_PASSWORD))
                     .andExpect(MockMvcResultMatchers.status().is4xxClientError());
             // CHECKSTYLE:OFF
         } catch (final Exception e) {

@@ -5,9 +5,12 @@ package fr.cnes.regards.cloud.gateway.authentication.plugins;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -27,41 +30,37 @@ import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public class SimpleAuthentication implements IAuthenticationPlugin {
+@Component
+public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(SimpleAuthentication.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RegardsInternalAuthenticationPlugin.class);
 
     /**
      * Current microservice name
      */
-    private final String microserviceName;
+    @Value("${spring.application.name}")
+    private String microserviceName;
 
     /**
      * rs-admin microservice client for accounts
      */
-    private final IAccountsClient accountsClient;
+    @Autowired
+    private IAccountsClient accountsClient;
 
     /**
      * rs-admin microservice client for accounts
      */
-    private final IProjectUsersClient projectUsersClient;
+    @Autowired
+    private IProjectUsersClient projectUsersClient;
 
     /**
      * Security JWT service
      */
-    private final JWTService jwtService;
-
-    public SimpleAuthentication(String microserviceName, IAccountsClient accountsClient,
-            IProjectUsersClient projectUsersClient, JWTService jwtService) {
-        super();
-        this.microserviceName = microserviceName;
-        this.accountsClient = accountsClient;
-        this.projectUsersClient = projectUsersClient;
-        this.jwtService = jwtService;
-    }
+    @Autowired
+    private JWTService jwtService;
 
     @Override
     public UserDetails retreiveUserDetails(final String pName, final String pScope) throws UserNotFoundException {

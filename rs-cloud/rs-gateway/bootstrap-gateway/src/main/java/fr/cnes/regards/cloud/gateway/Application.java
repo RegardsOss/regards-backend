@@ -3,21 +3,15 @@
  */
 package fr.cnes.regards.cloud.gateway;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
 
-import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
-import fr.cnes.regards.cloud.gateway.authentication.plugins.SimpleAuthentication;
 import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
 import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 
 /**
  *
@@ -28,7 +22,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "fr.cnes.regards.modules")
 @EnableZuulProxy
 @EnableAutoConfiguration
 public class Application { // NOSONAR
@@ -59,28 +53,12 @@ public class Application { // NOSONAR
 
     /**
      * TODO : Replace with remote-tenant-resolver admin Authorities provider
-     * 
+     *
      * @return
      */
     @Bean
     public IAuthoritiesProvider authProvider() {
         return new DefaultAuthorityProvider();
-    }
-
-    /**
-     *
-     * TODO : Replace with real plugin system
-     *
-     * @param pMicorserviceName
-     * @param pAccountsClient
-     * @param pProjectUsersClient
-     * @param pJwtService
-     * @return
-     */
-    @Bean
-    public IAuthenticationPlugin plugin(@Value("${spring.application.name") String pMicorserviceName,
-            IAccountsClient pAccountsClient, IProjectUsersClient pProjectUsersClient, JWTService pJwtService) {
-        return new SimpleAuthentication(pMicorserviceName, pAccountsClient, pProjectUsersClient, pJwtService);
     }
 
 }

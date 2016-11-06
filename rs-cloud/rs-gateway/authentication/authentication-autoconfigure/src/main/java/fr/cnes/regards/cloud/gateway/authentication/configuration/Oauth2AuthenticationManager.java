@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,6 +23,9 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.AuthenticateStatus;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.UserNotFoundException;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.plugins.service.PluginService;
+import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
@@ -41,14 +45,17 @@ public class Oauth2AuthenticationManager implements AuthenticationManager {
      */
     private static final Logger LOG = LoggerFactory.getLogger(Oauth2AuthenticationManager.class);
 
-    /**
-     * Custom authentication provider.
-     */
     @Autowired
-    private IAuthenticationPlugin authProvider;
+    private PluginService pluginService;
+
+    @Autowired
+    private IAuthenticationPlugin defaultAuthenticationPlugin;
 
     @Override
     public Authentication authenticate(final Authentication pAuthentication) {
+
+        AbstractAuthenticationToken token = null;
+
         final String name = pAuthentication.getName();
         final String password = pAuthentication.getCredentials().toString();
 
@@ -64,23 +71,60 @@ public class Oauth2AuthenticationManager implements AuthenticationManager {
             throw new BadCredentialsException(message);
         }
 
+        // Get all availables authentication plugins
+        final List<PluginConfiguration> pluginConfigurations = pluginService
+                .getPluginConfigurationsByType(IAuthenticationPlugin.class);
+        if (pluginConfigurations != null && !pluginConfigurations.isEmpty()) {
+            for (final PluginConfiguration config : pluginConfigurations) {
+                try {
+                    token = doPluginAuthentication(pluginService.getPlugin(config.getId()), name, password, scope);
+                } catch (final PluginUtilsException e) {
+                    LOG.error(e.getMessage(), e);
+                }
+            }
+        } else {
+            // Use default REGARDS internal plugin
+            token = doPluginAuthentication(defaultAuthenticationPlugin, name, password, scope);
+        }
+
+        return token;
+
+    }
+
+    /**
+     *
+     * Do authentication job with the given authentication plugin
+     *
+     * @param pPlugin
+     *            IAuthenticationPlugin to use for authentication
+     * @param pUserName
+     *            user name
+     * @param pUserPassword
+     *            user password
+     * @param pScope
+     *            scope
+     * @return AbstractAuthenticationToken
+     */
+    private AbstractAuthenticationToken doPluginAuthentication(IAuthenticationPlugin pPlugin, String pUserName,
+            String pUserPassword, String pScope) {
+
         // Check user/password
-        if (!authProvider.authenticate(name, password, scope).equals(AuthenticateStatus.ACCESS_GRANTED)) {
-            throw new BadCredentialsException("Access denied for user " + name);
+        if (!pPlugin.authenticate(pUserName, pUserPassword, pScope).equals(AuthenticateStatus.ACCESS_GRANTED)) {
+            throw new BadCredentialsException("Access denied for user " + pUserName);
         }
 
         // Retrieve account
         UserDetails userDetails;
         try {
-            userDetails = authProvider.retreiveUserDetails(name, scope);
+            userDetails = pPlugin.retreiveUserDetails(pUserName, pScope);
         } catch (final UserNotFoundException e) {
-            throw new BadCredentialsException(String.format("User %s does not exists ", name));
+            throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
         }
 
         final List<GrantedAuthority> grantedAuths = new ArrayList<>();
         grantedAuths.add(new SimpleGrantedAuthority(userDetails.getRole()));
 
-        return new UsernamePasswordAuthenticationToken(userDetails, password, grantedAuths);
+        return new UsernamePasswordAuthenticationToken(userDetails, pUserPassword, grantedAuths);
 
     }
 

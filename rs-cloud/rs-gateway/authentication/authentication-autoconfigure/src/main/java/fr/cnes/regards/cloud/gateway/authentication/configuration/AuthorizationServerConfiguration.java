@@ -7,7 +7,6 @@ import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,9 +22,6 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -131,36 +127,6 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 
         pEndpoints.tokenStore(tokenStore()).authenticationManager(this.authenticationManager)
                 .accessTokenConverter(accessTokenConverter()).tokenEnhancer(tokenEnhancerChain);
-    }
-
-    /**
-     *
-     * Create transactionManager mandatory by DefaultTokenService
-     *
-     * @return PlatformTransactionManager
-     * @since 1.0-SNAPSHOT
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public PlatformTransactionManager transactionManager() {
-        return new PlatformTransactionManager() {
-
-            @Override
-            public void rollback(final TransactionStatus pStatus) {
-                // Nothing to do. The JwtTokenStore does not persists tokens
-            }
-
-            @Override
-            public TransactionStatus getTransaction(final TransactionDefinition pDefinition) {
-                // Nothing to do. The JwtTokenStore does not persists tokens
-                return null;
-            }
-
-            @Override
-            public void commit(final TransactionStatus pStatus) {
-                // Nothing to do. The JwtTokenStore does not persists tokens
-            }
-        };
     }
 
     @Override

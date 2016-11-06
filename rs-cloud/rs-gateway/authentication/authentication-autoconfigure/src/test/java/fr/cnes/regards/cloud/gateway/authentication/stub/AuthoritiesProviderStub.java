@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.cloud.gateway.authentication.provider;
+package fr.cnes.regards.cloud.gateway.authentication.stub;
 
 import java.util.ArrayList;
 import java.util.List;
