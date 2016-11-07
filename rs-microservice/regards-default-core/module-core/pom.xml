@@ -17,7 +17,10 @@
 	</parent>
 
 	<dependencies>
-
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-utils</artifactId>
+		</dependency>
 		<!-- (De)Serialization -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
