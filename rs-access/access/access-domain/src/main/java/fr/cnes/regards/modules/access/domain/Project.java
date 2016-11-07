@@ -3,51 +3,86 @@
  */
 package fr.cnes.regards.modules.access.domain;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+
 /**
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
-public class Project {
+@Entity
+@Table(name = "T_NAVCTX_PROJECT")
+@SequenceGenerator(name = "navCtxProjectSequence", initialValue = 1, sequenceName = "SEQ_NAVCTX_PROJECT")
+public class Project implements IIdentifiable<Long> {
 
-	private Long id_;
+    /**
+     * Unique id
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "navCtxProjectSequence")
+    private Long id;
 
-	private String name_;
+    /**
+     * The name of the project
+     */
+    private String name;
 
-	private Theme theme_;
+    /**
+     * A {@link Theme} to use for this project
+     */
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "theme_id", referencedColumnName = "id",
+            foreignKey = @javax.persistence.ForeignKey(name = "FK_THEME_ID"))
+    private Theme theme;
 
-	public Project() {
-		super();
-	}
+    /**
+     * Default constructor
+     */
+    public Project() {
+        super();
+    }
 
-	public Project(String name, Theme theme) {
-		super();
-		name_ = name;
-		theme_ = theme;
-	}
+    /**
+     * A constructor with
+     * 
+     * @param pName
+     *            a project name
+     * @param pTheme
+     *            a {@link Theme}
+     */
+    public Project(String pName, Theme pTheme) {
+        super();
+        name = pName;
+        theme = pTheme;
+    }
 
-	public Long getId() {
-		return id_;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setId(Long id) {
-		id_ = id;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getName() {
-		return name_;
-	}
+    public void setName(String pName) {
+        name = pName;
+    }
 
-	public void setName(String name) {
-		name_ = name;
-	}
+    public Theme getTheme() {
+        return theme;
+    }
 
-	public Theme getTheme() {
-		return theme_;
-	}
-
-	public void setTheme(Theme theme) {
-		theme_ = theme;
-	}
+    public void setTheme(Theme pTheme) {
+        theme = pTheme;
+    }
 
 }

@@ -5,12 +5,25 @@ package fr.cnes.regards.modules.access.domain;
 
 /**
  *
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public enum ModuleType {
 
-    ADMIN, PORTAL, USER;
+    /**
+     * A {@link Module} for the Admin frontend
+     */
+    ADMIN,
+    
+    /**
+     * A {@link Module} for the Portal frontend
+     */
+    PORTAL,
+
+    /**
+     * A {@link Module} for the User frontend
+     */
+    USER;
 	
     @Override
     public String toString() {

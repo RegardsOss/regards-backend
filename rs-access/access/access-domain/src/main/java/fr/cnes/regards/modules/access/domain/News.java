@@ -7,7 +7,7 @@ import java.util.Date;
 
 /**
  *
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public class News {
@@ -15,92 +15,105 @@ public class News {
     /**
      *
      */
-    private Long id_;
+    private Long id;
 
     /**
      *
      */
-    private String title_;
+    private String title;
 
     /**
      *
      */
-    private String content_;
+    private String content;
 
     /**
      *
      */
-    private Date creationDate_;
+    private Date creationDate;
 
     /**
      *
      */
-    private Project project_;
+    private Project project;
 
     /**
      *
      */
-    private NewsType newsType_;
+    private NewsType newsType;
 
+    /**
+     * Default constructor
+     */
     public News() {
-		super();
-	}
-
-	public News(String title_, String content_, Date creationDate_, Project project_, NewsType newsType_) {
-		super();
-		this.title_ = title_;
-		this.content_ = content_;
-		this.creationDate_ = creationDate_;
-		this.project_ = project_;
-		this.newsType_ = newsType_;
-	}
-
-	public Long getId() {
-        return id_;
+        super();
     }
 
-    public void setId(Long pId) {
-        id_ = pId;
+    /**
+     * A constructor using fields.
+     * 
+     * @param pTitle
+     *            the title
+     * @param pContent
+     *            the cntent description
+     * @param pCreationDate
+     *            the creation date
+     * @param pProject
+     *            the project
+     * @param pNewsType
+     *            a {@link NewsType}
+     */
+    public News(String pTitle, String pContent, Date pCreationDate, Project pProject, NewsType pNewsType) {
+        super();
+        this.title = pTitle;
+        this.content = pContent;
+        this.creationDate = pCreationDate;
+        this.project = pProject;
+        this.newsType = pNewsType;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getTitle() {
-        return title_;
+        return title;
     }
 
     public void setTitle(String pTitle) {
-        title_ = pTitle;
+        title = pTitle;
     }
 
     public String getContent() {
-        return content_;
+        return content;
     }
 
     public void setContent(String pContent) {
-        content_ = pContent;
+        content = pContent;
     }
 
     public Date getCreationDate() {
-        return creationDate_;
+        return creationDate;
     }
 
     public void setCreationDate(Date pCreationDate) {
-        creationDate_ = pCreationDate;
+        creationDate = pCreationDate;
     }
 
     public Project getProject() {
-        return project_;
+        return project;
     }
 
     public void setProject(Project pProject) {
-        project_ = pProject;
+        project = pProject;
     }
 
     public NewsType getNewsType() {
-        return newsType_;
+        return newsType;
     }
 
     public void setNewsType(NewsType pNewsType) {
-        newsType_ = pNewsType;
+        newsType = pNewsType;
     }
 
 }

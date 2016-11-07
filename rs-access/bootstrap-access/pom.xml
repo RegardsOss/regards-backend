@@ -9,16 +9,13 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>REGARDS microservices access - bootstrap </name>
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>0.0.0-SNAPSHOT</version>
+		<version>0.0.5-SNAPSHOT</version>
 		<relativePath></relativePath>
 	</parent>
-	
+
 	<properties>
 		<fr.cnes.regards.docker.image.name>rs-access</fr.cnes.regards.docker.image.name>
 	</properties>
@@ -29,30 +26,20 @@
 			<groupId>fr.cnes.regards.microservices</groupId>
 			<artifactId>microservice-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.utils</groupId>
-			<artifactId>security-utils</artifactId>
-		</dependency>
-		<!-- Tests -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core-test</artifactId>
-			<scope>test</scope>
-		</dependency>
 		<!-- Module dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.access</groupId>
 			<artifactId>access-rest</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-integration-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

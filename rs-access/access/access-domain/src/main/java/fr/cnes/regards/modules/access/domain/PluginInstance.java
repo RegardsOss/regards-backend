@@ -5,62 +5,80 @@ package fr.cnes.regards.modules.access.domain;
 
 import java.util.List;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
 /**
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public class PluginInstance {
 
-	private Long id_;
+    /**
+     * Unique id
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "navCtxProjectSequence")
+    private Long id;
 
-	private String name_;
+    private String name;
 
-	private Project project_;
+    private Project project;
 
-	private List<ConfigParameter> parameters_;
+    private List<ConfigParameter> parameters;
 
-	public PluginInstance() {
-		super();
-	}
+    /**
+     * Default constructor
+     */
+    public PluginInstance() {
+        super();
+    }
 
-	public PluginInstance(String name, Project project, List<ConfigParameter> parameters) {
-		super();
-		name_ = name;
-		project_ = project;
-		parameters_ = parameters;
-	}
+    /**
+     * A constructor using fields.
+     * 
+     * @param pName
+     *            a name
+     * @param pProject
+     *            a {@link Project}
+     * @param pParameters
+     *            a list of {@link ConfigParameter}
+     */
+    public PluginInstance(String pName, Project pProject, List<ConfigParameter> pParameters) {
+        super();
+        name = pName;
+        project = pProject;
+        parameters = pParameters;
+    }
 
-	public Long getId() {
-		return id_;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setId(Long id) {
-		id_ = id;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getName() {
-		return name_;
-	}
+    public void setName(String pName) {
+        name = pName;
+    }
 
-	public void setName(String name) {
-		name_ = name;
-	}
+    public Project getProject() {
+        return project;
+    }
 
-	public Project getProject() {
-		return project_;
-	}
+    public void setProject(Project pProject) {
+        project = pProject;
+    }
 
-	public void setProject(Project project) {
-		project_ = project;
-	}
+    public List<ConfigParameter> getParameters() {
+        return parameters;
+    }
 
-	public List<ConfigParameter> getParameters() {
-		return parameters_;
-	}
-
-	public void setParameters(List<ConfigParameter> parameters) {
-		parameters_ = parameters;
-	}
+    public void setParameters(List<ConfigParameter> pParameters) {
+        parameters = pParameters;
+    }
 
 }

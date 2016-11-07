@@ -5,12 +5,30 @@ package fr.cnes.regards.modules.access.domain;
 
 /**
  *
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public enum ThemeType {
 
-    ADMIN, PORTAL, USER, ALL;
+    /**
+     * A {@link Theme} for the Admin frontend
+     */
+    ADMIN,
+    
+    /**
+     * A {@link Theme} for the Portal frontend
+     */
+    PORTAL,
+    
+    /**
+     * A {@link Theme} for the User frontend
+     */
+    USER,
+    
+    /**
+     * A {@link Theme} for all the frontend
+     */
+    ALL;
 	
     @Override
     public String toString() {

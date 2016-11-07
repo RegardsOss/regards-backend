@@ -3,73 +3,93 @@
  */
 package fr.cnes.regards.modules.access.domain;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
 /**
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public class Plugin {
 
-	private Long id_;
+    /**
+     * Unique id
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "navCtxProjectSequence")
+    private Long id;
 
-	private String name_;
+    private String name;
 
-	private String description_;
+    private String description;
 
-	private PluginType pluginType_;
+    private PluginType pluginType;
 
-	private String mainJsfFile_;
+    private String mainJsfFile;
 
-	public Plugin() {
-		super();
-	}
+    /**
+     * Default constructor
+     */
+    public Plugin() {
+        super();
+    }
 
-	public Plugin(String name, String description, PluginType pluginType, String mainJsfFile) {
-		super();
-		name_ = name;
-		description_ = description;
-		pluginType_ = pluginType;
-		mainJsfFile_ = mainJsfFile;
-	}
+    /**
+     * A constructor using fields.
+     * 
+     * @param pName
+     *            the name of the plugin
+     * @param pDescription
+     *            the description of the plugin
+     * @param pPluginType
+     *            the {@link PluginType}
+     * @param pMainJsfFile
+     *            the main Javascript file of the plugin
+     */
+    public Plugin(String pName, String pDescription, PluginType pPluginType, String pMainJsfFile) {
+        super();
+        name = pName;
+        description = pDescription;
+        pluginType = pPluginType;
+        mainJsfFile = pMainJsfFile;
+    }
 
-	public Long getId() {
-		return id_;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setId(Long id) {
-		id_ = id;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getName() {
-		return name_;
-	}
+    public void setName(String pName) {
+        name = pName;
+    }
 
-	public void setName(String name) {
-		name_ = name;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public String getDescription() {
-		return description_;
-	}
+    public void setDescription(String pDescription) {
+        description = pDescription;
+    }
 
-	public void setDescription(String description) {
-		description_ = description;
-	}
+    public PluginType getPluginType() {
+        return pluginType;
+    }
 
-	public PluginType getPluginType() {
-		return pluginType_;
-	}
+    public void setPluginType(PluginType pPluginType) {
+        pluginType = pPluginType;
+    }
 
-	public void setPluginType(PluginType pluginType) {
-		pluginType_ = pluginType;
-	}
+    public String getMainJsfFile() {
+        return mainJsfFile;
+    }
 
-	public String getMainJsfFile() {
-		return mainJsfFile_;
-	}
-
-	public void setMainJsfFile(String mainJsfFile) {
-		mainJsfFile_ = mainJsfFile;
-	}
+    public void setMainJsfFile(String pMainJsfFile) {
+        mainJsfFile = pMainJsfFile;
+    }
 
 }

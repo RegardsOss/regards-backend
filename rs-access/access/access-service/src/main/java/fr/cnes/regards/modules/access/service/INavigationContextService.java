@@ -5,28 +5,25 @@
 package fr.cnes.regards.modules.access.service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
-
-import javax.naming.OperationNotSupportedException;
 
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 
 /**
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public interface INavigationContextService {
 
     NavigationContext create(NavigationContext pNavigationContext) throws AlreadyExistingException;
 
-    void update(String pTinyUrl, NavigationContext pNavigationContext)
-            throws OperationNotSupportedException, NoSuchElementException;
+    void update(NavigationContext pNavigationContext) throws EntityNotFoundException;
 
-    void delete(String pTinyUrl) throws NoSuchElementException;
+    void delete(Long pNavCtxId) throws EntityNotFoundException;
 
-    NavigationContext load(String pTinyUrl) throws NoSuchElementException;
+    NavigationContext load(Long pNavCtxId) throws EntityNotFoundException;
 
     List<NavigationContext> list();
 

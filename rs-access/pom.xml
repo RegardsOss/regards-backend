@@ -17,8 +17,8 @@
 	</parent>
 
 	<modules>
-		<module>access</module>
 		<module>bootstrap-access</module>
+		<module>access</module>
 	</modules>
 
 </project>

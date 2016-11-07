@@ -3,69 +3,73 @@
  */
 package fr.cnes.regards.modules.access.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.validation.constraints.NotNull;
+
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+
 /**
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
-public class ConfigParameter implements IPair<String, String> {
-
-	/**
-	 * 
-	 */
-    private String name_;
-
-	/**
-	 * 
-	 */
-    private String value_;
-
-	/**
-	 * 
-	 */
-    public ConfigParameter() {
-		super();
-	}
-
-	/**
-	 * 
-	 * @param name
-	 * @param value
-	 */
-    public ConfigParameter(final String pName, final String pValue) {
-		this.name_ = pName;
-		this.value_ = pValue;
-	}
-
+@Entity(name = "T_NAVCTX_PARAMETER")
+@SequenceGenerator(name = "navCtxParameterSequence", initialValue = 1, sequenceName = "SEQ_NAVCTX_PARAMETER")
+public class ConfigParameter implements IIdentifiable<Long> {
 
     /**
-     * @return name_ + "-" value_
+     * The max size of a {@link String} value
      */
+    private static final int MAX_STRING_VALUE = 2048;
+
+    /**
+     * Unique id
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "navCtxParameterSequence")
+    private Long id;
+
+    /**
+     * Parameter name
+     */
+    @NotNull
+    private String name;
+
+    /**
+     * Parameter value
+     */
+    @Column(length = MAX_STRING_VALUE)
+    private String value;
+
+    /**
+     * Default constructor
+     */
+    public ConfigParameter() {
+        super();
+    }
+
+    /**
+     * A constructor using fields
+     * 
+     * @param pName
+     *            a parameter name
+     * @param pValue
+     *            a parameter value
+     */
+    public ConfigParameter(String pName, String pValue) {
+        super();
+        this.name = pName;
+        this.value = pValue;
+    }
+
     @Override
-    public final String toString() {
-		return this.name_ + " - " + this.value_;
-	}
-
-	@Override
-    public final String getKey() {
-		return this.name_;
-	}
-
-	@Override
-    public final String getValue() {
-		return this.value_;
-	}
-
-	@Override
-    public final String setKey(String pKey) {
-		this.name_ = pKey;
-		return this.name_;
-	}
-
-	@Override
-    public final String setValue(String pValue) {
-		this.value_ = pValue;
-		return this.value_;
-	}
+    public Long getId() {
+        return id;
+    }
 
 }

@@ -1,43 +1,33 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-
 package fr.cnes.regards.microservices.access;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
-import fr.cnes.regards.microservices.core.annotation.MicroserviceInfo;
-import springfox.documentation.builders.ApiInfoBuilder;
+import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
+
+
 
 /**
- * Main class to start Spring boot application for microservice access
+ *
+ * Start microservice ${artifactId}
+ *
+ * @author Christophe Mertz
+ *
  */
-@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices.core",
-        "fr.cnes.regards.security.utils" })
-@MicroserviceInfo(name = "access", version = "1.0-SNAPSHOT")
+@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
+@MicroserviceInfo(name = "Access", version = "1.0-SNAPSHOT")
 public class Application {
 
     /**
-     * API for access REGARDS Microservice
-     * 
-     * @return ApiInfoBuilder
-     */
-    @Bean
-    public ApiInfoBuilder apiInfoBuilder() {
-        return new ApiInfoBuilder().title("access API").description("API for access REGARDS Microservice")
-                .license("Apache License Version 2.0").version("1.0-SNAPSHOT");
-    }
-
-    /**
-     * API for access REGARDS Microservice main function
-     * 
+     * Microservice bootstrap method
+     *
      * @param pArgs
-     *            args
+     *            microservice bootstrap arguments
      */
-    public static void main(String[] pArgs) {
+    public static void main(final String[] pArgs) {
         SpringApplication.run(Application.class, pArgs); // NOSONAR
     }
-
 }

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 @Service

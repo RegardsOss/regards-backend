@@ -4,14 +4,28 @@
 package fr.cnes.regards.modules.access.domain;
 
 /**
- *
- * @author cmertz
+ * An enum for the type of the plugin
+ * 
+ * @author Christophe Mertz
  *
  */
 public enum PluginType {
 
-    ADMIN, PORTAL, USER;
-	
+    /**
+     * Admin
+     */
+    ADMIN,
+
+    /**
+     * Portal
+     */
+    PORTAL,
+
+    /**
+     * User
+     */
+    USER;
+
     public String toString() {
         return this.name();
     }
