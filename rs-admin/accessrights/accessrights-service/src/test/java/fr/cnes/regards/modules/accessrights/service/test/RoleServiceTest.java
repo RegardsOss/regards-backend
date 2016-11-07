@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.accessrights.service.RoleService;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.modules.core.exception.OperationForbiddenException;
 
 /**
  * Test class for {@link RoleService}.
@@ -138,7 +139,7 @@ public class RoleServiceTest {
      * Check that the system fails when trying to update a role which does not exist.
      *
      * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
+     *             when no {@link Role} with passed <code>id</code> could be found<br/>
      * @throws InvalidValueException
      *             Thrown if passed role id differs from the id of the passed role
      */
@@ -157,7 +158,7 @@ public class RoleServiceTest {
      * Check that the system fails when trying to update a role which id is different from the passed one.
      *
      * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
+     *             when no {@link Role} with passed <code>id</code> could be found<br/>
      * @throws InvalidValueException
      *             Thrown if passed role id differs from the id of the passed role
      */
@@ -176,7 +177,7 @@ public class RoleServiceTest {
      * Check that the system allows to update a role in a regular case.
      *
      * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
+     *             when no {@link Role} with passed <code>id</code> could be found<br/>
      * @throws InvalidValueException
      *             Thrown if passed role id differs from the id of the passed role
      */
@@ -211,15 +212,36 @@ public class RoleServiceTest {
     }
 
     /**
+     * Check that the system does not remove a native role.
+     *
+     * @throws OperationForbiddenException
+     *             when the updated role is native. Native roles should not be modified.
+     */
+    @Test(expected = OperationForbiddenException.class)
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system does not remove a native role.")
+    public void removeRoleNative() throws OperationForbiddenException {
+        final Long id = 0L;
+        final Role roleNative = new Role(id, "name", null, new ArrayList<>(), new ArrayList<>(), true, true);
+
+        // Mock repo
+        Mockito.when(roleRepository.exists(id)).thenReturn(true);
+        Mockito.when(roleRepository.findOne(id)).thenReturn(roleNative);
+
+        // Call tested method
+        roleService.removeRole(id);
+    }
+
+    /**
      * Check that the system allows to delete a role in a regular case.
      *
-     * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
+     * @throws OperationForbiddenException
+     *             when the updated role is native. Native roles should not be modified.
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to delete a role in a regular case.")
-    public void removeRole() throws EntityNotFoundException {
+    public void removeRole() throws OperationForbiddenException {
         final Long id = 0L;
 
         Mockito.when(roleRepository.exists(id)).thenReturn(true);

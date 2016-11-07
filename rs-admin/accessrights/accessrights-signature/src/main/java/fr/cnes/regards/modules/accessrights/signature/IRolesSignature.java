@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.modules.core.exception.OperationForbiddenException;
 
 /**
  * Define the common interface of REST clients for {@link Role}s.
@@ -72,15 +73,15 @@ public interface IRolesSignature {
      *            The {@link Role} <code>id</code>
      * @param pUpdatedRole
      *            The new {@link Role}
+     * @throws EntityNotFoundException
+     *             when no {@link Role} with passed <code>id</code> could be found
      * @throws InvalidValueException
      *             Thrown when <code>pRoleId</code> is different from the id of <code>pUpdatedRole</code>
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
      * @return {@link Void} wrapped in an {@link ResponseEntity}
      */
+    @ResponseBody
     @RequestMapping(value = "/{role_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     ResponseEntity<Void> updateRole(@PathVariable("role_id") Long pRoleId, @Valid @RequestBody Role pUpdatedRole)
             throws EntityNotFoundException, InvalidValueException;
 
@@ -90,12 +91,12 @@ public interface IRolesSignature {
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
      * @return {@link Void} wrapped in an {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     * @throws OperationForbiddenException
+     *             if the updated role is native. Native roles should not be modified.
      */
-    @RequestMapping(value = "/{role_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Void> removeRole(@PathVariable("role_id") Long pRoleId) throws EntityNotFoundException;
+    @RequestMapping(value = "/{role_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Void> removeRole(@PathVariable("role_id") Long pRoleId) throws OperationForbiddenException;
 
     /**
      * Define the endpoint for returning the {@link List} of {@link ResourcesAccess} on the {@link Role} of passed

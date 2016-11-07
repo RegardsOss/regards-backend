@@ -22,12 +22,13 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.modules.core.exception.OperationForbiddenException;
 import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 
 /**
  * {@link IRoleService} implementation
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  *
  */
 @Service
@@ -37,6 +38,11 @@ public class RoleService implements IRoleService {
      * CRUD repository managing {@link Role}s. Autowired by Spring.
      */
     private final IRoleRepository roleRepository;
+
+    /**
+     * Error message
+     */
+    private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
 
     /**
      * The default roles. Autowired by Spring.
@@ -88,7 +94,7 @@ public class RoleService implements IRoleService {
 
     @Override
     public void updateRole(final Long pRoleId, final Role pUpdatedRole)
-            throws InvalidValueException, EntityNotFoundException {
+            throws EntityNotFoundException, InvalidValueException {
         if (!pRoleId.equals(pUpdatedRole.getId())) {
             throw new InvalidValueException();
         }
@@ -99,7 +105,11 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void removeRole(final Long pRoleId) {
+    public void removeRole(final Long pRoleId) throws OperationForbiddenException {
+        final Role previous = roleRepository.findOne(pRoleId);
+        if ((previous != null) && previous.isNative()) {
+            throw new OperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
+        }
         roleRepository.delete(pRoleId);
     }
 

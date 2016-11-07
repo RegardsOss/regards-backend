@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.modules.core.exception.OperationForbiddenException;
 import fr.cnes.regards.modules.core.rest.AbstractController;
 
 @RestController
@@ -72,7 +73,8 @@ public class RolesController extends AbstractController implements IRolesSignatu
 
     @Override
     @ResourceAccess(description = "Remove the role of role_id", name = "")
-    public ResponseEntity<Void> removeRole(@PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
+    public ResponseEntity<Void> removeRole(@PathVariable("role_id") final Long pRoleId)
+            throws OperationForbiddenException {
         roleService.removeRole(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
