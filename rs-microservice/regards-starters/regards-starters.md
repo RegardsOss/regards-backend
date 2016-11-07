@@ -63,6 +63,8 @@ public class MyPojoController implements IResourceController<MyPojo> {
 
 ## JPA instance starter
 
+### Configuration
+
 ```properties
 regards.jpa.instance.enabled=false # Disable JPA instance support
 regards.jpa.instance.embedded=true # Activate embedded mode with HSQLDB
@@ -73,7 +75,18 @@ regards.jpa.instance.datasource.username=postgres # Not mandatory if embedded mo
 regards.jpa.instance.datasource.password=postgres # Not mandatory if embedded mode is activated
 regards.jpa.instance.datasource.driverClassName=org.postgresql.Driver # Not mandatory if embedded mode is activated
 ```
+
+### Usage
+
+To use Instance DAO, you have to annotate all your JPA Repositories and Entities with @InstanceEntity. Only those are used by the jpa-instance starter.
+
+### Use transaction with instance
+
+
+
 ## JPA multitenant starter
+
+### Configuration
 
 ```properties
 regards.jpa.multitenant.enabled=false # Disable JPA multitenant support
@@ -89,20 +102,6 @@ regards.jpa.multitenant.tenants[<x>].datasource.driverClassName=org.postgresql.D
 <x> : Integer value for tenant index starting with 0.
 ```
 
-### Use transaction with multitenant
-
-You can annotated your service or test with the following meta annotation to manage transaction:
-```java
-@MultitenantTransactional
-```
-
-## Multitenant starter
-
-### Default configuration
-
-```properties
-regards.tenants=PROJECT1, PROJECT2 # List of available tenants / Only useful for default configuration
-```
 ### Customize tenant resolver
 
 In a @Configuration file, define your bean as follow :
@@ -118,10 +117,35 @@ class CustomTenantResolver implements ITenantResolver {
 }
 ```
 
+### Use transaction with multitenant
+
+You can annotated your service or test with the following meta annotation to manage transaction:
+```java
+@MultitenantTransactional
+```
+
+
 ## Security starter
+
+### Default configuration
 
 ```properties
 jwt.secret=MTIzNDU2Nzg5 # Secret key
+```
+
+### Customize security endpoints filters
+
+In a @Configuration file define your bean as follow :
+
+```java
+@Bean
+public ICustomWebSecurityConfiguration customTSecurityEndpointsConfiguration() {
+            return new CustomWebSecurityConfiguration();
+}
+
+public class CustomWebSecurityConfiguration implements ICustomWebSecurityConfiguration {
+...
+}
 ```
 
 ## Swagger starter

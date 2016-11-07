@@ -5,7 +5,7 @@
  *
  * Package for JPA multitenant properties
  *
- * @author CS
+ * @author Sébastien Binda
  *
  */
 package fr.cnes.regards.framework.jpa.instance.properties;

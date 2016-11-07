@@ -7,7 +7,7 @@ package fr.cnes.regards.framework.jpa.multitenant.properties;
  *
  * POJO for microservice project configuration
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public class TenantConnection {

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
+package fr.cnes.regards.framework.jpa.instance.transactional;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -12,19 +12,19 @@ import java.lang.annotation.Target;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAutoConfiguration;
+import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 
 /**
- * Meta annotation to manage multitenant transaction
+ * Meta annotation to manage instance transaction
  *
- * @author msordi
+ * @author Sébastien Binda
  *
  */
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Transactional(transactionManager = MultitenantJpaAutoConfiguration.MULTITENANT_TRANSACTION_MANAGER)
-public @interface MultitenantTransactional {
+@Transactional(transactionManager = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
+public @interface InstanceTransactional {
 
 }

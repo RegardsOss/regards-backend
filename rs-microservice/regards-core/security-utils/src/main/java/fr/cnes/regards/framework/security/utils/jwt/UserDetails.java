@@ -30,6 +30,11 @@ public class UserDetails implements Serializable {
     private String email;
 
     /**
+     * User role name
+     */
+    private String role;
+
+    /**
      * Tenant the user is requesting
      */
     private String tenant;
@@ -77,6 +82,23 @@ public class UserDetails implements Serializable {
      */
     public void setTenant(String pTenant) {
         tenant = pTenant;
+    }
+
+    /**
+     *
+     * @return the role name
+     */
+    public String getRole() {
+        return role;
+    }
+
+    /**
+     *
+     * @param role
+     *            the role name
+     */
+    public void setRole(String role) {
+        this.role = role;
     }
 
 }

@@ -13,11 +13,16 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
  *
  * DAO Instance database configuration
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @ConfigurationProperties("regards.jpa.instance")
 public class InstanceDaoProperties {
+
+    /**
+     * Instance transactions manager identifier
+     */
+    public static final String INSTANCE_TRANSACTION_MANAGER = "instanceJpaTransactionManager";
 
     /**
      * Is Instance database enabled ?

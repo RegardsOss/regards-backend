@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
+package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
  * Interface to create a custom datasources configuration reader. All datasources returned by the method getDataSources
  * are managed by regards multitenancy jpa.
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @FunctionalInterface

@@ -12,11 +12,16 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * POJO for microservice configuration
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @ConfigurationProperties("regards.jpa.multitenant")
 public class MultitenantDaoProperties {
+
+    /**
+     * Multitenant transaction manager
+     */
+    public static final String MULTITENANT_TRANSACTION_MANAGER = "multitenantsJpaTransactionManager";
 
     /**
      * Does the dao is enabled ?
