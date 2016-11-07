@@ -19,8 +19,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.hateoas.Identifiable;
 
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  */
 @Entity(name = "T_NOTIFICATION")
 @SequenceGenerator(name = "notificationSequence", initialValue = 1, sequenceName = "SEQ_NOTIFICATION")
-public class Notification implements Identifiable<Long> {
+public class Notification implements IIdentifiable<Long> {
 
     /**
      * The date of the notification
@@ -40,7 +40,7 @@ public class Notification implements Identifiable<Long> {
     private LocalDateTime date;
 
     /**
-     * The settings unique id
+     * Unique Identifier
      */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "notificationSequence")
