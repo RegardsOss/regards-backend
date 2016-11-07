@@ -19,13 +19,18 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.microservices.core.manage.MaintenanceManager;
 
 /**
- * @author Sylvain Vissiere-Guerinet
+ * API REST allowing to manually handle maintenances
  *
+ * TODO: verification on pTenant(it's one of the project or instance)
+ *
+ * @author Sylvain Vissiere-Guerinet
+ * @since 1.0
  */
-@RestController("/maintenances")
+@RestController
+@RequestMapping("/maintenances")
 public class MaintenanceController {
 
-    @RequestMapping(method = RequestMethod.GET, value = "", produces = "application/json")
+    @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance")
     @ResponseBody
     public HttpEntity<Resource<Map<String, Boolean>>> retrieveTenantsInMaintenance() {
