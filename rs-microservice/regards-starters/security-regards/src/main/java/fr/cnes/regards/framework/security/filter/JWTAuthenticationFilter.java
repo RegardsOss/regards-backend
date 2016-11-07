@@ -63,14 +63,14 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         // Retrieve authentication header
         String jwt = request.getHeader(HttpConstants.AUTHORIZATION);
         if (jwt == null) {
-            final String message = "[REGARDS JWT FILER] Authentication token missing";
+            final String message = "[REGARDS JWT FILTER] Authentication token missing";
             LOG.error(message);
             response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
         } else {
 
             // Extract JWT from retrieved header
             if (!jwt.startsWith(HttpConstants.BEARER)) {
-                final String message = "[REGARDS JWT FILER] Invalid authentication token";
+                final String message = "[REGARDS JWT FILTER] Invalid authentication token";
                 LOG.error(message);
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             } else {
@@ -83,7 +83,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 // Set security context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                LOG.info("[REGARDS JWT FILER] Access granted");
+                LOG.info("[REGARDS JWT FILTER] Access granted");
 
                 // Continue the filtering chain
                 pFilterChain.doFilter(request, response);

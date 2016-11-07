@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.framework.microservice.autoconfigure.MicroserviceAutoConfiguration,\
+fr.cnes.regards.framework.microservice.rest.ManagerController
