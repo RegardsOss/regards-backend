@@ -84,10 +84,6 @@ public class JWTService {
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
-    public String getActualTenant() {
-        return ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication()).getTenant();
-    }
-
     public void injectMockToken(final String pTenant, final String pRole) {
         final JWTAuthentication jwt = new JWTAuthentication("mockJWT"); // Unparseable token
         final UserDetails details = new UserDetails();
