@@ -53,6 +53,11 @@ public class SendingSchedulerTest {
     private static final Long FOUR = 4L;
 
     /**
+     * Constant
+     */
+    private static final Integer FOUR_INT = 4;
+
+    /**
      * An email
      */
     private static final String EMAIL0 = "email0@test.com";
@@ -76,6 +81,11 @@ public class SendingSchedulerTest {
      * An other email
      */
     private static final String EMAIL4 = "email4@test.com";
+
+    /**
+     * A message
+     */
+    private static final String MESSAGE = "message";
 
     /**
      * The list of all notifications
@@ -320,11 +330,11 @@ public class SendingSchedulerTest {
         final Notification n = new Notification();
         n.setId(ONE);
         n.setDate(LocalDateTime.now().minusDays(THREE));
-        n.setMessage("message");
+        n.setMessage(MESSAGE);
         n.setProjectUserRecipients(new ArrayList<>());
         n.getProjectUserRecipients().add(projectUsers.get(0));
         n.getProjectUserRecipients().add(projectUsers.get(2));
-        n.getProjectUserRecipients().add(projectUsers.get(4));
+        n.getProjectUserRecipients().add(projectUsers.get(FOUR_INT));
         n.setRoleRecipients(new ArrayList<>());
 
         final List<Notification> toSend = new ArrayList<>();
@@ -355,11 +365,11 @@ public class SendingSchedulerTest {
         final Notification n = new Notification();
         n.setId(ONE);
         n.setDate(LocalDateTime.now().minusHours(2));
-        n.setMessage("message");
+        n.setMessage(MESSAGE);
         n.setProjectUserRecipients(new ArrayList<>());
         n.getProjectUserRecipients().add(projectUsers.get(0));
         n.getProjectUserRecipients().add(projectUsers.get(2));
-        n.getProjectUserRecipients().add(projectUsers.get(4));
+        n.getProjectUserRecipients().add(projectUsers.get(FOUR_INT));
         n.setRoleRecipients(new ArrayList<>());
 
         final List<Notification> toSend = new ArrayList<>();
