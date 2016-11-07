@@ -9,6 +9,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 import fr.cnes.regards.framework.microservice.manager.DefaultApplicationManager;
 import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
@@ -26,6 +28,7 @@ import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
  */
 @Configuration
 @AutoConfigureBefore(WebMvcAutoConfiguration.class)
+@Order(Ordered.HIGHEST_PRECEDENCE + 100)
 @ConditionalOnWebApplication
 public class MicroserviceAutoConfiguration {
 
