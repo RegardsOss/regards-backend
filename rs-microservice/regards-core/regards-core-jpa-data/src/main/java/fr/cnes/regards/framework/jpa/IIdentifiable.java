@@ -15,4 +15,7 @@ public interface IIdentifiable<ID extends Serializable> {
 
     ID getId();
 
+    default boolean isIdentifiable() {
+        return getId() != null;
+    }
 }

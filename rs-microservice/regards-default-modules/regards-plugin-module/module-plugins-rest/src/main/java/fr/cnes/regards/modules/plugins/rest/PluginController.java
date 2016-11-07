@@ -19,11 +19,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.modules.core.annotation.ModuleInfo;
-import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.modules.core.rest.AbstractController;
+import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.service.IPluginService;
@@ -33,14 +32,13 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  * Controller for REST Access to Plugin entities
- * 
+ *
  * @author Christophe Mertz
  *
  */
 @RestController
-@ModuleInfo(name = "plugins", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
-public class PluginController extends AbstractController implements IPluginsSignature {
+@ModuleInfo(name = "plugins", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+public class PluginController implements IPluginsSignature {
 
     /**
      * Class logger
@@ -50,11 +48,11 @@ public class PluginController extends AbstractController implements IPluginsSign
     /**
      * Business service for Project entities.
      */
-    private IPluginService pluginService;
+    private final IPluginService pluginService;
 
     /**
      * Constructor to specify a particular {@link IPluginService}.
-     * 
+     *
      * @param pPluginService
      *            The {@link PluginService} used
      */
@@ -149,7 +147,7 @@ public class PluginController extends AbstractController implements IPluginsSign
             @Valid @RequestBody PluginConfiguration pPluginConfiguration)
             throws EntityNotFoundException, InvalidValueException {
         final PluginConfiguration pluginConfiguration;
-        if (!pPluginId.equals(pPluginConfiguration.getPluginId()) || pConfigId != pPluginConfiguration.getId()) {
+        if (!pPluginId.equals(pPluginConfiguration.getPluginId()) || (pConfigId != pPluginConfiguration.getId())) {
             throw new InvalidValueException(
                     "The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
                             + ">- config id= <" + pConfigId + ">");

@@ -15,9 +15,9 @@ import javax.persistence.SequenceGenerator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import fr.cnes.regards.modules.core.deserializer.LocalDateTimeDeserializer;
-import fr.cnes.regards.modules.core.serializer.LocalDateTimeSerializer;
-import fr.cnes.regards.modules.core.validation.PastOrNow;
+import fr.cnes.regards.framework.jpa.utils.deserializer.LocalDateTimeDeserializer;
+import fr.cnes.regards.framework.jpa.utils.serializer.LocalDateTimeSerializer;
+import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 
 /**
  * Store job status
