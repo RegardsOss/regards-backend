@@ -64,7 +64,7 @@ public abstract class AbstractController {
      * Exception handler returning the code 422 when an entity in request violates its validation constraints.
      */
     @ExceptionHandler(InvalidEntityException.class)
-    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "Data does not respect validation constrains")
+    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "Data does not respect validation constraints")
     public void manualValidation() {
         // Nothing to do. Just throw the exception.
     }
