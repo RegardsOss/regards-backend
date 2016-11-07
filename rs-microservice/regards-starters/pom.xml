@@ -41,6 +41,8 @@
 		<module>microservice-regards-autoconfigure</module>
 		<module>microservice-regards-starter</module>
 		<module>microservice-regards</module>
+		<module>module-regards-starter</module>
+		<module>module-regards</module>
 	</modules>
 
 	<dependencies>
