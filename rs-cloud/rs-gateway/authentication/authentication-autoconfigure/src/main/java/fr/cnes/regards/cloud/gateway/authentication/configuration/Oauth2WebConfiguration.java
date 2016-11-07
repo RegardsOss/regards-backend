@@ -5,8 +5,8 @@ package fr.cnes.regards.cloud.gateway.authentication.configuration;
 
 import java.util.List;
 
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -20,7 +20,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class Oauth2WebConfiguration extends WebMvcConfigurerAdapter {
 
     @Override

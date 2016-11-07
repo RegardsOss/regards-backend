@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
@@ -19,7 +20,6 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.plugins.annotations.Plugin;
 
 /**
@@ -32,8 +32,7 @@ import fr.cnes.regards.modules.plugins.annotations.Plugin;
  * @since 1.0-SNAPSHOT
  */
 @Component
-@Plugin(author = "CSSI", description = "Regards internal authentication plugin",
-        id = "RegardsInternalAuthenticationPlugin", version = "1.0")
+@Plugin(author = "CSSI", description = "Regards internal authentication plugin", id = "RegardsInternalAuthenticationPlugin", version = "1.0")
 public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**
