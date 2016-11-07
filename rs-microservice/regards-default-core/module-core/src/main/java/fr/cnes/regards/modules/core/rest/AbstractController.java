@@ -15,6 +15,7 @@ import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.modules.core.exception.OperationForbiddenException;
 
 /**
  * Base controller class
@@ -76,6 +77,16 @@ public abstract class AbstractController {
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "Data does not respect validation constraints")
     public void hibernateValidation() {
+        // Nothing to do. Just throw the exception.
+    }
+
+    /**
+     * Exception handler returning the code 403 when an operation on an entity is forbidden.<br>
+     * Thrown by Hibernate.
+     */
+    @ExceptionHandler(OperationForbiddenException.class)
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    public void operationForbidden() {
         // Nothing to do. Just throw the exception.
     }
 }
