@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.Couple;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
@@ -93,9 +92,19 @@ public class ProjectUserServiceStub implements IProjectUserService {
                 visible, wanted.getRole(), wanted.getPermissions(), wanted.getEmail());
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveOneByEmail(java.lang.String)
+     */
     @Override
-    public ProjectUser retrieveUser(final String pLogin) {
-        return projectUserRepository.findOneByEmail(pLogin);
+    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
+        for (final ProjectUser projectUser : projectUsers) {
+            if (projectUser.getEmail().equals(pUserEmail)) {
+                return projectUser;
+            }
+        }
+        throw new EntityNotFoundException(pUserEmail, ProjectUser.class);
     }
 
     @Override
@@ -149,8 +158,8 @@ public class ProjectUserServiceStub implements IProjectUserService {
     }
 
     @Override
-    public Couple<List<ResourcesAccess>, Role> retrieveProjectUserAccessRights(final String pLogin,
-            final String pBorrowedRoleName) throws InvalidValueException {
+    public List<ResourcesAccess> retrieveProjectUserAccessRights(final String pLogin, final String pBorrowedRoleName)
+            throws InvalidValueException {
         final ProjectUser projectUser = projectUserRepository.findOneByEmail(pLogin);
         final Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
@@ -165,7 +174,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
             }
         }
 
-        return new Couple<>(projectUser.getPermissions(), returnedRole);
+        return projectUser.getPermissions();
     }
 
     @Override
@@ -173,7 +182,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
         if (!existUser(pLogin)) {
             throw new NoSuchElementException("ProjectUser of given login (" + pLogin + ") could not be found");
         }
-        final ProjectUser user = retrieveUser(pLogin);
+        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin);
 
         // Finder method
         // Pass the id and the list to search, returns the element with passed id
@@ -190,7 +199,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
 
     @Override
     public void removeUserAccessRights(final String pLogin) {
-        final ProjectUser user = retrieveUser(pLogin);
+        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin);
         user.setPermissions(new ArrayList<>());
     }
 
@@ -211,6 +220,16 @@ public class ProjectUserServiceStub implements IProjectUserService {
         final ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(new ArrayList<>());
 
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveCurrentUser()
+     */
+    @Override
+    public ProjectUser retrieveCurrentUser() {
+        return retrieveUserList().get(0);
     }
 
 }

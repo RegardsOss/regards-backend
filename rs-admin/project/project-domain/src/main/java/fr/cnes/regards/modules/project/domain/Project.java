@@ -12,8 +12,7 @@ import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
 import javax.validation.executable.ValidateOnExecution;
 
-import org.springframework.hateoas.Identifiable;
-
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
 /**
@@ -29,7 +28,7 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 @InstanceEntity
 @Entity(name = "T_PROJECT")
 @SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "SEQ_PROJECT")
-public class Project implements Identifiable<Long> {
+public class Project implements IIdentifiable<Long> {
 
     /**
      * Project Unique Identifier
@@ -62,17 +61,23 @@ public class Project implements Identifiable<Long> {
     /**
      * IS the project public ?
      */
+    @Column(name = "ispublic")
     @NotNull
-    @Column(name = "public")
-    private boolean isPublic;
+    private Boolean isPublic;
 
     /**
      * Is the project deleted ?
      */
-    @Column(name = "deleted")
-    private boolean isDeleted;
+    @Column(name = "isdeleted")
+    @NotNull
+    private Boolean isDeleted;
 
     public Project() {
+        super();
+        name = "undefined";
+        description = "";
+        isDeleted = false;
+        isPublic = false;
     }
 
     public Project(final Long pId, final String pDesc, final String pIcon, final boolean pIsPublic,
@@ -83,6 +88,7 @@ public class Project implements Identifiable<Long> {
         icon = pIcon;
         isPublic = pIsPublic;
         name = pName;
+        isDeleted = false;
     }
 
     public Project(final String pDesc, final String pIcon, final boolean pIsPublic, final String pName) {
@@ -91,6 +97,7 @@ public class Project implements Identifiable<Long> {
         icon = pIcon;
         isPublic = pIsPublic;
         name = pName;
+        isDeleted = false;
     }
 
     @Override

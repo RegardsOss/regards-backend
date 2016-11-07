@@ -15,6 +15,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  */
 public class RoleLineageAssembler {
 
+    /**
+     * The root role
+     */
     private Role role;
 
     public RoleLineageAssembler of(final Role pRole) {

@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -16,15 +18,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
-import javax.persistence.Transient;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.Email;
-import org.springframework.hateoas.Identifiable;
 
-import fr.cnes.regards.modules.accessrights.domain.PastOrNow;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.core.validation.PastOrNow;
 
 /**
  * Domain class representing a REGARDS project user.
@@ -33,18 +34,10 @@ import fr.cnes.regards.modules.accessrights.domain.UserStatus;
  */
 @Entity(name = "T_PROJECT_USER")
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "SEQ_PROJECT_USER")
-public class ProjectUser implements Identifiable<Long> {
+public class ProjectUser implements IIdentifiable<Long> {
 
     /**
-     * Temporary value to automatically manage ids
-     */
-    // TODO : Remove this useless attribute and add the id management in stub for test
-    @Transient
-    @Min(0L)
-    private static Long maxProjectUserId_ = 0L;
-
-    /**
-     * Te id
+     * The id
      */
     @Min(0L)
     @Id
@@ -60,23 +53,24 @@ public class ProjectUser implements Identifiable<Long> {
     private String email;
 
     /**
-     * The last connection date
+     * The last connection date. Is json ignored because this date is handled by the system and not the client.
      */
     @PastOrNow
     @Column(name = "lastConnection")
     private LocalDateTime lastConnection;
 
     /**
-     * The last update date
+     * The last update date. Is json ignored because this date is handled by the system and not the client.
      */
     @PastOrNow
     @Column(name = "lastUpdate")
     private LocalDateTime lastUpdate;
 
     /**
-     * The status of the user
+     * The status of the user.
      */
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private UserStatus status;
 
     /**
@@ -108,8 +102,6 @@ public class ProjectUser implements Identifiable<Long> {
      */
     public ProjectUser() {
         super();
-        id = maxProjectUserId_;
-        maxProjectUserId_++;
         permissions = new ArrayList<>();
         metaData = new ArrayList<>();
         status = UserStatus.WAITING_ACCESS;
@@ -206,7 +198,6 @@ public class ProjectUser implements Identifiable<Long> {
      */
     public void setLastUpdate(final LocalDateTime pLastUpdate) {
         lastUpdate = pLastUpdate;
-        lastUpdate = LocalDateTime.now();
     }
 
     /**
@@ -226,7 +217,6 @@ public class ProjectUser implements Identifiable<Long> {
      */
     public void setStatus(final UserStatus pStatus) {
         status = pStatus;
-        lastUpdate = LocalDateTime.now();
     }
 
     /**
@@ -246,7 +236,6 @@ public class ProjectUser implements Identifiable<Long> {
      */
     public void setMetaData(final List<MetaData> pMetaData) {
         metaData = pMetaData;
-        lastUpdate = LocalDateTime.now();
     }
 
     /**
@@ -330,29 +319,6 @@ public class ProjectUser implements Identifiable<Long> {
      */
     public void setEmail(final String pEmail) {
         email = pEmail;
-    }
-
-    @Override
-    public boolean equals(final Object pObject) {
-        return (pObject instanceof ProjectUser) && (((ProjectUser) pObject).getId() == id);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        final int prime = 37;
-        int result = 1;
-
-        result = (prime * result);
-        if (id != null) {
-            result += id.hashCode();
-        }
-
-        return result;
     }
 
 }

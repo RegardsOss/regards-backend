@@ -5,10 +5,11 @@ package fr.cnes.regards.modules.project;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
-import fr.cnes.regards.client.core.ClientRequestInterceptor;
+import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  *
@@ -20,9 +21,9 @@ import fr.cnes.regards.client.core.ClientRequestInterceptor;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@ComponentScan
-@EnableFeignClients(defaultConfiguration = { ClientRequestInterceptor.class })
+@EnableFeignClients(clients = { IProjectsClient.class, IProjectConnectionClient.class })
 @EnableAutoConfiguration
+@PropertySource("classpath:tests.properties")
 public class ProjectClientFallbacksTestsConfiguration {
 
 }

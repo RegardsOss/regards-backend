@@ -27,12 +27,12 @@ import fr.cnes.regards.modules.core.annotation.ModuleInfo;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidEntityException;
-import fr.cnes.regards.modules.core.rest.Controller;
+import fr.cnes.regards.modules.core.rest.AbstractController;
 
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class AccessesController extends Controller implements IAccessesSignature {
+public class AccessesController extends AbstractController implements IAccessesSignature {
 
     /**
      * Service handling CRUD operation on access requests. Autowired by Spring. Must no be <code>null</code>.
@@ -41,7 +41,7 @@ public class AccessesController extends Controller implements IAccessesSignature
     private IAccessRequestService accessRequestService;
 
     /**
-     * Service handling CRUD operation on {@link AccessSettings}. Autowired by Spring. Must no be <code>null</code>.
+     * Service handling CRUD operation on {@link AccountSettings}. Autowired by Spring. Must no be <code>null</code>.
      */
     @Autowired
     private IAccessSettingsService accessSettingsService;

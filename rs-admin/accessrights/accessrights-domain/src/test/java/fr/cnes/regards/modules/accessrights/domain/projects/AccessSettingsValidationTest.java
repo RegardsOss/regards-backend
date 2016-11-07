@@ -19,7 +19,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 
 /**
- * Validate hibernate constraints on {@link AccessSettings}.
+ * Validate hibernate constraints on {@link AccountSettings}.
  *
  * @author CS SI
  */
@@ -40,11 +40,11 @@ public class AccessSettingsValidationTest {
     }
 
     /**
-     * Check that the system fails when a wrong <code>mode</code> is set on an {@link AccessSettings}.
+     * Check that the system fails when a wrong <code>mode</code> is set on an {@link AccountSettings}.
      */
     @Test
     @Requirement("?")
-    @Purpose("Check that the system fails when a wrong mode is set on an AccessSettings.")
+    @Purpose("Check that the system fails when a wrong mode is set on an AccountSettings.")
     public void modeIsDifferentFromAllowedValues() {
         // Init the malformed object
         final AccessSettings settings = new AccessSettings();

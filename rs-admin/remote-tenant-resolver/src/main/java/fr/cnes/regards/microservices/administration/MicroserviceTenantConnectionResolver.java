@@ -12,10 +12,11 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.project.client.IProjectsClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
@@ -26,7 +27,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * Default tenants connections configuration reader. Reads tenants from the microservice "rs-admin". Enabled, only if
  * the microservice is Eureka client.
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public class MicroserviceTenantConnectionResolver implements ITenantConnectionResolver {
@@ -35,6 +36,11 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(MicroserviceTenantConnectionResolver.class);
+
+    /**
+     * Feign client to request administration service for projects informations
+     */
+    private final IProjectConnectionClient projectConnectionClient;
 
     /**
      * Feign client to request administration service for projects informations
@@ -56,10 +62,12 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
      *            microservice name
      * @since 1.0-SNAPSHOT
      */
-    public MicroserviceTenantConnectionResolver(final IProjectsClient pProjectsClient, final String pMicroserviceName) {
+    public MicroserviceTenantConnectionResolver(final IProjectConnectionClient pProjectConnectionClient,
+            final IProjectsClient pProjectsClient, final String pMicroserviceName) {
         super();
-        projectsClient = pProjectsClient;
+        projectConnectionClient = pProjectConnectionClient;
         microserviceName = pMicroserviceName;
+        projectsClient = pProjectsClient;
     }
 
     @Override
@@ -67,41 +75,18 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
 
         final List<TenantConnection> tenants = new ArrayList<>();
 
-        final List<Project> projects = getProjects();
-        for (final Project project : projects) {
-            final ProjectConnection projectConnection = getProjectConnection(project.getName(), microserviceName);
+        final ResponseEntity<List<Resource<Project>>> results = projectsClient.retrieveProjectList();
+        for (final Resource<Project> resource : results.getBody()) {
+            final ProjectConnection projectConnection = getProjectConnection(resource.getContent().getName(),
+                                                                             microserviceName);
             if (projectConnection != null) {
-                tenants.add(new TenantConnection(project.getName(), projectConnection.getUrl(),
+                tenants.add(new TenantConnection(resource.getContent().getName(), projectConnection.getUrl(),
                         projectConnection.getUserName(), projectConnection.getPassword(),
                         projectConnection.getDriverClassName()));
             }
         }
 
         return tenants;
-
-    }
-
-    /**
-     *
-     * Retrieve projects list from rest client
-     *
-     * @return List<Project>
-     * @since 1.0-SNAPSHOT
-     */
-    private List<Project> getProjects() {
-
-        final List<Project> projects = new ArrayList<>();
-        final ResponseEntity<List<Resource<Project>>> response = projectsClient.retrieveProjectList();
-
-        if (response.getStatusCode().equals(HttpStatus.OK)) {
-            final List<Resource<Project>> resources = response.getBody();
-            for (final Resource<Project> resource : resources) {
-                projects.add(resource.getContent());
-            }
-        } else {
-            LOG.error("Error retrieving projects from admin microservice");
-        }
-        return projects;
 
     }
 
@@ -119,7 +104,7 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
     private ProjectConnection getProjectConnection(final String pProjectName, final String pMicroserviceName) {
         ProjectConnection projectConnection = null;
         try {
-            final ResponseEntity<Resource<ProjectConnection>> response = projectsClient
+            final ResponseEntity<Resource<ProjectConnection>> response = projectConnectionClient
                     .retrieveProjectConnection(pProjectName, microserviceName);
             if (response.getStatusCode().equals(HttpStatus.OK)) {
                 projectConnection = response.getBody().getContent();

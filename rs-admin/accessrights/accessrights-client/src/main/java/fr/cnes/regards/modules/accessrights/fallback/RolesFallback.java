@@ -8,7 +8,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
@@ -22,7 +23,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  *
  * Fallback for Roles Feign client. This implementation is used in case of error during feign client calls.
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Component
@@ -36,61 +37,61 @@ public class RolesFallback implements IRolesClient {
     /**
      * Common error message to log
      */
-    private static final String fallBackErrorMessage = "RS-ADMIN /roles request error. Fallback.";
+    private static final String FALLBACK_ERROR_MESSAGE = "RS-ADMIN /roles request error. Fallback.";
 
     @Override
-    public HttpEntity<List<Resource<Role>>> retrieveRoleList() {
-        LOG.error(fallBackErrorMessage);
-        return null;
+    public ResponseEntity<List<Resource<Role>>> retrieveRoleList() {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<Resource<Role>> createRole(final Role pNewRole) {
-        LOG.error(fallBackErrorMessage);
-        return null;
+    public ResponseEntity<Resource<Role>> createRole(final Role pNewRole) {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<Resource<Role>> retrieveRole(final Long pRoleId) {
-        LOG.error(fallBackErrorMessage);
-        return null;
+    public ResponseEntity<Resource<Role>> retrieveRole(final String pRoleName) {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<Void> updateRole(final Long pRoleId, final Role pUpdatedRole) {
-        LOG.error(fallBackErrorMessage);
-        return null;
+    public ResponseEntity<Void> updateRole(final Long pRoleId, final Role pUpdatedRole) {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<Void> removeRole(final Long pRoleId) {
-        LOG.error(fallBackErrorMessage);
-        return null;
+    public ResponseEntity<Void> removeRole(final Long pRoleId) {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(final Long pRoleId) {
-        LOG.error(fallBackErrorMessage);
-        return null;
+    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(final Long pRoleId) {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<Void> updateRoleResourcesAccess(final Long pRoleId,
+    public ResponseEntity<Void> updateRoleResourcesAccess(final Long pRoleId,
             final List<ResourcesAccess> pResourcesAccessList) {
-        LOG.error(fallBackErrorMessage);
-        return null;
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<Void> clearRoleResourcesAccess(final Long pRoleId) {
-        LOG.error(fallBackErrorMessage);
-        return null;
+    public ResponseEntity<Void> clearRoleResourcesAccess(final Long pRoleId) {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public HttpEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId) {
-        LOG.error(fallBackErrorMessage);
-        return null;
+    public ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId) {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }

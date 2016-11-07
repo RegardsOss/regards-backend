@@ -8,8 +8,8 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,11 +34,11 @@ public interface IRolesSignature {
     /**
      * Define the endpoint for retrieving the list of all roles.
      *
-     * @return A {@link List} of roles as {@link Role} wrapped in an {@link HttpEntity}
+     * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<List<Resource<Role>>> retrieveRoleList();
+    ResponseEntity<List<Resource<Role>>> retrieveRoleList();
 
     /**
      * Define the endpoint for creating a new {@link Role}.
@@ -52,18 +52,18 @@ public interface IRolesSignature {
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Resource<Role>> createRole(@Valid @RequestBody Role pNewRole) throws AlreadyExistingException;
+    ResponseEntity<Resource<Role>> createRole(@Valid @RequestBody Role pNewRole) throws AlreadyExistingException;
 
     /**
      * Define the endpoint for retrieving the {@link Role} of passed <code>id</code>.
      *
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
-     * @return The {@link Role} wrapped in an {@link HttpEntity}
+     * @return The {@link Role} wrapped in an {@link ResponseEntity}
      */
-    @RequestMapping(value = "/{role_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{role_name}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Resource<Role>> retrieveRole(@PathVariable("role_id") Long pRoleId);
+    ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") String pRoleName);
 
     /**
      * Define the endpoint for updating the {@link Role} of id <code>pRoleId</code>.
@@ -76,12 +76,12 @@ public interface IRolesSignature {
      *             Thrown when <code>pRoleId</code> is different from the id of <code>pUpdatedRole</code>
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
-     * @return {@link Void} wrapped in an {@link HttpEntity}
+     * @return {@link Void} wrapped in an {@link ResponseEntity}
      */
     @RequestMapping(value = "/{role_id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> updateRole(@PathVariable("role_id") Long pRoleId, @Valid @RequestBody Role pUpdatedRole)
+    ResponseEntity<Void> updateRole(@PathVariable("role_id") Long pRoleId, @Valid @RequestBody Role pUpdatedRole)
             throws EntityNotFoundException, InvalidValueException;
 
     /**
@@ -89,13 +89,13 @@ public interface IRolesSignature {
      *
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
-     * @return {@link Void} wrapped in an {@link HttpEntity}
+     * @return {@link Void} wrapped in an {@link ResponseEntity}
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/{role_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> removeRole(@PathVariable("role_id") Long pRoleId) throws EntityNotFoundException;
+    ResponseEntity<Void> removeRole(@PathVariable("role_id") Long pRoleId) throws EntityNotFoundException;
 
     /**
      * Define the endpoint for returning the {@link List} of {@link ResourcesAccess} on the {@link Role} of passed
@@ -103,15 +103,15 @@ public interface IRolesSignature {
      *
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
-     * @return The {@link List} of permissions as {@link ResourcesAccess} wrapped in an {@link HttpEntity}
+     * @return The {@link List} of permissions as {@link ResourcesAccess} wrapped in an {@link ResponseEntity}
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(@PathVariable("role_id") Long pRoleId)
-            throws EntityNotFoundException;
+    ResponseEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(
+            @PathVariable("role_id") Long pRoleId) throws EntityNotFoundException;
 
     /**
      * Define the endpoint for setting the passed {@link List} of {@link ResourcesAccess} onto the {@link role} of
@@ -121,14 +121,14 @@ public interface IRolesSignature {
      *            The {@link Role}'s <code>id</code>
      * @param pResourcesAccessList
      *            The {@link List} of {@link ResourcesAccess} to set
-     * @return {@link Void} wrapped in an {@link HttpEntity}
+     * @return {@link Void} wrapped in an {@link ResponseEntity}
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") Long pRoleId,
+    ResponseEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") Long pRoleId,
             @Valid @RequestBody List<ResourcesAccess> pResourcesAccessList) throws EntityNotFoundException;
 
     /**
@@ -137,27 +137,27 @@ public interface IRolesSignature {
      *
      * @param pRoleId
      *            The {@link Role} <code>id</code>
-     * @return {@link Void} wrapped in an {@link HttpEntity}
+     * @return {@link Void} wrapped in an {@link ResponseEntity}
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") Long pRoleId) throws EntityNotFoundException;
+    ResponseEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") Long pRoleId) throws EntityNotFoundException;
 
     /**
      * Define the endpoint for retrieving the {@link List} of {@link ProjectUser} for the {@link Role} of passed
-     * <code>id</code>.
+     * <code>id</code> by crawling through parents' hierarachy.
      *
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
-     * @return The {@link List} of {@link ProjectUser} wrapped in an {@link HttpEntity}
+     * @return The {@link List} of {@link ProjectUser} wrapped in an {@link ResponseEntity}
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/{role_id}/users", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    HttpEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(@PathVariable("role_id") Long pRoleId)
+    ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(@PathVariable("role_id") Long pRoleId)
             throws EntityNotFoundException;
 }

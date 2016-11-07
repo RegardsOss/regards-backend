@@ -18,10 +18,19 @@
 			<groupId>fr.cnes.regards.modules.emails</groupId>
 			<artifactId>emails-signature</artifactId>
 		</dependency>
+		<!-- Hateoas -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>hateoas-regards-starter</artifactId>
+		</dependency>
 		<!-- Regards client core -->
 		<dependency>
 			<groupId>fr.cnes.regards.client</groupId>
 			<artifactId>client-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>hateoas-regards-starter</artifactId>
 		</dependency>
 	</dependencies>
 

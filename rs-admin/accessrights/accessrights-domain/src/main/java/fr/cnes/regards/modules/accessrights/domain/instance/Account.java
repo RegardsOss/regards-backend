@@ -14,17 +14,17 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.hateoas.Identifiable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 
 @InstanceEntity
 @Entity(name = "T_ACCOUNT")
 @SequenceGenerator(name = "accountSequence", initialValue = 1, sequenceName = "SEQ_ACCOUNT")
-public class Account implements Identifiable<Long> {
+public class Account implements IIdentifiable<Long> {
 
     // TODO : Remove this useless attribute and add the id management in stub for test
     @Transient

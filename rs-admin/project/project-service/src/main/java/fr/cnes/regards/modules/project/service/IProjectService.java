@@ -13,7 +13,6 @@ import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidEntityException;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
  *
@@ -21,7 +20,9 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  *
  * Interface for ProjectService. Allow to query projects entities.
  *
- * @author CS
+ * @author Sylvain Vissiere-Guerinet
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 public interface IProjectService {
@@ -92,86 +93,5 @@ public interface IProjectService {
      * @since 1.0-SNAPSHOT
      */
     Project createProject(Project pNewProject) throws EntityException;
-
-    /**
-     *
-     * Check if given project exists.
-     *
-     * @param pProjectName
-     *            Project to check for existance
-     * @return [true|false]
-     * @since 1.0-SNAPSHOT
-     */
-    boolean existProject(String pProjectName);
-
-    /**
-     *
-     * Check that the given project isn't deleted
-     *
-     * @param pProjectName
-     *            Project to check
-     * @return [true|false]
-     * @since 1.0-SNAPSHOT
-     */
-    boolean notDeletedProject(String pProjectName);
-
-    /**
-     *
-     * Create a new project connection. Requires an existing Project.
-     *
-     * @param pProjectConnection
-     *            ProjectConnection to create
-     * @return Created ProjectConnection
-     * @throws EntityException
-     *             <br/>
-     *             {@link AlreadyExistingException} Project connection already exists for couple (project name/
-     *             microservice name)<br/>
-     *             {@link AlreadyExistingException} EntityNotFoundException The Project referenced doesn't exists
-     * @since 1.0-SNAPSHOT
-     */
-    ProjectConnection createProjectConnection(ProjectConnection pProjectConnection) throws EntityException;
-
-    /**
-     *
-     * Delete a ProjectConnection
-     *
-     * @param pProjectConnectionId
-     *            ProjectConnection Identifier
-     * @throws EntityException
-     *             <br/>
-     *             {@link EntityNotFoundException} The ProjectConnection to delete doesn't exists
-     * @since 1.0-SNAPSHOT
-     */
-    void deleteProjectConnection(Long pProjectConnectionId) throws EntityException;
-
-    /**
-     *
-     * Update an existing project connection
-     *
-     * @param pProjectConnection
-     *            Project connection to update
-     * @return ProjectConnection updated
-     * @throws EntityException
-     *             <br/>
-     *             {@link EntityNotFoundException} Project connection or referenced project doesn't exists
-     * @since 1.0-SNAPSHOT
-     */
-    ProjectConnection updateProjectConnection(ProjectConnection pProjectConnection) throws EntityException;
-
-    /**
-     *
-     * Retrieve a ProjectConnection with couple project name/ microservice name
-     *
-     * @param pProjectName
-     *            Project name
-     * @param pMicroService
-     *            microservice name
-     * @return ProjectConnection
-     * @throws EntityNotFoundException
-     *             ProjectConnection doesn't exists
-     * @since 1.0-SNAPSHOT
-     */
-    ProjectConnection retreiveProjectConnection(final String pProjectName, String pMicroService)
-            throws EntityNotFoundException;
 
 }

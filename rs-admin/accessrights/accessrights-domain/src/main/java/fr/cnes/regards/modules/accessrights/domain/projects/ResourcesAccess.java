@@ -13,13 +13,12 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.hateoas.Identifiable;
-
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 
 @Entity(name = "T_RESOURCES_ACCESS")
 @SequenceGenerator(name = "resourcesAccessSequence", initialValue = 1, sequenceName = "SEQ_RESOURCES_ACCESS")
-public class ResourcesAccess implements Identifiable<Long> {
+public class ResourcesAccess implements IIdentifiable<Long> {
 
     @NotNull
     @Id
@@ -111,18 +110,6 @@ public class ResourcesAccess implements Identifiable<Long> {
 
     public void setVerb(final HttpVerb pVerb) {
         verb = pVerb;
-    }
-
-    // @Override
-    // public boolean equals(final Object o) {
-    // return (o instanceof ResourcesAccess) && ((ResourcesAccess) o).microservice.equals(this.microservice)
-    // && ((ResourcesAccess) o).resource.equals(this.resource)
-    // && ((ResourcesAccess) o).verb.equals(this.verb);
-    //
-    // }
-    @Override
-    public boolean equals(final Object pObj) {
-        return (pObj instanceof ResourcesAccess) && ((ResourcesAccess) pObj).getId().equals(id);
     }
 
 }

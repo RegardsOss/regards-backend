@@ -12,17 +12,17 @@ import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import org.springframework.hateoas.Identifiable;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
  * Models the different access settings.<br>
  * Instead of using a list of values, each field of this POJO defines a specific setting.
  *
- * @author CS SI
+ * @author Xavier-Alexandre
  */
 @Entity(name = "T_ACCESS_SETTINGS")
 @SequenceGenerator(name = "accessSettingsSequence", initialValue = 1, sequenceName = "SEQ_ACCESS_SETTINGS")
-public class AccessSettings implements Identifiable<Long> {
+public class AccessSettings implements IIdentifiable<Long> {
 
     /**
      * The settings unique id

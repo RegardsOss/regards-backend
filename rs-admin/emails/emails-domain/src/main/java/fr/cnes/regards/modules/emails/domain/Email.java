@@ -11,23 +11,23 @@ import javax.persistence.SequenceGenerator;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.hateoas.Identifiable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.util.ObjectUtils;
 
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.core.validation.PastOrNow;
 
 /**
  * Models a simple mail message, including data such as the from, to, cc, subject, and text fields.
  * <p>
- * This is a simplification of {@link SimpleMailMessage}.
+ * This is a just a simplified representation of {@link SimpleMailMessage} for data base storage.
  *
- * @author Xaver-Alexandre Brochard
+ * @author CS SI
  * @see org.springframework.mail.SimpleMailMessage
  */
 @Entity(name = "T_EMAIL")
 @SequenceGenerator(name = "emailSequence", initialValue = 1, sequenceName = "SEQ_EMAIL")
-public class Email implements Identifiable<Long> {
+public class Email implements IIdentifiable<Long> {
 
     /**
      * Array of bcc recipients' email address
@@ -42,10 +42,11 @@ public class Email implements Identifiable<Long> {
     private String[] cc;
 
     /**
-     * Sender's email address
+     * Sender's email address<br>
+     * "_" prefix is required because "from" is a reserved keyword in SQL
      */
     @org.hibernate.validator.constraints.Email
-    @Column(name = "toto")
+    @Column(name = "_from")
     private String from;
 
     /**
@@ -83,16 +84,17 @@ public class Email implements Identifiable<Long> {
     private String text;
 
     /**
-     * Array of recipients' email address
+     * Array of recipients' email address "_" prefix is required because "to" is a reserved keyword in SQL
      */
     @NotEmpty
-    @Column(name = "titi")
+    @Column(name = "_to")
     private String[] to;
 
     /**
      * Create a new {@code Email}.
      */
     public Email() {
+        super();
     }
 
     /**

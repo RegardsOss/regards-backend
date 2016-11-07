@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>0.0.5-SNAPSHOT</version>
+		<version>0.0.6-SNAPSHOT</version>
 		<relativePath></relativePath>
 	</parent>
 
@@ -66,6 +66,12 @@
 				<artifactId>notification-test</artifactId>
 				<version>${project.version}</version>
 				<scope>test</scope>
+			</dependency>
+			<!-- Module accessrights -->
+			<dependency>
+				<groupId>fr.cnes.regards.modules.accessrights</groupId>
+				<artifactId>accessrights-service</artifactId>
+				<version>1.1-SNAPSHOT</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

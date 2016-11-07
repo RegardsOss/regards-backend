@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.emails.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
-import fr.cnes.regards.modules.emails.domain.Recipient;
 
 /**
  * {@link IEmailService} implementation
@@ -58,21 +56,23 @@ public class EmailService implements IEmailService {
         return emails;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.emails.service.IEmailService#sendEmail(org.springframework.mail.SimpleMailMessage)
+     */
     @Override
-    public Email sendEmail(final Set<Recipient> pRecipients, final Email pEmail) {
-        final SimpleMailMessage message = createSimpleMailMessageFromEmail(pEmail);
-
-        // Set the recipients
-        final String[] asArray = pRecipients.stream().map(r -> r.getAddress()).toArray(size -> new String[size]);
-        pEmail.setTo(asArray);
-        message.setTo(asArray);
-        // Send the mail
-        mailSender.send(message);
+    public SimpleMailMessage sendEmail(final SimpleMailMessage pMessage) {
+        // Create the savable DTO
+        final Email email = createEmailFromSimpleMailMessage(pMessage);
 
         // Persist in DB
-        emailRepository.save(pEmail);
+        emailRepository.save(email);
 
-        return pEmail;
+        // Send the mail
+        mailSender.send(pMessage);
+
+        return pMessage;
     }
 
     @Override
@@ -115,6 +115,27 @@ public class EmailService implements IEmailService {
         message.setText(pEmail.getText());
         message.setTo(pEmail.getTo());
         return message;
+    }
+
+    /**
+     * Create a domain {@link Email} with same content as the passed {@link SimpleMailMessage} in order to save it in
+     * db.
+     *
+     * @param pMessage
+     *            The message
+     * @return The savable email
+     */
+    private Email createEmailFromSimpleMailMessage(final SimpleMailMessage pMessage) {
+        final Email email = new Email();
+        email.setBcc(pMessage.getBcc());
+        email.setCc(pMessage.getCc());
+        email.setFrom(pMessage.getFrom());
+        email.setReplyTo(pMessage.getReplyTo());
+        email.setSentDate(pMessage.getSentDate());
+        email.setSubject(pMessage.getSubject());
+        email.setText(pMessage.getText());
+        email.setTo(pMessage.getTo());
+        return email;
     }
 
 }

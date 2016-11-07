@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.projects;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Example;
@@ -41,4 +42,13 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      */
     List<ProjectUser> findByStatus(UserStatus pStatus);
 
+    /**
+     * Find the all {@link ProjectUser}s where <code>email</code> is in passed collection.<br>
+     * Custom query auto-implemented by JPA thanks to the method naming convention.
+     *
+     * @param pEmail
+     *            The {@link Collection} of <code>email</code>
+     * @return The {@link List} of found {@link ProjectUser}s
+     */
+    List<ProjectUser> findByEmailIn(Collection<String> pEmail);
 }

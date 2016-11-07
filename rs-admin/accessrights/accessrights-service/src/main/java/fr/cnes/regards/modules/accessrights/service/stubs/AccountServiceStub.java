@@ -126,7 +126,7 @@ public class AccountServiceStub implements IAccountService {
 
     @Override
     public void updateAccount(final Long pAccountId, final Account pUpdatedAccount)
-            throws InvalidValueException, EntityNotFoundException {
+            throws EntityNotFoundException, InvalidValueException {
         if (!existAccount(pAccountId)) {
             throw new EntityNotFoundException(pAccountId.toString(), Account.class);
         }
@@ -153,7 +153,7 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public void codeForAccount(final String pAccountEmail, final CodeType pType) {
+    public void sendAccountCode(final String pAccountEmail, final CodeType pType) {
         final String code = generateCode(pType);
         final Account account = this.retrieveAccountByEmail(pAccountEmail);
         account.setCode(code);
@@ -179,23 +179,6 @@ public class AccountServiceStub implements IAccountService {
         final Account account = this.retrieveAccount(pAccountId);
         check(account, pResetCode);
         account.setPassword(pNewPassword);
-    }
-
-    @Override
-    public List<String> retrieveAccountSettings() {
-        final List<String> accountSettings = new ArrayList<>();
-        accountSettings.add(accountSetting);
-        return accountSettings;
-    }
-
-    @Override
-    public void updateAccountSetting(final String pUpdatedAccountSetting) throws InvalidValueException {
-        if ("manual".equalsIgnoreCase(pUpdatedAccountSetting)
-                || "auto-accept".equalsIgnoreCase(pUpdatedAccountSetting)) {
-            accountSetting = pUpdatedAccountSetting.toLowerCase();
-            return;
-        }
-        throw new InvalidValueException("Only value accepted : manual or auto-accept");
     }
 
     @Override
@@ -240,14 +223,9 @@ public class AccountServiceStub implements IAccountService {
     }
 
     @Override
-    public boolean validatePassword(final String pLogin, final String pPassword) throws EntityNotFoundException {
-        final Account account = retrieveAccountByLogin(pLogin);
+    public boolean validatePassword(final String pEmail, final String pPassword) throws EntityNotFoundException {
+        final Account account = retrieveAccountByEmail(pEmail);
         return account.getPassword().equals(pPassword);
     }
 
-    @Override
-    public Account retrieveAccountByLogin(final String pLogin) throws EntityNotFoundException {
-        return accounts.stream().filter(p -> p.getLogin().equals(pLogin)).findFirst()
-                .orElseThrow(() -> new EntityNotFoundException(pLogin, Account.class));
-    }
 }

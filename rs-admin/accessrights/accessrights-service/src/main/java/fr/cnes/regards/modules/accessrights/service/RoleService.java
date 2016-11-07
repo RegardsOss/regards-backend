@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -21,12 +22,25 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 
+/**
+ * {@link IRoleService} implementation
+ *
+ * @author xbrochar
+ *
+ */
 @Service
 public class RoleService implements IRoleService {
 
+    /**
+     * CRUD repository managing {@link Role}s. Autowired by Spring.
+     */
     private final IRoleRepository roleRepository;
 
+    /**
+     * The default roles. Autowired by Spring.
+     */
     @Resource
     private List<Role> defaultRoles;
 
@@ -123,11 +137,14 @@ public class RoleService implements IRoleService {
         final Role role = roleRepository.findOne(pRoleId);
         final List<ResourcesAccess> permissions = role.getPermissions();
 
-        try (Stream<ResourcesAccess> stream = Stream.concat(pResourcesAccessList.stream(), permissions.stream())) {
-            role.setPermissions(stream.distinct().collect(Collectors.toList()));
-            role.setPermissions(permissions);
-            return roleRepository.save(role);
+        try (final Stream<ResourcesAccess> previous = permissions.stream();
+                final Stream<ResourcesAccess> toMerge = pResourcesAccessList.stream()) {
+            final Predicate<ResourcesAccess> filter = RegardsStreamUtils.distinctByKey(r -> r.getId());
+            role.setPermissions(Stream.concat(toMerge, previous).filter(filter).collect(Collectors.toList()));
+            roleRepository.save(role);
         }
+
+        return role;
     }
 
     @Override
@@ -145,8 +162,17 @@ public class RoleService implements IRoleService {
         if (!existRole(pRoleId)) {
             throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
+        final List<Role> roleAndHisAncestors = new ArrayList<>();
+
         final Role role = roleRepository.findOne(pRoleId);
-        return role.getProjectUsers();
+        roleAndHisAncestors.add(role);
+
+        final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
+        roleAndHisAncestors.addAll(roleLineageAssembler.of(role).get());
+
+        try (final Stream<Role> stream = roleAndHisAncestors.stream()) {
+            return stream.map(r -> r.getProjectUsers()).flatMap(l -> l.stream()).collect(Collectors.toList());
+        }
     }
 
     @Override

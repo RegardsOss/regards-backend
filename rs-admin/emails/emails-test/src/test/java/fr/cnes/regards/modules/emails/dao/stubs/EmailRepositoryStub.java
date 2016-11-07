@@ -31,6 +31,7 @@ public class EmailRepositoryStub extends RepositoryStub<Email> implements IEmail
         email.setFrom("recipient@stub.com");
         email.setText("The body of the message");
         email.setId(0L);
+        email.setTo(new String[] { "xavier-alexandre.brochard@c-s.fr" });
         getEntities().add(email);
 
         email = new Email();
@@ -38,6 +39,7 @@ public class EmailRepositoryStub extends RepositoryStub<Email> implements IEmail
         email.setFrom("another.recipient@stub.com");
         email.setText("Another body of the message");
         email.setId(1L);
+        email.setTo(new String[] { "xavier-alexandre.brochard@c-s.fr" });
         getEntities().add(email);
     }
 

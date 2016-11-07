@@ -14,20 +14,20 @@ import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 public interface IAccessSettingsService {
 
     /**
-     * Retrieve the {@link AccessSettings}.
+     * Retrieve the {@link AccountSettings}.
      *
-     * @return The {@link AccessSettings}
+     * @return The {@link AccountSettings}
      */
     AccessSettings retrieve();
 
     /**
-     * Update the {@link AccessSettings}.
+     * Update the {@link AccountSettings}.
      *
      * @param pAccessSettings
-     *            The {@link AccessSettings}
+     *            The {@link AccountSettings}
      * @return The updated access settings
      * @throws EntityNotFoundException
-     *             Thrown when an {@link AccessSettings} with passed id could not be found
+     *             Thrown when an {@link AccountSettings} with passed id could not be found
      */
     AccessSettings update(AccessSettings pAccessSettings) throws EntityNotFoundException;
 }
