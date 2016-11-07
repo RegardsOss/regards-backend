@@ -12,9 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import feign.FeignException;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.utils.client.TokenClientProvider;
@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  *
  * Business service for Resources entities
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Service
@@ -52,7 +52,7 @@ public class ResourcesService implements IResourcesService {
     private IResourcesAccessRepository resourceAccessRepo;
 
     @Override
-    @Transactional(transactionManager = "multitenantsJpaTransactionManager")
+    @MultitenantTransactional
     public List<ResourceMapping> collectResources() {
 
         final List<ResourceMapping> allResources = new ArrayList<>();

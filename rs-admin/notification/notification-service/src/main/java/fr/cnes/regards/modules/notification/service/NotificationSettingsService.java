@@ -4,8 +4,8 @@
 package fr.cnes.regards.modules.notification.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.IProjectUserService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
@@ -16,11 +16,12 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
 /**
  * {@link INotificationSettingsService} implementation.
  *
- * @author CS SI
+ * @author xbrochar
+ * @author Sébastien Binda
  *
  */
 @Service
-@Transactional
+@MultitenantTransactional
 public class NotificationSettingsService implements INotificationSettingsService {
 
     /**

@@ -16,8 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -35,9 +35,10 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
  * {@link IAccountService} implementation.
  *
  * @author Xavier-Alexandre Brochard
+ * @auhtor Sébastien Binda
  */
 @Service
-@Transactional
+@InstanceTransactional
 public class AccountService implements IAccountService {
 
     /**

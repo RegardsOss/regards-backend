@@ -12,9 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -31,10 +31,11 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
  * {@link INotificationService} implementation
  *
  * @author xbrochar
+ * @author Sébastien Binda
  *
  */
 @Service
-@Transactional
+@MultitenantTransactional
 public class NotificationService implements INotificationService {
 
     /**
