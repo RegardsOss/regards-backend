@@ -19,11 +19,11 @@ import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
+import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
+import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -79,7 +79,8 @@ public class ProjectUserServiceTest {
     /**
      * A sample role
      */
-    private static final Role ROLE = new Role(0L, "name", null, new ArrayList<>(), new ArrayList<>());
+    private static final Role ROLE = new Role(0L, DefaultRoleNames.ADMIN.toString(), null, new ArrayList<>(),
+            new ArrayList<>());
 
     /**
      * A sample list of permissions
@@ -102,11 +103,6 @@ public class ProjectUserServiceTest {
     private IRoleService roleService;
 
     /**
-     * Mocked CRUD repository managing {@link Role}s
-     */
-    private IRoleRepository roleRepository;
-
-    /**
      * Do some setup before each test
      */
     @Before
@@ -126,11 +122,9 @@ public class ProjectUserServiceTest {
         // Mock untested services & repos
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         roleService = Mockito.mock(IRoleService.class);
-        roleRepository = Mockito.mock(IRoleRepository.class);
 
         // Construct the tested service
-        projectUserService = new ProjectUserService(projectUserRepository, roleService, roleRepository,
-                "instance_admin@regards.fr");
+        projectUserService = new ProjectUserService(projectUserRepository, roleService, "instance_admin@regards.fr");
     }
 
     /**
@@ -424,4 +418,119 @@ public class ProjectUserServiceTest {
         // Check
         Mockito.verify(projectUserRepository).save(Mockito.refEq(expected, "lastConnection", "lastUpdate"));
     }
+
+    /**
+     * Check that the system fail when trying to retrieve a user's permissions using a role not hierarchically inferior.
+     *
+     * @throws InvalidValueException
+     *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
+     *             <code>role</code>.
+     */
+    @Test(expected = InvalidValueException.class)
+    @Requirement("REGARDS_DSL_ADM_ADM_260")
+    @Purpose("Check that the system fail when trying to retrieve "
+            + "a user's permissions using a role not hierarchically inferior.")
+    public void retrieveProjectUserAccessRightsBorrowedRoleNotInferior() throws InvalidValueException {
+        // Define borrowed role
+        final String borrowedRoleName = DefaultRoleNames.INSTANCE_ADMIN.toString();
+        final Role borrowedRole = new Role();
+
+        // Mock the repository
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(projectUser);
+        Mockito.when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
+        // Make sure the borrowed role is not hierarchically inferior
+        Mockito.when(roleService.isHierarchicallyInferior(borrowedRole, projectUser.getRole())).thenReturn(false);
+
+        // Trigger the exception
+        projectUserService.retrieveProjectUserAccessRights(EMAIL, borrowedRoleName);
+    }
+
+    /**
+     * Check that the system allows to retrieve all permissions a of user using a borrowed role.
+     *
+     * @throws InvalidValueException
+     *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
+     *             <code>role</code>.
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_260")
+    @Purpose("Check that the system allows to retrieve all permissions a of user using a borrowed role.")
+    public void retrieveProjectUserAccessRightsWithBorrowedRole()
+            throws InvalidValueException, EntityNotFoundException {
+        // Define borrowed role
+        final Long borrowedRoleId = 99L;
+        final String borrowedRoleName = DefaultRoleNames.INSTANCE_ADMIN.toString();
+        final List<ResourcesAccess> borrowedRolePermissions = new ArrayList<>();
+        borrowedRolePermissions.add(new ResourcesAccess(11L));
+        borrowedRolePermissions.add(new ResourcesAccess(10L));
+        borrowedRolePermissions.add(new ResourcesAccess(14L));
+        final Role borrowedRole = new Role();
+        borrowedRole.setId(borrowedRoleId);
+        borrowedRole.setName(borrowedRoleName);
+        borrowedRole.setPermissions(borrowedRolePermissions);
+
+        // Mock the repository
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(projectUser);
+        Mockito.when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
+        Mockito.when(roleService.retrieveRoleResourcesAccessList(borrowedRoleId)).thenReturn(borrowedRolePermissions);
+
+        // Make sure the borrowed role is hierarchically inferior
+        Mockito.when(roleService.isHierarchicallyInferior(borrowedRole, projectUser.getRole())).thenReturn(true);
+
+        // Define expected permissions
+        final List<ResourcesAccess> expected = new ArrayList<>();
+        expected.addAll(borrowedRolePermissions);
+        expected.addAll(projectUser.getPermissions());
+
+        // Define actual result
+        final List<ResourcesAccess> actual = projectUserService.retrieveProjectUserAccessRights(EMAIL,
+                                                                                                borrowedRoleName);
+
+        // Check
+        Assert.assertTrue(actual.containsAll(expected));
+        Assert.assertTrue(expected.containsAll(actual));
+    }
+
+    /**
+     * Check that the system allows to retrieve all permissions a of user.
+     *
+     * @throws InvalidValueException
+     *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
+     *             <code>role</code>.
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_260")
+    @Purpose("Check that the system allows to retrieve all permissions a of user.")
+    public void retrieveProjectUserAccessRights() throws InvalidValueException, EntityNotFoundException {
+        // Define the user's role permissions
+        final List<ResourcesAccess> permissions = new ArrayList<>();
+        permissions.add(new ResourcesAccess(11L));
+        permissions.add(new ResourcesAccess(10L));
+        permissions.add(new ResourcesAccess(14L));
+        projectUser.getRole().setPermissions(permissions);
+        projectUser.getRole().setPermissions(permissions);
+        projectUser.getRole().setPermissions(permissions);
+
+        // Mock the repository
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(projectUser);
+        Mockito.when(roleService.retrieveRoleResourcesAccessList(projectUser.getRole().getId()))
+                .thenReturn(permissions);
+
+        // Define expected permissions
+        final List<ResourcesAccess> expected = new ArrayList<>();
+        expected.addAll(permissions);
+        expected.addAll(projectUser.getPermissions());
+
+        // Define actual result
+        final List<ResourcesAccess> actual = projectUserService.retrieveProjectUserAccessRights(EMAIL, null);
+
+        // Check
+        Assert.assertTrue(actual.containsAll(expected));
+        Assert.assertTrue(expected.containsAll(actual));
+    }
+
 }
