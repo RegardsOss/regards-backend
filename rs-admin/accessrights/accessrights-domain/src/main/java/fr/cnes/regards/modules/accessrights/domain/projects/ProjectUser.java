@@ -21,8 +21,6 @@ import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.Email;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.core.validation.PastOrNow;
@@ -63,7 +61,6 @@ public class ProjectUser implements IIdentifiable<Long> {
     /**
      * The last connection date. Is json ignored because this date is handled by the system and not the client.
      */
-    @JsonIgnore
     @PastOrNow
     @Column(name = "lastConnection")
     private LocalDateTime lastConnection;
@@ -71,7 +68,6 @@ public class ProjectUser implements IIdentifiable<Long> {
     /**
      * The last update date. Is json ignored because this date is handled by the system and not the client.
      */
-    @JsonIgnore
     @PastOrNow
     @Column(name = "lastUpdate")
     private LocalDateTime lastUpdate;
