@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * Response from JobAllocationStrategy plugin
+ * 
+ * @author lmieulet
  */
 public class JobAllocationStrategyResponse {
 

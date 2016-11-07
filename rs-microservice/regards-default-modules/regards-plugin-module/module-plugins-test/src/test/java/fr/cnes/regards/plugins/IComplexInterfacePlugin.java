@@ -8,7 +8,7 @@ import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
 /**
  * IComplexInterfacePlugin
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 @PluginInterface(description = "hello plugin interface")

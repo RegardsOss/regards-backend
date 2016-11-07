@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
@@ -55,6 +56,12 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private MethodAuthorizationService authorizationService;
 
+    /**
+     * Custom web security configuration
+     */
+    @Autowired(required = false)
+    private ICustomWebSecurityConfiguration customConfigurer;
+
     @Override
     protected void configure(final HttpSecurity pHttp) throws Exception {
 
@@ -71,6 +78,12 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
         // Add CORS filter
         pHttp.addFilterAfter(new CorsFilter(authoritiesProvider), IpFilter.class);
+
+        // Add custom configuration if any
+        if (customConfigurer != null) {
+            customConfigurer.configure(pHttp);
+        }
+
     }
 
     @Override

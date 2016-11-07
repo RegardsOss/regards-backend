@@ -9,7 +9,7 @@ import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
 /**
  * ISamplePlugin
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 @Plugin(author = "CSSI", description = "Complex plugin test", id = "aComplexErrorPlugin", version = "0.0.1")

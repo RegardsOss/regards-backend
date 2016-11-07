@@ -168,9 +168,9 @@ public final class PluginParameterUtils {
         LOGGER.debug("Starting postProcess :" + pReturnPlugin.getClass().getSimpleName());
 
         // Test if the plugin configuration is active
-        if (!pPlgConf.getIsActive()) {
-            throw new PluginUtilsException(
-                    String.format("The plugin configuration <%s-%s> is not active.", pPlgConf.getId(),pPlgConf.getLabel()));
+        if (!pPlgConf.isActive()) {
+            throw new PluginUtilsException(String.format("The plugin configuration <%s-%s> is not active.",
+                                                         pPlgConf.getId(), pPlgConf.getLabel()));
         }
 
         // Look for annotated fields
@@ -269,7 +269,7 @@ public final class PluginParameterUtils {
              * Test if this parameter is set as dynamic in the plugin configuration
              */
             final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> cfd = pPlgConf.getParameters()
-                    .stream().filter(s -> s.getName().equals(aDynamicPlgParam.get().getName()) && s.getIsDynamic())
+                    .stream().filter(s -> s.getName().equals(aDynamicPlgParam.get().getName()) && s.isDynamic())
                     .findFirst();
             if (cfd.isPresent()) {
                 paramValue = postProcessDynamicValues(paramValue, cfd, aDynamicPlgParam);

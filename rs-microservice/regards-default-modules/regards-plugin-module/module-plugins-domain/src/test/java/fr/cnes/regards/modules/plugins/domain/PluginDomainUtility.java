@@ -7,7 +7,7 @@ import java.util.List;
 /***
  * Constants and datas for unit testing of plugin's Domain.
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public class PluginDomainUtility {
@@ -18,7 +18,7 @@ public class PluginDomainUtility {
     protected static final String PROJECT = "test1";
 
     /**
-     * An id constant {@link String}
+     * An id constant {@link Long}
      */
     protected static final Long AN_ID = new Long(33);
 
@@ -63,14 +63,19 @@ public class PluginDomainUtility {
     protected static final String RESULT = "result=";
 
     /**
-     * 5 constant {@link String}
+     * 5 constant {@link int}
      */
     protected static final int CINQ = 5;
 
     /**
-     * 4 constant {@link String}
+     * 4 constant {@link int}
      */
     protected static final int QUATRE = 4;
+
+    /**
+     * isActive constant {@link String}
+     */
+    protected static final String PARAM_IS_ACTIVE = "isActive";
 
     /**
      * A plugin identifier constant {@link String}
@@ -86,16 +91,17 @@ public class PluginDomainUtility {
      * A {@link PluginParameter}
      */
     protected static final List<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
-            .addParameter("param11", "value11").addParameterDynamic("coeff", "0").addParameter("isActive", "true")
-            .addParameterDynamic("suffix", RED, DYNAMICVALUES).getParameters();
+            .addParameter("param11", "value11").addParameterDynamic("coeff", "0")
+            .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString()).addParameterDynamic("suffix", RED, DYNAMICVALUES)
+            .getParameters();
 
     /**
      * A list of {@link PluginParameter}
      */
     protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
-            .addParameter("param34", "value34").addParameter("param35", "value35").addParameterDynamic("coeff", "3")
-            .addParameter("isActive", "true").addParameter("suffix", "Toulouse").getParameters();
+            .addParameter("param34", "value34").addParameter("param35", "value35").addParameterDynamic("Koeff", "3")
+            .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString()).addParameter("suffixe", "Toulouse").getParameters();
 
     /**
      * A {@link PluginConfiguration}
@@ -113,8 +119,8 @@ public class PluginDomainUtility {
      * A list of {@link PluginParameter} without parameters.
      */
     private PluginConfiguration pluginConfiguration3 = new PluginConfiguration(this.getPluginMetaData(),
-            "third configuration", 99);
-    
+            "third configuration", QUATRE);
+
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setClass(Integer.class);
@@ -131,7 +137,7 @@ public class PluginDomainUtility {
     protected PluginConfiguration getPluginConfigurationWithDynamicParameter() {
         return pluginConfiguration2;
     }
-    
+
     protected PluginConfiguration getPluginConfigurationWithoutParameters() {
         return pluginConfiguration3;
     }
@@ -140,7 +146,7 @@ public class PluginDomainUtility {
         getPluginConfigurationWithDynamicParameter().setId(null);
         getPluginConfigurationWithDynamicParameter().getParameters().forEach(p -> p.setId(null));
         getPluginConfigurationWithParameters().setId(null);
-        getPluginConfigurationWithParameters().getParameters().forEach(p -> p.setId(null)); 
+        getPluginConfigurationWithParameters().getParameters().forEach(p -> p.setId(null));
     }
 
 }

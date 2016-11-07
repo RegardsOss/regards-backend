@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -32,7 +31,7 @@ public class HateoasUtilsTest {
      * Check that the wrapping method correctly wraps objects.
      */
     @Test
-    @Requirement("?")
+    @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check that the wrapping method correctly wraps objects.")
     public void wrap() {
         final Object input = new Object();
@@ -47,7 +46,7 @@ public class HateoasUtilsTest {
      * Check that the wrapping method correctly wraps lists of objects.
      */
     @Test
-    @Requirement("?")
+    @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check that the wrapping method correctly wraps lists of objects.")
     public void wrapList() {
         final Object object = new Object();
@@ -64,7 +63,7 @@ public class HateoasUtilsTest {
      * Check that the unwrapping method correctly unwraps objects.
      */
     @Test
-    @Requirement("?")
+    @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check that the unwrapping method correctly unwraps objects.")
     public void unwrap() {
         final Object expected = new Object();
@@ -78,7 +77,7 @@ public class HateoasUtilsTest {
      * Check that the unwrapping method correctly unwraps objects lists.
      */
     @Test
-    @Requirement("?")
+    @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check that the unwrapping method correctly unwraps objects lists.")
     public void unwrapList() {
         final Object o0 = new Object();

@@ -7,20 +7,25 @@ import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
 
 /**
- *
+ * @author lmieulet
  */
 public interface IJobInfoSystemService {
 
     /**
-     * @param tenantName
-     * @param jobInfoId
+     * @param pTenantName
+     *            the tenant name
+     * @param pJobInfoId
+     *            the jobInfo id
+     * @return the jobInfo
      */
-    JobInfo findJobInfo(final String tenantName, final Long jobInfoId);
+    JobInfo findJobInfo(final String pTenantName, final Long pJobInfoId);
 
     /**
      * @param pTenantId
+     *            the tenant name
      * @param pJobInfo
-     * @return
+     *            the jobInfo id
+     * @return the updated jobInfo
      */
     JobInfo updateJobInfo(String pTenantId, JobInfo pJobInfo);
 
@@ -30,7 +35,10 @@ public interface IJobInfoSystemService {
      * @param pJobInfoId
      *            the jobInfo id
      * @param pJobStatus
-     *            the new jobStatus
+     *            the new jobStatus (succeeded, failed)
+     * @param pTenantName
+     *            the tenant name
+     * @return the updated jobInfo
      */
-    JobInfo updateJobInfoToDone(final Long pJobInfoId, final JobStatus pJobStatus, final String tenantName);
+    JobInfo updateJobInfoToDone(final Long pJobInfoId, final JobStatus pJobStatus, final String pTenantName);
 }

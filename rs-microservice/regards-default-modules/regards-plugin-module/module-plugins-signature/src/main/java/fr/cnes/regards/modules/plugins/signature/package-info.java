@@ -3,6 +3,6 @@
  */
 /**
  * 
- * @author cmertz
+ * @author Christophe Mertz
  */
 package fr.cnes.regards.modules.plugins.signature;

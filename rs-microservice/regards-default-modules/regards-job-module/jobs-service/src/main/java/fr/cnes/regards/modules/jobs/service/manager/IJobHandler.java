@@ -3,24 +3,17 @@
  */
 package fr.cnes.regards.modules.jobs.service.manager;
 
+import java.util.Map;
+
 import fr.cnes.regards.modules.jobs.domain.IEvent;
-import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.StatusInfo;
 
 /**
  * Provide a job pool
+ * 
+ * @author lmieulet
  */
 public interface IJobHandler {
-
-    /**
-     * Store the JobInfo into the database
-     *
-     *
-     * @param pJobInfo
-     *            Store the new jobInfo in the database
-     * @return the status of the new jobInfo
-     */
-    StatusInfo create(JobInfo pJobInfo);
 
     /**
      * Stop the thread pool in the next hours
@@ -63,8 +56,18 @@ public interface IJobHandler {
     void onEvent(IEvent pEvent);
 
     /**
-     * @return
+     * @return the number of concurrent jobs allowed on the same time
      */
     Integer getMaxJobCapacity();
+
+    /**
+     * @return a map with as key the tenant name and the current number of active threads
+     */
+    Map<String, Integer> getNbActiveThreadByTenant();
+
+    /**
+     * @return true if the microservice cannot accept more jobs
+     */
+    boolean isThreadPoolFull();
 
 }

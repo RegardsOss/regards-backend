@@ -16,9 +16,15 @@
 	</parent>
 
 	<dependencies>
+		<!-- Hibernante JPA api -->
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
 			<artifactId>hibernate-jpa-2.1-api</artifactId>
+		</dependency>
+		<!--  Spring JPA transactions -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
 		</dependency>
 	</dependencies>
 

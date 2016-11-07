@@ -12,7 +12,7 @@ import fr.cnes.regards.modules.plugins.signature.IPluginsSignature;
 /**
  * Feign client allowing access to the module with REST requests.
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 @FeignClient(name = "rs-microservice", fallback = PluginsFallback.class)

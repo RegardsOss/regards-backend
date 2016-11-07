@@ -17,6 +17,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -73,6 +74,12 @@ public class MethodAuthorizationService {
     private JWTService jwtService;
 
     /**
+     * Curent microservice name
+     */
+    @Value("${spring.application.name}")
+    private String microserviceName;
+
+    /**
      * Authorities cache that provide granted authorities per tenant and per resource.<br/>
      * Map<Tenant, Map<Resource, List<GrantedAuthority>>>
      */
@@ -106,7 +113,7 @@ public class MethodAuthorizationService {
         grantedAuthoritiesByTenant.clear();
         for (final String tenant : tenantResolver.getAllTenants()) {
             try {
-                jwtService.injectToken(tenant, RootResourceAccessVoter.ROOT_ADMIN_AUHTORITY);
+                jwtService.injectToken(tenant, RoleAuthority.getSysRole(microserviceName));
                 final List<ResourceMapping> resources = authoritiesProvider.getResourcesAccessConfiguration();
                 for (final ResourceMapping resource : resources) {
                     setAuthorities(tenant, resource);
@@ -172,7 +179,7 @@ public class MethodAuthorizationService {
             } else {
                 mappings.add(mapping);
             }
-        } catch (ResourceMappingException e) {
+        } catch (final ResourceMappingException e) {
             // Skip inconsistent resource management
             LOG.warn("Skipping resource management for method \"{}\" on class \"{}\".", pMethod.getName(),
                      pMethod.getDeclaringClass().getCanonicalName());
@@ -267,7 +274,7 @@ public class MethodAuthorizationService {
         }
         return Optional.ofNullable(result);
     }
-    
+
     /**
      * Check if a user can access an annotated method
      *

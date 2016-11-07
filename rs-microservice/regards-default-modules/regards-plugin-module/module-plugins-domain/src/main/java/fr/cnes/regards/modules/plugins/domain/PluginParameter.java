@@ -20,6 +20,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
+import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
@@ -28,15 +29,11 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  *
  * Parameter associated to a plugin configuration <PluginConfiguration>
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 @Entity(name = "T_PLUGIN_PARAMETER_VALUE")
 @SequenceGenerator(name = "pluginParameterSequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_PARAMETER")
 public class PluginParameter implements IIdentifiable<Long> {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginParameterSequence")
-    private Long id;
 
     /**
      * The max size of a {@link String} value
@@ -44,8 +41,16 @@ public class PluginParameter implements IIdentifiable<Long> {
     private static final int MAX_STRING_VALUE = 2048;
 
     /**
+     * Unique id
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginParameterSequence")
+    private Long id;
+
+    /**
      * Parameter name
      */
+    @NotNull
     private String name;
 
     /**
@@ -58,19 +63,21 @@ public class PluginParameter implements IIdentifiable<Long> {
      * {@link PluginConfiguration} parameter is optional
      */
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "PLUGIN_CONF_ID", referencedColumnName = "id", unique = true, nullable = true, insertable = true, updatable = true, foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_CONF"))
+    @JoinColumn(name = "PLUGIN_CONF_ID", referencedColumnName = "id", unique = true, nullable = true, insertable = true,
+            updatable = true, foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_CONF"))
     private PluginConfiguration pluginConfiguration;
 
     /**
      * The parameter is dynamic
      */
-    private Boolean isDynamic = false;
+    private Boolean dynamic = false;
 
     /**
      * The list of values for a dynamic parameters
      */
     @ElementCollection(targetClass = PluginDynamicValue.class)
-    @CollectionTable(name = "dynParamValue", joinColumns = @JoinColumn(name = "ID", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_ID")))
+    @CollectionTable(name = "dynParamValue",
+            joinColumns = @JoinColumn(name = "ID", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_ID")))
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PluginDynamicValue> dynamicsValues;
 
@@ -126,12 +133,12 @@ public class PluginParameter implements IIdentifiable<Long> {
         value = pValue;
     }
 
-    public final Boolean getIsDynamic() {
-        return isDynamic;
+    public final Boolean isDynamic() {
+        return dynamic;
     }
 
     public final void setIsDynamic(Boolean pIsDynamic) {
-        this.isDynamic = pIsDynamic;
+        this.dynamic = pIsDynamic;
     }
 
     public final PluginConfiguration getPluginConfiguration() {

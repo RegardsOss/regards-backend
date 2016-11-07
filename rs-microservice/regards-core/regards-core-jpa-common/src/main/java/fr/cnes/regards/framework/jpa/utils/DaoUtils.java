@@ -24,10 +24,10 @@ import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
  *
  * Tools class for DAO
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public class DaoUtils {
+public final class DaoUtils {
 
     /**
      * Package to scan for DAO Entities and Repositories
@@ -53,16 +53,18 @@ public class DaoUtils {
      * This method check that the classPatch is valid. That the scan packages for instance database and the projects
      * database are not in conflict.
      *
+     * @param pPackageToScan
+     *            package name to scan for JPA entities and repositories
      * @throws MultiDataBasesException
      *
      * @since 1.0-SNAPSHOT
      */
-    public static void checkClassPath(final String packageToScan) throws MultiDataBasesException {
+    public static void checkClassPath(final String pPackageToScan) throws MultiDataBasesException {
 
         LOG.info("Checking classpath for conflicts between instance and projects databases ...");
 
-        final List<Class<?>> instanceClasses = DaoUtils.scanForJpaPackages(packageToScan, InstanceEntity.class, null);
-        final List<Class<?>> projectsClasses = DaoUtils.scanForJpaPackages(packageToScan, Entity.class,
+        final List<Class<?>> instanceClasses = DaoUtils.scanForJpaPackages(pPackageToScan, InstanceEntity.class, null);
+        final List<Class<?>> projectsClasses = DaoUtils.scanForJpaPackages(pPackageToScan, Entity.class,
                                                                            InstanceEntity.class);
         final List<String> instancePackages = new ArrayList<>();
         instanceClasses.forEach(instanceClass -> instancePackages.add(instanceClass.getPackage().getName()));
