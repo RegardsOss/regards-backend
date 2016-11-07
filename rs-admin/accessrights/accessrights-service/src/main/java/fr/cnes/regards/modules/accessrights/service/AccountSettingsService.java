@@ -42,7 +42,7 @@ public class AccountSettingsService implements IAccountSettingsService {
     @Override
     public AccountSettings retrieve() {
         final List<AccountSettings> settings = accountSettingsRepository.findAll();
-        AccountSettings result = null;
+        AccountSettings result;
         if (!settings.isEmpty()) {
             result = settings.get(0);
         } else {

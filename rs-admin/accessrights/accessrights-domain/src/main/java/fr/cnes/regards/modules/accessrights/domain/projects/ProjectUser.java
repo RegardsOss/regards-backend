@@ -34,14 +34,6 @@ import fr.cnes.regards.modules.core.validation.PastOrNow;
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "SEQ_PROJECT_USER")
 public class ProjectUser implements IIdentifiable<Long> {
 
-    // /**
-    // * Temporary value to automatically manage ids
-    // */
-    // // TODO : Remove this useless attribute and add the id management in stub for test
-    // @Transient
-    // @Min(0L)
-    // private static Long maxProjectUserId_ = 0L;
-
     /**
      * The id
      */
@@ -107,8 +99,6 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     public ProjectUser() {
         super();
-        // id = maxProjectUserId_;
-        // maxProjectUserId_++;
         permissions = new ArrayList<>();
         metaData = new ArrayList<>();
         status = UserStatus.WAITING_ACCESS;

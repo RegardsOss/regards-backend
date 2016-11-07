@@ -129,9 +129,10 @@ public class ProjectUsersController extends AbstractController implements IProje
     }
 
     @Override
+    @ResponseBody
     @ResourceAccess(description = "remove all the specific access rights")
-    public @ResponseBody ResponseEntity<Void> removeProjectUserAccessRights(
-            @PathVariable("user_login") final String pUserLogin) throws EntityNotFoundException {
+    public ResponseEntity<Void> removeProjectUserAccessRights(@PathVariable("user_login") final String pUserLogin)
+            throws EntityNotFoundException {
         projectUserService.removeUserAccessRights(pUserLogin);
         return new ResponseEntity<>(HttpStatus.OK);
     }

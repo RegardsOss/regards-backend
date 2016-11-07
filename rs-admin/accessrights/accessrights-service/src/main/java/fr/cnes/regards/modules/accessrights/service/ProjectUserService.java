@@ -219,7 +219,6 @@ public class ProjectUserService implements IProjectUserService {
             LOG.debug("Could not retrieve permissions from role", e);
         }
         return merged;
-        // return merged.stream().filter(RegardsStreamUtils.distinctByKey(r -> r.getId())).collect(Collectors.toList());
     }
 
     @Override
