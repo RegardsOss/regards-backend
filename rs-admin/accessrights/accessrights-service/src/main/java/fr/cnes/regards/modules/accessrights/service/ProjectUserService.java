@@ -3,9 +3,6 @@ package fr.cnes.regards.modules.accessrights.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,6 +23,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 
 /**
  * {@link IProjectUserService} implementation
@@ -157,8 +155,8 @@ public class ProjectUserService implements IProjectUserService {
 
         try (Stream<ResourcesAccess> previous = user.getPermissions().stream();
                 Stream<ResourcesAccess> updated = pUpdatedUserAccessRights.stream()) {
-            user.setPermissions(Stream.concat(updated, previous).filter(distinctByKey(r -> r.getId()))
-                    .collect(Collectors.toList()));
+            user.setPermissions(Stream.concat(updated, previous)
+                    .filter(RegardsStreamUtils.distinctByKey(r -> r.getId())).collect(Collectors.toList()));
         }
 
         save(user);
@@ -241,28 +239,6 @@ public class ProjectUserService implements IProjectUserService {
     private void save(final ProjectUser pProjectUser) {
         pProjectUser.setLastUpdate(LocalDateTime.now());
         projectUserRepository.save(pProjectUser);
-    }
-
-    /**
-     * Filter in order to remove doubles (same as distinct) but with custom key extraction.
-     * <p>
-     * Warning: Keeps the first seen, so the order does matter!
-     *
-     * For example use as: persons.stream().filter(distinctByKey(p -> p.getName());
-     *
-     * Removes doubles based on person.name attribute.
-     *
-     *
-     * @param pKeyExtractor
-     *            The
-     * @param <T>
-     *            The type
-     * @return A predicate
-     * @see http://stackoverflow.com/questions/23699371/java-8-distinct-by-property
-     */
-    private static <T> Predicate<T> distinctByKey(final Function<? super T, ?> pKeyExtractor) {
-        final Map<Object, Boolean> seen = new ConcurrentHashMap<>();
-        return t -> seen.putIfAbsent(pKeyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
 }
