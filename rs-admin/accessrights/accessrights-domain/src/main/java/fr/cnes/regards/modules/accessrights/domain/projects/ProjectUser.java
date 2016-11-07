@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -25,6 +26,7 @@ import org.hibernate.validator.constraints.Email;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUserListener;
 import fr.cnes.regards.modules.core.validation.PastOrNow;
 
 /**
@@ -33,6 +35,7 @@ import fr.cnes.regards.modules.core.validation.PastOrNow;
  * @author CS
  */
 @Entity(name = "T_PROJECT_USER")
+@EntityListeners(ProjectUserListener.class)
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "SEQ_PROJECT_USER")
 public class ProjectUser implements IIdentifiable<Long> {
 
@@ -53,14 +56,14 @@ public class ProjectUser implements IIdentifiable<Long> {
     private String email;
 
     /**
-     * The last connection date. Is json ignored because this date is handled by the system and not the client.
+     * The last connection date
      */
     @PastOrNow
     @Column(name = "lastConnection")
     private LocalDateTime lastConnection;
 
     /**
-     * The last update date. Is json ignored because this date is handled by the system and not the client.
+     * The last update date
      */
     @PastOrNow
     @Column(name = "lastUpdate")
