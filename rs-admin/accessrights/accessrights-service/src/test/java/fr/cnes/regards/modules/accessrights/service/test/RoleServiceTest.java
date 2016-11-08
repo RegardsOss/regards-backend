@@ -34,6 +34,11 @@ import fr.cnes.regards.modules.accessrights.service.RoleService;
 public class RoleServiceTest {
 
     /**
+     * A name
+     */
+    private static final String NAME = "name";
+
+    /**
      * The tested service
      */
     private IRoleService roleService;
@@ -60,7 +65,7 @@ public class RoleServiceTest {
     @Purpose("Check that the allows to retrieve roles.")
     public void retrieveRoleList() {
         final List<Role> expected = new ArrayList<>();
-        final Role role0 = new Role(0L, "name", null, new ArrayList<>(), new ArrayList<>());
+        final Role role0 = new Role(0L, NAME, null, new ArrayList<>(), new ArrayList<>());
         final Role role1 = new Role(1L, "otherName", role0, new ArrayList<>(), new ArrayList<>());
         expected.add(role0);
         expected.add(role1);
@@ -83,7 +88,7 @@ public class RoleServiceTest {
     @Purpose("Check that the allows to retrieve a single role.")
     public void retrieveRole() {
         final Long id = 0L;
-        final Role expected = new Role(id, "name", null, new ArrayList<>(), new ArrayList<>());
+        final Role expected = new Role(id, NAME, null, new ArrayList<>(), new ArrayList<>());
 
         Mockito.when(roleRepository.findOne(id)).thenReturn(expected);
         final Role actual = roleService.retrieveRole(id);
@@ -188,7 +193,7 @@ public class RoleServiceTest {
         final Long passedRoleId = 0L;
 
         // Define the previous role in db
-        final Role previousRole = new Role(passedRoleId, "name", null, new ArrayList<>(), new ArrayList<>());
+        final Role previousRole = new Role(passedRoleId, NAME, null, new ArrayList<>(), new ArrayList<>());
         Mockito.when(roleRepository.exists(passedRoleId)).thenReturn(true);
 
         // Define the passed role in PUT
@@ -222,7 +227,7 @@ public class RoleServiceTest {
     @Purpose("Check that the system does not remove a native role.")
     public void removeRoleNative() throws OperationForbiddenException {
         final Long id = 0L;
-        final Role roleNative = new Role(id, "name", null, new ArrayList<>(), new ArrayList<>(), true, true);
+        final Role roleNative = new Role(id, NAME, null, new ArrayList<>(), new ArrayList<>(), true, true);
 
         // Mock repo
         Mockito.when(roleRepository.exists(id)).thenReturn(true);
@@ -287,7 +292,7 @@ public class RoleServiceTest {
     @Purpose("Check that the system allows to add resources accesses on a role.")
     public void updateRoleResourcesAccessAddingResourcesAccess() throws EntityNotFoundException {
         final Long id = 0L;
-        final Role role = new Role(id, "name", null, new ArrayList<>(), new ArrayList<>());
+        final Role role = new Role(id, NAME, null, new ArrayList<>(), new ArrayList<>());
 
         // Mock
         Mockito.when(roleRepository.exists(id)).thenReturn(true);
@@ -302,7 +307,7 @@ public class RoleServiceTest {
         roleService.updateRoleResourcesAccess(id, resourcesAccesses);
 
         // Prepare the expected result
-        final Role expected = new Role(id, "name", null, resourcesAccesses, new ArrayList<>());
+        final Role expected = new Role(id, NAME, null, resourcesAccesses, new ArrayList<>());
         Mockito.when(roleRepository.findOne(id)).thenReturn(expected);
 
         // Check
@@ -325,7 +330,7 @@ public class RoleServiceTest {
         final Long roleId = 0L;
         final List<ResourcesAccess> initRAs = new ArrayList<>();
         initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));
-        final Role role = new Role(0L, "name", null, initRAs, new ArrayList<>());
+        final Role role = new Role(0L, NAME, null, initRAs, new ArrayList<>());
 
         Mockito.when(roleRepository.exists(roleId)).thenReturn(true);
         Mockito.when(roleRepository.findOne(roleId)).thenReturn(role);
@@ -341,7 +346,7 @@ public class RoleServiceTest {
         Assert.assertTrue(!passedRAs.get(0).getVerb().equals(initRAs.get(0).getVerb()));
 
         // Perform the update
-        Role updatedRole = new Role(0L, "name", null, passedRAs, new ArrayList<>());
+        Role updatedRole = new Role(0L, NAME, null, passedRAs, new ArrayList<>());
         Mockito.when(roleRepository.save(updatedRole)).thenReturn(updatedRole);
         updatedRole = roleService.updateRoleResourcesAccess(roleId, passedRAs);
 
@@ -366,7 +371,7 @@ public class RoleServiceTest {
         final Long id = 0L;
         final List<ResourcesAccess> resourcesAccesses = new ArrayList<>();
         resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));
-        final Role role = new Role(id, "name", null, resourcesAccesses, new ArrayList<>());
+        final Role role = new Role(id, NAME, null, resourcesAccesses, new ArrayList<>());
         Assert.assertTrue(!role.getPermissions().isEmpty());
 
         // Mock
