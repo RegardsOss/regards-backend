@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -21,8 +23,6 @@ import fr.cnes.regards.modules.accessrights.service.IAccessRequestService;
 import fr.cnes.regards.modules.accessrights.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.RoleService;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 
 /**
  * Stubbed {@link IAccessRequestService} implementation

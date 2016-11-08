@@ -8,14 +8,14 @@ import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 
 /**
  * {@link IAccessRequestService} implementation

@@ -5,10 +5,10 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 
 /**
  * {@link IAccessSettingsService} implementation

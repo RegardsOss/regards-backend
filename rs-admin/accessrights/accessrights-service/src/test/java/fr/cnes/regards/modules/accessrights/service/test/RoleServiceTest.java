@@ -12,6 +12,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -21,10 +25,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.RoleService;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.modules.core.exception.OperationForbiddenException;
 
 /**
  * Test class for {@link RoleService}.

@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -21,8 +23,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
 import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 
 /**

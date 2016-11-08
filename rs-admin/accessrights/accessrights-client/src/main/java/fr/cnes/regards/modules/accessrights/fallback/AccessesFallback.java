@@ -14,12 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.IAccessesClient;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 
 /**
  *

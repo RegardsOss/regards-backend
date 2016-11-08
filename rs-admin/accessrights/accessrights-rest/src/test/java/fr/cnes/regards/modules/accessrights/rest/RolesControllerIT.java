@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -33,7 +34,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.IRoleService;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
 /**
  *

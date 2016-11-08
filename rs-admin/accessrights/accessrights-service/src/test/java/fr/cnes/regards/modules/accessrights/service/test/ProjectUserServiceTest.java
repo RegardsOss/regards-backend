@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -31,8 +33,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.ProjectUserService;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
  * Test class for {@link ProjectUserService}.

@@ -18,6 +18,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -26,16 +30,12 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
  * {@link IAccountService} implementation.
  *
  * @author Xavier-Alexandre Brochard
- * @auhtor Sébastien Binda
+ * @author Sébastien Binda
  */
 @Service
 @InstanceTransactional

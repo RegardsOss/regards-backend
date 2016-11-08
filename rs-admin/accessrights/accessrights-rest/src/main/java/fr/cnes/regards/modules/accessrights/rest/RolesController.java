@@ -17,23 +17,23 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.GlobalControllerAdvice;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.IRoleService;
 import fr.cnes.regards.modules.accessrights.signature.IRolesSignature;
-import fr.cnes.regards.modules.core.annotation.ModuleInfo;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.modules.core.exception.OperationForbiddenException;
-import fr.cnes.regards.modules.core.rest.AbstractController;
 
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class RolesController extends AbstractController implements IRolesSignature {
+public class RolesController extends GlobalControllerAdvice implements IRolesSignature {
 
     @Autowired
     private IRoleService roleService;
