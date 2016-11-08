@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
