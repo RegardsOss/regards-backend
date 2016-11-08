@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -20,7 +20,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
- * 
+ *
  * @since 1.0-SNAPSHOT
  */
 @Service
@@ -43,7 +43,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     /**
      * The constructor.
-     * 
+     *
      * @param pProjectRepository
      *            The JPA {@link Project} repository.
      * @param pProjectConnectionRepository

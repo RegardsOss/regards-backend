@@ -8,10 +8,10 @@ package fr.cnes.regards.modules.project.service;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidEntityException;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
- * 
+ *
  * @since 1.0-SNAPSHOT
  */
 public interface IProjectService {
