@@ -35,14 +35,14 @@ import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 public class RoleService implements IRoleService {
 
     /**
-     * CRUD repository managing {@link Role}s. Autowired by Spring.
-     */
-    private final IRoleRepository roleRepository;
-
-    /**
      * Error message
      */
     private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
+
+    /**
+     * CRUD repository managing {@link Role}s. Autowired by Spring.
+     */
+    private final IRoleRepository roleRepository;
 
     /**
      * The default roles. Autowired by Spring.

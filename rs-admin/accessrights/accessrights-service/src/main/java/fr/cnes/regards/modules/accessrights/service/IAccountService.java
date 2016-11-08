@@ -37,24 +37,6 @@ public interface IAccountService {
      */
     Account createAccount(Account pNewAccount) throws AlreadyExistingException;
 
-    // /**
-    // * Retrieve the account settings
-    // *
-    // * @return The account settings
-    // */
-    // List<String> retrieveAccountSettings();
-    //
-    // /**
-    // * Update the setting managing the account.
-    // *
-    // * @param pUpdatedAccountSetting
-    // * The new account setting
-    // * @throws InvalidValueException
-    // * Thrown when the passed <code>pUpdatedAccountSetting</code> is different from <code>manual</code> or
-    // * <code>auto-accept</code>
-    // */
-    // void updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException;
-
     /**
      * Return <code>true</code> if an {@link Account} of passed <code>id</code> exists.
      *
