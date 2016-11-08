@@ -6,8 +6,8 @@ package fr.cnes.regards.modules.notification.service;
 import java.util.List;
 import java.util.stream.Stream;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
