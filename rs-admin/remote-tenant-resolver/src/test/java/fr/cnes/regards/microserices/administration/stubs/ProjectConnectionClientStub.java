@@ -6,7 +6,6 @@ package fr.cnes.regards.microserices.administration.stubs;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
@@ -19,10 +18,9 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  *
  * Stub class for administration service client.
  *
- * @author sbinda
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@Component
 public class ProjectConnectionClientStub implements IProjectConnectionClient {
 
     @Override

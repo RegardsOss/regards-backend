@@ -8,6 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +28,7 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
  *
  * Fallback for Accounts Feign client. This implementation is used in case of error during feign client calls.
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Component
@@ -51,7 +52,7 @@ public class AccountsFallback implements IAccountsClient {
     @Override
     public ResponseEntity<List<Resource<Account>>> retrieveAccountList() {
         LOG.error(fallBackErrorMessage);
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /*
@@ -64,7 +65,7 @@ public class AccountsFallback implements IAccountsClient {
     public ResponseEntity<Resource<Account>> createAccount(final Account pNewAccount)
             throws AlreadyExistingException, InvalidEntityException {
         LOG.error(fallBackErrorMessage);
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /*
@@ -75,7 +76,7 @@ public class AccountsFallback implements IAccountsClient {
     @Override
     public ResponseEntity<Resource<Account>> retrieveAccount(final Long pAccountId) throws EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /*
@@ -88,7 +89,7 @@ public class AccountsFallback implements IAccountsClient {
     public ResponseEntity<Void> updateAccount(final Long pAccountId, final Account pUpdatedAccount)
             throws EntityNotFoundException, InvalidValueException {
         LOG.error(fallBackErrorMessage);
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /*
@@ -99,7 +100,7 @@ public class AccountsFallback implements IAccountsClient {
     @Override
     public ResponseEntity<Void> removeAccount(final Long pAccountId) throws EntityException {
         LOG.error(fallBackErrorMessage);
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /*
@@ -112,7 +113,7 @@ public class AccountsFallback implements IAccountsClient {
     public ResponseEntity<Void> unlockAccount(final Long pAccountId, final String pUnlockCode)
             throws InvalidValueException, EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /*
@@ -125,7 +126,7 @@ public class AccountsFallback implements IAccountsClient {
     public ResponseEntity<Void> changeAccountPassword(final Long pAccountId, final String pResetCode,
             final String pNewPassword) throws InvalidValueException, EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /*
@@ -138,7 +139,7 @@ public class AccountsFallback implements IAccountsClient {
     public ResponseEntity<Void> sendAccountCode(final String pEmail, final CodeType pType)
             throws EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /*
@@ -149,7 +150,7 @@ public class AccountsFallback implements IAccountsClient {
     @Override
     public ResponseEntity<Resource<AccountSettings>> retrieveAccountSettings() {
         LOG.error(fallBackErrorMessage);
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /*
@@ -162,7 +163,7 @@ public class AccountsFallback implements IAccountsClient {
     @Override
     public ResponseEntity<Void> updateAccountSetting(final AccountSettings pUpdatedAccountSetting) {
         LOG.error(fallBackErrorMessage);
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     /*
@@ -175,7 +176,7 @@ public class AccountsFallback implements IAccountsClient {
     public ResponseEntity<Void> validatePassword(final String pLogin, final String pPassword)
             throws EntityNotFoundException {
         LOG.error(fallBackErrorMessage);
-        return null;
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }

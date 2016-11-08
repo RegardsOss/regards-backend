@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -11,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
@@ -26,7 +28,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-public class MicroserviceAutoConfigure {
+public class MicroserviceAutoConfiguration {
 
     /**
      * Current Microservice name
@@ -35,21 +37,29 @@ public class MicroserviceAutoConfigure {
     private String microserviceName;
 
     /**
+     * JWT Security service
+     */
+    @Autowired
+    private JWTService jwtService;
+
+    /**
      *
      * multintenantResolver
      *
-     * @param pAdminProjectClient
+     * @param pAdminProjectConnectionClient
+     *            Administraction Rest client
+     * @param pAdminProjectsClient
      *            Administration Rest Client
      * @return IMultitenantResolver
      * @since 1.0-SNAPSHOT
      */
     @Bean
     @ConditionalOnMissingBean(ITenantConnectionResolver.class)
-    @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = false)
+    @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     ITenantConnectionResolver multintenantResolver(final IProjectConnectionClient pAdminProjectConnectionClient,
             final IProjectsClient pAdminProjectsClient) {
         return new MicroserviceTenantConnectionResolver(pAdminProjectConnectionClient, pAdminProjectsClient,
-                microserviceName);
+                microserviceName, jwtService);
     }
 
     /**
@@ -65,7 +75,7 @@ public class MicroserviceAutoConfigure {
      */
     @Bean
     @ConditionalOnMissingBean(IAuthoritiesProvider.class)
-    @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = false)
+    @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     IAuthoritiesProvider authoritiesProvider(final IRolesClient pRoleClient, final IResourcesClient pResourcesClient) {
         return new MicroserviceAuthoritiesProvider(pRoleClient, pResourcesClient);
     }

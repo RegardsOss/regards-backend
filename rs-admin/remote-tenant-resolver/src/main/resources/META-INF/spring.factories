@@ -1,2 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.microservices.administration.MicroserviceAutoConfigure
+fr.cnes.regards.microservices.administration.MicroserviceClientsAutoConfiguration,\
+fr.cnes.regards.microservices.administration.MicroserviceAutoConfiguration
