@@ -18,8 +18,12 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>microservice-regards</artifactId>
-			<version>${project.version}</version>
 			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-integration-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

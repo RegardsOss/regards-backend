@@ -19,5 +19,9 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-utils</artifactId>
+		</dependency>
 	</dependencies>
 </project>

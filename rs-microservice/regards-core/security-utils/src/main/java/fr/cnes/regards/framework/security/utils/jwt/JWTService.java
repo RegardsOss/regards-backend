@@ -73,6 +73,10 @@ public class JWTService {
     @Value("${jwt.secret}")
     private String secret;
 
+    public String getActualTenant() {
+        return ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication()).getTenant();
+    }
+
     public void injectToken(final String pTenant, final String pRole) throws JwtException {
         String token = null;
         if (scopesTokensMap_.get(pTenant) != null) {
