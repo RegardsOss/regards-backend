@@ -4,11 +4,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<name>REGARDS Authentication starter</name>
+	<name>REGARDS Authentication core</name>
 	<groupId>fr.cnes.regards.cloud.gateway</groupId>
-	<artifactId>authentication-starter</artifactId>
+	<artifactId>authentication-core</artifactId>
 	<version>1.0-SNAPSHOT</version>
-	<description>REGARDS Cloud - Gateway Authentication starter</description>
+	<description>REGARDS Cloud - Gateway Authentication autoconfigure</description>
 	<packaging>jar</packaging>
 
 	<parent>
@@ -59,11 +59,6 @@
 			<groupId>fr.cnes.regards.cloud.gateway</groupId>
 			<artifactId>authentication-plugins</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.cloud.gateway</groupId>
-			<artifactId>authentication-core</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<!-- Tests -->
 		<dependency>

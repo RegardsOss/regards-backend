@@ -23,6 +23,19 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.directory.api</groupId>
+			<artifactId>api-ldap-client-all</artifactId>
+			<version>1.0.0-M15</version>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.plugins</groupId>
+			<artifactId>module-plugins-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-client</artifactId>
+		</dependency>
 	</dependencies>
 </project>
 

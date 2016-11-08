@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.cloud.gateway.authentication.plugins;
 
-import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 
 /**
  *
@@ -29,19 +29,6 @@ public interface IAuthenticationPlugin {
      * @return Authentication status UserStatus
      * @since 1.0-SNAPSHOT
      */
-    AuthenticateStatus authenticate(String pName, String pPassword, String pScope);
-
-    /**
-     *
-     * Retrieve user role
-     *
-     * @param pName
-     *            user login
-     * @param pScope
-     *            user project
-     * @return Project User role
-     * @since 1.0-SNAPSHOT
-     */
-    UserDetails retreiveUserDetails(String pName, String pScope) throws UserNotFoundException;
+    AuthenticationPluginResponse authenticate(String pName, String pPassword, String pScope);
 
 }
