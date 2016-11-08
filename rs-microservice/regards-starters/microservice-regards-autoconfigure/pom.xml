@@ -18,7 +18,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>microservice-regards</artifactId>
-			<version>${project.version}</version>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>

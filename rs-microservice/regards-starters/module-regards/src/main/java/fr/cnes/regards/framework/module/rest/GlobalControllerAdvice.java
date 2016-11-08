@@ -7,10 +7,11 @@ import java.util.NoSuchElementException;
 
 import javax.validation.ValidationException;
 
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -30,6 +31,7 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  * @since 1.1-SNAPSHOT
  */
 @RestControllerAdvice(annotations = RestController.class)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalControllerAdvice {
 
     @ExceptionHandler(ModuleException.class)
@@ -47,45 +49,41 @@ public class GlobalControllerAdvice {
      * Exception handler returning the code 404 when a requested entity does not exists.
      */
     @ExceptionHandler(EntityNotFoundException.class)
-    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
-    public void dataNotFound() {
-        // Nothing to do. Just throw the exception.
+    public ResponseEntity<ServerErrorResponse> dataNotFound(EntityNotFoundException pException) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
     /**
      * Exception handler returning the code 404 when an element accessed does not exists (for example in a stream).
      */
     @ExceptionHandler(NoSuchElementException.class)
-    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Data Not Found")
-    public void noSuchElement() {
-        // Nothing to do. Just throw the exception.
+    public ResponseEntity<ServerErrorResponse> noSuchElement(NoSuchElementException pException) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
     /**
      * Exception handler returning the code 409 when trying to create an already existing entity.
      */
     @ExceptionHandler(AlreadyExistingException.class)
-    @ResponseStatus(value = HttpStatus.CONFLICT)
-    public void dataAlreadyExisting() {
-        // Nothing to do. Just throw the exception.
+    public ResponseEntity<ServerErrorResponse> dataAlreadyExisting(AlreadyExistingException pException) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pException.getMessage()));
     }
 
     /**
      * Exception handler returning the code 400 when the request is somehow malformed or invalid.
      */
     @ExceptionHandler(InvalidValueException.class)
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public void invalidValue() {
-        // Nothing to do. Just throw the exception.
+    public ResponseEntity<ServerErrorResponse> invalidValue(InvalidValueException pException) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(pException.getMessage()));
     }
 
     /**
      * Exception handler returning the code 422 when an entity in request violates its validation constraints.
      */
     @ExceptionHandler(InvalidEntityException.class)
-    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "Data does not respect validation constraints")
-    public void manualValidation() {
-        // Nothing to do. Just throw the exception.
+    public ResponseEntity<ServerErrorResponse> manualValidation(InvalidEntityException pException) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ServerErrorResponse(pException.getMessage()));
     }
 
     /**
@@ -93,8 +91,8 @@ public class GlobalControllerAdvice {
      * Thrown by Hibernate.
      */
     @ExceptionHandler(ValidationException.class)
-    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "Data does not respect validation constraints")
-    public void hibernateValidation() {
-        // Nothing to do. Just throw the exception.
+    public ResponseEntity<ServerErrorResponse> hibernateValidation(ValidationException pException) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ServerErrorResponse(pException.getMessage()));
     }
 }
