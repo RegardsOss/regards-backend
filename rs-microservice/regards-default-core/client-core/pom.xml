@@ -25,7 +25,6 @@
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
-			<version>0.21.0.RELEASE</version>
 		</dependency>
 
 		<!-- Spring Web Mvc -->
@@ -53,6 +52,10 @@
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
 			<artifactId>feign-slf4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.netflix.hystrix</groupId>
+			<artifactId>hystrix-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
