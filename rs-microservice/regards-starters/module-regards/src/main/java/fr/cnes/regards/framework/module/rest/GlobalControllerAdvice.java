@@ -20,6 +20,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 
 /**
@@ -33,13 +34,13 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 public class GlobalControllerAdvice {
 
     @ExceptionHandler(ModuleException.class)
-    public ResponseEntity<ServerErrorResponse> handleModelException(ModuleException pEx) {
+    public ResponseEntity<ServerErrorResponse> handleModelException(final ModuleException pEx) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ServerErrorResponse("Internal server error"));
     }
 
     @ExceptionHandler(AlreadyExistsException.class)
-    public ResponseEntity<ServerErrorResponse> handleModelException(AlreadyExistsException pEx) {
+    public ResponseEntity<ServerErrorResponse> handleModelException(final AlreadyExistsException pEx) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pEx.getMessage()));
     }
 
@@ -95,6 +96,16 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "Data does not respect validation constraints")
     public void hibernateValidation() {
+        // Nothing to do. Just throw the exception.
+    }
+
+    /**
+     * Exception handler returning the code 403 when an operation on an entity is forbidden.<br>
+     * Thrown by Hibernate.
+     */
+    @ExceptionHandler(OperationForbiddenException.class)
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    public void operationForbidden() {
         // Nothing to do. Just throw the exception.
     }
 }
