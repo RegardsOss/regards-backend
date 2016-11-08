@@ -4,29 +4,24 @@
 package fr.cnes.regards.modules.access.rest;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import javax.naming.OperationNotSupportedException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 import fr.cnes.regards.modules.access.service.INavigationContextService;
 import fr.cnes.regards.modules.access.signature.INavigationContextSignature;
-import fr.cnes.regards.modules.core.annotation.ModuleInfo;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.rest.AbstractController;
 
 /**
  * REST controller for the microservice Access
@@ -37,7 +32,7 @@ import fr.cnes.regards.modules.core.rest.AbstractController;
 @RestController
 @ModuleInfo(name = "navigation context", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class NavigationContextController extends AbstractController implements INavigationContextSignature {
+public class NavigationContextController implements INavigationContextSignature {
 
     @Autowired
     INavigationContextService service;
@@ -52,23 +47,6 @@ public class NavigationContextController extends AbstractController implements I
         super();
         service = pNavigationContextService;
     }
-
-    // TODO CMZ à virer
-    @ExceptionHandler(AlreadyExistingException.class)
-    @ResponseStatus(value = HttpStatus.CONFLICT)
-    public void dataAlreadyExisting() {
-    }
-
-    @ExceptionHandler(OperationNotSupportedException.class)
-    @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED)
-    public void operationNotSupported() {
-    }
-
-    @ExceptionHandler(NoSuchElementException.class)
-    @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED)
-    public void noSuchElement() {
-    }
-    // TODO CMZ à virer
 
     @Override
     public ResponseEntity<Resource<NavigationContext>> load(@PathVariable("navCtxId") Long pNavCtxId)

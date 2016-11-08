@@ -25,9 +25,9 @@
 	</dependency>
 	<!--  Netflix Feign REST Client -->
 	<dependency>
-    	<groupId>com.netflix.feign</groupId>
-    	<artifactId>feign-core</artifactId>
-    </dependency>
+		<groupId>fr.cnes.regards.framework</groupId>
+		<artifactId>module-regards-starter</artifactId>
+	</dependency>
   </dependencies>
  
 </project>
