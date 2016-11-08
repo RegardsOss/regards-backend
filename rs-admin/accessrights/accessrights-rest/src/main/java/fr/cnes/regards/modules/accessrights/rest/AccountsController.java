@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.GlobalControllerAdvice;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -32,9 +31,8 @@ import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsServ
 import fr.cnes.regards.modules.accessrights.signature.IAccountsSignature;
 
 @RestController
-@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
-public class AccountsController extends GlobalControllerAdvice implements IAccountsSignature {
+@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+public class AccountsController implements IAccountsSignature {
 
     @Autowired
     private IAccountService accountService;
@@ -96,10 +94,9 @@ public class AccountsController extends GlobalControllerAdvice implements IAccou
     }
 
     @Override
-    @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code",
-            name = "")
-    public ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") final Long pAccountId,
-            @PathVariable("reset_code") final String pResetCode, @Valid @RequestBody final String pNewPassword)
+    @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code", name = "")
+    public ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") final Long accountId,
+            @PathVariable("reset_code") final String resetCode, @Valid @RequestBody final String pNewPassword)
             throws EntityNotFoundException, InvalidValueException {
         accountService.changeAccountPassword(pAccountId, pResetCode, pNewPassword);
         return new ResponseEntity<>(HttpStatus.OK);

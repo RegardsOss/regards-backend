@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.GlobalControllerAdvice;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.notification.domain.Notification;
@@ -34,9 +33,8 @@ import fr.cnes.regards.modules.notification.signature.INotificationSignature;
  *
  */
 @RestController
-@ModuleInfo(name = "notification", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
-public class NotificationController extends GlobalControllerAdvice implements INotificationSignature {
+@ModuleInfo(name = "notification", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+public class NotificationController implements INotificationSignature {
 
     /**
      * The service responsible for managing notifications
@@ -70,8 +68,7 @@ public class NotificationController extends GlobalControllerAdvice implements IN
      * notification.domain.NotificationDTO)
      */
     @Override
-    @ResourceAccess(description = "Define the endpoint for sending an notification to recipients",
-            name = "notification")
+    @ResourceAccess(description = "Define the endpoint for sending an notification to recipients", name = "notification")
     public ResponseEntity<Notification> createNotification(@Valid @RequestBody final NotificationDTO pDto) {
         final Notification notification = notificationService.createNotification(pDto);
         return new ResponseEntity<>(notification, HttpStatus.CREATED);
@@ -120,8 +117,7 @@ public class NotificationController extends GlobalControllerAdvice implements IN
      * @see fr.cnes.regards.modules.notification.signature.INotificationSignature#retrieveNotificationSettings()
      */
     @Override
-    @ResourceAccess(description = "Define the endpoint for retrieving the notification settings for the logged user",
-            name = "notification")
+    @ResourceAccess(description = "Define the endpoint for retrieving the notification settings for the logged user", name = "notification")
     public ResponseEntity<NotificationSettings> retrieveNotificationSettings() {
         final NotificationSettings settings = notificationSettingsService.retrieveNotificationSettings();
         return new ResponseEntity<>(settings, HttpStatus.OK);

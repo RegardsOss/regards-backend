@@ -37,8 +37,7 @@ import fr.cnes.regards.modules.accessrights.signature.IProjectUsersSignature;
  *
  */
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 public class ProjectUsersController implements IProjectUsersSignature {
 
     @Autowired
