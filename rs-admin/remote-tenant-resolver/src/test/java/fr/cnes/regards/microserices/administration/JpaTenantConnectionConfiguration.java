@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.microserices.administration;
 
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -10,6 +12,7 @@ import org.springframework.context.annotation.PropertySource;
 
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
 import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
+import fr.cnes.regards.microservices.administration.MicroserviceClientsAutoConfiguration;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.fallback.ResourcesFallback;
@@ -23,10 +26,11 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
  *
  * Test configuratiob class
  *
- * @author sbinda
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Configuration
+@EnableAutoConfiguration(exclude = { MicroserviceClientsAutoConfiguration.class, DataSourceAutoConfiguration.class })
 @PropertySource("classpath:dao.properties")
 public class JpaTenantConnectionConfiguration {
 

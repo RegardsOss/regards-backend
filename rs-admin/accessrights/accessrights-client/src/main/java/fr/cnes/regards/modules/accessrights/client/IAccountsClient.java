@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.accessrights.client;
 
 import fr.cnes.regards.client.core.annotation.RestClient;
+import fr.cnes.regards.modules.accessrights.fallback.AccountsFallback;
 import fr.cnes.regards.modules.accessrights.signature.IAccountsSignature;
 
 /**
@@ -15,7 +16,7 @@ import fr.cnes.regards.modules.accessrights.signature.IAccountsSignature;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin", fallback = AccountsFallback.class)
 public interface IAccountsClient extends IAccountsSignature {
 
 }

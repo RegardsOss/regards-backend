@@ -19,10 +19,6 @@
 			<groupId>fr.cnes.regards.modules.notification</groupId>
 			<artifactId>notification-domain</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-jpa</artifactId>
-		</dependency>
 		<!-- Tests dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
