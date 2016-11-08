@@ -6,8 +6,6 @@ package fr.cnes.regards.framework.microservice.manager;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.stereotype.Component;
-
 /**
  *
  * Class containing the knowledge about projects which are in maintenance
@@ -15,7 +13,6 @@ import org.springframework.stereotype.Component;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@Component
 public final class MaintenanceManager {
 
     /**

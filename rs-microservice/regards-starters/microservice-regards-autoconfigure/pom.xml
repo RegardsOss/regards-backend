@@ -20,6 +20,11 @@
 			<artifactId>microservice-regards</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-integration-test</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>

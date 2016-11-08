@@ -102,8 +102,7 @@ public class GlobalControllerAdvice {
      * Thrown by Hibernate.
      */
     @ExceptionHandler(OperationForbiddenException.class)
-    @ResponseStatus(value = HttpStatus.FORBIDDEN)
-    public void operationForbidden() {
-        // Nothing to do. Just throw the exception.
+    public ResponseEntity<ServerErrorResponse> operationForbidden(final OperationForbiddenException pException) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
     }
 }
