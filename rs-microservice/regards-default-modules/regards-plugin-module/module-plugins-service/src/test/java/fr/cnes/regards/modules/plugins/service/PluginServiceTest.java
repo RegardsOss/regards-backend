@@ -85,7 +85,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     @Test
-    public void getPluginTypes() {
+    public void getPluginOneType() {
         final List<PluginMetaData> plugins = pluginServiceMocked.getPluginsByType(IComplexInterfacePlugin.class);
 
         Assert.assertNotNull(plugins);

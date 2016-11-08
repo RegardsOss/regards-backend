@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.modules.core.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.jobs.domain.Output;

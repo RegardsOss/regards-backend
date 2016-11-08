@@ -6,7 +6,7 @@
 
 	<artifactId>hateoas-regards</artifactId>
 	<version>0.0.0-SNAPSHOT</version>
-	<description>REGARDS security starter</description>
+	<description>hateoas</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>

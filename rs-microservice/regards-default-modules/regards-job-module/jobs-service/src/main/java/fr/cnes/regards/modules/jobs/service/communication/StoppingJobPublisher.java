@@ -3,9 +3,6 @@
  */
 package fr.cnes.regards.modules.jobs.service.communication;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
@@ -15,11 +12,6 @@ import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
  * @author lmieulet
  */
 public class StoppingJobPublisher implements IStoppingJobPublisher {
-
-    /**
-     * Logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(StoppingJobPublisher.class);
 
     /**
      * Allows to publish such event

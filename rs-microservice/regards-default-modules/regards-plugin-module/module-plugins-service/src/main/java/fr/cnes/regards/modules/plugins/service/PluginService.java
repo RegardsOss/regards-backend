@@ -97,9 +97,13 @@ public class PluginService implements IPluginService {
         final List<PluginMetaData> pluginAvailables = new ArrayList<>();
 
         plugins.forEach((pKey, pValue) -> {
-            if (pInterfacePluginType == null || (pInterfacePluginType != null
-                    && pInterfacePluginType.isAssignableFrom(pValue.getPluginClass()))) {
-                pluginAvailables.add(pValue);
+            try {
+                if (pInterfacePluginType == null || (pInterfacePluginType != null
+                        && pInterfacePluginType.isAssignableFrom(Class.forName(pValue.getPluginClassName())))) {
+                    pluginAvailables.add(pValue);
+                }
+            } catch (ClassNotFoundException e) {
+                LOGGER.error("cannot instanciate the class : %s" + pValue.getPluginClassName());
             }
         });
 
