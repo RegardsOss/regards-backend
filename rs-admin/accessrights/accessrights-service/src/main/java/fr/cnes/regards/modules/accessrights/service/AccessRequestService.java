@@ -109,14 +109,14 @@ public class AccessRequestService implements IAccessRequestService {
     @Override
     public void acceptAccessRequest(final Long pAccessId) throws EntityNotFoundException {
         final ProjectUser projectUser = findById(pAccessId);
-        projectUser.accept();
+        projectUser.setStatus(UserStatus.ACCESS_GRANTED);
         projectUserRepository.save(projectUser);
     }
 
     @Override
     public void denyAccessRequest(final Long pAccessId) throws EntityNotFoundException {
         final ProjectUser projectUser = findById(pAccessId);
-        projectUser.deny();
+        projectUser.setStatus(UserStatus.ACCESS_DENIED);
         projectUserRepository.save(projectUser);
     }
 

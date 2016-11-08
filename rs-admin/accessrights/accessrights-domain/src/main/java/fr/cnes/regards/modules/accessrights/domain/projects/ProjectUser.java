@@ -242,32 +242,6 @@ public class ProjectUser implements IIdentifiable<Long> {
     }
 
     /**
-     * TODO move this to service!!
-     *
-     * @return The accepted user
-     */
-    public ProjectUser accept() {
-        if (status.equals(UserStatus.WAITING_ACCESS)) {
-            setStatus(UserStatus.ACCESS_GRANTED);
-            return this;
-        }
-        throw new IllegalStateException("This request has already been treated (accepted)");
-    }
-
-    /**
-     * TODO move this to service!!
-     *
-     * @return The denied user
-     */
-    public ProjectUser deny() {
-        if (status.equals(UserStatus.WAITING_ACCESS)) {
-            setStatus(UserStatus.ACCESS_DENIED);
-            return this;
-        }
-        throw new IllegalStateException("This request has already been treated (denied)");
-    }
-
-    /**
      * Get <code>role</code>
      *
      * @return The role

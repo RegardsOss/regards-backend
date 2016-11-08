@@ -160,7 +160,7 @@ public class AccessRequestServiceStub implements IAccessRequestService {
 
         for (final ProjectUser projectUser : projectUsers) {
             if (projectUser.getId() == pAccessId) {
-                projectUser.accept();
+                projectUser.setStatus(UserStatus.ACCESS_GRANTED);
             }
         }
     }
@@ -173,7 +173,7 @@ public class AccessRequestServiceStub implements IAccessRequestService {
 
         for (final ProjectUser projectUser : projectUsers) {
             if (projectUser.getId() == pAccessId) {
-                projectUser.deny();
+                projectUser.setStatus(UserStatus.ACCESS_DENIED);
             }
         }
     }

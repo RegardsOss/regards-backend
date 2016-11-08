@@ -199,38 +199,6 @@ public class ProjectUserTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#accept()}.
-     */
-    @Test
-    public void testAccept() {
-        projectUser.accept();
-        Assert.assertEquals(UserStatus.ACCESS_GRANTED, projectUser.getStatus());
-
-        try {
-            projectUser.accept();
-            Assert.fail("Expected IllegalStateException");
-        } catch (final IllegalStateException e) {
-
-        }
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#deny()}.
-     */
-    @Test
-    public void testDeny() {
-        projectUser.deny();
-        Assert.assertEquals(UserStatus.ACCESS_DENIED, projectUser.getStatus());
-
-        try {
-            projectUser.deny();
-            Assert.fail("Expected IllegalStateException ");
-        } catch (final IllegalStateException e) {
-
-        }
-    }
-
-    /**
      * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#getRole()}.
      */
     @Test
