@@ -64,19 +64,9 @@ public class AccountServiceTest {
     private static final String LAST_NAME = "Lastname";
 
     /**
-     * Dummy login
-     */
-    private static final String LOGIN = "login";
-
-    /**
      * Dummy password
      */
     private static final String PASSWORD = "password";
-
-    /**
-     * Dummy account status
-     */
-    private static final AccountStatus STATUS = AccountStatus.ACCEPTED;
 
     /**
      * Dummy unlock code
@@ -119,7 +109,7 @@ public class AccountServiceTest {
      */
     @Before
     public void setUp() {
-        account = new Account(ID, EMAIL, FIRST_NAME, LAST_NAME, LOGIN, PASSWORD, STATUS, CODE);
+        account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
         // Mock dependencies
         accountRepository = Mockito.mock(IAccountRepository.class);
         projectUserService = Mockito.mock(IProjectUserService.class);
@@ -263,6 +253,9 @@ public class AccountServiceTest {
     @Requirement("?")
     @Purpose("Check that the system allows to create a new account.")
     public void updateAccountNotFound() throws EntityNotFoundException, InvalidValueException {
+        // Prepare account
+        account.setId(ID);
+
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(false);
 
@@ -282,6 +275,10 @@ public class AccountServiceTest {
     @Requirement("?")
     @Purpose("Check that the system fails when trying to update a account with different id thant the passed one.")
     public void updateAccountDifferentId() throws EntityNotFoundException, InvalidValueException {
+        // Prepare the account
+        account.setId(ID);
+
+        // Define a wrong id
         final Long wrongId = 1L;
 
         // Mock
@@ -304,10 +301,13 @@ public class AccountServiceTest {
     @Requirement("?")
     @Purpose("Check that the system allows to update an account.")
     public void updateAccount() throws EntityNotFoundException, InvalidValueException {
+        // Prepare the case
+        account.setId(ID);
+        account.setFirstName("Newfirstname");
+
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        account.setCode("newCode");
 
         // Call tested method
         accountService.updateAccount(ID, account);
@@ -377,6 +377,7 @@ public class AccountServiceTest {
 
         // Prepare the case
         account.setStatus(AccountStatus.LOCKED);
+        account.setCode(CODE);
 
         // Call tested method
         accountService.unlockAccount(ID, CODE);

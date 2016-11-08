@@ -47,13 +47,13 @@ public interface IAccountService {
     boolean existAccount(Long pId);
 
     /**
-     * Return <code>true</code> if an {@link Account} of passed <code>login</code> exists.
+     * Return <code>true</code> if an {@link Account} of passed <code>email</code> exists.
      *
-     * @param pLogin
-     *            The {@link Account}'s <code>login</code>
+     * @param pEmail
+     *            The {@link Account}'s <code>email</code>
      * @return <code>true</code> if exists, else <code>false</code>
      */
-    boolean existAccount(String pLogin);
+    boolean existAccount(String pEmail);
 
     /**
      * Retrieve the {@link Account} of passed <code>id</code>.
@@ -147,7 +147,7 @@ public interface IAccountService {
 
     /**
      * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of
-     * passed <code>login</code>
+     * passed <code>email</code>
      *
      * @param pEmail
      *            The {@link Account}'s <code>email</code>

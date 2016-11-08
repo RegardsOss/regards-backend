@@ -14,8 +14,6 @@ public class AccessRequestDTO {
 
     private String lastName;
 
-    private String login;
-
     private List<MetaData> metaData;
 
     private String password;
@@ -34,10 +32,6 @@ public class AccessRequestDTO {
 
     public String getLastName() {
         return lastName;
-    }
-
-    public String getLogin() {
-        return login;
     }
 
     public List<MetaData> getMetaData() {
@@ -66,10 +60,6 @@ public class AccessRequestDTO {
 
     public void setLastName(final String pLastName) {
         lastName = pLastName;
-    }
-
-    public void setLogin(final String pLogin) {
-        login = pLogin;
     }
 
     public void setMetaData(final List<MetaData> pMetaData) {

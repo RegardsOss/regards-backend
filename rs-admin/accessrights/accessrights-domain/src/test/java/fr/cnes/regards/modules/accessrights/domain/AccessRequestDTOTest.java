@@ -42,11 +42,6 @@ public class AccessRequestDTOTest {
     private final String lastName = "lastName";
 
     /**
-     * Test login
-     */
-    private final String login = "login";
-
-    /**
      * Test MetaData
      */
     private List<MetaData> metaDatas;
@@ -81,7 +76,6 @@ public class AccessRequestDTOTest {
         access.setEmail(email);
         access.setFirstName(firstName);
         access.setLastName(lastName);
-        access.setLogin(login);
         access.setPassword(password);
         access.setMetaData(metaDatas);
         access.setPermissions(permissions);
@@ -112,14 +106,6 @@ public class AccessRequestDTOTest {
     @Test
     public void testGetLastName() {
         Assert.assertEquals(lastName, access.getLastName());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#getLogin()}.
-     */
-    @Test
-    public void testGetLogin() {
-        Assert.assertEquals(login, access.getLogin());
     }
 
     /**
@@ -184,16 +170,6 @@ public class AccessRequestDTOTest {
         final String newLastName = "newLastName";
         access.setLastName(newLastName);
         Assert.assertEquals(newLastName, access.getLastName());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#setLogin(java.lang.String)}.
-     */
-    @Test
-    public void testSetLogin() {
-        final String newLogin = "newLogin";
-        access.setLogin(newLogin);
-        Assert.assertEquals(newLogin, access.getLogin());
     }
 
     /**

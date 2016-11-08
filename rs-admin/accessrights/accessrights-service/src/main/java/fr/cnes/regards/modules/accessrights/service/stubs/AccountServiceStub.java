@@ -12,9 +12,6 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -27,11 +24,13 @@ import fr.cnes.regards.modules.accessrights.service.IAccountService;
 /**
  * Stubbed {@link IAccountService} implementation
  *
+ * TODO: Delete this class
+ *
  * @author CS SI
  */
-@Service
-@Profile("test")
-@Primary
+// @Service
+// @Profile("test")
+// @Primary
 public class AccountServiceStub implements IAccountService {
 
     /**
@@ -74,15 +73,15 @@ public class AccountServiceStub implements IAccountService {
      */
     private static final String MDP_1 = "otherpassword";
 
-    /**
-     * A code
-     */
-    private static final String CODE_0 = "code";
-
-    /**
-     * An other code
-     */
-    private static final String CODE_1 = "othercode";
+    // /**
+    // * A code
+    // */
+    // private static final String CODE_0 = "code";
+    //
+    // /**
+    // * An other code
+    // */
+    // private static final String CODE_1 = "othercode";
 
     /**
      * The account setting
@@ -100,8 +99,11 @@ public class AccountServiceStub implements IAccountService {
      */
     @PostConstruct
     public void init() {
-        accounts.add(new Account(0L, EMAIL_0, FIRSTNAME_0, LASTNAME_0, EMAIL_0, MDP_0, AccountStatus.ACCEPTED, CODE_0));
-        accounts.add(new Account(1L, EMAIL_1, FIRSTNAME_1, LASTNAME_1, EMAIL_1, MDP_1, AccountStatus.PENDING, CODE_1));
+        final Account account0 = new Account(EMAIL_0, FIRSTNAME_0, LASTNAME_0, MDP_0);
+        account0.setStatus(AccountStatus.ACCEPTED);
+        final Account account1 = new Account(EMAIL_1, FIRSTNAME_1, LASTNAME_1, MDP_1);
+        accounts.add(account0);
+        accounts.add(account1);
     }
 
     @Override
@@ -169,8 +171,7 @@ public class AccountServiceStub implements IAccountService {
             throws InvalidValueException, EntityNotFoundException {
         final Account toUnlock = this.retrieveAccount(pAccountId);
         check(toUnlock, pUnlockCode);
-        toUnlock.unlock();
-
+        toUnlock.setStatus(AccountStatus.ACTIVE);
     }
 
     @Override
@@ -186,6 +187,16 @@ public class AccountServiceStub implements IAccountService {
         return accounts.stream().filter(p -> p.getId() == pId).findFirst().isPresent();
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.IAccountService#existAccount(java.lang.String)
+     */
+    @Override
+    public boolean existAccount(final String pEmail) {
+        return accounts.stream().filter(p -> p.getEmail() == pEmail).findFirst().isPresent();
+    }
+
     /**
      * Check if the passed {@link Account} exists in db.
      *
@@ -195,15 +206,6 @@ public class AccountServiceStub implements IAccountService {
      */
     private boolean existAccount(final Account pNewAccount) {
         return accounts.stream().filter(p -> p.equals(pNewAccount)).findFirst().isPresent();
-    }
-
-    /**
-     * @param pLogin
-     * @return
-     */
-    @Override
-    public boolean existAccount(final String pLogin) {
-        return accounts.stream().filter(p -> p.getLogin().equals(pLogin)).findFirst().isPresent();
     }
 
     /*

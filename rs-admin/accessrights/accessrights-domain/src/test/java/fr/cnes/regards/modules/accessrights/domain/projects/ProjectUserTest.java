@@ -91,7 +91,7 @@ public class ProjectUserTest {
 
     /**
      * Test method for
-     * {@link ProjectUser#ProjectUser(Long, LocalDateTime, LocalDateTime, UserStatus, List, Role, List, String)}.
+     * {@link ProjectUser#createProjectUser(Long, LocalDateTime, LocalDateTime, UserStatus, List, Role, List, String)}.
      */
     @Test
     public void testProjectUserWithParams() {

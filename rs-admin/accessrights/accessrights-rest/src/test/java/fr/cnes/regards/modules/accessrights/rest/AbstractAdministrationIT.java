@@ -44,6 +44,8 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
 
     @Before
     public void initProjects() {
+        // Clean repository
+        projectRepository.deleteAll();
 
         final Project project = new Project(0L, "desc", "icon", true, PROJECT_TEST_NAME);
         projectRepository.save(project);

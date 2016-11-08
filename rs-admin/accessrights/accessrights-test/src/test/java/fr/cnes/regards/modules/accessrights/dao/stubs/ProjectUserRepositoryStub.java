@@ -60,7 +60,7 @@ public class ProjectUserRepositoryStub extends JpaRepositoryStub<ProjectUser> im
     private ProjectUser buildProjectUser(final Long pProjectUserId, final String pMail, final Role pRole)
             throws AlreadyExistingException {
 
-        Account account = new Account(pMail);
+        Account account = new Account(pMail, "Firstname", "Lastname", "password");
         account = accountRepository.save(account);
 
         ProjectUser projectUser;

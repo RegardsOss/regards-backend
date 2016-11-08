@@ -19,7 +19,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
@@ -51,11 +50,6 @@ public class AccessRequestServiceTest {
      * Stub constant value for a last name
      */
     private static final String LAST_NAME = "Lirstname";
-
-    /**
-     * Stub constant value for a login
-     */
-    private static final String LOGIN = "login";
 
     /**
      * Stub constant value for a lsit of meta data
@@ -123,7 +117,6 @@ public class AccessRequestServiceTest {
         dto.setEmail(EMAIL);
         dto.setFirstName(FIRST_NAME);
         dto.setLastName(LAST_NAME);
-        dto.setLogin(LOGIN);
         dto.setMetaData(META_DATA);
         dto.setPassword(PASSOWRD);
         dto.setPermissions(PERMISSIONS);
@@ -251,13 +244,8 @@ public class AccessRequestServiceTest {
         Mockito.when(accountService.existAccount(EMAIL)).thenReturn(false);
 
         // Prepare the account we exepect to be created
-        final Account account = new Account();
-        account.setEmail(EMAIL);
-        account.setLastName(LAST_NAME);
-        account.setFirstName(FIRST_NAME);
-        account.setLogin(LOGIN);
-        account.setPassword(PASSOWRD);
-        account.setStatus(AccountStatus.PENDING);
+        // final Account account = new Account();
+        final Account account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSOWRD);
 
         // Call the service
         accessRequestService.requestAccess(dto);

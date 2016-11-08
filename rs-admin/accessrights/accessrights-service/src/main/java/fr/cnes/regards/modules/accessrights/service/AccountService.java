@@ -4,8 +4,8 @@
 package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
@@ -102,7 +101,7 @@ public class AccountService implements IAccountService {
     @PostConstruct
     public void initialize() throws AlreadyExistingException {
         if (!this.existAccount(rootAdminUserLogin)) {
-            this.createAccount(new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
+            createAccount(new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
                     rootAdminUserPassword));
         }
     }
@@ -127,17 +126,18 @@ public class AccountService implements IAccountService {
 
     @Override
     public Account retrieveAccount(final Long pAccountId) throws EntityNotFoundException {
-        return accountRepository.findOne(pAccountId);
+        final Optional<Account> account = Optional.ofNullable(accountRepository.findOne(pAccountId));
+        return account.orElseThrow(() -> new EntityNotFoundException(pAccountId.toString(), Account.class));
     }
 
     @Override
     public void updateAccount(final Long pAccountId, final Account pUpdatedAccount)
             throws EntityNotFoundException, InvalidValueException {
-        if (!existAccount(pAccountId)) {
-            throw new EntityNotFoundException(pAccountId.toString(), Account.class);
-        }
         if (!pUpdatedAccount.getId().equals(pAccountId)) {
             throw new InvalidValueException("Account id specified differs from updated account id");
+        }
+        if (!existAccount(pAccountId)) {
+            throw new EntityNotFoundException(pAccountId.toString(), Account.class);
         }
         save(pUpdatedAccount);
     }
@@ -157,13 +157,11 @@ public class AccountService implements IAccountService {
 
         // Define inject tenant consumer
         final Consumer<? super String> injectTenant = t -> {
-            try {
-                // TODO: User role system
-                jwtService.injectToken(t, "");
-                LOG.info("Injected tenant " + t);
-            } catch (final JwtException e) {
-                LOG.info("Could not inject tenant " + t, e);
-            }
+
+            // TODO: User role system
+            jwtService.changeTenant(t);
+            LOG.info("Injected tenant " + t);
+
         };
 
         // Predicate: is there a project user associated to the account on this tenant?
@@ -187,10 +185,10 @@ public class AccountService implements IAccountService {
         if (!existAccount(pEmail)) {
             throw new EntityNotFoundException(pEmail, Account.class);
         }
-        final String code = generateCode(pType);
+        // final String code = generateCode(pType);
         final Account account = retrieveAccountByEmail(pEmail);
-        account.setCode(code);
-        save(account);
+        // account.setCode(code);
+        // save(account);
         // TODO: sendEmail(pEmail,code);
     }
 
@@ -232,13 +230,10 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public boolean validatePassword(final String pEmail, final String pPassword) {
-        boolean valid = false;
-        final Account account = accountRepository.findOneByEmail(pEmail);
-        if ((account != null) && account.getPassword().equals(pPassword)) {
-            valid = true;
-        }
-        return valid;
+    public boolean validatePassword(final String pEmail, final String pPassword) throws EntityNotFoundException {
+        final Optional<Account> account = Optional.ofNullable(accountRepository.findOneByEmail(pEmail));
+        return account.orElseThrow(() -> new EntityNotFoundException(pEmail, Account.class)).getPassword()
+                .equals(pPassword);
     }
 
     @Override
@@ -249,7 +244,6 @@ public class AccountService implements IAccountService {
             exists = true;
         }
         return exists;
-
     }
 
     /**
@@ -276,16 +270,5 @@ public class AccountService implements IAccountService {
         if (!pAccount.getCode().equals(pCode)) {
             throw new InvalidValueException("this is not the right code");
         }
-    }
-
-    /**
-     * Generate an unlock code for the account
-     *
-     * @param pType
-     *            The type
-     * @return The code
-     */
-    private String generateCode(final CodeType pType) {
-        return pType.toString() + "-" + UUID.randomUUID().toString();
     }
 }

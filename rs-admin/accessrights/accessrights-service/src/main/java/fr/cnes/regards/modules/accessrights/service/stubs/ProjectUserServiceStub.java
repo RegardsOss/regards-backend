@@ -11,10 +11,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -32,9 +28,9 @@ import fr.cnes.regards.modules.accessrights.service.IRoleService;
  * @author svissier
  *
  */
-@Service
-@Profile("test")
-@Primary
+// @Service
+// @Profile("test")
+// @Primary
 public class ProjectUserServiceStub implements IProjectUserService {
 
     /**

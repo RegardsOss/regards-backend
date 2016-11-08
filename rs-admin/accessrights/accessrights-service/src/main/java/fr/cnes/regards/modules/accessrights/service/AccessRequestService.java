@@ -12,7 +12,6 @@ import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -78,13 +77,8 @@ public class AccessRequestService implements IAccessRequestService {
         // If no associated account
         if (!accountService.existAccount(pDto.getEmail())) {
             // Initialize a new final Account with provided final info and the final pending status
-            final Account account = new Account();
-            account.setEmail(pDto.getEmail());
-            account.setFirstName(pDto.getFirstName());
-            account.setLastName(pDto.getLastName());
-            account.setLogin(pDto.getLogin());
-            account.setPassword(pDto.getPassword());
-            account.setStatus(AccountStatus.PENDING);
+            final Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
+                    pDto.getPassword());
 
             // Create it via the account service
             accountService.createAccount(account);

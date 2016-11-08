@@ -20,11 +20,11 @@ public class AccountTest {
      * Test account
      */
     private Account accountTest;
-
-    /**
-     * Test id
-     */
-    private final Long id = 0L;
+    //
+    // /**
+    // * Test id
+    // */
+    // private final Long id = 0L;
 
     /**
      * Test email
@@ -64,90 +64,92 @@ public class AccountTest {
     @Before
     public void setUp() {
         status = AccountStatus.PENDING;
-        accountTest = new Account(id, email, firstName, lastName, login, password, status, code);
+        accountTest = new Account(email, firstName, lastName, password);
     }
 
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#Account()}.
-     */
-    @Test
-    public void testAccount() {
-        final Account account = new Account();
+    // /**
+    // * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#Account()}.
+    // */
+    // @Test
+    // public void testAccountDefault() {
+    // final Account account = new Account();
+    //
+    // Assert.assertEquals(null, account.getId());
+    // Assert.assertEquals(null, account.getEmail());
+    // Assert.assertEquals(null, account.getFirstName());
+    // Assert.assertEquals(null, account.getLastName());
+    // Assert.assertEquals(null, account.getLogin());
+    // Assert.assertEquals(null, account.getPassword());
+    // Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
+    // Assert.assertEquals(null, account.getCode());
+    // }
 
-        Assert.assertEquals(null, account.getId());
-        Assert.assertEquals(null, account.getEmail());
-        Assert.assertEquals(null, account.getFirstName());
-        Assert.assertEquals(null, account.getLastName());
-        Assert.assertEquals(null, account.getLogin());
-        Assert.assertEquals(null, account.getPassword());
-        Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
-        Assert.assertEquals(null, account.getCode());
-    }
+    // /**
+    // * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#Account(java.lang.String)}.
+    // */
+    // @Test
+    // public void testAccountEmail() {
+    // final Account account = new Account(email);
+    //
+    // Assert.assertEquals(email, account.getEmail());
+    // Assert.assertEquals(null, account.getFirstName());
+    // Assert.assertEquals(null, account.getLastName());
+    // Assert.assertEquals(email, account.getLogin());
+    // Assert.assertEquals(null, account.getPassword());
+    // Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
+    // Assert.assertEquals(null, account.getCode());
+    // }
 
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#Account(java.lang.String)}.
-     */
-    @Test
-    public void testAccountEmail() {
-        final Account account = new Account(email);
+    // /**
+    // * Test method for {@link Account#Account(java.lang.String, java.lang.String, java.lang.String,
+    // java.lang.String)}.
+    // */
+    // @Test
+    // public void testAccountWithoutLogin() {
+    // final Account account = new Account(email, firstName, lastName, password);
+    //
+    // Assert.assertEquals(email, account.getEmail());
+    // Assert.assertEquals(firstName, account.getFirstName());
+    // Assert.assertEquals(lastName, account.getLastName());
+    // Assert.assertEquals(email, account.getLogin());
+    // Assert.assertEquals(password, account.getPassword());
+    // Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
+    // Assert.assertEquals(null, account.getCode());
+    // }
 
-        Assert.assertEquals(email, account.getEmail());
-        Assert.assertEquals(null, account.getFirstName());
-        Assert.assertEquals(null, account.getLastName());
-        Assert.assertEquals(email, account.getLogin());
-        Assert.assertEquals(null, account.getPassword());
-        Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
-        Assert.assertEquals(null, account.getCode());
-    }
-
-    /**
-     * Test method for {@link Account#Account(java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
-     */
-    @Test
-    public void testAccountWithoutLogin() {
-        final Account account = new Account(email, firstName, lastName, password);
-
-        Assert.assertEquals(email, account.getEmail());
-        Assert.assertEquals(firstName, account.getFirstName());
-        Assert.assertEquals(lastName, account.getLastName());
-        Assert.assertEquals(email, account.getLogin());
-        Assert.assertEquals(password, account.getPassword());
-        Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
-        Assert.assertEquals(null, account.getCode());
-    }
-
-    /**
-     * Test method for
-     * {@link Account#Account(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}
-     */
-    @Test
-    public void testAccountWithLogin() {
-        final Account account = new Account(email, firstName, lastName, login, password);
-
-        Assert.assertEquals(email, account.getEmail());
-        Assert.assertEquals(firstName, account.getFirstName());
-        Assert.assertEquals(lastName, account.getLastName());
-        Assert.assertEquals(login, account.getLogin());
-        Assert.assertEquals(password, account.getPassword());
-        Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
-        Assert.assertEquals(null, account.getCode());
-    }
+    // /**
+    // * Test method for
+    // * {@link Account#Account(java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+    // java.lang.String)}
+    // */
+    // @Test
+    // public void testAccountWithLogin() {
+    // final Account account = new Account(email, firstName, lastName, login, password);
+    //
+    // Assert.assertEquals(email, account.getEmail());
+    // Assert.assertEquals(firstName, account.getFirstName());
+    // Assert.assertEquals(lastName, account.getLastName());
+    // Assert.assertEquals(login, account.getLogin());
+    // Assert.assertEquals(password, account.getPassword());
+    // Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
+    // Assert.assertEquals(null, account.getCode());
+    // }
 
     /**
      * Test method for {@link Account#Account(Long, String, String, String, String, jString, AccountStatus, String)}.
      */
     @Test
     public void testAccountFull() {
-        final Account account = new Account(id, email, firstName, lastName, login, password, status, code);
+        // final Account account = new Account(id, email, firstName, lastName, login, password, status, code);
+        final Account account = new Account(email, firstName, lastName, password);
 
-        Assert.assertEquals(id, account.getId());
+        Assert.assertEquals(null, account.getId());
         Assert.assertEquals(email, account.getEmail());
         Assert.assertEquals(firstName, account.getFirstName());
         Assert.assertEquals(lastName, account.getLastName());
-        Assert.assertEquals(login, account.getLogin());
         Assert.assertEquals(password, account.getPassword());
         Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
-        Assert.assertEquals(code, account.getCode());
+        Assert.assertNotNull(account.getCode());
     }
 
     /**
@@ -207,24 +209,6 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#getLogin()}.
-     */
-    @Test
-    public void testGetLogin() {
-        Assert.assertEquals(login, accountTest.getLogin());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#setLogin(java.lang.String)}.
-     */
-    @Test
-    public void testSetLogin() {
-        final String newLogin = "newLogin";
-        accountTest.setLogin(newLogin);
-        Assert.assertEquals(newLogin, accountTest.getLogin());
-    }
-
-    /**
      * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#getPassword()}.
      */
     @Test
@@ -261,26 +245,11 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#unlock()}.
-     */
-    @Test
-    public void testUnlock() {
-        // Test if Account Status is unlocked
-        accountTest.unlock();
-        Assert.assertEquals(AccountStatus.PENDING, accountTest.getStatus());
-
-        // Test if Account Status is locked
-        accountTest.setStatus(AccountStatus.LOCKED);
-        accountTest.unlock();
-        Assert.assertEquals(AccountStatus.ACTIVE, accountTest.getStatus());
-    }
-
-    /**
      * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#getId()}.
      */
     @Test
     public void testGetId() {
-        Assert.assertEquals(id, accountTest.getId());
+        Assert.assertEquals(null, accountTest.getId());
     }
 
     /**
@@ -298,6 +267,7 @@ public class AccountTest {
      */
     @Test
     public void testGetCode() {
+        accountTest.setCode(code);
         Assert.assertEquals(code, accountTest.getCode());
     }
 
@@ -316,12 +286,11 @@ public class AccountTest {
      */
     @Test
     public void testEqualsObject() {
-        Account otherAccount = new Account(id, email, firstName, lastName, login, password, status, code);
+        // Account otherAccount = new Account(id, email, firstName, lastName, login, password, status, code);
+        Account otherAccount = new Account(email, "otherFirstName", "otherLastName", "otherPassword");
         Assert.assertTrue(accountTest.equals(otherAccount));
 
-        final Long localId = 4L;
-        otherAccount = new Account(localId, "otherMail", "otherFirstName", "otherLastName", "otherLogin",
-                "otherPassword", AccountStatus.INACTIVE, "otherCode");
+        otherAccount = new Account("otherMail", firstName, lastName, password);
         Assert.assertFalse(accountTest.equals(otherAccount));
     }
 

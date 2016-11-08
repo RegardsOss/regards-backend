@@ -155,7 +155,6 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
         newAccessRequest.setEmail("login@test.com");
         newAccessRequest.setFirstName("Firstname");
         newAccessRequest.setLastName("Lastname");
-        newAccessRequest.setLogin("login");
         newAccessRequest.setPassword("password");
         newAccessRequest.setRole(new Role());
         newAccessRequest.setPermissions(new ArrayList<>());
