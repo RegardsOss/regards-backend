@@ -43,9 +43,9 @@ public class RegardsStreamUtilsTest {
     @Test
     public void distinctByKey() {
         final List<Person> people = new ArrayList<>();
-        final Person person0 = new Person(26, "Alice");
-        final Person person1 = new Person(15, "Bob");
-        final Person person2 = new Person(41, "Alice");
+        final Person person0 = new Person("Alice");
+        final Person person1 = new Person("Bob");
+        final Person person2 = new Person("Alice");
         people.add(person0);
         people.add(person1);
         people.add(person2);
@@ -73,11 +73,6 @@ public class RegardsStreamUtilsTest {
     private class Person {
 
         /**
-         * A field
-         */
-        private final Integer age;
-
-        /**
          * An other field
          */
         private final String name;
@@ -86,9 +81,7 @@ public class RegardsStreamUtilsTest {
          * @param pAge
          * @param pName
          */
-        public Person(final Integer pAge, final String pName) {
-            super();
-            age = pAge;
+        public Person(final String pName) {
             name = pName;
         }
 
@@ -98,7 +91,6 @@ public class RegardsStreamUtilsTest {
         public String getName() {
             return name;
         }
-
     }
 
 }

@@ -14,11 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.google.common.base.Optional;
-
-import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.modules.plugins.client.IPluginsClient;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -42,14 +38,13 @@ public class PluginsFallback implements IPluginsClient {
 
     @Override
     public ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
-            @RequestParam(value = "pluginType", required = false) final String pPluginType) throws EntityException {
+            @RequestParam(value = "pluginType", required = false) final String pPluginType) throws InvalidValueException {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(
-            @PathVariable("pluginId") String pPluginId) {
+    public ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(@PathVariable("pluginId") String pPluginId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -63,15 +58,14 @@ public class PluginsFallback implements IPluginsClient {
 
     @Override
     public ResponseEntity<Resource<PluginConfiguration>> savePluginConfiguration(
-            PluginConfiguration pPluginConfiguration) throws InvalidValueException {
+            PluginConfiguration pPluginConfiguration) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
-            @PathVariable("pluginId") String pPluginId, @PathVariable("configId") Long pConfigId)
-            throws EntityNotFoundException {
+            @PathVariable("pluginId") String pPluginId, @PathVariable("configId") Long pConfigId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -79,14 +73,14 @@ public class PluginsFallback implements IPluginsClient {
     @Override
     public ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(
             @PathVariable("pluginId") String pPluginId, @PathVariable("configId") Long pConfigId,
-            PluginConfiguration pPluginConfiguration) throws EntityNotFoundException, InvalidValueException {
+            PluginConfiguration pPluginConfiguration) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") String pPluginId,
-            @PathVariable("configId") Long pConfigId) throws EntityNotFoundException {
+            @PathVariable("configId") Long pConfigId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }

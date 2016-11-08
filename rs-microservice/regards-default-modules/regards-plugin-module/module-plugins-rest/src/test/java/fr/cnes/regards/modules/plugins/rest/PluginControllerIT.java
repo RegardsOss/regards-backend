@@ -95,7 +95,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
     @Test
     public void getPluginOneUnknownType() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isInternalServerError());
+        expectations.add(status().isBadRequest());
         final String pluginType = "hello";
         performDefaultGet(apiPluginsWithParamPluginType + pluginType, expectations,
                           String.format("unable to load plugins of unknown type", pluginType));

@@ -9,21 +9,15 @@ import java.nio.file.Paths;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
+ * Path converter utils
+ *
  * @author lmieulet
  *
  */
 
 @Converter
 public class PathConverter implements AttributeConverter<Path, String> {
-
-    /**
-     * Logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(PathConverter.class);
 
     @Override
     public String convertToDatabaseColumn(final Path pAttribute) {

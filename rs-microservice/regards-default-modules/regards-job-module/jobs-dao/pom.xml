@@ -19,24 +19,15 @@
 			<groupId>fr.cnes.regards.modules.jobs</groupId>
 			<artifactId>jobs-domain</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-jpa</artifactId>
-		</dependency>
-		<!-- Tests dependencies -->
+		<!-- REGARDS starter -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
-			<scope>test</scope>
+			<artifactId>jpa-multitenant-regards</artifactId>
 		</dependency>
+		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
