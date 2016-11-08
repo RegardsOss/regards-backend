@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -157,6 +158,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         performGet(apiRolesName, jwt, expectations, "TODO Error message", wrongRoleName);
     }
 
+    @Ignore
     @Test
     @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_210")
