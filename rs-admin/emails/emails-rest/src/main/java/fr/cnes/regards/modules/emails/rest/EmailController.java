@@ -14,9 +14,9 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.AbstractController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.GlobalControllerAdvice;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.service.IEmailService;
@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.emails.signature.IEmailSignature;
 @RestController
 @ModuleInfo(name = "emails", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class EmailController extends AbstractController implements IEmailSignature {
+public class EmailController extends GlobalControllerAdvice implements IEmailSignature {
 
     /**
      * The service responsible for handling CRUD and mailing operations
