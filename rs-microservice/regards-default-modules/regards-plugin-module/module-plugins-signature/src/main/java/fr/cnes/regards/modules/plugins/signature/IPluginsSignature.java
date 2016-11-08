@@ -48,7 +48,7 @@ public interface IPluginsSignature {
     @RequestMapping(value = "/plugins", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
-            @RequestParam(value = "pluginType", required = false) final String pPluginType) throws EntityException;
+            @RequestParam(value = "pluginType", required = false) final String pPluginType) throws InvalidValueException;
 
     /**
      * Get the interface identified with the annotation {@link PluginInterface}.
@@ -91,7 +91,7 @@ public interface IPluginsSignature {
      * 
      * @param pPluginConfiguration
      *            a {@link PluginConfiguration}
-     *            
+     * 
      * @return the {@link PluginConfiguration] created
      * 
      * @throws InvalidValueException
@@ -142,7 +142,7 @@ public interface IPluginsSignature {
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      * @throws InvalidValueException
      *             the {@link PluginConfiguration} is incoherent with the path parameter
-     *             
+     * 
      */
     @RequestMapping(value = "/plugins/{pluginId}/config/{configId}", method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

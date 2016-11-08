@@ -63,7 +63,7 @@ public class PluginController implements IPluginsSignature {
 
     @Override
     public ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
-            @RequestParam(value = "pluginType", required = false) final String pPluginType) throws EntityException {
+            @RequestParam(value = "pluginType", required = false) final String pPluginType) throws InvalidValueException {
         final List<PluginMetaData> metadaDatas;
 
         if (pPluginType == null) {
@@ -76,7 +76,7 @@ public class PluginController implements IPluginsSignature {
                 metadaDatas = pluginService.getPluginsByType(Class.forName(pPluginType));
             } catch (ClassNotFoundException e) {
                 LOGGER.error(e.getMessage());
-                throw new EntityExistsException(e);
+                throw new InvalidValueException(e.getMessage());
             }
         }
 

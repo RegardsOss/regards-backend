@@ -73,14 +73,14 @@ public final class PluginUtils {
                 final PluginMetaData pMeta = plugins.get(plugin.getPluginId());
                 final String message = String
                         .format("Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
-                                plugin.getPluginId(), plugin.getPluginClass(), pMeta.getPluginClass());
+                                plugin.getPluginId(), plugin.getPluginClassName(), pMeta.getPluginClassName());
                 throw new PluginUtilsException(message);
             }
 
             // Store plugin reference
             plugins.put(plugin.getPluginId(), plugin);
-            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.",
-                                      plugin.getPluginClass().getTypeName(), plugin.getPluginId()));
+            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.", plugin.getPluginClassName(),
+                                      plugin.getPluginId()));
         }
         return plugins;
     }
@@ -101,7 +101,7 @@ public final class PluginUtils {
 
         // Init plugin metadata
         pluginMetaData = new PluginMetaData();
-        pluginMetaData.setClass(pPluginClass);
+        pluginMetaData.setPluginClassName(pPluginClass.getCanonicalName());
 
         // Manage plugin id
         if ("".equals(plugin.id())) {
@@ -143,7 +143,7 @@ public final class PluginUtils {
 
         try {
             // Make a new instance
-            returnPlugin = (T) pPluginMetadata.getPluginClass().newInstance();
+            returnPlugin = (T) Class.forName(pPluginMetadata.getPluginClassName()).newInstance();
 
             // Post process parameters
             PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPluginParameters);
@@ -151,9 +151,10 @@ public final class PluginUtils {
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | ClassNotFoundException e) {
             throw new PluginUtilsException(
-                    String.format("Cannot instantiate \"%s\"", pPluginMetadata.getPluginClass().getName()), e);
+                    String.format("Cannot instantiate <%s>", pPluginMetadata.getPluginClassName()), e);
+
         }
 
         return returnPlugin;
@@ -193,7 +194,7 @@ public final class PluginUtils {
 
         } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
                 | SecurityException | ClassNotFoundException e) {
-            throw new PluginUtilsException(String.format("Cannot instantiate \"%s\"", pPluginClassName), e);
+            throw new PluginUtilsException(String.format("Cannot instantiate <%s>", pPluginClassName), e);
         }
 
         return returnPlugin;
@@ -242,11 +243,11 @@ public final class PluginUtils {
             if (method.isAnnotationPresent(PluginInit.class)) {
                 // Invoke method
                 ReflectionUtils.makeAccessible(method);
-    
+
                 try {
                     method.invoke(pPluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    LOGGER.error(String.format("Exception while invoking init method on plugin class \"%s\".",
+                    LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
                                                pPluginInstance.getClass()),
                                  e);
                     throw new PluginUtilsException(e);
