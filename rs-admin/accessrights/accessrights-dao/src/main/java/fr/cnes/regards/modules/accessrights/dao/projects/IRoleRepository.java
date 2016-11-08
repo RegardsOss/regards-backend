@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Example;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -17,11 +17,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * Embeds paging/sorting abilities by entending {@link PagingAndSortingRepository}.<br>
  * Allows execution of Query by Example {@link Example} instances.
  *
- * TODO: Switch to JpaRepository instead of CrudRepository
- *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
-public interface IRoleRepository extends CrudRepository<Role, Long> {
+public interface IRoleRepository extends JpaRepository<Role, Long> {
 
     /**
      * Find the unique {@link Role} where <code>default</code> equal to passed boolean.<br>

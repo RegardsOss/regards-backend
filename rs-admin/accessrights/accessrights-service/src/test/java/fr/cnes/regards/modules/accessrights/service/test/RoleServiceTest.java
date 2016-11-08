@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -31,6 +32,11 @@ import fr.cnes.regards.modules.accessrights.service.RoleService;
  * @author xbrochar
  */
 public class RoleServiceTest {
+
+    /**
+     * A name
+     */
+    private static final String NAME = "name";
 
     /**
      * The tested service
@@ -59,7 +65,7 @@ public class RoleServiceTest {
     @Purpose("Check that the allows to retrieve roles.")
     public void retrieveRoleList() {
         final List<Role> expected = new ArrayList<>();
-        final Role role0 = new Role(0L, "name", null, new ArrayList<>(), new ArrayList<>());
+        final Role role0 = new Role(0L, NAME, null, new ArrayList<>(), new ArrayList<>());
         final Role role1 = new Role(1L, "otherName", role0, new ArrayList<>(), new ArrayList<>());
         expected.add(role0);
         expected.add(role1);
@@ -82,7 +88,7 @@ public class RoleServiceTest {
     @Purpose("Check that the allows to retrieve a single role.")
     public void retrieveRole() {
         final Long id = 0L;
-        final Role expected = new Role(id, "name", null, new ArrayList<>(), new ArrayList<>());
+        final Role expected = new Role(id, NAME, null, new ArrayList<>(), new ArrayList<>());
 
         Mockito.when(roleRepository.findOne(id)).thenReturn(expected);
         final Role actual = roleService.retrieveRole(id);
@@ -138,7 +144,7 @@ public class RoleServiceTest {
      * Check that the system fails when trying to update a role which does not exist.
      *
      * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
+     *             when no {@link Role} with passed <code>id</code> could be found<br/>
      * @throws InvalidValueException
      *             Thrown if passed role id differs from the id of the passed role
      */
@@ -157,7 +163,7 @@ public class RoleServiceTest {
      * Check that the system fails when trying to update a role which id is different from the passed one.
      *
      * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
+     *             when no {@link Role} with passed <code>id</code> could be found<br/>
      * @throws InvalidValueException
      *             Thrown if passed role id differs from the id of the passed role
      */
@@ -176,7 +182,7 @@ public class RoleServiceTest {
      * Check that the system allows to update a role in a regular case.
      *
      * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
+     *             when no {@link Role} with passed <code>id</code> could be found<br/>
      * @throws InvalidValueException
      *             Thrown if passed role id differs from the id of the passed role
      */
@@ -187,7 +193,7 @@ public class RoleServiceTest {
         final Long passedRoleId = 0L;
 
         // Define the previous role in db
-        final Role previousRole = new Role(passedRoleId, "name", null, new ArrayList<>(), new ArrayList<>());
+        final Role previousRole = new Role(passedRoleId, NAME, null, new ArrayList<>(), new ArrayList<>());
         Mockito.when(roleRepository.exists(passedRoleId)).thenReturn(true);
 
         // Define the passed role in PUT
@@ -211,15 +217,36 @@ public class RoleServiceTest {
     }
 
     /**
+     * Check that the system does not remove a native role.
+     *
+     * @throws OperationForbiddenException
+     *             when the updated role is native. Native roles should not be modified.
+     */
+    @Test(expected = OperationForbiddenException.class)
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system does not remove a native role.")
+    public void removeRoleNative() throws OperationForbiddenException {
+        final Long id = 0L;
+        final Role roleNative = new Role(id, NAME, null, new ArrayList<>(), new ArrayList<>(), true, true);
+
+        // Mock repo
+        Mockito.when(roleRepository.exists(id)).thenReturn(true);
+        Mockito.when(roleRepository.findOne(id)).thenReturn(roleNative);
+
+        // Call tested method
+        roleService.removeRole(id);
+    }
+
+    /**
      * Check that the system allows to delete a role in a regular case.
      *
-     * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
+     * @throws OperationForbiddenException
+     *             when the updated role is native. Native roles should not be modified.
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to delete a role in a regular case.")
-    public void removeRole() throws EntityNotFoundException {
+    public void removeRole() throws OperationForbiddenException {
         final Long id = 0L;
 
         Mockito.when(roleRepository.exists(id)).thenReturn(true);
@@ -265,7 +292,7 @@ public class RoleServiceTest {
     @Purpose("Check that the system allows to add resources accesses on a role.")
     public void updateRoleResourcesAccessAddingResourcesAccess() throws EntityNotFoundException {
         final Long id = 0L;
-        final Role role = new Role(id, "name", null, new ArrayList<>(), new ArrayList<>());
+        final Role role = new Role(id, NAME, null, new ArrayList<>(), new ArrayList<>());
 
         // Mock
         Mockito.when(roleRepository.exists(id)).thenReturn(true);
@@ -280,7 +307,7 @@ public class RoleServiceTest {
         roleService.updateRoleResourcesAccess(id, resourcesAccesses);
 
         // Prepare the expected result
-        final Role expected = new Role(id, "name", null, resourcesAccesses, new ArrayList<>());
+        final Role expected = new Role(id, NAME, null, resourcesAccesses, new ArrayList<>());
         Mockito.when(roleRepository.findOne(id)).thenReturn(expected);
 
         // Check
@@ -303,7 +330,7 @@ public class RoleServiceTest {
         final Long roleId = 0L;
         final List<ResourcesAccess> initRAs = new ArrayList<>();
         initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));
-        final Role role = new Role(0L, "name", null, initRAs, new ArrayList<>());
+        final Role role = new Role(0L, NAME, null, initRAs, new ArrayList<>());
 
         Mockito.when(roleRepository.exists(roleId)).thenReturn(true);
         Mockito.when(roleRepository.findOne(roleId)).thenReturn(role);
@@ -319,7 +346,7 @@ public class RoleServiceTest {
         Assert.assertTrue(!passedRAs.get(0).getVerb().equals(initRAs.get(0).getVerb()));
 
         // Perform the update
-        Role updatedRole = new Role(0L, "name", null, passedRAs, new ArrayList<>());
+        Role updatedRole = new Role(0L, NAME, null, passedRAs, new ArrayList<>());
         Mockito.when(roleRepository.save(updatedRole)).thenReturn(updatedRole);
         updatedRole = roleService.updateRoleResourcesAccess(roleId, passedRAs);
 
@@ -344,7 +371,7 @@ public class RoleServiceTest {
         final Long id = 0L;
         final List<ResourcesAccess> resourcesAccesses = new ArrayList<>();
         resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));
-        final Role role = new Role(id, "name", null, resourcesAccesses, new ArrayList<>());
+        final Role role = new Role(id, NAME, null, resourcesAccesses, new ArrayList<>());
         Assert.assertTrue(!role.getPermissions().isEmpty());
 
         // Mock

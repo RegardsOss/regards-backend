@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * {@link IAccountService} implementation.
  *
  * @author Xavier-Alexandre Brochard
- * @auhtor Sébastien Binda
+ * @author Sébastien Binda
  */
 @Service
 @InstanceTransactional

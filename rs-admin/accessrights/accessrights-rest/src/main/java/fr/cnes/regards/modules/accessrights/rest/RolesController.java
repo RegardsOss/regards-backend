@@ -21,6 +21,7 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -70,7 +71,8 @@ public class RolesController implements IRolesSignature {
 
     @Override
     @ResourceAccess(description = "Remove the role of role_id", name = "")
-    public ResponseEntity<Void> removeRole(@PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
+    public ResponseEntity<Void> removeRole(@PathVariable("role_id") final Long pRoleId)
+            throws OperationForbiddenException {
         roleService.removeRole(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

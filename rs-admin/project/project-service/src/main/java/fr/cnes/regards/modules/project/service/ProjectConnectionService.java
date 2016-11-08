@@ -20,7 +20,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
- * 
+ *
  * @since 1.0-SNAPSHOT
  */
 @Service
@@ -43,7 +43,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     /**
      * The constructor.
-     * 
+     *
      * @param pProjectRepository
      *            The JPA {@link Project} repository.
      * @param pProjectConnectionRepository

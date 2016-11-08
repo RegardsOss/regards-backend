@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
- * 
+ *
  * @since 1.0-SNAPSHOT
  */
 public interface IProjectService {
