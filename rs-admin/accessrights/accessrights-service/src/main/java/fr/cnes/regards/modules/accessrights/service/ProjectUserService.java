@@ -101,9 +101,7 @@ public class ProjectUserService implements IProjectUserService {
     public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
         final ProjectUser user;
         if (instanceAdminUserEmail.equals(pUserEmail)) {
-            user = new ProjectUser(0L, null, null, UserStatus.ACCESS_GRANTED, new ArrayList<>(),
-                    new Role(0L, RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null, new ArrayList<>(), new ArrayList<>()),
-                    new ArrayList<>(), pUserEmail);
+            user = new ProjectUser(pUserEmail, new Role(0L, RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null, new ArrayList<>(), new ArrayList<>()), new ArrayList<>(), new ArrayList<>());
         } else {
             user = projectUserRepository.findOneByEmail(pUserEmail);
             if (user == null) {

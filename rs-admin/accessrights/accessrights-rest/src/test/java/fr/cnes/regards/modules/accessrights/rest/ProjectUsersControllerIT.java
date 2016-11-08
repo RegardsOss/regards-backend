@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -174,8 +173,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         // Initiate a specific project user for the test
         Assert.assertTrue(roleRepository.findOneByName(DefaultRoleNames.ADMIN.toString()) != null);
         final Role role = roleRepository.findOneByName(DefaultRoleNames.ADMIN.toString());
-        final ProjectUser projectUser = new ProjectUser(4824L, null, null, UserStatus.ACCESS_GRANTED, new ArrayList<>(),
-                role, new ArrayList<>(), "email@test.com");
+        final ProjectUser projectUser = new ProjectUser("email@test.com", role, new ArrayList<>(), new ArrayList<>());
         // Save it
         projectUserRepository.save(projectUser);
 

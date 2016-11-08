@@ -140,8 +140,8 @@ public class AccessRequestServiceTest {
     public void retrieveAccessRequestList() {
         // Populate all projects users (which can be access requests or not)
         final List<ProjectUser> accessRequests = new ArrayList<>();
-        accessRequests.add(new ProjectUser(0L, null, null, UserStatus.WAITING_ACCESS, null, null, null, null));
-        accessRequests.add(new ProjectUser(1L, null, null, UserStatus.WAITING_ACCESS, null, null, null, null));
+        accessRequests.add(new ProjectUser(null, null, null, null));
+        accessRequests.add(new ProjectUser(null, null, null, null));
         Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(accessRequests);
 
         try (final Stream<ProjectUser> stream = accessRequests.stream()) {

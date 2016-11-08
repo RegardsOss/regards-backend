@@ -19,7 +19,6 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
@@ -61,8 +60,7 @@ public class ProjectUserDaoTest {
     @Test
     @Purpose("Check that the system updates automaticly the field lastUpdate before any db persistence.")
     public final void setLastUpdateListener() {
-        final ProjectUser user = new ProjectUser(0L, LocalDateTime.now(), null, UserStatus.ACCESS_GRANTED,
-                new ArrayList<>(), null, new ArrayList<>(), "email@test.com");
+        final ProjectUser user = new ProjectUser("email@test.com", null, new ArrayList<>(), new ArrayList<>());
 
         // Init with a past date (2 days ago)
         final LocalDateTime initial = LocalDateTime.now().minusDays(2);

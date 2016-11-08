@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.stubs;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -64,8 +63,8 @@ public class ProjectUserRepositoryStub extends JpaRepositoryStub<ProjectUser> im
         account = accountRepository.save(account);
 
         ProjectUser projectUser;
-        projectUser = new ProjectUser(pProjectUserId, LocalDateTime.now(), LocalDateTime.now(),
-                UserStatus.ACCESS_GRANTED, new ArrayList<>(), pRole, new ArrayList<>(), pMail);
+        projectUser = new ProjectUser(pMail, pRole, new ArrayList<>(),
+                new ArrayList<>());
         return projectUser;
     }
 

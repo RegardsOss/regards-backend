@@ -20,7 +20,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
 
@@ -42,7 +42,6 @@ public class ProjectUser implements IIdentifiable<Long> {
     /**
      * The id
      */
-    @Min(0L)
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projectUserSequence")
     @Column(name = "id")
@@ -70,8 +69,9 @@ public class ProjectUser implements IIdentifiable<Long> {
     private LocalDateTime lastUpdate;
 
     /**
-     * The status of the user.
+     * The status of the user
      */
+    @NotNull
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private UserStatus status;
@@ -108,38 +108,23 @@ public class ProjectUser implements IIdentifiable<Long> {
         permissions = new ArrayList<>();
         metaData = new ArrayList<>();
         status = UserStatus.WAITING_ACCESS;
-        lastConnection = LocalDateTime.now();
-        lastUpdate = LocalDateTime.now();
     }
 
     /**
-     * Create a new {@link ProjectUser} with specific values.
+     * Creates a new {@link ProjectUser}
      *
-     * @param pId
-     *            The id
-     * @param pLastConnection
-     *            The last connection date
-     * @param pLastUpdate
-     *            The last update date
-     * @param pStatus
-     *            The status
-     * @param pMetaData
-     *            The list of meta data
+     * @param pEmail
+     *            The email
      * @param pRole
      *            The role
      * @param pPermissions
      *            The list of permissions
-     * @param pEmail
-     *            The email
+     * @param pMetaData
+     *            The list of meta data
      */
-    public ProjectUser(final Long pId, final LocalDateTime pLastConnection, final LocalDateTime pLastUpdate,
-            final UserStatus pStatus, final List<MetaData> pMetaData, final Role pRole,
-            final List<ResourcesAccess> pPermissions, final String pEmail) {
-        super();
-        id = pId;
-        lastConnection = pLastConnection;
-        lastUpdate = pLastUpdate;
-        status = pStatus;
+    public ProjectUser(final String pEmail, final Role pRole, final List<ResourcesAccess> pPermissions,
+            final List<MetaData> pMetaData) {
+        this();
         metaData = pMetaData;
         role = pRole;
         permissions = pPermissions;

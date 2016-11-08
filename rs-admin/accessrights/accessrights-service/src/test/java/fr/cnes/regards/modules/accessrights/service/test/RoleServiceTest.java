@@ -406,14 +406,14 @@ public class RoleServiceTest {
         // Define a parent role with a few users
         final List<ProjectUser> parentUsers = new ArrayList<>();
         final Role roleParent = new Role(idParent, "parent", null, new ArrayList<>(), parentUsers);
-        parentUsers.add(new ProjectUser(0L, null, null, null, null, roleParent, null, "user0@email.com"));
-        parentUsers.add(new ProjectUser(1L, null, null, null, null, roleParent, null, "user1@email.com"));
+        parentUsers.add(new ProjectUser("user0@email.com", roleParent, null, null));
+        parentUsers.add(new ProjectUser("user1@email.com", roleParent, null, null));
 
         // Define a child role with a few users
         final List<ProjectUser> childUsers = new ArrayList<>();
         final Role roleChild = new Role(idChild, "child", roleParent, new ArrayList<>(), childUsers);
-        childUsers.add(new ProjectUser(0L, null, null, null, null, roleChild, null, "user2@email.com"));
-        childUsers.add(new ProjectUser(1L, null, null, null, null, roleChild, null, "user3@email.com"));
+        childUsers.add(new ProjectUser("user2@email.com", roleChild, null, null));
+        childUsers.add(new ProjectUser("user3@email.com", roleChild, null, null));
 
         // Define the expected result: all accesses, from child and its parent
         final List<ProjectUser> expected = new ArrayList<>();

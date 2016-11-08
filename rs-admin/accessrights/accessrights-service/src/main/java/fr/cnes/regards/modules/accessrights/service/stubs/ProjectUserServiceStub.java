@@ -84,8 +84,7 @@ public class ProjectUserServiceStub implements IProjectUserService {
         final ProjectUser wanted = notWaitingAccess.stream().filter(p -> p.getId() == pUserId).findFirst().get();
         final List<MetaData> visible = wanted.getMetaData().stream()
                 .filter(m -> !m.getVisibility().equals(UserVisibility.HIDDEN)).collect(Collectors.toList());
-        return new ProjectUser(wanted.getId(), wanted.getLastConnection(), wanted.getLastUpdate(), wanted.getStatus(),
-                visible, wanted.getRole(), wanted.getPermissions(), wanted.getEmail());
+        return new ProjectUser(wanted.getEmail(), wanted.getRole(), wanted.getPermissions(), visible);
     }
 
     /*

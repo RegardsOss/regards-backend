@@ -133,11 +133,11 @@ public class SendingSchedulerTest {
     @Before
     public void setUp() {
         // Populate first batch of recipients
-        final ProjectUser projectUser0 = new ProjectUser(ZERO, null, null, null, null, null, null, EMAIL0);
-        final ProjectUser projectUser1 = new ProjectUser(ONE, null, null, null, null, null, null, EMAIL1);
-        final ProjectUser projectUser2 = new ProjectUser(TWO, null, null, null, null, null, null, EMAIL2);
-        final ProjectUser projectUser3 = new ProjectUser(THREE, null, null, null, null, null, null, EMAIL3);
-        final ProjectUser projectUser4 = new ProjectUser(FOUR, null, null, null, null, null, null, EMAIL4);
+        final ProjectUser projectUser0 = new ProjectUser(EMAIL0, null, null, null);
+        final ProjectUser projectUser1 = new ProjectUser(EMAIL1, null, null, null);
+        final ProjectUser projectUser2 = new ProjectUser(EMAIL2, null, null, null);
+        final ProjectUser projectUser3 = new ProjectUser(EMAIL3, null, null, null);
+        final ProjectUser projectUser4 = new ProjectUser(EMAIL4, null, null, null);
         projectUsers = new ArrayList<>();
         projectUsers.add(projectUser0);
         projectUsers.add(projectUser1);
