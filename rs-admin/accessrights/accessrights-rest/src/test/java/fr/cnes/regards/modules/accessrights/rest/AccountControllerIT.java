@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -173,6 +174,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         performGet(apiAccountId, jwt, expectations, errorMessage, Integer.MAX_VALUE);
     }
 
+    @Ignore
     @Test
     @Requirement("?")
     @Purpose("?")
