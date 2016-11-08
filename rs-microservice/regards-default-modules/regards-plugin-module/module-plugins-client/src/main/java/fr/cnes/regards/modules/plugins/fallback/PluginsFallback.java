@@ -14,6 +14,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.google.common.base.Optional;
+
+import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.core.exception.InvalidValueException;
 import fr.cnes.regards.modules.plugins.client.IPluginsClient;
@@ -39,13 +42,14 @@ public class PluginsFallback implements IPluginsClient {
 
     @Override
     public ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
-            @RequestParam(value = "pluginType", required = false) final String pPluginType) {
+            @RequestParam(value = "pluginType", required = false) final String pPluginType) throws EntityException {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(@PathVariable("pluginId") String pPluginId) {
+    public ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(
+            @PathVariable("pluginId") String pPluginId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }

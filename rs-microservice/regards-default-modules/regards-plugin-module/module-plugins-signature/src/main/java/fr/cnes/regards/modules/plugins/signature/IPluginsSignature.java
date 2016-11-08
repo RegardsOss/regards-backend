@@ -91,7 +91,7 @@ public interface IPluginsSignature {
      * 
      * @param pPluginConfiguration
      *            a {@link PluginConfiguration}
-     *            
+     * 
      * @return the {@link PluginConfiguration] created
      * 
      * @throws InvalidValueException
@@ -142,7 +142,7 @@ public interface IPluginsSignature {
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      * @throws InvalidValueException
      *             the {@link PluginConfiguration} is incoherent with the path parameter
-     *             
+     * 
      */
     @RequestMapping(value = "/plugins/{pluginId}/config/{configId}", method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

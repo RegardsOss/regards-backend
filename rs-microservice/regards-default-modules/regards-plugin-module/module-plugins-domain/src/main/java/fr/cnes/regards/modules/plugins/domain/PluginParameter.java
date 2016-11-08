@@ -25,8 +25,6 @@ import javax.validation.constraints.NotNull;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
- * Class PluginParameter
- *
  * Parameter associated to a plugin configuration <PluginConfiguration>
  *
  * @author Christophe Mertz

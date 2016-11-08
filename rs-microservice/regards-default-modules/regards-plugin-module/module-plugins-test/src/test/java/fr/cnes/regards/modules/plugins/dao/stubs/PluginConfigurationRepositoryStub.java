@@ -91,7 +91,7 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
 
     public PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setClass(Integer.class);
+        pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
         pluginMetaData.setPluginId("plugin-id");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);
@@ -112,7 +112,7 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
     public List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pPluginId) {
         List<PluginConfiguration> plgConfs = new ArrayList<>();
 
-        entities.stream().filter(p -> p.getPluginId().equals(pPluginId)).forEach(p -> plgConfs.add(p));
+        getEntities().stream().filter(p -> p.getPluginId().equals(pPluginId)).forEach(p -> plgConfs.add(p));
 
         return plgConfs;
     }

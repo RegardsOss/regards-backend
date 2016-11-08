@@ -78,7 +78,7 @@ public class PluginController extends AbstractController implements IPluginsSign
                 metadaDatas = pluginService.getPluginsByType(Class.forName(pPluginType));
             } catch (ClassNotFoundException e) {
                 LOGGER.error(e.getMessage());
-                throw new EntityExistsException(e);
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
 

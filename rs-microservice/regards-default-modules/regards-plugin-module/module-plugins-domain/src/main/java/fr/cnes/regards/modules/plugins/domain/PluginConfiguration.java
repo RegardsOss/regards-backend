@@ -23,8 +23,6 @@ import javax.persistence.Table;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
- * Class PluginConfiguration
- *
  * Plugin configuration contains a unique Id, plugin meta-data and parameters.
  *
  */
@@ -108,7 +106,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         super();
         pluginId = pPluginMetaData.getPluginId();
         version = pPluginMetaData.getVersion();
-        pluginClassName = pPluginMetaData.getPluginClass().getName();
+        pluginClassName = pPluginMetaData.getPluginClassName();
         parameters = pParameters;
         priorityOrder = pOrder;
         label = pLabel;
@@ -129,7 +127,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         super();
         pluginId = pPluginMetaData.getPluginId();
         version = pPluginMetaData.getVersion();
-        pluginClassName = pPluginMetaData.getPluginClass().getName();
+        pluginClassName = pPluginMetaData.getPluginClassName();
         priorityOrder = pOrder;
         label = pLabel;
         active = Boolean.TRUE;
