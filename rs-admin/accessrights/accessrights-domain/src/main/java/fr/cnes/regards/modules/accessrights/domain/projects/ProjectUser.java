@@ -24,8 +24,8 @@ import javax.validation.constraints.Min;
 import org.hibernate.validator.constraints.Email;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.core.validation.PastOrNow;
 
 /**
  * Domain class representing a REGARDS project user.

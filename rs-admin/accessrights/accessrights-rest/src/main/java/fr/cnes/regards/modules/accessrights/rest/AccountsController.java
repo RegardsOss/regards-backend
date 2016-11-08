@@ -19,6 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -26,17 +31,10 @@ import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.signature.IAccountsSignature;
-import fr.cnes.regards.modules.core.annotation.ModuleInfo;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.modules.core.rest.AbstractController;
 
 @RestController
-@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
-public class AccountsController extends AbstractController implements IAccountsSignature {
+@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+public class AccountsController implements IAccountsSignature {
 
     private static final Logger LOG = LoggerFactory.getLogger(AccountsController.class);
 
@@ -98,8 +96,7 @@ public class AccountsController extends AbstractController implements IAccountsS
     }
 
     @Override
-    @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code",
-            name = "")
+    @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code", name = "")
     public ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") final Long accountId,
             @PathVariable("reset_code") final String resetCode, @Valid @RequestBody final String pNewPassword)
             throws EntityNotFoundException, InvalidValueException {

@@ -3,8 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
 
 /**
  * Strategy interface to handle Read an Update operations on access settings.

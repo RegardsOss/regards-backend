@@ -18,11 +18,10 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.core.annotation.ModuleInfo;
-import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.rest.AbstractController;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 import fr.cnes.regards.modules.project.signature.IProjectConnectionSignature;
@@ -37,9 +36,8 @@ import fr.cnes.regards.modules.project.signature.IProjectConnectionSignature;
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
-public class ProjectConnectionController extends AbstractController
+@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+public class ProjectConnectionController
         implements IResourceController<ProjectConnection>, IProjectConnectionSignature {
 
     /**
@@ -65,8 +63,7 @@ public class ProjectConnectionController extends AbstractController
     }
 
     @Override
-    @ResourceAccess(
-            description = "retrieve a project connection associated to a given project and a given microservice")
+    @ResourceAccess(description = "retrieve a project connection associated to a given project and a given microservice")
     public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
             @PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroService) throws EntityNotFoundException {
