@@ -23,7 +23,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>microservice-regards</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<!-- Spring boot config -->
 		<dependency>

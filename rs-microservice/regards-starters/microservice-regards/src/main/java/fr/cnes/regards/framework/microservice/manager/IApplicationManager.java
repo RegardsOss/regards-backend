@@ -8,10 +8,11 @@ import java.io.IOException;
 /**
  *
  * Microservice application manager
- * 
- * @author Marc Sordi
  *
+ * @author Marc Sordi
+ * @author Sylvain Vissiere-Guerinet
  */
+@FunctionalInterface
 public interface IApplicationManager {
 
     void immediateShutdown() throws IOException;

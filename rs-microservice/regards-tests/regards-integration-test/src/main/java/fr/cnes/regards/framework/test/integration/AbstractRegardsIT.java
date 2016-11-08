@@ -87,9 +87,19 @@ public abstract class AbstractRegardsIT {
     protected abstract Logger getLogger();
 
     protected ResultActions performGet(final String pUrlTemplate, final String pAuthenticationToken,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage) {
+        return performRequest(pAuthenticationToken, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage);
+    }
+
+    protected ResultActions performGet(final String pUrlTemplate, final String pAuthenticationToken,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         return performRequest(pAuthenticationToken, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage,
                               pUrlVariables);
+    }
+
+    protected ResultActions performPost(final String pUrlTemplate, final String pAuthenticationToken,
+            final Object pContent, final List<ResultMatcher> pMatchers, final String pErrorMessage) {
+        return performRequest(pAuthenticationToken, HttpMethod.POST, pUrlTemplate, pContent, pMatchers, pErrorMessage);
     }
 
     protected ResultActions performPost(final String pUrlTemplate, final String pAuthenticationToken,
@@ -100,10 +110,20 @@ public abstract class AbstractRegardsIT {
     }
 
     protected ResultActions performPut(final String pUrlTemplate, final String pAuthenticationToken,
+            final Object pContent, final List<ResultMatcher> pMatchers, final String pErrorMessage) {
+        return performRequest(pAuthenticationToken, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage);
+    }
+
+    protected ResultActions performPut(final String pUrlTemplate, final String pAuthenticationToken,
             final Object pContent, final List<ResultMatcher> pMatchers, final String pErrorMessage,
             final Object... pUrlVariables) {
         return performRequest(pAuthenticationToken, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage,
                               pUrlVariables);
+    }
+
+    protected ResultActions performDelete(final String pUrlTemplate, final String pAuthenticationToken,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage) {
+        return performRequest(pAuthenticationToken, HttpMethod.DELETE, pUrlTemplate, pMatchers, pErrorMessage);
     }
 
     protected ResultActions performDelete(final String pUrlTemplate, final String pAuthenticationToken,
@@ -115,27 +135,51 @@ public abstract class AbstractRegardsIT {
     // Automatic default security management methods
 
     protected ResultActions performDefaultGet(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
+            final String pErrorMessage) {
+        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.GET);
+        return performGet(pUrlTemplate, jwt, pMatchers, pErrorMessage);
+    }
+
+    protected ResultActions performDefaultGet(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
             final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.GET);
-        return performRequest(jwt, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
+        return performGet(pUrlTemplate, jwt, pMatchers, pErrorMessage, pUrlVariables);
+    }
+
+    protected ResultActions performDefaultPost(final String pUrlTemplate, final Object pContent,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage) {
+        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
+        return performPost(pUrlTemplate, jwt, pContent, pMatchers, pErrorMessage);
     }
 
     protected ResultActions performDefaultPost(final String pUrlTemplate, final Object pContent,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
-        return performRequest(jwt, HttpMethod.POST, pUrlTemplate, pContent, pMatchers, pErrorMessage, pUrlVariables);
+        return performPost(pUrlTemplate, jwt, pContent, pMatchers, pErrorMessage, pUrlVariables);
+    }
+
+    protected ResultActions performDefaultPut(final String pUrlTemplate, final Object pContent,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage) {
+        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.PUT);
+        return performPut(pUrlTemplate, jwt, pContent, pMatchers, pErrorMessage);
     }
 
     protected ResultActions performDefaultPut(final String pUrlTemplate, final Object pContent,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.PUT);
-        return performRequest(jwt, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage, pUrlVariables);
+        return performPut(pUrlTemplate, jwt, pContent, pMatchers, pErrorMessage, pUrlVariables);
+    }
+
+    protected ResultActions performDefaultDelete(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
+            final String pErrorMessage) {
+        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.DELETE);
+        return performDelete(pUrlTemplate, jwt, pMatchers, pErrorMessage);
     }
 
     protected ResultActions performDefaultDelete(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
             final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.DELETE);
-        return performRequest(jwt, HttpMethod.DELETE, pUrlTemplate, pMatchers, pErrorMessage, pUrlVariables);
+        return performDelete(pUrlTemplate, jwt, pMatchers, pErrorMessage, pUrlVariables);
     }
 
     /**
