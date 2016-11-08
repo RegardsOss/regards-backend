@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.security.utils.endpoint.IRoleSysAccessVoter;
  *
  */
 @ConditionalOnWebApplication
-
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfiguration {
 

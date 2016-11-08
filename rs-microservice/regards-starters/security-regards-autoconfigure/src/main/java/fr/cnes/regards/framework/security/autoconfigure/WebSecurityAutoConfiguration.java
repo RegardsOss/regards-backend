@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 @Configuration
 @EnableWebSecurity
 @ConditionalOnWebApplication
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
     /**
