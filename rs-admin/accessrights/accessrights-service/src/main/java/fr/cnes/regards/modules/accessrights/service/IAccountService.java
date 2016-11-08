@@ -5,12 +5,12 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.List;
 
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
  * Define the base interface for any implementation of an Account Service.
@@ -36,24 +36,6 @@ public interface IAccountService {
      *             Thrown when an {@link Account} with same id already exists
      */
     Account createAccount(Account pNewAccount) throws AlreadyExistingException;
-
-    // /**
-    // * Retrieve the account settings
-    // *
-    // * @return The account settings
-    // */
-    // List<String> retrieveAccountSettings();
-    //
-    // /**
-    // * Update the setting managing the account.
-    // *
-    // * @param pUpdatedAccountSetting
-    // * The new account setting
-    // * @throws InvalidValueException
-    // * Thrown when the passed <code>pUpdatedAccountSetting</code> is different from <code>manual</code> or
-    // * <code>auto-accept</code>
-    // */
-    // void updateAccountSetting(String pUpdatedAccountSetting) throws InvalidValueException;
 
     /**
      * Return <code>true</code> if an {@link Account} of passed <code>id</code> exists.

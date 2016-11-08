@@ -15,7 +15,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.util.ObjectUtils;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.modules.core.validation.PastOrNow;
+import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 
 /**
  * Models a simple mail message, including data such as the from, to, cc, subject, and text fields.

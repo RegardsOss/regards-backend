@@ -3,28 +3,27 @@ package fr.cnes.regards.modules.accessrights.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
+import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 
 /**
  * {@link IProjectUserService} implementation
@@ -35,6 +34,11 @@ import fr.cnes.regards.modules.core.exception.InvalidValueException;
 public class ProjectUserService implements IProjectUserService {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectUserService.class);
+
+    /**
      * CRUD repository managing {@link ProjectUser}s. Autowired by Spring.
      */
     private final IProjectUserRepository projectUserRepository;
@@ -43,11 +47,6 @@ public class ProjectUserService implements IProjectUserService {
      * Service handling CRUD operation on {@link Role}s
      */
     private final IRoleService roleService;
-
-    /**
-     * CRUD repository managing {@link Role}s. Autowired by Spring.
-     */
-    private final IRoleRepository roleRepository;
 
     /**
      * A filter on meta data to keep visible ones only
@@ -67,16 +66,14 @@ public class ProjectUserService implements IProjectUserService {
      *            The project user repo
      * @param pRoleService
      *            The role service
-     * @param pRoleRepository
-     *            The role repo
+     * @param pInstanceAdminUserEmail
+     *            The instance admin user email
      */
     public ProjectUserService(final IProjectUserRepository pProjectUserRepository, final IRoleService pRoleService,
-            final IRoleRepository pRoleRepository,
             @Value("${regards.accounts.root.user.login}") final String pInstanceAdminUserEmail) {
         super();
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
-        roleRepository = pRoleRepository;
         instanceAdminUserEmail = pInstanceAdminUserEmail;
     }
 
@@ -102,7 +99,7 @@ public class ProjectUserService implements IProjectUserService {
      */
     @Override
     public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
-        ProjectUser user;
+        final ProjectUser user;
         if (instanceAdminUserEmail.equals(pUserEmail)) {
             user = new ProjectUser(0L, null, null, UserStatus.ACCESS_GRANTED, new ArrayList<>(),
                     new Role(0L, RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null, new ArrayList<>(), new ArrayList<>()),
@@ -158,8 +155,8 @@ public class ProjectUserService implements IProjectUserService {
 
         try (Stream<ResourcesAccess> previous = user.getPermissions().stream();
                 Stream<ResourcesAccess> updated = pUpdatedUserAccessRights.stream()) {
-            user.setPermissions(Stream.concat(updated, previous).filter(distinctByKey(r -> r.getId()))
-                    .collect(Collectors.toList()));
+            user.setPermissions(Stream.concat(updated, previous)
+                    .filter(RegardsStreamUtils.distinctByKey(r -> r.getId())).collect(Collectors.toList()));
         }
 
         save(user);
@@ -200,7 +197,7 @@ public class ProjectUserService implements IProjectUserService {
         Role returnedRole = userRole;
 
         if (pBorrowedRoleName != null) {
-            final Role borrowedRole = roleRepository.findOneByName(pBorrowedRoleName);
+            final Role borrowedRole = roleService.retrieveRole(pBorrowedRoleName);
             if (roleService.isHierarchicallyInferior(borrowedRole, returnedRole)) {
                 returnedRole = borrowedRole;
             } else {
@@ -210,16 +207,16 @@ public class ProjectUserService implements IProjectUserService {
         }
 
         // Merge permissions from the project user and from the role
-        List<ResourcesAccess> permissions;
-        try (Stream<ResourcesAccess> fromUser = projectUser.getPermissions().stream();
-                Stream<ResourcesAccess> fromRole = roleService.retrieveRoleResourcesAccessList(returnedRole.getId())
-                        .stream()) {
-            permissions = Stream.concat(fromUser, fromRole).distinct().collect(Collectors.toList());
+        final List<ResourcesAccess> merged = new ArrayList<>();
+        final List<ResourcesAccess> fromUser = projectUser.getPermissions();
+        merged.addAll(fromUser);
+        try {
+            final List<ResourcesAccess> fromRole = roleService.retrieveRoleResourcesAccessList(returnedRole.getId());
+            merged.addAll(fromRole);
         } catch (final EntityNotFoundException e) {
-            permissions = projectUser.getPermissions();
+            LOG.debug("Could not retrieve permissions from role", e);
         }
-
-        return permissions;
+        return merged;
     }
 
     @Override
@@ -242,28 +239,6 @@ public class ProjectUserService implements IProjectUserService {
     private void save(final ProjectUser pProjectUser) {
         pProjectUser.setLastUpdate(LocalDateTime.now());
         projectUserRepository.save(pProjectUser);
-    }
-
-    /**
-     * Filter in order to remove doubles (same as distinct) but with custom key extraction.
-     * <p>
-     * Warning: Keeps the first seen, so the order does matter!
-     *
-     * For example use as: persons.stream().filter(distinctByKey(p -> p.getName());
-     *
-     * Removes doubles based on person.name attribute.
-     *
-     *
-     * @param pKeyExtractor
-     *            The
-     * @param <T>
-     *            The type
-     * @return A predicate
-     * @see http://stackoverflow.com/questions/23699371/java-8-distinct-by-property
-     */
-    private static <T> Predicate<T> distinctByKey(final Function<? super T, ?> pKeyExtractor) {
-        final Map<Object, Boolean> seen = new ConcurrentHashMap<>();
-        return t -> seen.putIfAbsent(pKeyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
 }

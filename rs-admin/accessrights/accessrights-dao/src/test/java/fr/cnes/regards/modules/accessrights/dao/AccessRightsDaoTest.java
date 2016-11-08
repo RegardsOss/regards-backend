@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.dao;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,20 +42,26 @@ public class AccessRightsDaoTest {
     private JWTService jwtService;
 
     /**
+     * @throws JwtException
+     *             if the token cannot be parsed
+     */
+    @Before
+    public void setUp() throws JwtException {
+        jwtService.injectToken("test1", "USER");
+    }
+
+    /**
      *
      * Test method
-     * 
+     *
      * @throws JwtException
+     *             if the token cannot be parsed
      *
      * @since 1.0-SNAPSHOT
      */
     @Test
     public void test() throws JwtException {
-
-        jwtService.injectToken("test1", "USER");
-
         projectUserRepo.findAll();
-
     }
 
 }

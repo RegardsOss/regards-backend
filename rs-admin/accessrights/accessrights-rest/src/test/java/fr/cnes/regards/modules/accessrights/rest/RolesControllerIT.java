@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -33,17 +35,13 @@ import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.IRoleService;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
 
 /**
- *
- * RolesControllerIT
- *
  * Integration tests for Roles REST Controller.
  *
  * @author sbinda
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
- *
  */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class RolesControllerIT extends AbstractAdministrationIT {
@@ -153,6 +151,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         performGet(apiRolesName, jwt, expectations, "TODO Error message", wrongRoleName);
     }
 
+    @Ignore
     @Test
     @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_210")
@@ -185,12 +184,32 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         performPut(apiRolesId, jwt, notUpdated, expectations, "TODO Error message", id);
     }
 
+    /**
+     * Check that the system prevents from deleting a native role.
+     */
+    @Test
+    @DirtiesContext
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system prevents from deleting a native role.")
+    public void removeRoleNative() {
+        // In RoleRepositoryStub, role of id 0 is native
+        final Long roleId = 0L;
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isForbidden());
+        performDelete(apiRolesId, jwt, expectations, "TODO Error message", roleId);
+    }
+
+    /**
+     * Check that the system allows to delete a role.
+     */
     @Test
     @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to delete a role.")
     public void removeRole() {
-        final Long roleId = 0L;
+        // In RoleRepositoryStub, role of id 5 is not native
+        final Long roleId = 5L;
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());

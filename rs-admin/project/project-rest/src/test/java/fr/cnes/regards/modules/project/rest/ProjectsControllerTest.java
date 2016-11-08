@@ -20,10 +20,10 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import fr.cnes.regards.framework.hateoas.DefaultResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.core.exception.EntityException;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.dao.stub.ProjectRepositoryStub;
 import fr.cnes.regards.modules.project.domain.Project;

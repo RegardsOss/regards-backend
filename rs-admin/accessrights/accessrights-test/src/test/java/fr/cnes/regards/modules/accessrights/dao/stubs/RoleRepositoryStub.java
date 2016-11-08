@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.test.repository.RepositoryStub;
+import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 @Repository
 @Profile("test")
 @Primary
-public class RoleRepositoryStub extends RepositoryStub<Role> implements IRoleRepository {
+public class RoleRepositoryStub extends JpaRepositoryStub<Role> implements IRoleRepository {
 
     public RoleRepositoryStub() {
         final List<ResourcesAccess> permissionList = new ArrayList<ResourcesAccess>();
@@ -58,12 +58,9 @@ public class RoleRepositoryStub extends RepositoryStub<Role> implements IRoleRep
         entities.add(roleInstanceAdmin);
 
         // Init some custom roles
-        final Role role5 = new Role(5L, "Role 5", rolePublic, permissionList.subList(1, 2),
-                projectUsers.subList(0, 1));
-        final Role role6 = new Role(6L, "Role 6", rolePublic, permissionList.subList(0, 2),
-                projectUsers.subList(1, 2));
-        final Role role7 = new Role(7L, "Role 7", rolePublic, permissionList.subList(1, 3),
-                projectUsers.subList(0, 2));
+        final Role role5 = new Role(5L, "Role 5", rolePublic, permissionList.subList(1, 2), projectUsers.subList(0, 1));
+        final Role role6 = new Role(6L, "Role 6", rolePublic, permissionList.subList(0, 2), projectUsers.subList(1, 2));
+        final Role role7 = new Role(7L, "Role 7", rolePublic, permissionList.subList(1, 3), projectUsers.subList(0, 2));
         entities.add(role5);
         entities.add(role6);
         entities.add(role7);

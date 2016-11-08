@@ -26,7 +26,6 @@ import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.IAccessRequestService;
-import fr.cnes.regards.modules.project.dao.IProjectRepository;
 
 /**
  *
@@ -50,18 +49,6 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
      * Test project name
      */
     public static final String PROJECT_TEST_NAME = "test-1";
-
-    /**
-     * Project Repository STUB
-     */
-    @Autowired
-    private IProjectRepository projectRepository;
-
-    /**
-     * Method authorization service.
-     */
-    @Autowired
-    private MethodAuthorizationService methodAuthorizationService;
 
     /**
      * The autowired service handling the jwt token.
@@ -106,7 +93,7 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
     private String apiAccessSettings;
 
     /**
-     * The error message TODO: Remove this? We should not shadow the error message thrown by the caght exception.
+     * The error message TODO: Remove this? We should not shadow the error message thrown by the caught exception.
      */
     private String errorMessage;
 

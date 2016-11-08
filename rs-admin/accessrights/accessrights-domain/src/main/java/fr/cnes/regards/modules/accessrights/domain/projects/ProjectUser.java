@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -23,11 +24,10 @@ import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.Email;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.core.validation.PastOrNow;
+import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUserListener;
 
 /**
  * Domain class representing a REGARDS project user.
@@ -35,16 +35,9 @@ import fr.cnes.regards.modules.core.validation.PastOrNow;
  * @author CS
  */
 @Entity(name = "T_PROJECT_USER")
+@EntityListeners(ProjectUserListener.class)
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "SEQ_PROJECT_USER")
 public class ProjectUser implements IIdentifiable<Long> {
-
-    // /**
-    // * Temporary value to automatically manage ids
-    // */
-    // // TODO : Remove this useless attribute and add the id management in stub for test
-    // @Transient
-    // @Min(0L)
-    // private static Long maxProjectUserId_ = 0L;
 
     /**
      * The id
@@ -63,17 +56,15 @@ public class ProjectUser implements IIdentifiable<Long> {
     private String email;
 
     /**
-     * The last connection date. Is json ignored because this date is handled by the system and not the client.
+     * The last connection date
      */
-    @JsonIgnore
     @PastOrNow
     @Column(name = "lastConnection")
     private LocalDateTime lastConnection;
 
     /**
-     * The last update date. Is json ignored because this date is handled by the system and not the client.
+     * The last update date
      */
-    @JsonIgnore
     @PastOrNow
     @Column(name = "lastUpdate")
     private LocalDateTime lastUpdate;
@@ -114,8 +105,6 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     public ProjectUser() {
         super();
-        // id = maxProjectUserId_;
-        // maxProjectUserId_++;
         permissions = new ArrayList<>();
         metaData = new ArrayList<>();
         status = UserStatus.WAITING_ACCESS;

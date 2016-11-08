@@ -17,22 +17,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.IRoleService;
 import fr.cnes.regards.modules.accessrights.signature.IRolesSignature;
-import fr.cnes.regards.modules.core.annotation.ModuleInfo;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.modules.core.rest.AbstractController;
 
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
-public class RolesController extends AbstractController implements IRolesSignature {
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+public class RolesController implements IRolesSignature {
 
     @Autowired
     private IRoleService roleService;
@@ -72,7 +71,8 @@ public class RolesController extends AbstractController implements IRolesSignatu
 
     @Override
     @ResourceAccess(description = "Remove the role of role_id", name = "")
-    public ResponseEntity<Void> removeRole(@PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
+    public ResponseEntity<Void> removeRole(@PathVariable("role_id") final Long pRoleId)
+            throws OperationForbiddenException {
         roleService.removeRole(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -104,9 +104,7 @@ public class RolesController extends AbstractController implements IRolesSignatu
     }
 
     @Override
-    @ResourceAccess(
-            description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id",
-            name = "")
+    @ResourceAccess(description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id", name = "")
     public ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(
             @PathVariable("role_id") final Long pRoleId) {
         List<ProjectUser> projectUserList = new ArrayList<>();

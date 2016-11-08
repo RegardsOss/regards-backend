@@ -53,6 +53,11 @@ public class SendingSchedulerTest {
     private static final Long FOUR = 4L;
 
     /**
+     * Constant
+     */
+    private static final Integer FOUR_INT = 4;
+
+    /**
      * An email
      */
     private static final String EMAIL0 = "email0@test.com";
@@ -76,6 +81,11 @@ public class SendingSchedulerTest {
      * An other email
      */
     private static final String EMAIL4 = "email4@test.com";
+
+    /**
+     * A message
+     */
+    private static final String MESSAGE = "message";
 
     /**
      * The list of all notifications
@@ -161,35 +171,35 @@ public class SendingSchedulerTest {
         settings0.setDays(1);
         settings0.setHours(2);
         settings0.setFrequency(NotificationFrequency.DAILY);
-        settings0.setUser(projectUser0);
+        settings0.setProjectUser(projectUser0);
         settings.add(settings0);
         final NotificationSettings settings1 = new NotificationSettings();
         settings1.setId(ONE);
         settings1.setDays(2);
         settings1.setHours(2);
         settings1.setFrequency(NotificationFrequency.DAILY);
-        settings1.setUser(projectUser1);
+        settings1.setProjectUser(projectUser1);
         settings.add(settings1);
         final NotificationSettings settings2 = new NotificationSettings();
         settings2.setId(TWO);
         settings2.setDays(2);
         settings2.setHours(2);
         settings2.setFrequency(NotificationFrequency.WEEKLY);
-        settings2.setUser(projectUser2);
+        settings2.setProjectUser(projectUser2);
         settings.add(settings2);
         final NotificationSettings settings3 = new NotificationSettings();
         settings3.setId(THREE);
         settings3.setDays(2);
         settings3.setHours(2);
         settings3.setFrequency(NotificationFrequency.MONTHLY);
-        settings3.setUser(projectUser3);
+        settings3.setProjectUser(projectUser3);
         settings.add(settings3);
         final NotificationSettings settings4 = new NotificationSettings();
         settings4.setId(FOUR);
         settings4.setDays(2);
         settings4.setHours(2);
         settings4.setFrequency(NotificationFrequency.CUSTOM);
-        settings4.setUser(projectUser4);
+        settings4.setProjectUser(projectUser4);
         settings.add(settings4);
 
         // Populate notifications
@@ -320,11 +330,11 @@ public class SendingSchedulerTest {
         final Notification n = new Notification();
         n.setId(ONE);
         n.setDate(LocalDateTime.now().minusDays(THREE));
-        n.setMessage("message");
+        n.setMessage(MESSAGE);
         n.setProjectUserRecipients(new ArrayList<>());
         n.getProjectUserRecipients().add(projectUsers.get(0));
         n.getProjectUserRecipients().add(projectUsers.get(2));
-        n.getProjectUserRecipients().add(projectUsers.get(4));
+        n.getProjectUserRecipients().add(projectUsers.get(FOUR_INT));
         n.setRoleRecipients(new ArrayList<>());
 
         final List<Notification> toSend = new ArrayList<>();
@@ -355,11 +365,11 @@ public class SendingSchedulerTest {
         final Notification n = new Notification();
         n.setId(ONE);
         n.setDate(LocalDateTime.now().minusHours(2));
-        n.setMessage("message");
+        n.setMessage(MESSAGE);
         n.setProjectUserRecipients(new ArrayList<>());
         n.getProjectUserRecipients().add(projectUsers.get(0));
         n.getProjectUserRecipients().add(projectUsers.get(2));
-        n.getProjectUserRecipients().add(projectUsers.get(4));
+        n.getProjectUserRecipients().add(projectUsers.get(FOUR_INT));
         n.setRoleRecipients(new ArrayList<>());
 
         final List<Notification> toSend = new ArrayList<>();
