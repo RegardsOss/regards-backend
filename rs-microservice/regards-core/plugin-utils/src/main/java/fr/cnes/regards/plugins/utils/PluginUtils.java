@@ -79,9 +79,22 @@ public final class PluginUtils {
 
             // Store plugin reference
             plugins.put(plugin.getPluginId(), plugin);
+
             LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.", plugin.getPluginClassName(),
                                       plugin.getPluginId()));
         }
+        return plugins;
+    }
+
+    public static Map<String, PluginMetaData> getPlugins(final List<String> pPrefixs) throws PluginUtilsException {
+        final Map<String, PluginMetaData> plugins = new HashMap<>();
+        pPrefixs.forEach(p -> {
+            try {
+                plugins.putAll(getPlugins(p));
+            } catch (PluginUtilsException e) {
+                e.printStackTrace();
+            }
+        });
         return plugins;
     }
 

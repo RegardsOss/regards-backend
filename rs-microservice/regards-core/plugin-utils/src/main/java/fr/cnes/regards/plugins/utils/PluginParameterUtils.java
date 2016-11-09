@@ -295,7 +295,7 @@ public final class PluginParameterUtils {
                                   pPlgParamAnnotation.name(), pPluginInstance.getClass(), paramValue),
                     e);
         }
-        LOGGER.debug("Ending   postProcessPrimitiveType :" + pPlgParamAnnotation.name());
+        LOGGER.debug("Ending postProcessPrimitiveType :" + pPlgParamAnnotation.name());
     }
 
     /**
@@ -336,7 +336,7 @@ public final class PluginParameterUtils {
                     e);
         }
 
-        LOGGER.debug("Ending   postProcessInterface :" + pPlgParamAnnotation.name());
+        LOGGER.debug("Ending postProcessInterface :" + pPlgParamAnnotation.name());
     }
 
     /**
