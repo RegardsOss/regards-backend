@@ -41,6 +41,9 @@ import fr.cnes.regards.modules.project.signature.IProjectsSignature;
  */
 public class ProjectsControllerTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(ProjectsControllerTest.class);
 
     /**
