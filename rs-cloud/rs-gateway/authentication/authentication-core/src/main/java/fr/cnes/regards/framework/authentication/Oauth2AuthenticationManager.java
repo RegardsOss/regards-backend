@@ -64,6 +64,16 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     private BeanFactory beanFactory;
 
+    /**
+     * The default constructor.
+     * 
+     * @param pMicroserviceName
+     *            The microservice name
+     * @param pDefaultAuthenticationPlugin
+     *            The {@link IAuthenticationPlugin} to used
+     * @param pJwtService
+     *            The {@link JWTService} to used
+     */
     public Oauth2AuthenticationManager(final String pMicroserviceName,
             final IAuthenticationPlugin pDefaultAuthenticationPlugin, final JWTService pJwtService) {
         super();
@@ -205,7 +215,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         // Retrieve account
         UserDetails userDetails;
         try {
-            userDetails = retreiveUserDetails(pUserName, pScope);
+            userDetails = retrieveUserDetails(pUserName, pScope);
         } catch (final EntityNotFoundException e) {
             LOG.debug(e.getMessage(), e);
             throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
@@ -220,18 +230,18 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     /**
      *
-     * Retreive user information from internal REGARDS database
+     * Retrieve user information from internal REGARDS database
      *
      * @param pEmail
      *            user email
      * @param pScope
      *            project to authenticate to
      * @return UserDetails
-     * @throws UserNotFoundException
+     * @throws EntityNotFoundException
      *             user not found in internal REGARDS database
      * @since 1.0-SNAPSHOT
      */
-    public UserDetails retreiveUserDetails(final String pEmail, final String pScope) throws EntityNotFoundException {
+    public UserDetails retrieveUserDetails(final String pEmail, final String pScope) throws EntityNotFoundException {
         final UserDetails user = new UserDetails();
         try {
 
