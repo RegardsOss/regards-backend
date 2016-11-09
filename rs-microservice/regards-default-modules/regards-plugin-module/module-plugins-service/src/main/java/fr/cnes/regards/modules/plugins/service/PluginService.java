@@ -5,7 +5,6 @@
 package fr.cnes.regards.modules.plugins.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -36,9 +36,19 @@ public class PluginService implements IPluginService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
 
     /**
+     * The default Regards package for the {@link Plugin} of the core
+     */
+    private static final String REGARDS_PACKAGE_PLUGINS_DEFAULT = "fr.cnes.regards.plugins";
+
+    /**
+     * The default Regards package for the {@link Plugin} of the contributors
+     */
+    private static final String CONTRIB_PACKAGE_PLUGINS_DEFAULT = "fr.cnes.regards.contrib";
+
+    /**
      * The plugin's package to scan
      */
-    private List<String> pluginPackage = Arrays.asList( "fr.cnes.regards.plugins", "fr.cnes.regards.contrib" );
+    private List<String> pluginPackage = new ArrayList<>();
 
     /**
      * {@link PluginConfiguration} JPA Repository
@@ -60,15 +70,13 @@ public class PluginService implements IPluginService {
     public PluginService(IPluginConfigurationRepository pPluginConfigurationRepository) {
         super();
         pluginConfRepository = pPluginConfigurationRepository;
+        getPluginPackage().add(REGARDS_PACKAGE_PLUGINS_DEFAULT);
+        getPluginPackage().add(CONTRIB_PACKAGE_PLUGINS_DEFAULT);
     }
 
     private Map<String, PluginMetaData> getLoadedPlugins() {
         if (plugins == null) {
-            try {
-                plugins = PluginUtils.getPlugins(getPluginPackage());
-            } catch (PluginUtilsException e) {
-                LOGGER.warn(e.getMessage());
-            }
+            plugins = PluginUtils.getPlugins(getPluginPackage());
         }
         return plugins;
     }
