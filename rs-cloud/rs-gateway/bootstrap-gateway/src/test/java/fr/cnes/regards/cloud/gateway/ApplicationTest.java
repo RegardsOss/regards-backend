@@ -4,10 +4,7 @@
 package fr.cnes.regards.cloud.gateway;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 
 /**
  *
@@ -18,7 +15,6 @@ import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@RunWith(RegardsSpringRunner.class)
 @SpringBootTest(classes = Application.class)
 public class ApplicationTest {
 
