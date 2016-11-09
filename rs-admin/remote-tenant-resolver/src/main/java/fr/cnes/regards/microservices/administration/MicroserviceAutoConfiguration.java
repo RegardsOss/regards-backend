@@ -5,11 +5,13 @@ package fr.cnes.regards.microservices.administration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -28,6 +30,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
+@AutoConfigureBefore(DataSourcesConfiguration.class)
 public class MicroserviceAutoConfiguration {
 
     /**

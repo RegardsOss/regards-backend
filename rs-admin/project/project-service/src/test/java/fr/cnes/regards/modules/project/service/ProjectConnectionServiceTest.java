@@ -108,7 +108,8 @@ public class ProjectConnectionServiceTest {
         projectService = new ProjectService(projectRepoStub);
 
         final IProjectConnectionRepository projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
-        projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub);
+        projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub, null,
+                "rs-admin");
 
         final Project project1 = projectRepoStub
                 .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));

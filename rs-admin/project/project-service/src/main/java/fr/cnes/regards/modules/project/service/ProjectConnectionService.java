@@ -3,10 +3,15 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -32,6 +37,11 @@ public class ProjectConnectionService implements IProjectConnectionService {
     private static final Logger LOG = LoggerFactory.getLogger(ProjectConnectionService.class);
 
     /**
+     * Name of the current microservice
+     */
+    private final String microserviceName;
+
+    /**
      * JPA Repository to query projects from database
      */
     private final IProjectRepository projectRepository;
@@ -42,18 +52,52 @@ public class ProjectConnectionService implements IProjectConnectionService {
     private final IProjectConnectionRepository projectConnectionRepository;
 
     /**
+     * JPA Multitenants default configuration from properties file.
+     */
+    private final MultitenantDaoProperties defaultProperties;
+
+    /**
      * The constructor.
      *
      * @param pProjectRepository
      *            The JPA {@link Project} repository.
      * @param pProjectConnectionRepository
      *            The JPA {@link ProjectConnection} repository.
+     * @param pDefaultProperties
+     *            multitenant DAO properties form config file
+     * @param pMicroserviceName
+     *            current microservice name
      */
     public ProjectConnectionService(final IProjectRepository pProjectRepository,
-            final IProjectConnectionRepository pProjectConnectionRepository) {
+            final IProjectConnectionRepository pProjectConnectionRepository,
+            final MultitenantDaoProperties pDefaultProperties,
+            @Value("${spring.application.name}") final String pMicroserviceName) {
         super();
         projectRepository = pProjectRepository;
         projectConnectionRepository = pProjectConnectionRepository;
+        defaultProperties = pDefaultProperties;
+        microserviceName = pMicroserviceName;
+    }
+
+    /**
+     *
+     * Initialize projects.
+     *
+     * @since 1.0-SNAPHOT
+     */
+    @PostConstruct
+    public void projectsInitialization() {
+        // Create project from properties files it does not exists yet
+        for (final TenantConnection tenant : defaultProperties.getTenants()) {
+            if (projectRepository.findOneByName(tenant.getName()) == null) {
+                LOG.info(String.format("Creating new project %s from static properties configuration",
+                                       tenant.getName()));
+                final Project project = projectRepository.save(new Project("", "", true, tenant.getName()));
+                // Then create connection for current microservice
+                projectConnectionRepository.save(new ProjectConnection(project, microserviceName, tenant.getUserName(),
+                        tenant.getPassword(), tenant.getDriverClassName(), tenant.getUrl()));
+            }
+        }
     }
 
     @Override

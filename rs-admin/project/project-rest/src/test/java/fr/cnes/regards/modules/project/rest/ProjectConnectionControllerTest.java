@@ -107,7 +107,8 @@ public class ProjectConnectionControllerTest {
         Mockito.when(methodMocked.hasAccess(Mockito.any(), Mockito.any())).thenReturn(true);
 
         projectConnectionController = new ProjectConnectionController(
-                new ProjectConnectionService(projectRepo, projectConnRepo), new DefaultResourceService(methodMocked));
+                new ProjectConnectionService(projectRepo, projectConnRepo, null, "rs-admin"),
+                new DefaultResourceService(methodMocked));
 
         // Initialization of in-lines entities
         existingProject = new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_0);
