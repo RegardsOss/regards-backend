@@ -16,7 +16,7 @@ import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
  *
  * Plugin utilities
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 public final class PluginInterfaceUtils {
 
@@ -27,6 +27,27 @@ public final class PluginInterfaceUtils {
      */
     private PluginInterfaceUtils() {
         // Static class
+    }
+
+    /**
+     *
+     * Retrieve all annotated {@link PluginInterface}.
+     * 
+     * @param pPrefixs
+     *            a list of package prefix used for the search
+     * @return all class annotated {@link PluginInterface}
+     */
+    public static List<String> getInterfaces(final List<String> pPrefixs) {
+        final List<String> interfaces = new ArrayList<>();
+
+        pPrefixs.forEach(p -> {
+            final List<String> ll = getInterfaces(p);
+            if (ll != null && !ll.isEmpty()) {
+                ll.forEach(s -> interfaces.add(s));
+            }
+        });
+
+        return interfaces;
     }
 
     /**

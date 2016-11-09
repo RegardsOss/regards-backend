@@ -16,11 +16,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>websocket-regards-autoconfigure</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-websocket</artifactId>
 		</dependency>

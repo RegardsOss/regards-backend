@@ -17,13 +17,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>hateoas-regards-autoconfigure</artifactId>
-			<version>${project.version}</version>
+			<artifactId>hateoas-regards</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>hateoas-regards</artifactId>
-			<version>${project.version}</version>
+			<artifactId>security-regards-starter</artifactId>
 		</dependency>
 	</dependencies>
 </project>

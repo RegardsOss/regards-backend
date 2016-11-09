@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.plugins.annotations.Plugin;
@@ -32,14 +31,24 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
 public class PluginService implements IPluginService {
 
     /**
-     * Package scanned to find plugins.
-     */
-    public static final String PLUGINS_PACKAGE = "fr.cnes.regards.plugins";
-
-    /**
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
+
+    /**
+     * The default Regards package for the {@link Plugin} of the core
+     */
+    private static final String REGARDS_PACKAGE_PLUGINS_DEFAULT = "fr.cnes.regards.plugins";
+
+    /**
+     * The default Regards package for the {@link Plugin} of the contributors
+     */
+    private static final String CONTRIB_PACKAGE_PLUGINS_DEFAULT = "fr.cnes.regards.contrib";
+
+    /**
+     * The plugin's package to scan
+     */
+    private final List<String> pluginPackage = new ArrayList<>();
 
     /**
      * {@link PluginConfiguration} JPA Repository
@@ -57,34 +66,25 @@ public class PluginService implements IPluginService {
      *
      * @param pPluginConfigurationRepository
      *            {@link PluginConfiguration} JPA repository
-     * @throws PluginUtilsException
-     *             throw if an error occurs
      */
-    public PluginService(IPluginConfigurationRepository pPluginConfigurationRepository) throws PluginUtilsException {
+    public PluginService(IPluginConfigurationRepository pPluginConfigurationRepository) {
         super();
         pluginConfRepository = pPluginConfigurationRepository;
-        loadPlugins();
+        getPluginPackage().add(REGARDS_PACKAGE_PLUGINS_DEFAULT);
+        getPluginPackage().add(CONTRIB_PACKAGE_PLUGINS_DEFAULT);
+
     }
 
-    /**
-     *
-     * Load from the classpath the plugins implementations of plugin annotation : {@link Plugin}
-     *
-     * @param parameters
-     *
-     * @throws PluginUtilsException
-     *             Error when loading the plugins
-     */
-    private void loadPlugins() throws PluginUtilsException {
-        // Scan class path for plugins implementations only once
+    private Map<String, PluginMetaData> getLoadedPlugins() {
         if (plugins == null) {
-            plugins = PluginUtils.getPlugins(PLUGINS_PACKAGE);
+            plugins = PluginUtils.getPlugins(getPluginPackage());
         }
+        return plugins;
     }
 
     @Override
     public List<String> getPluginTypes() {
-        return PluginInterfaceUtils.getInterfaces(PLUGINS_PACKAGE);
+        return PluginInterfaceUtils.getInterfaces(getPluginPackage());
     }
 
     @Override
@@ -96,7 +96,7 @@ public class PluginService implements IPluginService {
     public List<PluginMetaData> getPluginsByType(final Class<?> pInterfacePluginType) {
         final List<PluginMetaData> pluginAvailables = new ArrayList<>();
 
-        plugins.forEach((pKey, pValue) -> {
+        getLoadedPlugins().forEach((pKey, pValue) -> {
             try {
                 if ((pInterfacePluginType == null) || ((pInterfacePluginType != null)
                         && pInterfacePluginType.isAssignableFrom(Class.forName(pValue.getPluginClassName())))) {
@@ -167,12 +167,11 @@ public class PluginService implements IPluginService {
 
     @Override
     public void deletePluginConfiguration(final Long pPluginId) throws PluginUtilsException {
-        try {
-            pluginConfRepository.delete(pPluginId);
-        } catch (final EmptyResultDataAccessException e) {
-            throw new PluginUtilsException(
-                    String.format("Error while deleting the plugin configuration <%s>.", pPluginId), e);
+        if (!pluginConfRepository.exists(pPluginId)) {
+            LOGGER.error(String.format("Error while deleting the plugin configuration <%s>.", pPluginId));
+            throw new PluginUtilsException(pPluginId.toString());
         }
+        pluginConfRepository.delete(pPluginId);
     }
 
     @Override
@@ -194,7 +193,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public PluginMetaData getPluginMetaDataById(final String pPluginImplId) {
-        return plugins.get(pPluginImplId);
+        return getLoadedPlugins().get(pPluginImplId);
     }
 
     @Override
@@ -236,7 +235,7 @@ public class PluginService implements IPluginService {
         final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
 
         // Get the plugin implementation associated
-        final PluginMetaData pluginMetadata = plugins.get(pluginConf.getPluginId());
+        final PluginMetaData pluginMetadata = getLoadedPlugins().get(pluginConf.getPluginId());
 
         // Check if plugin version has changed since the last saved configuration of the plugin
         if ((pluginConf.getVersion() != null) && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
@@ -245,6 +244,15 @@ public class PluginService implements IPluginService {
         }
 
         return PluginUtils.getPlugin(pluginConf, pluginMetadata, pPluginParameters);
+    }
+
+    public List<String> getPluginPackage() {
+        return pluginPackage;
+    }
+
+    @Override
+    public void addPluginPackage(String pPluginPackage) {
+        pluginPackage.add(pPluginPackage);
     }
 
 }

@@ -50,12 +50,10 @@ public final class PluginUtils {
      * the required plugin metadata.
      * 
      * @param pPrefix
-     *            a package prefix used for the search
+     *            a package prefix used for the scan
      * @return all class annotated {@link Plugin}
-     * @throws PluginUtilsException
-     *             a pluginId is found a twice
      */
-    public static Map<String, PluginMetaData> getPlugins(final String pPrefix) throws PluginUtilsException {
+    public static Map<String, PluginMetaData> getPlugins(final String pPrefix) {
         final Map<String, PluginMetaData> plugins = new HashMap<>();
 
         // Scan class path with Reflections library
@@ -74,14 +72,33 @@ public final class PluginUtils {
                 final String message = String
                         .format("Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
                                 plugin.getPluginId(), plugin.getPluginClassName(), pMeta.getPluginClassName());
-                throw new PluginUtilsException(message);
+                LOGGER.warn(message);
             }
 
             // Store plugin reference
             plugins.put(plugin.getPluginId(), plugin);
+
             LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.", plugin.getPluginClassName(),
                                       plugin.getPluginId()));
         }
+        return plugins;
+    }
+
+    /**
+     * Retrieve all annotated plugin (@see {@link Plugin}) and init a map whose key is the plugin identifier and value
+     * the required plugin metadata.
+     * 
+     * @param pPrefixs
+     *            a list of package prefix used for the scan
+     * @return all class annotated {@link Plugin}
+     */
+    public static Map<String, PluginMetaData> getPlugins(final List<String> pPrefixs) {
+        final Map<String, PluginMetaData> plugins = new HashMap<>();
+
+        for (String p : pPrefixs) {
+            plugins.putAll(getPlugins(p));
+        }
+
         return plugins;
     }
 
