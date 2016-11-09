@@ -28,6 +28,10 @@ public final class MaintenanceManager {
         return maintenanceMap;
     }
 
+    public static Boolean getMaintenance(String pTenant) {
+        return maintenanceMap.get(pTenant);
+    }
+
     public static void addTenant(String pTenant) {
         maintenanceMap.put(pTenant, Boolean.FALSE);
     }
