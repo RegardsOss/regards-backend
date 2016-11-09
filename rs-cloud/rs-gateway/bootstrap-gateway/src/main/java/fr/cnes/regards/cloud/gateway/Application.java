@@ -10,6 +10,7 @@ import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
 
 import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
+import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 
@@ -23,6 +24,7 @@ import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
  * @since 1.0-SNAPSHOT
  */
 @SpringBootApplication(scanBasePackages = "fr.cnes.regards.modules")
+@MicroserviceInfo(name = "gateway", version = "1.0-SNAPSHOT")
 @EnableZuulProxy
 @EnableAutoConfiguration
 public class Application { // NOSONAR

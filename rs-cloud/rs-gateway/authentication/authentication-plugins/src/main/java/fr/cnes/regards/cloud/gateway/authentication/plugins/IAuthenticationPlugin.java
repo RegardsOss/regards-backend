@@ -4,16 +4,19 @@
 package fr.cnes.regards.cloud.gateway.authentication.plugins;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
+import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
 
 /**
  *
  * Class IAuthenticationProvider
  *
- * Authentication Provider interface. TODO : Should be replace with the REGARDS Plugins system.
+ * Authentication Provider interface.
  *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
+@PluginInterface
+@FunctionalInterface
 public interface IAuthenticationPlugin {
 
     /**

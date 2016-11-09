@@ -35,6 +35,8 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
@@ -73,15 +75,6 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     @Override
     public Authentication authenticate(final Authentication pAuthentication) {
 
-        AbstractAuthenticationToken token = null;
-
-        final IPluginService pluginService = beanFactory.getBean(IPluginService.class);
-        if (pluginService == null) {
-            final String message = "Context not initialized, Authentication plugins cannot be retreive";
-            LOG.error(message);
-            throw new BadCredentialsException(message);
-        }
-
         final String name = pAuthentication.getName();
         final String password = pAuthentication.getCredentials().toString();
 
@@ -97,23 +90,88 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             throw new BadCredentialsException(message);
         }
 
+        // There is no token in SecurityContext now. We have to set one for the given scope to allow access to JPA for
+        // plugins service
+        try {
+            jwtService.injectToken(scope, RoleAuthority.getSysRole(microserviceName));
+        } catch (final JwtException e) {
+            LOG.error(e.getMessage(), e);
+            throw new BadCredentialsException("Internal server error");
+        }
+
+        checkScope(scope);
+        return doAuthentication(name, password, scope);
+
+    }
+
+    /**
+     *
+     * Authenticate a user for a given project
+     *
+     * @param pLogin
+     *            user login
+     * @param pPassword
+     *            user password
+     * @param pScope
+     *            project to authenticate to
+     * @return Authentication token
+     * @since 1.0-SNAPSHOT
+     */
+    private Authentication doAuthentication(final String pLogin, final String pPassword, final String pScope) {
+
+        Authentication token = null;
+
+        final IPluginService pluginService = beanFactory.getBean(IPluginService.class);
+        if (pluginService == null) {
+            final String message = "Context not initialized, Authentication plugins cannot be retreive";
+            LOG.error(message);
+            throw new BadCredentialsException(message);
+        }
+
         // Get all availables authentication plugins
         final List<PluginConfiguration> pluginConfigurations = pluginService
                 .getPluginConfigurationsByType(IAuthenticationPlugin.class);
         if ((pluginConfigurations != null) && !pluginConfigurations.isEmpty()) {
             for (final PluginConfiguration config : pluginConfigurations) {
                 try {
-                    token = doPluginAuthentication(pluginService.getPlugin(config.getId()), name, password, scope);
+                    token = doPluginAuthentication(pluginService.getPlugin(config.getId()), pLogin, pPassword, pScope);
                 } catch (final PluginUtilsException e) {
                     LOG.error(e.getMessage(), e);
                 }
             }
         } else {
             // Use default REGARDS internal plugin
-            token = doPluginAuthentication(defaultAuthenticationPlugin, name, password, scope);
+            token = doPluginAuthentication(defaultAuthenticationPlugin, pLogin, pPassword, pScope);
+        }
+        return token;
+    }
+
+    /**
+     *
+     * Check that given scope is an existing configured project
+     *
+     * @param pScope
+     *            project ot authenticate to
+     * @since 1.0-SNAPSHOT
+     */
+    private void checkScope(final String pScope) {
+
+        final IProjectsClient projectsClient = beanFactory.getBean(IProjectsClient.class);
+        if (projectsClient == null) {
+            final String message = "Context not initialized, Administration projects client is not available";
+            LOG.error(message);
+            throw new BadCredentialsException(message);
         }
 
-        return token;
+        try {
+            final ResponseEntity<Resource<Project>> response = projectsClient.retrieveProject(pScope);
+            if (!response.getStatusCode().equals(HttpStatus.OK)) {
+                throw new BadCredentialsException(String.format("Project %s does not exists.", pScope));
+            }
+        } catch (final Exception e) {
+            LOG.error(e.getMessage(), e);
+            throw new BadCredentialsException(String.format("Project %s does not exists.", pScope));
+        }
 
     }
 

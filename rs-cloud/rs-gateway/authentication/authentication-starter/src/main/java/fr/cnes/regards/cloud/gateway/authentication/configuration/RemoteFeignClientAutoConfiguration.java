@@ -7,6 +7,7 @@ import org.springframework.cloud.netflix.feign.EnableFeignClients;
 
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  *
@@ -17,7 +18,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@EnableFeignClients(clients = { IProjectUsersClient.class, IAccountsClient.class })
+@EnableFeignClients(clients = { IProjectsClient.class, IProjectUsersClient.class, IAccountsClient.class })
 public class RemoteFeignClientAutoConfiguration {
 
 }
