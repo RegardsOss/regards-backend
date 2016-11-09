@@ -11,8 +11,6 @@ import org.springframework.context.annotation.Bean;
 
 import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
-import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 
 /**
  *
@@ -51,16 +49,6 @@ public class Application { // NOSONAR
     @Bean
     public ProxyLogFilter proxyLogFilter() {
         return new ProxyLogFilter();
-    }
-
-    /**
-     * TODO : Replace with remote-tenant-resolver admin Authorities provider
-     *
-     * @return
-     */
-    @Bean
-    public IAuthoritiesProvider authProvider() {
-        return new DefaultAuthorityProvider();
     }
 
 }
