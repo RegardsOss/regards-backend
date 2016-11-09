@@ -62,8 +62,6 @@ public class IpFilter extends OncePerRequestFilter {
     protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
 
-        LOG.info(String.format("[REGARDS IP FILTER] Request sent from %s", pRequest.getRemoteAddr()));
-
         // Get authorized ip associated to given role
         final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
                 .getAuthentication();
@@ -77,12 +75,12 @@ public class IpFilter extends OncePerRequestFilter {
                 authorizedAddresses.addAll(authoritiesProvider.getRoleAuthorizedAddress(role.getAuthority()));
             }
             if (!checkAccessByAddress(authorizedAddresses, pRequest.getRemoteAddr())) {
-                final String message = String.format("[REGARDS IP FILTER] - %s -Authorization denied",
+                final String message = String.format("[REGARDS IP FILTER] - %s - Authorization denied",
                                                      pRequest.getRemoteAddr());
                 LOG.error(message);
                 pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             } else {
-                LOG.info(String.format("[REGARDS IP FILTER] - %s -Authorization granted", pRequest.getRemoteAddr()));
+                LOG.info(String.format("[REGARDS IP FILTER] - %s - Authorization granted", pRequest.getRemoteAddr()));
 
                 // Continue the filtering chain
                 pFilterChain.doFilter(pRequest, pResponse);

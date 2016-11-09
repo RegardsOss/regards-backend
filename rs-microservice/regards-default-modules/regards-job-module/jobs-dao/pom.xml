@@ -22,6 +22,11 @@
 		<!-- REGARDS starter -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>regards-core-jpa-data</artifactId>
+		</dependency>
+		<!-- Tests -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards</artifactId>
 		</dependency>
 		<!-- Tests -->
