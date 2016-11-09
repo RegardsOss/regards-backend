@@ -4,10 +4,29 @@
 package fr.cnes.regards.modules.accessrights.domain;
 
 public enum AccountStatus {
-    INACTIVE, ACCEPTED, ACTIVE, LOCKED, PENDING;
+    /**
+     * Account is inactive
+     */
+    INACTIVE,
+    /**
+     * Account request is accepted
+     */
+    ACCEPTED,
+    /**
+     * Account is active
+     */
+    ACTIVE,
+    /**
+     * Account is locked
+     */
+    LOCKED,
+    /**
+     * Account request is pending
+     */
+    PENDING;
 
     @Override
     public String toString() {
-        return this.name();
+        return name();
     }
 }
