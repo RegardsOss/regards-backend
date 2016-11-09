@@ -91,7 +91,7 @@ public class NotificationSettingsTest {
         settings.setDays(DAYS);
         settings.setHours(HOURS);
         settings.setFrequency(FREQUENCY);
-        settings.setUser(user);
+        settings.setProjectUser(user);
 
         // Run the validator
         final Set<ConstraintViolation<NotificationSettings>> constraintViolations = validator.validate(settings);
@@ -111,7 +111,7 @@ public class NotificationSettingsTest {
         Assert.assertTrue(settings.getDays().equals(DAYS));
         Assert.assertTrue(settings.getHours().equals(HOURS));
         Assert.assertTrue(settings.getFrequency().equals(FREQUENCY));
-        Assert.assertTrue(settings.getUser().equals(user));
+        Assert.assertTrue(settings.getProjectUser().equals(user));
     }
 
     /**
@@ -156,7 +156,7 @@ public class NotificationSettingsTest {
     @Purpose("Check that the system fails when user is null.")
     public void userIsNull() {
         // Init the malformed object
-        settings.setUser(null);
+        settings.setProjectUser(null);
 
         // Run the validator
         final Set<ConstraintViolation<NotificationSettings>> constraintViolations = validator.validate(settings);

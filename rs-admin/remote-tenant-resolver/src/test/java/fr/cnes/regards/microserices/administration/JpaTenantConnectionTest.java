@@ -8,7 +8,6 @@ import java.io.File;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -16,7 +15,7 @@ import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
-import fr.cnes.regards.microservices.administration.MicroserviceAutoConfigure;
+import fr.cnes.regards.microservices.administration.MicroserviceAutoConfiguration;
 
 /**
  *
@@ -24,13 +23,12 @@ import fr.cnes.regards.microservices.administration.MicroserviceAutoConfigure;
  *
  * Test with jpa multitenant starter database creation.
  *
- * @author sbinda
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @RunWith(RegardsSpringRunner.class)
 @SpringBootTest
-@EnableAutoConfiguration
-@ContextConfiguration(classes = { JpaTenantConnectionConfiguration.class, MicroserviceAutoConfigure.class })
+@ContextConfiguration(classes = { JpaTenantConnectionConfiguration.class, MicroserviceAutoConfiguration.class })
 public class JpaTenantConnectionTest {
 
     /**

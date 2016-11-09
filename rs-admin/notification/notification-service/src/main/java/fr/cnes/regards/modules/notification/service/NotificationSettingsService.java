@@ -97,7 +97,7 @@ public class NotificationSettingsService implements INotificationSettingsService
      */
     private NotificationSettings createNotificationSettings(final ProjectUser pProjectUser) {
         final NotificationSettings settings = new NotificationSettings();
-        settings.setUser(pProjectUser);
+        settings.setProjectUser(pProjectUser);
         return notificationSettingsRepository.save(settings);
     }
 

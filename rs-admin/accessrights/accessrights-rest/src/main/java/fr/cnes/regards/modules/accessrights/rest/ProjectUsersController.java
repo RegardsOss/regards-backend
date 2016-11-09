@@ -19,16 +19,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.service.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.signature.IProjectUsersSignature;
-import fr.cnes.regards.modules.core.annotation.ModuleInfo;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
-import fr.cnes.regards.modules.core.rest.AbstractController;
 
 /**
  *
@@ -38,9 +37,8 @@ import fr.cnes.regards.modules.core.rest.AbstractController;
  *
  */
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
-public class ProjectUsersController extends AbstractController implements IProjectUsersSignature {
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+public class ProjectUsersController implements IProjectUsersSignature {
 
     @Autowired
     private IProjectUserService projectUserService;
@@ -129,9 +127,10 @@ public class ProjectUsersController extends AbstractController implements IProje
     }
 
     @Override
+    @ResponseBody
     @ResourceAccess(description = "remove all the specific access rights")
-    public @ResponseBody ResponseEntity<Void> removeProjectUserAccessRights(
-            @PathVariable("user_login") final String pUserLogin) throws EntityNotFoundException {
+    public ResponseEntity<Void> removeProjectUserAccessRights(@PathVariable("user_login") final String pUserLogin)
+            throws EntityNotFoundException {
         projectUserService.removeUserAccessRights(pUserLogin);
         return new ResponseEntity<>(HttpStatus.OK);
     }

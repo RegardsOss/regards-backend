@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectConnectionService;

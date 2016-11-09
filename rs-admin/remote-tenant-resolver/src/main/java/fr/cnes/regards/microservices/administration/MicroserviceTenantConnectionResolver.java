@@ -12,9 +12,14 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.netflix.hystrix.exception.HystrixRuntimeException;
+
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -53,6 +58,11 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
     private final String microserviceName;
 
     /**
+     * Security service
+     */
+    private final JWTService jwtService;
+
+    /**
      *
      * Constructor
      *
@@ -63,11 +73,12 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
      * @since 1.0-SNAPSHOT
      */
     public MicroserviceTenantConnectionResolver(final IProjectConnectionClient pProjectConnectionClient,
-            final IProjectsClient pProjectsClient, final String pMicroserviceName) {
+            final IProjectsClient pProjectsClient, final String pMicroserviceName, final JWTService pJwtService) {
         super();
         projectConnectionClient = pProjectConnectionClient;
         microserviceName = pMicroserviceName;
         projectsClient = pProjectsClient;
+        jwtService = pJwtService;
     }
 
     @Override
@@ -75,15 +86,24 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
 
         final List<TenantConnection> tenants = new ArrayList<>();
 
-        final ResponseEntity<List<Resource<Project>>> results = projectsClient.retrieveProjectList();
-        for (final Resource<Project> resource : results.getBody()) {
-            final ProjectConnection projectConnection = getProjectConnection(resource.getContent().getName(),
-                                                                             microserviceName);
-            if (projectConnection != null) {
-                tenants.add(new TenantConnection(resource.getContent().getName(), projectConnection.getUrl(),
-                        projectConnection.getUserName(), projectConnection.getPassword(),
-                        projectConnection.getDriverClassName()));
+        try {
+            jwtService.injectToken("instance", RoleAuthority.getSysRole(microserviceName));
+            final ResponseEntity<List<Resource<Project>>> results = projectsClient.retrieveProjectList();
+            if ((results != null) && (results.getBody() != null)) {
+                for (final Resource<Project> resource : results.getBody()) {
+                    final ProjectConnection projectConnection = getProjectConnection(resource.getContent().getName(),
+                                                                                     microserviceName);
+                    if (projectConnection != null) {
+                        tenants.add(new TenantConnection(resource.getContent().getName(), projectConnection.getUrl(),
+                                projectConnection.getUserName(), projectConnection.getPassword(),
+                                projectConnection.getDriverClassName()));
+                    }
+                }
+            } else {
+                LOG.error("Error during remote request to administration service");
             }
+        } catch (final JwtException | HystrixRuntimeException e) {
+            LOG.error(e.getMessage(), e);
         }
 
         return tenants;

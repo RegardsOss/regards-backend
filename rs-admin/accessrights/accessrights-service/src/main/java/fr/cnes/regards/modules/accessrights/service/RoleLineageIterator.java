@@ -16,6 +16,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  */
 public class RoleLineageIterator implements Iterator<Role> {
 
+    /**
+     * The current role
+     */
     private Role role;
 
     public RoleLineageIterator(final Role pRole) {

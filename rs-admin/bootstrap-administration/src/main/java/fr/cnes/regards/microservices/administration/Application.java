@@ -11,9 +11,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
 import fr.cnes.regards.framework.security.utils.endpoint.IRoleSysAccessVoter;
-import fr.cnes.regards.microservices.core.annotation.MicroserviceInfo;
 
 /**
  *

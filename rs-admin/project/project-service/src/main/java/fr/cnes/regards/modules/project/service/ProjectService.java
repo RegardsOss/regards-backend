@@ -10,10 +10,10 @@ import java.util.stream.StreamSupport;
 
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidEntityException;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
- * 
+ *
  * @since 1.0-SNAPSHOT
  */
 @Service
@@ -36,7 +36,7 @@ public class ProjectService implements IProjectService {
 
     /**
      * The constructor.
-     * 
+     *
      * @param pProjectRepository
      *            The JPA repository.
      */
@@ -64,7 +64,7 @@ public class ProjectService implements IProjectService {
 
     @Override
     public Project updateProject(final String pProjectName, final Project pProject) throws EntityException {
-        Project theProject = projectRepository.findOneByName(pProjectName);
+        final Project theProject = projectRepository.findOneByName(pProjectName);
         if (theProject == null) {
             throw new EntityNotFoundException(pProjectName, Project.class);
         }
@@ -86,7 +86,7 @@ public class ProjectService implements IProjectService {
 
     @Override
     public Project createProject(final Project pNewProject) throws AlreadyExistingException {
-        Project theProject = projectRepository.findOneByName(pNewProject.getName());
+        final Project theProject = projectRepository.findOneByName(pNewProject.getName());
         if (theProject != null) {
             throw new AlreadyExistingException(pNewProject.getName());
         }

@@ -16,10 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidEntityException;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
@@ -95,8 +94,7 @@ public interface IProjectsSignature {
      *             {@link InvalidEntityException} if pProjectName doesn't match the given project
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}", consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") String pProjectName,
             @RequestBody Project pProjectToUpdate) throws EntityException;

@@ -5,12 +5,13 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.List;
 
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.core.exception.AlreadyExistingException;
-import fr.cnes.regards.modules.core.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.core.exception.InvalidValueException;
 
 /**
  * Define the base interface for any implementation of a Role Service.
@@ -64,22 +65,22 @@ public interface IRoleService {
      *            The {@link Role} <code>id</code>
      * @param pUpdatedRole
      *            The new {@link Role}
+     * @throws EntityNotFoundException
+     *             when no {@link Role} with passed <code>id</code> could be found
      * @throws InvalidValueException
      *             Thrown when <code>pRoleId</code> is different from the id of <code>pUpdatedRole</code>
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
-    void updateRole(Long pRoleId, Role pUpdatedRole) throws InvalidValueException, EntityNotFoundException;
+    void updateRole(Long pRoleId, Role pUpdatedRole) throws EntityNotFoundException, InvalidValueException;
 
     /**
      * Delete the {@link Role} of passed <code>id</code>.
      *
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     * @throws OperationForbiddenException
+     *             when the updated role is native. Native roles should not be removed
      */
-    void removeRole(Long pRoleId) throws EntityNotFoundException;
+    void removeRole(Long pRoleId) throws OperationForbiddenException;
 
     /**
      * Return the {@link List} of {@link ResourcesAccess} on the {@link Role} of passed <code>id</code>.

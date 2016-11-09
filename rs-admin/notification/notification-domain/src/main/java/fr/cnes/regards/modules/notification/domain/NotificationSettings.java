@@ -16,18 +16,17 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.hateoas.Identifiable;
-
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
- * Wraps the different project user's settings available for notifications configuration.
+ * Wraps the different project projectUser's settings available for notifications configuration.
  *
  * @author CS SI
  */
 @Entity(name = "T_NOTIFICATION_SETTINGS")
 @SequenceGenerator(name = "notificationSettingsSequence", initialValue = 1, sequenceName = "SEQ_NOTIFICATION_SETTINGS")
-public class NotificationSettings implements Identifiable<Long> {
+public class NotificationSettings implements IIdentifiable<Long> {
 
     /**
      * Self expl
@@ -61,7 +60,7 @@ public class NotificationSettings implements Identifiable<Long> {
      * The settings unique id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "notificationSequence")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "notificationSettingsSequence")
     @Column(name = "id")
     private Long id;
 
@@ -71,7 +70,7 @@ public class NotificationSettings implements Identifiable<Long> {
     @NotNull
     @OneToOne
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_NOTIFICATION_SETTINGS_USER"))
-    private ProjectUser user;
+    private ProjectUser projectUser;
 
     /**
      * @return the days
@@ -105,10 +104,10 @@ public class NotificationSettings implements Identifiable<Long> {
     }
 
     /**
-     * @return the user
+     * @return the projectUser
      */
-    public ProjectUser getUser() {
-        return user;
+    public ProjectUser getProjectUser() {
+        return projectUser;
     }
 
     /**
@@ -145,9 +144,9 @@ public class NotificationSettings implements Identifiable<Long> {
 
     /**
      * @param pUser
-     *            the user to set
+     *            the projectUser to set
      */
-    public void setUser(final ProjectUser pUser) {
-        user = pUser;
+    public void setProjectUser(final ProjectUser pUser) {
+        projectUser = pUser;
     }
 }

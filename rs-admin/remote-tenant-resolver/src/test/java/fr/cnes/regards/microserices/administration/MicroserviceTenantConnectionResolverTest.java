@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
@@ -32,8 +33,10 @@ public class MicroserviceTenantConnectionResolverTest {
 
     @Before
     public void init() {
+        final JWTService jwtService = new JWTService();
+        jwtService.setSecret("123456789");
         resovler = new MicroserviceTenantConnectionResolver(new ProjectConnectionClientStub(), new ProjectClientStub(),
-                "test-microservice");
+                "test-microservice", jwtService);
     }
 
     /**
