@@ -44,7 +44,7 @@ public class PluginService implements IPluginService {
     /**
      * {@link PluginConfiguration} JPA Repository
      */
-    private IPluginConfigurationRepository pluginConfRepository;
+    private final IPluginConfigurationRepository pluginConfRepository;
 
     /**
      * Plugins implementation list sorted by plugin id. Plugin id, is the id of the "@PluginMetaData" annotation of the
@@ -54,7 +54,7 @@ public class PluginService implements IPluginService {
 
     /**
      * A constructor with the {@link IPluginConfigurationRepository}.
-     * 
+     *
      * @param pPluginConfigurationRepository
      *            {@link PluginConfiguration} JPA repository
      * @throws PluginUtilsException
@@ -63,7 +63,7 @@ public class PluginService implements IPluginService {
     public PluginService(IPluginConfigurationRepository pPluginConfigurationRepository) throws PluginUtilsException {
         super();
         pluginConfRepository = pPluginConfigurationRepository;
-        this.loadPlugins();
+        loadPlugins();
     }
 
     /**
@@ -98,7 +98,7 @@ public class PluginService implements IPluginService {
 
         plugins.forEach((pKey, pValue) -> {
             try {
-                if (pInterfacePluginType == null || (pInterfacePluginType != null
+                if ((pInterfacePluginType == null) || ((pInterfacePluginType != null)
                         && pInterfacePluginType.isAssignableFrom(Class.forName(pValue.getPluginClassName())))) {
                     pluginAvailables.add(pValue);
                 }
@@ -122,15 +122,15 @@ public class PluginService implements IPluginService {
             message += ". The plugin configuration cannot be null.";
             throwError = true;
         }
-        if (!throwError && pPluginConfiguration.getPluginId() == null) {
+        if (!throwError && (pPluginConfiguration.getPluginId() == null)) {
             message += ". The unique identifier of the plugin (attribute pluginId) is required.";
             throwError = true;
         }
-        if (!throwError && pPluginConfiguration.getPriorityOrder() == null) {
+        if (!throwError && (pPluginConfiguration.getPriorityOrder() == null)) {
             message += String.format(" <%s> without priority order.", pPluginConfiguration.getPluginId());
             throwError = true;
         }
-        if (!throwError && pPluginConfiguration.getVersion() == null) {
+        if (!throwError && (pPluginConfiguration.getVersion() == null)) {
             message = String.format(" <%s> without version.", pPluginConfiguration.getPluginId());
             throwError = true;
         }
