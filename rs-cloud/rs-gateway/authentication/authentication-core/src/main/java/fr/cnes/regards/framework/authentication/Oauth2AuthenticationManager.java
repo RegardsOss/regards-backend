@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.hateoas.Resource;
@@ -66,7 +65,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     /**
      * The default constructor.
-     * 
+     *
      * @param pMicroserviceName
      *            The microservice name
      * @param pDefaultAuthenticationPlugin
@@ -274,7 +273,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     }
 
     @Override
-    public void setBeanFactory(final BeanFactory pBeanFactory) throws BeansException {
+    public void setBeanFactory(final BeanFactory pBeanFactory) {
         beanFactory = pBeanFactory;
     }
 
