@@ -41,15 +41,15 @@
 			<artifactId>postgresql</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<optional>true</optional>
+		</dependency>
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
