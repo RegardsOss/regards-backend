@@ -15,8 +15,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -98,20 +98,20 @@ public class ProjectUserServiceStub implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.IProjectUserService#retrieveOneByEmail(java.lang.String)
      */
     @Override
-    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
+    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws ModuleEntityNotFoundException {
         for (final ProjectUser projectUser : projectUsers) {
             if (projectUser.getEmail().equals(pUserEmail)) {
                 return projectUser;
             }
         }
-        throw new EntityNotFoundException(pUserEmail, ProjectUser.class);
+        throw new ModuleEntityNotFoundException(pUserEmail, ProjectUser.class);
     }
 
     @Override
     public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
-            throws InvalidValueException, EntityNotFoundException {
+            throws InvalidValueException, ModuleEntityNotFoundException {
         if (!existUser(pUserId)) {
-            throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
+            throw new ModuleEntityNotFoundException(pUserId.toString(), ProjectUser.class);
         }
         if (!pUserId.equals(pUpdatedProjectUser.getId())) {
             throw new InvalidValueException("Account id specified differs from updated account id");

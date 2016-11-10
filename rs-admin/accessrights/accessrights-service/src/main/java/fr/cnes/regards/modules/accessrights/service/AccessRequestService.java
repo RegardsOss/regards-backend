@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -104,23 +104,23 @@ public class AccessRequestService implements IAccessRequestService {
     }
 
     @Override
-    public void removeAccessRequest(final Long pAccessId) throws EntityNotFoundException {
+    public void removeAccessRequest(final Long pAccessId) throws ModuleEntityNotFoundException {
         if (exists(pAccessId)) {
             projectUserRepository.delete(pAccessId);
         } else {
-            throw new EntityNotFoundException(pAccessId.toString(), ProjectUser.class);
+            throw new ModuleEntityNotFoundException(pAccessId.toString(), ProjectUser.class);
         }
     }
 
     @Override
-    public void acceptAccessRequest(final Long pAccessId) throws EntityNotFoundException {
+    public void acceptAccessRequest(final Long pAccessId) throws ModuleEntityNotFoundException {
         final ProjectUser projectUser = findById(pAccessId);
         projectUser.accept();
         projectUserRepository.save(projectUser);
     }
 
     @Override
-    public void denyAccessRequest(final Long pAccessId) throws EntityNotFoundException {
+    public void denyAccessRequest(final Long pAccessId) throws ModuleEntityNotFoundException {
         final ProjectUser projectUser = findById(pAccessId);
         projectUser.deny();
         projectUserRepository.save(projectUser);
@@ -152,13 +152,13 @@ public class AccessRequestService implements IAccessRequestService {
      * @param pId
      *            The access request <code>id</code>
      * @return The found access request
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when a project user with passed id could not be found
      */
-    private ProjectUser findById(final Long pId) throws EntityNotFoundException {
+    private ProjectUser findById(final Long pId) throws ModuleEntityNotFoundException {
         try (Stream<ProjectUser> stream = retrieveAccessRequestList().stream()) {
             return stream.filter(p -> p.getId() == pId).findFirst()
-                    .orElseThrow(() -> new EntityNotFoundException(pId.toString(), ProjectUser.class));
+                    .orElseThrow(() -> new ModuleEntityNotFoundException(pId.toString(), ProjectUser.class));
         }
     }
 

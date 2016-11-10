@@ -7,8 +7,8 @@ import java.util.List;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
@@ -78,11 +78,11 @@ public interface IAccountService {
      *
      * @param pAccountId
      *            The {@link Account}'s <code>id</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown if no {@link Account} with passed <code>id</code> could be found
      * @return The account
      */
-    Account retrieveAccount(Long pAccountId) throws EntityNotFoundException;
+    Account retrieveAccount(Long pAccountId) throws ModuleEntityNotFoundException;
 
     /**
      * Update an {@link Account} with passed values.
@@ -91,12 +91,13 @@ public interface IAccountService {
      *            The <code>id</code> of the {@link Account} to update
      * @param pUpdatedAccount
      *            The new values to set
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
      * @throws InvalidValueException
      *             Thrown when <code>pAccountId</code> is different from the id of <code>pUpdatedAccount</code>
      */
-    void updateAccount(Long pAccountId, Account pUpdatedAccount) throws EntityNotFoundException, InvalidValueException;
+    void updateAccount(Long pAccountId, Account pUpdatedAccount)
+            throws ModuleEntityNotFoundException, InvalidValueException;
 
     /**
      * Remove on {@link Account} from db.<br>
@@ -116,10 +117,10 @@ public interface IAccountService {
      *            recipient's email address
      * @param pType
      *            The type of code
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} with passed <code>email</code> could be found
      */
-    void sendAccountCode(String pEmail, CodeType pType) throws EntityNotFoundException;
+    void sendAccountCode(String pEmail, CodeType pType) throws ModuleEntityNotFoundException;
 
     /**
      * Unlock the {@link Account} of passed <code>id</code>.
@@ -130,10 +131,10 @@ public interface IAccountService {
      *            The unlock code
      * @throws InvalidValueException
      *             Thrown when the passed unlock code is different from the one expected
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
      */
-    void unlockAccount(Long pAccountId, String pUnlockCode) throws InvalidValueException, EntityNotFoundException;
+    void unlockAccount(Long pAccountId, String pUnlockCode) throws InvalidValueException, ModuleEntityNotFoundException;
 
     /**
      * Change the passord of an {@link Account}.
@@ -146,11 +147,11 @@ public interface IAccountService {
      *            The new <code>password</code>
      * @throws InvalidValueException
      *             Thrown when the passed reset code is different from the one expected
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
      */
     void changeAccountPassword(Long pAccountId, String pResetCode, String pNewPassword)
-            throws InvalidValueException, EntityNotFoundException;
+            throws InvalidValueException, ModuleEntityNotFoundException;
 
     /**
      * Retrieve the {@link Account} of passed <code>email</code>
@@ -158,10 +159,10 @@ public interface IAccountService {
      * @param pEmail
      *            The {@link Account}'s <code>email</code>
      * @return the account
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown if no {@link Account} with passed <code>email</code> could be found
      */
-    Account retrieveAccountByEmail(String pEmail) throws EntityNotFoundException;
+    Account retrieveAccountByEmail(String pEmail) throws ModuleEntityNotFoundException;
 
     /**
      * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of
@@ -171,10 +172,10 @@ public interface IAccountService {
      *            The {@link Account}'s <code>email</code>
      * @param pPassword
      *            The password to check
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
      * @return <code>true</code> if the password is valid, else <code>false</code>
      */
-    boolean validatePassword(String pEmail, String pPassword) throws EntityNotFoundException;
+    boolean validatePassword(String pEmail, String pPassword) throws ModuleEntityNotFoundException;
 
 }

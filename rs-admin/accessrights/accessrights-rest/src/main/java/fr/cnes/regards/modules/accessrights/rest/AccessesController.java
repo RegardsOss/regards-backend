@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
@@ -30,7 +30,8 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsS
 import fr.cnes.regards.modules.accessrights.signature.IAccessesSignature;
 
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 public class AccessesController implements IAccessesSignature {
 
     /**
@@ -67,7 +68,7 @@ public class AccessesController implements IAccessesSignature {
     @Override
     @ResourceAccess(description = "accept the access request", name = "")
     public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long pAccessId)
-            throws EntityNotFoundException {
+            throws ModuleEntityNotFoundException {
         accessRequestService.acceptAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -75,7 +76,7 @@ public class AccessesController implements IAccessesSignature {
     @Override
     @ResourceAccess(description = "deny the access request", name = "")
     public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long pAccessId)
-            throws EntityNotFoundException {
+            throws ModuleEntityNotFoundException {
         accessRequestService.denyAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -83,7 +84,7 @@ public class AccessesController implements IAccessesSignature {
     @Override
     @ResourceAccess(description = "remove the access request", name = "")
     public ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") final Long pAccessId)
-            throws EntityNotFoundException {
+            throws ModuleEntityNotFoundException {
         accessRequestService.removeAccessRequest(pAccessId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -99,7 +100,7 @@ public class AccessesController implements IAccessesSignature {
     @Override
     @ResourceAccess(description = "update the setting managing the access requests", name = "")
     public ResponseEntity<Void> updateAccessSettings(@Valid @RequestBody final AccessSettings pAccessSettings)
-            throws EntityNotFoundException {
+            throws ModuleEntityNotFoundException {
         accessSettingsService.update(pAccessSettings);
         return new ResponseEntity<>(HttpStatus.OK);
     }
