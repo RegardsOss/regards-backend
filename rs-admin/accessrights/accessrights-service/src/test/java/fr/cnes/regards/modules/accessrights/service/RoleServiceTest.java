@@ -23,8 +23,8 @@ import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.IRoleService;
-import fr.cnes.regards.modules.accessrights.service.RoleService;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
  * Test class for {@link RoleService}.

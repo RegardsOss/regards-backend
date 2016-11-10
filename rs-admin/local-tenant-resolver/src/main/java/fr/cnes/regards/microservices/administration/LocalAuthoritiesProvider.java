@@ -14,8 +14,8 @@ import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.IResourcesService;
-import fr.cnes.regards.modules.accessrights.service.IRoleService;
+import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  *

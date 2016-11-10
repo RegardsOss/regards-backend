@@ -17,7 +17,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.accessrights.service.AccessSettingsService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.AccessSettingsService;
 
 /**
  * Test class for {@link AccessSettingsService}.

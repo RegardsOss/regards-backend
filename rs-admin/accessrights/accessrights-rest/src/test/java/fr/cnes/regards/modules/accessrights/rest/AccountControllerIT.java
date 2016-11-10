@@ -32,8 +32,8 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.instance.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.instance.IAccountSettingsService;
+import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
+import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 
 /**
  * Integration tests for accounts.

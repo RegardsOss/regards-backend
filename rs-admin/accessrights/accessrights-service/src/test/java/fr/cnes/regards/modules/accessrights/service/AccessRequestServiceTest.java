@@ -25,9 +25,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.AccessRequestService;
-import fr.cnes.regards.modules.accessrights.service.IRoleService;
-import fr.cnes.regards.modules.accessrights.service.instance.IAccountService;
+import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.AccessRequestService;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  * Test class for {@link AccessRequestService}.

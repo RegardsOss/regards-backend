@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.service.IResourcesService;
+import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
 import fr.cnes.regards.modules.accessrights.signature.IResourcesSignature;
 
 /**
