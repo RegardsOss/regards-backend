@@ -79,8 +79,7 @@ public class ProjectUserServiceTest {
     /**
      * A sample role
      */
-    private static final Role ROLE = new Role(0L, DefaultRoleNames.ADMIN.toString(), null, new ArrayList<>(),
-            new ArrayList<>());
+    private static final Role ROLE = new Role(DefaultRoleNames.ADMIN.toString(), null);
 
     /**
      * A sample list of permissions

@@ -23,9 +23,9 @@ import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolve
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -113,14 +113,25 @@ public class TestConfiguration {
         addresses.add("127.0.0.2");
         addresses.add("127.0.0.3");
         pRoleRpo.deleteAll();
-        final Role publicRole = pRoleRpo.save(new Role(0L, DefaultRoleNames.PUBLIC.toString(), null, new ArrayList<>(),
-                addresses, new ArrayList<>(), false, true, true, LocalDateTime.now().plusDays(5L)));
-        pRoleRpo.save(new Role(0L, CORS_ROLE_NAME_GRANTED, publicRole, new ArrayList<>(), addresses, new ArrayList<>(),
-                false, true, true, LocalDateTime.now().plusDays(5L)));
-        pRoleRpo.save(new Role(0L, CORS_ROLE_NAME_INVALID_1, publicRole, new ArrayList<>(), addresses,
-                new ArrayList<>(), false, true, true, LocalDateTime.now().minusDays(5L)));
-        pRoleRpo.save(new Role(0L, CORS_ROLE_NAME_INVALID_2, publicRole, new ArrayList<>(), addresses,
-                new ArrayList<>(), false, true, false, null));
+
+        final LocalDateTime endDate = LocalDateTime.now().plusDays(5L);
+
+        RoleFactory.doRetain();
+        RoleFactory.getInstance().withId(0L).withAuthorizedAddresses(addresses).withCorsRequestsAuthorized(true)
+                .withCorsRequestsAuthorizationEndDate(endDate).withDefault(false).withNative(true)
+                .withCorsRequestsAuthorized(true);
+
+        final Role publicRole = pRoleRpo.save(RoleFactory.getInstance().createPublic());
+
+        pRoleRpo.save(RoleFactory.getInstance().withName(CORS_ROLE_NAME_GRANTED).withParentRole(publicRole).create());
+
+        pRoleRpo.save(RoleFactory.getInstance().withName(CORS_ROLE_NAME_INVALID_1)
+                .withCorsRequestsAuthorizationEndDate(LocalDateTime.now().minusDays(5L)).create());
+
+        pRoleRpo.save(RoleFactory.getInstance().withName(CORS_ROLE_NAME_INVALID_2).withCorsRequestsAuthorized(false)
+                .withCorsRequestsAuthorizationEndDate(null).create());
+
+        RoleFactory.reset();
 
         pResourceAccessRepo.deleteAll();
         pResourceAccessRepo.save(new ResourcesAccess(0L, "description", microserviceName, "/resource", HttpVerb.GET));

@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -80,7 +81,7 @@ public class AccessRequestDTOTest {
         access.setMetaData(metaDatas);
         access.setPermissions(permissions);
 
-        role = new Role(0L);
+        role = new Role(DefaultRoleNames.ADMIN.toString(), null);
         access.setRole(role);
     }
 
@@ -211,7 +212,7 @@ public class AccessRequestDTOTest {
      */
     @Test
     public void testSetRole() {
-        final Role newRole = new Role(1L);
+        final Role newRole = new Role(DefaultRoleNames.REGISTERED_USER.toString(), role);
         access.setRole(newRole);
         Assert.assertEquals(newRole, access.getRole());
     }

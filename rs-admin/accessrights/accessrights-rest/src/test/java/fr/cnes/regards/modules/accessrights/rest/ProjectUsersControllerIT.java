@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
@@ -155,8 +156,9 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
             projectUserRepository.deleteAll();
             roleRepository.deleteAll();
             // And start with a single user and a single role for convenience
-            ROLE = roleRepository.save(new Role(0L, DefaultRoleNames.PUBLIC.toString(), null, new ArrayList<>(),
-                    new ArrayList<>(), true, true));
+            // ROLE = roleRepository.save(new Role(0L, DefaultRoleNames.PUBLIC.toString(), null, new ArrayList<>(),
+            // new ArrayList<>(), true, true));
+            ROLE = roleRepository.save(RoleFactory.getInstance().createPublic());
             projectUser = projectUserRepository.save(new ProjectUser(EMAIL, ROLE, PERMISSIONS, METADATA));
             ROLE.getProjectUsers().add(projectUser);
             roleRepository.save(ROLE);

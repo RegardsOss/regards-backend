@@ -200,7 +200,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetRole() {
-        final Role newRole = new Role(4L);
+        final Role newRole = new Role(DefaultRoleNames.PUBLIC.toString(), null);
         projectUser.setRole(newRole);
         Assert.assertEquals(newRole, projectUser.getRole());
     }

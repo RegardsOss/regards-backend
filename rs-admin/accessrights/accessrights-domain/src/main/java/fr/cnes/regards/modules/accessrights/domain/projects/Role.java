@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -118,48 +119,48 @@ public class Role implements IIdentifiable<Long> {
         isDefault = false;
         isNative = false;
         isCorsRequestsAuthorized = false;
+        permissions = new ArrayList<>();
+        projectUsers = new ArrayList<>();
+        authorizedAddresses = new ArrayList<>();
     }
 
-    /**
-     *
-     * Constructor
-     *
-     * @param pRoleId
-     *            Role identifier
-     * @since 1.0-SNAPSHOT
-     */
-    public Role(final Long pRoleId) {
-        id = pRoleId;
-    }
+    // /**
+    // *
+    // * Constructor
+    // *
+    // * @param pRoleId
+    // * Role identifier
+    // * @since 1.0-SNAPSHOT
+    // */
+    // public Role(final Long pRoleId) {
+    // id = pRoleId;
+    // }
 
-    public Role(final Long pRoleId, final String pName, final Role pParentRole,
-            final List<ResourcesAccess> pPermissions, final List<ProjectUser> pProjectUsers) {
-        this(pRoleId);
+    public Role(final String pName, final Role pParentRole) {
+        this();
         name = pName;
         parentRole = pParentRole;
-        permissions = pPermissions;
-        projectUsers = pProjectUsers;
     }
 
-    public Role(final Long pRoleId, final String pName, final Role pParentRole,
-            final List<ResourcesAccess> pPermissions, final List<ProjectUser> pProjectUsers, final boolean pIsDefault,
-            final boolean pIsNative) {
-        this(pRoleId, pName, pParentRole, pPermissions, pProjectUsers);
-        isDefault = pIsDefault;
-        isNative = pIsNative;
-    }
-
-    public Role(final Long pRoleId, final String pName, final Role pParentRole,
-            final List<ResourcesAccess> pPermissions, final List<String> pAuthorizedAddresses,
-            final List<ProjectUser> pProjectUsers, final boolean pIsDefault, final boolean pIsNative,
-            final boolean pIsCorsRequestsAuthorized, final LocalDateTime pCorsRequestsEndDate) {
-        this(pRoleId, pName, pParentRole, pPermissions, pProjectUsers);
-        isDefault = pIsDefault;
-        isNative = pIsNative;
-        isCorsRequestsAuthorized = pIsCorsRequestsAuthorized;
-        corsRequestsAuthorizationEndDate = pCorsRequestsEndDate;
-        authorizedAddresses = pAuthorizedAddresses;
-    }
+    // public Role(final Long pRoleId, final String pName, final Role pParentRole,
+    // final List<ResourcesAccess> pPermissions, final List<ProjectUser> pProjectUsers, final boolean pIsDefault,
+    // final boolean pIsNative) {
+    // this(pRoleId, pName, pParentRole, pPermissions, pProjectUsers);
+    // isDefault = pIsDefault;
+    // isNative = pIsNative;
+    // }
+    //
+    // public Role(final Long pRoleId, final String pName, final Role pParentRole,
+    // final List<ResourcesAccess> pPermissions, final List<String> pAuthorizedAddresses,
+    // final List<ProjectUser> pProjectUsers, final boolean pIsDefault, final boolean pIsNative,
+    // final boolean pIsCorsRequestsAuthorized, final LocalDateTime pCorsRequestsEndDate) {
+    // this(pRoleId, pName, pParentRole, pPermissions, pProjectUsers);
+    // isDefault = pIsDefault;
+    // isNative = pIsNative;
+    // isCorsRequestsAuthorized = pIsCorsRequestsAuthorized;
+    // corsRequestsAuthorizationEndDate = pCorsRequestsEndDate;
+    // authorizedAddresses = pAuthorizedAddresses;
+    // }
 
     public void setNative(final boolean pIsNative) {
         isNative = pIsNative;

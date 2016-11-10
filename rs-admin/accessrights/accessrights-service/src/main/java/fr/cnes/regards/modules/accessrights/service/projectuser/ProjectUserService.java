@@ -103,7 +103,7 @@ public class ProjectUserService implements IProjectUserService {
         final ProjectUser user;
         if (instanceAdminUserEmail.equals(pUserEmail)) {
             user = new ProjectUser(pUserEmail,
-                    new Role(0L, RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null, new ArrayList<>(), new ArrayList<>()),
+                    new Role(RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null),
                     new ArrayList<>(), new ArrayList<>());
         } else {
             user = projectUserRepository.findOneByEmail(pUserEmail);

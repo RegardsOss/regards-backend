@@ -69,7 +69,7 @@ public class AccessRequestServiceTest {
     /**
      * Stub constant value for a role
      */
-    private static final Role ROLE = new Role(0L, "role name", null, new ArrayList<>(), new ArrayList<>());
+    private static final Role ROLE = new Role("role name", null);
 
     /**
      * The tested service
@@ -216,7 +216,7 @@ public class AccessRequestServiceTest {
         dto.setRole(null);
 
         // Mock role repository
-        final Role publicRole = new Role(0L, "Public", null, null, null);
+        final Role publicRole = new Role("Public", null);
         Mockito.when(roleService.getDefaultRole()).thenReturn(publicRole);
 
         // Prepare expected result

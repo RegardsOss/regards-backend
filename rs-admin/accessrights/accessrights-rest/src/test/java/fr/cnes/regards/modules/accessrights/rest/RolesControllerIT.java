@@ -120,7 +120,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to create a role and handle fail cases.")
     public void createRole() {
-        final Role newRole = new Role(15464L, "NEW_ROLE", rolePublic, null, null);
+        final Role newRole = new Role("NEW_ROLE", rolePublic);
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
@@ -175,7 +175,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         performPut(apiRolesId, jwt, toUpdate, expectations, "TODO Error message", id);
 
         final Long notSameID = 41554L;
-        final Role notUpdated = new Role(notSameID, null, null, null, null);
+        final Role notUpdated = new Role(null, null);
 
         expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isBadRequest());

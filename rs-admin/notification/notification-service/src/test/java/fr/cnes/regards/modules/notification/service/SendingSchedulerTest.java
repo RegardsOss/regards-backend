@@ -146,9 +146,9 @@ public class SendingSchedulerTest {
         projectUsers.add(projectUser4);
 
         // Roles
-        final Role role0 = new Role(ZERO, "Role0", null, null, new ArrayList<>());
-        final Role role1 = new Role(ONE, "Role1", role0, null, new ArrayList<>());
-        final Role role2 = new Role(TWO, "Role2", role1, null, new ArrayList<>());
+        final Role role0 = new Role("Role0", null);
+        final Role role1 = new Role("Role1", role0);
+        final Role role2 = new Role("Role2", role1);
         roles = new ArrayList<>();
         roles.add(role0);
         roles.add(role1);

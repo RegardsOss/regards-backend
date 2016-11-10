@@ -104,14 +104,11 @@ public class NotificationTest {
         notification.setStatus(STATUS);
 
         roleRecipients = new ArrayList<>();
-        roleRecipients.add(new Role(0L, DefaultRoleNames.PUBLIC.toString(), null, new ArrayList<>(), new ArrayList<>(),
-                true, true));
+        roleRecipients.add(new Role(DefaultRoleNames.PUBLIC.toString(), null));
         notification.setRoleRecipients(roleRecipients);
 
         projectUserRecipients = new ArrayList<>();
-        projectUserRecipients
-                .add(new ProjectUser("user@email.com", null, new ArrayList<>(),
-                        new ArrayList<>()));
+        projectUserRecipients.add(new ProjectUser("user@email.com", null, new ArrayList<>(), new ArrayList<>()));
         notification.setProjectUserRecipients(projectUserRecipients);
 
         // Run the validator

@@ -78,9 +78,17 @@ public class RoleTest {
         permissions.add(new ResourcesAccess());
         projectUsers.add(new ProjectUser());
         authorizedAddresses.add("authorizedAddress");
-
-        role = new Role(id, name, parentRole, permissions, authorizedAddresses, projectUsers, isDefault, isNative,
-                isCorsRequestsAuthorized, corsRequestsAuthorizationEndDate);
+        role = new Role(name, parentRole);
+        role.setAuthorizedAddresses(authorizedAddresses);
+        role.setCorsRequestsAuthorizationEndDate(corsRequestsAuthorizationEndDate);
+        role.setCorsRequestsAuthorized(isCorsRequestsAuthorized);
+        role.setDefault(isDefault);
+        role.setId(id);
+        role.setName(name);
+        role.setNative(isNative);
+        role.setParentRole(parentRole);
+        role.setPermissions(permissions);
+        role.setProjectUsers(projectUsers);
     }
 
     /**
@@ -94,85 +102,29 @@ public class RoleTest {
         Assert.assertEquals(false, testRole.isNative());
         Assert.assertEquals(false, testRole.isDefault());
         Assert.assertEquals(null, testRole.getParentRole());
-        Assert.assertEquals(null, testRole.getPermissions());
-        Assert.assertEquals(null, testRole.getProjectUsers());
-        Assert.assertEquals(null, testRole.getAuthorizedAddresses());
+        Assert.assertEquals(new ArrayList<>(), testRole.getPermissions());
+        Assert.assertEquals(new ArrayList<>(), testRole.getProjectUsers());
+        Assert.assertEquals(new ArrayList<>(), testRole.getAuthorizedAddresses());
         Assert.assertEquals(false, testRole.isCorsRequestsAuthorized());
         Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#Role(java.lang.Long)}.
-     */
-    @Test
-    public void testRoleWithId() {
-        final Role testRole = new Role(id);
-        Assert.assertEquals(id, testRole.getId());
-        Assert.assertEquals(null, testRole.getName());
-        Assert.assertEquals(false, testRole.isNative());
-        Assert.assertEquals(false, testRole.isDefault());
-        Assert.assertEquals(null, testRole.getParentRole());
-        Assert.assertEquals(null, testRole.getPermissions());
-        Assert.assertEquals(null, testRole.getProjectUsers());
-        Assert.assertEquals(null, testRole.getAuthorizedAddresses());
-        Assert.assertEquals(false, testRole.isCorsRequestsAuthorized());
-        Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
-    }
-
-    /**
-     * Test method for {@link Role#Role(Long, String, Role, List, List)}.
+     * Test method for {@link Role#Role(String, Role)}.
      */
     @Test
     public void testRoleWithParams() {
-        final Role testRole = new Role(id, name, parentRole, permissions, projectUsers);
-        Assert.assertEquals(id, testRole.getId());
+        final Role testRole = new Role(name, parentRole);
+        Assert.assertEquals(null, testRole.getId());
         Assert.assertEquals(name, testRole.getName());
         Assert.assertEquals(false, testRole.isNative());
         Assert.assertEquals(false, testRole.isDefault());
         Assert.assertEquals(parentRole, testRole.getParentRole());
-        Assert.assertEquals(permissions, testRole.getPermissions());
-        Assert.assertEquals(projectUsers, testRole.getProjectUsers());
-        Assert.assertEquals(null, testRole.getAuthorizedAddresses());
+        Assert.assertEquals(new ArrayList<>(), testRole.getPermissions());
+        Assert.assertEquals(new ArrayList<>(), testRole.getProjectUsers());
+        Assert.assertEquals(new ArrayList<>(), testRole.getAuthorizedAddresses());
         Assert.assertEquals(false, testRole.isCorsRequestsAuthorized());
         Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
-    }
-
-    /**
-     * Test method for {@link Role#Role(Long, String, Role, List, List, boolean, boolean)}.
-     */
-    @Test
-    public void testRoleWithoutCORS() {
-        final Role testRole = new Role(id, name, parentRole, permissions, projectUsers, isDefault, isNative);
-        Assert.assertEquals(id, testRole.getId());
-        Assert.assertEquals(name, testRole.getName());
-        Assert.assertEquals(isNative, testRole.isNative());
-        Assert.assertEquals(isDefault, testRole.isDefault());
-        Assert.assertEquals(parentRole, testRole.getParentRole());
-        Assert.assertEquals(permissions, testRole.getPermissions());
-        Assert.assertEquals(projectUsers, testRole.getProjectUsers());
-        Assert.assertEquals(null, testRole.getAuthorizedAddresses());
-        Assert.assertEquals(false, testRole.isCorsRequestsAuthorized());
-        Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
-    }
-
-    /**
-     * Test method for
-     * {@link Role#Role(Long, String, Role, List, List, List, boolean, boolean, boolean, LocalDateTime)}.
-     */
-    @Test
-    public void testRoleFull() {
-        final Role testRole = new Role(id, name, parentRole, permissions, authorizedAddresses, projectUsers, isDefault,
-                isNative, isCorsRequestsAuthorized, corsRequestsAuthorizationEndDate);
-        Assert.assertEquals(id, testRole.getId());
-        Assert.assertEquals(name, testRole.getName());
-        Assert.assertEquals(isNative, testRole.isNative());
-        Assert.assertEquals(isDefault, testRole.isDefault());
-        Assert.assertEquals(parentRole, testRole.getParentRole());
-        Assert.assertEquals(permissions, testRole.getPermissions());
-        Assert.assertEquals(projectUsers, testRole.getProjectUsers());
-        Assert.assertEquals(authorizedAddresses, testRole.getAuthorizedAddresses());
-        Assert.assertEquals(isCorsRequestsAuthorized, testRole.isCorsRequestsAuthorized());
-        Assert.assertEquals(corsRequestsAuthorizationEndDate, testRole.getCorsRequestsAuthorizationEndDate());
     }
 
     /**
@@ -275,7 +227,7 @@ public class RoleTest {
      */
     @Test
     public void testSetParentRole() {
-        final Role newParentRole = new Role(8L);
+        final Role newParentRole = new Role("newParentRole", null);
         role.setParentRole(newParentRole);
         Assert.assertEquals(newParentRole, role.getParentRole());
     }
