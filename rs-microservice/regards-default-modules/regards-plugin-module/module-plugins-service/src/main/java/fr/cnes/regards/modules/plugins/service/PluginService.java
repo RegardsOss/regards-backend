@@ -63,7 +63,7 @@ public class PluginService implements IPluginService {
 
     /**
      * A constructor with the {@link IPluginConfigurationRepository}.
-     * 
+     *
      * @param pPluginConfigurationRepository
      *            {@link PluginConfiguration} JPA repository
      */
@@ -97,12 +97,12 @@ public class PluginService implements IPluginService {
 
         getLoadedPlugins().forEach((pKey, pValue) -> {
             try {
-                if (pInterfacePluginType == null || (pInterfacePluginType != null
+                if ((pInterfacePluginType == null) || ((pInterfacePluginType != null)
                         && pInterfacePluginType.isAssignableFrom(Class.forName(pValue.getPluginClassName())))) {
                     pluginAvailables.add(pValue);
                 }
             } catch (ClassNotFoundException e) {
-                LOGGER.warn("cannot instanciate the class : %s" + pValue.getPluginClassName());
+                LOGGER.error("cannot instanciate the class : %s" + pValue.getPluginClassName());
             }
         });
 

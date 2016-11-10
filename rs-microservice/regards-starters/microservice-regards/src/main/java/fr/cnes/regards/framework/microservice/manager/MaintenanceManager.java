@@ -28,6 +28,15 @@ public final class MaintenanceManager {
         return maintenanceMap;
     }
 
+    public static Boolean getMaintenance(String pTenant) {
+        Boolean b = maintenanceMap.get(pTenant);
+        // if the tenant is unknown, it is not in maintenance
+        if (b == null) {
+            b = Boolean.FALSE;
+        }
+        return b;
+    }
+
     public static void addTenant(String pTenant) {
         maintenanceMap.put(pTenant, Boolean.FALSE);
     }

@@ -91,6 +91,7 @@ public class PluginController implements IPluginsSignature {
         final List<String> types = pluginService.getPluginTypes();
         final List<Resource<String>> resources = types.stream().map(p -> new Resource<>(p))
                 .collect(Collectors.toList());
+
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
