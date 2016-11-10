@@ -102,7 +102,9 @@ public class ProjectUserService implements IProjectUserService {
     public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
         final ProjectUser user;
         if (instanceAdminUserEmail.equals(pUserEmail)) {
-            user = new ProjectUser(pUserEmail, new Role(0L, RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null, new ArrayList<>(), new ArrayList<>()), new ArrayList<>(), new ArrayList<>());
+            user = new ProjectUser(pUserEmail,
+                    new Role(0L, RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null, new ArrayList<>(), new ArrayList<>()),
+                    new ArrayList<>(), new ArrayList<>());
         } else {
             user = projectUserRepository.findOneByEmail(pUserEmail);
             if (user == null) {
@@ -189,9 +191,9 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public List<ResourcesAccess> retrieveProjectUserAccessRights(final String pLogin, final String pBorrowedRoleName)
-            throws InvalidValueException {
-        final ProjectUser projectUser = projectUserRepository.findOneByEmail(pLogin);
+    public List<ResourcesAccess> retrieveProjectUserAccessRights(final String pEmail, final String pBorrowedRoleName)
+            throws InvalidValueException, EntityNotFoundException {
+        final ProjectUser projectUser = retrieveOneByEmail(pEmail);
         final Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
 

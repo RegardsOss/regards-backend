@@ -79,7 +79,7 @@ public interface IProjectUserService {
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
      *
-     * @param pLogin
+     * @param pEmail
      *            The {@link ProjectUser}'s <code>id</code>
      * @param pBorrowedRoleName
      *            The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
@@ -87,9 +87,11 @@ public interface IProjectUserService {
      * @throws InvalidValueException
      *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
      *             <code>role</code>.
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
-    List<ResourcesAccess> retrieveProjectUserAccessRights(String pLogin, String pBorrowedRoleName)
-            throws InvalidValueException;
+    List<ResourcesAccess> retrieveProjectUserAccessRights(String pEmail, String pBorrowedRoleName)
+            throws InvalidValueException, EntityNotFoundException;
 
     /**
      * Update the the {@link List} of <code>permissions</code>.

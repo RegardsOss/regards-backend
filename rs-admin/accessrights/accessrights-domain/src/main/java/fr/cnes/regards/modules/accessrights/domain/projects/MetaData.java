@@ -13,8 +13,10 @@ import javax.persistence.SequenceGenerator;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 
-/*
- * LICENSE_PLACEHOLDER
+/**
+ * Domain class representing a project user's meta datum.
+ *
+ * @author CS
  */
 @Entity(name = "T_META_DATA")
 @SequenceGenerator(name = "metaDataSequence", initialValue = 1, sequenceName = "SEQ_META_DATA")

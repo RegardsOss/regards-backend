@@ -12,6 +12,8 @@ import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -80,7 +82,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      * The list of meta data on the user
      */
     @Valid
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @Column(name = "metaData")
     private List<MetaData> metaData;
 
@@ -88,15 +90,16 @@ public class ProjectUser implements IIdentifiable<Long> {
      * The user's role. Can be null according to /accesses@POST (role value can be unspecified and so it's PUBLIC)
      */
     @Valid
+    @NotNull
     @ManyToOne
-    @JoinColumn(name = "role_id", foreignKey = @javax.persistence.ForeignKey(name = "FK_USER_ROLE"))
+    @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "FK_USER_ROLE"))
     private Role role;
 
     /**
      * The list of specific permissions for this user, augmenting the permissions granted by the role.
      */
     @Valid
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @Column(name = "permissions")
     private List<ResourcesAccess> permissions;
 

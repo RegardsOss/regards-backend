@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.GlobalControllerAdvice;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -40,7 +39,7 @@ import fr.cnes.regards.modules.accessrights.signature.IProjectUsersSignature;
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class ProjectUsersController extends GlobalControllerAdvice implements IProjectUsersSignature {
+public class ProjectUsersController implements IProjectUsersSignature {
 
     @Autowired
     private IProjectUserService projectUserService;
@@ -55,10 +54,10 @@ public class ProjectUsersController extends GlobalControllerAdvice implements IP
     }
 
     @Override
-    @ResourceAccess(description = "retrieve the project user and only display  metadata")
-    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") final String userEmail)
+    @ResourceAccess(description = "retrieve the project user and only display metadata")
+    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") final String pUserEmail)
             throws EntityNotFoundException {
-        final ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
+        final ProjectUser user = projectUserService.retrieveOneByEmail(pUserEmail);
         final Resource<ProjectUser> resource = new Resource<>(user);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -109,7 +108,7 @@ public class ProjectUsersController extends GlobalControllerAdvice implements IP
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(
             @PathVariable("user_login") final String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) final String pBorrowedRoleName)
-            throws InvalidValueException {
+            throws InvalidValueException, EntityNotFoundException {
         final List<ResourcesAccess> permissions = projectUserService.retrieveProjectUserAccessRights(pUserLogin,
                                                                                                      pBorrowedRoleName);
 

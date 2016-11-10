@@ -9,12 +9,15 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.Valid;
@@ -55,21 +58,22 @@ public class Role implements IIdentifiable<Long> {
      * <p/>
      * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasParentOrPublic} annotation.
      */
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "parent_role_id", foreignKey = @ForeignKey(name = "FK_ROLE_PARENT_ROLE"))
     private Role parentRole;
 
     /**
      * Role permissions
      */
     @Valid
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<ResourcesAccess> permissions;
 
     /**
      * Role associated project users
      */
     @Valid
-    @OneToMany(mappedBy = "role")
+    @OneToMany(mappedBy = "role", fetch = FetchType.EAGER)
     private List<ProjectUser> projectUsers;
 
     /**
@@ -83,7 +87,7 @@ public class Role implements IIdentifiable<Long> {
      * Are the cors requests authorized for this role ?
      */
     @Column(name = "cors_requests_authorized")
-    private boolean isCorsRequestsAuthorized = false;
+    private boolean isCorsRequestsAuthorized;
 
     /**
      * If CORS requests are authorized for this role, this parameter indicates the limit date of the authorization
@@ -113,6 +117,7 @@ public class Role implements IIdentifiable<Long> {
         super();
         isDefault = false;
         isNative = false;
+        isCorsRequestsAuthorized = false;
     }
 
     /**

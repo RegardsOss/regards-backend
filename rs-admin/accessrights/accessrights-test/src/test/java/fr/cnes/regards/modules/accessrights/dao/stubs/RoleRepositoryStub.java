@@ -9,10 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
-
 import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
@@ -21,9 +17,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
-@Repository
-@Profile("test")
-@Primary
+//@Repository
+//@Profile("test")
+//@Primary
 public class RoleRepositoryStub extends JpaRepositoryStub<Role> implements IRoleRepository {
 
     public RoleRepositoryStub() {

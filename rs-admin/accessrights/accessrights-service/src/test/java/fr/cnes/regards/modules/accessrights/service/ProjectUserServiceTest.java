@@ -425,12 +425,15 @@ public class ProjectUserServiceTest {
      * @throws InvalidValueException
      *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
      *             <code>role</code>.
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @Test(expected = InvalidValueException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_260")
     @Purpose("Check that the system fail when trying to retrieve "
             + "a user's permissions using a role not hierarchically inferior.")
-    public void retrieveProjectUserAccessRightsBorrowedRoleNotInferior() throws InvalidValueException {
+    public void retrieveProjectUserAccessRightsBorrowedRoleNotInferior()
+            throws InvalidValueException, EntityNotFoundException {
         // Define borrowed role
         final String borrowedRoleName = DefaultRoleNames.INSTANCE_ADMIN.toString();
         final Role borrowedRole = new Role();
