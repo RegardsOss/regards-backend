@@ -1,37 +1,27 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessrights.service;
+package fr.cnes.regards.modules.accessrights.service.instance;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
- * {@link IAccountService} implementation.
+ * {@link IAccountState} implementation.
  *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
@@ -39,11 +29,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 @Service
 @InstanceTransactional
 public class AccountService implements IAccountService {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
 
     /**
      * Root admin user login
@@ -63,39 +48,22 @@ public class AccountService implements IAccountService {
     private final IAccountRepository accountRepository;
 
     /**
-     * Service managing {@link ProjectUser}s. Autowired by Spring.
+     * Factory class for retrieving an account's state from its status
      */
-    private final IProjectUserService projectUserService;
-
-    /**
-     * Tenant resolver. Autowired by Spring.
-     */
-    private final ITenantResolver tenantResolver;
-
-    /**
-     * JWT Service. Autowired by Spring.
-     */
-    private final JWTService jwtService;
+    private final AccountStateFactory accountStateFactory;
 
     /**
      * Creates a new instance with passed deps
      *
      * @param pAccountRepository
      *            The account repository
-     * @param pProjectUserService
-     *            The project user service
-     * @param pTenantResolver
-     *            The tenant resolver
-     * @param pJwtService
-     *            The jwt service
+     * @param pAccountStateFactory
+     *            The account state factory
      */
-    public AccountService(final IAccountRepository pAccountRepository, final IProjectUserService pProjectUserService,
-            final ITenantResolver pTenantResolver, final JWTService pJwtService) {
+    public AccountService(final IAccountRepository pAccountRepository, final AccountStateFactory pAccountStateFactory) {
         super();
         accountRepository = pAccountRepository;
-        projectUserService = pProjectUserService;
-        tenantResolver = pTenantResolver;
-        jwtService = pJwtService;
+        accountStateFactory = pAccountStateFactory;
     }
 
     @PostConstruct
@@ -116,7 +84,9 @@ public class AccountService implements IAccountService {
         if (existAccount(pNewAccount.getEmail())) {
             throw new AlreadyExistingException(pNewAccount.getEmail());
         }
-        return accountRepository.save(pNewAccount);
+        final Account toCreate = new Account(pNewAccount.getEmail(), pNewAccount.getFirstName(),
+                pNewAccount.getLastName(), pNewAccount.getPassword());
+        return accountRepository.save(toCreate);
     }
 
     @Override
@@ -139,45 +109,7 @@ public class AccountService implements IAccountService {
         if (!existAccount(pAccountId)) {
             throw new EntityNotFoundException(pAccountId.toString(), Account.class);
         }
-        save(pUpdatedAccount);
-    }
-
-    @Override
-    public void removeAccount(final Long pAccountId) throws EntityException {
-        final Account account = accountRepository.findOne(pAccountId);
-
-        // Silently fail + shortcut if the account does not exist
-        if (account == null) {
-            LOG.info("Tried to remove a not existing account of id " + pAccountId);
-            return;
-        }
-
-        // Get all tenants
-        final Set<String> tenants = tenantResolver.getAllTenants();
-
-        // Define inject tenant consumer
-        final Consumer<? super String> injectTenant = t -> {
-
-            // TODO: User role system
-            jwtService.changeTenant(t);
-            LOG.info("Injected tenant " + t);
-
-        };
-
-        // Predicate: is there a project user associated to the account on this tenant?
-        final Predicate<? super String> hasProjectUser = t -> {
-            LOG.info("Evaluated predicate with tenant " + t);
-            return projectUserService.existUser(account.getEmail());
-        };
-
-        try (Stream<String> stream = tenants.stream()) {
-            if (stream.peek(injectTenant).anyMatch(hasProjectUser)) {
-                accountRepository.delete(pAccountId);
-            } else {
-                throw new EntityException(
-                        "Cannot remove account of id " + pAccountId + " because it is linked to project users.");
-            }
-        }
+        accountRepository.save(pUpdatedAccount);
     }
 
     @Override
@@ -185,38 +117,17 @@ public class AccountService implements IAccountService {
         if (!existAccount(pEmail)) {
             throw new EntityNotFoundException(pEmail, Account.class);
         }
-        // final String code = generateCode(pType);
         final Account account = retrieveAccountByEmail(pEmail);
-        // account.setCode(code);
-        // save(account);
-        // TODO: sendEmail(pEmail,code);
-    }
-
-    @Override
-    public void unlockAccount(final Long pAccountId, final String pUnlockCode)
-            throws InvalidValueException, EntityNotFoundException {
-        final Account toUnlock = retrieveAccount(pAccountId);
-
-        // Check it is effectively locked
-        if (!AccountStatus.LOCKED.equals(toUnlock.getStatus())) {
-            throw new InvalidValueException("Account is not locked");
-        }
-
-        // Check code
-        check(toUnlock, pUnlockCode);
-
-        // Change status
-        toUnlock.setStatus(AccountStatus.ACTIVE);
-        save(toUnlock);
+        // TODO: sendEmail(pEmail,account.getCode();
     }
 
     @Override
     public void changeAccountPassword(final Long pAccountId, final String pResetCode, final String pNewPassword)
             throws EntityNotFoundException, InvalidValueException {
         final Account account = retrieveAccount(pAccountId);
-        check(account, pResetCode);
+        checkCode(account, pResetCode);
         account.setPassword(pNewPassword);
-        save(account);
+        accountRepository.save(account);
     }
 
     @Override
@@ -226,7 +137,6 @@ public class AccountService implements IAccountService {
             throw new EntityNotFoundException(pEmail, Account.class);
         }
         return account;
-
     }
 
     @Override
@@ -247,16 +157,6 @@ public class AccountService implements IAccountService {
     }
 
     /**
-     * Save the account
-     *
-     * @param pAccount
-     *            The account to save
-     */
-    private void save(final Account pAccount) {
-        accountRepository.save(pAccount);
-    }
-
-    /**
      * Check the passed code matches the code set on the passed account.
      *
      * @param pAccount
@@ -266,9 +166,90 @@ public class AccountService implements IAccountService {
      * @throws InvalidValueException
      *             Thrown if the passed code differs from the one set on the account
      */
-    private void check(final Account pAccount, final String pCode) throws InvalidValueException {
+    private void checkCode(final Account pAccount, final String pCode) throws InvalidValueException {
         if (!pAccount.getCode().equals(pCode)) {
             throw new InvalidValueException("this is not the right code");
         }
     }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.service.instance.IAccountState#makeAdminDecision(fr.cnes.regards.modules.
+     * accessrights.domain.instance.Account)
+     */
+    @Override
+    public void makeAdminDecision(final Account pAccount) throws IllegalActionForAccountStatusException {
+        accountStateFactory.createState(pAccount).emailValidation(pAccount);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.instance.IAccountState#emailValidation(fr.cnes.regards.modules.
+     * accessrights.domain.instance.Account)
+     */
+    @Override
+    public void emailValidation(final Account pAccount) throws IllegalActionForAccountStatusException {
+        accountStateFactory.createState(pAccount).emailValidation(pAccount);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.instance.IAccountState#lockAccount(fr.cnes.regards.modules.
+     * accessrights.domain.instance.Account)
+     */
+    @Override
+    public void lockAccount(final Account pAccount) throws IllegalActionForAccountStatusException {
+        accountStateFactory.createState(pAccount).lockAccount(pAccount);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.instance.IAccountState#unlockAccount(fr.cnes.regards.modules.
+     * accessrights.domain.instance.Account)
+     */
+    @Override
+    public void unlockAccount(final Account pAccount, final String pUnlockCode)
+            throws IllegalActionForAccountStatusException, InvalidValueException {
+        accountStateFactory.createState(pAccount).unlockAccount(pAccount, pUnlockCode);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.instance.IAccountState#inactiveAccount(fr.cnes.regards.modules.
+     * accessrights.domain.instance.Account)
+     */
+    @Override
+    public void inactiveAccount(final Account pAccount) throws IllegalActionForAccountStatusException {
+        accountStateFactory.createState(pAccount).inactiveAccount(pAccount);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.instance.IAccountState#activeAccount(fr.cnes.regards.modules.
+     * accessrights.domain.instance.Account)
+     */
+    @Override
+    public void activeAccount(final Account pAccount) throws IllegalActionForAccountStatusException {
+        accountStateFactory.createState(pAccount).activeAccount(pAccount);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.service.instance.IAccountState#delete(fr.cnes.regards.modules.accessrights.
+     * domain.instance.Account)
+     */
+    @Override
+    public void delete(final Account pAccount) throws OperationForbiddenException {
+        accountStateFactory.createState(pAccount).delete(pAccount);
+    }
+
 }

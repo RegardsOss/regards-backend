@@ -15,6 +15,7 @@ import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.service.instance.IAccountService;
 
 /**
  * {@link IAccessRequestService} implementation

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessrights.service.test;
+package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +26,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.AccessRequestService;
-import fr.cnes.regards.modules.accessrights.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.IRoleService;
+import fr.cnes.regards.modules.accessrights.service.instance.IAccountService;
 
 /**
  * Test class for {@link AccessRequestService}.

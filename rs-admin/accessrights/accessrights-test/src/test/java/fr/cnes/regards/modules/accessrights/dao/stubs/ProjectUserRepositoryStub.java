@@ -9,10 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
-
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
@@ -22,9 +18,9 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
-@Repository
-@Profile("test")
-@Primary
+//@Repository
+//@Profile("test")
+//@Primary
 public class ProjectUserRepositoryStub extends JpaRepositoryStub<ProjectUser> implements IProjectUserRepository {
 
     private final IAccountRepository accountRepository;
@@ -63,8 +59,7 @@ public class ProjectUserRepositoryStub extends JpaRepositoryStub<ProjectUser> im
         account = accountRepository.save(account);
 
         ProjectUser projectUser;
-        projectUser = new ProjectUser(pMail, pRole, new ArrayList<>(),
-                new ArrayList<>());
+        projectUser = new ProjectUser(pMail, pRole, new ArrayList<>(), new ArrayList<>());
         return projectUser;
     }
 

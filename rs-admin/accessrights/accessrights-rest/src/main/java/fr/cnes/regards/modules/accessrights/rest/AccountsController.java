@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -29,16 +27,14 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
-import fr.cnes.regards.modules.accessrights.service.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.IAccountSettingsService;
+import fr.cnes.regards.modules.accessrights.service.instance.IAccountService;
+import fr.cnes.regards.modules.accessrights.service.instance.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.signature.IAccountsSignature;
 
 @RestController
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
 public class AccountsController extends GlobalControllerAdvice implements IAccountsSignature {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AccountsController.class);
 
     @Autowired
     private IAccountService accountService;
@@ -66,44 +62,46 @@ public class AccountsController extends GlobalControllerAdvice implements IAccou
 
     @Override
     @ResourceAccess(description = "retrieve the account account_id", name = "")
-    public ResponseEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") final Long accountId)
+    public ResponseEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") final Long pAccountId)
             throws EntityNotFoundException {
-        final Account account = accountService.retrieveAccount(accountId);
+        final Account account = accountService.retrieveAccount(pAccountId);
         final Resource<Account> resource = new Resource<>(account);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "update the account account_id according to the body specified", name = "")
-    public ResponseEntity<Void> updateAccount(@PathVariable("account_id") final Long accountId,
+    public ResponseEntity<Void> updateAccount(@PathVariable("account_id") final Long pAccountId,
             @Valid @RequestBody final Account pUpdatedAccount) throws EntityNotFoundException, InvalidValueException {
-        accountService.updateAccount(accountId, pUpdatedAccount);
+        accountService.updateAccount(pAccountId, pUpdatedAccount);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "remove the account account_id", name = "")
-    public ResponseEntity<Void> removeAccount(@PathVariable("account_id") final Long accountId) throws EntityException {
-        accountService.removeAccount(accountId);
+    public ResponseEntity<Void> removeAccount(@PathVariable("account_id") final Long pAccountId)
+            throws EntityException {
+        final Account account = accountService.retrieveAccount(pAccountId);
+        accountService.delete(account);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "unlock the account account_id according to the code unlock_code", name = "")
-    public ResponseEntity<Void> unlockAccount(@PathVariable("account_id") final Long accountId,
-            @PathVariable("unlock_code") final String unlockCode)
-            throws InvalidValueException, EntityNotFoundException {
-        accountService.unlockAccount(accountId, unlockCode);
+    public ResponseEntity<Void> unlockAccount(@PathVariable("account_id") final Long pAccountId,
+            @PathVariable("unlock_code") final String unlockCode) throws EntityException, InvalidValueException {
+        final Account account = accountService.retrieveAccount(pAccountId);
+        accountService.unlockAccount(account, unlockCode);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code",
             name = "")
-    public ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") final Long accountId,
-            @PathVariable("reset_code") final String resetCode, @Valid @RequestBody final String pNewPassword)
+    public ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") final Long pAccountId,
+            @PathVariable("reset_code") final String pResetCode, @Valid @RequestBody final String pNewPassword)
             throws EntityNotFoundException, InvalidValueException {
-        accountService.changeAccountPassword(accountId, resetCode, pNewPassword);
+        accountService.changeAccountPassword(pAccountId, pResetCode, pNewPassword);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

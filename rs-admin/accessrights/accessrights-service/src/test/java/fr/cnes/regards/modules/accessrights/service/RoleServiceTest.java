@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessrights.service.test;
+package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.ArrayList;
 import java.util.List;

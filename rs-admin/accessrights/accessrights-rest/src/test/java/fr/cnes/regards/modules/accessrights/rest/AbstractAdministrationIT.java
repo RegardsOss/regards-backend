@@ -28,7 +28,7 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
     /**
      * Test project name
      */
-    public static final String PROJECT_TEST_NAME = "test-1";
+    public static final String PROJECT_TEST_NAME = "test1";
 
     /**
      * Project Repository STUB

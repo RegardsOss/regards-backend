@@ -83,18 +83,24 @@ public interface IAccountsSignature {
     /**
      * Do not respect REST architecture because the request comes from a mail client, ideally should be a PUT
      *
-     * @param accountId
-     * @param unlockCode
+     * @param pAccountId
+     *            The account id
+     * @param pUnlockCode
+     *            the unlock code
      * @return
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when no {@link Account} could be found with id
+     *             <code>pAccountId</code><br>
+     *             {@link IllegalActionForAccountStatusException} Thrown if the account is not in status LOCKED
      * @throws InvalidValueException
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
+     *             Thrown when the passed code is different from the one expected
      */
     @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> unlockAccount(@PathVariable("account_id") Long pAccountId,
-            @PathVariable("unlock_code") String pUnlockCode) throws InvalidValueException, EntityNotFoundException;
+            @PathVariable("unlock_code") String pUnlockCode) throws EntityException, InvalidValueException;
 
     /**
      * Change the passord of an {@link Account}.

@@ -51,7 +51,7 @@ public class ProjectUserService implements IProjectUserService {
     /**
      * A filter on meta data to keep visible ones only
      */
-    private final Predicate<? super MetaData> visibleMetaDataFilter = m -> !UserVisibility.HIDDEN
+    private final Predicate<? super MetaData> keepVisibleMetaData = m -> !UserVisibility.HIDDEN
             .equals(m.getVisibility());
 
     /**
@@ -87,7 +87,7 @@ public class ProjectUserService implements IProjectUserService {
         final ProjectUser user = projectUserRepository.findOne(pUserId);
         // Filter out hidden meta data
         try (final Stream<MetaData> stream = user.getMetaData().stream()) {
-            user.setMetaData(stream.filter(visibleMetaDataFilter).collect(Collectors.toList()));
+            user.setMetaData(stream.filter(keepVisibleMetaData).collect(Collectors.toList()));
         }
         return user;
     }
@@ -109,7 +109,7 @@ public class ProjectUserService implements IProjectUserService {
             }
             // Filter out hidden meta data
             try (final Stream<MetaData> stream = user.getMetaData().stream()) {
-                stream.filter(visibleMetaDataFilter);
+                stream.filter(keepVisibleMetaData);
             }
         }
         return user;

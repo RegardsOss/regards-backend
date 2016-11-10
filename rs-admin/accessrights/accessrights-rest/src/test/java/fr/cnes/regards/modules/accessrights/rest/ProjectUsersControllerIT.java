@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.accessrights.service.IRoleService;
  *
  * @author svissier
  * @author sbinda
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
@@ -52,6 +52,26 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(ProjectUsersControllerIT.class);
+
+    /**
+     * A role
+     */
+    private static final Role ROLE = null;
+
+    /**
+     * An email
+     */
+    private static final String EMAIL = "email@test.com";
+
+    /**
+     * A list of permissions
+     */
+    private static final List<ResourcesAccess> PERMISSIONS = null;
+
+    /**
+     * A list of meta data
+     */
+    private static final List<MetaData> METADATA = null;
 
     @Autowired
     private JWTService jwtService;
@@ -89,6 +109,8 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     @Autowired
     private IRoleService roleService;
 
+    private ProjectUser projectUser;
+
     @Override
     public void init() {
         final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
@@ -112,6 +134,11 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         apiUserPermissionsBorrowedRole = apiUserPermissions + "?borrowedRoleName=";
         apiUserMetaData = apiUserId + "/metadata";
         errorMessage = "Cannot reach model attributes";
+
+        // Clear the repo
+        projectUserRepository.deleteAll();
+        // And start with a single account for convenience
+        projectUser = projectUserRepository.save(new ProjectUser(EMAIL, ROLE, PERMISSIONS, METADATA));
     }
 
     @Test
@@ -121,7 +148,6 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiUsers, jwt, expectations, errorMessage);
-
     }
 
     @Test
@@ -137,7 +163,6 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         expectations.clear();
         expectations.add(status().isNotFound());
         performGet(apiUserEmail, jwt, expectations, errorMessage, "user@invalid.fr");
-
     }
 
     @Test

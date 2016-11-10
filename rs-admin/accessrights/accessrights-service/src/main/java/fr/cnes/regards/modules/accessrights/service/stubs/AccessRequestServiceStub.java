@@ -19,9 +19,9 @@ import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.IAccessRequestService;
-import fr.cnes.regards.modules.accessrights.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.RoleService;
+import fr.cnes.regards.modules.accessrights.service.instance.IAccountService;
 
 /**
  * Stubbed {@link IAccessRequestService} implementation

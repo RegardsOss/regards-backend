@@ -1,12 +1,11 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessrights.service;
+package fr.cnes.regards.modules.accessrights.service.instance;
 
 import java.util.List;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
@@ -17,7 +16,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  *
  * @author CS SI
  */
-public interface IAccountService {
+public interface IAccountService extends IAccountState {
 
     /**
      * Retrieve the list of all {@link Account}s.
@@ -81,17 +80,6 @@ public interface IAccountService {
     void updateAccount(Long pAccountId, Account pUpdatedAccount) throws EntityNotFoundException, InvalidValueException;
 
     /**
-     * Remove on {@link Account} from db.<br>
-     * Only remove if no project user for any tenant.
-     *
-     * @param pAccountId
-     *            The account <code>id</code>
-     * @throws EntityException
-     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
-     */
-    void removeAccount(Long pAccountId) throws EntityException;
-
-    /**
      * Send a code of type <code>pType</code> to the specified recipient.
      *
      * @param pEmail
@@ -102,20 +90,6 @@ public interface IAccountService {
      *             Thrown when no {@link Account} with passed <code>email</code> could be found
      */
     void sendAccountCode(String pEmail, CodeType pType) throws EntityNotFoundException;
-
-    /**
-     * Unlock the {@link Account} of passed <code>id</code>.
-     *
-     * @param pAccountId
-     *            The {@link Account} <code>id</code>
-     * @param pUnlockCode
-     *            The unlock code
-     * @throws InvalidValueException
-     *             Thrown when the passed unlock code is different from the one expected
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
-     */
-    void unlockAccount(Long pAccountId, String pUnlockCode) throws InvalidValueException, EntityNotFoundException;
 
     /**
      * Change the passord of an {@link Account}.
