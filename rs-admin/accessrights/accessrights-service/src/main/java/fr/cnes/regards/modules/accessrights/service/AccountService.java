@@ -20,8 +20,8 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -126,15 +126,15 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Account retrieveAccount(final Long pAccountId) throws EntityNotFoundException {
+    public Account retrieveAccount(final Long pAccountId) throws ModuleEntityNotFoundException {
         return accountRepository.findOne(pAccountId);
     }
 
     @Override
     public void updateAccount(final Long pAccountId, final Account pUpdatedAccount)
-            throws EntityNotFoundException, InvalidValueException {
+            throws ModuleEntityNotFoundException, InvalidValueException {
         if (!existAccount(pAccountId)) {
-            throw new EntityNotFoundException(pAccountId.toString(), Account.class);
+            throw new ModuleEntityNotFoundException(pAccountId.toString(), Account.class);
         }
         if (!pUpdatedAccount.getId().equals(pAccountId)) {
             throw new InvalidValueException("Account id specified differs from updated account id");
@@ -183,9 +183,9 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public void sendAccountCode(final String pEmail, final CodeType pType) throws EntityNotFoundException {
+    public void sendAccountCode(final String pEmail, final CodeType pType) throws ModuleEntityNotFoundException {
         if (!existAccount(pEmail)) {
-            throw new EntityNotFoundException(pEmail, Account.class);
+            throw new ModuleEntityNotFoundException(pEmail, Account.class);
         }
         final String code = generateCode(pType);
         final Account account = retrieveAccountByEmail(pEmail);
@@ -196,7 +196,7 @@ public class AccountService implements IAccountService {
 
     @Override
     public void unlockAccount(final Long pAccountId, final String pUnlockCode)
-            throws InvalidValueException, EntityNotFoundException {
+            throws InvalidValueException, ModuleEntityNotFoundException {
         final Account toUnlock = retrieveAccount(pAccountId);
 
         // Check it is effectively locked
@@ -214,7 +214,7 @@ public class AccountService implements IAccountService {
 
     @Override
     public void changeAccountPassword(final Long pAccountId, final String pResetCode, final String pNewPassword)
-            throws EntityNotFoundException, InvalidValueException {
+            throws ModuleEntityNotFoundException, InvalidValueException {
         final Account account = retrieveAccount(pAccountId);
         check(account, pResetCode);
         account.setPassword(pNewPassword);
@@ -222,10 +222,10 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Account retrieveAccountByEmail(final String pEmail) throws EntityNotFoundException {
+    public Account retrieveAccountByEmail(final String pEmail) throws ModuleEntityNotFoundException {
         final Account account = accountRepository.findOneByEmail(pEmail);
         if (account == null) {
-            throw new EntityNotFoundException(pEmail, Account.class);
+            throw new ModuleEntityNotFoundException(pEmail, Account.class);
         }
         return account;
 

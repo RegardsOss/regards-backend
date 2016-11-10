@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -150,18 +150,18 @@ public class AccessRequestServiceStub implements IAccessRequestService {
     }
 
     @Override
-    public void removeAccessRequest(final Long pAccessId) throws EntityNotFoundException {
+    public void removeAccessRequest(final Long pAccessId) throws ModuleEntityNotFoundException {
         if (exists(pAccessId)) {
             projectUsers = projectUsers.stream().filter(p -> p.getId() != pAccessId).collect(Collectors.toList());
             return;
         }
-        throw new EntityNotFoundException(pAccessId.toString(), ProjectUser.class);
+        throw new ModuleEntityNotFoundException(pAccessId.toString(), ProjectUser.class);
     }
 
     @Override
-    public void acceptAccessRequest(final Long pAccessId) throws EntityNotFoundException {
+    public void acceptAccessRequest(final Long pAccessId) throws ModuleEntityNotFoundException {
         if (!exists(pAccessId)) {
-            throw new EntityNotFoundException(pAccessId.toString(), ProjectUser.class);
+            throw new ModuleEntityNotFoundException(pAccessId.toString(), ProjectUser.class);
         }
 
         for (final ProjectUser projectUser : projectUsers) {
@@ -172,9 +172,9 @@ public class AccessRequestServiceStub implements IAccessRequestService {
     }
 
     @Override
-    public void denyAccessRequest(final Long pAccessId) throws EntityNotFoundException {
+    public void denyAccessRequest(final Long pAccessId) throws ModuleEntityNotFoundException {
         if (!exists(pAccessId)) {
-            throw new EntityNotFoundException(pAccessId.toString(), ProjectUser.class);
+            throw new ModuleEntityNotFoundException(pAccessId.toString(), ProjectUser.class);
         }
 
         for (final ProjectUser projectUser : projectUsers) {

@@ -5,7 +5,7 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
@@ -50,9 +50,9 @@ public class AccessSettingsService implements IAccessSettingsService {
      * @see fr.cnes.regards.modules.accessrights.service.IAccessSettingsService#update()
      */
     @Override
-    public AccessSettings update(final AccessSettings pAccessSettings) throws EntityNotFoundException {
+    public AccessSettings update(final AccessSettings pAccessSettings) throws ModuleEntityNotFoundException {
         if (!accessSettingsRepository.exists(pAccessSettings.getId())) {
-            throw new EntityNotFoundException(pAccessSettings.getId().toString(), AccessSettings.class);
+            throw new ModuleEntityNotFoundException(pAccessSettings.getId().toString(), AccessSettings.class);
         }
         return accessSettingsRepository.save(pAccessSettings);
     }

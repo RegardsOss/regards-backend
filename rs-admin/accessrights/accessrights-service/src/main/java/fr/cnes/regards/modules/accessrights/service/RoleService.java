@@ -16,8 +16,8 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -94,12 +94,12 @@ public class RoleService implements IRoleService {
 
     @Override
     public void updateRole(final Long pRoleId, final Role pUpdatedRole)
-            throws EntityNotFoundException, InvalidValueException {
+            throws ModuleEntityNotFoundException, InvalidValueException {
         if (!pRoleId.equals(pUpdatedRole.getId())) {
             throw new InvalidValueException();
         }
         if (!existRole(pRoleId)) {
-            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
         }
         roleRepository.save(pUpdatedRole);
     }
@@ -121,9 +121,10 @@ public class RoleService implements IRoleService {
      * @see REGARDS_DSL_ADM_ADM_260
      */
     @Override
-    public List<ResourcesAccess> retrieveRoleResourcesAccessList(final Long pRoleId) throws EntityNotFoundException {
+    public List<ResourcesAccess> retrieveRoleResourcesAccessList(final Long pRoleId)
+            throws ModuleEntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
         }
 
         final List<Role> roleAndHisAncestors = new ArrayList<>();
@@ -140,9 +141,9 @@ public class RoleService implements IRoleService {
 
     @Override
     public Role updateRoleResourcesAccess(final Long pRoleId, final List<ResourcesAccess> pResourcesAccessList)
-            throws EntityNotFoundException {
+            throws ModuleEntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
         }
         final Role role = roleRepository.findOne(pRoleId);
         final List<ResourcesAccess> permissions = role.getPermissions();
@@ -158,9 +159,9 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void clearRoleResourcesAccess(final Long pRoleId) throws EntityNotFoundException {
+    public void clearRoleResourcesAccess(final Long pRoleId) throws ModuleEntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
         }
         final Role role = roleRepository.findOne(pRoleId);
         role.setPermissions(new ArrayList<>());
@@ -168,9 +169,9 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public List<ProjectUser> retrieveRoleProjectUserList(final Long pRoleId) throws EntityNotFoundException {
+    public List<ProjectUser> retrieveRoleProjectUserList(final Long pRoleId) throws ModuleEntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
         }
         final List<Role> roleAndHisAncestors = new ArrayList<>();
 

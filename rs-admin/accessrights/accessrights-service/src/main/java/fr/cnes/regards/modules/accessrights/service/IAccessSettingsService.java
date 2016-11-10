@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.service;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 
 /**
@@ -26,8 +26,8 @@ public interface IAccessSettingsService {
      * @param pAccessSettings
      *            The {@link AccessSettings}
      * @return The updated access settings
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when an {@link AccessSettings} with passed id could not be found
      */
-    AccessSettings update(AccessSettings pAccessSettings) throws EntityNotFoundException;
+    AccessSettings update(AccessSettings pAccessSettings) throws ModuleEntityNotFoundException;
 }

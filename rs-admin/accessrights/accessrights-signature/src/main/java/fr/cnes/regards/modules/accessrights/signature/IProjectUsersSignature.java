@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -47,12 +47,12 @@ public interface IProjectUsersSignature {
      *
      * @param pUserId
      *            The {@link ProjectUser}'s <code>email</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      */
     @RequestMapping(value = "/{user_email}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") String pUserEmail)
-            throws EntityNotFoundException;
+            throws ModuleEntityNotFoundException;
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.
@@ -63,13 +63,13 @@ public interface IProjectUsersSignature {
      *            The new {@link ProjectUser}
      * @throws InvalidValueException
      *             Thrown when <code>pUserId</code> is different from the id of <code>pUpdatedProjectUser</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> updateProjectUser(@PathVariable("user_id") Long pUserId,
-            @RequestBody ProjectUser pUpdatedProjectUser) throws InvalidValueException, EntityNotFoundException;
+            @RequestBody ProjectUser pUpdatedProjectUser) throws InvalidValueException, ModuleEntityNotFoundException;
 
     /**
      * Delete the {@link ProjectUser} of passed <code>id</code>.
@@ -87,14 +87,14 @@ public interface IProjectUsersSignature {
      * @param pUserId
      *            The {@link ProjectUser}'s <code>id</code>
      * @return
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(@PathVariable("user_id") Long pUserId)
-            throws EntityNotFoundException;
+            throws ModuleEntityNotFoundException;
 
     /**
      * Set the passed {@link MetaData} onto the {@link ProjectUser} of passed <code>id</code>.
@@ -108,21 +108,21 @@ public interface IProjectUsersSignature {
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") Long pUserId,
-            @Valid @RequestBody List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException;
+            @Valid @RequestBody List<MetaData> pUpdatedUserMetaData) throws ModuleEntityNotFoundException;
 
     /**
      * Clear the {@link List} of {@link MetaData} of the {@link ProjectUser} with passed <code>id</code>.
      *
      * @param pUserId
      *            The {@link ProjectUser} <code>id</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") Long pUserId)
-            throws EntityNotFoundException;
+            throws ModuleEntityNotFoundException;
 
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
@@ -150,26 +150,26 @@ public interface IProjectUsersSignature {
      *            The {@link ProjectUser}'s <code>login</code>
      * @param pUpdatedUserAccessRights
      *            The {@link List} of {@link ResourcesAccess} to set
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> updateProjectUserAccessRights(@PathVariable("user_login") String pLogin,
-            @Valid @RequestBody List<ResourcesAccess> pUpdatedUserAccessRights) throws EntityNotFoundException;
+            @Valid @RequestBody List<ResourcesAccess> pUpdatedUserAccessRights) throws ModuleEntityNotFoundException;
 
     /**
      * Clear the {@link List} of {@link ResourcesAccess} of the {@link ProjectUser} with passed <code>login</code>.
      *
      * @param pLogin
      *            The {@link ProjectUser} <code>login</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> removeProjectUserAccessRights(@PathVariable("user_login") String pUserLogin)
-            throws EntityNotFoundException;
+            throws ModuleEntityNotFoundException;
 }
