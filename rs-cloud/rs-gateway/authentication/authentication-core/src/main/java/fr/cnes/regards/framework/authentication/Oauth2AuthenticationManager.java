@@ -26,10 +26,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import com.netflix.hystrix.exception.HystrixRuntimeException;
+
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
@@ -59,12 +62,24 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      */
     private static final Logger LOG = LoggerFactory.getLogger(Oauth2AuthenticationManager.class);
 
+    /**
+     * Current microservice name
+     */
     private final String microserviceName;
 
+    /**
+     * Default authentication plugin to use if none is configured
+     */
     private final IAuthenticationPlugin defaultAuthenticationPlugin;
 
+    /**
+     * Security JWT Service
+     */
     private final JWTService jwtService;
 
+    /**
+     * Spring bean factory
+     */
     private BeanFactory beanFactory;
 
     /**
@@ -155,6 +170,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             for (final PluginConfiguration config : pluginConfigurations) {
                 try {
                     token = doPluginAuthentication(pluginService.getPlugin(config.getId()), pLogin, pPassword, pScope);
+                    if (token.isAuthenticated()) {
+                        break;
+                    }
                 } catch (final PluginUtilsException e) {
                     LOG.error(e.getMessage(), e);
                 }
@@ -163,7 +181,24 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             // Use default REGARDS internal plugin
             token = doPluginAuthentication(defaultAuthenticationPlugin, pLogin, pPassword, pScope);
         }
+
+        if (token.isAuthenticated()) {
+            createMissingAccount(token);
+        }
+
         return token;
+    }
+
+    /**
+     *
+     * Create account into REGARDS internal accounts system if the account does already exists
+     *
+     * @param pToken
+     *            Authentication token containing user details informations
+     * @since 1.0-SNAPSHOT
+     */
+    private void createMissingAccount(final Authentication pToken) {
+        // TODO Check/create account from IAccountsClient
     }
 
     /**
@@ -183,14 +218,16 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             throw new BadCredentialsException(message);
         }
 
+        final String errorMessage = "Project %s does not exists.";
         try {
+
             final ResponseEntity<Resource<Project>> response = projectsClient.retrieveProject(pScope);
             if (!response.getStatusCode().equals(HttpStatus.OK)) {
-                throw new BadCredentialsException(String.format("Project %s does not exists.", pScope));
+                throw new BadCredentialsException(String.format(errorMessage, pScope));
             }
-        } catch (final Exception e) {
+        } catch (final HystrixRuntimeException | EntityException e) {
             LOG.error(e.getMessage(), e);
-            throw new BadCredentialsException(String.format("Project %s does not exists.", pScope));
+            throw new BadCredentialsException(String.format(errorMessage, pScope));
         }
 
     }
@@ -231,10 +268,10 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         }
 
         // Retrieve account
-        UserDetails userDetails;
+        final UserDetails userDetails;
         try {
             userDetails = retrieveUserDetails(pUserName, pScope);
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleEntityNotFoundException e) {
             LOG.debug(e.getMessage(), e);
             throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
         }
@@ -255,11 +292,12 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @param pScope
      *            project to authenticate to
      * @return UserDetails
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             user not found in internal REGARDS database
      * @since 1.0-SNAPSHOT
      */
-    public UserDetails retrieveUserDetails(final String pEmail, final String pScope) throws EntityNotFoundException {
+    public UserDetails retrieveUserDetails(final String pEmail, final String pScope)
+            throws ModuleEntityNotFoundException {
         final UserDetails user = new UserDetails();
         try {
 
@@ -282,7 +320,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 final String message = String.format("Remote administration request error. Returned code %s",
                                                      response.getStatusCode());
                 LOG.error(message);
-                throw new EntityNotFoundException(pEmail, ProjectUser.class);
+                throw new ModuleEntityNotFoundException(pEmail, ProjectUser.class);
             }
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);

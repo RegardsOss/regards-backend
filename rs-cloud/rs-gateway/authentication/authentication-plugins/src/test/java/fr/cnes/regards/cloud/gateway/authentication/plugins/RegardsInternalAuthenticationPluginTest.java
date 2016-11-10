@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.RegardsInternalAuthenticationPlugin;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -67,14 +67,14 @@ public class RegardsInternalAuthenticationPluginTest {
      *
      * Check a valid authentication throught the Regards internal authentication system
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             test error.
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Check a valid authentication throught the Regards internal authentication system")
     @Test
-    public void testValidAuthentication() throws EntityNotFoundException {
+    public void testValidAuthentication() throws ModuleEntityNotFoundException {
 
         Field privateField;
         try {
@@ -112,14 +112,14 @@ public class RegardsInternalAuthenticationPluginTest {
      *
      * Check a authentication throught the Regards internal authentication system with error
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             test error.
      * @since 1.0-SNAPSHOT
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Test
-    public void testErrorAuthentication() throws EntityNotFoundException {
+    public void testErrorAuthentication() throws ModuleEntityNotFoundException {
 
         Field privateField;
         try {
@@ -156,13 +156,13 @@ public class RegardsInternalAuthenticationPluginTest {
      *
      * Check a authentication throught the Regards internal authentication system with error
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Test
-    public void testRequestErrorAuthentication() throws EntityNotFoundException {
+    public void testRequestErrorAuthentication() throws ModuleEntityNotFoundException {
 
         Field privateField;
         try {
@@ -199,14 +199,14 @@ public class RegardsInternalAuthenticationPluginTest {
      *
      * Check a authentication throught the Regards internal authentication system with error
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             test error
      * @since 1.0-SNAPSHOT
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Test
-    public void testRequestErrorAuthenticationException() throws EntityNotFoundException {
+    public void testRequestErrorAuthenticationException() throws ModuleEntityNotFoundException {
 
         Field privateField;
         try {
@@ -222,7 +222,7 @@ public class RegardsInternalAuthenticationPluginTest {
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString()))
-                    .thenThrow(new EntityNotFoundException("test", Account.class));
+                    .thenThrow(new ModuleEntityNotFoundException("test", Account.class));
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
             privateField.setAccessible(true);

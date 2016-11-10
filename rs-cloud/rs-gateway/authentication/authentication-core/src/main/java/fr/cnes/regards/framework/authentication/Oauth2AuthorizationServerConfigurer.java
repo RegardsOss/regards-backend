@@ -60,6 +60,9 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
      */
     private final String grantType;
 
+    /**
+     * Security JWT service
+     */
     private final JWTService jwtService;
 
     /**

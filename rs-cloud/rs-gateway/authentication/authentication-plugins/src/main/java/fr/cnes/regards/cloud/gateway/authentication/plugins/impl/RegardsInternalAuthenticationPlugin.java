@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -81,7 +81,7 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
             }
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleEntityNotFoundException e) {
             LOG.error(e.getMessage(), e);
             errorMessage = String.format("Accound %s doesn't exists", pEmail);
             LOG.error(errorMessage);

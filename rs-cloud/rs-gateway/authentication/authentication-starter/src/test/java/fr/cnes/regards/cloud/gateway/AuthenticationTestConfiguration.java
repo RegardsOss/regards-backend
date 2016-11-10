@@ -22,7 +22,7 @@ import fr.cnes.regards.cloud.gateway.authentication.configuration.RemoteFeignCli
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.stub.AuthenticationPluginStub;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -73,7 +73,7 @@ public class AuthenticationTestConfiguration {
                 new Resource<ProjectUser>(testUser, new ArrayList<>()), HttpStatus.OK);
         try {
             Mockito.when(client.retrieveProjectUser(Mockito.anyString())).thenReturn(response);
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleEntityNotFoundException e) {
             Assert.fail(e.getMessage());
         }
         return client;
