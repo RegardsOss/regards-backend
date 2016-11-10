@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.plugins.rest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityExistsException;
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
@@ -37,7 +35,8 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  *
  */
 @RestController
-@ModuleInfo(name = "plugins", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "plugins", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 public class PluginController implements IPluginsSignature {
 
     /**
@@ -63,7 +62,8 @@ public class PluginController implements IPluginsSignature {
 
     @Override
     public ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
-            @RequestParam(value = "pluginType", required = false) final String pPluginType) throws InvalidValueException {
+            @RequestParam(value = "pluginType", required = false) final String pPluginType)
+            throws InvalidValueException {
         final List<PluginMetaData> metadaDatas;
 
         if (pPluginType == null) {
@@ -91,6 +91,7 @@ public class PluginController implements IPluginsSignature {
         final List<String> types = pluginService.getPluginTypes();
         final List<Resource<String>> resources = types.stream().map(p -> new Resource<>(p))
                 .collect(Collectors.toList());
+
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 

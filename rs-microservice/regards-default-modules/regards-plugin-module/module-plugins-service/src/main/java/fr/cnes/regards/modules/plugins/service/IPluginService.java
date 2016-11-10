@@ -158,4 +158,12 @@ public interface IPluginService {
      */
     List<PluginConfiguration> getPluginConfigurationsByType(String pPluginId);
 
+    /**
+     * Add a package to scan to find the plugins.
+     *
+     * @param pPluginPackage
+     *            A package name to scan to find the plugins.
+     */
+    public void addPluginPackage(String pPluginPackage);
+
 }

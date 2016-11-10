@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.modules.plugins.annotations.Plugin;
@@ -42,13 +41,14 @@ public interface IPluginsSignature {
      * 
      * @return a list of {@link PluginMetaData}
      * 
-     * @throws EntityException
+     * @throws InvalidValueException
      *             if problem occurs
      */
     @RequestMapping(value = "/plugins", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
-            @RequestParam(value = "pluginType", required = false) final String pPluginType) throws InvalidValueException;
+            @RequestParam(value = "pluginType", required = false) final String pPluginType)
+            throws InvalidValueException;
 
     /**
      * Get the interface identified with the annotation {@link PluginInterface}.

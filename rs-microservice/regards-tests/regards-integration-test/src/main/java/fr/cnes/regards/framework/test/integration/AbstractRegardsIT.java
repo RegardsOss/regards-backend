@@ -23,6 +23,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.gson.Gson;
@@ -87,19 +89,16 @@ public abstract class AbstractRegardsIT {
     protected abstract Logger getLogger();
 
     protected ResultActions performGet(final String pUrlTemplate, final String pAuthenticationToken,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage) {
-        return performRequest(pAuthenticationToken, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage);
-    }
-
-    protected ResultActions performGet(final String pUrlTemplate, final String pAuthenticationToken,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         return performRequest(pAuthenticationToken, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage,
                               pUrlVariables);
     }
 
-    protected ResultActions performPost(final String pUrlTemplate, final String pAuthenticationToken,
-            final Object pContent, final List<ResultMatcher> pMatchers, final String pErrorMessage) {
-        return performRequest(pAuthenticationToken, HttpMethod.POST, pUrlTemplate, pContent, pMatchers, pErrorMessage);
+    protected ResultActions performGet(final String pUrlTemplate, final String pAuthenticationToken,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, RequestParamBuilder pRequestParams,
+            final Object... pUrlVariables) {
+        return performRequest(pAuthenticationToken, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage,
+                              pRequestParams, pUrlVariables);
     }
 
     protected ResultActions performPost(final String pUrlTemplate, final String pAuthenticationToken,
@@ -110,20 +109,10 @@ public abstract class AbstractRegardsIT {
     }
 
     protected ResultActions performPut(final String pUrlTemplate, final String pAuthenticationToken,
-            final Object pContent, final List<ResultMatcher> pMatchers, final String pErrorMessage) {
-        return performRequest(pAuthenticationToken, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage);
-    }
-
-    protected ResultActions performPut(final String pUrlTemplate, final String pAuthenticationToken,
             final Object pContent, final List<ResultMatcher> pMatchers, final String pErrorMessage,
             final Object... pUrlVariables) {
         return performRequest(pAuthenticationToken, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage,
                               pUrlVariables);
-    }
-
-    protected ResultActions performDelete(final String pUrlTemplate, final String pAuthenticationToken,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage) {
-        return performRequest(pAuthenticationToken, HttpMethod.DELETE, pUrlTemplate, pMatchers, pErrorMessage);
     }
 
     protected ResultActions performDelete(final String pUrlTemplate, final String pAuthenticationToken,
@@ -135,9 +124,9 @@ public abstract class AbstractRegardsIT {
     // Automatic default security management methods
 
     protected ResultActions performDefaultGet(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
-            final String pErrorMessage) {
+            final String pErrorMessage, RequestParamBuilder pRequestParams, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.GET);
-        return performGet(pUrlTemplate, jwt, pMatchers, pErrorMessage);
+        return performGet(pUrlTemplate, jwt, pMatchers, pErrorMessage, pRequestParams, pUrlVariables);
     }
 
     protected ResultActions performDefaultGet(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
@@ -147,33 +136,15 @@ public abstract class AbstractRegardsIT {
     }
 
     protected ResultActions performDefaultPost(final String pUrlTemplate, final Object pContent,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
-        return performPost(pUrlTemplate, jwt, pContent, pMatchers, pErrorMessage);
-    }
-
-    protected ResultActions performDefaultPost(final String pUrlTemplate, final Object pContent,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
         return performPost(pUrlTemplate, jwt, pContent, pMatchers, pErrorMessage, pUrlVariables);
     }
 
     protected ResultActions performDefaultPut(final String pUrlTemplate, final Object pContent,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.PUT);
-        return performPut(pUrlTemplate, jwt, pContent, pMatchers, pErrorMessage);
-    }
-
-    protected ResultActions performDefaultPut(final String pUrlTemplate, final Object pContent,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.PUT);
         return performPut(pUrlTemplate, jwt, pContent, pMatchers, pErrorMessage, pUrlVariables);
-    }
-
-    protected ResultActions performDefaultDelete(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
-            final String pErrorMessage) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.DELETE);
-        return performDelete(pUrlTemplate, jwt, pMatchers, pErrorMessage);
     }
 
     protected ResultActions performDefaultDelete(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
@@ -211,6 +182,18 @@ public abstract class AbstractRegardsIT {
         final String content = gson(pContent);
         requestBuilder = requestBuilder.content(content).header(HttpHeaders.CONTENT_TYPE,
                                                                 MediaType.APPLICATION_JSON_VALUE);
+        return performRequest(requestBuilder, pMatchers, pErrorMessage);
+    }
+
+    protected ResultActions performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
+            final String pUrlTemplate, final List<ResultMatcher> pMatchers, final String pErrorMessage,
+            RequestParamBuilder pRequestParams, final Object... pUrlVariables) {
+
+        // Request parameters is only available on GET request AT THE MOMENT
+        Assert.assertTrue(HttpMethod.GET.equals(pHttpMethod));
+        final MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(pAuthenticationToken, pHttpMethod,
+                                                                               pUrlTemplate, pUrlVariables);
+        requestBuilder.params(pRequestParams.getParameters());
         return performRequest(requestBuilder, pMatchers, pErrorMessage);
     }
 
@@ -339,5 +322,9 @@ public abstract class AbstractRegardsIT {
         final String jwt = generateToken(DEFAULT_USER_EMAIL, DEFAULT_USER, DEFAULT_ROLE);
         setAuthorities(pUrlPath, pMethod, DEFAULT_ROLE);
         return jwt;
+    }
+
+    protected static MultiValueMap<String, String> buildRequestParams() {
+        return new LinkedMultiValueMap<String, String>();
     }
 }

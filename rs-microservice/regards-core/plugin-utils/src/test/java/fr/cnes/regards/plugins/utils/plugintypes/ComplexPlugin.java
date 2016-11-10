@@ -14,7 +14,7 @@ import fr.cnes.regards.plugins.utils.ISamplePlugin;
 /**
  * ISamplePlugin
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 @Plugin(author = "CSSI", description = "Complex plugin test", id = "aComplexPlugin", version = "0.0.1")

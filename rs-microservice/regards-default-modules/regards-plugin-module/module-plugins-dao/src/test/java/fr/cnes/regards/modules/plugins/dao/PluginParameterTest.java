@@ -2,7 +2,6 @@
 package fr.cnes.regards.modules.plugins.dao;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -41,12 +40,6 @@ public class PluginParameterTest extends PluginDaoUtility {
     private static String INVALID_JWT = "Invalid JWT";
 
     /**
-     * IPluginParameterRepository
-     */
-    @Autowired
-    private IPluginParameterRepository pluginParameterRepository;
-
-    /**
      * Security service to generate tokens.
      */
     @Autowired
@@ -57,8 +50,10 @@ public class PluginParameterTest extends PluginDaoUtility {
      */
     @Test
     public void createPluginParameter() {
+
         try {
             jwtService.injectToken(PROJECT, USERROLE);
+            cleanDb();
 
             final long nPluginParameter = pluginParameterRepository.count();
 
@@ -66,7 +61,9 @@ public class PluginParameterTest extends PluginDaoUtility {
             pluginParameterRepository.save(PARAMETER2);
 
             Assert.assertEquals(nPluginParameter + 2, pluginParameterRepository.count());
+            Assert.assertEquals(PARAMETER2.getDynamicsValuesAsString().size(), pluginDynamicValueRepository.count());
 
+            pluginDynamicValueRepository.findAll().forEach(p -> LOGGER.info(p.getValue()));
         } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
@@ -76,9 +73,11 @@ public class PluginParameterTest extends PluginDaoUtility {
      * Unit test for the update of a {@link PluginParameter}
      */
     @Test
+    @DirtiesContext
     public void updatePluginParameter() {
         try {
             jwtService.injectToken(PROJECT, USERROLE);
+            cleanDb();
 
             pluginParameterRepository.save(INTERFACEPARAMETERS.get(0));
             final PluginParameter paramJpa = pluginParameterRepository.save(PARAMETER2);
@@ -100,9 +99,11 @@ public class PluginParameterTest extends PluginDaoUtility {
      * Unit test for the delete of a {@link PluginParameter}
      */
     @Test
+    @DirtiesContext
     public void deletePluginParameter() {
         try {
             jwtService.injectToken(PROJECT, USERROLE);
+            cleanDb();
 
             pluginParameterRepository.save(PARAMETER1);
             final long n = pluginParameterRepository.count();
@@ -122,9 +123,11 @@ public class PluginParameterTest extends PluginDaoUtility {
      * Unit test about the dynamic values of a {@link PluginParameter}
      */
     @Test
+    @DirtiesContext
     public void controlPluginParameterDynamicValues() {
         try {
             jwtService.injectToken(PROJECT, USERROLE);
+            cleanDb();
 
             // first plugin parameter
             pluginParameterRepository.save(PARAMETER1);
@@ -143,11 +146,6 @@ public class PluginParameterTest extends PluginDaoUtility {
         } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
-    }
-
-    @Before
-    public void deleteAllFromRepository() {
-        resetId();
     }
 
 }
