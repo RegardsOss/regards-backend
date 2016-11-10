@@ -48,7 +48,7 @@ public class PluginService implements IPluginService {
     /**
      * The plugin's package to scan
      */
-    private List<String> pluginPackage = new ArrayList<>();
+    private final List<String> pluginPackage = new ArrayList<>();
 
     /**
      * {@link PluginConfiguration} JPA Repository
@@ -102,7 +102,7 @@ public class PluginService implements IPluginService {
                     pluginAvailables.add(pValue);
                 }
             } catch (ClassNotFoundException e) {
-                LOGGER.error("cannot instanciate the class : %s" + pValue.getPluginClassName());
+                LOGGER.warn("cannot instanciate the class : %s" + pValue.getPluginClassName());
             }
         });
 
@@ -113,29 +113,29 @@ public class PluginService implements IPluginService {
     public PluginConfiguration savePluginConfiguration(final PluginConfiguration pPluginConfiguration)
             throws PluginUtilsException {
         // Check plugin configuration validity
-        String message = "Impossible to save a plugin configuration";
+        final StringBuilder msg = new StringBuilder("Impossible to save a plugin configuration");
 
         boolean throwError = false;
 
         if (pPluginConfiguration == null) {
-            message += ". The plugin configuration cannot be null.";
+            msg.append(". The plugin configuration cannot be null.");
             throwError = true;
         }
         if (!throwError && pPluginConfiguration.getPluginId() == null) {
-            message += ". The unique identifier of the plugin (attribute pluginId) is required.";
+            msg.append(". The unique identifier of the plugin (attribute pluginId) is required.");
             throwError = true;
         }
         if (!throwError && pPluginConfiguration.getPriorityOrder() == null) {
-            message += String.format(" <%s> without priority order.", pPluginConfiguration.getPluginId());
+            msg.append(String.format(" <%s> without priority order.", pPluginConfiguration.getPluginId()));
             throwError = true;
         }
         if (!throwError && pPluginConfiguration.getVersion() == null) {
-            message = String.format(" <%s> without version.", pPluginConfiguration.getPluginId());
+            msg.append(String.format(" <%s> without version.", pPluginConfiguration.getPluginId()));
             throwError = true;
         }
 
         if (throwError) {
-            throw new PluginUtilsException(message);
+            throw new PluginUtilsException(msg.toString());
         }
 
         return pluginConfRepository.save(pPluginConfiguration);
@@ -179,8 +179,8 @@ public class PluginService implements IPluginService {
 
         final List<PluginMetaData> pluginImpls = getPluginsByType(pInterfacePluginType);
 
-        pluginImpls.forEach(p -> configurations
-                .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(p.getPluginId())));
+        pluginImpls.forEach(pMetaData -> configurations
+                .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pMetaData.getPluginId())));
 
         return configurations;
     }
