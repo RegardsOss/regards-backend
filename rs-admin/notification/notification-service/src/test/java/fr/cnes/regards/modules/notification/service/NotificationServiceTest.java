@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
@@ -470,7 +471,7 @@ public class NotificationServiceTest {
     @Test
     @Requirement("?")
     @Purpose("Check that the system properly aggregates the list of notification recipients.")
-    public void findRecipients() throws EntityNotFoundException {
+    public void findRecipients() throws ModuleEntityNotFoundException {
         // Define expected
         final List<ProjectUser> expected = new ArrayList<>();
         expected.add(projectUser0); // Expected from the notif roleRecipients attribute
