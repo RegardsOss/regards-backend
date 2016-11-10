@@ -182,7 +182,7 @@ public class AuthenticationTestIT {
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
                     .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
-                    .param(SCOPE, "scope3").param(USER_NAME, "name3").param(PASSWORD, "plop"))
+                    .param(SCOPE, "scope3").param(USER_NAME, "test@regards.fr").param(PASSWORD, "plop"))
                     .andExpect(MockMvcResultMatchers.status().isOk());
             // CHECKSTYLE:OFF
         } catch (final Exception e) {

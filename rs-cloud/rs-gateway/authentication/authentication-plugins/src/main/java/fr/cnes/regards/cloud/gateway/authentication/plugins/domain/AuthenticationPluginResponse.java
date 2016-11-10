@@ -9,6 +9,11 @@
 
 package fr.cnes.regards.cloud.gateway.authentication.plugins.domain;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotEmpty;
+
 /**
  *
  * Class AuthenticationPluginResponse
@@ -23,17 +28,34 @@ public class AuthenticationPluginResponse {
     /**
      * Authentication status
      */
+    @NotNull
     private AuthenticationStatus status;
 
     /**
-     * User role
+     * User email
      */
-    private String role;
+    @NotNull
+    @NotEmpty
+    @Email
+    private final String email;
 
     /**
      * Error message
      */
     private String errorMessage = null;
+
+    public AuthenticationPluginResponse(final AuthenticationStatus pStatus, final String pEmail) {
+        super();
+        status = pStatus;
+        email = pEmail;
+    }
+
+    public AuthenticationPluginResponse(final AuthenticationStatus pStatus, final String pEmail,
+            final String pErrorMessage) {
+        status = pStatus;
+        email = pEmail;
+        errorMessage = pErrorMessage;
+    }
 
     /**
      * Get method.
@@ -77,25 +99,8 @@ public class AuthenticationPluginResponse {
         errorMessage = pErrorMessage;
     }
 
-    /**
-     * Get method.
-     *
-     * @return the role
-     * @since 1.0-SNAPSHOT
-     */
-    public String getRole() {
-        return role;
-    }
-
-    /**
-     * Set method.
-     *
-     * @param pRole
-     *            the role to set
-     * @since 1.0-SNAPSHOT
-     */
-    public void setRole(final String pRole) {
-        role = pRole;
+    public String getEmail() {
+        return email;
     }
 
 }

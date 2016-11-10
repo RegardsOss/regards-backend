@@ -56,40 +56,39 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
     private JWTService jwtService;
 
     @Override
-    public AuthenticationPluginResponse authenticate(final String pName, final String pPassword, final String pScope) {
-        LOG.info("Trying to authenticate user " + pName + " with password=" + pPassword + " for project " + pScope);
+    public AuthenticationPluginResponse authenticate(final String pEmail, final String pPassword, final String pScope) {
+        LOG.info("Trying to authenticate user " + pEmail + " with password=" + pPassword + " for project " + pScope);
 
-        final AuthenticationPluginResponse response = new AuthenticationPluginResponse();
-        response.setStatus(AuthenticationStatus.ACCESS_DENIED);
+        AuthenticationStatus status = AuthenticationStatus.ACCESS_DENIED;
+        String errorMessage = null;
 
         try {
             jwtService.injectToken(pScope, RoleAuthority.getSysRole(microserviceName));
-            final ResponseEntity<Void> validateResponse = accountsClient.validatePassword(pName, pPassword);
+            final ResponseEntity<Void> validateResponse = accountsClient.validatePassword(pEmail, pPassword);
             switch (validateResponse.getStatusCode()) {
                 case OK:
-                    response.setStatus(AuthenticationStatus.ACCESS_GRANTED);
+                    status = AuthenticationStatus.ACCESS_GRANTED;
                     break;
                 case UNAUTHORIZED:
-                    response.setStatus(AuthenticationStatus.ACCESS_DENIED);
+                    status = AuthenticationStatus.ACCESS_DENIED;
+                    errorMessage = "Authentication failed.";
                     break;
                 default:
-                    final String message = String.format("Remote administration request error. Returned code %s",
-                                                         validateResponse.getStatusCode());
-                    response.setErrorMessage(message);
-                    LOG.error(message);
+                    errorMessage = String.format("Remote administration request error. Returned code %s",
+                                                 validateResponse.getStatusCode());
+                    LOG.error(errorMessage);
                     break;
             }
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);
         } catch (final EntityNotFoundException e) {
             LOG.error(e.getMessage(), e);
-            final String error = String.format("Accound %s doesn't exists", pName);
-            response.setErrorMessage(error);
-            LOG.error(error);
-            response.setStatus(AuthenticationStatus.ACCOUNT_NOT_FOUD);
+            errorMessage = String.format("Accound %s doesn't exists", pEmail);
+            LOG.error(errorMessage);
+            status = AuthenticationStatus.ACCOUNT_NOT_FOUD;
         }
 
-        return response;
+        return new AuthenticationPluginResponse(status, pEmail, errorMessage);
 
     }
 

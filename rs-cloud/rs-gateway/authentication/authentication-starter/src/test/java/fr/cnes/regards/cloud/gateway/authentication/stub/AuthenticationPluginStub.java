@@ -30,13 +30,12 @@ public class AuthenticationPluginStub implements IAuthenticationPlugin {
 
     @Override
     public AuthenticationPluginResponse authenticate(final String pName, final String pPassword, final String pScope) {
-        final AuthenticationPluginResponse response = new AuthenticationPluginResponse();
-        response.setStatus(AuthenticationStatus.ACCESS_DENIED);
+        AuthenticationStatus status = AuthenticationStatus.ACCESS_DENIED;
         if (pPassword.equals(INVALID_PASSWORD)) {
-            response.setStatus(AuthenticationStatus.INVALID_PASSWORD);
+            status = AuthenticationStatus.INVALID_PASSWORD;
         } else {
-            response.setStatus(AuthenticationStatus.ACCESS_GRANTED);
+            status = AuthenticationStatus.ACCESS_GRANTED;
         }
-        return response;
+        return new AuthenticationPluginResponse(status, pName, null);
     }
 }

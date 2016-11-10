@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
@@ -85,7 +89,11 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     public Authentication authenticate(final Authentication pAuthentication) {
 
         final String name = pAuthentication.getName();
-        final String password = pAuthentication.getCredentials().toString();
+        final String password = (String) pAuthentication.getCredentials();
+
+        if ((name == null) || (password == null)) {
+            throw new BadCredentialsException("User login / password cannot be empty");
+        }
 
         final Object details = pAuthentication.getDetails();
         final String scope;
@@ -93,6 +101,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             @SuppressWarnings("unchecked")
             final Map<String, String> detailsMap = (Map<String, String>) details;
             scope = detailsMap.get("scope");
+            if (scope == null) {
+                throw new BadCredentialsException("Attribute scope is missing");
+            }
         } else {
             final String message = "Invalid scope";
             LOG.error(message);
@@ -203,6 +214,14 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
         // Check user/password
         final AuthenticationPluginResponse response = pPlugin.authenticate(pUserName, pUserPassword, pScope);
+        final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        final Validator validator = factory.getValidator();
+        if (!validator.validate(response).isEmpty()) {
+            final String message = String.format("Access denied for user %s. Authentication informations are not valid",
+                                                 pUserName);
+            throw new BadCredentialsException(message);
+        }
+
         if ((response == null) || !response.getStatus().equals(AuthenticationStatus.ACCESS_GRANTED)) {
             String message = String.format("Access denied for user %s.", pUserName);
             if (response != null) {

@@ -4,7 +4,6 @@
 package fr.cnes.regards.cloud.gateway.authentication.plugins;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
-import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
 
 /**
  *
@@ -15,7 +14,6 @@ import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@PluginInterface
 @FunctionalInterface
 public interface IAuthenticationPlugin {
 
