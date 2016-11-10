@@ -202,7 +202,7 @@ public abstract class AbstractRegardsIT {
         } catch (final Exception e) {
             // CHECKSTYLE:ON
             getLogger().error(pErrorMessage, e);
-            throw new AssertionError(pErrorMessage);
+            throw new AssertionError(pErrorMessage + ": " + e);
         }
     }
 
@@ -219,7 +219,7 @@ public abstract class AbstractRegardsIT {
      *            results
      * @return payload data
      */
-    protected String payload(ResultActions pResultActions) {
+    protected String payload(final ResultActions pResultActions) {
         Assert.assertNotNull(pResultActions);
         final MockHttpServletResponse response = pResultActions.andReturn().getResponse();
         try {
@@ -230,7 +230,7 @@ public abstract class AbstractRegardsIT {
                 throw new AssertionError("Invalid media type " + current);
             }
             // CHECKSTYLE:OFF
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // CHECKSTYLE:ON
             getLogger().error("Cannot parse payload data");
             throw new AssertionError(e);
