@@ -68,6 +68,21 @@ public class AccountsController implements IAccountsSignature {
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
+    @ResourceAccess(description = "retrieve the account with his unique email", name = "")
+    @Override
+    public ResponseEntity<Resource<Account>> retrieveAccounByEmail(String pAccountEmail) {
+        ResponseEntity<Resource<Account>> response;
+        try {
+            final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+            final Resource<Account> resource = new Resource<>(account);
+            response = new ResponseEntity<>(resource, HttpStatus.OK);
+        } catch (final ModuleEntityNotFoundException e) {
+            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return response;
+
+    }
+
     @Override
     @ResourceAccess(description = "update the account account_id according to the body specified", name = "")
     public ResponseEntity<Void> updateAccount(@PathVariable("account_id") final Long accountId,
@@ -137,4 +152,5 @@ public class AccountsController implements IAccountsSignature {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
+
 }

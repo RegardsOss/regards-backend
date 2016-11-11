@@ -180,4 +180,15 @@ public class AccountsFallback implements IAccountsClient {
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.signature.IAccountsSignature#retrieveAccounByEmail(java.lang.String)
+     */
+    @Override
+    public ResponseEntity<Resource<Account>> retrieveAccounByEmail(String pAccountEmail) {
+        LOG.error(fallBackErrorMessage);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
 }
