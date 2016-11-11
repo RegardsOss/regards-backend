@@ -50,6 +50,18 @@ public interface IAccountsSignature {
             throws ModuleEntityNotFoundException;
 
     /**
+     *
+     * Retrieve an account by his unique email
+     *
+     * @param pAccountEmail
+     *            email of the account to retrieve
+     * @return Account
+     */
+    @RequestMapping(value = "/account/{email}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    ResponseEntity<Resource<Account>> retrieveAccounByEmail(@PathVariable("account_email") String pAccountEmail);
+
+    /**
      * Update an {@link Account} with passed values.
      *
      * @param pAccountId
