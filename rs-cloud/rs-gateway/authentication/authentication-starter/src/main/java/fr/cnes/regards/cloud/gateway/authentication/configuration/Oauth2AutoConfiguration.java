@@ -43,12 +43,6 @@ public class Oauth2AutoConfiguration {
     private String resourceId;
 
     /**
-     * Validity time for token generated
-     */
-    @Value("${access_token.validity_period}")
-    private int accessTokenValiditySeconds;
-
-    /**
      * JWT Secret string to encrypt tokens
      */
     @Value("${jwt.secret}")

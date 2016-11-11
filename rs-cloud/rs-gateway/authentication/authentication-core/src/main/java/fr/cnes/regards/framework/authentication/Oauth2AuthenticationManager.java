@@ -31,13 +31,17 @@ import com.netflix.hystrix.exception.HystrixRuntimeException;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.service.IPluginService;
@@ -163,7 +167,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             throw new BadCredentialsException(message);
         }
 
-        // Get all availables authentication plugins
+        // Get all available authentication plugins
         final List<PluginConfiguration> pluginConfigurations = pluginService
                 .getPluginConfigurationsByType(IAuthenticationPlugin.class);
         if ((pluginConfigurations != null) && !pluginConfigurations.isEmpty()) {
@@ -198,7 +202,26 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @since 1.0-SNAPSHOT
      */
     private void createMissingAccount(final Authentication pToken) {
-        // TODO Check/create account from IAccountsClient
+
+        final IAccountsClient accountClient = beanFactory.getBean(IAccountsClient.class);
+        if (accountClient == null) {
+            final String message = "Context not initialized, Accounts client is not available";
+            LOG.error(message);
+            throw new BadCredentialsException(message);
+        }
+
+        final UserDetails details = (UserDetails) pToken.getPrincipal();
+
+        final ResponseEntity<Resource<Account>> response = accountClient.retrieveAccounByEmail(details.getEmail());
+        if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+
+            try {
+                accountClient.createAccount(new Account(details.getEmail(), "", "", null));
+            } catch (AlreadyExistingException | InvalidEntityException e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+
     }
 
     /**

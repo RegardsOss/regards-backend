@@ -21,12 +21,15 @@ import org.springframework.security.core.Authentication;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -54,6 +57,8 @@ public class Oauth2AuthenticationManagerTest {
      * JWT authentication to use during test
      */
     private static JWTAuthentication auth;
+
+    private static IAccountsClient accountsClientMock;
 
     /**
      *
@@ -91,6 +96,12 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(projectsClientMock.retrieveProject(Mockito.anyString())).thenReturn(response);
         Mockito.when(beanFactoryMock.getBean(IProjectsClient.class)).thenReturn(projectsClientMock);
 
+        // Mock Administration Projects client
+        accountsClientMock = Mockito.mock(IAccountsClient.class);
+        Mockito.when(accountsClientMock.retrieveAccounByEmail(Mockito.anyString()))
+                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        Mockito.when(beanFactoryMock.getBean(IAccountsClient.class)).thenReturn(accountsClientMock);
+
         final IProjectUsersClient projectUsersClientMock = Mockito.mock(IProjectUsersClient.class);
         final ProjectUser user = new ProjectUser();
         final Role role = new Role();
@@ -117,12 +128,17 @@ public class Oauth2AuthenticationManagerTest {
      *
      * Check oauth2 authentication process using default authentication plugin
      *
+     * @throws InvalidEntityException
+     *             test error
+     * @throws AlreadyExistingException
+     *             test error
+     *
      * @since 1.0-SNAPSHOT
      */
     @Purpose("Check oauth2 authentication process using default authentication plugin")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Test
-    public void testOauth2AuthenticationDefaultProcess() {
+    public void testOauth2AuthenticationDefaultProcess() throws AlreadyExistingException, InvalidEntityException {
         auth = Mockito.mock(JWTAuthentication.class);
         Mockito.when(auth.getName()).thenReturn("name");
         Mockito.when(auth.getCredentials()).thenReturn("password");
@@ -133,6 +149,8 @@ public class Oauth2AuthenticationManagerTest {
         final Authentication authResult = manager.authenticate(auth);
         Assert.assertNotNull(authResult);
         Assert.assertTrue(authResult.isAuthenticated());
+
+        Mockito.verify(accountsClientMock, Mockito.times(1)).createAccount(Mockito.any());
     }
 
     /**
