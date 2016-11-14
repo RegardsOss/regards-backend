@@ -150,7 +150,7 @@ public class PluginController implements IPluginsSignature {
         if (!pPluginId.equals(pPluginConfiguration.getPluginId())) {
             LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
                     + ">- config id= <" + pConfigId + ">");
-            throw new ModuleEntityNotFoundException(pPluginConfiguration.getId(), PluginConfiguration.class);
+            throw new ModuleEntityNotFoundException(pPluginId, PluginConfiguration.class);
         }
         if (pConfigId != pPluginConfiguration.getId()) {
             throw new ModuleEntityNotFoundException(pConfigId, PluginConfiguration.class);
