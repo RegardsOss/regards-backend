@@ -26,13 +26,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import com.netflix.hystrix.exception.HystrixRuntimeException;
-
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -45,8 +42,6 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
@@ -138,7 +133,6 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             throw new BadCredentialsException("Internal server error");
         }
 
-        checkScope(scope);
         return doAuthentication(name, password, scope);
 
     }
@@ -170,23 +164,23 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         // Get all available authentication plugins
         final List<PluginConfiguration> pluginConfigurations = pluginService
                 .getPluginConfigurationsByType(IAuthenticationPlugin.class);
-        if ((pluginConfigurations != null) && !pluginConfigurations.isEmpty()) {
-            for (final PluginConfiguration config : pluginConfigurations) {
-                try {
-                    token = doPluginAuthentication(pluginService.getPlugin(config.getId()), pLogin, pPassword, pScope);
-                    if (token.isAuthenticated()) {
-                        break;
-                    }
-                } catch (final PluginUtilsException e) {
-                    LOG.error(e.getMessage(), e);
+        for (final PluginConfiguration config : pluginConfigurations) {
+            try {
+                token = doPluginAuthentication(pluginService.getPlugin(config.getId()), pLogin, pPassword, pScope);
+                if (token.isAuthenticated()) {
+                    break;
                 }
+            } catch (final PluginUtilsException e) {
+                LOG.error(e.getMessage(), e);
             }
-        } else {
+        }
+
+        if ((token == null) || !token.isAuthenticated()) {
             // Use default REGARDS internal plugin
             token = doPluginAuthentication(defaultAuthenticationPlugin, pLogin, pPassword, pScope);
         }
 
-        if (token.isAuthenticated()) {
+        if ((token != null) && token.isAuthenticated()) {
             createMissingAccount(token);
         }
 
@@ -220,37 +214,6 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             } catch (AlreadyExistingException | InvalidEntityException e) {
                 LOG.error(e.getMessage(), e);
             }
-        }
-
-    }
-
-    /**
-     *
-     * Check that given scope is an existing configured project
-     *
-     * @param pScope
-     *            project ot authenticate to
-     * @since 1.0-SNAPSHOT
-     */
-    private void checkScope(final String pScope) {
-
-        final IProjectsClient projectsClient = beanFactory.getBean(IProjectsClient.class);
-        if (projectsClient == null) {
-            final String message = "Context not initialized, Administration projects client is not available";
-            LOG.error(message);
-            throw new BadCredentialsException(message);
-        }
-
-        final String errorMessage = "Project %s does not exists.";
-        try {
-
-            final ResponseEntity<Resource<Project>> response = projectsClient.retrieveProject(pScope);
-            if (!response.getStatusCode().equals(HttpStatus.OK)) {
-                throw new BadCredentialsException(String.format(errorMessage, pScope));
-            }
-        } catch (final HystrixRuntimeException | EntityException e) {
-            LOG.error(e.getMessage(), e);
-            throw new BadCredentialsException(String.format(errorMessage, pScope));
         }
 
     }

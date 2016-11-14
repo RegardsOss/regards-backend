@@ -172,7 +172,7 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(auth.getDetails()).thenReturn(mockedDetails);
 
         try {
-            final Authentication authResult = manager.authenticate(auth);
+            manager.authenticate(auth);
             Assert.fail("There should be an error here");
         } catch (final BadCredentialsException e) {
             // Nothing to do
@@ -198,7 +198,7 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(auth.getDetails()).thenReturn(mockedDetails);
 
         try {
-            final Authentication authResult = manager.authenticate(auth);
+            manager.authenticate(auth);
             Assert.fail("There should be an error here");
         } catch (final BadCredentialsException e) {
             // Nothing to do
@@ -222,7 +222,7 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(auth.getDetails()).thenReturn(null);
 
         try {
-            final Authentication authResult = manager.authenticate(auth);
+            manager.authenticate(auth);
             Assert.fail("There should be an error here");
         } catch (final BadCredentialsException e) {
             // Nothing to do
