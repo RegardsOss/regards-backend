@@ -18,4 +18,7 @@ public class ModuleEntityNotFoundException extends ModuleException {
                             pEntityIdentifier));
     }
 
+    public ModuleEntityNotFoundException(final Long pEntityIdentifier, final Class<?> pEntityClass) {
+        this(String.valueOf(pEntityIdentifier), pEntityClass);
+    }
 }
