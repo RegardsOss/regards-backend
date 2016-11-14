@@ -40,22 +40,22 @@ public class JWTService {
     /**
      * Project claim
      */
-    private static final String CLAIM_PROJECT = "project";
+    public static final String CLAIM_PROJECT = "project";
 
     /**
      * Email claim
      */
-    private static final String CLAIM_EMAIL = "email";
+    public static final String CLAIM_EMAIL = "email";
 
     /**
      * Role claim
      */
-    private static final String CLAIM_ROLE = "role";
+    public static final String CLAIM_ROLE = "role";
 
     /**
      * Subject claim
      */
-    private static final String CLAIM_SUBJECT = "sub";
+    public static final String CLAIM_SUBJECT = "sub";
 
     /**
      * Class logger
@@ -118,9 +118,9 @@ public class JWTService {
                     .parseClaimsJws(pAuthentication.getJwt());
             // OK, trusted JWT parsed and validated
 
-            UserDetails user = new UserDetails();
+            final UserDetails user = new UserDetails();
 
-            String project = claims.getBody().get(CLAIM_PROJECT, String.class);
+            final String project = claims.getBody().get(CLAIM_PROJECT, String.class);
             if (project == null) {
                 throw new MissingClaimException(CLAIM_PROJECT);
             }

@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
  *
  * Plugin utilities
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 public final class PluginUtils {
 

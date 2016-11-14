@@ -20,7 +20,7 @@ import fr.cnes.regards.plugins.utils.PluginParameterUtils.PrimitiveObject;
 /**
  * Unit testing of {@link PluginUtils}.
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public class PluginUtilsTest extends PluginUtilsTestConstants {

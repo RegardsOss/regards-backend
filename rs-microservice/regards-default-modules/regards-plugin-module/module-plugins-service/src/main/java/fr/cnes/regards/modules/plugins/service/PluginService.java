@@ -53,7 +53,7 @@ public class PluginService implements IPluginService {
     /**
      * {@link PluginConfiguration} JPA Repository
      */
-    private final IPluginConfigurationRepository pluginConfRepository;
+    private IPluginConfigurationRepository pluginConfRepository;
 
     /**
      * Plugins implementation list sorted by plugin id. Plugin id, is the id of the "@PluginMetaData" annotation of the
@@ -72,7 +72,6 @@ public class PluginService implements IPluginService {
         pluginConfRepository = pPluginConfigurationRepository;
         getPluginPackage().add(REGARDS_PACKAGE_PLUGINS_DEFAULT);
         getPluginPackage().add(CONTRIB_PACKAGE_PLUGINS_DEFAULT);
-
     }
 
     private Map<String, PluginMetaData> getLoadedPlugins() {
@@ -114,29 +113,29 @@ public class PluginService implements IPluginService {
     public PluginConfiguration savePluginConfiguration(final PluginConfiguration pPluginConfiguration)
             throws PluginUtilsException {
         // Check plugin configuration validity
-        String message = "Impossible to save a plugin configuration";
+        final StringBuilder msg = new StringBuilder("Impossible to save a plugin configuration");
 
         boolean throwError = false;
 
         if (pPluginConfiguration == null) {
-            message += ". The plugin configuration cannot be null.";
+            msg.append(". The plugin configuration cannot be null.");
             throwError = true;
         }
-        if (!throwError && (pPluginConfiguration.getPluginId() == null)) {
-            message += ". The unique identifier of the plugin (attribute pluginId) is required.";
+        if (!throwError && pPluginConfiguration.getPluginId() == null) {
+            msg.append(". The unique identifier of the plugin (attribute pluginId) is required.");
             throwError = true;
         }
-        if (!throwError && (pPluginConfiguration.getPriorityOrder() == null)) {
-            message += String.format(" <%s> without priority order.", pPluginConfiguration.getPluginId());
+        if (!throwError && pPluginConfiguration.getPriorityOrder() == null) {
+            msg.append(String.format(" <%s> without priority order.", pPluginConfiguration.getPluginId()));
             throwError = true;
         }
-        if (!throwError && (pPluginConfiguration.getVersion() == null)) {
-            message = String.format(" <%s> without version.", pPluginConfiguration.getPluginId());
+        if (!throwError && pPluginConfiguration.getVersion() == null) {
+            msg.append(String.format(" <%s> without version.", pPluginConfiguration.getPluginId()));
             throwError = true;
         }
 
         if (throwError) {
-            throw new PluginUtilsException(message);
+            throw new PluginUtilsException(msg.toString());
         }
 
         return pluginConfRepository.save(pPluginConfiguration);
@@ -180,8 +179,8 @@ public class PluginService implements IPluginService {
 
         final List<PluginMetaData> pluginImpls = getPluginsByType(pInterfacePluginType);
 
-        pluginImpls.forEach(p -> configurations
-                .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(p.getPluginId())));
+        pluginImpls.forEach(pMetaData -> configurations
+                .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pMetaData.getPluginId())));
 
         return configurations;
     }
@@ -250,9 +249,8 @@ public class PluginService implements IPluginService {
         return pluginPackage;
     }
 
-    @Override
     public void addPluginPackage(String pPluginPackage) {
-        pluginPackage.add(pPluginPackage);
+        this.pluginPackage.add(pPluginPackage);
     }
 
 }

@@ -21,7 +21,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsTestConstants;
 /**
  * Unit testing of {@link PluginInterfaceUtils}.
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {

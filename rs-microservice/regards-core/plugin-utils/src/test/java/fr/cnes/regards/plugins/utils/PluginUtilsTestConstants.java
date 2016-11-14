@@ -6,7 +6,7 @@ package fr.cnes.regards.plugins.utils;
 /**
  * This class contains a set of {@link String) constants used in the tests.
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public class PluginUtilsTestConstants {

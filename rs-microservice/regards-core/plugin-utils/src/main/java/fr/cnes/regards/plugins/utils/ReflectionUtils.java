@@ -12,7 +12,7 @@ import java.lang.reflect.Modifier;
  *
  * Utility class used in reflections
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 public final class ReflectionUtils {
 
