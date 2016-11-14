@@ -6,14 +6,15 @@ package fr.cnes.regards.framework.jpa;
 import java.io.Serializable;
 
 /**
- * @param <ID>
+ * @param <I>
  *            identifier type
  * @author msordi
  *
  */
-public interface IIdentifiable<ID extends Serializable> {
+@FunctionalInterface
+public interface IIdentifiable<I extends Serializable> {
 
-    ID getId();
+    I getId();
 
     default boolean isIdentifiable() {
         return getId() != null;
