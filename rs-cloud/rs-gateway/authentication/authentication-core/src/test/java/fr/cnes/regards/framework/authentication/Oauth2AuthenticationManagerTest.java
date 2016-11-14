@@ -59,6 +59,9 @@ public class Oauth2AuthenticationManagerTest {
      */
     private static JWTAuthentication auth;
 
+    /**
+     * Mock for accounts client from administration service.
+     */
     private static IAccountsClient accountsClientMock;
 
     /**

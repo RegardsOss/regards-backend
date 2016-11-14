@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
-import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.service.IPluginService;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
@@ -68,31 +68,35 @@ public class InternalAuthenticationPluginService implements IInternalAuthenticat
 
     @Override
     public PluginConfiguration createIdentityProviderPlugin(final PluginConfiguration pPluginConfigurationToCreate)
-            throws InvalidEntityException {
+            throws ModuleException {
         try {
             return pluginService.savePluginConfiguration(pPluginConfigurationToCreate);
         } catch (final PluginUtilsException e) {
             LOG.error(e.getMessage(), e);
-            throw new InvalidEntityException(e.getMessage());
+            throw new ModuleException(e.getMessage());
         }
 
     }
 
     @Override
     public PluginConfiguration updateIdentityProviderPlugin(final PluginConfiguration pPluginConfigurationToUpdate)
-            throws InvalidEntityException, ModuleEntityNotFoundException {
+            throws ModuleException {
         try {
             return pluginService.updatePluginConfiguration(pPluginConfigurationToUpdate);
         } catch (final PluginUtilsException e) {
             LOG.error(e.getMessage(), e);
-            throw new InvalidEntityException(e.getMessage());
+            throw new ModuleException(e.getMessage());
         }
     }
 
     @Override
-    public void deleteIdentityProviderPlugin(final Long pPluginConfigurationId)
-            throws ModuleEntityNotFoundException, PluginUtilsException {
-        pluginService.deletePluginConfiguration(pPluginConfigurationId);
+    public void deleteIdentityProviderPlugin(final Long pPluginConfigurationId) throws ModuleException {
+        try {
+            pluginService.deletePluginConfiguration(pPluginConfigurationId);
+        } catch (final PluginUtilsException e) {
+            LOG.error(e.getMessage(), e);
+            throw new ModuleException(e.getMessage());
+        }
     }
 
 }

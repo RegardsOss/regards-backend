@@ -19,10 +19,9 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
@@ -72,7 +71,7 @@ public class InternalAuthenticationController
         try {
             final PluginConfiguration plugin = service.createIdentityProviderPlugin(pPluginConfigurationToCreate);
             response = new ResponseEntity<>(toResource(plugin), HttpStatus.OK);
-        } catch (final InvalidEntityException e) {
+        } catch (final ModuleException e) {
             LOG.error(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -111,12 +110,12 @@ public class InternalAuthenticationController
                 } else {
                     response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
                 }
-            } catch (final InvalidEntityException e) {
-                LOG.error(e.getMessage(), e);
-                response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             } catch (final ModuleEntityNotFoundException e) {
                 LOG.error(e.getMessage(), e);
                 response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            } catch (final ModuleException e) {
+                LOG.error(e.getMessage(), e);
+                response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
 
         } else {
@@ -137,7 +136,7 @@ public class InternalAuthenticationController
         } catch (final ModuleEntityNotFoundException e) {
             LOG.error(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (final PluginUtilsException e) {
+        } catch (final ModuleException e) {
             LOG.error(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
