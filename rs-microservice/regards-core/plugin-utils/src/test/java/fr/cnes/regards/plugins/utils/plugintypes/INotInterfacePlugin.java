@@ -6,7 +6,7 @@ package fr.cnes.regards.plugins.utils.plugintypes;
 /**
  * INotInterfacePlugin
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public interface INotInterfacePlugin {

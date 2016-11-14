@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
  *
  * Post process plugin instances to inject annotated parameters.
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 public final class PluginParameterUtils {
 
@@ -42,15 +42,52 @@ public final class PluginParameterUtils {
     /**
      * PrimitiveObject for the plugin parameters
      * 
-     * @author cmertz
+     * @author Christophe Mertz
      *
      */
     public enum PrimitiveObject {
-        STRING(String.class), BYTE(Byte.class), SHORT(Short.class), INT(Integer.class), LONG(Long.class), FLOAT(
-                Float.class), DOUBLE(Double.class), BOOLEAN(Boolean.class);
+        /**
+         * A primitive of {@link String}
+         */
+        STRING(String.class),
 
         /**
-         * Type_
+         * A primitive of {@link Byte}
+         */
+        BYTE(Byte.class),
+
+        /**
+         * A primitive of {@link Short}
+         */
+        SHORT(Short.class),
+
+        /**
+         * A primitive of {@link Integer}
+         */
+        INT(Integer.class),
+
+        /**
+         * A primitive of {@link Long}
+         */
+        LONG(Long.class),
+
+        /**
+         * A primitive of {@link Float}
+         */
+        FLOAT(Float.class),
+
+        /**
+         * A primitive of {@link Double}
+         */
+        DOUBLE(Double.class),
+
+        /**
+         * A primitive of {@link Boolean}
+         */
+        BOOLEAN(Boolean.class);
+
+        /**
+         * Type
          */
         private final Class<?> type;
 

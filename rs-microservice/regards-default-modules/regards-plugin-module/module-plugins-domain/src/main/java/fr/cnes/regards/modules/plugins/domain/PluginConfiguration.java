@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -15,7 +17,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -74,12 +75,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Configuration parameters of the plugin
      */
+    @ElementCollection
+    @CollectionTable(
+            joinColumns = @JoinColumn(name = "ID", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_ID")))
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE",
-            joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_ID")) },
-            inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMETER_ID")) })
     private List<PluginParameter> parameters;
 
     /**

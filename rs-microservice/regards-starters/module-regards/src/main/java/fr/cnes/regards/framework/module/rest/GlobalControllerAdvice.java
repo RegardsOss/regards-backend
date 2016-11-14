@@ -16,10 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotEmptyException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotIdentifiableException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
@@ -41,8 +44,8 @@ public class GlobalControllerAdvice {
                 .body(new ServerErrorResponse("Internal server error"));
     }
 
-    @ExceptionHandler(AlreadyExistsException.class)
-    public ResponseEntity<ServerErrorResponse> handleModelException(final AlreadyExistsException pEx) {
+    @ExceptionHandler(ModuleAlreadyExistsException.class)
+    public ResponseEntity<ServerErrorResponse> handleModelException(final ModuleAlreadyExistsException pEx) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pEx.getMessage()));
     }
 
@@ -51,6 +54,21 @@ public class GlobalControllerAdvice {
      */
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ServerErrorResponse> dataNotFound(EntityNotFoundException pException) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    @ExceptionHandler(ModuleEntityNotEmptyException.class)
+    public ResponseEntity<ServerErrorResponse> entityNotEmpty(ModuleEntityNotEmptyException pException) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    @ExceptionHandler(ModuleEntityNotFoundException.class)
+    public ResponseEntity<ServerErrorResponse> dataNotFound(ModuleEntityNotFoundException pException) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    @ExceptionHandler(ModuleEntityNotIdentifiableException.class)
+    public ResponseEntity<ServerErrorResponse> entityNotIdentifiable(ModuleEntityNotIdentifiableException pException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
