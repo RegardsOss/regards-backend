@@ -7,8 +7,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
@@ -25,7 +23,7 @@ public class ProjectConnectionClientStub implements IProjectConnectionClient {
 
     @Override
     public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(final String pProjectName,
-            final String pMicroService) throws EntityNotFoundException {
+            final String pMicroService) {
 
         final ProjectConnection connection = new ProjectConnection(0L, ProjectClientStub.PROJECT, pMicroService, "", "",
                 "", "");
@@ -35,19 +33,18 @@ public class ProjectConnectionClientStub implements IProjectConnectionClient {
 
     @Override
     public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
-            final ProjectConnection pProjectConnection) throws EntityException {
+            final ProjectConnection pProjectConnection) {
         return null;
     }
 
     @Override
     public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
-            final ProjectConnection pProjectConnection) throws EntityException {
+            final ProjectConnection pProjectConnection) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Void> deleteProjectConnection(final String pProjectName, final String pMicroservice)
-            throws EntityException {
+    public ResponseEntity<Void> deleteProjectConnection(final String pProjectName, final String pMicroservice) {
         return null;
     }
 

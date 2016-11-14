@@ -10,14 +10,14 @@ import org.mockito.Mockito;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import fr.cnes.regards.framework.hateoas.DefaultResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -135,23 +135,19 @@ public class ProjectConnectionControllerTest {
     @Test
     public void retrieveProjectConnection() {
 
-        try {
-            final HttpEntity<Resource<ProjectConnection>> result = projectConnectionController
-                    .retrieveProjectConnection(PROJECT_TEST_0, MICROSERVICE_TEST);
-            final Resource<ProjectConnection> resource = result.getBody();
-            final ProjectConnection connection = resource.getContent();
-            Assert.assertNotNull("Error retrieving project connection.", connection);
-            Link link = resource.getLink(LinkRels.DELETE);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.DELETE), link);
-            link = resource.getLink(LinkRels.SELF);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.SELF), link);
-            link = resource.getLink(LinkRels.CREATE);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.CREATE), link);
-            link = resource.getLink(LinkRels.UPDATE);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.UPDATE), link);
-        } catch (final EntityNotFoundException e) {
-            Assert.fail(e.getMessage());
-        }
+        final HttpEntity<Resource<ProjectConnection>> result = projectConnectionController
+                .retrieveProjectConnection(PROJECT_TEST_0, MICROSERVICE_TEST);
+        final Resource<ProjectConnection> resource = result.getBody();
+        final ProjectConnection connection = resource.getContent();
+        Assert.assertNotNull("Error retrieving project connection.", connection);
+        Link link = resource.getLink(LinkRels.DELETE);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.DELETE), link);
+        link = resource.getLink(LinkRels.SELF);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.SELF), link);
+        link = resource.getLink(LinkRels.CREATE);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.CREATE), link);
+        link = resource.getLink(LinkRels.UPDATE);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.UPDATE), link);
 
     }
 
@@ -166,25 +162,20 @@ public class ProjectConnectionControllerTest {
     @Purpose("Check REST Access to create a project connection and Hateoas returned links")
     @Test
     public void createProjectConnection() {
-        try {
-            final HttpEntity<Resource<ProjectConnection>> result = projectConnectionController
-                    .createProjectConnection(new ProjectConnection(2L, existingProject, "new description",
-                            "newUserName", "newPassword", "newDriver", "newUrl"));
-            final Resource<ProjectConnection> resource = result.getBody();
-            final ProjectConnection connection = resource.getContent();
-            Assert.assertNotNull("Error during project connection creation.", connection);
-            Link link = resource.getLink(LinkRels.DELETE);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.DELETE), link);
-            link = resource.getLink(LinkRels.SELF);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.SELF), link);
-            link = resource.getLink(LinkRels.CREATE);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.CREATE), link);
-            link = resource.getLink(LinkRels.UPDATE);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.UPDATE), link);
-
-        } catch (final EntityException e) {
-            Assert.fail(e.getMessage());
-        }
+        final HttpEntity<Resource<ProjectConnection>> result = projectConnectionController
+                .createProjectConnection(new ProjectConnection(2L, existingProject, "new description", "newUserName",
+                        "newPassword", "newDriver", "newUrl"));
+        final Resource<ProjectConnection> resource = result.getBody();
+        final ProjectConnection connection = resource.getContent();
+        Assert.assertNotNull("Error during project connection creation.", connection);
+        Link link = resource.getLink(LinkRels.DELETE);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.DELETE), link);
+        link = resource.getLink(LinkRels.SELF);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.SELF), link);
+        link = resource.getLink(LinkRels.CREATE);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.CREATE), link);
+        link = resource.getLink(LinkRels.UPDATE);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.UPDATE), link);
     }
 
     /**
@@ -198,25 +189,20 @@ public class ProjectConnectionControllerTest {
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
     @Test
     public void updateProjectConnection() {
-        try {
-            final HttpEntity<Resource<ProjectConnection>> result = projectConnectionController
-                    .updateProjectConnection(new ProjectConnection(0L, existingProject, "update description",
-                            "updateUserName", "updatePassword", "updateDriver", "updateUrl"));
-            final Resource<ProjectConnection> resource = result.getBody();
-            final ProjectConnection connection = resource.getContent();
-            Assert.assertNotNull("Error during project connection update.", connection);
-            Link link = resource.getLink(LinkRels.DELETE);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.DELETE), link);
-            link = resource.getLink(LinkRels.SELF);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.SELF), link);
-            link = resource.getLink(LinkRels.CREATE);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.CREATE), link);
-            link = resource.getLink(LinkRels.UPDATE);
-            Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.UPDATE), link);
-
-        } catch (final EntityException e) {
-            Assert.fail(e.getMessage());
-        }
+        final HttpEntity<Resource<ProjectConnection>> result = projectConnectionController
+                .updateProjectConnection(new ProjectConnection(0L, existingProject, "update description",
+                        "updateUserName", "updatePassword", "updateDriver", "updateUrl"));
+        final Resource<ProjectConnection> resource = result.getBody();
+        final ProjectConnection connection = resource.getContent();
+        Assert.assertNotNull("Error during project connection update.", connection);
+        Link link = resource.getLink(LinkRels.DELETE);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.DELETE), link);
+        link = resource.getLink(LinkRels.SELF);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.SELF), link);
+        link = resource.getLink(LinkRels.CREATE);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.CREATE), link);
+        link = resource.getLink(LinkRels.UPDATE);
+        Assert.assertNotNull(String.format(HATEOAS_MISSING, LinkRels.UPDATE), link);
     }
 
     /**
@@ -231,23 +217,13 @@ public class ProjectConnectionControllerTest {
     @Test
     public void deleteProjectConnection() {
 
-        // Test for inexisting project connection deletion
-        try {
-            projectConnectionController.deleteProjectConnection("project-invalid", MICROSERVICE_TEST_2);
-            Assert.fail("Project connection doesn't exists. There should be an exception thrown here.");
-        } catch (final EntityNotFoundException e1) {
-            // Nothing to do
-        } catch (final EntityException e) {
-            Assert.fail(e.getMessage());
-        }
+        final ResponseEntity<Void> response = projectConnectionController.deleteProjectConnection("project-invalid",
+                                                                                                  MICROSERVICE_TEST_2);
 
-        // Delete existing entity
-        try {
-            projectConnectionController.deleteProjectConnection(PROJECT_TEST_0, MICROSERVICE_TEST_2);
+        Assert.assertTrue("Project connection doesn't exists. There should be an error",
+                          response.getStatusCode().equals(HttpStatus.NOT_FOUND));
 
-        } catch (final EntityException e) {
-            Assert.fail(e.getMessage());
-        }
+        projectConnectionController.deleteProjectConnection(PROJECT_TEST_0, MICROSERVICE_TEST_2);
     }
 
 }

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectConnectionService;
@@ -83,7 +83,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
                             projectConnection.getUrl(), projectConnection.getUserName(),
                             projectConnection.getPassword(), projectConnection.getDriverClassName()));
                 }
-            } catch (final EntityNotFoundException e) {
+            } catch (final ModuleEntityNotFoundException e) {
                 LOG.error(e.getMessage(), e);
                 LOG.error(String.format("No database connection found for project %s", project.getName()));
             }

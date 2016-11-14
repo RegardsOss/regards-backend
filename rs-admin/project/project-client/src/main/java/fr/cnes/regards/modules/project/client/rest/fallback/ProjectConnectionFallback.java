@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
@@ -45,7 +44,7 @@ public class ProjectConnectionFallback implements IProjectConnectionClient {
 
     @Override
     public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
-            final ProjectConnection pProjectConnection) throws AlreadyExistingException {
+            final ProjectConnection pProjectConnection) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }

@@ -12,8 +12,9 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -102,11 +103,11 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     @Override
     public ProjectConnection retrieveProjectConnection(final String pProjectName, final String pMicroService)
-            throws EntityNotFoundException {
+            throws ModuleEntityNotFoundException {
         final ProjectConnection connection = projectConnectionRepository
                 .findOneByProjectNameAndMicroservice(pProjectName, pMicroService);
         if (connection == null) {
-            throw new EntityNotFoundException(String.format("%s:%s", pProjectName, pMicroService),
+            throw new ModuleEntityNotFoundException(String.format("%s:%s", pProjectName, pMicroService),
                     ProjectConnection.class);
         }
         return connection;
@@ -114,7 +115,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     @Override
     public ProjectConnection createProjectConnection(final ProjectConnection pProjectConnection)
-            throws AlreadyExistingException, EntityNotFoundException {
+            throws ModuleException {
         final ProjectConnection connection;
         final Project project = pProjectConnection.getProject();
         // Check referenced project exists
@@ -125,29 +126,29 @@ public class ProjectConnectionService implements IProjectConnectionService {
                                                          pProjectConnection.getMicroservice()) == null) {
                 connection = projectConnectionRepository.save(pProjectConnection);
             } else {
-                throw new AlreadyExistingException(project.getName());
+                throw new ModuleAlreadyExistsException(project.getName());
             }
         } else {
-            throw new EntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
+            throw new ModuleEntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
         }
 
         return connection;
     }
 
     @Override
-    public void deleteProjectConnection(final Long pProjectConnectionId) throws EntityNotFoundException {
+    public void deleteProjectConnection(final Long pProjectConnectionId) throws ModuleEntityNotFoundException {
         if (projectConnectionRepository.exists(pProjectConnectionId)) {
             projectConnectionRepository.delete(pProjectConnectionId);
         } else {
             final String message = "Invalid entity <ProjectConnection> for deletion. Entity (id=%d) does not exists";
             LOG.error(String.format(message, pProjectConnectionId));
-            throw new EntityNotFoundException(pProjectConnectionId.toString(), ProjectConnection.class);
+            throw new ModuleEntityNotFoundException(pProjectConnectionId.toString(), ProjectConnection.class);
         }
     }
 
     @Override
     public ProjectConnection updateProjectConnection(final ProjectConnection pProjectConnection)
-            throws EntityNotFoundException {
+            throws ModuleEntityNotFoundException {
         final ProjectConnection connection;
         // Check that entity to update exists
         if ((pProjectConnection.getId() != null) && projectConnectionRepository.exists(pProjectConnection.getId())) {
@@ -157,10 +158,10 @@ public class ProjectConnectionService implements IProjectConnectionService {
                 // Update entity
                 connection = projectConnectionRepository.save(pProjectConnection);
             } else {
-                throw new EntityNotFoundException(project.getName(), Project.class);
+                throw new ModuleEntityNotFoundException(project.getName(), Project.class);
             }
         } else {
-            throw new EntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
+            throw new ModuleEntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
         }
         return connection;
     }
