@@ -94,13 +94,13 @@ public class Role implements IIdentifiable<Long> {
     /**
      * Is a default role ?
      */
-    @Column(name = "default")
+    @Column(name = "is_default")
     private boolean isDefault;
 
     /**
      * Is a native role ?
      */
-    @Column(name = "native")
+    @Column(name = "is_native")
     private boolean isNative;
 
     /**
