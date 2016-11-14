@@ -115,7 +115,7 @@ public interface IPluginsSignature {
      *
      * @return the {@link PluginConfiguration} of the plugin
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      * @throws ModuleEntityNotFoundException
      *
@@ -140,7 +140,7 @@ public interface IPluginsSignature {
      *
      * @return the {@link PluginConfiguration} of the plugin.
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      * @throws InvalidValueException
      *             the {@link PluginConfiguration} is incoherent with the path parameter
@@ -165,7 +165,7 @@ public interface IPluginsSignature {
      *
      * @return void
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      */
     @RequestMapping(value = "/plugins/{pluginId}/config/{configId}", method = RequestMethod.DELETE,

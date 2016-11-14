@@ -76,7 +76,7 @@ public class PluginController implements IPluginsSignature {
             try {
                 metadaDatas = pluginService.getPluginsByType(Class.forName(pPluginType));
             } catch (final ClassNotFoundException e) {
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
                 throw new InvalidValueException(e.getMessage());
             }
         }
@@ -147,13 +147,15 @@ public class PluginController implements IPluginsSignature {
     @Override
     public ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId,
-            @Valid @RequestBody final PluginConfiguration pPluginConfiguration)
-            throws ModuleEntityNotFoundException, InvalidValueException {
+            @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws ModuleEntityNotFoundException {
         final PluginConfiguration pluginConfiguration;
-        if (!pPluginId.equals(pPluginConfiguration.getPluginId()) || (pConfigId != pPluginConfiguration.getId())) {
-            throw new InvalidValueException(
-                    "The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
-                            + ">- config id= <" + pConfigId + ">");
+        if (!pPluginId.equals(pPluginConfiguration.getPluginId())) {
+            LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
+                    + ">- config id= <" + pConfigId + ">");
+            throw new ModuleEntityNotFoundException(pPluginId, PluginConfiguration.class);
+        }
+        if (pConfigId != pPluginConfiguration.getId()) {
+            throw new ModuleEntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
         }
         try {
             pluginConfiguration = pluginService.updatePluginConfiguration(pPluginConfiguration);
