@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 
 /**
@@ -35,13 +36,13 @@ public interface INavigationContextSignature {
      * @param pNavCtxId
      *            the id of the {@link NavigationContext} to load
      * @return the loaded {@link NavigationContext}
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             throw if an error occurs
      */
     @RequestMapping(value = "/url/{navCtxId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Resource<NavigationContext>> load(@PathVariable("navCtxId") Long pNavCtxId)
-            throws EntityNotFoundException;
+            throws ModuleEntityNotFoundException;
 
     /**
      * Update a {@link NavigationContext}.
@@ -51,14 +52,14 @@ public interface INavigationContextSignature {
      * @param pNavigationContext
      *            the {@link NavigationContext} to update
      * @return the updated {@link NavigationContext}
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             throw if an error occurs
      */
     @RequestMapping(value = "/url/{navCtxId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Resource<NavigationContext>> update(@PathVariable("navCtxId") Long pNavCtxId,
-            @Valid @RequestBody NavigationContext pNavigationContext) throws EntityNotFoundException;
+            @Valid @RequestBody NavigationContext pNavigationContext) throws ModuleEntityNotFoundException;
 
     /**
      * Delete a {@link NavigationContext}.
@@ -66,13 +67,13 @@ public interface INavigationContextSignature {
      * @param pNavCtxId
      *            the id of the {@link NavigationContext} to load
      * @return void
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             throw if an error occurs
      */
     @RequestMapping(value = "/url/{navCtxId}", method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Void> delete(@PathVariable("navCtxId") Long pNavCtxId) throws EntityNotFoundException;
+    ResponseEntity<Void> delete(@PathVariable("navCtxId") Long pNavCtxId) throws ModuleEntityNotFoundException;
 
     /**
      * Lists all the {@link} {@link NavigationContext}.
@@ -89,13 +90,13 @@ public interface INavigationContextSignature {
      * @param pNavigationContext
      *            the {@link NavigationContext} to create
      * @return the created {@link NavigationContext}
-     * @throws AlreadyExistingException
+     * @throws ModuleAlreadyExistsException
      *             the {@link NavigationContext} already exists
      */
     @RequestMapping(value = "/urls", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Resource<NavigationContext>> create(@Valid @RequestBody NavigationContext pNavigationContext)
-            throws AlreadyExistingException;
+            throws ModuleAlreadyExistsException;
 
 }

@@ -6,8 +6,8 @@ package fr.cnes.regards.modules.access.service;
 
 import java.util.List;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 
 /**
@@ -23,32 +23,31 @@ public interface INavigationContextService {
      * @param pNavigationContext
      *            the {@link NavigationContext} to create
      * @return the created {@link NavigationContext}
-     * @throws AlreadyExistingException
+     * @throws ModuleException
      *             the {@link NavigationContext} already exists
      */
-    NavigationContext create(NavigationContext pNavigationContext) throws AlreadyExistingException;
+    NavigationContext create(NavigationContext pNavigationContext) throws ModuleException;
 
     /**
      * Update a {@link NavigationContext}.
      * 
-     * @param pNavCtxId
-     *            the id of the {@link NavigationContext} to load
      * @param pNavigationContext
      *            the {@link NavigationContext} to update
-     * @throws EntityNotFoundException
+     * @return The {@link NavigationContext} updated
+     * @throws ModuleEntityNotFoundException
      *             throw if an error occurs
      */
-    void update(NavigationContext pNavigationContext) throws EntityNotFoundException;
+    NavigationContext update(NavigationContext pNavigationContext) throws ModuleEntityNotFoundException;
 
     /**
      * Delete a {@link NavigationContext}.
      * 
      * @param pNavCtxId
      *            the id of the {@link NavigationContext} to load
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             throw if an error occurs
      */
-    void delete(Long pNavCtxId) throws EntityNotFoundException;
+    void delete(Long pNavCtxId) throws ModuleEntityNotFoundException;
 
     /**
      * Load a {@link NavigationContext}
@@ -56,10 +55,10 @@ public interface INavigationContextService {
      * @param pNavCtxId
      *            the id of the {@link NavigationContext} to load
      * @return the loaded {@link NavigationContext}
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             throw if an error occurs
      */
-    NavigationContext load(Long pNavCtxId) throws EntityNotFoundException;
+    NavigationContext load(Long pNavCtxId) throws ModuleEntityNotFoundException;
 
     /**
      * Lists all the {@link} {@link NavigationContext}.

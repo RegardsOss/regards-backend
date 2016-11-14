@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.access.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -16,6 +17,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
@@ -39,6 +41,7 @@ public class NavigationContext implements IIdentifiable<Long> {
     /**
      * 
      */
+    @NotNull
     private String tinyUrl;
 
     /**
@@ -58,11 +61,13 @@ public class NavigationContext implements IIdentifiable<Long> {
     /**
      * 
      */
+    @NotNull
     private String route;
 
     /**
      * 
      */
+    @NotNull
     private Integer store;
 
     /**
@@ -119,7 +124,6 @@ public class NavigationContext implements IIdentifiable<Long> {
         return id;
     }
 
-    
     public void setId(Long id) {
         this.id = id;
     }
@@ -146,6 +150,13 @@ public class NavigationContext implements IIdentifiable<Long> {
 
     public void setQueryParameters(List<ConfigParameter> pQueryParameters) {
         queryParameters = pQueryParameters;
+    }
+
+    public void addQueryParameters(ConfigParameter pQueryParameters) {
+        if (queryParameters == null) {
+            queryParameters = new ArrayList<>();
+        }
+        queryParameters.add(pQueryParameters);
     }
 
     public String getRoute() {

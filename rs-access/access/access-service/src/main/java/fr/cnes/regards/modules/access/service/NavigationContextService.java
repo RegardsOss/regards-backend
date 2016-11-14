@@ -2,11 +2,11 @@ package fr.cnes.regards.modules.access.service;
 
 import java.util.List;
 
-import org.apache.commons.collections4.IterableUtils;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.jpa.utils.IterableUtils;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.access.dao.INavigationContextRepository;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 
@@ -19,12 +19,16 @@ import fr.cnes.regards.modules.access.domain.NavigationContext;
 @Service
 public class NavigationContextService implements INavigationContextService {
 
-    INavigationContextRepository navigationContextReposiory;
+    /**
+     * {@link NavigationContext} JPA Repository
+     */
+    private INavigationContextRepository navigationContextReposiory;
 
     /**
      * A constructor with the {@link INavigationContextRepository}
      * 
      * @param pNavigationContextRepository
+     *            {@link NavigationContext} JPA Repository
      */
     public NavigationContextService(INavigationContextRepository pNavigationContextRepository) {
         super();
@@ -32,35 +36,48 @@ public class NavigationContextService implements INavigationContextService {
     }
 
     @Override
-    public NavigationContext create(NavigationContext pNavigationContext) throws AlreadyExistingException {
-        // TODO CMZ tester que tout est OK avant de sauver
+    public NavigationContext create(NavigationContext pNavigationContext) throws ModuleException {
+        final StringBuilder msg = new StringBuilder("Impossible to save a navigation context");
+
+        boolean throwError = false;
+        if (pNavigationContext == null) {
+            msg.append(". The navigation context cannot be null.");
+            throwError = true;
+        }
+        if (!throwError && pNavigationContext.getTinyUrl() == null) {
+            msg.append(". The tinyUrll attribute cannot be null.");
+            throwError = true;
+        }
+        if (!throwError && pNavigationContext.getStore() == null) {
+            msg.append(". The store attribute cannot be null.");
+            throwError = true;
+        }
+        if (throwError) {
+            throw new ModuleException(msg.toString());
+        }
         return navigationContextReposiory.save(pNavigationContext);
     }
 
     @Override
-    public void update(NavigationContext pNavigationContext) throws EntityNotFoundException {
+    public NavigationContext update(NavigationContext pNavigationContext) throws ModuleEntityNotFoundException {
         if (!navigationContextReposiory.exists(pNavigationContext.getId())) {
-            throw new EntityNotFoundException(
-                    String.format("Error while updating the navigation context <%s>.", pNavigationContext.getId()),
-                    NavigationContext.class);
+            throw new ModuleEntityNotFoundException(pNavigationContext.getId(), NavigationContext.class);
         }
-        navigationContextReposiory.save(pNavigationContext);
+        return navigationContextReposiory.save(pNavigationContext);
     }
 
     @Override
-    public void delete(Long pNavCtxId) throws EntityNotFoundException {
-        NavigationContext aNavigationContext = this.load(pNavCtxId);
+    public void delete(Long pNavCtxId) throws ModuleEntityNotFoundException {
+        final NavigationContext aNavigationContext = this.load(pNavCtxId);
         navigationContextReposiory.delete(aNavigationContext.getId());
     }
 
     @Override
-    public NavigationContext load(Long pNavCtxId) throws EntityNotFoundException {
+    public NavigationContext load(Long pNavCtxId) throws ModuleEntityNotFoundException {
         final NavigationContext navContexts = navigationContextReposiory.findOne(pNavCtxId);
 
         if (navContexts == null) {
-            throw new EntityNotFoundException(
-                    String.format("Error while getting the navigation context with tiny URL <%l>.", pNavCtxId),
-                    NavigationContext.class);
+            throw new ModuleEntityNotFoundException(pNavCtxId, NavigationContext.class);
         }
 
         return navContexts;

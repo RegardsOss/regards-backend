@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -17,8 +19,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 import fr.cnes.regards.modules.access.service.INavigationContextService;
 import fr.cnes.regards.modules.access.signature.INavigationContextSignature;
@@ -33,6 +36,11 @@ import fr.cnes.regards.modules.access.signature.INavigationContextSignature;
 @ModuleInfo(name = "navigation context", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
 public class NavigationContextController implements INavigationContextSignature {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(NavigationContextController.class);
 
     @Autowired
     INavigationContextService service;
@@ -50,24 +58,25 @@ public class NavigationContextController implements INavigationContextSignature 
 
     @Override
     public ResponseEntity<Resource<NavigationContext>> load(@PathVariable("navCtxId") Long pNavCtxId)
-            throws EntityNotFoundException {
+            throws ModuleEntityNotFoundException {
         NavigationContext navigationContext = service.load(pNavCtxId);
         return new ResponseEntity<>(new Resource<NavigationContext>(navigationContext), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Resource<NavigationContext>> update(@PathVariable("navCtxId") Long pNavCtxId,
-            @Valid @RequestBody NavigationContext pNavigationContext) throws EntityNotFoundException {
+            @Valid @RequestBody NavigationContext pNavigationContext) throws ModuleEntityNotFoundException {
         if (pNavigationContext.getId() != pNavCtxId) {
-            throw new EntityNotFoundException(String.format("invalid context navigation identifier : <%l>", pNavCtxId),
-                    NavigationContext.class);
+            LOGGER.error(String.format("invalid context navigation identifier : <%s>", pNavCtxId),
+                         NavigationContext.class);
+            throw new ModuleEntityNotFoundException(pNavCtxId, NavigationContext.class);
         }
         service.update(pNavigationContext);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<Void> delete(@PathVariable("navCtxId") Long pNavCtxId) throws EntityNotFoundException {
+    public ResponseEntity<Void> delete(@PathVariable("navCtxId") Long pNavCtxId) throws ModuleEntityNotFoundException {
         service.delete(pNavCtxId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -83,8 +92,13 @@ public class NavigationContextController implements INavigationContextSignature 
 
     @Override
     public ResponseEntity<Resource<NavigationContext>> create(@Valid @RequestBody NavigationContext pNavigationContext)
-            throws AlreadyExistingException {
-        NavigationContext navigationContext = service.create(pNavigationContext);
+            throws ModuleAlreadyExistsException {
+        NavigationContext navigationContext;
+        try {
+            navigationContext = service.create(pNavigationContext);
+        } catch (ModuleException e) {
+            throw new ModuleAlreadyExistsException(e.getMessage());
+        }
         // addLinksToProjects(projects);
         final Resource<NavigationContext> resource = new Resource<>(navigationContext);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
