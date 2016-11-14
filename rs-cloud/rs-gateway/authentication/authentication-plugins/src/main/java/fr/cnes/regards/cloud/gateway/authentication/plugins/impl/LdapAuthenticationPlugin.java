@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
  * @author Sébastien Binda
  * @since 1.0
  */
-@Plugin(author = "CS-SI", description = "LDAP authentication plugin", id = "LDAPAuthenticationPlugin", version = "1.0")
+@Plugin(author = "CS-SI", description = "LDAP authentication plugin", id = "LdapAuthenticationPlugin", version = "1.0")
 public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**

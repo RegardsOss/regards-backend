@@ -72,6 +72,7 @@ public class RegardsInternalAuthenticationPluginTest {
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
+    @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Purpose("Check a valid authentication throught the Regards internal authentication system")
     @Test
     public void testValidAuthentication() throws ModuleEntityNotFoundException {
@@ -118,6 +119,7 @@ public class RegardsInternalAuthenticationPluginTest {
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
+    @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Test
     public void testErrorAuthentication() throws ModuleEntityNotFoundException {
 
@@ -161,6 +163,7 @@ public class RegardsInternalAuthenticationPluginTest {
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
+    @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Test
     public void testRequestErrorAuthentication() throws ModuleEntityNotFoundException {
 
@@ -205,6 +208,7 @@ public class RegardsInternalAuthenticationPluginTest {
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
+    @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Test
     public void testRequestErrorAuthenticationException() throws ModuleEntityNotFoundException {
 

@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import fr.cnes.regards.framework.authentication.internal.RoleSysFilter;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
@@ -35,6 +36,10 @@ public class RoleSysFilterTest {
      *
      * Check access to gateway is not denied by the ROLE Filter for all non SYS roles users
      *
+     ** @throws ServletException
+     *             test error
+     * @throws IOException
+     *             test error
      * @since 1.0-SNAPSHOT
      */
     @Purpose("Check access to gateway is not denied by the ROLE Filter for all non SYS roles users")
@@ -54,9 +59,7 @@ public class RoleSysFilterTest {
         final HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
         final FilterChain chaine = Mockito.mock(FilterChain.class);
 
-        final RoleSysFilter filterSpy = Mockito.spy(filter);
-
-        filter.doFilterInternal(request, response, chaine);
+        filter.doFilter(request, response, chaine);
 
         Mockito.verify(chaine, Mockito.times(1)).doFilter(Mockito.any(), Mockito.any());
 
@@ -66,6 +69,10 @@ public class RoleSysFilterTest {
      *
      * Check error during oauth2 authentication process using default authentication plugin
      *
+     * @throws ServletException
+     *             test error
+     * @throws IOException
+     *             test error
      * @since 1.0-SNAPSHOT
      */
     @Purpose("Check access to gateway is denied for all SYS roles users ")
@@ -85,7 +92,7 @@ public class RoleSysFilterTest {
         final HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
         final FilterChain chaine = Mockito.mock(FilterChain.class);
 
-        filter.doFilterInternal(request, response, chaine);
+        filter.doFilter(request, response, chaine);
 
         Mockito.verify(response, Mockito.times(1)).sendError(Mockito.anyInt(), Mockito.anyString());
         Mockito.verify(chaine, Mockito.times(0)).doFilter(Mockito.any(), Mockito.any());

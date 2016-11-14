@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
+import fr.cnes.regards.framework.authentication.internal.Oauth2AuthenticationManager;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
@@ -114,9 +115,8 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(projectUsersClientMock.retrieveProjectUser(Mockito.anyString())).thenReturn(resp);
         Mockito.when(beanFactoryMock.getBean(IProjectUsersClient.class)).thenReturn(projectUsersClientMock);
 
-        Field privateField;
         try {
-            privateField = Oauth2AuthenticationManager.class.getDeclaredField("beanFactory");
+            final Field privateField = Oauth2AuthenticationManager.class.getDeclaredField("beanFactory");
             privateField.setAccessible(true);
             privateField.set(manager, beanFactoryMock);
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {

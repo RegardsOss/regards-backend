@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.authentication;
+package fr.cnes.regards.framework.authentication.internal;
 
 import java.io.IOException;
 import java.util.Collection;

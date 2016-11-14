@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.authentication;
+package fr.cnes.regards.framework.authentication.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
