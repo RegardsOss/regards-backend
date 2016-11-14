@@ -38,12 +38,12 @@ import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
  */
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
 @ComponentScan("fr.cnes.regards.framework.authentication")
-public class AuthenticationControllerIT extends AbstractRegardsIT {
+public class AuthenticationControllerTest extends AbstractRegardsIT {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(AuthenticationControllerIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AuthenticationControllerTest.class);
 
     /**
      * Access route
