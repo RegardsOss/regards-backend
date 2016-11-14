@@ -75,6 +75,9 @@ public class NavigationContext implements IIdentifiable<Long> {
      */
     public NavigationContext() {
         super();
+        tinyUrl="undefined";
+        route="undefined";
+        store=0;
     }
 
     /**
@@ -93,11 +96,11 @@ public class NavigationContext implements IIdentifiable<Long> {
     public NavigationContext(String pTinyUrl, Project pProject, List<ConfigParameter> pQueryParameters, String pRoute,
             Integer pStore) {
         super();
-        this.tinyUrl = pTinyUrl;
-        this.project = pProject;
-        this.queryParameters = pQueryParameters;
-        this.route = pRoute;
-        this.store = pStore;
+        tinyUrl = pTinyUrl;
+        project = pProject;
+        queryParameters = pQueryParameters;
+        route = pRoute;
+        store = pStore;
     }
 
     /**
@@ -113,10 +116,10 @@ public class NavigationContext implements IIdentifiable<Long> {
      */
     public NavigationContext(Project pProject, List<ConfigParameter> pQueryParameters, String pRoute, Integer pStore) {
         super();
-        this.project = pProject;
-        this.queryParameters = pQueryParameters;
-        this.route = pRoute;
-        this.store = pStore;
+        project = pProject;
+        queryParameters = pQueryParameters;
+        route = pRoute;
+        store = pStore;
     }
 
     @Override

@@ -51,6 +51,7 @@ public class ConfigParameter implements IIdentifiable<Long> {
      */
     public ConfigParameter() {
         super();
+        name= "undefined";
     }
 
     /**
@@ -63,8 +64,8 @@ public class ConfigParameter implements IIdentifiable<Long> {
      */
     public ConfigParameter(String pName, String pValue) {
         super();
-        this.name = pName;
-        this.value = pValue;
+        name = pName;
+        value = pValue;
     }
 
     @Override
