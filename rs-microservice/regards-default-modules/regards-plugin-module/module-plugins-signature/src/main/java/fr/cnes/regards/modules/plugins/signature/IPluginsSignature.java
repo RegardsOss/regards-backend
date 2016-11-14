@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
@@ -114,7 +114,7 @@ public interface IPluginsSignature {
      * 
      * @return the {@link PluginConfiguration} of the plugin
      * 
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      * 
      */
@@ -122,7 +122,7 @@ public interface IPluginsSignature {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(@PathVariable("pluginId") String pPluginId,
-            @PathVariable("configId") Long pConfigId) throws EntityNotFoundException;
+            @PathVariable("configId") Long pConfigId) throws ModuleEntityNotFoundException;
 
     /**
      * Update a {@link PluginConfiguration} of a specified plugin.
@@ -138,7 +138,7 @@ public interface IPluginsSignature {
      * 
      * @return the {@link PluginConfiguration} of the plugin.
      * 
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      * @throws InvalidValueException
      *             the {@link PluginConfiguration} is incoherent with the path parameter
@@ -149,7 +149,7 @@ public interface IPluginsSignature {
     @ResponseBody
     ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(@PathVariable("pluginId") String pPluginId,
             @PathVariable("configId") Long pConfigId, @Valid @RequestBody PluginConfiguration pPluginConfiguration)
-            throws EntityNotFoundException, InvalidValueException;
+            throws ModuleEntityNotFoundException, InvalidValueException;
 
     /**
      * Delete a {@link PluginConfiguration}.
@@ -162,13 +162,13 @@ public interface IPluginsSignature {
      * 
      * @return void
      * 
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      */
     @RequestMapping(value = "/plugins/{pluginId}/config/{configId}", method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") String pPluginId,
-            @PathVariable("configId") Long pConfigId) throws EntityNotFoundException;
+            @PathVariable("configId") Long pConfigId) throws ModuleEntityNotFoundException;
 
 }

@@ -17,7 +17,7 @@ public final class IterableUtils {
     public static <T> List<T> toList(final Iterable<T> pIterable) {
         List<T> target = new ArrayList<>();
         if (pIterable != null) {
-            pIterable.forEach(target::add);
+            pIterable.forEach (target::add);
         }
         return target;
     }

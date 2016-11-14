@@ -226,7 +226,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         }
 
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
+        expectations.add(status().isNotFound());
 
         // Update the added PluginConfiguration
         performDefaultPut(apiPluginsOneConfigId, aPluginConfiguration, expectations,
