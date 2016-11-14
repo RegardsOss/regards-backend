@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.dao.EmptyResultDataAccessException;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -26,16 +27,17 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * Unit testing of {@link PluginService}.
  *
  * @author Christophe Mertz
+ * @author Sébastien Binda
  */
 public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
-     * 
+     *
      */
     private IPluginConfigurationRepository pluginConfRepositoryMocked;
 
     /**
-     * 
+     *
      */
     private IPluginService pluginServiceMocked;
 
@@ -51,7 +53,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Get an unsaved {@link PluginConfiguration}.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -65,21 +67,24 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Delete an unsaved {@link PluginConfiguration}.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
+     * @throws ModuleEntityNotFoundException
+     *             throw if an error occurs
      */
-    @Test(expected = PluginUtilsException.class)
-    public void deleteAPluginConfigurationUnknown() throws PluginUtilsException {
+    @Test(expected = ModuleEntityNotFoundException.class)
+    public void deleteAPluginConfigurationUnknown() throws PluginUtilsException, ModuleEntityNotFoundException {
         final Long aPluginId = 56789L;
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginId)).thenReturn(false);
         Mockito.doThrow(EmptyResultDataAccessException.class).when(pluginConfRepositoryMocked).delete(aPluginId);
         pluginServiceMocked.deletePluginConfiguration(aPluginId);
+        Assert.fail("There must be an exception thrown");
     }
 
     /**
      * Save a null {@link PluginConfiguration}.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -91,7 +96,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a {@link PluginConfiguration} without pluginId attribute.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -105,7 +110,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a {@link PluginConfiguration} without priorityOrder attribute.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -119,7 +124,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a {@link PluginConfiguration} without priorityOrder attribute.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -133,7 +138,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a {@link PluginConfiguration} without parameters.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -151,12 +156,14 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Update an unsaved {@link PluginConfiguration}
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
+     * @throws ModuleEntityNotFoundException
+     *             test error
      */
-    @Test(expected = PluginUtilsException.class)
-    public void updateAPluginConfigurationUnknown() throws PluginUtilsException {
+    @Test(expected = ModuleEntityNotFoundException.class)
+    public void updateAPluginConfigurationUnknown() throws PluginUtilsException, ModuleEntityNotFoundException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         final Long aPluginId = 999L;
         aPluginConfiguration.setId(aPluginId);
@@ -181,7 +188,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
      * parameter.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -207,7 +214,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Error to get a plugin with a configuration that is not the most priority.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -238,7 +245,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Error to get a plugin with a configuration that is not active.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */

@@ -14,6 +14,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -28,6 +29,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * Unit testing of {@link PluginService}.
  *
  * @author Christophe Mertz
+ * @author Sébastien Binda
  */
 public class PluginServiceTest extends PluginServiceUtility {
 
@@ -37,12 +39,12 @@ public class PluginServiceTest extends PluginServiceUtility {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginServiceTest.class);
 
     /**
-     * 
+     *
      */
     private IPluginConfigurationRepository pluginConfRepositoryMocked;
 
     /**
-     * 
+     *
      */
     private IPluginService pluginServiceMocked;
 
@@ -96,7 +98,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         try {
             plugins = pluginServiceMocked.getPluginsByType(Class.forName(aClass));
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             Assert.fail();
         }
 
@@ -120,7 +122,7 @@ public class PluginServiceTest extends PluginServiceUtility {
             final PluginConfiguration pCon = pluginServiceMocked.getPluginConfiguration(aPluginConfiguration.getId());
             Assert.assertEquals(pCon.getLabel(), aPluginConfiguration.getLabel());
 
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
     }
@@ -135,7 +137,7 @@ public class PluginServiceTest extends PluginServiceUtility {
             Mockito.when(pluginConfRepositoryMocked.exists(aPlugnId)).thenReturn(true);
             pluginServiceMocked.deletePluginConfiguration(aPlugnId);
             Mockito.verify(pluginConfRepositoryMocked).delete(aPlugnId);
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException | ModuleEntityNotFoundException e) {
             Assert.fail();
         }
     }
@@ -157,16 +159,19 @@ public class PluginServiceTest extends PluginServiceUtility {
             Assert.assertEquals(aPluginConfiguration.isActive(), savedPluginConfiguration.isActive());
             Assert.assertEquals(aPluginConfiguration.getParameters().size(),
                                 savedPluginConfiguration.getParameters().size());
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
     }
 
     /**
      * Update a {@link PluginConfiguration}.
+     *
+     * @throws ModuleEntityNotFoundException
+     *             test error
      */
     @Test
-    public void updateAPluginConfiguration() {
+    public void updateAPluginConfiguration() throws ModuleEntityNotFoundException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         final Long aPluginId = 890L;
         aPluginConfiguration.setId(aPluginId);
@@ -179,7 +184,7 @@ public class PluginServiceTest extends PluginServiceUtility {
             final PluginConfiguration pCon = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
             Assert.assertEquals(pCon.getLabel(), aPluginConfiguration.getLabel());
             Assert.assertEquals(pCon.getPluginId(), aPluginConfiguration.getPluginId());
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
     }
@@ -220,7 +225,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * Get the first plugin of a specific type
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -249,7 +254,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * Get the first plugin of a specific type with a specific parameter
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -285,7 +290,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
      * parameter.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -310,7 +315,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * Get the first plugin of a specific type with a dynamic parameter. Set a value for the dynamic parameter.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -341,7 +346,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
      * parameter.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -367,7 +372,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * Get the first plugin with the configuration the most priority.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
