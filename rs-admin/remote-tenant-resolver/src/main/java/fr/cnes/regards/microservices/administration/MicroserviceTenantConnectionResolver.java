@@ -9,7 +9,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.netflix.hystrix.exception.HystrixRuntimeException;
@@ -19,7 +18,6 @@ import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResol
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -123,16 +121,21 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
      */
     private ProjectConnection getProjectConnection(final String pProjectName, final String pMicroserviceName) {
         ProjectConnection projectConnection = null;
-        try {
-            final ResponseEntity<Resource<ProjectConnection>> response = projectConnectionClient
-                    .retrieveProjectConnection(pProjectName, microserviceName);
-            if (response.getStatusCode().equals(HttpStatus.OK)) {
+
+        final ResponseEntity<Resource<ProjectConnection>> response = projectConnectionClient
+                .retrieveProjectConnection(pProjectName, microserviceName);
+        switch (response.getStatusCode()) {
+            case OK:
                 projectConnection = response.getBody().getContent();
-            }
-        } catch (final EntityNotFoundException e) {
-            LOG.error(e.getMessage(), e);
-            LOG.error(String.format("No database connection found for project %s", pProjectName));
+                break;
+            case NOT_FOUND:
+                LOG.error(String.format("No database connection found for project %s", pProjectName));
+                break;
+            default:
+                LOG.error(String.format("Error getting  database connection for project %s", pProjectName));
+                break;
         }
+
         return projectConnection;
     }
 

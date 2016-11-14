@@ -19,8 +19,8 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectConnectionService;
@@ -36,7 +36,8 @@ import fr.cnes.regards.modules.project.signature.IProjectConnectionSignature;
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 public class ProjectConnectionController
         implements IResourceController<ProjectConnection>, IProjectConnectionSignature {
 
@@ -63,51 +64,79 @@ public class ProjectConnectionController
     }
 
     @Override
-    @ResourceAccess(description = "retrieve a project connection associated to a given project and a given microservice")
+    @ResourceAccess(
+            description = "retrieve a project connection associated to a given project and a given microservice")
     public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
             @PathVariable("project_name") final String pProjectName,
-            @PathVariable("microservice") final String pMicroService) throws EntityNotFoundException {
+            @PathVariable("microservice") final String pMicroService) {
 
-        final ResponseEntity<Resource<ProjectConnection>> response;
-        final ProjectConnection pConn = projectConnectionService.retrieveProjectConnection(pProjectName, pMicroService);
-
-        if (pConn != null) {
-            response = ResponseEntity.ok(toResource(pConn));
-        } else {
+        ResponseEntity<Resource<ProjectConnection>> response;
+        try {
+            final ProjectConnection pConn = projectConnectionService.retrieveProjectConnection(pProjectName,
+                                                                                               pMicroService);
+            if (pConn != null) {
+                response = ResponseEntity.ok(toResource(pConn));
+            } else {
+                response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (final ModuleEntityNotFoundException e) {
+            LOG.error(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
         return response;
     }
 
     @Override
     @ResourceAccess(description = "create a new project connection")
     public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
-            @Valid @RequestBody final ProjectConnection pProjectConnection) throws EntityException {
-        final ProjectConnection pConn = projectConnectionService.createProjectConnection(pProjectConnection);
-        return new ResponseEntity<>(toResource(pConn), HttpStatus.CREATED);
+            @Valid @RequestBody final ProjectConnection pProjectConnection) {
+        ResponseEntity<Resource<ProjectConnection>> response;
+        try {
+            final ProjectConnection pConn = projectConnectionService.createProjectConnection(pProjectConnection);
+            response = new ResponseEntity<>(toResource(pConn), HttpStatus.CREATED);
+        } catch (final ModuleException e) {
+            LOG.error(e.getMessage(), e);
+            response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return response;
     }
 
     @Override
     @ResourceAccess(description = "update a project connection")
     public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
-            @Valid @RequestBody final ProjectConnection pProjectConnection) throws EntityException {
-        final ProjectConnection pConn = projectConnectionService.updateProjectConnection(pProjectConnection);
-        return ResponseEntity.ok(toResource(pConn));
+            @Valid @RequestBody final ProjectConnection pProjectConnection) {
+        ResponseEntity<Resource<ProjectConnection>> response;
+        try {
+            final ProjectConnection pConn = projectConnectionService.updateProjectConnection(pProjectConnection);
+            response = ResponseEntity.ok(toResource(pConn));
+        } catch (final ModuleEntityNotFoundException e) {
+            LOG.error(e.getMessage(), e);
+            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return response;
     }
 
     @Override
     @ResourceAccess(description = "delete a project connection")
     public ResponseEntity<Void> deleteProjectConnection(@PathVariable("project_name") final String pProjectName,
-            @PathVariable("microservice") final String pMicroservice) throws EntityException {
+            @PathVariable("microservice") final String pMicroservice) {
 
-        final ResponseEntity<Void> response;
-        final ProjectConnection pConn = projectConnectionService.retrieveProjectConnection(pProjectName, pMicroservice);
-        if (pConn != null) {
-            projectConnectionService.deleteProjectConnection(pConn.getId());
-            response = new ResponseEntity<>(HttpStatus.OK);
-        } else {
+        ResponseEntity<Void> response;
+        try {
+            final ProjectConnection pConn = projectConnectionService.retrieveProjectConnection(pProjectName,
+                                                                                               pMicroservice);
+            if (pConn != null) {
+                projectConnectionService.deleteProjectConnection(pConn.getId());
+                response = new ResponseEntity<>(HttpStatus.OK);
+            } else {
+                response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (final ModuleEntityNotFoundException e) {
+            LOG.error(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
         return response;
     }
 

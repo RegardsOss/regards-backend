@@ -7,9 +7,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -143,16 +144,16 @@ public class ProjectConnectionServiceTest {
                 COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL);
         try {
             projectConnectionService.createProjectConnection(connection);
-        } catch (final AlreadyExistingException | EntityNotFoundException e) {
+        } catch (final ModuleException e) {
             Assert.fail(e.getMessage());
         }
 
         try {
             projectConnectionService.createProjectConnection(connection);
             Assert.fail("Impossible to add two project connection for same project and microservice");
-        } catch (final AlreadyExistingException e) {
+        } catch (final ModuleAlreadyExistsException e) {
             // Noting to do
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleException e) {
             Assert.fail(e.getMessage());
         }
     }
@@ -170,19 +171,19 @@ public class ProjectConnectionServiceTest {
         ProjectConnection connection = null;
         try {
             connection = projectConnectionService.retrieveProjectConnection(PROJECT_TEST_2, MS_TEST_2);
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleEntityNotFoundException e) {
             Assert.fail(e.getMessage());
         }
         try {
             projectConnectionService.deleteProjectConnection(connection.getId());
-        } catch (final EntityNotFoundException e1) {
+        } catch (final ModuleEntityNotFoundException e1) {
             Assert.fail(e1.getMessage());
         }
 
         try {
             connection = projectConnectionService.retrieveProjectConnection(PROJECT_TEST_2, MS_TEST_1);
             Assert.fail("Deletion error. Project connection always exists.");
-        } catch (final EntityNotFoundException e1) {
+        } catch (final ModuleEntityNotFoundException e1) {
             // Nothing to do
         }
 
@@ -190,7 +191,7 @@ public class ProjectConnectionServiceTest {
             final long id = 5556L;
             projectConnectionService.deleteProjectConnection(id);
             Assert.fail("Error the deletion should be in error. The entity doest not exists.");
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleEntityNotFoundException e) {
             // Nothing to do
         }
 
@@ -212,14 +213,14 @@ public class ProjectConnectionServiceTest {
         ProjectConnection connection = null;
         try {
             connection = projectConnectionService.retrieveProjectConnection(PROJECT_TEST_1, MS_TEST_1);
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleEntityNotFoundException e) {
             Assert.fail(e.getMessage());
         }
         connection.setUserName(updateUserName);
         try {
             connection = projectConnectionService.updateProjectConnection(connection);
             Assert.assertTrue("Error updating project connection.", connection.getUserName().equals(updateUserName));
-        } catch (final EntityNotFoundException e1) {
+        } catch (final ModuleEntityNotFoundException e1) {
             Assert.fail(e1.getMessage());
         }
 
@@ -230,7 +231,7 @@ public class ProjectConnectionServiceTest {
         try {
             connection = projectConnectionService.updateProjectConnection(connection);
             Assert.fail(errorUpdate);
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleEntityNotFoundException e) {
             // Nothing to do
         }
 
@@ -242,7 +243,7 @@ public class ProjectConnectionServiceTest {
         try {
             connection = projectConnectionService.updateProjectConnection(connection);
             Assert.fail(errorUpdate);
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleEntityNotFoundException e) {
             // Nothing to do
         }
 

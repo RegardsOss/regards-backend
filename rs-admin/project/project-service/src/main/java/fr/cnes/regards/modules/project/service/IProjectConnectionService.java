@@ -7,8 +7,8 @@
 package fr.cnes.regards.modules.project.service;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
@@ -29,14 +29,14 @@ public interface IProjectConnectionService {
      * @param pProjectConnection
      *            ProjectConnection to create
      * @return Created ProjectConnection
-     * @throws EntityException
+     * @throws ModuleException
      *             <br/>
      *             {@link AlreadyExistingException} Project connection already exists for couple (project name/
      *             microservice name)<br/>
-     *             {@link AlreadyExistingException} EntityNotFoundException The Project referenced doesn't exists
+     *             {@link AlreadyExistingException} ModuleEntityNotFoundException The Project referenced doesn't exists
      * @since 1.0-SNAPSHOT
      */
-    ProjectConnection createProjectConnection(ProjectConnection pProjectConnection) throws EntityException;
+    ProjectConnection createProjectConnection(ProjectConnection pProjectConnection) throws ModuleException;
 
     /**
      *
@@ -44,12 +44,12 @@ public interface IProjectConnectionService {
      *
      * @param pProjectConnectionId
      *            ProjectConnection Identifier
-     * @throws EntityException
+     * @throws ModuleException
      *             <br/>
-     *             {@link EntityNotFoundException} The ProjectConnection to delete doesn't exists
+     *             {@link ModuleEntityNotFoundException} The ProjectConnection to delete doesn't exists
      * @since 1.0-SNAPSHOT
      */
-    void deleteProjectConnection(Long pProjectConnectionId) throws EntityException;
+    void deleteProjectConnection(Long pProjectConnectionId) throws ModuleEntityNotFoundException;
 
     /**
      *
@@ -58,12 +58,13 @@ public interface IProjectConnectionService {
      * @param pProjectConnection
      *            Project connection to update
      * @return ProjectConnection updated
-     * @throws EntityException
+     * @throws ModuleException
      *             <br/>
-     *             {@link EntityNotFoundException} Project connection or referenced project doesn't exists
+     *             {@link ModuleEntityNotFoundException} Project connection or referenced project doesn't exists
      * @since 1.0-SNAPSHOT
      */
-    ProjectConnection updateProjectConnection(ProjectConnection pProjectConnection) throws EntityException;
+    ProjectConnection updateProjectConnection(ProjectConnection pProjectConnection)
+            throws ModuleEntityNotFoundException;
 
     /**
      *
@@ -74,11 +75,11 @@ public interface IProjectConnectionService {
      * @param pMicroService
      *            microservice name
      * @return ProjectConnection
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             ProjectConnection doesn't exists
      * @since 1.0-SNAPSHOT
      */
     ProjectConnection retrieveProjectConnection(final String pProjectName, String pMicroService)
-            throws EntityNotFoundException;
+            throws ModuleEntityNotFoundException;
 
 }
