@@ -76,10 +76,10 @@ public class PluginDomainTest extends PluginDomainUtility {
     @Test
     public void pluginConfigurationParameters() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
-        final String parameterName = "paramWithPluginConf";
+        final String parameterName = "paramWithPluginConf1";
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameterPluginConfiguration(parameterName, aPluginConfiguration)
-                .addParameter("paramIdentifier", BLUE).getParameters();
+                .addParameter("paramIdentifier1", BLUE).getParameters();
         parameters.get(0).setId(AN_ID);
 
         final PluginConfiguration pluginConfigurationParameter = new PluginConfiguration();
@@ -94,6 +94,36 @@ public class PluginDomainTest extends PluginDomainUtility {
         Assert.assertEquals(plgConf.getVersion(), aPluginConfiguration.getVersion());
         Assert.assertEquals(plgConf.getParameters().get(0).getId(),
                             aPluginConfiguration.getParameters().get(0).getId());
+        
+        plgConf.logParams();
+    }
+
+    @Test
+    public void pluginConfigurationGetUnknowParameterName() {
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
+        final String parameterName = "paramWithPluginConf2";
+        final List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameterPluginConfiguration(parameterName, aPluginConfiguration)
+                .addParameter("paramIdentifier2", BLUE).getParameters();
+        parameters.get(0).setId(AN_ID);
+
+        final PluginConfiguration pluginConfigurationParameter = new PluginConfiguration();
+        pluginConfigurationParameter.setParameters(parameters);
+
+        final PluginConfiguration plgConf = pluginConfigurationParameter
+                .getParameterConfiguration("unknown-parameter-name");
+
+        Assert.assertNull(plgConf);
+    }
+
+    @Test
+    public void pluginConfigurationGetUnknowParameterName2() {
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
+
+        final PluginConfiguration plgConf = aPluginConfiguration
+                .getParameterConfiguration("other-unknown-parameter-name");
+
+        Assert.assertNull(plgConf);
     }
 
     /**
