@@ -31,6 +31,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * Unit testing of {@link PluginService}.
  *
  * @author Christophe Mertz
+ * @author Sébastien Binda
  */
 public class PluginServiceTest extends PluginServiceUtility {
 
@@ -105,7 +106,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         try {
             plugins = pluginServiceMocked.getPluginsByType(Class.forName(aClass));
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             Assert.fail();
         }
 
@@ -131,7 +132,7 @@ public class PluginServiceTest extends PluginServiceUtility {
             final PluginConfiguration aConf = pluginServiceMocked.getPluginConfiguration(aPluginConfiguration.getId());
             Assert.assertEquals(aConf.getLabel(), aPluginConfiguration.getLabel());
 
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
     }
@@ -148,7 +149,7 @@ public class PluginServiceTest extends PluginServiceUtility {
             Mockito.when(pluginConfRepositoryMocked.exists(aPlugnId)).thenReturn(true);
             pluginServiceMocked.deletePluginConfiguration(aPlugnId);
             Mockito.verify(pluginConfRepositoryMocked).delete(aPlugnId);
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException | ModuleEntityNotFoundException e) {
             Assert.fail();
         }
     }
@@ -172,18 +173,21 @@ public class PluginServiceTest extends PluginServiceUtility {
             Assert.assertEquals(aPluginConfiguration.isActive(), savedPluginConfiguration.isActive());
             Assert.assertEquals(aPluginConfiguration.getParameters().size(),
                                 savedPluginConfiguration.getParameters().size());
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
     }
 
     /**
      * Update a {@link PluginConfiguration}.
+     *
+     * @throws ModuleEntityNotFoundException
+     *             test error
      */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_SYS_ARC_100"), @Requirement("REGARDS_DSL_CMP_PLG_100") })
     @Purpose("Update a plugin configuration identified by an identifier")
-    public void updateAPluginConfiguration() {
+    public void updateAPluginConfiguration() throws ModuleEntityNotFoundException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
         try {
