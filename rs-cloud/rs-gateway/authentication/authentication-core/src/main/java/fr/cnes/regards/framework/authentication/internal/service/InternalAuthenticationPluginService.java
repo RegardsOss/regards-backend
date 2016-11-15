@@ -90,13 +90,8 @@ public class InternalAuthenticationPluginService implements IInternalAuthenticat
     }
 
     @Override
-    public void deleteIdentityProviderPlugin(final Long pPluginConfigurationId) throws ModuleException {
-        try {
-            pluginService.deletePluginConfiguration(pPluginConfigurationId);
-        } catch (final PluginUtilsException e) {
-            LOG.error(e.getMessage(), e);
-            throw new ModuleException(e.getMessage());
-        }
+    public void deleteIdentityProviderPlugin(final Long pPluginConfigurationId) throws ModuleEntityNotFoundException {
+        pluginService.deletePluginConfiguration(pPluginConfigurationId);
     }
 
 }
