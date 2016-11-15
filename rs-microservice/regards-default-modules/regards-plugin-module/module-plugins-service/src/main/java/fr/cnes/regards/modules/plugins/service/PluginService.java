@@ -104,7 +104,7 @@ public class PluginService implements IPluginService {
                     pluginAvailables.add(pValue);
                 }
             } catch (final ClassNotFoundException e) {
-                LOGGER.error("cannot instanciate the class : %s" + pValue.getPluginClassName());
+                LOGGER.error("cannot instanciate the class : %s" + pValue.getPluginClassName(), e);
             }
         });
 
