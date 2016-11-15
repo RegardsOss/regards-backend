@@ -23,6 +23,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         final PluginMetaData pluginMetaData = getPluginMetaData();
         Assert.assertNotNull(pluginMetaData);
         Assert.assertNotNull(pluginConfiguration);
+        Assert.assertNotNull(pluginConfiguration.getPluginClassName());
 
         // Get an existing parameter value
         final String value = pluginConfiguration
@@ -32,6 +33,8 @@ public class PluginDomainTest extends PluginDomainUtility {
         // Get an unknown parameter value
         final String unknowValue = pluginConfiguration.getParameterValue("unknon");
         Assert.assertNull(unknowValue);
+
+        pluginConfiguration.logParams();
 
     }
 
@@ -124,7 +127,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         Assert.assertEquals(RED, plgParam.getName());
         Assert.assertEquals(GREEN, plgParam.getValue());
         Assert.assertEquals(false, plgParam.isDynamic().booleanValue());
-        
+
         // test dynamics==null
         Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), 0);
 
@@ -132,7 +135,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         final List<PluginDynamicValue> dynValues = new ArrayList<>();
         plgParam.setDynamicsValues(dynValues);
         Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), dynValues.size());
-        
+
         dynValues.add(new PluginDynamicValue(BLUE));
         dynValues.add(new PluginDynamicValue(GREEN));
         final PluginDynamicValue plgDynValue = new PluginDynamicValue();

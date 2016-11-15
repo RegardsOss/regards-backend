@@ -85,6 +85,7 @@ public class PluginParameter implements IIdentifiable<Long> {
      */
     public PluginParameter() {
         super();
+        name="undefined";
     }
 
     /**

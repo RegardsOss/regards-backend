@@ -89,6 +89,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Requirement("REGARDS_DSL_CMZ_PLG_200")
     @Purpose("Load all plugin's metada for a specific plugin type identified by a Class.")
     public void getPluginOneType() {
+        pluginServiceMocked.addPluginPackage("fr.cnes.regards.mypackage");
         final List<PluginMetaData> plugins = pluginServiceMocked.getPluginsByType(IComplexInterfacePlugin.class);
 
         Assert.assertNotNull(plugins);
