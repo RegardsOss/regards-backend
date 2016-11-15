@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import fr.cnes.regards.framework.authentication.internal.RoleSysFilter;
+import fr.cnes.regards.framework.authentication.internal.filter.RoleSysFilter;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
