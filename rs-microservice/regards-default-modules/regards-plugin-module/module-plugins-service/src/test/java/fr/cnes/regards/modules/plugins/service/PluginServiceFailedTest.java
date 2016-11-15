@@ -13,6 +13,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.dao.EmptyResultDataAccessException;
 
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -243,6 +246,8 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      *             throw if an error occurs
      */
     @Test(expected = PluginUtilsException.class)
+    @Requirement("REGARDS_DSL_CMP_PLG_100")
+    @Purpose("Unable to load a plugin with a no active configuration")
     public void getPluginNotActiveConfiguration() throws PluginUtilsException {
 
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();

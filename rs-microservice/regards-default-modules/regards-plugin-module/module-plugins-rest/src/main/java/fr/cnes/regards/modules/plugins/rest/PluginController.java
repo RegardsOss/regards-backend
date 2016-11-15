@@ -75,7 +75,7 @@ public class PluginController implements IPluginsSignature {
             try {
                 metadaDatas = pluginService.getPluginsByType(Class.forName(pPluginType));
             } catch (ClassNotFoundException e) {
-                LOGGER.error(e.getMessage());
+                LOGGER.error(e.getMessage(),e);
                 throw new InvalidValueException(e.getMessage());
             }
         }

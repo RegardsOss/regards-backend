@@ -75,7 +75,7 @@ public class PluginDomainUtility {
     /**
      * isActive constant {@link String}
      */
-    protected static final String PARAM_IS_ACTIVE = "isActive";
+    protected static final String PARAM_IS_ACTIVE = "isBoolean";
 
     /**
      * A plugin identifier constant {@link String}

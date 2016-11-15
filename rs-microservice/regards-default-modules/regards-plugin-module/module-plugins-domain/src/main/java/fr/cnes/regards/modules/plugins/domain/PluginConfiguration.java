@@ -20,6 +20,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
@@ -34,6 +38,11 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(PluginConfiguration.class);
+
+    /**
      * Unique id
      */
     @Id
@@ -44,6 +53,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Unique identifier of the plugin. This id is the id defined in the "@Plugin" annotation of the plugin
      * implementation class.
      */
+    @NotNull
     private String pluginId;
 
     /**
@@ -86,6 +96,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public PluginConfiguration() {
         super();
+        pluginId="undefined";
     }
 
     /**
@@ -168,6 +179,31 @@ public class PluginConfiguration implements IIdentifiable<Long> {
             }
         }
         return value;
+    }
+
+    
+    /**
+     * Log the parameters of the {@link PluginConfiguration}
+     */
+    public void logParams() {
+        LOGGER.info("===> parameters <===");
+        LOGGER.info("  ---> number of dynamic parameters : "
+                + this.getParameters().stream().filter(p -> p.isDynamic()).count());
+        this.getParameters().stream().filter(p -> p.isDynamic()).forEach(p -> {
+            LOGGER.info("  ---> dynamic parameter : " + p.getName() + "-def val:" + p.getValue());
+            if (!p.getDynamicsValuesAsString().isEmpty()) {
+                p.getDynamicsValuesAsString().forEach(v -> LOGGER.info("     --> val=" + v));
+            }
+        });
+        
+        LOGGER.info("  ---> number of no dynamic parameters : "
+                + this.getParameters().stream().filter(p -> !p.isDynamic()).count());
+        this.getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> {
+            LOGGER.info("  ---> parameter : " + p.getName() + "-def val:" + p.getValue());
+            if (!p.getDynamicsValuesAsString().isEmpty()) {
+                p.getDynamicsValuesAsString().forEach(v -> LOGGER.info("     --> val=" + v));
+            }
+        });
     }
 
     public final String getLabel() {
