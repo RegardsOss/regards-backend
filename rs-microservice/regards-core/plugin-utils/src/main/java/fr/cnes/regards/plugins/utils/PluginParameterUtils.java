@@ -139,11 +139,9 @@ public final class PluginParameterUtils {
                     /*
                      * The type of the field is unknown
                      */
-                    if (LOGGER.isWarnEnabled()) {
-                        LOGGER.warn(String.format(
-                                                  "Annotation <%s> not applicable for field type <%s>. System will ignore it.",
-                                                  PluginParameter.class.getName(), field.getType()));
-                    }
+                    LOGGER.warn(String.format(
+                                              "Annotation <%s> not applicable for field type <%s>. System will ignore it.",
+                                              PluginParameter.class.getName(), field.getType()));
                 }
             }
         }

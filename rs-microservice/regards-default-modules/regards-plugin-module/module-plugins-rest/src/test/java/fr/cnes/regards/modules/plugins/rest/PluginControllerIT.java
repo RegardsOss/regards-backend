@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -214,13 +215,34 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
-    public void updatePluginConfigurationErrorPluginId() {
+    public void updatePluginConfigurationErrorId() {
         // Add a PluginConfiguration with the PluginService
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL, PARAMETERS,
                 0);
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
+        } catch (PluginUtilsException e) {
+            Assert.fail();
+        }
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNotFound());
+
+        // Update the added PluginConfiguration
+        performDefaultPut(apiPluginsOneConfigId, aPluginConfiguration, expectations,
+                          "unable to update a plugin configuration", PLUGIN_ID, 9999L);
+    }
+    
+    @Test
+    @DirtiesContext
+    public void updatePluginConfigurationErrorPluginId() {
+        // Add a PluginConfiguration with the PluginService
+        PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL, PARAMETERS,
+                0);
+        try {
+            aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
+            aPluginConfiguration.setPluginId("hello-toulouse");
         } catch (PluginUtilsException e) {
             Assert.fail();
         }
@@ -272,14 +294,36 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
-    public void savePluginConfigurationError() {
+    public void savePluginConfigurationErrorPriorityOrderNull() {
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 PARAMETERS, 0);
 
-        aPluginConfiguration.setPluginId(null);
+        aPluginConfiguration.setPriorityOrder(null);
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isBadRequest());
         performDefaultPost(apiPluginsAllConfig, aPluginConfiguration, expectations,
+                           "unable to save a plugin configuration", PLUGIN_ID);
+    }
+
+    @Test
+    @DirtiesContext
+    public void savePluginConfigurationErrorVersionNull() {
+        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
+                PARAMETERS, 0);
+
+        aPluginConfiguration.setVersion(null);
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isBadRequest());
+        performDefaultPost(apiPluginsAllConfig, aPluginConfiguration, expectations,
+                           "unable to save a plugin configuration", PLUGIN_ID);
+    }
+    
+    @Test
+    @DirtiesContext
+    public void savePluginConfigurationErrorConfNull() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isServiceUnavailable());
+        performDefaultPost(apiPluginsAllConfig, null, expectations,
                            "unable to save a plugin configuration", PLUGIN_ID);
     }
 
@@ -296,18 +340,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
         }
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
-        performDefaultDelete(apiPluginsOneConfigId, expectations, "unable to delete a plugin configuration", PLUGIN_ID,
-                             aPluginConfiguration.getId());
-    }
-
-    @Test
-    @DirtiesContext
-    public void deletePluginConfigurationError() {
-        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
-                PARAMETERS, 0);
-        aPluginConfiguration.setId(AN_ID);
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isNotFound());
         performDefaultDelete(apiPluginsOneConfigId, expectations, "unable to delete a plugin configuration", PLUGIN_ID,
                              aPluginConfiguration.getId());
     }

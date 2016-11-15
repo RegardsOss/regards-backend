@@ -32,7 +32,6 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * Controller for REST Access to Plugin entities
  *
  * @author Christophe Mertz
- * @author Sébastien Binda
  *
  */
 @RestController
@@ -137,7 +136,7 @@ public class PluginController implements IPluginsSignature {
             pluginConfiguration = pluginService.getPluginConfiguration(pConfigId);
         } catch (final PluginUtilsException e) {
             LOGGER.error("Cannot get the plugin configuration : <" + pConfigId + ">", e);
-            throw new ModuleEntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
+            throw new ModuleEntityNotFoundException(pConfigId, PluginConfiguration.class);
         }
         final Resource<PluginConfiguration> resource = new Resource<>(pluginConfiguration);
 
@@ -161,7 +160,7 @@ public class PluginController implements IPluginsSignature {
             pluginConfiguration = pluginService.updatePluginConfiguration(pPluginConfiguration);
         } catch (final PluginUtilsException e) {
             LOGGER.error("Cannot update the plugin configuration : <" + pConfigId + ">", e);
-            throw new ModuleEntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
+            throw new ModuleEntityNotFoundException(pConfigId, PluginConfiguration.class);
         }
         final Resource<PluginConfiguration> resource = new Resource<>(pluginConfiguration);
 
@@ -171,12 +170,7 @@ public class PluginController implements IPluginsSignature {
     @Override
     public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") final String pPluginId,
             @PathVariable("configId") final Long pConfigId) throws ModuleEntityNotFoundException {
-        try {
-            pluginService.deletePluginConfiguration(pConfigId);
-        } catch (final PluginUtilsException e) {
-            LOGGER.error("Cannot delete the plugin configuration : <" + pConfigId + ">", e);
-            throw new ModuleEntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
-        }
+        pluginService.deletePluginConfiguration(pConfigId);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

@@ -110,12 +110,10 @@ public interface IPluginService {
      * @param pPluginId
      *            a specific configuration
      * @return
-     * @throws PluginUtilsException
-     *             throw if an error occurs
      * @throws ModuleEntityNotFoundException
      *             Entity to delete does not exists
      */
-    void deletePluginConfiguration(Long pPluginId) throws PluginUtilsException, ModuleEntityNotFoundException;
+    void deletePluginConfiguration(Long pPluginId) throws ModuleEntityNotFoundException;
 
     /**
      *

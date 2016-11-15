@@ -14,6 +14,8 @@ import org.mockito.Mockito;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -32,12 +34,12 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
 public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
-     *
+     * 
      */
     private IPluginConfigurationRepository pluginConfRepositoryMocked;
 
     /**
-     *
+     * 
      */
     private IPluginService pluginServiceMocked;
 
@@ -53,7 +55,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Get an unsaved {@link PluginConfiguration}.
-     *
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -67,7 +69,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Delete an unsaved {@link PluginConfiguration}.
-     *
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      * @throws ModuleEntityNotFoundException
@@ -84,7 +86,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a null {@link PluginConfiguration}.
-     *
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -96,7 +98,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a {@link PluginConfiguration} without pluginId attribute.
-     *
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -110,7 +112,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a {@link PluginConfiguration} without priorityOrder attribute.
-     *
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -124,7 +126,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a {@link PluginConfiguration} without priorityOrder attribute.
-     *
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -138,7 +140,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a {@link PluginConfiguration} without parameters.
-     *
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -156,7 +158,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Update an unsaved {@link PluginConfiguration}
-     *
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      * @throws ModuleEntityNotFoundException
@@ -188,7 +190,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
      * parameter.
-     *
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -214,7 +216,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Error to get a plugin with a configuration that is not the most priority.
-     *
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -245,11 +247,13 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Error to get a plugin with a configuration that is not active.
-     *
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
     @Test(expected = PluginUtilsException.class)
+    @Requirement("REGARDS_DSL_CMP_PLG_100")
+    @Purpose("Unable to load a plugin with a no active configuration")
     public void getPluginNotActiveConfiguration() throws PluginUtilsException {
 
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();

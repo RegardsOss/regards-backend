@@ -142,6 +142,7 @@ public interface IPluginsSignature {
      *
      * @throws ModuleEntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
+     * 
      * @throws InvalidValueException
      *             the {@link PluginConfiguration} is incoherent with the path parameter
      * @throws ModuleEntityNotFoundException
