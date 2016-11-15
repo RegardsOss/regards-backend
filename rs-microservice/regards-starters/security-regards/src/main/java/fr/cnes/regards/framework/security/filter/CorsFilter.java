@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  *
  * Add the allow origin in the response headers to allow CORS requests.
  *
- * @author sbinda
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public class CorsFilter extends OncePerRequestFilter {
@@ -51,6 +51,11 @@ public class CorsFilter extends OncePerRequestFilter {
     public static final String CONTROL_MAX_AGE = "Access-Control-Max-Age";
 
     /**
+     * Options request
+     */
+    public static final String OPTIONS_REQUEST_TYPE = "OPTIONS";
+
+    /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(CorsFilter.class);
@@ -58,7 +63,11 @@ public class CorsFilter extends OncePerRequestFilter {
     /**
      * Provider of authorities entities
      */
-    private final IAuthoritiesProvider authoritiesProvider;
+    private IAuthoritiesProvider authoritiesProvider = null;
+
+    public CorsFilter() {
+        super();
+    }
 
     public CorsFilter(final IAuthoritiesProvider pAuthoritiesProvider) {
         super();
@@ -67,6 +76,37 @@ public class CorsFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
+            final FilterChain pFilterChain) throws ServletException, IOException {
+
+        if ((SecurityContextHolder.getContext().getAuthentication() != null) && (authoritiesProvider != null)) {
+            doSecurizedFilter(pRequest, pResponse, pFilterChain);
+        } else {
+            allowCorsRequest(pRequest, pResponse, pFilterChain);
+        }
+
+        if (!OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
+            pFilterChain.doFilter(pRequest, pResponse);
+        }
+
+    }
+
+    /**
+     *
+     * Allow CORS Request only if authenticate user is autorized to.
+     *
+     * @param pRequest
+     *            Http request
+     * @param pResponse
+     *            Http response
+     * @param pFilterChain
+     *            Filter chain
+     * @throws ServletException
+     *             Servlet error
+     * @throws IOException
+     *             Internal error
+     * @since 1.0-SNAPSHOT
+     */
+    private void doSecurizedFilter(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
 
         // Get authorized ip associated to given role
@@ -82,22 +122,45 @@ public class CorsFilter extends OncePerRequestFilter {
                 access = access || authoritiesProvider.hasCorsRequestsAccess(role.getAuthority());
             }
             if (!access) {
-                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), String
-                        .format("[REGARDS CORS FILTER] Access denied for user %s", authentication.getUser().getName()));
+                if (OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
+                    pResponse.sendError(HttpStatus.UNAUTHORIZED.value(),
+                                        String.format("[REGARDS CORS FILTER] Access denied for user %s",
+                                                      authentication.getUser().getName()));
+                }
             } else {
                 LOG.info(String.format("[REGARDS CORS FILTER] Access granted for user %s",
                                        authentication.getUser().getName()));
-                pResponse.setHeader(ALLOW_ORIGIN, "*");
-                pResponse.setHeader(ALLOW_METHOD, "POST, PUT, GET, OPTIONS, DELETE");
-                pResponse.setHeader(ALLOW_HEADER, "authorization, content-type");
-                pResponse.setHeader(CONTROL_MAX_AGE, "3600");
-
-                if (!"OPTIONS".equals(pRequest.getMethod())) {
-                    pFilterChain.doFilter(pRequest, pResponse);
-                }
+                allowCorsRequest(pRequest, pResponse, pFilterChain);
             }
         } else {
-            pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS CORS FILTER] No Authority Role defined");
+            if (OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
+                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS CORS FILTER] No Authority Role defined");
+            }
         }
     }
+
+    /**
+     *
+     * Allow cors request
+     *
+     * @param pRequest
+     *            Http request
+     * @param pResponse
+     *            Http response
+     * @param pFilterChain
+     *            Filter chain
+     * @throws ServletException
+     *             Servlet error
+     * @throws IOException
+     *             Internal error
+     * @since 1.0-SNAPSHOT
+     */
+    private void allowCorsRequest(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
+            final FilterChain pFilterChain) throws IOException, ServletException {
+        pResponse.setHeader(ALLOW_ORIGIN, "*");
+        pResponse.setHeader(ALLOW_METHOD, "POST, PUT, GET, OPTIONS, DELETE");
+        pResponse.setHeader(ALLOW_HEADER, "authorization, content-type");
+        pResponse.setHeader(CONTROL_MAX_AGE, "3600");
+    }
+
 }
