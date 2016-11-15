@@ -170,12 +170,7 @@ public class PluginController implements IPluginsSignature {
     @Override
     public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") final String pPluginId,
             @PathVariable("configId") final Long pConfigId) throws ModuleEntityNotFoundException {
-        try {
-            pluginService.deletePluginConfiguration(pConfigId);
-        } catch (final PluginUtilsException e) {
-            LOGGER.error("Cannot delete the plugin configuration : <" + pConfigId + ">", e);
-            throw new ModuleEntityNotFoundException(pConfigId, PluginConfiguration.class);
-        }
+        pluginService.deletePluginConfiguration(pConfigId);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

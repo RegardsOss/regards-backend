@@ -165,8 +165,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public void deletePluginConfiguration(final Long pPluginId)
-            throws PluginUtilsException, ModuleEntityNotFoundException {
+    public void deletePluginConfiguration(final Long pPluginId) throws ModuleEntityNotFoundException {
         if (!pluginConfRepository.exists(pPluginId)) {
             LOGGER.error(String.format("Error while deleting the plugin configuration <%s>.", pPluginId));
             throw new ModuleEntityNotFoundException(pPluginId.toString(), PluginConfiguration.class);

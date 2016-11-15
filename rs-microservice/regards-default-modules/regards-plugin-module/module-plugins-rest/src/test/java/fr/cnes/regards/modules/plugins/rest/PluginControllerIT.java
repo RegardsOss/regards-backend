@@ -344,18 +344,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
                              aPluginConfiguration.getId());
     }
 
-    @Test
-    @DirtiesContext
-    public void deletePluginConfigurationError() {
-        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
-                PARAMETERS, 0);
-        aPluginConfiguration.setId(AN_ID);
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isNotFound());
-        performDefaultDelete(apiPluginsOneConfigId, expectations, "unable to delete a plugin configuration", PLUGIN_ID,
-                             aPluginConfiguration.getId());
-    }
-
     private PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());

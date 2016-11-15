@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -151,7 +152,25 @@ public class PluginServiceTest extends PluginServiceUtility {
             Mockito.when(pluginConfRepositoryMocked.exists(aPlugnId)).thenReturn(true);
             pluginServiceMocked.deletePluginConfiguration(aPlugnId);
             Mockito.verify(pluginConfRepositoryMocked).delete(aPlugnId);
-        } catch (final PluginUtilsException | ModuleEntityNotFoundException e) {
+        } catch (final ModuleEntityNotFoundException e) {
+            Assert.fail();
+        }
+    }
+    
+    /**
+     * Delete a {@link PluginConfiguration}.
+     */
+    @Test
+    @Ignore
+    @Requirement("REGARDS_DSL_SYS_ARC_100")
+    @Purpose("Delete a plugin configuration identified by an identifier")
+    public void deleteAPluginConfigurationError() {
+        final Long aPlugnId = 3457L;
+        try {
+            Mockito.when(pluginConfRepositoryMocked.exists(aPlugnId)).thenReturn(true);
+            pluginServiceMocked.deletePluginConfiguration(aPlugnId);
+            Mockito.verify(pluginConfRepositoryMocked).delete(aPlugnId);
+        } catch (final ModuleEntityNotFoundException e) {
             Assert.fail();
         }
     }
