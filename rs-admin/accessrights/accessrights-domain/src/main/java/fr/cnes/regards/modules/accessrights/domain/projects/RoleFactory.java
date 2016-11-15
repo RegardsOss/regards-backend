@@ -48,11 +48,6 @@ public class RoleFactory {
     private List<ResourcesAccess> permissions;
 
     /**
-     * Role associated project users
-     */
-    private List<ProjectUser> projectUsers;
-
-    /**
      * Role associated authorized IP addresses
      */
     private List<String> authorizedAddresses;
@@ -91,7 +86,6 @@ public class RoleFactory {
         name = forDefaultValues.getName();
         parentRole = forDefaultValues.getParentRole();
         permissions = forDefaultValues.getPermissions();
-        projectUsers = forDefaultValues.getProjectUsers();
         authorizedAddresses = forDefaultValues.getAuthorizedAddresses();
         isCorsRequestsAuthorized = forDefaultValues.isCorsRequestsAuthorized();
         corsRequestsAuthorizationEndDate = forDefaultValues.getCorsRequestsAuthorizationEndDate();
@@ -110,7 +104,6 @@ public class RoleFactory {
         toCreate.setName(name);
         toCreate.setParentRole(parentRole);
         toCreate.setPermissions(permissions);
-        toCreate.setProjectUsers(projectUsers);
         toCreate.setAuthorizedAddresses(authorizedAddresses);
         toCreate.setCorsRequestsAuthorized(isCorsRequestsAuthorized);
         toCreate.setCorsRequestsAuthorizationEndDate(corsRequestsAuthorizationEndDate);
@@ -259,16 +252,6 @@ public class RoleFactory {
      */
     public RoleFactory withPermissions(final List<ResourcesAccess> pPermissions) {
         permissions = pPermissions;
-        return this;
-    }
-
-    /**
-     * @param pProjectUsers
-     *            the projectUsers to set
-     * @return this for chaining
-     */
-    public RoleFactory withProjectUsers(final List<ProjectUser> pProjectUsers) {
-        projectUsers = pProjectUsers;
         return this;
     }
 

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -56,9 +57,10 @@ public class AccessRequestServiceStub implements IAccessRequestService {
      * @param pRoleRepository
      *            The role repository
      */
-    public AccessRequestServiceStub(final IAccountService pAccountService, final IRoleRepository pRoleRepository) {
+    public AccessRequestServiceStub(final IAccountService pAccountService, final IRoleRepository pRoleRepository,
+            final IProjectUserRepository pProjectUserRepository) {
         accountService = pAccountService;
-        roleService = new RoleService(pRoleRepository);
+        roleService = new RoleService(pRoleRepository, pProjectUserRepository);
 
         String login = "login0@test.com";
         final ProjectUser projectUser0 = new ProjectUser();

@@ -167,11 +167,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
             // final RoleFactory roleFactory = new RoleFactory();
             ((RoleService) roleService).initDefaultRoles();
             ROLE = roleRepository.findOneByName(DefaultRoleNames.PUBLIC.toString());
-
-            // ROLE = roleRepository.save(roleFactory.createPublic());
             projectUser = projectUserRepository.save(new ProjectUser(EMAIL, ROLE, PERMISSIONS, METADATA));
-            ROLE.getProjectUsers().add(projectUser);
-            roleRepository.save(ROLE);
         } catch (final Exception e) {
             Assert.fail(e.getMessage());
         }

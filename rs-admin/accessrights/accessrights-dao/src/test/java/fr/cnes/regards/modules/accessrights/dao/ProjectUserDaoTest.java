@@ -19,7 +19,10 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 
 /**
  *
@@ -37,7 +40,7 @@ public class ProjectUserDaoTest {
      * JPA Repository
      */
     @Autowired
-    private IProjectUserRepository repository;
+    private IProjectUserRepository projectUserRepository;
 
     /**
      * Security service to generate tokens.
@@ -46,12 +49,20 @@ public class ProjectUserDaoTest {
     private JWTService jwtService;
 
     /**
+     * Role projectUserRepository.
+     */
+    @Autowired
+    private IRoleRepository roleRepository;
+
+    /**
      * @throws JwtException
      *             if the token is wrong
      */
     @Before
     public void setUp() throws JwtException {
         jwtService.injectToken("test1", "USER");
+        projectUserRepository.deleteAll();
+        roleRepository.deleteAll();
     }
 
     /**
@@ -60,7 +71,9 @@ public class ProjectUserDaoTest {
     @Test
     @Purpose("Check that the system updates automaticly the field lastUpdate before any db persistence.")
     public final void setLastUpdateListener() {
-        final ProjectUser user = new ProjectUser("email@test.com", null, new ArrayList<>(), new ArrayList<>());
+        final RoleFactory factory = new RoleFactory();
+        final Role role = roleRepository.save(factory.createPublic());
+        final ProjectUser user = new ProjectUser("email@test.com", role, new ArrayList<>(), new ArrayList<>());
 
         // Init with a past date (2 days ago)
         final LocalDateTime initial = LocalDateTime.now().minusDays(2);
@@ -68,7 +81,7 @@ public class ProjectUserDaoTest {
         Assert.assertEquals(user.getLastUpdate(), initial);
 
         // Call tested method
-        final ProjectUser saved = repository.save(user);
+        final ProjectUser saved = projectUserRepository.save(user);
 
         // Check the value was updated
         Assert.assertNotEquals(saved.getLastUpdate(), initial);

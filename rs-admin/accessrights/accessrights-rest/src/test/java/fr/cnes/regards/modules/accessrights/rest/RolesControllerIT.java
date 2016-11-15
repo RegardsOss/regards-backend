@@ -164,7 +164,6 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         toUpdate.setNative(false);
         toUpdate.setParentRole(rolePublic);
         toUpdate.setPermissions(new ArrayList<>());
-        toUpdate.setProjectUsers(new ArrayList<>());
         roleService.createRole(toUpdate);
 
         // Update the role

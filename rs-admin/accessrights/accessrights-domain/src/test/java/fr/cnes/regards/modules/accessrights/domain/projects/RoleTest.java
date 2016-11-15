@@ -88,7 +88,6 @@ public class RoleTest {
         role.setNative(isNative);
         role.setParentRole(parentRole);
         role.setPermissions(permissions);
-        role.setProjectUsers(projectUsers);
     }
 
     /**
@@ -103,7 +102,6 @@ public class RoleTest {
         Assert.assertEquals(false, testRole.isDefault());
         Assert.assertEquals(null, testRole.getParentRole());
         Assert.assertEquals(new ArrayList<>(), testRole.getPermissions());
-        Assert.assertEquals(new ArrayList<>(), testRole.getProjectUsers());
         Assert.assertEquals(new ArrayList<>(), testRole.getAuthorizedAddresses());
         Assert.assertEquals(false, testRole.isCorsRequestsAuthorized());
         Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
@@ -121,7 +119,6 @@ public class RoleTest {
         Assert.assertEquals(false, testRole.isDefault());
         Assert.assertEquals(parentRole, testRole.getParentRole());
         Assert.assertEquals(new ArrayList<>(), testRole.getPermissions());
-        Assert.assertEquals(new ArrayList<>(), testRole.getProjectUsers());
         Assert.assertEquals(new ArrayList<>(), testRole.getAuthorizedAddresses());
         Assert.assertEquals(false, testRole.isCorsRequestsAuthorized());
         Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
@@ -180,14 +177,6 @@ public class RoleTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#getProjectUsers()}.
-     */
-    @Test
-    public void testGetProjectUsers() {
-        Assert.assertEquals(projectUsers, role.getProjectUsers());
-    }
-
-    /**
      * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#isDefault()}.
      */
     @Test
@@ -242,18 +231,6 @@ public class RoleTest {
         newPermissions.add(new ResourcesAccess(localId));
         role.setPermissions(newPermissions);
         Assert.assertEquals(newPermissions, role.getPermissions());
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#setProjectUsers(java.util.List)}.
-     */
-    @Test
-    public void testSetProjectUsers() {
-        final List<ProjectUser> newProjectUsers = new ArrayList<ProjectUser>();
-        newProjectUsers.add(new ProjectUser());
-        role.setProjectUsers(newProjectUsers);
-        Assert.assertEquals(newProjectUsers, role.getProjectUsers());
     }
 
     /**

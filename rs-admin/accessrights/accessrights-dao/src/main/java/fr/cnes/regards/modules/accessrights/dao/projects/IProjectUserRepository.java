@@ -33,7 +33,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     ProjectUser findOneByEmail(String pEmail);
 
     /**
-     * Find the all {@link ProjectUser}s with passed <code>status</code>.<br>
+     * Find all {@link ProjectUser}s with passed <code>status</code>.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
      * @param pStatus
@@ -43,7 +43,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     List<ProjectUser> findByStatus(UserStatus pStatus);
 
     /**
-     * Find the all {@link ProjectUser}s where <code>email</code> is in passed collection.<br>
+     * Find all {@link ProjectUser}s where <code>email</code> is in passed collection.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
      * @param pEmail
@@ -51,4 +51,14 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * @return The {@link List} of found {@link ProjectUser}s
      */
     List<ProjectUser> findByEmailIn(Collection<String> pEmail);
+
+    /**
+     * Find all project users whose role name equals param.<br>
+     * Custom query auto-implemented by JPA thanks to the method naming convention.
+     *
+     * @param pName
+     *            The role name
+     * @return all project users with this role
+     */
+    List<ProjectUser> findByRoleName(String pName);
 }

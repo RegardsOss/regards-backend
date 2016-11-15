@@ -18,6 +18,7 @@ import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -55,12 +56,18 @@ public class RoleServiceTest {
     private IRoleRepository roleRepository;
 
     /**
+     * Mock repository
+     */
+    private IProjectUserRepository projectUserRepository;
+
+    /**
      * Do some setup before each test
      */
     @Before
     public void init() {
         roleRepository = Mockito.mock(IRoleRepository.class);
-        roleService = new RoleService(roleRepository);
+        projectUserRepository = Mockito.mock(IProjectUserRepository.class);
+        roleService = new RoleService(roleRepository, projectUserRepository);
     }
 
     /**
@@ -415,18 +422,18 @@ public class RoleServiceTest {
     public void retrieveRoleProjectUserList() throws EntityNotFoundException {
         final Long idParent = 0L;
         final Long idChild = 1L;
+        final String roleParentName = "parent";
+        final String roleChildName = "child";
 
         // Define a parent role with a few users
         final List<ProjectUser> parentUsers = new ArrayList<>();
-        final Role roleParent = new Role("parent", null);
-        roleParent.setProjectUsers(parentUsers);
+        final Role roleParent = new Role(roleParentName, null);
         parentUsers.add(new ProjectUser("user0@email.com", roleParent, null, null));
         parentUsers.add(new ProjectUser("user1@email.com", roleParent, null, null));
 
         // Define a child role with a few users
         final List<ProjectUser> childUsers = new ArrayList<>();
-        final Role roleChild = new Role("child", roleParent);
-        roleChild.setProjectUsers(childUsers);
+        final Role roleChild = new Role(roleChildName, roleParent);
         childUsers.add(new ProjectUser("user2@email.com", roleChild, null, null));
         childUsers.add(new ProjectUser("user3@email.com", roleChild, null, null));
 
@@ -438,6 +445,8 @@ public class RoleServiceTest {
         // Mock
         Mockito.when(roleRepository.exists(idChild)).thenReturn(true);
         Mockito.when(roleRepository.findOne(idChild)).thenReturn(roleChild);
+        Mockito.when(projectUserRepository.findByRoleName(roleParentName)).thenReturn(parentUsers);
+        Mockito.when(projectUserRepository.findByRoleName(roleChildName)).thenReturn(childUsers);
 
         // Define actual result
         final List<ProjectUser> actual = roleService.retrieveRoleProjectUserList(idChild);
@@ -447,6 +456,8 @@ public class RoleServiceTest {
 
         // Check that the repository's method was called with right arguments
         Mockito.verify(roleRepository).findOne(idChild);
+        Mockito.verify(projectUserRepository).findByRoleName(roleParentName);
+        Mockito.verify(projectUserRepository).findByRoleName(roleChildName);
     }
 
     /**
@@ -531,8 +542,8 @@ public class RoleServiceTest {
         Assert.assertThat(pActual.getName(), CoreMatchers.is(CoreMatchers.equalTo(pExpected.getName())));
         Assert.assertThat(pActual.getParentRole(), CoreMatchers.is(CoreMatchers.equalTo(pExpected.getParentRole())));
         Assert.assertThat(pActual.getPermissions(), CoreMatchers.is(CoreMatchers.equalTo(pExpected.getPermissions())));
-        Assert.assertThat(pActual.getProjectUsers(),
-                          CoreMatchers.is(CoreMatchers.equalTo(pExpected.getProjectUsers())));
+        // Assert.assertThat(pActual.getProjectUsers(),
+        // CoreMatchers.is(CoreMatchers.equalTo(pExpected.getProjectUsers())));
     }
 
 }

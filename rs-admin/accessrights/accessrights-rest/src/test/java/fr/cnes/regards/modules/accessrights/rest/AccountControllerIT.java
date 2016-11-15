@@ -27,11 +27,17 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
+import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
+import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
  * Integration tests for accounts.
@@ -105,6 +111,15 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Autowired
     private IAccountSettingsService settingsService;
 
+    @Autowired
+    private IProjectUserRepository projectUserRepository;
+
+    @Autowired
+    private RoleService roleService;
+
+    @Autowired
+    private IRoleRepository roleRepository;
+
     @Value("${root.admin.login:admin}")
     private String rootAdminLogin;
 
@@ -139,8 +154,11 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         apiChangePassword = apiAccountId + "/password/{reset_code}";
         apiAccountCode = apiAccounts + "/code";
 
-        // Clear the repo
+        // Clear the repos
         accountRepository.deleteAll();
+        projectUserRepository.deleteAll();
+        roleRepository.deleteAll();
+
         // And start with a single account for convenience
         account = accountRepository.save(new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD));
     }
@@ -280,11 +298,36 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
     }
 
+    /**
+     * Check that the system prevents from deleting an account linked to any project users.
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
-    @Purpose("Check that the system allows to delete an instance user.")
-    public void deleteAccount() throws AlreadyExistingException {
+    @Purpose("Check that the system prevents from deleting an account linked to any project users.")
+    public void deleteAccountNotAllowedBecauseOfLinkedProjectUser() {
+        // Make sure we have a project user with same email on at least one tenant
+        roleService.initDefaultRoles();
+        final Role rolePublic = roleService.retrieveRole(DefaultRoleNames.PUBLIC.toString());
+        projectUserRepository.save(new ProjectUser(EMAIL, rolePublic, new ArrayList<>(), new ArrayList<>()));
+
         // Prepare the account. Must have a status allowing deletion
+        account.setStatus(AccountStatus.INACTIVE);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isForbidden());
+        performDelete(apiAccountId, jwt, expectations, errorMessage, account.getId());
+    }
+
+    /**
+     * Check that the system allows to delete an account linked to no project user.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_300")
+    @Purpose("Check that the system allows to delete an account linked to no project user.")
+    public void deleteAccount() {
+        // Prepare the account. Must have a status allowing deletion and have no project user
+        account.setEmail("randomEmailNotMatchingAnyProjectUser@test.com");
         account.setStatus(AccountStatus.INACTIVE);
         accountRepository.save(account);
 

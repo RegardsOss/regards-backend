@@ -19,6 +19,7 @@ import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
+import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -46,14 +47,20 @@ public class RoleService implements IRoleService {
     private final IRoleRepository roleRepository;
 
     /**
+     * CRUD repository managing {@link ProjectUser}s. Autowired by Spring.
+     */
+    private final IProjectUserRepository projectUserRepository;
+
+    /**
      * The default roles. Autowired by Spring.
      */
     @Resource
     private List<Role> defaultRoles;
 
-    public RoleService(final IRoleRepository pRoleRepository) {
+    public RoleService(final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository) {
         super();
         roleRepository = pRoleRepository;
+        projectUserRepository = pProjectUserRepository;
     }
 
     @PostConstruct
@@ -182,7 +189,8 @@ public class RoleService implements IRoleService {
         roleAndHisAncestors.addAll(roleLineageAssembler.of(role).get());
 
         try (final Stream<Role> stream = roleAndHisAncestors.stream()) {
-            return stream.map(r -> r.getProjectUsers()).flatMap(l -> l.stream()).collect(Collectors.toList());
+            return stream.map(r -> projectUserRepository.findByRoleName(r.getName())).flatMap(l -> l.stream())
+                    .collect(Collectors.toList());
         }
     }
 

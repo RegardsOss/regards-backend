@@ -156,13 +156,9 @@ public class SendingSchedulerTest {
 
         // Link users and roles
         projectUser0.setRole(role0);
-        role0.getProjectUsers().add(projectUser0);
         projectUser1.setRole(role1);
-        role1.getProjectUsers().add(projectUser1);
         projectUser2.setRole(role2);
-        role2.getProjectUsers().add(projectUser2);
         projectUser3.setRole(role1);
-        role1.getProjectUsers().add(projectUser3);
 
         // Settings
         settings = new ArrayList<>();

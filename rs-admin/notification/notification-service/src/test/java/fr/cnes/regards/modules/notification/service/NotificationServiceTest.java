@@ -150,8 +150,6 @@ public class NotificationServiceTest {
         role0.setName(ROLE_NAME_0);
         role0.setNative(false);
         role0.setParentRole(null);
-        role0.setProjectUsers(new ArrayList<>());
-        role0.getProjectUsers().add(projectUser0);
         role0.setPermissions(new ArrayList<>());
 
         role1 = new Role();
@@ -159,9 +157,6 @@ public class NotificationServiceTest {
         role1.setName(ROLE_NAME_1);
         role1.setNative(false);
         role1.setParentRole(null);
-        role1.setProjectUsers(new ArrayList<>());
-        role1.getProjectUsers().add(projectUser1);
-        role1.getProjectUsers().add(projectUser2);
         role1.setPermissions(new ArrayList<>());
 
         // Init some users

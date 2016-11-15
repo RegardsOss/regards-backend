@@ -25,8 +25,6 @@ import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublic;
 
@@ -73,14 +71,6 @@ public class Role implements IIdentifiable<Long> {
     private List<ResourcesAccess> permissions;
 
     /**
-     * Role associated project users
-     */
-    @Valid
-    @OneToMany(mappedBy = "role", fetch = FetchType.EAGER)
-    @JsonManagedReference
-    private List<ProjectUser> projectUsers;
-
-    /**
      * Role associated authorized IP addresses
      */
     @Column(name = "authorized_addresses")
@@ -123,7 +113,6 @@ public class Role implements IIdentifiable<Long> {
         isNative = false;
         isCorsRequestsAuthorized = false;
         permissions = new ArrayList<>();
-        projectUsers = new ArrayList<>();
         authorizedAddresses = new ArrayList<>();
     }
 
@@ -142,76 +131,124 @@ public class Role implements IIdentifiable<Long> {
         return id;
     }
 
-    public void setId(final Long pId) {
-        id = pId;
-    }
-
+    /**
+     * @return the name
+     */
     public String getName() {
         return name;
     }
 
-    public Role getParentRole() {
-        return parentRole;
-    }
-
-    public List<ResourcesAccess> getPermissions() {
-        return permissions;
-    }
-
-    public List<ProjectUser> getProjectUsers() {
-        return projectUsers;
-    }
-
-    public boolean isDefault() {
-        return isDefault;
-    }
-
-    public boolean isNative() {
-        return isNative;
-    }
-
-    public void setDefault(final boolean pIsDefault) {
-        isDefault = pIsDefault;
-    }
-
+    /**
+     * @param pName
+     *            the name to set
+     */
     public void setName(final String pName) {
         name = pName;
     }
 
+    /**
+     * @return the parentRole
+     */
+    public Role getParentRole() {
+        return parentRole;
+    }
+
+    /**
+     * @param pParentRole
+     *            the parentRole to set
+     */
     public void setParentRole(final Role pParentRole) {
         parentRole = pParentRole;
     }
 
+    /**
+     * @return the permissions
+     */
+    public List<ResourcesAccess> getPermissions() {
+        return permissions;
+    }
+
+    /**
+     * @param pPermissions
+     *            the permissions to set
+     */
     public void setPermissions(final List<ResourcesAccess> pPermissions) {
         permissions = pPermissions;
     }
 
-    public void setProjectUsers(final List<ProjectUser> pProjectUsers) {
-        projectUsers = pProjectUsers;
-    }
-
+    /**
+     * @return the authorizedAddresses
+     */
     public List<String> getAuthorizedAddresses() {
         return authorizedAddresses;
     }
 
+    /**
+     * @param pAuthorizedAddresses
+     *            the authorizedAddresses to set
+     */
     public void setAuthorizedAddresses(final List<String> pAuthorizedAddresses) {
         authorizedAddresses = pAuthorizedAddresses;
     }
 
+    /**
+     * @return the isCorsRequestsAuthorized
+     */
     public boolean isCorsRequestsAuthorized() {
         return isCorsRequestsAuthorized;
     }
 
+    /**
+     * @param pIsCorsRequestsAuthorized
+     *            the isCorsRequestsAuthorized to set
+     */
     public void setCorsRequestsAuthorized(final boolean pIsCorsRequestsAuthorized) {
         isCorsRequestsAuthorized = pIsCorsRequestsAuthorized;
     }
 
+    /**
+     * @return the corsRequestsAuthorizationEndDate
+     */
     public LocalDateTime getCorsRequestsAuthorizationEndDate() {
         return corsRequestsAuthorizationEndDate;
     }
 
+    /**
+     * @param pCorsRequestsAuthorizationEndDate
+     *            the corsRequestsAuthorizationEndDate to set
+     */
     public void setCorsRequestsAuthorizationEndDate(final LocalDateTime pCorsRequestsAuthorizationEndDate) {
         corsRequestsAuthorizationEndDate = pCorsRequestsAuthorizationEndDate;
+    }
+
+    /**
+     * @return the isDefault
+     */
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    /**
+     * @param pIsDefault
+     *            the isDefault to set
+     */
+    public void setDefault(final boolean pIsDefault) {
+        isDefault = pIsDefault;
+    }
+
+    /**
+     * @return the isNative
+     */
+    public boolean isNative() {
+        return isNative;
+    }
+
+    /**
+     * @param pId
+     *            the id to set
+     */
+    public void setId(final Long pId) {
+        id = pId;
     }
 
 }
