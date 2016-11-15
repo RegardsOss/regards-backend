@@ -6,216 +6,290 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublic;
+
 /**
  * Helper classs for creating Roles implemented as a fluent API.
  * </p>
- * 1 - Call 'getInstance' in order to enable chaining.<br>
+ * 1 - Create an instance of the factory. A new role will be created with default values.<br>
  * 2 - You can use the different 'with' methods to specify the non-default fields for your role.<br>
- * 3 - Call 'create', to return the created role.<br>
+ * 3 - Call 'create' to return the created role.<br>
  * OR<br>
  * 3 - Call a 'createPublic'/'createAdmin/...' method to use the predefined role templates.<br>
- * Step 3 is called a terminal operation.
  * </p>
- * The methods 'doRetain' and 'doNotRetain' allow the caller to define the fields retainment strategy:<br>
- * - With doNotRetain, the fields set <i>via</i> 'with' methods will be reset to default values after each terminal
- * operation. This is the default behavious.<br>
- * - With doNotRetain, the fields set <i>via</i> 'with' methods will NOT be reset, allowing the caller the 'reuse'
- * previously set values and thus reduce the code to write.
- * </p>
+ * Note: The values set via 'with' are then cached in the instance of the factory. This allows to reuse previously set
+ * values when creating various roles successively, and thus reducing code boilerplate. If you do not want to use cached
+ * values, simply create a new instance of the factory.
  *
  * @author Xavier-Alexandre Brochard
  */
 public class RoleFactory {
 
     /**
-     * Store static instance for chaining
+     * Role indentifier
      */
-    private static RoleFactory instance = new RoleFactory();
+    private Long id;
 
     /**
-     * The role to be creted
+     * Role name
      */
-    private static Role proxyRole;
+    private String name;
 
     /**
-     * Do we reset the proxyRole during terminal operations (create[...])?<br>
-     * Default <code>false</code>
+     * The parent role.
+     * <p/>
+     * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasParentOrPublic} annotation.
      */
-    private boolean retain = false;
+    private Role parentRole;
 
     /**
-     * Set retain to true
+     * Role permissions
      */
-    public static void doRetain() {
-        instance.retain = true;
-    }
+    private List<ResourcesAccess> permissions;
 
     /**
-     * Set retain to false
+     * Role associated project users
      */
-    public static void doNotRetain() {
-        instance.retain = false;
-    }
+    private List<ProjectUser> projectUsers;
 
     /**
-     * @return the instance
+     * Role associated authorized IP addresses
      */
-    public static RoleFactory getInstance() {
-        if (!instance.retain) {
-            reset();
-        }
-        return instance;
-    }
+    private List<String> authorizedAddresses;
 
     /**
-     * Reset the helper
+     * Are the cors requests authorized for this role ?
      */
-    public static void reset() {
-        instance = new RoleFactory();
-    }
+    private boolean isCorsRequestsAuthorized;
+
+    /**
+     * If CORS requests are authorized for this role, this parameter indicates the limit date of the authorization
+     */
+    private LocalDateTime corsRequestsAuthorizationEndDate;
+
+    /**
+     * Is a default role ?
+     */
+    private boolean isDefault;
+
+    /**
+     * Is a native role ?
+     */
+    private boolean isNative;
+
+    /**
+     * When create a native role, should we automaticly create in cascade the role parent ?
+     */
+    private boolean autoCreateParents = true;
 
     /**
      * Private constructor for static class
      */
-    private RoleFactory() {
-        proxyRole = new Role();
+    public RoleFactory() {
+        final Role forDefaultValues = new Role();
+        id = forDefaultValues.getId();
+        name = forDefaultValues.getName();
+        parentRole = forDefaultValues.getParentRole();
+        permissions = forDefaultValues.getPermissions();
+        projectUsers = forDefaultValues.getProjectUsers();
+        authorizedAddresses = forDefaultValues.getAuthorizedAddresses();
+        isCorsRequestsAuthorized = forDefaultValues.isCorsRequestsAuthorized();
+        corsRequestsAuthorizationEndDate = forDefaultValues.getCorsRequestsAuthorizationEndDate();
+        isDefault = forDefaultValues.isDefault();
+        isNative = forDefaultValues.isNative();
     }
 
+    /**
+     * Create a new role with values set in the factory
+     *
+     * @return the role
+     */
     public Role create() {
-        terminate();
-        return proxyRole;
+        final Role toCreate = new Role();
+        toCreate.setId(id);
+        toCreate.setName(name);
+        toCreate.setParentRole(parentRole);
+        toCreate.setPermissions(permissions);
+        toCreate.setProjectUsers(projectUsers);
+        toCreate.setAuthorizedAddresses(authorizedAddresses);
+        toCreate.setCorsRequestsAuthorized(isCorsRequestsAuthorized);
+        toCreate.setCorsRequestsAuthorizationEndDate(corsRequestsAuthorizationEndDate);
+        toCreate.setDefault(isDefault);
+        toCreate.setNative(isNative);
+        return toCreate;
     }
 
     public Role createAdmin() {
-        proxyRole.setName(DefaultRoleNames.ADMIN.toString());
-        proxyRole.setParentRole(createRegisteredUser());
-        proxyRole.setNative(true);
-        return proxyRole;
+        final Role toCreate = create();
+        final RoleFactory factoryForParentRole = new RoleFactory();
+        toCreate.setName(DefaultRoleNames.ADMIN.toString());
+        toCreate.setNative(true);
+        if (autoCreateParents) {
+            toCreate.setParentRole(factoryForParentRole.createRegisteredUser());
+        }
+        return toCreate;
     }
 
     public Role createInstanceAdmin() {
-        proxyRole.setName(DefaultRoleNames.INSTANCE_ADMIN.toString());
-        proxyRole.setParentRole(createProjectAdmin());
-        proxyRole.setNative(true);
-        return proxyRole;
+        final Role toCreate = create();
+        final RoleFactory factoryForParentRole = new RoleFactory();
+        toCreate.setName(DefaultRoleNames.INSTANCE_ADMIN.toString());
+        toCreate.setNative(true);
+        if (autoCreateParents) {
+            toCreate.setParentRole(factoryForParentRole.createProjectAdmin());
+        }
+        return toCreate;
     }
 
     public Role createProjectAdmin() {
-        proxyRole.setName(DefaultRoleNames.PROJECT_ADMIN.toString());
-        proxyRole.setParentRole(createAdmin());
-        proxyRole.setNative(true);
-        return proxyRole;
+        final Role toCreate = create();
+        final RoleFactory factoryForParentRole = new RoleFactory();
+        toCreate.setName(DefaultRoleNames.PROJECT_ADMIN.toString());
+        toCreate.setNative(true);
+        if (autoCreateParents) {
+            toCreate.setParentRole(factoryForParentRole.createAdmin());
+        }
+        return toCreate;
     }
 
     public Role createPublic() {
-        proxyRole.setName(DefaultRoleNames.PUBLIC.toString());
-        proxyRole.setParentRole(null);
-        proxyRole.setNative(true);
-        proxyRole.setDefault(true);
-        return proxyRole;
+        final Role toCreate = create();
+        toCreate.setName(DefaultRoleNames.PUBLIC.toString());
+        toCreate.setParentRole(null);
+        toCreate.setNative(true);
+        toCreate.setDefault(true);
+        return toCreate;
     }
 
     public Role createRegisteredUser() {
-        proxyRole.setName(DefaultRoleNames.REGISTERED_USER.toString());
-        proxyRole.setParentRole(createPublic());
-        proxyRole.setNative(true);
-        return proxyRole;
-    }
-
-    private void terminate() {
-        if (!instance.retain) {
-            reset();
+        final Role toCreate = create();
+        final RoleFactory factoryForParentRole = new RoleFactory();
+        toCreate.setName(DefaultRoleNames.REGISTERED_USER.toString());
+        toCreate.setNative(true);
+        if (autoCreateParents) {
+            toCreate.setParentRole(factoryForParentRole.createPublic());
         }
+        return toCreate;
     }
 
     /**
      * @param pAuthorizedAddresses
      *            the authorizedAddresses to set
+     * @return this for chaining
      */
     public RoleFactory withAuthorizedAddresses(final List<String> pAuthorizedAddresses) {
-        proxyRole.setAuthorizedAddresses(pAuthorizedAddresses);
-        return instance;
+        authorizedAddresses = pAuthorizedAddresses;
+        return this;
     }
 
     /**
      * @param pCorsRequestsAuthorizationEndDate
      *            the corsRequestsAuthorizationEndDate to set
+     * @return this for chaining
      */
     public RoleFactory withCorsRequestsAuthorizationEndDate(final LocalDateTime pCorsRequestsAuthorizationEndDate) {
-        proxyRole.setCorsRequestsAuthorizationEndDate(pCorsRequestsAuthorizationEndDate);
-        return instance;
+        corsRequestsAuthorizationEndDate = pCorsRequestsAuthorizationEndDate;
+        return this;
     }
 
     /**
      * @param pIsCorsRequestsAuthorized
      *            the isCorsRequestsAuthorized to set
+     * @return this for chaining
      */
     public RoleFactory withCorsRequestsAuthorized(final boolean pIsCorsRequestsAuthorized) {
-        proxyRole.setCorsRequestsAuthorized(pIsCorsRequestsAuthorized);
-        return instance;
+        isCorsRequestsAuthorized = pIsCorsRequestsAuthorized;
+        return this;
     }
 
     /**
      * @param pIsDefault
      *            the isDefault to set
+     * @return this for chaining
      */
     public RoleFactory withDefault(final boolean pIsDefault) {
-        proxyRole.setDefault(pIsDefault);
-        return instance;
+        isDefault = pIsDefault;
+        return this;
     }
 
     /**
      * @param pId
      *            the id to set
+     * @return this for chaining
      */
     public RoleFactory withId(final Long pId) {
-        proxyRole.setId(pId);
-        return instance;
+        id = pId;
+        return this;
     }
 
     /**
      * @param pName
      *            the name to set
+     * @return this for chaining
      */
     public RoleFactory withName(final String pName) {
-        proxyRole.setName(pName);
-        return instance;
+        name = pName;
+        return this;
     }
 
     /**
      * @param pIsNative
      *            the isNative to set
+     * @return this for chaining
      */
     public RoleFactory withNative(final boolean pIsNative) {
-        proxyRole.setNative(pIsNative);
-        return instance;
+        isNative = pIsNative;
+        return this;
     }
 
     /**
      * @param pParentRole
      *            the parent role to set
+     * @return this for chaining
      */
     public RoleFactory withParentRole(final Role pParentRole) {
-        proxyRole.setParentRole(pParentRole);
-        return instance;
+        parentRole = pParentRole;
+        return this;
     }
 
     /**
      * @param pPermissions
      *            the permissions to set
+     * @return this for chaining
      */
     public RoleFactory withPermissions(final List<ResourcesAccess> pPermissions) {
-        proxyRole.setPermissions(pPermissions);
-        return instance;
+        permissions = pPermissions;
+        return this;
     }
 
     /**
      * @param pProjectUsers
      *            the projectUsers to set
+     * @return this for chaining
      */
     public RoleFactory withProjectUsers(final List<ProjectUser> pProjectUsers) {
-        proxyRole.setProjectUsers(pProjectUsers);
-        return instance;
+        projectUsers = pProjectUsers;
+        return this;
+    }
+
+    /**
+     * Set <code>autoCreateParents</code> to <code>true</code>
+     *
+     * @return this for chaining
+     */
+    public RoleFactory doNotAutoCreateParents() {
+        autoCreateParents = false;
+        return this;
+    }
+
+    /**
+     * Set <code>autoCreateParents</code> to <code>false</code>
+     *
+     * @return this for chaining
+     */
+    public RoleFactory doAutoCreateParents() {
+        autoCreateParents = true;
+        return this;
     }
 
 }

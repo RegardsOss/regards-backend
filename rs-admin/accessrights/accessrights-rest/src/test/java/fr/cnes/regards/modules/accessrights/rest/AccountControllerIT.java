@@ -27,11 +27,9 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 
@@ -103,9 +101,6 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
     @Autowired
     private IAccountRepository accountRepository;
-
-    @Autowired
-    private IProjectUserRepository projectUserRepository;
 
     @Autowired
     private IAccountSettingsService settingsService;
@@ -249,7 +244,6 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         performPut(apiAccountId, jwt, account, expectations, errorMessage, account.getId());
 
         // if that's not the same functional ID and the parameter is valid:
-        // final Account notSameID = new Account("othereamil@test.com", "firstName", "lastName", "login", "password");
         expectations.clear();
         expectations.add(status().isBadRequest());
         performPut(apiAccountId, jwt, account, expectations, errorMessage, 99L);
@@ -290,10 +284,9 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system allows to delete an instance user.")
     public void deleteAccount() throws AlreadyExistingException {
-        // Create the account the delete
-        final ProjectUser user = new ProjectUser();
-        user.setEmail(EMAIL);
-        projectUserRepository.save(user);
+        // Prepare the account. Must have a status allowing deletion
+        account.setStatus(AccountStatus.INACTIVE);
+        accountRepository.save(account);
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());

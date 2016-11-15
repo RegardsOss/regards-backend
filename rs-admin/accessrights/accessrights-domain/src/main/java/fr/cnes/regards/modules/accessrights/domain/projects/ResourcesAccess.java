@@ -13,6 +13,8 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotBlank;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 
@@ -20,7 +22,6 @@ import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 @SequenceGenerator(name = "resourcesAccessSequence", initialValue = 1, sequenceName = "SEQ_RESOURCES_ACCESS")
 public class ResourcesAccess implements IIdentifiable<Long> {
 
-    @NotNull
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resourcesAccessSequence")
     @Column(name = "id")
@@ -29,11 +30,11 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     @Column(name = "description")
     private String description;
 
-    @NotNull
+    @NotBlank
     @Column(name = "microservice")
     private String microservice;
 
-    @NotNull
+    @NotBlank
     @Column(name = "resource")
     private String resource;
 

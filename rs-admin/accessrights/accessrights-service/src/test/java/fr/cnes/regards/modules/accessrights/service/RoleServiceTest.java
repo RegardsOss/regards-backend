@@ -237,7 +237,8 @@ public class RoleServiceTest {
     @Purpose("Check that the system does not remove a native role.")
     public void removeRoleNative() throws OperationForbiddenException {
         final Long id = 0L;
-        final Role roleNative = RoleFactory.getInstance().createPublic();
+        final RoleFactory roleFactory = new RoleFactory();
+        final Role roleNative = roleFactory.createPublic();
 
         // Mock repo
         Mockito.when(roleRepository.exists(id)).thenReturn(true);

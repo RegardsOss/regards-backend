@@ -3,18 +3,14 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.stubs;
 
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
-
 import fr.cnes.regards.framework.test.repository.RepositoryStub;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 
-@Repository
-@Profile("test")
-@Primary
+//@Repository
+//@Profile("test")
+//@Primary
 public class ResourcesAccessRepositoryStub extends RepositoryStub<ResourcesAccess>
         implements IResourcesAccessRepository {
 

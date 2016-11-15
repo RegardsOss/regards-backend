@@ -26,6 +26,8 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -93,6 +95,7 @@ public class ProjectUser implements IIdentifiable<Long> {
     @NotNull
     @ManyToOne
     @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "FK_USER_ROLE"))
+    @JsonBackReference
     private Role role;
 
     /**
@@ -128,10 +131,10 @@ public class ProjectUser implements IIdentifiable<Long> {
     public ProjectUser(final String pEmail, final Role pRole, final List<ResourcesAccess> pPermissions,
             final List<MetaData> pMetaData) {
         this();
-        metaData = pMetaData;
+        email = pEmail;
         role = pRole;
         permissions = pPermissions;
-        email = pEmail;
+        metaData = pMetaData;
     }
 
     /**

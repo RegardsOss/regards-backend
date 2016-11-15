@@ -33,8 +33,8 @@ public class HasParentOrPublicValidator implements ConstraintValidator<HasParent
      */
     @Override
     public boolean isValid(final Role pValue, final ConstraintValidatorContext pContext) {
-        return ((pValue.getName() != DefaultRoleNames.PUBLIC.toString()) && (pValue.getParentRole() != null))
-                || ((pValue.getName() == DefaultRoleNames.PUBLIC.toString()) && (pValue.getParentRole() == null));
+        return (DefaultRoleNames.PUBLIC.toString().equals(pValue.getName()) && (pValue.getParentRole() == null))
+                || (!DefaultRoleNames.PUBLIC.toString().equals(pValue.getName()) && (pValue.getParentRole() != null));
     }
 
 }

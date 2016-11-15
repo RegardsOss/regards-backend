@@ -25,6 +25,8 @@ import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublic;
 
@@ -75,6 +77,7 @@ public class Role implements IIdentifiable<Long> {
      */
     @Valid
     @OneToMany(mappedBy = "role", fetch = FetchType.EAGER)
+    @JsonManagedReference
     private List<ProjectUser> projectUsers;
 
     /**
@@ -124,43 +127,11 @@ public class Role implements IIdentifiable<Long> {
         authorizedAddresses = new ArrayList<>();
     }
 
-    // /**
-    // *
-    // * Constructor
-    // *
-    // * @param pRoleId
-    // * Role identifier
-    // * @since 1.0-SNAPSHOT
-    // */
-    // public Role(final Long pRoleId) {
-    // id = pRoleId;
-    // }
-
     public Role(final String pName, final Role pParentRole) {
         this();
         name = pName;
         parentRole = pParentRole;
     }
-
-    // public Role(final Long pRoleId, final String pName, final Role pParentRole,
-    // final List<ResourcesAccess> pPermissions, final List<ProjectUser> pProjectUsers, final boolean pIsDefault,
-    // final boolean pIsNative) {
-    // this(pRoleId, pName, pParentRole, pPermissions, pProjectUsers);
-    // isDefault = pIsDefault;
-    // isNative = pIsNative;
-    // }
-    //
-    // public Role(final Long pRoleId, final String pName, final Role pParentRole,
-    // final List<ResourcesAccess> pPermissions, final List<String> pAuthorizedAddresses,
-    // final List<ProjectUser> pProjectUsers, final boolean pIsDefault, final boolean pIsNative,
-    // final boolean pIsCorsRequestsAuthorized, final LocalDateTime pCorsRequestsEndDate) {
-    // this(pRoleId, pName, pParentRole, pPermissions, pProjectUsers);
-    // isDefault = pIsDefault;
-    // isNative = pIsNative;
-    // isCorsRequestsAuthorized = pIsCorsRequestsAuthorized;
-    // corsRequestsAuthorizationEndDate = pCorsRequestsEndDate;
-    // authorizedAddresses = pAuthorizedAddresses;
-    // }
 
     public void setNative(final boolean pIsNative) {
         isNative = pIsNative;

@@ -116,22 +116,20 @@ public class TestConfiguration {
 
         final LocalDateTime endDate = LocalDateTime.now().plusDays(5L);
 
-        RoleFactory.doRetain();
-        RoleFactory.getInstance().withId(0L).withAuthorizedAddresses(addresses).withCorsRequestsAuthorized(true)
+        final RoleFactory roleFactory = new RoleFactory();
+        roleFactory.withId(0L).withAuthorizedAddresses(addresses).withCorsRequestsAuthorized(true)
                 .withCorsRequestsAuthorizationEndDate(endDate).withDefault(false).withNative(true)
                 .withCorsRequestsAuthorized(true);
 
-        final Role publicRole = pRoleRpo.save(RoleFactory.getInstance().createPublic());
+        final Role publicRole = pRoleRpo.save(roleFactory.createPublic());
 
-        pRoleRpo.save(RoleFactory.getInstance().withName(CORS_ROLE_NAME_GRANTED).withParentRole(publicRole).create());
+        pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_GRANTED).withParentRole(publicRole).create());
 
-        pRoleRpo.save(RoleFactory.getInstance().withName(CORS_ROLE_NAME_INVALID_1)
+        pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_INVALID_1)
                 .withCorsRequestsAuthorizationEndDate(LocalDateTime.now().minusDays(5L)).create());
 
-        pRoleRpo.save(RoleFactory.getInstance().withName(CORS_ROLE_NAME_INVALID_2).withCorsRequestsAuthorized(false)
+        pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_INVALID_2).withCorsRequestsAuthorized(false)
                 .withCorsRequestsAuthorizationEndDate(null).create());
-
-        RoleFactory.reset();
 
         pResourceAccessRepo.deleteAll();
         pResourceAccessRepo.save(new ResourcesAccess(0L, "description", microserviceName, "/resource", HttpVerb.GET));

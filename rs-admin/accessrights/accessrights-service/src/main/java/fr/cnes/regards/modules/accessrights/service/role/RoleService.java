@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 
 /**
@@ -205,11 +206,24 @@ public class RoleService implements IRoleService {
      */
     @Override
     public boolean isHierarchicallyInferior(final Role pRole, final Role pOther) {
-
         final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
         final List<Role> ancestors = roleLineageAssembler.of(pOther).get();
+        try (Stream<Role> stream = ancestors.stream()) {
+            return stream.anyMatch(r -> r.getName().equals(pRole.getName()));
+        }
+    }
 
-        return ancestors.contains(pRole);
+    /**
+     * Init the default roles
+     */
+    public void initDefaultRoles() {
+        final RoleFactory factory = new RoleFactory();
+        factory.doNotAutoCreateParents();
+        final Role rolePublic = roleRepository.save(factory.createPublic());
+        final Role roleRegisteredUser = roleRepository.save(factory.withParentRole(rolePublic).createRegisteredUser());
+        final Role roleAdmin = roleRepository.save(factory.withParentRole(roleRegisteredUser).createAdmin());
+        final Role roleProjectAdmin = roleRepository.save(factory.withParentRole(roleAdmin).createProjectAdmin());
+        roleRepository.save(factory.withParentRole(roleProjectAdmin).createInstanceAdmin());
     }
 
 }

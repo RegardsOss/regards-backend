@@ -45,7 +45,8 @@ public class RoleValidationTest {
 
     @Before
     public void setUp() {
-        role = RoleFactory.getInstance().createInstanceAdmin();
+        final RoleFactory roleFactory = new RoleFactory();
+        role = roleFactory.createInstanceAdmin();
     }
 
     /**
