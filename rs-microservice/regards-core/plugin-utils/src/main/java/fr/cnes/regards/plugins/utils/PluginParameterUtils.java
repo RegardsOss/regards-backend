@@ -407,8 +407,8 @@ public final class PluginParameterUtils {
 
         paramValue = pDynamicPlgParam.get().getValue();
 
-        LOGGER.debug(String.format("Starting postProcessDynamicValues : %s - new value= <%s>",
-                                   pDynamicPlgParam.get().getName(), pParamValue));
+        LOGGER.debug(String.format("Ending postProcessDynamicValues : %s - new value= <%s>",
+                                   pDynamicPlgParam.get().getName(), paramValue));
 
         return paramValue;
     }

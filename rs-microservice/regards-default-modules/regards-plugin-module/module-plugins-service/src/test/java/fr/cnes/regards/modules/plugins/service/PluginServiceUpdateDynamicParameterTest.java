@@ -63,7 +63,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
     @Requirement("REGARDS_DSL_CMP_PLG_330")
     @Purpose("Change the parameter's status from dynamic to not dynamic.")
     public void updateDynamicParameter() {
-        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
             Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
@@ -113,7 +113,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
     @Requirement("REGARDS_DSL_CMP_PLG_330")
     @Purpose("Change the parameter's status from not dynamic to dynamic.")
     public void updateParameterToDynamic() {
-        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
             Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);

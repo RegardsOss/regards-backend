@@ -161,7 +161,6 @@ public class PluginServiceTest extends PluginServiceUtility {
      * Delete a {@link PluginConfiguration}.
      */
     @Test
-    @Ignore
     @Requirement("REGARDS_DSL_SYS_ARC_100")
     @Purpose("Delete a plugin configuration identified by an identifier")
     public void deleteAPluginConfigurationError() {
