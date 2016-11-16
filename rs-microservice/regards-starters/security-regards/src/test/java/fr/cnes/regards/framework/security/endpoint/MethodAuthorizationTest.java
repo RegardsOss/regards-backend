@@ -219,7 +219,7 @@ public class MethodAuthorizationTest {
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @ResourceAccess(name = "the name", description = "the description")
+            @ResourceAccess(description = "the description")
             @RequestMapping(value = "/method_level_mapping", method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
@@ -260,7 +260,7 @@ public class MethodAuthorizationTest {
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @ResourceAccess(name = "the name", description = "the description")
+            @ResourceAccess(description = "the description")
             @RequestMapping(value = "/method_level_mapping", method = RequestMethod.PUT)
             public Object endpoint() {
                 return null;
@@ -301,7 +301,7 @@ public class MethodAuthorizationTest {
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @ResourceAccess(name = "the name", description = "the description")
+            @ResourceAccess(description = "the description")
             @RequestMapping(path = "/method_level_mapping", method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
@@ -342,7 +342,7 @@ public class MethodAuthorizationTest {
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @ResourceAccess(name = "the name", description = "the description")
+            @ResourceAccess(description = "the description")
             @RequestMapping(value = "/method_level_mapping", path = "/method_level_mapping", method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
@@ -383,7 +383,7 @@ public class MethodAuthorizationTest {
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @ResourceAccess(name = "the name", description = "the description")
+            @ResourceAccess(description = "the description")
             @RequestMapping(value = "/method_level_mapping", path = "/different_method_level_mapping", method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
@@ -422,7 +422,7 @@ public class MethodAuthorizationTest {
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @ResourceAccess(name = "the name", description = "the description")
+            @ResourceAccess(description = "the description")
             @GetMapping(value = "/method_level_mapping")
             public Object endpoint() {
                 return null;
@@ -463,7 +463,7 @@ public class MethodAuthorizationTest {
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @ResourceAccess(name = "the name", description = "the description")
+            @ResourceAccess(description = "the description")
             @PutMapping(value = "/method_level_mapping")
             public Object endpoint() {
                 return null;
@@ -504,7 +504,7 @@ public class MethodAuthorizationTest {
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @ResourceAccess(name = "the name", description = "the description")
+            @ResourceAccess(description = "the description")
             @PostMapping(value = "/method_level_mapping")
             public Object endpoint() {
                 return null;
@@ -545,7 +545,7 @@ public class MethodAuthorizationTest {
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @ResourceAccess(name = "the name", description = "the description")
+            @ResourceAccess(description = "the description")
             @DeleteMapping(value = "/method_level_mapping")
             public Object endpoint() {
                 return null;
@@ -586,7 +586,7 @@ public class MethodAuthorizationTest {
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @ResourceAccess(name = "the name", description = "the description")
+            @ResourceAccess(description = "the description")
             @PatchMapping(value = "/method_level_mapping")
             public Object endpoint() {
                 return null;
@@ -631,55 +631,55 @@ public class MethodAuthorizationTest {
         }
 
         @RequestMapping(value = "/e", method = RequestMethod.PUT)
-        @ResourceAccess(name = "the name", description = "the description")
+        @ResourceAccess(description = "the description")
         public Object endpointE() {
             return null;
         }
 
         @RequestMapping(path = "/f", method = RequestMethod.PUT)
-        @ResourceAccess(name = "the name", description = "the description")
+        @ResourceAccess(description = "the description")
         public Object endpointF() {
             return null;
         }
 
         @RequestMapping(value = "/g", path = "/g", method = RequestMethod.PUT)
-        @ResourceAccess(name = "the name", description = "the description")
+        @ResourceAccess(description = "the description")
         public Object endpointG() {
             return null;
         }
 
         @RequestMapping(value = "/h", path = "not_/h", method = RequestMethod.PUT)
-        @ResourceAccess(name = "the name", description = "the description")
+        @ResourceAccess(description = "the description")
         public Object endpointH() {
             return null;
         }
 
         @GetMapping(value = "/i")
-        @ResourceAccess(name = "the name", description = "the description")
+        @ResourceAccess(description = "the description")
         public Object endpointI() {
             return null;
         }
 
         @PutMapping(value = "/j")
-        @ResourceAccess(name = "the name", description = "the description")
+        @ResourceAccess(description = "the description")
         public Object endpointJ() {
             return null;
         }
 
         @PostMapping(value = "/k")
-        @ResourceAccess(name = "the name", description = "the description")
+        @ResourceAccess(description = "the description")
         public Object endpointK() {
             return null;
         }
 
         @DeleteMapping(value = "/l")
-        @ResourceAccess(name = "the name", description = "the description")
+        @ResourceAccess(description = "the description")
         public Object endpointL() {
             return null;
         }
 
         @PatchMapping(value = "/m")
-        @ResourceAccess(name = "the name", description = "the description")
+        @ResourceAccess(description = "the description")
         public Object endpointM() {
             return null;
         }

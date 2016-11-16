@@ -27,20 +27,21 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 
 /**
  * Signature interface for Plugins module.
- * 
+ *
  * @author Christophe Mertz
+ * @author Sébastien Binda
  *
  */
 public interface IPluginsSignature {
 
     /**
      * Get all the plugins identifies by the annotation {@link Plugin}.
-     * 
+     *
      * @param pPluginType
      *            a type of plugin
-     * 
+     *
      * @return a list of {@link PluginMetaData}
-     * 
+     *
      * @throws InvalidValueException
      *             if problem occurs
      */
@@ -52,7 +53,7 @@ public interface IPluginsSignature {
 
     /**
      * Get the interface identified with the annotation {@link PluginInterface}.
-     * 
+     *
      * @return a list of interface annotated with {@link PluginInterface}.
      */
     @RequestMapping(value = "/plugintypes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -61,10 +62,10 @@ public interface IPluginsSignature {
 
     /**
      * Get all the metadata of a specified plugin.
-     * 
+     *
      * @param pPluginId
      *            a plugin identifier
-     * 
+     *
      * @return a list of {@link PluginParameter}
      */
     @RequestMapping(value = "/plugins/{pluginId}", method = RequestMethod.GET,
@@ -74,10 +75,10 @@ public interface IPluginsSignature {
 
     /**
      * Get all the {@link PluginConfiguration} of a specified plugin.
-     * 
+     *
      * @param pPluginId
      *            a plugin identifier
-     * 
+     *
      * @return a list of {@link PluginConfiguration}
      */
     @RequestMapping(value = "/plugins/{pluginId}/config", method = RequestMethod.GET,
@@ -88,12 +89,12 @@ public interface IPluginsSignature {
 
     /**
      * Create a new {@link PluginConfiguration}.
-     * 
+     *
      * @param pPluginConfiguration
      *            a {@link PluginConfiguration}
-     * 
+     *
      * @return the {@link PluginConfiguration] created
-     * 
+     *
      * @throws InvalidValueException
      *             if problem occurs
      */
@@ -105,18 +106,19 @@ public interface IPluginsSignature {
 
     /**
      * Get the {@link PluginConfiguration} of a specified plugin.
-     * 
+     *
      * @param pPluginId
      *            a plugin identifier
-     * 
+     *
      * @param pConfigId
      *            a plugin configuration identifier
-     * 
+     *
      * @return the {@link PluginConfiguration} of the plugin
-     * 
+     *
      * @throws ModuleEntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
-     * 
+     * @throws ModuleEntityNotFoundException
+     *
      */
     @RequestMapping(value = "/plugins/{pluginId}/config/{configId}", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -126,42 +128,44 @@ public interface IPluginsSignature {
 
     /**
      * Update a {@link PluginConfiguration} of a specified plugin.
-     * 
+     *
      * @param pPluginId
      *            a plugin identifier
-     * 
+     *
      * @param pConfigId
      *            a plugin configuration identifier
-     * 
+     *
      * @param pPluginConfiguration
      *            a {@link PluginConfiguration}
-     * 
+     *
      * @return the {@link PluginConfiguration} of the plugin.
-     * 
+     *
      * @throws ModuleEntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
+     * 
      * @throws InvalidValueException
      *             the {@link PluginConfiguration} is incoherent with the path parameter
-     * 
+     * @throws ModuleEntityNotFoundException
+     *
      */
     @RequestMapping(value = "/plugins/{pluginId}/config/{configId}", method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(@PathVariable("pluginId") String pPluginId,
             @PathVariable("configId") Long pConfigId, @Valid @RequestBody PluginConfiguration pPluginConfiguration)
-            throws ModuleEntityNotFoundException, InvalidValueException;
+            throws InvalidValueException, ModuleEntityNotFoundException;
 
     /**
      * Delete a {@link PluginConfiguration}.
-     * 
+     *
      * @param pPluginId
      *            a plugin identifier
-     * 
+     *
      * @param pConfigId
      *            a plugin configuration identifier
-     * 
+     *
      * @return void
-     * 
+     *
      * @throws ModuleEntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      */

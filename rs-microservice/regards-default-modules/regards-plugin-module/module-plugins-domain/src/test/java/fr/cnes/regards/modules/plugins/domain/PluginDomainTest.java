@@ -23,6 +23,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         final PluginMetaData pluginMetaData = getPluginMetaData();
         Assert.assertNotNull(pluginMetaData);
         Assert.assertNotNull(pluginConfiguration);
+        Assert.assertNotNull(pluginConfiguration.getPluginClassName());
 
         // Get an existing parameter value
         final String value = pluginConfiguration
@@ -32,6 +33,8 @@ public class PluginDomainTest extends PluginDomainUtility {
         // Get an unknown parameter value
         final String unknowValue = pluginConfiguration.getParameterValue("unknon");
         Assert.assertNull(unknowValue);
+
+        pluginConfiguration.logParams();
 
     }
 
@@ -73,10 +76,10 @@ public class PluginDomainTest extends PluginDomainUtility {
     @Test
     public void pluginConfigurationParameters() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
-        final String parameterName = "paramWithPluginConf";
+        final String parameterName = "paramWithPluginConf1";
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameterPluginConfiguration(parameterName, aPluginConfiguration)
-                .addParameter("paramIdentifier", BLUE).getParameters();
+                .addParameter("paramIdentifier1", BLUE).getParameters();
         parameters.get(0).setId(AN_ID);
 
         final PluginConfiguration pluginConfigurationParameter = new PluginConfiguration();
@@ -91,6 +94,36 @@ public class PluginDomainTest extends PluginDomainUtility {
         Assert.assertEquals(plgConf.getVersion(), aPluginConfiguration.getVersion());
         Assert.assertEquals(plgConf.getParameters().get(0).getId(),
                             aPluginConfiguration.getParameters().get(0).getId());
+        
+        plgConf.logParams();
+    }
+
+    @Test
+    public void pluginConfigurationGetUnknowParameterName() {
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
+        final String parameterName = "paramWithPluginConf2";
+        final List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameterPluginConfiguration(parameterName, aPluginConfiguration)
+                .addParameter("paramIdentifier2", BLUE).getParameters();
+        parameters.get(0).setId(AN_ID);
+
+        final PluginConfiguration pluginConfigurationParameter = new PluginConfiguration();
+        pluginConfigurationParameter.setParameters(parameters);
+
+        final PluginConfiguration plgConf = pluginConfigurationParameter
+                .getParameterConfiguration("unknown-parameter-name");
+
+        Assert.assertNull(plgConf);
+    }
+
+    @Test
+    public void pluginConfigurationGetUnknowParameterName2() {
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
+
+        final PluginConfiguration plgConf = aPluginConfiguration
+                .getParameterConfiguration("other-unknown-parameter-name");
+
+        Assert.assertNull(plgConf);
     }
 
     /**
@@ -124,7 +157,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         Assert.assertEquals(RED, plgParam.getName());
         Assert.assertEquals(GREEN, plgParam.getValue());
         Assert.assertEquals(false, plgParam.isDynamic().booleanValue());
-        
+
         // test dynamics==null
         Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), 0);
 
@@ -132,7 +165,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         final List<PluginDynamicValue> dynValues = new ArrayList<>();
         plgParam.setDynamicsValues(dynValues);
         Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), dynValues.size());
-        
+
         dynValues.add(new PluginDynamicValue(BLUE));
         dynValues.add(new PluginDynamicValue(GREEN));
         final PluginDynamicValue plgDynValue = new PluginDynamicValue();

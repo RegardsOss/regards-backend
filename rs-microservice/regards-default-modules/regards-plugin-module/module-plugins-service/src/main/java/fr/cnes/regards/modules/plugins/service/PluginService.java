@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
@@ -26,6 +27,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * The implementation of {@link IPluginService}.
  *
  * @author Christophe Mertz
+ * @author Sébastien Binda
  */
 @Service
 public class PluginService implements IPluginService {
@@ -53,7 +55,7 @@ public class PluginService implements IPluginService {
     /**
      * {@link PluginConfiguration} JPA Repository
      */
-    private IPluginConfigurationRepository pluginConfRepository;
+    private final IPluginConfigurationRepository pluginConfRepository;
 
     /**
      * Plugins implementation list sorted by plugin id. Plugin id, is the id of the "@PluginMetaData" annotation of the
@@ -67,7 +69,7 @@ public class PluginService implements IPluginService {
      * @param pPluginConfigurationRepository
      *            {@link PluginConfiguration} JPA repository
      */
-    public PluginService(IPluginConfigurationRepository pPluginConfigurationRepository) {
+    public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository) {
         super();
         pluginConfRepository = pPluginConfigurationRepository;
         getPluginPackage().add(REGARDS_PACKAGE_PLUGINS_DEFAULT);
@@ -101,8 +103,8 @@ public class PluginService implements IPluginService {
                         && pInterfacePluginType.isAssignableFrom(Class.forName(pValue.getPluginClassName())))) {
                     pluginAvailables.add(pValue);
                 }
-            } catch (ClassNotFoundException e) {
-                LOGGER.error("cannot instanciate the class : %s" + pValue.getPluginClassName());
+            } catch (final ClassNotFoundException e) {
+                LOGGER.error("cannot instanciate the class : %s" + pValue.getPluginClassName(), e);
             }
         });
 
@@ -121,15 +123,15 @@ public class PluginService implements IPluginService {
             msg.append(". The plugin configuration cannot be null.");
             throwError = true;
         }
-        if (!throwError && pPluginConfiguration.getPluginId() == null) {
+        if (!throwError && (pPluginConfiguration.getPluginId() == null)) {
             msg.append(". The unique identifier of the plugin (attribute pluginId) is required.");
             throwError = true;
         }
-        if (!throwError && pPluginConfiguration.getPriorityOrder() == null) {
+        if (!throwError && (pPluginConfiguration.getPriorityOrder() == null)) {
             msg.append(String.format(" <%s> without priority order.", pPluginConfiguration.getPluginId()));
             throwError = true;
         }
-        if (!throwError && pPluginConfiguration.getVersion() == null) {
+        if (!throwError && (pPluginConfiguration.getVersion() == null)) {
             msg.append(String.format(" <%s> without version.", pPluginConfiguration.getPluginId()));
             throwError = true;
         }
@@ -154,21 +156,19 @@ public class PluginService implements IPluginService {
 
     @Override
     public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPlugin)
-            throws PluginUtilsException {
+            throws ModuleEntityNotFoundException, PluginUtilsException {
         // Check if plugin configuration exists
         if (!pluginConfRepository.exists(pPlugin.getId())) {
-            throw new PluginUtilsException(
-                    String.format("Error while updating the plugin configuration <%s>.", pPlugin.getId()));
+            throw new ModuleEntityNotFoundException(pPlugin.getId().toString(), PluginConfiguration.class);
         }
-
         return savePluginConfiguration(pPlugin);
     }
 
     @Override
-    public void deletePluginConfiguration(final Long pPluginId) throws PluginUtilsException {
+    public void deletePluginConfiguration(final Long pPluginId) throws ModuleEntityNotFoundException {
         if (!pluginConfRepository.exists(pPluginId)) {
             LOGGER.error(String.format("Error while deleting the plugin configuration <%s>.", pPluginId));
-            throw new PluginUtilsException(pPluginId.toString());
+            throw new ModuleEntityNotFoundException(pPluginId.toString(), PluginConfiguration.class);
         }
         pluginConfRepository.delete(pPluginId);
     }
@@ -186,7 +186,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public List<PluginConfiguration> getPluginConfigurationsByType(String pPluginId) {
+    public List<PluginConfiguration> getPluginConfigurationsByType(final String pPluginId) {
         return pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pPluginId);
     }
 
@@ -249,7 +249,8 @@ public class PluginService implements IPluginService {
         return pluginPackage;
     }
 
-    public void addPluginPackage(String pPluginPackage) {
+    @Override
+    public void addPluginPackage(final String pPluginPackage) {
         this.pluginPackage.add(pPluginPackage);
     }
 

@@ -9,11 +9,16 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -28,6 +33,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * Unit testing of {@link PluginService}.
  *
  * @author Christophe Mertz
+ * @author Sébastien Binda
  */
 public class PluginServiceTest extends PluginServiceUtility {
 
@@ -57,6 +63,8 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMZ_PLG_200")
+    @Purpose("Load all plugin's metada.")
     public void getAllPlugins() {
         final List<PluginMetaData> metadaDatas = pluginServiceMocked.getPlugins();
 
@@ -79,7 +87,10 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMZ_PLG_200")
+    @Purpose("Load all plugin's metada for a specific plugin type identified by a Class.")
     public void getPluginOneType() {
+        pluginServiceMocked.addPluginPackage("fr.cnes.regards.mypackage");
         final List<PluginMetaData> plugins = pluginServiceMocked.getPluginsByType(IComplexInterfacePlugin.class);
 
         Assert.assertNotNull(plugins);
@@ -90,13 +101,15 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMZ_PLG_200")
+    @Purpose("Load all plugin's metada for a specific plugin type identified by a class name.")
     public void getPluginTypesByString() {
         final String aClass = "fr.cnes.regards.plugins.IComplexInterfacePlugin";
         List<PluginMetaData> plugins = null;
 
         try {
             plugins = pluginServiceMocked.getPluginsByType(Class.forName(aClass));
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             Assert.fail();
         }
 
@@ -111,16 +124,18 @@ public class PluginServiceTest extends PluginServiceUtility {
      * Get a {@link PluginConfiguration}.
      */
     @Test
+    @Requirement("REGARDS_DSL_SYS_ARC_100")
+    @Purpose("Get a plugin configuration identified by an identifier.")
     public void getAPluginConfiguration() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
         try {
-            final PluginConfiguration pCon = pluginServiceMocked.getPluginConfiguration(aPluginConfiguration.getId());
-            Assert.assertEquals(pCon.getLabel(), aPluginConfiguration.getLabel());
+            final PluginConfiguration aConf = pluginServiceMocked.getPluginConfiguration(aPluginConfiguration.getId());
+            Assert.assertEquals(aConf.getLabel(), aPluginConfiguration.getLabel());
 
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
     }
@@ -129,13 +144,32 @@ public class PluginServiceTest extends PluginServiceUtility {
      * Delete a {@link PluginConfiguration}.
      */
     @Test
+    @Requirement("REGARDS_DSL_SYS_ARC_100")
+    @Purpose("Delete a plugin configuration identified by an identifier")
     public void deleteAPluginConfiguration() {
         final Long aPlugnId = 3456L;
         try {
             Mockito.when(pluginConfRepositoryMocked.exists(aPlugnId)).thenReturn(true);
             pluginServiceMocked.deletePluginConfiguration(aPlugnId);
             Mockito.verify(pluginConfRepositoryMocked).delete(aPlugnId);
-        } catch (PluginUtilsException e) {
+        } catch (final ModuleEntityNotFoundException e) {
+            Assert.fail();
+        }
+    }
+    
+    /**
+     * Delete a {@link PluginConfiguration}.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_SYS_ARC_100")
+    @Purpose("Delete a plugin configuration identified by an identifier")
+    public void deleteAPluginConfigurationError() {
+        final Long aPlugnId = 3457L;
+        try {
+            Mockito.when(pluginConfRepositoryMocked.exists(aPlugnId)).thenReturn(true);
+            pluginServiceMocked.deletePluginConfiguration(aPlugnId);
+            Mockito.verify(pluginConfRepositoryMocked).delete(aPlugnId);
+        } catch (final ModuleEntityNotFoundException e) {
             Assert.fail();
         }
     }
@@ -144,6 +178,8 @@ public class PluginServiceTest extends PluginServiceUtility {
      * Save a {@link PluginConfiguration}.
      */
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_SYS_ARC_100"), @Requirement("REGARDS_DSL_CMP_PLG_320") })
+    @Purpose("Create a new plugin configuration")
     public void saveAPluginConfiguration() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         final PluginConfiguration aPluginConfigurationWithId = getPluginConfigurationWithParameters();
@@ -157,34 +193,40 @@ public class PluginServiceTest extends PluginServiceUtility {
             Assert.assertEquals(aPluginConfiguration.isActive(), savedPluginConfiguration.isActive());
             Assert.assertEquals(aPluginConfiguration.getParameters().size(),
                                 savedPluginConfiguration.getParameters().size());
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
     }
 
     /**
      * Update a {@link PluginConfiguration}.
+     *
+     * @throws ModuleEntityNotFoundException
+     *             test error
      */
     @Test
-    public void updateAPluginConfiguration() {
+    @Requirements({ @Requirement("REGARDS_DSL_SYS_ARC_100"), @Requirement("REGARDS_DSL_CMP_PLG_100") })
+    @Purpose("Update a plugin configuration identified by an identifier")
+    public void updateAPluginConfiguration() throws ModuleEntityNotFoundException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        final Long aPluginId = 890L;
-        aPluginConfiguration.setId(aPluginId);
+        aPluginConfiguration.setId(AN_ID);
         try {
             Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
             Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
-            final PluginConfiguration pCon = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
-            Assert.assertEquals(pCon.getLabel(), aPluginConfiguration.getLabel());
-            Assert.assertEquals(pCon.getPluginId(), aPluginConfiguration.getPluginId());
+            final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
+            Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
+            Assert.assertEquals(updatedConf.getPluginId(), aPluginConfiguration.getPluginId());
         } catch (PluginUtilsException e) {
             Assert.fail();
         }
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMZ_PLG_200")
+    @Purpose("Load a plugin's metada for a specific plugin type identified by a plugin identifier.")
     public void getPluginMetaDataById() {
         final PluginMetaData pluginMetaData = pluginServiceMocked.getPluginMetaDataById("aSamplePlugin");
         Assert.assertNotNull(pluginMetaData);
@@ -225,6 +267,8 @@ public class PluginServiceTest extends PluginServiceUtility {
      *             throw if an error occurs
      */
     @Test
+    @Requirement("REGARDS_DSL_SYS_ARC_120")
+    @Purpose("Load a plugin from a specific type with a configuration and execute a method.")
     public void getFirstPluginByType() throws PluginUtilsException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
@@ -254,6 +298,9 @@ public class PluginServiceTest extends PluginServiceUtility {
      *             throw if an error occurs
      */
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_SYS_ARC_120"), @Requirement("REGARDS_DSL_CMP_PLG_120"),
+            @Requirement("REGARDS_DSL_CMP_PLG_310") })
+    @Purpose("Load a plugin with a dynamic parameter from a specific type with a configuration and execute a method.")
     public void getFirstPluginByTypeWithADynamicParameter() throws PluginUtilsException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
@@ -290,6 +337,8 @@ public class PluginServiceTest extends PluginServiceUtility {
      *             throw if an error occurs
      */
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_SYS_ARC_120"), @Requirement("REGARDS_DSL_CMP_PLG_310") })
+    @Purpose("Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and execute a method.")
     public void getFirstPluginByTypeWithADynamicParameterWithAListOfValue() throws PluginUtilsException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
@@ -315,6 +364,8 @@ public class PluginServiceTest extends PluginServiceUtility {
      *             throw if an error occurs
      */
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_SYS_ARC_120"), @Requirement("REGARDS_DSL_CMP_PLG_310") })
+    @Purpose("Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and set a parameter value and execute a method.")
     public void getFirstPluginByTypeWithADynamicParameterWithAListOfValueAndSetAValue() throws PluginUtilsException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
