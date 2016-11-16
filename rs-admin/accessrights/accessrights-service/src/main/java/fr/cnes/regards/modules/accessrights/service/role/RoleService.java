@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.role;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,22 +89,36 @@ public class RoleService implements IRoleService {
         jwtService = pJwtService;
     }
 
+    /**
+     * Init medthod
+     */
     @PostConstruct
-    public void init() throws AlreadyExistingException {
+    public void init() {
 
         // Ensure the final existence of default final roles
         // If not, add them final from their bean final definition in final defaultRoles.xml
-        // Get all final projects in database
-        try {
-            for (final String tenant : tenantResolver.getAllTenants()) {
+
+        // Define a consumer injecting the passed tenant in the context
+        final Consumer<? super String> injectTenant = tenant -> {
+            try {
                 jwtService.injectToken(tenant, RoleAuthority.getSysRole("rs-admin"));
-                for (final Role role : defaultRoles) {
-                    roleRepository.save(role);
-                }
+            } catch (final JwtException e) {
+                LOG.error(e.getMessage(), e);
             }
-        } catch (final JwtException e) {
-            LOG.error(e.getMessage(), e);
+        };
+
+        // Define a consumer creating (if needed) all default roles on current tenant
+        final Consumer<? super String> createDefaultRolesOnTenant = t -> {
+            try (Stream<Role> rolesStream = defaultRoles.stream()) {
+                rolesStream.filter(r -> !existByName(r.getName())).forEach(roleRepository::save);
+            }
+        };
+
+        // For each tenant, inject tenant in context and create (if needed) default roles
+        try (Stream<String> tenantsStream = tenantResolver.getAllTenants().stream()) {
+            tenantsStream.peek(injectTenant).forEach(createDefaultRolesOnTenant);
         }
+
     }
 
     @Override
