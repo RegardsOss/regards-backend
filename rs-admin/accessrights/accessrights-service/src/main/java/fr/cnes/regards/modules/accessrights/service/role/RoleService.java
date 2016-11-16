@@ -137,8 +137,9 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Role retrieveRole(final String pRoleName) {
-        return roleRepository.findOneByName(pRoleName).orElseGet(() -> getDefaultRole());
+    public Role retrieveRole(final String pRoleName) throws ModuleEntityNotFoundException {
+        return roleRepository.findOneByName(pRoleName)
+                .orElseThrow(() -> new ModuleEntityNotFoundException(pRoleName, Role.class));
     }
 
     @Override

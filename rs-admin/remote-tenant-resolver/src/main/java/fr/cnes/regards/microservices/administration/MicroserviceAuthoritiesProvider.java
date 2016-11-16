@@ -11,7 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
@@ -72,30 +74,37 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<String> getRoleAuthorizedAddress(final String pRole) {
-
-        final List<String> addresses = new ArrayList<>();
-        final ResponseEntity<Resource<Role>> result = roleClient.retrieveRole(pRole);
-        if (result.getStatusCode().equals(HttpStatus.OK)) {
-            final Resource<Role> body = result.getBody();
-            if (body != null) {
-                addresses.addAll(body.getContent().getAuthorizedAddresses());
+    public List<String> getRoleAuthorizedAddress(final String pRole) throws SecurityException {
+        try {
+            final List<String> addresses = new ArrayList<>();
+            final ResponseEntity<Resource<Role>> result = roleClient.retrieveRole(pRole);
+            if (result.getStatusCode().equals(HttpStatus.OK)) {
+                final Resource<Role> body = result.getBody();
+                if (body != null) {
+                    addresses.addAll(body.getContent().getAuthorizedAddresses());
+                }
             }
+            return addresses;
+        } catch (final ModuleEntityNotFoundException e) {
+            throw new SecurityException("Could not get role authorized addesses", e);
         }
-        return addresses;
     }
 
     @Override
-    public boolean hasCorsRequestsAccess(final String pRole) {
-        boolean access = false;
-        final ResponseEntity<Resource<Role>> result = roleClient.retrieveRole(pRole);
-        if (result.getStatusCode().equals(HttpStatus.OK)) {
-            final Resource<Role> body = result.getBody();
-            if (body != null) {
-                access = body.getContent().isCorsRequestsAuthorized();
+    public boolean hasCorsRequestsAccess(final String pRole) throws SecurityException {
+        try {
+            boolean access = false;
+            final ResponseEntity<Resource<Role>> result = roleClient.retrieveRole(pRole);
+            if (result.getStatusCode().equals(HttpStatus.OK)) {
+                final Resource<Role> body = result.getBody();
+                if (body != null) {
+                    access = body.getContent().isCorsRequestsAuthorized();
+                }
             }
+            return access;
+        } catch (final ModuleEntityNotFoundException e) {
+            throw new SecurityException("Could not get cors requests access", e);
         }
-        return access;
     }
 
 }

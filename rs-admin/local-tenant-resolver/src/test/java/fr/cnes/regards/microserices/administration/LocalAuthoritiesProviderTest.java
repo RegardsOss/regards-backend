@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -48,13 +50,16 @@ public class LocalAuthoritiesProviderTest {
      *
      * Check cors requests access by role with date limitation
      *
+     * @throws SecurityException
+     *             when no role with passed name could be found
+     *
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_030")
     @Requirement("REGARDS_DSL_SYS_ARC_040")
     @Purpose("Check cors requests access by role with date limitation")
     @Test
-    public void checkCorsRequestsAccessByRole() {
+    public void checkCorsRequestsAccessByRole() throws ModuleEntityNotFoundException, SecurityException {
         Assert.assertEquals(provider.getRoleAuthorizedAddress(TestConfiguration.CORS_ROLE_NAME_GRANTED).size(), 3);
         Assert.assertTrue(provider.hasCorsRequestsAccess(TestConfiguration.CORS_ROLE_NAME_GRANTED));
         Assert.assertFalse(provider.hasCorsRequestsAccess(TestConfiguration.CORS_ROLE_NAME_INVALID_1));

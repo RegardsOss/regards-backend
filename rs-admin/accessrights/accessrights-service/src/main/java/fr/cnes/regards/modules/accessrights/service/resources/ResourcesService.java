@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import feign.FeignException;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -218,10 +219,13 @@ public class ResourcesService implements IResourcesService {
             // Add default role if exists
             if ((collectedResource.getResourceAccess().role() != null)
                     && !collectedResource.getResourceAccess().role().equals(DefaultRole.NONE)) {
-                final Role role = roleService.retrieveRole(collectedResource.getResourceAccess().role().toString());
-                if (role != null) {
+                Role role;
+                try {
+                    role = roleService.retrieveRole(collectedResource.getResourceAccess().role().toString());
                     defaultRoles.add(role);
                     resource.setRoles(defaultRoles);
+                } catch (final ModuleEntityNotFoundException e) {
+                    LOG.debug("Role not found", e);
                 }
             }
             collectedResources.add(resource);

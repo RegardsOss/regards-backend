@@ -18,6 +18,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -113,10 +114,16 @@ public class ResourcesServiceTest {
         Assert.assertTrue(resourcesService.retrieveRessources().isEmpty());
     }
 
-    @Purpose("Check that the collect resources functionnality is well done for local administration service resources")
+    /**
+     * Check that the collect resources functionnality is well done for local administration service resources.
+     *
+     * @throws ModuleEntityNotFoundException
+     *             when no role with passed name could be found
+     */
+    @Purpose("Check that the collect resources functionnality is well done for local administration service resources.")
     @Requirement("REGARDS_DSL_ADM_ADM_240")
     @Test
-    public void testLocalResourcesToCollect() {
+    public void testLocalResourcesToCollect() throws ModuleEntityNotFoundException {
 
         resourcesRepo.deleteAll();
 
@@ -152,10 +159,16 @@ public class ResourcesServiceTest {
 
     }
 
+    /**
+     * Check that the collect resources functionnality is well done for remote services resources.
+     * 
+     * @throws ModuleEntityNotFoundException
+     *             when no role with passed name could be found
+     */
     @Purpose("Check that the collect resources functionnality is well done for remote services resources")
     @Requirement("REGARDS_DSL_ADM_ADM_240")
     @Test
-    public void testRemoteResourcesToCollect() {
+    public void testRemoteResourcesToCollect() throws ModuleEntityNotFoundException {
 
         resourcesRepo.deleteAll();
 
