@@ -4,9 +4,9 @@
 package fr.cnes.regards.microservices.administration;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
@@ -42,7 +42,7 @@ public class LocalTenantConnectionResolverAutoConfigure {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    @ConditionalOnMissingBean
+    @Primary
     ITenantConnectionResolver tenantConnectionResolver(final IProjectService pProjectService,
             final IProjectConnectionService pProjectConnectionService) {
         return new LocalTenantConnectionResolver(microserviceName, pProjectService, pProjectConnectionService);
@@ -56,7 +56,7 @@ public class LocalTenantConnectionResolverAutoConfigure {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    @ConditionalOnMissingBean
+    @Primary
     ITenantResolver tenantResolver() {
         return new LocalTenantResolver();
     }
@@ -69,7 +69,7 @@ public class LocalTenantConnectionResolverAutoConfigure {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    @ConditionalOnMissingBean
+    @Primary
     IAuthoritiesProvider authoritiesProvider() {
         return new LocalAuthoritiesProvider();
     }

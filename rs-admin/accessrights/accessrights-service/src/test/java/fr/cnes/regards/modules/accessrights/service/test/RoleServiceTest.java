@@ -16,6 +16,8 @@ import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -54,7 +56,9 @@ public class RoleServiceTest {
     @Before
     public void init() {
         roleRepository = Mockito.mock(IRoleRepository.class);
-        roleService = new RoleService(roleRepository);
+        final JWTService jwService = new JWTService();
+        jwService.setSecret("123456789");
+        roleService = new RoleService(roleRepository, new LocalTenantResolver(), jwService);
     }
 
     /**

@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -59,7 +61,9 @@ public class AccessRequestServiceStub implements IAccessRequestService {
      */
     public AccessRequestServiceStub(final IAccountService pAccountService, final IRoleRepository pRoleRepository) {
         accountService = pAccountService;
-        roleService = new RoleService(pRoleRepository);
+        final JWTService jwService = new JWTService();
+        jwService.setSecret("123456789");
+        roleService = new RoleService(pRoleRepository, new LocalTenantResolver(), jwService);
 
         String login = "login0@test.com";
         final ProjectUser projectUser0 = new ProjectUser();

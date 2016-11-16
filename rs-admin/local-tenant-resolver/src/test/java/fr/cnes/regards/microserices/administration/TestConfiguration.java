@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.microservices.administration.LocalAuthoritiesProvider;
 import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolver;
+import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolverAutoConfigure;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
@@ -45,6 +47,7 @@ import fr.cnes.regards.modules.project.service.IProjectService;
 @Configuration
 @ComponentScan("fr.cnes.regards.modules")
 @PropertySource("classpath:dao.properties")
+@EnableAutoConfiguration(exclude = LocalTenantConnectionResolverAutoConfigure.class)
 @ImportResource({ "classpath*:defaultRoles.xml" })
 public class TestConfiguration {
 
@@ -107,7 +110,7 @@ public class TestConfiguration {
     public IAuthoritiesProvider authoritiesProvider(final JWTService pJwtService, final IRoleRepository pRoleRpo,
             final IResourcesAccessRepository pResourceAccessRepo) throws JwtException {
 
-        pJwtService.injectToken("test1", CORS_ROLE_NAME_GRANTED);
+        pJwtService.injectToken(PROJECT_NAME, CORS_ROLE_NAME_GRANTED);
         final List<String> addresses = new ArrayList<>();
         addresses.add("127.0.0.1");
         addresses.add("127.0.0.2");

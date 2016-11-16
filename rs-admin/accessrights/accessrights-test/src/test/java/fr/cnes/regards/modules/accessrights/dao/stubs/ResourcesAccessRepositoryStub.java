@@ -3,6 +3,9 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.stubs;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -29,8 +32,12 @@ public class ResourcesAccessRepositoryStub extends RepositoryStub<ResourcesAcces
     @Override
     public ResourcesAccess findOneByMicroserviceAndResourceAndVerb(final String pMicroservice,
             final String pResourceFullPath, final HttpVerb pVerb) {
-        // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public List<ResourcesAccess> findByMicroservice(final String pMicroservice) {
+        return new ArrayList<>();
     }
 
 }

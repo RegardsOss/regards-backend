@@ -7,7 +7,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -27,7 +26,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @RunWith(RegardsSpringRunner.class)
 @SpringBootTest
-@EnableAutoConfiguration
 @ContextConfiguration(classes = { TestConfiguration.class })
 public class LocalAuthoritiesProviderTest {
 
