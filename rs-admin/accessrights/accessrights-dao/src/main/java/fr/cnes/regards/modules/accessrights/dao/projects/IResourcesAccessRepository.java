@@ -19,7 +19,19 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  */
 public interface IResourcesAccessRepository extends CrudRepository<ResourcesAccess, Long> {
 
+    /**
+     * Find the single {@link ResourcesAccess} with passed <code>microservice</code> and <code>resource</code> and
+     * <code>verb</code>.<br>
+     * Custom query auto-implemented by JPA thanks to the method naming convention.
+     *
+     * @param pMicroservice
+     *            the microservice name
+     * @param pResourceFullPath
+     *            the resource path
+     * @param pVerb
+     *            the http verb
+     * @return the resources access
+     */
     ResourcesAccess findOneByMicroserviceAndResourceAndVerb(String pMicroservice, String pResourceFullPath,
             HttpVerb pVerb);
-
 }
