@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
@@ -33,7 +34,8 @@ import fr.cnes.regards.modules.accessrights.service.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.signature.IAccountsSignature;
 
 @RestController
-@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 public class AccountsController implements IAccountsSignature {
 
     private static final Logger LOG = LoggerFactory.getLogger(AccountsController.class);
@@ -73,7 +75,8 @@ public class AccountsController implements IAccountsSignature {
 
     @ResourceAccess(description = "retrieve the account with his unique email")
     @Override
-    public ResponseEntity<Resource<Account>> retrieveAccounByEmail(String pAccountEmail) {
+    public ResponseEntity<Resource<Account>> retrieveAccounByEmail(
+            @PathVariable("account_email") final String pAccountEmail) {
         ResponseEntity<Resource<Account>> response;
         try {
             final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
@@ -144,12 +147,12 @@ public class AccountsController implements IAccountsSignature {
 
     @Override
     @ResourceAccess(description = "Validate the account password")
-    public ResponseEntity<Void> validatePassword(@PathVariable("account_login") final String pLogin,
+    public ResponseEntity<AccountStatus> validatePassword(@PathVariable("account_login") final String pLogin,
             @RequestParam("password") final String pPassword) throws ModuleEntityNotFoundException {
         if (accountService.validatePassword(pLogin, pPassword)) {
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(AccountStatus.ACTIVE, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(AccountStatus.INACTIVE, HttpStatus.OK);
         }
     }
 

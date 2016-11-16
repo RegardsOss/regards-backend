@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
@@ -289,10 +290,12 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.content().string("\"" + AccountStatus.ACTIVE.toString() + "\""));
         performGet(apiValidatePassword, jwt, expectations, errorMessage, login, rightPassword);
 
         expectations.clear();
-        expectations.add(status().isUnauthorized());
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.content().string("\"" + AccountStatus.INACTIVE.toString() + "\""));
         performGet(apiValidatePassword, jwt, expectations, errorMessage, login, wrongPassword);
 
         final String wrongLogin = "wrongLogin";
