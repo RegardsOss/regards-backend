@@ -237,7 +237,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
     @Test
     @DirtiesContext
     public void updatePluginConfigurationErrorPluginId() {
-        // Add a PluginConfiguration with the PluginService
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL, PARAMETERS,
                 0);
         try {
@@ -258,7 +257,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
     @Test
     @DirtiesContext
     public void updateUnknownPluginConfigurationError() {
-        // Add a PluginConfiguration with the PluginService
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 PARAMETERS, 0);
         aPluginConfiguration.setId(AN_ID);

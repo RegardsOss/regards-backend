@@ -11,8 +11,9 @@
 	</appender>
 	
 	<logger name="org.springframework" level="INFO" />
+	<logger name="org.hibernate" level="INFO" />
 
-	<root level="debug">
+	<root level="info">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>
