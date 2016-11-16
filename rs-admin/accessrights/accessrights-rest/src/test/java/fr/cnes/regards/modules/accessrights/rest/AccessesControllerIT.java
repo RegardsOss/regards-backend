@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.IAccessRequestService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessRequestService;
 
 /**
  *
@@ -155,7 +155,6 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
         newAccessRequest.setEmail("login@test.com");
         newAccessRequest.setFirstName("Firstname");
         newAccessRequest.setLastName("Lastname");
-        newAccessRequest.setLogin("login");
         newAccessRequest.setPassword("password");
         newAccessRequest.setRole(new Role());
         newAccessRequest.setPermissions(new ArrayList<>());

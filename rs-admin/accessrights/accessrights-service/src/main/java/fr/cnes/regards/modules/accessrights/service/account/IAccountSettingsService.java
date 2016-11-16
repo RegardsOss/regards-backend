@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessrights.service;
+package fr.cnes.regards.modules.accessrights.service.account;
 
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 

@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -40,11 +41,6 @@ public class AccessRequestDTOTest {
      * Test last name
      */
     private final String lastName = "lastName";
-
-    /**
-     * Test login
-     */
-    private final String login = "login";
 
     /**
      * Test MetaData
@@ -81,12 +77,11 @@ public class AccessRequestDTOTest {
         access.setEmail(email);
         access.setFirstName(firstName);
         access.setLastName(lastName);
-        access.setLogin(login);
         access.setPassword(password);
         access.setMetaData(metaDatas);
         access.setPermissions(permissions);
 
-        role = new Role(0L);
+        role = new Role(DefaultRoleNames.ADMIN.toString(), null);
         access.setRole(role);
     }
 
@@ -112,14 +107,6 @@ public class AccessRequestDTOTest {
     @Test
     public void testGetLastName() {
         Assert.assertEquals(lastName, access.getLastName());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#getLogin()}.
-     */
-    @Test
-    public void testGetLogin() {
-        Assert.assertEquals(login, access.getLogin());
     }
 
     /**
@@ -187,16 +174,6 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#setLogin(java.lang.String)}.
-     */
-    @Test
-    public void testSetLogin() {
-        final String newLogin = "newLogin";
-        access.setLogin(newLogin);
-        Assert.assertEquals(newLogin, access.getLogin());
-    }
-
-    /**
      * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#setMetaData(java.util.List)}.
      */
     @Test
@@ -235,7 +212,7 @@ public class AccessRequestDTOTest {
      */
     @Test
     public void testSetRole() {
-        final Role newRole = new Role(1L);
+        final Role newRole = new Role(DefaultRoleNames.REGISTERED_USER.toString(), role);
         access.setRole(newRole);
         Assert.assertEquals(newRole, access.getRole());
     }

@@ -25,8 +25,8 @@ import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.IAccessRequestService;
-import fr.cnes.regards.modules.accessrights.service.IAccessSettingsService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessRequestService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.signature.IAccessesSignature;
 
 @RestController

@@ -4,4 +4,4 @@
 /**
  * Package for accessrights public interface signatures.
  */
-package fr.cnes.regards.modules.accessrights.service;
+package fr.cnes.regards.modules.accessrights.service.role;

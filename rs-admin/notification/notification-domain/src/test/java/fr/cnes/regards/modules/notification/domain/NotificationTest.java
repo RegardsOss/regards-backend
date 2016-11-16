@@ -21,6 +21,7 @@ import org.junit.Test;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -105,14 +106,11 @@ public class NotificationTest {
         notification.setStatus(STATUS);
 
         roleRecipients = new ArrayList<>();
-        roleRecipients.add(new Role(0L, DefaultRole.PUBLIC.toString(), null, new ArrayList<>(), new ArrayList<>(),
-                true, true));
+        roleRecipients.add(new Role(DefaultRoleNames.PUBLIC.toString(), null));
         notification.setRoleRecipients(roleRecipients);
 
         projectUserRecipients = new ArrayList<>();
-        projectUserRecipients
-                .add(new ProjectUser(0L, LocalDateTime.now().minusMonths(1), LocalDateTime.now().minusMonths(1),
-                        UserStatus.ACCESS_GRANTED, new ArrayList<>(), null, new ArrayList<>(), "user@email.com"));
+        projectUserRecipients.add(new ProjectUser("user@email.com", null, new ArrayList<>(), new ArrayList<>()));
         notification.setProjectUserRecipients(projectUserRecipients);
 
         // Run the validator

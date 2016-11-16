@@ -49,8 +49,8 @@ public interface IProjectUsersSignature {
      *            The {@link ProjectUser}'s <code>email</code>
      * @throws ModuleEntityNotFoundException
      */
-    @RequestMapping(value = "/{user_email}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @RequestMapping(value = "/{user_email:.+}", method = RequestMethod.GET)
     ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") String pUserEmail)
             throws ModuleEntityNotFoundException;
 
@@ -135,13 +135,15 @@ public interface IProjectUsersSignature {
      * @throws InvalidValueException
      *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
      *             <code>role</code>.
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @ResponseBody
     @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.GET)
     ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(
             @PathVariable("user_login") String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) String pBorrowedRoleName)
-            throws InvalidValueException;
+            throws InvalidValueException, EntityNotFoundException;
 
     /**
      * Update the the {@link List} of <code>permissions</code>.

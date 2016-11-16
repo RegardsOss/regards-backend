@@ -12,6 +12,8 @@ import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -20,9 +22,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.validator.PastOrNow;
@@ -42,7 +46,6 @@ public class ProjectUser implements IIdentifiable<Long> {
     /**
      * The id
      */
-    @Min(0L)
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projectUserSequence")
     @Column(name = "id")
@@ -70,8 +73,9 @@ public class ProjectUser implements IIdentifiable<Long> {
     private LocalDateTime lastUpdate;
 
     /**
-     * The status of the user.
+     * The status of the user
      */
+    @NotNull
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private UserStatus status;
@@ -80,7 +84,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      * The list of meta data on the user
      */
     @Valid
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @Column(name = "metaData")
     private List<MetaData> metaData;
 
@@ -88,15 +92,17 @@ public class ProjectUser implements IIdentifiable<Long> {
      * The user's role. Can be null according to /accesses@POST (role value can be unspecified and so it's PUBLIC)
      */
     @Valid
+    @NotNull
     @ManyToOne
-    @JoinColumn(name = "role_id", foreignKey = @javax.persistence.ForeignKey(name = "FK_USER_ROLE"))
+    @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "FK_USER_ROLE"))
+    @JsonBackReference
     private Role role;
 
     /**
      * The list of specific permissions for this user, augmenting the permissions granted by the role.
      */
     @Valid
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @Column(name = "permissions")
     private List<ResourcesAccess> permissions;
 
@@ -108,42 +114,27 @@ public class ProjectUser implements IIdentifiable<Long> {
         permissions = new ArrayList<>();
         metaData = new ArrayList<>();
         status = UserStatus.WAITING_ACCESS;
-        lastConnection = LocalDateTime.now();
-        lastUpdate = LocalDateTime.now();
     }
 
     /**
-     * Create a new {@link ProjectUser} with specific values.
+     * Creates a new {@link ProjectUser}
      *
-     * @param pId
-     *            The id
-     * @param pLastConnection
-     *            The last connection date
-     * @param pLastUpdate
-     *            The last update date
-     * @param pStatus
-     *            The status
-     * @param pMetaData
-     *            The list of meta data
+     * @param pEmail
+     *            The email
      * @param pRole
      *            The role
      * @param pPermissions
      *            The list of permissions
-     * @param pEmail
-     *            The email
+     * @param pMetaData
+     *            The list of meta data
      */
-    public ProjectUser(final Long pId, final LocalDateTime pLastConnection, final LocalDateTime pLastUpdate,
-            final UserStatus pStatus, final List<MetaData> pMetaData, final Role pRole,
-            final List<ResourcesAccess> pPermissions, final String pEmail) {
-        super();
-        id = pId;
-        lastConnection = pLastConnection;
-        lastUpdate = pLastUpdate;
-        status = pStatus;
-        metaData = pMetaData;
+    public ProjectUser(final String pEmail, final Role pRole, final List<ResourcesAccess> pPermissions,
+            final List<MetaData> pMetaData) {
+        this();
+        email = pEmail;
         role = pRole;
         permissions = pPermissions;
-        email = pEmail;
+        metaData = pMetaData;
     }
 
     /**
@@ -239,32 +230,6 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     public void setMetaData(final List<MetaData> pMetaData) {
         metaData = pMetaData;
-    }
-
-    /**
-     * TODO move this to service!!
-     *
-     * @return The accepted user
-     */
-    public ProjectUser accept() {
-        if (status.equals(UserStatus.WAITING_ACCESS)) {
-            setStatus(UserStatus.ACCESS_GRANTED);
-            return this;
-        }
-        throw new IllegalStateException("This request has already been treated (accepted)");
-    }
-
-    /**
-     * TODO move this to service!!
-     *
-     * @return The denied user
-     */
-    public ProjectUser deny() {
-        if (status.equals(UserStatus.WAITING_ACCESS)) {
-            setStatus(UserStatus.ACCESS_DENIED);
-            return this;
-        }
-        throw new IllegalStateException("This request has already been treated (denied)");
     }
 
     /**

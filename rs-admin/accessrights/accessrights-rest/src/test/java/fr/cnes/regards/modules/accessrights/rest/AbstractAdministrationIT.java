@@ -28,7 +28,7 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
     /**
      * Test project name
      */
-    public static final String PROJECT_TEST_NAME = "test-1";
+    public static final String PROJECT_TEST_NAME = "test1";
 
     /**
      * Project Repository STUB
@@ -44,6 +44,8 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
 
     @Before
     public void initProjects() {
+        // Clean repository
+        projectRepository.deleteAll();
 
         final Project project = new Project(0L, "desc", "icon", true, PROJECT_TEST_NAME);
         projectRepository.save(project);

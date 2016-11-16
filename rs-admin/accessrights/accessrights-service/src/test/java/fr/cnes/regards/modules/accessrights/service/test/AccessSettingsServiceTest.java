@@ -15,7 +15,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundExcep
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.service.AccessSettingsService;
 

@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.util.ArrayList;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
@@ -37,21 +36,6 @@ public class RoleValidationTest {
     private static Role role;
 
     /**
-     * An id
-     */
-    private static Long ID = 0L;
-
-    /**
-     * Default
-     */
-    private static boolean DEFAULT = false;
-
-    /**
-     * Native
-     */
-    private static boolean NATIVE = true;
-
-    /**
      * Set up the validator
      */
     @BeforeClass
@@ -62,8 +46,8 @@ public class RoleValidationTest {
 
     @Before
     public void setUp() {
-        role = new Role(ID, DefaultRole.INSTANCE_ADMIN.toString(), null, new ArrayList<>(), new ArrayList<>(),
-                DEFAULT, NATIVE);
+        final RoleFactory roleFactory = new RoleFactory();
+        role = roleFactory.createInstanceAdmin();
     }
 
     /**

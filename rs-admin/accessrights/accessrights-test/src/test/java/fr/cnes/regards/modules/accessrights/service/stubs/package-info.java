@@ -2,6 +2,7 @@
  * LICENSE_PLACEHOLDER
  */
 /**
- * Package for accessrights public interface signatures.
+ * 
+ * @author Xavier-Alexandre Brochard
  */
 package fr.cnes.regards.modules.accessrights.service.stubs;

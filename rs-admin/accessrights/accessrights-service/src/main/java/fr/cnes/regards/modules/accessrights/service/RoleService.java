@@ -28,16 +28,11 @@ import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 /**
  * {@link IRoleService} implementation
  *
- * @author Xavier-Alexandre Brochard
+ * @author xbrochar
  *
  */
 @Service
 public class RoleService implements IRoleService {
-
-    /**
-     * Error message
-     */
-    private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
 
     /**
      * CRUD repository managing {@link Role}s. Autowired by Spring.
@@ -105,11 +100,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void removeRole(final Long pRoleId) throws OperationForbiddenException {
-        final Role previous = roleRepository.findOne(pRoleId);
-        if ((previous != null) && previous.isNative()) {
-            throw new OperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-        }
+    public void removeRole(final Long pRoleId) {
         roleRepository.delete(pRoleId);
     }
 

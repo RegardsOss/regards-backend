@@ -69,6 +69,8 @@ public interface IRoleService {
      *             when no {@link Role} with passed <code>id</code> could be found
      * @throws InvalidValueException
      *             Thrown when <code>pRoleId</code> is different from the id of <code>pUpdatedRole</code>
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
     void updateRole(Long pRoleId, Role pUpdatedRole) throws ModuleEntityNotFoundException, InvalidValueException;
 
@@ -77,10 +79,10 @@ public interface IRoleService {
      *
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
-     * @throws OperationForbiddenException
-     *             when the updated role is native. Native roles should not be removed
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
-    void removeRole(Long pRoleId) throws OperationForbiddenException;
+    void removeRole(Long pRoleId) throws EntityNotFoundException;
 
     /**
      * Return the {@link List} of {@link ResourcesAccess} on the {@link Role} of passed <code>id</code>.

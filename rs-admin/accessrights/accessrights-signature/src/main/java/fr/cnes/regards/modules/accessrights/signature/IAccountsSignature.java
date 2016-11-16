@@ -95,9 +95,16 @@ public interface IAccountsSignature {
     /**
      * Do not respect REST architecture because the request comes from a mail client, ideally should be a PUT
      *
-     * @param accountId
-     * @param unlockCode
+     * @param pAccountId
+     *            The account id
+     * @param pUnlockCode
+     *            the unlock code
      * @return
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when no {@link Account} could be found with id
+     *             <code>pAccountId</code><br>
+     *             {@link IllegalActionForAccountStatusException} Thrown if the account is not in status LOCKED
      * @throws InvalidValueException
      * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>

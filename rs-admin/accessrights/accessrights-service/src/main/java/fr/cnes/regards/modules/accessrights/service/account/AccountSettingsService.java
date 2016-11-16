@@ -1,12 +1,13 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessrights.service;
+package fr.cnes.regards.modules.accessrights.service.account;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountSettingsRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 
@@ -16,6 +17,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
  * @author Xavier-Alexandre Brochard
  */
 @Service
+@InstanceTransactional
 public class AccountSettingsService implements IAccountSettingsService {
 
     /**
@@ -37,12 +39,12 @@ public class AccountSettingsService implements IAccountSettingsService {
     /*
      * (non-Javadoc)
      *
-     * @see fr.cnes.regards.modules.accessrights.service.IAccountSettingsService#retrieve()
+     * @see fr.cnes.regards.modules.accessrights.service.role.IAccountSettingsService#retrieve()
      */
     @Override
     public AccountSettings retrieve() {
         final List<AccountSettings> settings = accountSettingsRepository.findAll();
-        AccountSettings result;
+        final AccountSettings result;
         if (!settings.isEmpty()) {
             result = settings.get(0);
         } else {
@@ -56,7 +58,7 @@ public class AccountSettingsService implements IAccountSettingsService {
     /*
      * (non-Javadoc)
      *
-     * @see fr.cnes.regards.modules.accessrights.service.IAccountSettingsService#update()
+     * @see fr.cnes.regards.modules.accessrights.service.role.IAccountSettingsService#update()
      */
     @Override
     public AccountSettings update(final AccountSettings pAccessSettings) {

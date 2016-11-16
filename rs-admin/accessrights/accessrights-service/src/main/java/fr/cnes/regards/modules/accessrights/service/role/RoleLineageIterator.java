@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.accessrights.service;
+package fr.cnes.regards.modules.accessrights.service.role;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
