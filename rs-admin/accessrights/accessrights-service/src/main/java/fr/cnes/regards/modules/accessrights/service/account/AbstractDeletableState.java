@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -106,18 +108,17 @@ abstract class AbstractDeletableState implements IAccountState {
         // Get all tenants
         final Set<String> tenants = tenantResolver.getAllTenants();
 
-        // Define inject tenant consumer
-        final Consumer<? super String> injectTenant = t -> {
-            // TODO: User role system
-            jwtService.changeTenant(t);
-            LOG.info("Injected tenant " + t);
+        // Define a consumer injecting the passed tenant in the context
+        final Consumer<? super String> injectTenant = tenant -> {
+            try {
+                jwtService.injectToken(tenant, RoleAuthority.getSysRole("rs-admin"));
+            } catch (final JwtException e) {
+                LOG.error(e.getMessage(), e);
+            }
         };
 
         // Predicate: is there a project user associated to the account on this tenant?
-        final Predicate<? super String> hasProjectUser = t -> {
-            LOG.info("Evaluated predicate with tenant " + t);
-            return projectUserService.existUser(pAccount.getEmail());
-        };
+        final Predicate<? super String> hasProjectUser = tenant -> projectUserService.existUser(pAccount.getEmail());
 
         try (Stream<String> stream = tenants.stream()) {
             if (stream.peek(injectTenant).anyMatch(hasProjectUser)) {

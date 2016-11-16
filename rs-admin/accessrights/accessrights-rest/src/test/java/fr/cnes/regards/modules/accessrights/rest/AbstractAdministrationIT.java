@@ -9,6 +9,7 @@ import org.springframework.context.annotation.ImportResource;
 
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -37,6 +38,12 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
     private IProjectRepository projectRepository;
 
     /**
+     * Project Connection Repository STUB
+     */
+    @Autowired
+    private IProjectConnectionRepository projectConnectionRepository;
+
+    /**
      * Method authorization service.
      */
     @Autowired
@@ -44,7 +51,8 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
 
     @Before
     public void initProjects() {
-        // Clean repository
+        // Clean repositories
+        projectConnectionRepository.deleteAll();
         projectRepository.deleteAll();
 
         final Project project = new Project(0L, "desc", "icon", true, PROJECT_TEST_NAME);
