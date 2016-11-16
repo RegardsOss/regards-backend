@@ -21,6 +21,7 @@ import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolve
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.client.TokenClientProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -214,10 +215,13 @@ public class ResourcesService implements IResourcesService {
                     HttpVerb.valueOf(collectedResource.getMethod().name()));
 
             // Add default role if exists
-            final Role role = roleService.retrieveRole(collectedResource.getResourceAccess().role().toString());
-            if (role != null) {
-                defaultRoles.add(role);
-                resource.setRoles(defaultRoles);
+            if ((collectedResource.getResourceAccess().role() != null)
+                    && !collectedResource.getResourceAccess().role().equals(DefaultRole.NONE)) {
+                final Role role = roleService.retrieveRole(collectedResource.getResourceAccess().role().toString());
+                if (role != null) {
+                    defaultRoles.add(role);
+                    resource.setRoles(defaultRoles);
+                }
             }
             collectedResources.add(resource);
         }

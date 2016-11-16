@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolve
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -123,6 +124,7 @@ public class ResourcesServiceTest {
         final Map<String, Object> attributs = new HashMap<>();
         attributs.put("name", "/test/premier");
         attributs.put("description", "premier test");
+        attributs.put("role", DefaultRole.ADMIN);
         ResourceAccess resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
         resources.add(new ResourceMapping(resourceAccess, "/test/premier", RequestMethod.GET));
         attributs.put("name", "/test/second");
@@ -136,15 +138,16 @@ public class ResourcesServiceTest {
         Mockito.when(methodAuthServiceMock.getResources()).thenReturn(resources);
         Mockito.when(discoveryClientMock.getServices()).thenReturn(new ArrayList<>());
 
-        Mockito.when(roleServiceMock.retrieveRole("ADMIN")).thenReturn(new Role(1L, "ADMIN", null, new ArrayList<>(),
-                new ArrayList<>(), new ArrayList<>(), false, true, true, null));
+        Mockito.when(roleServiceMock.retrieveRole(DefaultRole.ADMIN.toString()))
+                .thenReturn(new Role(1L, DefaultRole.ADMIN.toString(), null, new ArrayList<>(), new ArrayList<>(),
+                        new ArrayList<>(), false, true, true, null));
 
         Assert.assertTrue(resourcesService.collectResources().size() == 3);
         Assert.assertTrue(resourcesRepo.count() == 3);
 
         for (final ResourcesAccess resource : resourcesService.retrieveRessources()) {
             Assert.assertTrue(!resource.getRoles().isEmpty());
-            Assert.assertTrue(resource.getRoles().get(0).getName().equals("ADMIN"));
+            Assert.assertTrue(resource.getRoles().get(0).getName().equals(DefaultRole.ADMIN.toString()));
         }
 
     }
@@ -160,6 +163,7 @@ public class ResourcesServiceTest {
         final Map<String, Object> attributs = new HashMap<>();
         attributs.put("name", "/test/premier");
         attributs.put("description", "premier test");
+        attributs.put("role", DefaultRole.ADMIN);
         ResourceAccess resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
         resources.add(new ResourceMapping(resourceAccess, "/test/premier", RequestMethod.GET));
         attributs.put("name", "/test/second");
@@ -177,8 +181,9 @@ public class ResourcesServiceTest {
 
         Mockito.when(discoveryClientMock.getServices()).thenReturn(services);
 
-        Mockito.when(roleServiceMock.retrieveRole("ADMIN")).thenReturn(new Role(1L, "ADMIN", null, new ArrayList<>(),
-                new ArrayList<>(), new ArrayList<>(), false, true, true, null));
+        Mockito.when(roleServiceMock.retrieveRole(DefaultRole.ADMIN.toString()))
+                .thenReturn(new Role(1L, DefaultRole.ADMIN.toString(), null, new ArrayList<>(), new ArrayList<>(),
+                        new ArrayList<>(), false, true, true, null));
 
         Mockito.doReturn(resources).when(resourcesService).getRemoteResources(Mockito.anyString());
 
@@ -187,7 +192,7 @@ public class ResourcesServiceTest {
 
         for (final ResourcesAccess resource : resourcesService.retrieveRessources()) {
             Assert.assertTrue(!resource.getRoles().isEmpty());
-            Assert.assertTrue(resource.getRoles().get(0).getName().equals("ADMIN"));
+            Assert.assertTrue(resource.getRoles().get(0).getName().equals(DefaultRole.ADMIN.toString()));
         }
 
     }
