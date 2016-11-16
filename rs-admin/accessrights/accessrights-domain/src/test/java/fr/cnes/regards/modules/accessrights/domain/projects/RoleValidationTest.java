@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 
 /**
@@ -56,7 +57,7 @@ public class RoleValidationTest {
     @Purpose("Check that the system prevents the role PUBLIC to have a parent.")
     public void testRoleIsPublicAndHasParent() {
         // Init the malformed role PUBLIC - it must have no parent
-        role.setName(DefaultRoleNames.PUBLIC.toString());
+        role.setName(DefaultRole.PUBLIC.toString());
         final Role parent = new Role();
         role.setParentRole(parent);
 
@@ -74,7 +75,7 @@ public class RoleValidationTest {
     @Purpose("Check that the system allows the role PUBLIC to have a null parent.")
     public void testRoleIsPublicAndNullParent() {
         // Init the well formed role PUBLIC
-        role.setName(DefaultRoleNames.PUBLIC.toString());
+        role.setName(DefaultRole.PUBLIC.toString());
         role.setParentRole(null);
 
         // Run the validator

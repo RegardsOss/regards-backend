@@ -30,15 +30,14 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.signature.IRolesSignature;
 
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 public class RolesController implements IRolesSignature {
 
     @Autowired
     private IRoleService roleService;
 
     @Override
-    @ResourceAccess(description = "Retrieve the list of roles", name = "")
+    @ResourceAccess(description = "Retrieve the list of roles")
     public ResponseEntity<List<Resource<Role>>> retrieveRoleList() {
         final List<Role> roles = roleService.retrieveRoleList();
         final List<Resource<Role>> resources = roles.stream().map(r -> new Resource<>(r)).collect(Collectors.toList());
@@ -46,7 +45,7 @@ public class RolesController implements IRolesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "Create a role", name = "")
+    @ResourceAccess(description = "Create a role")
     public ResponseEntity<Resource<Role>> createRole(@Valid @RequestBody final Role pNewRole)
             throws AlreadyExistingException {
         final Role created = roleService.createRole(pNewRole);
@@ -55,7 +54,7 @@ public class RolesController implements IRolesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "Retrieve a role by id", name = "")
+    @ResourceAccess(description = "Retrieve a role by id")
     public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName) {
         final Role role = roleService.retrieveRole(pRoleName);
         final Resource<Role> resource = new Resource<>(role);
@@ -63,7 +62,7 @@ public class RolesController implements IRolesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "Update the role of role_id with passed body", name = "")
+    @ResourceAccess(description = "Update the role of role_id with passed body")
     public ResponseEntity<Void> updateRole(@PathVariable("role_id") final Long pRoleId,
             @Valid @RequestBody final Role pUpdatedRole) throws ModuleEntityNotFoundException, InvalidValueException {
         roleService.updateRole(pRoleId, pUpdatedRole);
@@ -71,7 +70,7 @@ public class RolesController implements IRolesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "Remove the role of role_id", name = "")
+    @ResourceAccess(description = "Remove the role of role_id")
     public ResponseEntity<Void> removeRole(@PathVariable("role_id") final Long pRoleId)
             throws OperationForbiddenException {
         roleService.removeRole(pRoleId);
@@ -79,7 +78,7 @@ public class RolesController implements IRolesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "Retrieve the list of permissions of the role with role_id", name = "")
+    @ResourceAccess(description = "Retrieve the list of permissions of the role with role_id")
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(
             @PathVariable("role_id") final Long pRoleId) throws ModuleEntityNotFoundException {
         final List<ResourcesAccess> resourcesAccesses = roleService.retrieveRoleResourcesAccessList(pRoleId);
@@ -89,7 +88,7 @@ public class RolesController implements IRolesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "Incrementally update the list of permissions of the role with role_id", name = "")
+    @ResourceAccess(description = "Incrementally update the list of permissions of the role with role_id")
     public ResponseEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId,
             @Valid @RequestBody final List<ResourcesAccess> pResourcesAccessList) throws ModuleEntityNotFoundException {
         roleService.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
@@ -97,7 +96,7 @@ public class RolesController implements IRolesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "Clear the list of permissions of the", name = "")
+    @ResourceAccess(description = "Clear the list of permissions of the")
     public ResponseEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId)
             throws ModuleEntityNotFoundException {
         roleService.clearRoleResourcesAccess(pRoleId);
@@ -105,9 +104,7 @@ public class RolesController implements IRolesSignature {
     }
 
     @Override
-    @ResourceAccess(
-            description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id",
-            name = "")
+    @ResourceAccess(description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id")
     public ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(
             @PathVariable("role_id") final Long pRoleId) {
         List<ProjectUser> projectUserList = new ArrayList<>();

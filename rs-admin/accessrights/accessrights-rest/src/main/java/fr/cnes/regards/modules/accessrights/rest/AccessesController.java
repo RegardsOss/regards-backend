@@ -30,8 +30,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsS
 import fr.cnes.regards.modules.accessrights.signature.IAccessesSignature;
 
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 public class AccessesController implements IAccessesSignature {
 
     /**
@@ -47,7 +46,7 @@ public class AccessesController implements IAccessesSignature {
     private IAccessSettingsService accessSettingsService;
 
     @Override
-    @ResourceAccess(description = "retrieve the list of access request", name = "")
+    @ResourceAccess(description = "retrieve the list of access request")
     public ResponseEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
         final List<ProjectUser> projectUsers = accessRequestService.retrieveAccessRequestList();
         final List<Resource<ProjectUser>> resources = projectUsers.stream().map(p -> new Resource<>(p))
@@ -56,7 +55,7 @@ public class AccessesController implements IAccessesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "create a new access request", name = "")
+    @ResourceAccess(description = "create a new access request")
     public ResponseEntity<Resource<AccessRequestDTO>> requestAccess(
             @Valid @RequestBody final AccessRequestDTO pAccessRequest)
             throws AlreadyExistingException, InvalidEntityException {
@@ -66,7 +65,7 @@ public class AccessesController implements IAccessesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "accept the access request", name = "")
+    @ResourceAccess(description = "accept the access request")
     public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws ModuleEntityNotFoundException {
         accessRequestService.acceptAccessRequest(pAccessId);
@@ -74,7 +73,7 @@ public class AccessesController implements IAccessesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "deny the access request", name = "")
+    @ResourceAccess(description = "deny the access request")
     public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws ModuleEntityNotFoundException {
         accessRequestService.denyAccessRequest(pAccessId);
@@ -82,7 +81,7 @@ public class AccessesController implements IAccessesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "remove the access request", name = "")
+    @ResourceAccess(description = "remove the access request")
     public ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws ModuleEntityNotFoundException {
         accessRequestService.removeAccessRequest(pAccessId);
@@ -90,7 +89,7 @@ public class AccessesController implements IAccessesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "retrieve the settings managing the access requests", name = "")
+    @ResourceAccess(description = "retrieve the settings managing the access requests")
     public ResponseEntity<Resource<AccessSettings>> getAccessSettings() {
         final AccessSettings accessSettings = accessSettingsService.retrieve();
         final Resource<AccessSettings> resource = new Resource<>(accessSettings);
@@ -98,7 +97,7 @@ public class AccessesController implements IAccessesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "update the setting managing the access requests", name = "")
+    @ResourceAccess(description = "update the setting managing the access requests")
     public ResponseEntity<Void> updateAccessSettings(@Valid @RequestBody final AccessSettings pAccessSettings)
             throws ModuleEntityNotFoundException {
         accessSettingsService.update(pAccessSettings);

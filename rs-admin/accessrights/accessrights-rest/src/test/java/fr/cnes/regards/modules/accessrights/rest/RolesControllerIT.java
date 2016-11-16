@@ -26,13 +26,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
@@ -96,7 +96,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Override
     public void init() {
         final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
-        jwt = jwtService.generateToken(tenant, "email", DefaultRoleNames.PUBLIC.toString(), "USER");
+        jwt = jwtService.generateToken(tenant, "email", DefaultRole.PUBLIC.toString(), "USER");
         authService.setAuthorities(tenant, "/roles", RequestMethod.GET, "USER");
         authService.setAuthorities(tenant, "/roles", RequestMethod.POST, "USER");
         authService.setAuthorities(tenant, "/roles/{role_name}", RequestMethod.GET, "USER");
@@ -150,7 +150,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     public void retrieveRole() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRolesName, jwt, expectations, "TODO Error message", DefaultRoleNames.REGISTERED_USER);
+        performGet(apiRolesName, jwt, expectations, "TODO Error message", DefaultRole.REGISTERED_USER);
 
         final String wrongRoleName = "WRONG_ROLE";
         expectations = new ArrayList<>(1);

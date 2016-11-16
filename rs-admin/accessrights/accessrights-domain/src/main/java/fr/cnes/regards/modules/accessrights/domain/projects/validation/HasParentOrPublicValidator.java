@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.accessrights.domain.projects.validation;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
