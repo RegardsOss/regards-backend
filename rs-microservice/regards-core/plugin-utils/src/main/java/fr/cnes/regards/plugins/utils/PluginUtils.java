@@ -21,6 +21,7 @@ import fr.cnes.regards.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.plugins.utils.bean.IPluginUtilsBean;
 
 /**
  *
@@ -34,6 +35,8 @@ public final class PluginUtils {
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtils.class);
+
+    private static IPluginUtilsBean pluginUtilsBean;
 
     /**
      *
@@ -165,6 +168,10 @@ public final class PluginUtils {
             // Post process parameters
             PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPluginParameters);
 
+            if (pluginUtilsBean != null) {
+                pluginUtilsBean.processAutowiredBean(returnPlugin);
+            }
+
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
@@ -175,6 +182,13 @@ public final class PluginUtils {
         }
 
         return returnPlugin;
+    }
+
+    public static <T> T getPlugin(final PluginConfiguration pPluginConf, final PluginMetaData pPluginMetadata,
+            final IPluginUtilsBean pPluginUtilsBean, final PluginParameter... pPluginParameters)
+            throws PluginUtilsException {
+        pluginUtilsBean = pPluginUtilsBean;
+        return PluginUtils.getPlugin(pPluginConf, pPluginMetadata, pPluginParameters);
     }
 
     /**
@@ -206,6 +220,10 @@ public final class PluginUtils {
             // Post process parameters
             PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPluginParameters);
 
+            if (pluginUtilsBean != null) {
+                pluginUtilsBean.processAutowiredBean(returnPlugin);
+            }
+
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
@@ -234,6 +252,13 @@ public final class PluginUtils {
      * @throws PluginUtilsException
      *             if problem occurs
      */
+    public static <T> T getPlugin(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
+            final IPluginUtilsBean pPluginUtilsBean, final PluginParameter... pPluginParameters)
+            throws PluginUtilsException {
+        pluginUtilsBean = pPluginUtilsBean;
+        return PluginUtils.getPlugin(pParameters, pReturnInterfaceType, pPluginParameters);
+    }
+
     public static <T> T getPlugin(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
             final PluginParameter... pPluginParameters) throws PluginUtilsException {
         // Build plugin metadata
@@ -295,4 +320,5 @@ public final class PluginUtils {
 
         return new PluginConfiguration(pluginMetadata, "", pParameters, 0);
     }
+
 }
