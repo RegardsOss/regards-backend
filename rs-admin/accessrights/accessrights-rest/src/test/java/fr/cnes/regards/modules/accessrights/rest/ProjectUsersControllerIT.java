@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -27,7 +28,6 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -172,8 +172,8 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     @Purpose("Check that the system allows a user to connect using a hierarchically inferior role to its own and handle fail cases.")
     public void getUserPermissionsWithBorrowedRole() {
         // Initiate a specific project user for the test
-        Assert.assertTrue(roleRepository.findOneByName(DefaultRoleNames.ADMIN.toString()) != null);
-        final Role role = roleRepository.findOneByName(DefaultRoleNames.ADMIN.toString());
+        Assert.assertTrue(roleRepository.findOneByName(DefaultRole.ADMIN.toString()) != null);
+        final Role role = roleRepository.findOneByName(DefaultRole.ADMIN.toString());
         final ProjectUser projectUser = new ProjectUser(4824L, null, null, UserStatus.ACCESS_GRANTED, new ArrayList<>(),
                 role, new ArrayList<>(), "email@test.com");
         // Save it
@@ -183,7 +183,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
 
         // Borrowing a hierarchically inferior role
-        String borrowedRoleName = DefaultRoleNames.REGISTERED_USER.toString();
+        String borrowedRoleName = DefaultRole.REGISTERED_USER.toString();
         Assert.assertTrue(roleRepository.findOneByName(borrowedRoleName) != null);
         Role borrowedRole = roleRepository.findOneByName(borrowedRoleName);
         Assert.assertTrue(roleService.isHierarchicallyInferior(borrowedRole, role));
@@ -192,7 +192,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
                    projectUser.getEmail());
 
         // Borrowing a hierarchically superior role
-        borrowedRoleName = DefaultRoleNames.INSTANCE_ADMIN.toString();
+        borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();
         Assert.assertTrue(roleRepository.findOneByName(borrowedRoleName) != null);
         borrowedRole = roleRepository.findOneByName(borrowedRoleName);
         Assert.assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, role));

@@ -36,8 +36,7 @@ import fr.cnes.regards.modules.project.signature.IProjectConnectionSignature;
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
+@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 public class ProjectConnectionController
         implements IResourceController<ProjectConnection>, IProjectConnectionSignature {
 
@@ -64,8 +63,7 @@ public class ProjectConnectionController
     }
 
     @Override
-    @ResourceAccess(
-            description = "retrieve a project connection associated to a given project and a given microservice")
+    @ResourceAccess(description = "retrieve a project connection associated to a given project and a given microservice")
     public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
             @PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroService) {
@@ -141,7 +139,7 @@ public class ProjectConnectionController
     }
 
     @Override
-    public Resource<ProjectConnection> toResource(final ProjectConnection pElement) {
+    public Resource<ProjectConnection> toResource(final ProjectConnection pElement, Object... pExtras) {
 
         final Resource<ProjectConnection> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveProjectConnection", LinkRels.SELF,

@@ -54,7 +54,7 @@ public class NotificationController implements INotificationSignature {
      * @see fr.cnes.regards.modules.notification.signature.INotificationSignature#retrieveNotifications()
      */
     @Override
-    @ResourceAccess(description = "Retrieve the list of notifications for the logged user", name = "notification")
+    @ResourceAccess(description = "Retrieve the list of notifications for the logged user")
     public ResponseEntity<List<Notification>> retrieveNotifications() {
         final List<Notification> notifications = notificationService.retrieveNotifications();
         return new ResponseEntity<>(notifications, HttpStatus.OK);
@@ -68,7 +68,7 @@ public class NotificationController implements INotificationSignature {
      * notification.domain.NotificationDTO)
      */
     @Override
-    @ResourceAccess(description = "Define the endpoint for sending an notification to recipients", name = "notification")
+    @ResourceAccess(description = "Define the endpoint for sending an notification to recipients")
     public ResponseEntity<Notification> createNotification(@Valid @RequestBody final NotificationDTO pDto) {
         final Notification notification = notificationService.createNotification(pDto);
         return new ResponseEntity<>(notification, HttpStatus.CREATED);
@@ -80,7 +80,7 @@ public class NotificationController implements INotificationSignature {
      * @see fr.cnes.regards.modules.notification.signature.INotificationSignature#retrieveNotification(java.lang.Long)
      */
     @Override
-    @ResourceAccess(description = "Define the endpoint for retrieving a notification", name = "notification")
+    @ResourceAccess(description = "Define the endpoint for retrieving a notification")
     public ResponseEntity<Notification> retrieveNotification(@PathVariable("notification_id") final Long pId)
             throws EntityNotFoundException {
         final Notification notification = notificationService.retrieveNotification(pId);
@@ -94,7 +94,7 @@ public class NotificationController implements INotificationSignature {
      * fr.cnes.regards.modules.notification.signature.INotificationSignature#updateNotificationStatus(java.lang.Long)
      */
     @Override
-    @ResourceAccess(description = "Define the endpoint for updating the notification status", name = "notification")
+    @ResourceAccess(description = "Define the endpoint for updating the notification status")
     public void updateNotificationStatus(@PathVariable("notification_id") final Long pId,
             @Valid @RequestBody final NotificationStatus pStatus) throws EntityNotFoundException {
         notificationService.updateNotificationStatus(pId, pStatus);
@@ -106,7 +106,7 @@ public class NotificationController implements INotificationSignature {
      * @see fr.cnes.regards.modules.notification.signature.INotificationSignature#deleteNotification(java.lang.Long)
      */
     @Override
-    @ResourceAccess(description = "Define the endpoint for deleting a notification", name = "notification")
+    @ResourceAccess(description = "Define the endpoint for deleting a notification")
     public void deleteNotification(@PathVariable("notification_id") final Long pId) throws EntityNotFoundException {
         notificationService.deleteNotification(pId);
     }
@@ -117,7 +117,7 @@ public class NotificationController implements INotificationSignature {
      * @see fr.cnes.regards.modules.notification.signature.INotificationSignature#retrieveNotificationSettings()
      */
     @Override
-    @ResourceAccess(description = "Define the endpoint for retrieving the notification settings for the logged user", name = "notification")
+    @ResourceAccess(description = "Define the endpoint for retrieving the notification settings for the logged user")
     public ResponseEntity<NotificationSettings> retrieveNotificationSettings() {
         final NotificationSettings settings = notificationSettingsService.retrieveNotificationSettings();
         return new ResponseEntity<>(settings, HttpStatus.OK);
@@ -131,7 +131,7 @@ public class NotificationController implements INotificationSignature {
      * modules.notification.domain.NotificationSettings)
      */
     @Override
-    @ResourceAccess(description = "Define the endpoint for updating the notification status", name = "notification")
+    @ResourceAccess(description = "Define the endpoint for updating the notification status")
     public void updateNotificationSettings(final NotificationSettingsDTO pNotificationSettings) {
         notificationSettingsService.updateNotificationSettings(pNotificationSettings);
     }

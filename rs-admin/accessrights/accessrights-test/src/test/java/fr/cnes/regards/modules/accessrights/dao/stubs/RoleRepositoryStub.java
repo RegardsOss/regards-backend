@@ -13,10 +13,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -41,15 +41,15 @@ public class RoleRepositoryStub extends JpaRepositoryStub<Role> implements IRole
         projectUsers.add(new ProjectUser());
 
         // Init default roles
-        final Role rolePublic = new Role(0L, DefaultRoleNames.PUBLIC.toString(), null, permissionList,
+        final Role rolePublic = new Role(0L, DefaultRole.PUBLIC.toString(), null, permissionList,
                 projectUsers.subList(0, 2), true, true);
-        final Role roleRegisteredUser = new Role(1L, DefaultRoleNames.REGISTERED_USER.toString(), rolePublic, null,
+        final Role roleRegisteredUser = new Role(1L, DefaultRole.REGISTERED_USER.toString(), rolePublic, null,
                 projectUsers.subList(2, 4), false, true);
-        final Role roleAdmin = new Role(2L, DefaultRoleNames.ADMIN.toString(), roleRegisteredUser,
+        final Role roleAdmin = new Role(2L, DefaultRole.ADMIN.toString(), roleRegisteredUser,
                 permissionList.subList(1, 2), projectUsers.subList(1, 2), false, true);
-        final Role roleProjectAdmin = new Role(3L, DefaultRoleNames.PROJECT_ADMIN.toString(), roleAdmin,
+        final Role roleProjectAdmin = new Role(3L, DefaultRole.PROJECT_ADMIN.toString(), roleAdmin,
                 permissionList.subList(1, 3), projectUsers.subList(1, 4), false, true);
-        final Role roleInstanceAdmin = new Role(4L, DefaultRoleNames.INSTANCE_ADMIN.toString(), roleProjectAdmin,
+        final Role roleInstanceAdmin = new Role(4L, DefaultRole.INSTANCE_ADMIN.toString(), roleProjectAdmin,
                 new ArrayList<>(), projectUsers.subList(0, 2), false, true);
         entities.add(rolePublic);
         entities.add(roleRegisteredUser);

@@ -16,6 +16,7 @@ import org.springframework.context.annotation.PropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.microservices.administration.LocalAuthoritiesProvider;
@@ -23,7 +24,6 @@ import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolve
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -113,7 +113,7 @@ public class TestConfiguration {
         addresses.add("127.0.0.2");
         addresses.add("127.0.0.3");
         pRoleRpo.deleteAll();
-        final Role publicRole = pRoleRpo.save(new Role(0L, DefaultRoleNames.PUBLIC.toString(), null, new ArrayList<>(),
+        final Role publicRole = pRoleRpo.save(new Role(0L, DefaultRole.PUBLIC.toString(), null, new ArrayList<>(),
                 addresses, new ArrayList<>(), false, true, true, LocalDateTime.now().plusDays(5L)));
         pRoleRpo.save(new Role(0L, CORS_ROLE_NAME_GRANTED, publicRole, new ArrayList<>(), addresses, new ArrayList<>(),
                 false, true, true, LocalDateTime.now().plusDays(5L)));

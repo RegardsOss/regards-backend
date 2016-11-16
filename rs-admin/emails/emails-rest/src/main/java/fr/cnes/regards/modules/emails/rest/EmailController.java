@@ -38,7 +38,7 @@ public class EmailController implements IEmailSignature {
     private IEmailService emailService;
 
     @Override
-    @ResourceAccess(description = "Retrieve all emails", name = "email")
+    @ResourceAccess(description = "Retrieve all emails")
     public ResponseEntity<List<Email>> retrieveEmails() {
         final List<Email> emails = emailService.retrieveEmails();
         return new ResponseEntity<>(emails, HttpStatus.OK);
@@ -51,27 +51,27 @@ public class EmailController implements IEmailSignature {
      * fr.cnes.regards.modules.emails.signature.IEmailSignature#sendEmail1(org.springframework.mail.SimpleMailMessage)
      */
     @Override
-    @ResourceAccess(description = "Send an email to recipients", name = "email")
+    @ResourceAccess(description = "Send an email to recipients")
     public ResponseEntity<SimpleMailMessage> sendEmail(@Valid @RequestBody final SimpleMailMessage pMessage) {
         final SimpleMailMessage created = emailService.sendEmail(pMessage);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @Override
-    @ResourceAccess(description = "Retrieve an email", name = "email")
+    @ResourceAccess(description = "Retrieve an email")
     public ResponseEntity<Email> retrieveEmail(@PathVariable("mail_id") final Long pId) {
         final Email email = emailService.retrieveEmail(pId);
         return new ResponseEntity<>(email, HttpStatus.OK);
     }
 
     @Override
-    @ResourceAccess(description = "Send again an email", name = "email")
+    @ResourceAccess(description = "Send again an email")
     public void resendEmail(@PathVariable("mail_id") final Long pId) {
         emailService.resendEmail(pId);
     }
 
     @Override
-    @ResourceAccess(description = "Delete an email", name = "email")
+    @ResourceAccess(description = "Delete an email")
     public void deleteEmail(@PathVariable("mail_id") final Long pId) {
         emailService.deleteEmail(pId);
     }

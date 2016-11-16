@@ -37,15 +37,14 @@ import fr.cnes.regards.modules.accessrights.signature.IProjectUsersSignature;
  *
  */
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 public class ProjectUsersController implements IProjectUsersSignature {
 
     @Autowired
     private IProjectUserService projectUserService;
 
     @Override
-    @ResourceAccess(description = "retrieve the list of users of the project", name = "")
+    @ResourceAccess(description = "retrieve the list of users of the project")
     public ResponseEntity<List<Resource<ProjectUser>>> retrieveProjectUserList() {
         final List<ProjectUser> users = projectUserService.retrieveUserList();
         final List<Resource<ProjectUser>> resources = users.stream().map(u -> new Resource<>(u))

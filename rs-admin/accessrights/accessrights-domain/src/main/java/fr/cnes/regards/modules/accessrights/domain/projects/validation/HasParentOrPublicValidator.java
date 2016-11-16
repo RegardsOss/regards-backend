@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.accessrights.domain.projects.validation;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
@@ -33,8 +33,8 @@ public class HasParentOrPublicValidator implements ConstraintValidator<HasParent
      */
     @Override
     public boolean isValid(final Role pValue, final ConstraintValidatorContext pContext) {
-        return ((pValue.getName() != DefaultRoleNames.PUBLIC.toString()) && (pValue.getParentRole() != null))
-                || ((pValue.getName() == DefaultRoleNames.PUBLIC.toString()) && (pValue.getParentRole() == null));
+        return ((pValue.getName() != DefaultRole.PUBLIC.toString()) && (pValue.getParentRole() != null))
+                || ((pValue.getName() == DefaultRole.PUBLIC.toString()) && (pValue.getParentRole() == null));
     }
 
 }
