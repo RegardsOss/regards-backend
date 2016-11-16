@@ -3,7 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.projects;
 
-import org.springframework.data.domain.Example;
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -11,27 +12,40 @@ import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 
 /**
- * Interface for a JPA auto-generated CRUD repository managing {@link ResourcesAccess}s.<br>
- * Embeds paging/sorting abilities by entending {@link PagingAndSortingRepository}.<br>
- * Allows execution of Query by Example {@link Example} instances.
  *
- * @author CS SI
+ * Class IResourcesAccessRepository
+ *
+ * JPA Repository to access ResourcesAccess entities
+ *
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
  */
 public interface IResourcesAccessRepository extends CrudRepository<ResourcesAccess, Long> {
 
     /**
-     * Find the single {@link ResourcesAccess} with passed <code>microservice</code> and <code>resource</code> and
-     * <code>verb</code>.<br>
-     * Custom query auto-implemented by JPA thanks to the method naming convention.
+     *
+     * Retrieve one resource by microservice, resource path and http verb
      *
      * @param pMicroservice
-     *            the microservice name
-     * @param pResourceFullPath
-     *            the resource path
+     *            Microservice name who own the resource
+     * @param resourceFullPath
+     *            resource full path
      * @param pVerb
-     *            the http verb
-     * @return the resources access
+     *            HttpVerb of the resource
+     * @return ResourcesAccess
+     * @since 1.0-SNAPSHOT
      */
-    ResourcesAccess findOneByMicroserviceAndResourceAndVerb(String pMicroservice, String pResourceFullPath,
+    ResourcesAccess findOneByMicroserviceAndResourceAndVerb(String pMicroservice, String resourceFullPath,
             HttpVerb pVerb);
+
+    /**
+     *
+     * Retrieve all resource for a given microservice
+     *
+     * @param pMicroservice
+     * @return List<ResourcesAccess>
+     * @since 1.0-SNAPSHOT
+     */
+    List<ResourcesAccess> findByMicroservice(String pMicroservice);
+
 }

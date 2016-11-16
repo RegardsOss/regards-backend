@@ -43,13 +43,7 @@ public class LocalTenantConnectionTest {
     @Test
     public void checkJpaTenants() {
 
-        File resourcesDirectory = new File("target/" + TestConfiguration.PROJECT_NAME);
-        Assert.assertTrue(resourcesDirectory.exists());
-
-        resourcesDirectory = new File("target/test1");
-        Assert.assertTrue(resourcesDirectory.exists());
-
-        resourcesDirectory = new File("target/test2");
+        final File resourcesDirectory = new File("target/" + TestConfiguration.PROJECT_NAME);
         Assert.assertTrue(resourcesDirectory.exists());
 
     }

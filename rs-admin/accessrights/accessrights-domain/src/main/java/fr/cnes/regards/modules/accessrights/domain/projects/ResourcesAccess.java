@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -10,6 +12,9 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
 
@@ -43,6 +48,14 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     @Enumerated(EnumType.STRING)
     private HttpVerb verb;
 
+    @ManyToMany
+    @JoinTable(name = "TA_RESOURCES_ROLES",
+            joinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_RESOURCES_ROLES")),
+            inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_ROLES_RESOURCES")))
+    private List<Role> roles;
+
     public ResourcesAccess() {
         super();
         verb = HttpVerb.GET;
@@ -75,6 +88,31 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     @Override
     public Long getId() {
         return id;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getId().hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object pObj) {
+        if (pObj instanceof ResourcesAccess) {
+            final ResourcesAccess toCompare = (ResourcesAccess) pObj;
+            if ((this.getId() != null) && this.getId().equals(toCompare.getId())) {
+                return true;
+            } else {
+                if ((this.getMicroservice() == null) || (this.getResource() == null) || (this.getVerb() == null)) {
+                    return false;
+                }
+                if (this.getMicroservice().equals(toCompare.getMicroservice())
+                        && this.getResource().equals(toCompare.getResource())
+                        && this.getVerb().equals(toCompare.getVerb())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void setId(final Long pId) {
@@ -111,6 +149,14 @@ public class ResourcesAccess implements IIdentifiable<Long> {
 
     public void setVerb(final HttpVerb pVerb) {
         verb = pVerb;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(final List<Role> pRoles) {
+        roles = pRoles;
     }
 
 }

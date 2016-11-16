@@ -39,6 +39,12 @@
 		</dependency>
 		<!-- Tests -->
 		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-test</artifactId>
+			<scope>test</scope>
+			<type>test-jar</type>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
