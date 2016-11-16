@@ -125,9 +125,9 @@ public class JWTService {
                     .parseClaimsJws(pAuthentication.getJwt());
             // OK, trusted JWT parsed and validated
 
-            UserDetails user = new UserDetails();
+            final UserDetails user = new UserDetails();
 
-            String project = claims.getBody().get(CLAIM_PROJECT, String.class);
+            final String project = claims.getBody().get(CLAIM_PROJECT, String.class);
             if (project == null) {
                 throw new MissingClaimException(CLAIM_PROJECT);
             }

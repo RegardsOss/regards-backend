@@ -33,7 +33,7 @@ public class LocalTenantResolver implements ITenantResolver {
     public void init() {
         tenants = new TreeSet<>();
         if (localTenants != null) {
-            for (String tenant : localTenants) {
+            for (final String tenant : localTenants) {
                 tenants.add(tenant);
             }
         }

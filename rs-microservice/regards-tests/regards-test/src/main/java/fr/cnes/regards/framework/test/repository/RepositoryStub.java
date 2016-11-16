@@ -29,6 +29,12 @@ public class RepositoryStub<T extends IIdentifiable<Long>> implements CrudReposi
      */
     protected List<T> entities = new ArrayList<>();
 
+    /**
+     * Keep track of the entities id
+     */
+    // TODO: Set it and increment it when a new entity is saved
+    private final Long SEQ_ID = 0L;
+
     @Override
     public <S extends T> S save(final S pEntity) {
         entities.removeIf(r -> r.equals(pEntity));

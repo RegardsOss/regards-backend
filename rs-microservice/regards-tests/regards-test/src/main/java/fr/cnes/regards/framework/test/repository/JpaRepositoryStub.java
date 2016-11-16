@@ -20,8 +20,8 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
  * Generic implementation a of {@link JpaRepository}.<br>
- * <h1>This is a <strong>stubbed, incorrect and incomplete</strong> implementation, yet wrong! Only use this class for
- * test purposes!</h1>
+ * <h1>This is a <strong>stubbed, incorrect and incomplete</strong> implementation, yet wrong! Be extra careful and only
+ * use this class for test purposes!</h1>
  *
  * @author CS SI
  */
