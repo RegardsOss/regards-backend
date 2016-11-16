@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -58,6 +59,11 @@ public class PollerIT {
      * Logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PollerIT.class);
+
+    /**
+     * PROJECT1
+     */
+    private static final String REGARDS_NAMESPACE = "Regards.amqp.";
 
     /**
      * PROJECT1
@@ -127,7 +133,7 @@ public class PollerIT {
         final TestEvent toSend = new TestEvent("test3");
         final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
         LOGGER.info("SENDED " + sended);
-        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
+        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), REGARDS_NAMESPACE + TENANT);
         rabbitTemplate.convertAndSend(TestEvent.class.getName(), "", sended);
         SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
 
@@ -167,7 +173,7 @@ public class PollerIT {
         final TestEvent toSend = new TestEvent("test4");
         final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
         LOGGER.info("SENDED :" + sended);
-        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
+        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), RabbitVirtualHostUtils.getVhostName(TENANT));
         // for one to one communication, exchange is named after the application and not what we are exchanging
         rabbitTemplate.convertAndSend("REGARDS", TestEvent.class.getName(), sended);
         SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());

@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -160,7 +161,8 @@ public class PublisherIT {
             publisher.publish(sended, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.EXTERNAL);
             LOGGER.info("SENDED " + sended);
 
-            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
+            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(),
+                                      RabbitVirtualHostUtils.getVhostName(TENANT));
             // CHECKSTYLE:OFF
             @SuppressWarnings("unchecked")
             final TenantWrapper<TestEvent> wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
@@ -210,20 +212,23 @@ public class PublisherIT {
             publisher.publish(priority1, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.EXTERNAL, 1);
             publisher.publish(priority02, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.EXTERNAL, 0);
 
-            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
+            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(),
+                                      RabbitVirtualHostUtils.getVhostName(TENANT));
             TenantWrapper<TestEvent> wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
                     .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
                                                                       AmqpCommunicationTarget.EXTERNAL));
             SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
             Assert.assertEquals(priority1, wrappedMessage.getContent());
 
-            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
+            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(),
+                                      RabbitVirtualHostUtils.getVhostName(TENANT));
             wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate.receiveAndConvert(amqpConfiguration
                     .getQueueName(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.EXTERNAL));
             SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
             Assert.assertEquals(priority0, wrappedMessage.getContent());
 
-            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
+            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(),
+                                      RabbitVirtualHostUtils.getVhostName(TENANT));
             wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate.receiveAndConvert(amqpConfiguration
                     .getQueueName(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.EXTERNAL));
             SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());

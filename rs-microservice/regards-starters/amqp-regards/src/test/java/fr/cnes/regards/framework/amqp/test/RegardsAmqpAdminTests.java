@@ -11,6 +11,7 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 
 /**
  * @author svissier
@@ -50,7 +51,7 @@ public class RegardsAmqpAdminTests {
         final String[] rabbitHostAndPort = parseRabbitAddresses(ADDRESSES);
         final CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHostAndPort[0],
                 Integer.parseInt(rabbitHostAndPort[1]));
-        connectionFactory.setVirtualHost(vhost);
+        connectionFactory.setVirtualHost(RabbitVirtualHostUtils.getVhostName(vhost));
         final CachingConnectionFactory result = regardsAmqpAdmin.createConnectionFactory(vhost);
         // same host
         Assert.assertEquals(connectionFactory.getHost(), result.getHost());

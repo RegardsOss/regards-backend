@@ -27,6 +27,7 @@ import org.springframework.web.client.RestTemplate;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 
 /**
  * @author svissier
@@ -86,7 +87,8 @@ public class RabbitVirtualHostUtilsIT {
 
             final List<String> secondRetrieve = rabbitVirtualHostUtils.retrieveVhostList();
             Assert.assertEquals(firstRetrieve.size(), secondRetrieve.size() - 1);
-            Assert.assertTrue(secondRetrieve.stream().filter(v -> v.equals(TEST_VHOST)).findAny().isPresent());
+            Assert.assertTrue(secondRetrieve.stream()
+                    .filter(v -> v.equals(RabbitVirtualHostUtils.getVhostName(TEST_VHOST))).findAny().isPresent());
         } catch (RabbitMQVhostException e) {
             Assert.fail();
             LOGGER.error("Issue during adding the Vhost", e);

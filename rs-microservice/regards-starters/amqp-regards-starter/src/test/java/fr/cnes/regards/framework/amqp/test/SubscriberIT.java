@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.amqp.test.domain.TestReceiver;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -157,7 +158,7 @@ public class SubscriberIT {
         final TestEvent toSend = new TestEvent("test one to many");
         final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
         LOGGER.info(SENDED + sended);
-        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), TENANT);
+        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), RabbitVirtualHostUtils.getVhostName(TENANT));
         // CHECKSTYLE:OFF
         rabbitTemplate.convertAndSend(
                                       amqpConfiguration.getExchangeName(TestEvent.class.getName(),
