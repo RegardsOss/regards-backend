@@ -27,11 +27,7 @@ public enum AccountStatus {
     LOCKED,
     /**
      * Account request is pending
-    PENDING;
      */
+    PENDING;
 
-    @Override
-    public String toString() {
-        return name();
-    }
 }
