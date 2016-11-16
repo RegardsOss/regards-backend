@@ -19,10 +19,9 @@ import java.util.stream.Stream;
 public interface RegardsStreamUtils {
 
     /**
-     * Return a predicate/filter in order to remove doubles (same as distinct) but with custom key extraction.
-     * <p>
-     * Warning: Keeps the first seen, so the order does matter!
-     *
+     * Return a predicate/filter in order to remove doubles (same as distinct) but with custom key extraction.<br>
+     * <b>Warning: Keeps the first seen, so the order of elements in the stream does matter!</b>
+     * <p/>
      * For example use as: <code>persons.stream().filter(distinctByKey(p -> p.getName());</code>
      *
      * Removes doubles based on person.name attribute.

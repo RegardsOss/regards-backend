@@ -37,8 +37,8 @@ public class MultitenantAutoConfigurationTest {
 
     @After
     public void tearDown() {
-        if (this.context != null) {
-            this.context.close();
+        if (context != null) {
+            context.close();
         }
     }
 
@@ -47,7 +47,7 @@ public class MultitenantAutoConfigurationTest {
         final String project1 = "PROJECT1";
         final String project2 = "PROJECT2";
         loadApplicationContext(EmptyConfiguration.class, "regards.tenants=" + project1 + ", " + project2);
-        final ITenantResolver tenantResolver = this.context.getBean(ITenantResolver.class);
+        final ITenantResolver tenantResolver = context.getBean(ITenantResolver.class);
         Assert.assertNotNull(tenantResolver);
         Assert.assertEquals(2, tenantResolver.getAllTenants().size(), 2);
         Assert.assertTrue(tenantResolver.getAllTenants().contains(project1));
@@ -57,7 +57,7 @@ public class MultitenantAutoConfigurationTest {
     @Test
     public void testDefaultNoPropertyAutoConfiguration() {
         loadApplicationContext(EmptyConfiguration.class);
-        final ITenantResolver tenantResolver = this.context.getBean(ITenantResolver.class);
+        final ITenantResolver tenantResolver = context.getBean(ITenantResolver.class);
         Assert.assertNotNull(tenantResolver);
         Assert.assertTrue(tenantResolver.getAllTenants().isEmpty());
     }
@@ -65,7 +65,7 @@ public class MultitenantAutoConfigurationTest {
     @Test
     public void testCustomAutoConfiguration() {
         loadApplicationContext(CustomConfiguration.class);
-        final ITenantResolver tenantResolver = this.context.getBean(ITenantResolver.class);
+        final ITenantResolver tenantResolver = context.getBean(ITenantResolver.class);
         Assert.assertTrue(tenantResolver instanceof CustomConfiguration.CustomTenantResolver);
         Assert.assertTrue(tenantResolver.getAllTenants().contains(CUSTOM_TENANT));
     }
@@ -73,7 +73,7 @@ public class MultitenantAutoConfigurationTest {
     private void loadApplicationContext(Class<?> pConfig, String... pPairs) {
         context = new AnnotationConfigWebApplicationContext();
         context.setServletContext(new MockServletContext());
-        EnvironmentTestUtils.addEnvironment(this.context, pPairs);
+        EnvironmentTestUtils.addEnvironment(context, pPairs);
         context.register(pConfig);
         context.register(MultitenantAutoConfiguration.class);
         context.refresh();

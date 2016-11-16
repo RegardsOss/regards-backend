@@ -250,7 +250,7 @@ public abstract class AbstractRegardsIT {
         } catch (final Exception e) {
             // CHECKSTYLE:ON
             getLogger().error(pErrorMessage, e);
-            throw new AssertionError(pErrorMessage);
+            throw new AssertionError(pErrorMessage + ": " + e);
         }
     }
 
