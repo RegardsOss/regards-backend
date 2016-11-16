@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -21,6 +22,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
+import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -36,14 +38,19 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 public class RoleServiceTest {
 
     /**
-     * And id
+     * The role public
+     */
+    private static Role rolePublic;
+
+    /**
+     * The role public id
      */
     private static final Long ID = 0L;
 
     /**
-     * A name
+     * The role public name
      */
-    private static final String NAME = "name";
+    private static final String NAME = DefaultRoleNames.PUBLIC.toString();
 
     /**
      * The tested service
@@ -68,6 +75,13 @@ public class RoleServiceTest {
         roleRepository = Mockito.mock(IRoleRepository.class);
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         roleService = new RoleService(roleRepository, projectUserRepository);
+
+        // Clear the repos
+        projectUserRepository.deleteAll();
+        roleRepository.deleteAll();
+        rolePublic = new Role(NAME, null);
+        // Set an id in order to simulate it was saved in db
+        rolePublic.setId(ID);
     }
 
     /**
@@ -78,17 +92,13 @@ public class RoleServiceTest {
     @Purpose("Check that the allows to retrieve roles.")
     public void retrieveRoleList() {
         final List<Role> expected = new ArrayList<>();
-        final Role role0 = new Role(NAME, null);
-        final Role role1 = new Role("otherName", role0);
-        expected.add(role0);
-        expected.add(role1);
+        expected.add(rolePublic);
 
         Mockito.when(roleRepository.findAll()).thenReturn(expected);
         final List<Role> actual = roleService.retrieveRoleList();
 
         // Check that the expected and actual role have same values
         checkRolesEqual(expected.get(0), actual.get(0));
-        checkRolesEqual(expected.get(1), actual.get(1));
         // Check that the repository's method was called with right arguments
         Mockito.verify(roleRepository).findAll();
     }
@@ -100,16 +110,13 @@ public class RoleServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the allows to retrieve a single role.")
     public void retrieveRole() {
-        final Long id = 0L;
-        final Role expected = new Role(NAME, null);
-
-        Mockito.when(roleRepository.findOne(id)).thenReturn(expected);
-        final Role actual = roleService.retrieveRole(id);
+        Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
+        final Role actual = roleService.retrieveRole(NAME);
 
         // Check that the expected and actual role have same values
-        checkRolesEqual(expected, actual);
+        checkRolesEqual(rolePublic, actual);
         // Check that the repository's method was called with right arguments
-        Mockito.verify(roleRepository).findOne(id);
+        Mockito.verify(roleRepository).findOneByName(NAME);
     }
 
     /**
@@ -122,11 +129,9 @@ public class RoleServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to create an already existing role.")
     public void createRoleDuplicate() throws AlreadyExistingException {
-        final Long id = 0L;
-        Mockito.when(roleRepository.exists(id)).thenReturn(true);
+        Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
-        final Role duplicate = new Role();
-        duplicate.setId(id);
+        final Role duplicate = new Role(NAME, null);
         roleService.createRole(duplicate);
     }
 
@@ -207,30 +212,25 @@ public class RoleServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update a role in a regular case.")
     public void updateRole() throws EntityNotFoundException, InvalidValueException {
-        // Define the previous role in db
-        final Role previousRole = new Role(NAME, null);
-        previousRole.setId(ID);
+        // Mock
         Mockito.when(roleRepository.exists(ID)).thenReturn(true);
+        Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
-        // Define the passed role in PUT
-        final Role passedRole = new Role("new name", null);
-        passedRole.setId(ID);
-
-        // Ensure at least one is different from the previous
-        Assert.assertTrue(passedRole.getName() != previousRole.getName());
+        // Change something on the role
+        rolePublic.setCorsRequestsAuthorized(!rolePublic.isCorsRequestsAuthorized());
 
         // Do the update
-        roleService.updateRole(ID, passedRole);
+        roleService.updateRole(ID, rolePublic);
 
         // Retrieve the updated role
-        Mockito.when(roleRepository.findOne(ID)).thenReturn(passedRole);
-        final Role updatedRole = roleService.retrieveRole(ID);
+        Mockito.when(roleRepository.findOne(ID)).thenReturn(rolePublic);
+        final Role updatedRole = roleService.retrieveRole(NAME);
 
         // Ensure they are now equal
-        checkRolesEqual(passedRole, updatedRole);
+        checkRolesEqual(rolePublic, updatedRole);
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(roleRepository).save(passedRole);
+        Mockito.verify(roleRepository).save(rolePublic);
     }
 
     /**
@@ -309,12 +309,10 @@ public class RoleServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to add resources accesses on a role.")
     public void updateRoleResourcesAccessAddingResourcesAccess() throws EntityNotFoundException {
-        final Role role = new Role(NAME, null);
-        role.setId(ID);
-
         // Mock
         Mockito.when(roleRepository.exists(ID)).thenReturn(true);
-        Mockito.when(roleRepository.findOne(ID)).thenReturn(role);
+        Mockito.when(roleRepository.findOne(ID)).thenReturn(rolePublic);
+        Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
         Assert.assertTrue(roleService.existRole(ID));
 
         final List<ResourcesAccess> resourcesAccesses = new ArrayList<>();
@@ -330,7 +328,7 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.findOne(ID)).thenReturn(expected);
 
         // Check
-        Assert.assertTrue(roleService.retrieveRole(ID).getPermissions().contains(addedResourcesAccess));
+        Assert.assertTrue(roleService.retrieveRole(NAME).getPermissions().contains(addedResourcesAccess));
 
         // Check that the repository's method was called with right arguments
         Mockito.verify(roleRepository).save(Mockito.refEq(expected, "id"));
@@ -387,27 +385,26 @@ public class RoleServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to remove all resources accesses of a role.")
     public void clearRoleResourcesAccess() throws EntityNotFoundException {
-        final Long id = 0L;
+        // Prepare the role by adding some resources accesses
         final List<ResourcesAccess> resourcesAccesses = new ArrayList<>();
         resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));
-        final Role role = new Role(NAME, null);
-        role.setPermissions(resourcesAccesses);
-        Assert.assertTrue(!role.getPermissions().isEmpty());
+        rolePublic.setPermissions(resourcesAccesses);
 
         // Mock
-        Mockito.when(roleRepository.exists(id)).thenReturn(true);
-        Mockito.when(roleRepository.findOne(id)).thenReturn(role);
+        Mockito.when(roleRepository.exists(ID)).thenReturn(true);
+        Mockito.when(roleRepository.findOne(ID)).thenReturn(rolePublic);
+        Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
-        roleService.clearRoleResourcesAccess(id);
+        roleService.clearRoleResourcesAccess(ID);
 
         // Retrieve updated role
-        final Role updated = roleService.retrieveRole(id);
+        final Role updated = roleService.retrieveRole(NAME);
 
         // Check
         Assert.assertTrue(updated.getPermissions().isEmpty());
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(roleRepository).save(role);
+        Mockito.verify(roleRepository).save(rolePublic);
     }
 
     /**
@@ -514,16 +511,18 @@ public class RoleServiceTest {
     @Purpose("Check that the system is able to hierarchically compare two roles.")
     public void isHierarchicallyInferior() {
         // Init default roles
-        final Role rolePublic = new Role("Plublic", null);
-        final Role roleRegisteredUser = new Role("Registered User", rolePublic);
-        final Role roleAdmin = new Role("Admin", roleRegisteredUser);
-        final Role roleProjectAdmin = new Role("Project Admin", roleAdmin);
+        final RoleFactory factory = new RoleFactory();
+        final Role roleInstanceAdmin = factory.createInstanceAdmin();
+        final Role roleProjectAdmin = roleInstanceAdmin.getParentRole();
+        final Role roleAdmin = roleProjectAdmin.getParentRole();
+        final Role roleRegisteredUser = roleAdmin.getParentRole();
+        final Role rolePublic = roleRegisteredUser.getParentRole();
 
         Assert.assertTrue(roleService.isHierarchicallyInferior(roleRegisteredUser, roleProjectAdmin));
         Assert.assertFalse(roleService.isHierarchicallyInferior(roleProjectAdmin, roleRegisteredUser));
 
-        final Role admin = roleService.retrieveRole(2L);
-        final Role customRoleFromAdmin = new Role("custom role", admin);
+        // final Role admin = roleService.retrieveRole(2L);
+        final Role customRoleFromAdmin = new Role("custom role", roleAdmin);
 
         Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, roleRegisteredUser));
         Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, roleProjectAdmin));
@@ -542,8 +541,6 @@ public class RoleServiceTest {
         Assert.assertThat(pActual.getName(), CoreMatchers.is(CoreMatchers.equalTo(pExpected.getName())));
         Assert.assertThat(pActual.getParentRole(), CoreMatchers.is(CoreMatchers.equalTo(pExpected.getParentRole())));
         Assert.assertThat(pActual.getPermissions(), CoreMatchers.is(CoreMatchers.equalTo(pExpected.getPermissions())));
-        // Assert.assertThat(pActual.getProjectUsers(),
-        // CoreMatchers.is(CoreMatchers.equalTo(pExpected.getProjectUsers())));
     }
 
 }

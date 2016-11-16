@@ -28,26 +28,6 @@ public interface IRoleService {
     List<Role> retrieveRoleList();
 
     /**
-     * Create a new {@link Role}.
-     *
-     * @param pNewRole
-     *            The new {@link Role} values
-     * @return The created {@link Role}
-     * @throws AlreadyExistingException
-     *             Thrown if a {@link Role} with same <code>id</code> already exists
-     */
-    Role createRole(Role pNewRole) throws AlreadyExistingException;
-
-    /**
-     * Retrieve the {@link Role} of passed <code>id</code>.
-     *
-     * @param pRoleId
-     *            The {@link Role}'s <code>id</code>
-     * @return The {@link Role}
-     */
-    Role retrieveRole(Long pRoleId);
-
-    /**
      *
      * Retrieve the {@link Role} of passed <code>name</code>.
      *
@@ -57,6 +37,13 @@ public interface IRoleService {
      * @since 1.0-SNAPSHOT
      */
     Role retrieveRole(String pRoleName);
+
+    /**
+     * Return the single <code>default</code> {@link Role}.
+     *
+     * @return The only {@link Role} with it's <code>default</code> attribute set to <code>true</code>
+     */
+    Role getDefaultRole();
 
     /**
      * Update the {@link Role} of id <code>pRoleId</code>.
@@ -71,6 +58,17 @@ public interface IRoleService {
      *             Thrown when <code>pRoleId</code> is different from the id of <code>pUpdatedRole</code>
      */
     void updateRole(Long pRoleId, Role pUpdatedRole) throws EntityNotFoundException, InvalidValueException;
+
+    /**
+     * Create a new {@link Role}.
+     *
+     * @param pNewRole
+     *            The new {@link Role} values
+     * @return The created {@link Role}
+     * @throws AlreadyExistingException
+     *             Thrown if a {@link Role} with same <code>id</code> already exists
+     */
+    Role createRole(Role pNewRole) throws AlreadyExistingException;
 
     /**
      * Delete the {@link Role} of passed <code>id</code>.
@@ -147,11 +145,13 @@ public interface IRoleService {
     boolean existRole(Role pRole);
 
     /**
-     * Return the single <code>default</code> {@link Role}.
+     * Return true when a {@link Role} with passed name exists in db.
      *
-     * @return The only {@link Role} with it's <code>default</code> attribute set to <code>true</code>
+     * @param pName
+     *            The {@link Role}'s name
+     * @return True if the role exists, else false
      */
-    Role getDefaultRole();
+    boolean existByName(String pName);
 
     /**
      * Return true if the {@link Role} <code>pRole</code> is hierarchically inferior the the {@link Role}
@@ -164,4 +164,10 @@ public interface IRoleService {
      * @return True if the {@link Role} <code>pRole</code> is hierarchically inferior the the {@link Role}, else false
      */
     boolean isHierarchicallyInferior(Role pRole, Role pOther);
+
+    /**
+     * Init the default roles
+     */
+    void initDefaultRoles();
+
 }

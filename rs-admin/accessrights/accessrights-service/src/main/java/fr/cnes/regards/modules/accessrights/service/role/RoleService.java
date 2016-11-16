@@ -21,6 +21,7 @@ import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
+import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -84,20 +85,15 @@ public class RoleService implements IRoleService {
 
     @Override
     public Role createRole(final Role pNewRole) throws AlreadyExistingException {
-        if (existRole(pNewRole)) {
-            throw new AlreadyExistingException(pNewRole.toString());
+        if (existByName(pNewRole.getName())) {
+            throw new AlreadyExistingException(pNewRole.getName());
         }
         return roleRepository.save(pNewRole);
     }
 
     @Override
-    public Role retrieveRole(final Long pRoleId) {
-        return roleRepository.findOne(pRoleId);
-    }
-
-    @Override
     public Role retrieveRole(final String pRoleName) {
-        return roleRepository.findOneByName(pRoleName);
+        return roleRepository.findOneByName(pRoleName).orElseGet(() -> getDefaultRole());
     }
 
     @Override
@@ -205,8 +201,13 @@ public class RoleService implements IRoleService {
     }
 
     @Override
+    public boolean existByName(final String pName) {
+        return roleRepository.findOneByName(pName) != null;
+    }
+
+    @Override
     public Role getDefaultRole() {
-        return roleRepository.findByIsDefault(true);
+        return roleRepository.findOneByIsDefault(true).orElse(getRolePublic());
     }
 
     /**
@@ -221,9 +222,7 @@ public class RoleService implements IRoleService {
         }
     }
 
-    /**
-     * Init the default roles
-     */
+    @Override
     public void initDefaultRoles() {
         final RoleFactory factory = new RoleFactory();
         factory.doNotAutoCreateParents();
@@ -232,6 +231,26 @@ public class RoleService implements IRoleService {
         final Role roleAdmin = roleRepository.save(factory.withParentRole(roleRegisteredUser).createAdmin());
         final Role roleProjectAdmin = roleRepository.save(factory.withParentRole(roleAdmin).createProjectAdmin());
         roleRepository.save(factory.withParentRole(roleProjectAdmin).createInstanceAdmin());
+    }
+
+    /**
+     * @return the role public. Create it if not found
+     */
+    public Role getRolePublic() {
+        final RoleFactory factory = new RoleFactory();
+        return roleRepository.findOneByName(DefaultRoleNames.PUBLIC.toString())
+                .orElseGet(() -> roleRepository.save(factory.createPublic()));
+    }
+
+    /**
+     * Return a predicate allowing to filter a roles stream on name
+     *
+     * @param pName
+     *            the role name
+     * @return the predicate
+     */
+    private Predicate<? super Role> createFilterOnName(final String pName) {
+        return r -> pName.equals(r.getName());
     }
 
 }

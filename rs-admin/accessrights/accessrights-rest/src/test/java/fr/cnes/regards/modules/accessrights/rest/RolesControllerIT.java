@@ -3,10 +3,9 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,11 +28,13 @@ import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
  * Integration tests for Roles REST Controller.
@@ -74,16 +75,22 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     private String apiRolesUsers;
 
     @Autowired
-    private IRoleService roleService;
+    private RoleService roleService;
+
+    @Autowired
+    private IRoleRepository roleRepository;
+
+    @Autowired
+    private IResourcesAccessRepository resourcesAccessRepository;
 
     @Rule
     public ExpectedException thrown_ = ExpectedException.none();
 
     @Value("${root.admin.login:admin}")
-    private String rootAdminLogin_;
+    private String rootAdminLogin;
 
     @Value("${root.admin.password:admin}")
-    private String rootAdminPassword_;
+    private String rootAdminPassword;
 
     @Override
     public void init() {
@@ -104,7 +111,12 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         apiRolesPermissions = apiRolesId + "/permissions";
         apiRolesUsers = apiRolesId + "/users";
 
-        rolePublic = roleService.retrieveRole(DefaultRoleNames.PUBLIC.toString());
+        // Flush repos
+        roleRepository.deleteAll();
+        resourcesAccessRepository.deleteAll();
+        // Reinit
+        roleService.initDefaultRoles();
+        rolePublic = roleService.getRolePublic();
     }
 
     @Test
@@ -135,16 +147,11 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the allows to retrieve a single role and handle fail cases.")
     public void retrieveRole() {
-        final Long roleId = 0L;
-        assertTrue(roleService.existRole(roleId));
-
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiRolesName, jwt, expectations, "TODO Error message", DefaultRoleNames.REGISTERED_USER);
 
-        final Long wrongRoleId = 46453L;
         final String wrongRoleName = "WRONG_ROLE";
-        assertFalse(roleService.existRole(wrongRoleId));
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
         performGet(apiRolesName, jwt, expectations, "TODO Error message", wrongRoleName);
@@ -155,30 +162,18 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update a role and handle fail cases.")
     public void updateRole() throws AlreadyExistingException {
-        // Create a new role in order to update it later
-        final Long id = 99L;
-        final Role toUpdate = new Role();
-        toUpdate.setId(id);
-        toUpdate.setName("NAME_TO_UPDATE");
-        toUpdate.setDefault(false);
-        toUpdate.setNative(false);
-        toUpdate.setParentRole(rolePublic);
-        toUpdate.setPermissions(new ArrayList<>());
-        roleService.createRole(toUpdate);
+        // Grab a role a change something
+        rolePublic.setCorsRequestsAuthorizationEndDate(LocalDateTime.now().plusDays(2));
 
-        // Update the role
-        toUpdate.setName("UPDATED_NAME");
-
+        // Regular case
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiRolesId, jwt, toUpdate, expectations, "TODO Error message", id);
+        performPut(apiRolesId, jwt, rolePublic, expectations, "TODO Error message", rolePublic.getId());
 
-        final Long notSameID = 41554L;
-        final Role notUpdated = new Role(null, null);
-
+        // Fail case: ids differ
         expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isBadRequest());
-        performPut(apiRolesId, jwt, notUpdated, expectations, "TODO Error message", id);
+        performPut(apiRolesId, jwt, rolePublic, expectations, "TODO Error message", 99L);
     }
 
     /**
@@ -189,39 +184,39 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system prevents from deleting a native role.")
     public void removeRoleNative() {
-        // In RoleRepositoryStub, role of id 0 is native
-        final Long roleId = 0L;
+        // Role public is native, we use this one
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
-        performDelete(apiRolesId, jwt, expectations, "TODO Error message", roleId);
+        performDelete(apiRolesId, jwt, expectations, "TODO Error message", rolePublic.getId());
     }
 
     /**
      * Check that the system allows to delete a role.
+     *
+     * @throws AlreadyExistingException
      */
     @Test
     @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to delete a role.")
-    public void removeRole() {
-        // In RoleRepositoryStub, role of id 5 is not native
-        final Long roleId = 5L;
+    public void removeRole() throws AlreadyExistingException {
+        // Create a non-native role
+        final Role role = new Role("CUSTOM", rolePublic);
+        roleService.createRole(role);
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiRolesId, jwt, expectations, "TODO Error message", roleId);
+        performDelete(apiRolesId, jwt, expectations, "TODO Error message", role.getId());
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to retrieve all resources accesses of a role.")
     public void retrieveRoleResourcesAccessList() {
-        final Long roleId = 0L;
-
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRolesPermissions, jwt, expectations, "TODO Error message", roleId);
+        performGet(apiRolesPermissions, jwt, expectations, "TODO Error message", rolePublic.getId());
     }
 
     @Test
@@ -229,15 +224,16 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update resources accesses of a role.")
     public void updateRoleResourcesAccess() {
-        final Long roleId = 0L;
 
         final List<ResourcesAccess> newPermissionList = new ArrayList<>();
-        newPermissionList.add(new ResourcesAccess(463L, "new", "new", "new", HttpVerb.PUT));
-        newPermissionList.add(new ResourcesAccess(350L, "neww", "neww", "neww", HttpVerb.DELETE));
+        newPermissionList
+                .add(resourcesAccessRepository.save(new ResourcesAccess(0L, "new", "new", "new", HttpVerb.PUT)));
+        newPermissionList
+                .add(resourcesAccessRepository.save(new ResourcesAccess(1L, "neww", "neww", "neww", HttpVerb.DELETE)));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiRolesPermissions, jwt, newPermissionList, expectations, "TODO Error message", roleId);
+        performPut(apiRolesPermissions, jwt, newPermissionList, expectations, "TODO Error message", rolePublic.getId());
     }
 
     @Test
@@ -245,22 +241,18 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to remove all resources accesses of a role.")
     public void clearRoleResourcesAccess() {
-        final Long roleId = 0L;
-
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiRolesPermissions, jwt, expectations, "TODO Error message", roleId);
+        performDelete(apiRolesPermissions, jwt, expectations, "TODO Error message", rolePublic.getId());
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to retrieve all users of a role.")
     public void retrieveRoleProjectUserList() {
-        final Long roleId = 0L;
-
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRolesUsers, jwt, expectations, "TODO Error message", roleId);
+        performGet(apiRolesUsers, jwt, expectations, "TODO Error message", rolePublic.getId());
     }
 
     @Override

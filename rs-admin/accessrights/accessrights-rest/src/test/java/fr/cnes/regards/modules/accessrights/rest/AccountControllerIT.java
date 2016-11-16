@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -300,11 +301,13 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
     /**
      * Check that the system prevents from deleting an account linked to any project users.
+     * 
+     * @throws EntityNotFoundException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system prevents from deleting an account linked to any project users.")
-    public void deleteAccountNotAllowedBecauseOfLinkedProjectUser() {
+    public void deleteAccountNotAllowedBecauseOfLinkedProjectUser() throws EntityNotFoundException {
         // Make sure we have a project user with same email on at least one tenant
         roleService.initDefaultRoles();
         final Role rolePublic = roleService.retrieveRole(DefaultRoleNames.PUBLIC.toString());

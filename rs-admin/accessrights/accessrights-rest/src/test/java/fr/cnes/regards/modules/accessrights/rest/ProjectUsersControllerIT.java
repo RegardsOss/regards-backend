@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -33,7 +34,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
@@ -118,7 +118,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     private IRoleRepository roleRepository;
 
     @Autowired
-    private IRoleService roleService;
+    private RoleService roleService;
 
     @Autowired
     private IResourcesAccessRepository resourcesAccessRepository;
@@ -165,8 +165,8 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
             roleRepository.deleteAll();
             // And start with a single user and a single role for convenience
             // final RoleFactory roleFactory = new RoleFactory();
-            ((RoleService) roleService).initDefaultRoles();
-            ROLE = roleRepository.findOneByName(DefaultRoleNames.PUBLIC.toString());
+            roleService.initDefaultRoles();
+            ROLE = roleService.getRolePublic();
             projectUser = projectUserRepository.save(new ProjectUser(EMAIL, ROLE, PERMISSIONS, METADATA));
         } catch (final Exception e) {
             Assert.fail(e.getMessage());
@@ -219,19 +219,21 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
 
     /**
      * Check that the system prevents a user to connect using a hierarchically superior role.
+     *
+     * @throws EntityNotFoundException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_270")
     @Purpose("Check that the system prevents a user to connect using a hierarchically superior role.")
-    public void getUserPermissionsWithBorrowedRoleInferior() {
+    public void getUserPermissionsWithBorrowedRoleInferior() throws EntityNotFoundException {
         // Prepare a project user with role admin
-        final Role roleAdmin = roleRepository.findOneByName(DefaultRoleNames.ADMIN.toString());
+        final Role roleAdmin = roleService.retrieveRole(DefaultRoleNames.ADMIN.toString());
         projectUser.setRole(roleAdmin);
         projectUserRepository.save(projectUser);
 
         // Get the borrowed role
         final String borrowedRoleName = DefaultRoleNames.REGISTERED_USER.toString();
-        final Role borrowedRole = roleRepository.findOneByName(borrowedRoleName);
+        final Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
 
         // Borrowing a hierarchically inferior role
         final List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -243,19 +245,21 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
 
     /**
      * Check that the system allows a user to connect using a hierarchically inferior role.
+     * 
+     * @throws EntityNotFoundException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_270")
     @Purpose("Check that the system allows a user to connect using a hierarchically inferior role.")
-    public void getUserPermissionsWithBorrowedRoleSuperior() {
+    public void getUserPermissionsWithBorrowedRoleSuperior() throws EntityNotFoundException {
         // Prepare a project user with role admin
-        final Role roleAdmin = roleRepository.findOneByName(DefaultRoleNames.ADMIN.toString());
+        final Role roleAdmin = roleService.retrieveRole(DefaultRoleNames.ADMIN.toString());
         projectUser.setRole(roleAdmin);
         projectUserRepository.save(projectUser);
 
         // Get the borrowed role
         final String borrowedRoleName = DefaultRoleNames.INSTANCE_ADMIN.toString();
-        final Role borrowedRole = roleRepository.findOneByName(borrowedRoleName);
+        final Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
 
         // Borrowing a hierarchically superior role
         final List<ResultMatcher> expectations = new ArrayList<>(1);
