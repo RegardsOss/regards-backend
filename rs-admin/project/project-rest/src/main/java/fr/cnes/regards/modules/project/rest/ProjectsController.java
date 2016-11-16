@@ -106,7 +106,7 @@ public class ProjectsController implements IResourceController<Project>, IProjec
     }
 
     @Override
-    public Resource<Project> toResource(final Project pElement) {
+    public Resource<Project> toResource(final Project pElement, Object... pExtras) {
 
         Resource<Project> resource = null;
         if ((pElement != null) && (pElement.getName() != null)) {

@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -25,7 +26,6 @@ import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -79,7 +79,7 @@ public class ProjectUserServiceTest {
     /**
      * A sample role
      */
-    private static final Role ROLE = new Role(0L, DefaultRoleNames.ADMIN.toString(), null, new ArrayList<>(),
+    private static final Role ROLE = new Role(0L, DefaultRole.ADMIN.toString(), null, new ArrayList<>(),
             new ArrayList<>());
 
     /**
@@ -432,7 +432,7 @@ public class ProjectUserServiceTest {
             + "a user's permissions using a role not hierarchically inferior.")
     public void retrieveProjectUserAccessRightsBorrowedRoleNotInferior() throws InvalidValueException {
         // Define borrowed role
-        final String borrowedRoleName = DefaultRoleNames.INSTANCE_ADMIN.toString();
+        final String borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();
         final Role borrowedRole = new Role();
 
         // Mock the repository
@@ -461,7 +461,7 @@ public class ProjectUserServiceTest {
             throws InvalidValueException, ModuleEntityNotFoundException {
         // Define borrowed role
         final Long borrowedRoleId = 99L;
-        final String borrowedRoleName = DefaultRoleNames.INSTANCE_ADMIN.toString();
+        final String borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();
         final List<ResourcesAccess> borrowedRolePermissions = new ArrayList<>();
         borrowedRolePermissions.add(new ResourcesAccess(11L));
         borrowedRolePermissions.add(new ResourcesAccess(10L));

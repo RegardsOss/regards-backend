@@ -214,8 +214,7 @@ public class ResourcesService implements IResourcesService {
                     HttpVerb.valueOf(collectedResource.getMethod().name()));
 
             // Add default role if exists
-            // FIXME : Use default role from ResourceAccess annotation
-            final Role role = roleService.retrieveRole("ADMIN");
+            final Role role = roleService.retrieveRole(collectedResource.getResourceAccess().role().toString());
             if (role != null) {
                 defaultRoles.add(role);
                 resource.setRoles(defaultRoles);
