@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublic;
 
 /**
@@ -115,7 +116,7 @@ public class RoleFactory {
     public Role createAdmin() {
         final Role toCreate = create();
         final RoleFactory factoryForParentRole = new RoleFactory();
-        toCreate.setName(DefaultRoleNames.ADMIN.toString());
+        toCreate.setName(DefaultRole.ADMIN.toString());
         toCreate.setNative(true);
         if (autoCreateParents) {
             toCreate.setParentRole(factoryForParentRole.createRegisteredUser());
@@ -126,7 +127,7 @@ public class RoleFactory {
     public Role createInstanceAdmin() {
         final Role toCreate = create();
         final RoleFactory factoryForParentRole = new RoleFactory();
-        toCreate.setName(DefaultRoleNames.INSTANCE_ADMIN.toString());
+        toCreate.setName(DefaultRole.INSTANCE_ADMIN.toString());
         toCreate.setNative(true);
         if (autoCreateParents) {
             toCreate.setParentRole(factoryForParentRole.createProjectAdmin());
@@ -137,7 +138,7 @@ public class RoleFactory {
     public Role createProjectAdmin() {
         final Role toCreate = create();
         final RoleFactory factoryForParentRole = new RoleFactory();
-        toCreate.setName(DefaultRoleNames.PROJECT_ADMIN.toString());
+        toCreate.setName(DefaultRole.PROJECT_ADMIN.toString());
         toCreate.setNative(true);
         if (autoCreateParents) {
             toCreate.setParentRole(factoryForParentRole.createAdmin());
@@ -147,7 +148,7 @@ public class RoleFactory {
 
     public Role createPublic() {
         final Role toCreate = create();
-        toCreate.setName(DefaultRoleNames.PUBLIC.toString());
+        toCreate.setName(DefaultRole.PUBLIC.toString());
         toCreate.setParentRole(null);
         toCreate.setNative(true);
         toCreate.setDefault(true);
@@ -157,7 +158,7 @@ public class RoleFactory {
     public Role createRegisteredUser() {
         final Role toCreate = create();
         final RoleFactory factoryForParentRole = new RoleFactory();
-        toCreate.setName(DefaultRoleNames.REGISTERED_USER.toString());
+        toCreate.setName(DefaultRole.REGISTERED_USER.toString());
         toCreate.setNative(true);
         if (autoCreateParents) {
             toCreate.setParentRole(factoryForParentRole.createPublic());

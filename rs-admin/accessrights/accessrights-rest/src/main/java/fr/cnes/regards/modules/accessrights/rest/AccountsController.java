@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -31,7 +31,8 @@ import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsServ
 import fr.cnes.regards.modules.accessrights.signature.IAccountsSignature;
 
 @RestController
-@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 public class AccountsController implements IAccountsSignature {
 
     @Autowired
@@ -69,7 +70,7 @@ public class AccountsController implements IAccountsSignature {
 
     @ResourceAccess(description = "retrieve the account with his unique email")
     @Override
-    public ResponseEntity<Resource<Account>> retrieveAccounByEmail(String pAccountEmail) {
+    public ResponseEntity<Resource<Account>> retrieveAccounByEmail(final String pAccountEmail) {
         ResponseEntity<Resource<Account>> response;
         try {
             final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
@@ -92,9 +93,9 @@ public class AccountsController implements IAccountsSignature {
     }
 
     @Override
-    @ResourceAccess(description = "remove the account account_id", name = "")
+    @ResourceAccess(description = "remove the account account_id")
     public ResponseEntity<Void> removeAccount(@PathVariable("account_id") final Long pAccountId)
-            throws EntityException {
+            throws ModuleException {
         final Account account = accountService.retrieveAccount(pAccountId);
         accountService.delete(account);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -102,10 +103,10 @@ public class AccountsController implements IAccountsSignature {
 
     @Override
     @ResourceAccess(description = "unlock the account account_id according to the code unlock_code")
-    public ResponseEntity<Void> unlockAccount(@PathVariable("account_id") final Long accountId,
-            @PathVariable("unlock_code") final String unlockCode)
-            throws InvalidValueException, ModuleEntityNotFoundException {
-        accountService.unlockAccount(accountId, unlockCode);
+    public ResponseEntity<Void> unlockAccount(@PathVariable("account_id") final Long pAccountId,
+            @PathVariable("unlock_code") final String unlockCode) throws ModuleException, InvalidValueException {
+        final Account account = accountService.retrieveAccount(pAccountId);
+        accountService.unlockAccount(account, unlockCode);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

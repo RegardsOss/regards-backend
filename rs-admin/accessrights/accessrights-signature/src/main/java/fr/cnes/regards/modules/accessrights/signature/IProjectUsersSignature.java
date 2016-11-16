@@ -135,7 +135,7 @@ public interface IProjectUsersSignature {
      * @throws InvalidValueException
      *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
      *             <code>role</code>.
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @ResponseBody
@@ -143,7 +143,7 @@ public interface IProjectUsersSignature {
     ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(
             @PathVariable("user_login") String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) String pBorrowedRoleName)
-            throws InvalidValueException, EntityNotFoundException;
+            throws InvalidValueException, ModuleEntityNotFoundException;
 
     /**
      * Update the the {@link List} of <code>permissions</code>.

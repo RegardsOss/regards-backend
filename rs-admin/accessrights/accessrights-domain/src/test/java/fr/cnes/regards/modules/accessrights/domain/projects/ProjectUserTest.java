@@ -11,6 +11,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 
 /**
@@ -200,7 +201,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetRole() {
-        final Role newRole = new Role(DefaultRoleNames.PUBLIC.toString(), null);
+        final Role newRole = new Role(DefaultRole.PUBLIC.toString(), null);
         projectUser.setRole(newRole);
         Assert.assertEquals(newRole, projectUser.getRole());
     }

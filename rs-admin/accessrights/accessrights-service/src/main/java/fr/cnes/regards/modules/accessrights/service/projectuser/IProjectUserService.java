@@ -5,8 +5,8 @@ package fr.cnes.regards.modules.accessrights.service.projectuser;
 
 import java.util.List;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -40,11 +40,11 @@ public interface IProjectUserService {
      *
      * @param pEmail
      *            The {@link ProjectUser}'s <code>email</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      * @return The project user
      */
-    ProjectUser retrieveOneByEmail(String pEmail) throws EntityNotFoundException;
+    ProjectUser retrieveOneByEmail(String pEmail) throws ModuleEntityNotFoundException;
 
     /**
      * Retrieve the current {@link ProjectUser}.
@@ -62,11 +62,11 @@ public interface IProjectUserService {
      *            The new {@link ProjectUser}
      * @throws InvalidValueException
      *             Thrown when <code>pUserId</code> differs from the id of <code>pUpdatedProjectUser</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     void updateUser(Long pUserId, ProjectUser pUpdatedProjectUser)
-            throws InvalidValueException, EntityNotFoundException;
+            throws InvalidValueException, ModuleEntityNotFoundException;
 
     /**
      * Delete the {@link ProjectUser} of passed <code>id</code>.
@@ -87,11 +87,11 @@ public interface IProjectUserService {
      * @throws InvalidValueException
      *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
      *             <code>role</code>.
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     List<ResourcesAccess> retrieveProjectUserAccessRights(String pEmail, String pBorrowedRoleName)
-            throws InvalidValueException, EntityNotFoundException;
+            throws InvalidValueException, ModuleEntityNotFoundException;
 
     /**
      * Update the the {@link List} of <code>permissions</code>.
@@ -100,21 +100,21 @@ public interface IProjectUserService {
      *            The {@link ProjectUser}'s <code>login</code>
      * @param pUpdatedUserAccessRights
      *            The {@link List} of {@link ResourcesAccess} to set
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     void updateUserAccessRights(String pLogin, List<ResourcesAccess> pUpdatedUserAccessRights)
-            throws EntityNotFoundException;
+            throws ModuleEntityNotFoundException;
 
     /**
      * Clear the {@link List} of {@link ResourcesAccess} of the {@link ProjectUser} with passed <code>login</code>.
      *
      * @param pLogin
      *            The {@link ProjectUser} <code>login</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
-    void removeUserAccessRights(String pLogin) throws EntityNotFoundException;
+    void removeUserAccessRights(String pLogin) throws ModuleEntityNotFoundException;
 
     /**
      * Return the {@link List} of {@link MetaData} on the {@link ProjectUser} of passed <code>id</code>.
@@ -122,10 +122,10 @@ public interface IProjectUserService {
      * @param pUserId
      *            The {@link ProjectUser}'s <code>id</code>
      * @return The list of meta data
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
-    List<MetaData> retrieveUserMetaData(Long pUserId) throws EntityNotFoundException;
+    List<MetaData> retrieveUserMetaData(Long pUserId) throws ModuleEntityNotFoundException;
 
     /**
      * Set the passed {@link MetaData} onto the {@link ProjectUser} of passed <code>id</code>
@@ -134,20 +134,20 @@ public interface IProjectUserService {
      *            The {@link ProjectUser}'s <code>id</code>
      * @param pUpdatedUserMetaData
      *            The {@link List} of {@link MetaData} to set
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thhrown when not project user of passed <code>id</code> could be found
      */
-    void updateUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException;
+    void updateUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData) throws ModuleEntityNotFoundException;
 
     /**
      * Clear the {@link List} of {@link MetaData} of the {@link ProjectUser} with passed <code>id</code>.
      *
      * @param pUserId
      *            The {@link ProjectUser} <code>id</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
-    void removeUserMetaData(Long pUserId) throws EntityNotFoundException;
+    void removeUserMetaData(Long pUserId) throws ModuleEntityNotFoundException;
 
     /**
      * Return true when {@link ProjectUser} of passed <code>id</code> exists in db.

@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -99,16 +99,15 @@ public class ProjectUserService implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.role.IProjectUserService#retrieveOneByEmail(java.lang.String)
      */
     @Override
-    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
+    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws ModuleEntityNotFoundException {
         final ProjectUser user;
         if (instanceAdminUserEmail.equals(pUserEmail)) {
-            user = new ProjectUser(pUserEmail,
-                    new Role(RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null),
+            user = new ProjectUser(pUserEmail, new Role(RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null),
                     new ArrayList<>(), new ArrayList<>());
         } else {
             user = projectUserRepository.findOneByEmail(pUserEmail);
             if (user == null) {
-                throw new EntityNotFoundException(pUserEmail, ProjectUser.class);
+                throw new ModuleEntityNotFoundException(pUserEmail, ProjectUser.class);
             }
             // Filter out hidden meta data
             try (final Stream<MetaData> stream = user.getMetaData().stream()) {
@@ -131,12 +130,12 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
-            throws InvalidValueException, EntityNotFoundException {
+            throws InvalidValueException, ModuleEntityNotFoundException {
         if (pUpdatedProjectUser.getId() != pUserId) {
             throw new InvalidValueException("Account id specified differs from updated account id");
         }
         if (!existUser(pUserId)) {
-            throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
+            throw new ModuleEntityNotFoundException(pUserId.toString(), ProjectUser.class);
         }
         save(pUpdatedProjectUser);
     }
@@ -148,9 +147,9 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public void updateUserAccessRights(final String pLogin, final List<ResourcesAccess> pUpdatedUserAccessRights)
-            throws EntityNotFoundException {
+            throws ModuleEntityNotFoundException {
         if (!existUser(pLogin)) {
-            throw new EntityNotFoundException(pLogin, ProjectUser.class);
+            throw new ModuleEntityNotFoundException(pLogin, ProjectUser.class);
         }
         final ProjectUser user = projectUserRepository.findOneByEmail(pLogin);
 
@@ -192,7 +191,7 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public List<ResourcesAccess> retrieveProjectUserAccessRights(final String pEmail, final String pBorrowedRoleName)
-            throws InvalidValueException, EntityNotFoundException {
+            throws InvalidValueException, ModuleEntityNotFoundException {
         final ProjectUser projectUser = retrieveOneByEmail(pEmail);
         final Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
@@ -214,7 +213,7 @@ public class ProjectUserService implements IProjectUserService {
         try {
             final List<ResourcesAccess> fromRole = roleService.retrieveRoleResourcesAccessList(returnedRole.getId());
             merged.addAll(fromRole);
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleEntityNotFoundException e) {
             LOG.debug("Could not retrieve permissions from role", e);
         }
         return merged;

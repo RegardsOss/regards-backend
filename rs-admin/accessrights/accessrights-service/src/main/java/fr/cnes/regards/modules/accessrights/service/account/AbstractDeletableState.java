@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -80,7 +81,7 @@ abstract class AbstractDeletableState implements IAccountState {
     }
 
     @Override
-    public void delete(final Account pAccount) throws OperationForbiddenException {
+    public void delete(final Account pAccount) throws ModuleException {
         switch (pAccount.getStatus()) {
             case ACTIVE:
             case LOCKED:

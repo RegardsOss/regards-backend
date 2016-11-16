@@ -23,8 +23,9 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -34,7 +35,6 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
@@ -303,16 +303,17 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
     /**
      * Check that the system prevents from deleting an account linked to any project users.
-     * 
-     * @throws EntityNotFoundException
+     *
+     * @throws ModuleEntityNotFoundException
+     *             when no role with name 'PUBLIC' could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system prevents from deleting an account linked to any project users.")
-    public void deleteAccountNotAllowedBecauseOfLinkedProjectUser() throws EntityNotFoundException {
+    public void deleteAccountNotAllowedBecauseOfLinkedProjectUser() throws ModuleEntityNotFoundException {
         // Make sure we have a project user with same email on at least one tenant
         roleService.initDefaultRoles();
-        final Role rolePublic = roleService.retrieveRole(DefaultRoleNames.PUBLIC.toString());
+        final Role rolePublic = roleService.retrieveRole(DefaultRole.PUBLIC.toString());
         projectUserRepository.save(new ProjectUser(EMAIL, rolePublic, new ArrayList<>(), new ArrayList<>()));
 
         // Prepare the account. Must have a status allowing deletion

@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.accessrights.service.projectuser;
 import java.util.List;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -46,30 +46,30 @@ public interface IAccessRequestService {
      *
      * @param pAccessId
      *            The resource access' <code>id</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> could not be found
      */
-    void removeAccessRequest(Long pAccessId) throws EntityNotFoundException;
+    void removeAccessRequest(Long pAccessId) throws ModuleEntityNotFoundException;
 
     /**
      * Accept an access request by setting the {@link ProjectUser}'s status to {@link UserStatus#ACCESS_GRANTED}.
      *
      * @param pAccessId
      *            The access access' <code>id</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> could not be found
      */
-    void acceptAccessRequest(Long pAccessId) throws EntityNotFoundException;
+    void acceptAccessRequest(Long pAccessId) throws ModuleEntityNotFoundException;
 
     /**
      * Deny an access request by setting the {@link ProjectUser}'s status to {@link UserStatus#ACCESS_DENIED}.
      *
      * @param pAccessId
      *            The access access' <code>id</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when a project user with passed id could not be found
      */
-    void denyAccessRequest(Long pAccessId) throws EntityNotFoundException;
+    void denyAccessRequest(Long pAccessId) throws ModuleEntityNotFoundException;
 
     /**
      * Tell if an access request with passed <code>id</code> exists.

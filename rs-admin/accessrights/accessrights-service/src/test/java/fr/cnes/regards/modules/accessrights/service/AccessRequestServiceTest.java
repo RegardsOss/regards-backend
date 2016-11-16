@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -258,13 +258,13 @@ public class AccessRequestServiceTest {
     /**
      * Check that the system fails when trying to delete an inexistent registration request.
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
      */
-    @Test(expected = EntityNotFoundException.class)
+    @Test(expected = ModuleEntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system fails when trying to delete an inexistent registration request.")
-    public void removeAccessRequestNotFound() throws EntityNotFoundException {
+    public void removeAccessRequestNotFound() throws ModuleEntityNotFoundException {
         final Long id = 0L;
 
         // Mock repository's content
@@ -277,13 +277,13 @@ public class AccessRequestServiceTest {
     /**
      * Check that the system allows to delete a registration request.
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to delete a registration request.")
-    public void removeAccessRequest() throws EntityNotFoundException {
+    public void removeAccessRequest() throws ModuleEntityNotFoundException {
         final Long id = 0L;
         projectUser.setId(id);
         final List<ProjectUser> asList = new ArrayList<>();
@@ -302,13 +302,13 @@ public class AccessRequestServiceTest {
     /**
      * Check that the system fails when trying to accept an inexistent registration request.
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
      */
-    @Test(expected = EntityNotFoundException.class)
+    @Test(expected = ModuleEntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system fails when trying to accept an inexistent registration request.")
-    public void acceptAccessRequestNotFound() throws EntityNotFoundException {
+    public void acceptAccessRequestNotFound() throws ModuleEntityNotFoundException {
         final Long id = 0L;
 
         // Mock repository's content
@@ -321,13 +321,13 @@ public class AccessRequestServiceTest {
     /**
      * Check that the system allows to validate a registration request.
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to validate a registration request.")
-    public void acceptAccessRequest() throws EntityNotFoundException {
+    public void acceptAccessRequest() throws ModuleEntityNotFoundException {
         final Long id = 0L;
         projectUser.setId(id);
         final List<ProjectUser> asList = new ArrayList<>();
@@ -349,13 +349,13 @@ public class AccessRequestServiceTest {
     /**
      * Check that the system fails when trying to deny a inexistent registration request.
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
      */
-    @Test(expected = EntityNotFoundException.class)
+    @Test(expected = ModuleEntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system fails when trying to deny a inexistent registration request.")
-    public void denyAccessRequestNotFound() throws EntityNotFoundException {
+    public void denyAccessRequestNotFound() throws ModuleEntityNotFoundException {
         final Long id = 0L;
 
         // Mock repository's content
@@ -368,13 +368,13 @@ public class AccessRequestServiceTest {
     /**
      * Check that the system allows to deny a registration request.
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to deny a registration request.")
-    public void denyAccessRequest() throws EntityNotFoundException {
+    public void denyAccessRequest() throws ModuleEntityNotFoundException {
         final Long id = 0L;
         projectUser.setId(id);
         final List<ProjectUser> asList = new ArrayList<>();

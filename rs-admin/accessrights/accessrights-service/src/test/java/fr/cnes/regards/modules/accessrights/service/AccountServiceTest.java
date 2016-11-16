@@ -18,6 +18,9 @@ import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -181,13 +184,13 @@ public class AccountServiceTest {
     /**
      * Check that the system prevents from deleting an account if it is still linked to project users.
      *
-     * @throws EntityException
+     * @throws OperationForbiddenException
      *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
      */
-    @Test(expected = EntityException.class)
+    @Test(expected = OperationForbiddenException.class)
     @Requirement("?")
     @Purpose("Check that the system prevents from deleting an account if it is still linked to project users.")
-    public void removeAccountUndeletable() throws EntityException {
+    public void removeAccountUndeletable() throws ModuleException {
         // Prepare the case
         account.setId(ID);
         account.setStatus(AccountStatus.ACTIVE);
@@ -212,7 +215,7 @@ public class AccountServiceTest {
     @Test(expected = IllegalActionForAccountStatusException.class)
     @Requirement("?")
     @Purpose("Check that the system prevents from deleting an account for certain status (ACCEPTED...).")
-    public void removeAccountWrongStatus() throws EntityException {
+    public void removeAccountWrongStatus() throws ModuleException {
         // Mock
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
@@ -237,7 +240,7 @@ public class AccountServiceTest {
     @Test
     @Requirement("?")
     @Purpose("Check that the system allows to delete an account.")
-    public void removeAccount() throws EntityException {
+    public void removeAccount() throws ModuleException {
         // Prepare the case
         account.setId(ID);
         account.setStatus(AccountStatus.ACTIVE);
@@ -296,15 +299,15 @@ public class AccountServiceTest {
     /**
      * Check that the system fails when trying to update a not existing account
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} with passed if could be found
      * @throws InvalidValueException
      *             Thrown when passed id is different from the id of passed account
      */
-    @Test(expected = EntityNotFoundException.class)
+    @Test(expected = ModuleEntityNotFoundException.class)
     @Requirement("?")
     @Purpose("Check that the system allows to create a new account.")
-    public void updateAccountNotFound() throws EntityNotFoundException, InvalidValueException {
+    public void updateAccountNotFound() throws ModuleEntityNotFoundException, InvalidValueException {
         // Prepare account
         account.setId(ID);
 
@@ -318,15 +321,15 @@ public class AccountServiceTest {
     /**
      * Check that the system fails when trying to update a account with different id thant the passed one.
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} with passed if could be found
      * @throws InvalidValueException
      *             Thrown when passed id is different from the id of passed account
      */
-    @Test(expected = InvalidValueException.class)
+    @Test(expected = ModuleEntityNotFoundException.class)
     @Requirement("?")
     @Purpose("Check that the system fails when trying to update a account with different id thant the passed one.")
-    public void updateAccountDifferentId() throws EntityNotFoundException, InvalidValueException {
+    public void updateAccountDifferentId() throws ModuleEntityNotFoundException, InvalidValueException {
         // Prepare the account
         account.setId(ID);
 
@@ -344,7 +347,7 @@ public class AccountServiceTest {
     /**
      * Check that the system allows to update an account.
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} with passed if could be found
      * @throws InvalidValueException
      *             Thrown when passed id is different from the id of passed account
@@ -352,7 +355,7 @@ public class AccountServiceTest {
     @Test
     @Requirement("?")
     @Purpose("Check that the system allows to update an account.")
-    public void updateAccount() throws EntityNotFoundException, InvalidValueException {
+    public void updateAccount() throws ModuleEntityNotFoundException, InvalidValueException {
         // Prepare the case
         account.setId(ID);
         account.setFirstName("Newfirstname");
@@ -427,7 +430,7 @@ public class AccountServiceTest {
     /**
      * Check that the system allows a user to unlock its account with a code.
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} with passed if could be found
      * @throws InvalidValueException
      *             Thrown when passed id is different from the id of passed account
@@ -438,7 +441,7 @@ public class AccountServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows a user to unlock its account with a code.")
     public void unlockAccountRightCode()
-            throws EntityNotFoundException, InvalidValueException, IllegalActionForAccountStatusException {
+            throws ModuleEntityNotFoundException, InvalidValueException, IllegalActionForAccountStatusException {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);

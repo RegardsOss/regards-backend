@@ -4,7 +4,7 @@
 package fr.cnes.regards.modules.accessrights.service.account;
 
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
@@ -106,11 +106,11 @@ public interface IAccountState {
      *
      * @param pAccount
      *            The account
-     * @throws OperationForbiddenException
+     * @throws ModuleException
      *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.<br>
      *             {@link IllegalActionForAccountStatusException} Thrown if the {@link Account} is not in state ACTIVE.
      */
-    default void delete(final Account pAccount) throws OperationForbiddenException {
+    default void delete(final Account pAccount) throws ModuleException {
         throw new IllegalActionForAccountStatusException(pAccount,
                 Thread.currentThread().getStackTrace()[1].getMethodName());
     };

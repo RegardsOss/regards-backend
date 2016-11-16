@@ -6,8 +6,8 @@ package fr.cnes.regards.modules.accessrights.service.role;
 import java.util.List;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -52,12 +52,12 @@ public interface IRoleService {
      *            The {@link Role} <code>id</code>
      * @param pUpdatedRole
      *            The new {@link Role}
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             when no {@link Role} with passed <code>id</code> could be found
      * @throws InvalidValueException
      *             Thrown when <code>pRoleId</code> is different from the id of <code>pUpdatedRole</code>
      */
-    void updateRole(Long pRoleId, Role pUpdatedRole) throws EntityNotFoundException, InvalidValueException;
+    void updateRole(Long pRoleId, Role pUpdatedRole) throws ModuleEntityNotFoundException, InvalidValueException;
 
     /**
      * Create a new {@link Role}.
@@ -86,10 +86,10 @@ public interface IRoleService {
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
      * @return The {@link List} of {@link ResourcesAccess} on the {@link Role}
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
-    List<ResourcesAccess> retrieveRoleResourcesAccessList(Long pRoleId) throws EntityNotFoundException;
+    List<ResourcesAccess> retrieveRoleResourcesAccessList(Long pRoleId) throws ModuleEntityNotFoundException;
 
     /**
      * Set the passed {@link ResourcesAccess} onto the {@link role} of passed <code>id</code>.
@@ -98,22 +98,22 @@ public interface IRoleService {
      *            The {@link Role}'s <code>id</code>
      * @param pResourcesAccessList
      *            The {@link List} of {@link ResourcesAccess} to set
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      * @return The updated {@link Role}
      */
     Role updateRoleResourcesAccess(Long pRoleId, List<ResourcesAccess> pResourcesAccessList)
-            throws EntityNotFoundException;
+            throws ModuleEntityNotFoundException;
 
     /**
      * Clear the {@link List} of {@link ResourcesAccess} of the {@link Role} with passed <code>id</code>.
      *
      * @param pRoleId
      *            The {@link Role} <code>id</code>
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
-    void clearRoleResourcesAccess(Long pRoleId) throws EntityNotFoundException;
+    void clearRoleResourcesAccess(Long pRoleId) throws ModuleEntityNotFoundException;
 
     /**
      * Retrieve the {@link List} of {@link ProjectUser} for the {@link Role} of passed <code>id</code>.
@@ -121,10 +121,10 @@ public interface IRoleService {
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
      * @return The {@link List} of {@link ProjectUser} for the {@link Role}
-     * @throws EntityNotFoundException
+     * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
-    List<ProjectUser> retrieveRoleProjectUserList(Long pRoleId) throws EntityNotFoundException;
+    List<ProjectUser> retrieveRoleProjectUserList(Long pRoleId) throws ModuleEntityNotFoundException;
 
     /**
      * Return true when {@link Role} of passed <code>id</code> exists in db.

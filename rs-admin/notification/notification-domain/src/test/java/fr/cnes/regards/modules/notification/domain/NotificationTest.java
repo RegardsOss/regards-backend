@@ -21,8 +21,6 @@ import org.junit.Test;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.domain.projects.DefaultRoleNames;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
@@ -106,7 +104,7 @@ public class NotificationTest {
         notification.setStatus(STATUS);
 
         roleRecipients = new ArrayList<>();
-        roleRecipients.add(new Role(DefaultRoleNames.PUBLIC.toString(), null));
+        roleRecipients.add(new Role(DefaultRole.PUBLIC.toString(), null));
         notification.setRoleRecipients(roleRecipients);
 
         projectUserRecipients = new ArrayList<>();
