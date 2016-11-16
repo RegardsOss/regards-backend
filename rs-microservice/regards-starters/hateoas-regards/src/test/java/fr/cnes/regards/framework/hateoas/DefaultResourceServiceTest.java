@@ -225,7 +225,7 @@ public class DefaultResourceServiceTest {
         }
 
         @Override
-        public Resource<Pojo> toResource(Pojo pElement) {
+        public Resource<Pojo> toResource(Pojo pElement, Object... pExtras) {
             final Resource<Pojo> resource = resourceService.toResource(pElement);
             resourceService.addLink(resource, PojoController.class, GET_METHOD_NAME, LinkRels.SELF,
                                     MethodParamFactory.build(Long.class, pElement.getId()));
