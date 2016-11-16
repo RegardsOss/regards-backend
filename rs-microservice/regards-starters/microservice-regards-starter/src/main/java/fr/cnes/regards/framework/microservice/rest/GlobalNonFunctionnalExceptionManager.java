@@ -34,7 +34,7 @@ public class GlobalNonFunctionnalExceptionManager {
      *            exception thrown
      * @return response
      */
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler(Throwable.class)
     public ResponseEntity<ServerErrorResponse> nonFunctionnalException(Exception pException) {
         String tenant = jwtService.getActualTenant();
         MaintenanceManager.setMaintenance(tenant);
