@@ -145,7 +145,7 @@ public class InternalAuthenticationController
     }
 
     @Override
-    public Resource<PluginConfiguration> toResource(final PluginConfiguration pElement) {
+    public Resource<PluginConfiguration> toResource(final PluginConfiguration pElement, Object... pExtras) {
         final Resource<PluginConfiguration> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveIdentityProviderPlugin", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, pElement.getId()));
