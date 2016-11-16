@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +32,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  * Web security auto configuration
  *
  * @author msordi
+ * @author Sylvain Vissiere-Guerinet
  *
  */
 @Configuration
@@ -60,7 +63,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
      * Custom web security configuration
      */
     @Autowired(required = false)
-    private ICustomWebSecurityConfiguration customConfigurer;
+    private Set<ICustomWebSecurityConfiguration> customConfigurers;
 
     @Override
     protected void configure(final HttpSecurity pHttp) throws Exception {
@@ -79,9 +82,11 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         // Add CORS filter
         pHttp.addFilterAfter(new CorsFilter(authoritiesProvider), IpFilter.class);
 
-        // Add custom configuration if any
-        if (customConfigurer != null) {
-            customConfigurer.configure(pHttp);
+        // Add custom configurations if any
+        if (customConfigurers != null) {
+            for (ICustomWebSecurityConfiguration customConfigurer : customConfigurers) {
+                customConfigurer.configure(pHttp);
+            }
         }
 
     }

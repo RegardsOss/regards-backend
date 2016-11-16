@@ -81,7 +81,7 @@ public class MethodAuthorizationServiceTest {
         @RequestMapping
         class Controller {
 
-            @ResourceAccess(name = "/endpoint1", description = "description")
+            @ResourceAccess(description = "description")
             @RequestMapping(value = "/endpoint1", method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
@@ -134,7 +134,7 @@ public class MethodAuthorizationServiceTest {
         @RequestMapping
         class Controller {
 
-            @ResourceAccess(name = "/endpoint1/unauthorized", description = "description")
+            @ResourceAccess(description = "description")
             @RequestMapping(value = "/endpoint/unauthorized", method = RequestMethod.GET)
             public Object endpoint() {
                 return null;

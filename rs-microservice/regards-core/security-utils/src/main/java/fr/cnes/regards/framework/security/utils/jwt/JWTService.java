@@ -40,22 +40,22 @@ public class JWTService {
     /**
      * Project claim
      */
-    private static final String CLAIM_PROJECT = "project";
+    public static final String CLAIM_PROJECT = "project";
 
     /**
      * Email claim
      */
-    private static final String CLAIM_EMAIL = "email";
+    public static final String CLAIM_EMAIL = "email";
 
     /**
      * Role claim
      */
-    private static final String CLAIM_ROLE = "role";
+    public static final String CLAIM_ROLE = "role";
 
     /**
      * Subject claim
      */
-    private static final String CLAIM_SUBJECT = "sub";
+    public static final String CLAIM_SUBJECT = "sub";
 
     /**
      * Class logger
@@ -72,6 +72,10 @@ public class JWTService {
      */
     @Value("${jwt.secret}")
     private String secret;
+
+    public String getActualTenant() {
+        return ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication()).getTenant();
+    }
 
     public void injectToken(final String pTenant, final String pRole) throws JwtException {
         String token = null;

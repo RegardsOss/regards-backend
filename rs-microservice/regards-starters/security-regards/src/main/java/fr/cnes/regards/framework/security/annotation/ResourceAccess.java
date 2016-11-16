@@ -13,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.google.gson.annotations.JsonAdapter;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
+
 /**
  * Security hook to identify and secured REST endpoint accesses.
  *
@@ -25,17 +27,6 @@ import com.google.gson.annotations.JsonAdapter;
 @PreAuthorize("VOID")
 @JsonAdapter(ResourceAccessAdapter.class)
 public @interface ResourceAccess {
-
-    /**
-     * Set the name of the current resource.<br>
-     * Resource name is associated to the HTTP verb to identify the resource access (i.e. the endpoint). This
-     * association must be unique by microservice. Default value ""
-     *
-     *
-     * @return resource name.
-     * @since 1.0-SNAPSHOT
-     */
-    String name() default "";
 
     /**
      * Describe the current feature should start with an action verb
@@ -53,4 +44,11 @@ public @interface ResourceAccess {
      * @since 1.0-SNAPSHOT
      */
     Class<?> plugin() default Void.class;
+
+    /**
+     * Allows to configure sensible default accesses
+     * 
+     * @return default resource role
+     */
+    DefaultRole role() default DefaultRole.NONE;
 }

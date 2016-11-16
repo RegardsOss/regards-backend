@@ -25,18 +25,22 @@ public interface IResourceController<T> {
      *
      * @param pElement
      *            element to convert
+     * @param pExtras
+     *            Extra URL path parameters for links
      * @return a {@link Resource}
      */
-    Resource<T> toResource(T pElement);
+    Resource<T> toResource(T pElement, Object... pExtras);
 
     /**
      * Convert a list of elements to a list of {@link Resource}
      *
      * @param pElements
      *            list of elements to convert
+     * @param pExtras
+     *            Extra URL path parameters for links
      * @return a list of {@link Resource}
      */
-    default List<Resource<T>> toResources(final List<T> pElements) {
+    default List<Resource<T>> toResources(final List<T> pElements, Object... pExtras) {
         Assert.notNull(pElements);
         return pElements.stream().map(this::toResource).collect(Collectors.toList());
     }

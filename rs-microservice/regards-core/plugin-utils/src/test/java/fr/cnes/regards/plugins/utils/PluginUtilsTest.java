@@ -20,7 +20,7 @@ import fr.cnes.regards.plugins.utils.PluginParameterUtils.PrimitiveObject;
 /**
  * Unit testing of {@link PluginUtils}.
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public class PluginUtilsTest extends PluginUtilsTestConstants {
@@ -37,21 +37,18 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     public void loadPlugins() {
         LOGGER.debug(STARTING + this.toString());
 
-        try {
-            // Get all the plugins
-            final Map<String, PluginMetaData> maps = PluginUtils.getPlugins("fr.cnes.regards.plugins.utils");
-            Assert.assertNotNull(maps);
-            Assert.assertTrue(maps.size() > 1);
+        // Get all the plugins
+        final Map<String, PluginMetaData> maps = PluginUtils.getPlugins("fr.cnes.regards.plugins.utils");
+        Assert.assertNotNull(maps);
+        Assert.assertTrue(maps.size() > 1);
 
-            // Get the PluginMetaData of the first plugin
-            final PluginMetaData pluginMetaData = maps.get(maps.keySet().stream().findFirst().get());
-            Assert.assertNotNull(pluginMetaData);
+        // Get the PluginMetaData of the first plugin
+        final PluginMetaData pluginMetaData = maps.get(maps.keySet().stream().findFirst().get());
+        Assert.assertNotNull(pluginMetaData);
 
-            // Log the parameters of the first plugin
-            pluginMetaData.getParameters().stream().forEach(s -> LOGGER.info(s));
-        } catch (PluginUtilsException e) {
-            Assert.fail();
-        }
+        // Log the parameters of the first plugin
+        pluginMetaData.getParameters().stream().forEach(s -> LOGGER.info(s));
+        
         LOGGER.debug(ENDING + this.toString());
     }
 
@@ -268,7 +265,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         // instantiate plugin
         PluginUtils.getPlugin(parameters, SampleErrorPlugin.class);
     }
-    
+
     @Test
     public void testPluginParameterEnum() {
         PrimitiveObject.valueOf(PrimitiveObject.BOOLEAN.name());

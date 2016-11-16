@@ -17,13 +17,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>microservice-regards-autoconfigure</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>microservice-regards</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<!-- Spring boot config -->
 		<dependency>

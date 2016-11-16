@@ -32,11 +32,19 @@ public @interface Plugin {
 
     /**
      *
-     * Version of the plugin. Use to check if the plugin changed
+     * An URL link to the web site of the plugin.
      *
-     * @return the plugin's version
+     * @return the plugin's url
      */
-    String version();
+    String url() default "";
+
+    /**
+     *
+     * Description of the plugin. Simple user information.
+     *
+     * @return the plugin's description
+     */
+    String description() default "";
 
     /**
      *
@@ -48,10 +56,34 @@ public @interface Plugin {
 
     /**
      *
-     * Description of the plugin. Simple user information.
+     * An email to contact the plugin's author.
      *
-     * @return the plugin's description
+     * @return the email of the plugin's author
      */
-    String description();
+    String contact() default "";
+
+    /**
+     *
+     * The legal owner of the plugin.
+     *
+     * @return the plugin's legal owner
+     */
+    String owner()default "";
+
+    /**
+     *
+     * Version of the plugin. Use to check if the plugin changed
+     *
+     * @return the plugin's version
+     */
+    String version();
+
+    /**
+     *
+     * Licence of the plugin.
+     *
+     * @return the plugin's licence
+     */
+    String licence() default "";
 
 }

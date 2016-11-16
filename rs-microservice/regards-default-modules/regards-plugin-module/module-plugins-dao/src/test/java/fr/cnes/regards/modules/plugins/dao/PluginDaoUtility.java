@@ -4,6 +4,11 @@ package fr.cnes.regards.modules.plugins.dao;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
@@ -16,6 +21,11 @@ import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
  *
  */
 public class PluginDaoUtility {
+
+    /**
+     * Class logger
+     */
+    protected static final Logger LOGGER = LoggerFactory.getLogger(PluginParameterTest.class);
 
     /**
      * Project used for test
@@ -70,11 +80,17 @@ public class PluginDaoUtility {
             .addParameterDynamic("param-dyn21", RED, DYNAMICVALUES).getParameters().get(0);
 
     /**
+     * A {@link PluginParameter}
+     */
+    static final PluginParameter PARAMETER3 = PluginParametersFactory.build().addParameter("param31", "value31")
+            .getParameters().get(0);
+
+    /**
      * A list of {@link PluginParameter}
      */
     static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
-            .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
-            .addParameter("param34", "value34").addParameter("param35", "value35").getParameters();
+            .addParameter("param41", "value41").addParameter("param42", "value42").addParameter("param43", "value43")
+            .addParameter("param44", "value44").addParameter("param45", "value45").getParameters();
 
     /**
      * A {@link PluginConfiguration}
@@ -86,11 +102,35 @@ public class PluginDaoUtility {
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
      */
     private static PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
-            "second configuration", Arrays.asList(PARAMETER1, PARAMETER2), 0);
+            "second configuration", Arrays.asList(PARAMETER2, PARAMETER3), 0);
+
+    /**
+     * IPluginConfigurationRepository
+     */
+    @Autowired
+    protected IPluginConfigurationRepository pluginConfigurationRepository;
+
+    /**
+     * IPluginParameterRepository
+     */
+    @Autowired
+    protected IPluginParameterRepository pluginParameterRepository;
+
+    /**
+     * IPluginDynamicValueRepository
+     */
+    @Autowired
+    protected IPluginDynamicValueRepository pluginDynamicValueRepository;
+
+    /**
+     * Security service to generate tokens.
+     */
+    @Autowired
+    protected JWTService jwtService;
 
     static PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setClass(Integer.class);
+        pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
         pluginMetaData.setPluginId("plugin-id");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);
@@ -105,12 +145,38 @@ public class PluginDaoUtility {
         return pluginConfiguration2;
     }
 
-    public static void resetId() {
+    protected void cleanDb() {
+        pluginConfigurationRepository.deleteAll();
+        pluginParameterRepository.deleteAll();
+        pluginDynamicValueRepository.deleteAll();
+        resetId();
+    }
+
+    protected static void resetId() {
         getPluginConfigurationWithDynamicParameter().setId(null);
         getPluginConfigurationWithDynamicParameter().getParameters().forEach(p -> p.setId(null));
+
         getPluginConfigurationWithParameters().setId(null);
         getPluginConfigurationWithParameters().getParameters().forEach(p -> p.setId(null));
+
         PARAMETER2.getDynamicsValues().forEach(p -> p.setId(null));
+
+        INTERFACEPARAMETERS.forEach(p -> p.setId(null));
+    }
+
+    protected void displayParams() {
+        LOGGER.info("=====> dynamic values");
+        pluginDynamicValueRepository.findAll().forEach(p -> LOGGER.info("id=" + p.getId() + "-value=" + p.getValue()));
+
+        LOGGER.info("=====> parameter");
+        pluginParameterRepository.findAll().forEach(p -> LOGGER.info("name=" + p.getName() + "-value=" + p.getValue()
+                + "-nb dyns=" + p.getDynamicsValuesAsString().size()));
+        for (PluginParameter pP : pluginParameterRepository.findAll()) {
+            if (pP.getDynamicsValues() != null && !pP.getDynamicsValues().isEmpty()) {
+                pP.getDynamicsValues().forEach(p -> LOGGER.info("id=" + p.getId() + "-val=" + p.getValue()));
+            }
+        }
+        LOGGER.info("<=====");
     }
 
 }

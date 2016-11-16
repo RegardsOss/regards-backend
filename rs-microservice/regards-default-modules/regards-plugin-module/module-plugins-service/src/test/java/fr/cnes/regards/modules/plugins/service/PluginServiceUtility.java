@@ -111,6 +111,14 @@ public class PluginServiceUtility {
             .addParameterDynamic(PARAM_SUFFIX, RED, DYNAMICVALUES).getParameters();
 
     /**
+     * A {@link PluginParameter}
+     */
+    protected static final List<PluginParameter> DYNAMICPARAMETERS_TO_UPDATE = PluginParametersFactory.build()
+            .addParameter("param11", "value11").addParameterDynamic(PARAM_COEFF, "0")
+            .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString())
+            .addParameterDynamic(PARAM_SUFFIX, RED, DYNAMICVALUES).getParameters();
+
+    /**
      * A list of {@link PluginParameter}
      */
     protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
@@ -126,7 +134,7 @@ public class PluginServiceUtility {
             "a configuration", INTERFACEPARAMETERS, 0);
 
     /**
-     * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
+     * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}.
      */
     private PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
             "second configuration", DYNAMICPARAMETERS, 0);
@@ -137,9 +145,15 @@ public class PluginServiceUtility {
     private PluginConfiguration pluginConfiguration3 = new PluginConfiguration(this.getPluginMetaData(),
             "third configuration", CINQ);
 
+    /**
+     * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}.
+     */
+    private PluginConfiguration pluginConfiguration4 = new PluginConfiguration(this.getPluginMetaData(),
+            "fourth configuration", DYNAMICPARAMETERS_TO_UPDATE, 0);
+
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setClass(Integer.class);
+        pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
         pluginMetaData.setPluginId("aSamplePlugin");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);
@@ -156,6 +170,10 @@ public class PluginServiceUtility {
 
     protected PluginConfiguration getPluginConfigurationWithoutParameters() {
         return pluginConfiguration3;
+    }
+
+    protected PluginConfiguration getPluginConfigurationWithoutParametersToUpdate() {
+        return pluginConfiguration4;
     }
 
     protected void resetId() {

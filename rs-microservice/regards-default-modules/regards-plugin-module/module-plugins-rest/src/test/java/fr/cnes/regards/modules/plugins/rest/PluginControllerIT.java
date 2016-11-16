@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.plugins.rest;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -7,6 +10,7 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +28,14 @@ import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.modules.plugins.service.IPluginService;
+import fr.cnes.regards.plugins.IComplexInterfacePlugin;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
+/**
+ * 
+ * @author Christophe Mertz
+ *
+ */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class PluginControllerIT extends AbstractRegardsIT {
 
@@ -55,23 +65,54 @@ public class PluginControllerIT extends AbstractRegardsIT {
     @Autowired
     private IPluginService pluginService;
 
-    private final String apiPluginsRoot = "/plugins";
+    private final String apiPlugins = "/plugins";
+
+    private final String apiPluginsWithParamPluginType = "/plugins" + "?pluginType=";
 
     private final String apiPluginTypes = "/plugintypes";
 
-    private final String apiPluginsConfig = apiPluginsRoot + "/{pluginId}" + "/config";
+    private final String apiPluginsOnePluginId = "/plugins/{pluginId}";
 
-    private final String apiPluginsConfigId = apiPluginsConfig + "/{configId}";
+    private final String apiPluginsAllConfig = apiPluginsOnePluginId + "/config";
 
-    // @Test
-    // public void getAllPluginsRest() {
-    // final List<ResultMatcher> expectations = new ArrayList<>(1);
-    // expectations.add(status().isOk());
-    // performDefaultGet("/plugins", expectations, "unable to load all plugins");
-    // }
+    private final String apiPluginsOneConfigId = apiPluginsAllConfig + "/{configId}";
 
     @Test
-    public void getAllPluginTypesRest() {
+    public void getAllPlugins() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        performDefaultGet(apiPlugins, expectations, "unable to load all plugins");
+    }
+
+    @Test
+    public void getPluginOneType() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        final String pluginType = IComplexInterfacePlugin.class.getCanonicalName();
+        performDefaultGet(apiPluginsWithParamPluginType + pluginType, expectations,
+                          String.format("unable to load plugins of type <%s>", pluginType));
+    }
+
+    @Test
+    public void getPluginOneUnknownType() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isBadRequest());
+        final String pluginType = "hello";
+        performDefaultGet(apiPluginsWithParamPluginType + pluginType, expectations,
+                          String.format("unable to load plugins of unknown type", pluginType));
+    }
+
+    @Test
+    public void getOnePlugin() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        final String pluginId = pluginService.getPlugins().get(0).getPluginId();
+        performDefaultGet(apiPluginsOnePluginId, expectations, String.format("unable to load plugin id <%s>", pluginId),
+                          pluginId);
+    }
+
+    @Test
+    public void getAllPluginTypes() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
@@ -104,8 +145,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$..content.parameters[1].dynamic",
                                                         Matchers.hasToString("[false]")));
 
-        performDefaultGet(apiPluginsConfig, expectations, "unable to load all plugin configuration of a specific type",
-                          PLUGIN_ID);
+        performDefaultGet(apiPluginsAllConfig, expectations,
+                          "unable to load all plugin configuration of a specific type", PLUGIN_ID);
     }
 
     @Test
@@ -122,13 +163,24 @@ public class PluginControllerIT extends AbstractRegardsIT {
         }
 
         // Get the added PluginConfiguration
-        final String configId = AN_ID.toString();
+        final Long configId = AN_ID;
         final String pluginId = PLUGIN_ID;
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.id", Matchers.hasToString(configId)));
-        performDefaultGet(apiPluginsConfigId, expectations, "unable to load a plugin configuration", pluginId,
+        performDefaultGet(apiPluginsOneConfigId, expectations, "unable to load a plugin configuration", pluginId,
+                          configId);
+    }
+
+    @Test
+    @DirtiesContext
+    public void getPluginConfigurationError() {
+        // Get an unknown PluginConfiguration
+        final Long configId = AN_ID;
+        final String pluginId = PLUGIN_ID;
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNotFound());
+        performDefaultGet(apiPluginsOneConfigId, expectations, "unable to load a plugin configuration", pluginId,
                           configId);
     }
 
@@ -157,9 +209,66 @@ public class PluginControllerIT extends AbstractRegardsIT {
                 .add(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic", Matchers.hasToString("false")));
 
         // Update the added PluginConfiguration
-        performDefaultPut(apiPluginsConfigId, aPluginConfiguration, expectations,
-                          "unable to update a plugin configuration", PLUGIN_ID,
-                          aPluginConfiguration.getId().toString());
+        performDefaultPut(apiPluginsOneConfigId, aPluginConfiguration, expectations,
+                          "unable to update a plugin configuration", PLUGIN_ID, aPluginConfiguration.getId());
+    }
+
+    @Test
+    @DirtiesContext
+    public void updatePluginConfigurationErrorId() {
+        // Add a PluginConfiguration with the PluginService
+        PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL, PARAMETERS,
+                0);
+        try {
+            aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
+            aPluginConfiguration.setId(AN_ID);
+        } catch (PluginUtilsException e) {
+            Assert.fail();
+        }
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNotFound());
+
+        // Update the added PluginConfiguration
+        performDefaultPut(apiPluginsOneConfigId, aPluginConfiguration, expectations,
+                          "unable to update a plugin configuration", PLUGIN_ID, 9999L);
+    }
+    
+    @Test
+    @DirtiesContext
+    public void updatePluginConfigurationErrorPluginId() {
+        // Add a PluginConfiguration with the PluginService
+        PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL, PARAMETERS,
+                0);
+        try {
+            aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
+            aPluginConfiguration.setPluginId("hello-toulouse");
+        } catch (PluginUtilsException e) {
+            Assert.fail();
+        }
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNotFound());
+
+        // Update the added PluginConfiguration
+        performDefaultPut(apiPluginsOneConfigId, aPluginConfiguration, expectations,
+                          "unable to update a plugin configuration", PLUGIN_ID, 9999L);
+    }
+
+    @Test
+    @DirtiesContext
+    public void updateUnknownPluginConfigurationError() {
+        // Add a PluginConfiguration with the PluginService
+        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
+                PARAMETERS, 0);
+        aPluginConfiguration.setId(AN_ID);
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNotFound());
+
+        // Update the added PluginConfiguration
+        performDefaultPut(apiPluginsOneConfigId, aPluginConfiguration, expectations,
+                          "unable to update a plugin configuration", PLUGIN_ID, AN_ID);
     }
 
     @Test
@@ -179,7 +288,42 @@ public class PluginControllerIT extends AbstractRegardsIT {
         expectations
                 .add(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic", Matchers.hasToString("false")));
 
-        performDefaultPost(apiPluginsConfig, aPluginConfiguration, expectations,
+        performDefaultPost(apiPluginsAllConfig, aPluginConfiguration, expectations,
+                           "unable to save a plugin configuration", PLUGIN_ID);
+    }
+
+    @Test
+    @DirtiesContext
+    public void savePluginConfigurationErrorPriorityOrderNull() {
+        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
+                PARAMETERS, 0);
+
+        aPluginConfiguration.setPriorityOrder(null);
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isBadRequest());
+        performDefaultPost(apiPluginsAllConfig, aPluginConfiguration, expectations,
+                           "unable to save a plugin configuration", PLUGIN_ID);
+    }
+
+    @Test
+    @DirtiesContext
+    public void savePluginConfigurationErrorVersionNull() {
+        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
+                PARAMETERS, 0);
+
+        aPluginConfiguration.setVersion(null);
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isBadRequest());
+        performDefaultPost(apiPluginsAllConfig, aPluginConfiguration, expectations,
+                           "unable to save a plugin configuration", PLUGIN_ID);
+    }
+    
+    @Test
+    @DirtiesContext
+    public void savePluginConfigurationErrorConfNull() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isServiceUnavailable());
+        performDefaultPost(apiPluginsAllConfig, null, expectations,
                            "unable to save a plugin configuration", PLUGIN_ID);
     }
 
@@ -196,13 +340,13 @@ public class PluginControllerIT extends AbstractRegardsIT {
         }
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
-        performDefaultDelete(apiPluginsConfigId, expectations, "unable to delete a plugin configuration", PLUGIN_ID,
-                             aPluginConfiguration.getId().toString());
+        performDefaultDelete(apiPluginsOneConfigId, expectations, "unable to delete a plugin configuration", PLUGIN_ID,
+                             aPluginConfiguration.getId());
     }
 
     private PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setClass(Integer.class);
+        pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
         pluginMetaData.setPluginId(PLUGIN_ID);
         pluginMetaData.setAuthor(AUTHOR);
         pluginMetaData.setVersion(VERSION);

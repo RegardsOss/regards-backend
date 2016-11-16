@@ -4,16 +4,13 @@ package fr.cnes.regards.modules.plugins.dao;
 import java.util.Arrays;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 
@@ -31,34 +28,23 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 public class PluginConfigurationTest extends PluginDaoUtility {
 
     /**
-     * IPluginConfigurationRepository
-     */
-    @Autowired
-    private IPluginConfigurationRepository pluginConfigurationRepository;
-
-    /**
-     * IPluginParameterRepository
-     */
-    @Autowired
-    private IPluginParameterRepository pluginParameterRepository;
-
-    /**
-     * Security service to generate tokens.
-     */
-    @Autowired
-    private JWTService jwtService;
-
-    /**
      * Unit test of creation {@link PluginConfiguration}
      */
     @Test
     public void createPluginConfiguration() {
         try {
             jwtService.injectToken(PROJECT, USERROLE);
+            cleanDb();
 
+            // persist a PluginConfiguration
             final PluginConfiguration jpaConf = pluginConfigurationRepository
                     .save(getPluginConfigurationWithParameters());
+
             Assert.assertEquals(1, pluginConfigurationRepository.count());
+            Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
+                                pluginParameterRepository.count());
+
+            // Assert.assertEquals(0, pluginDynamicValueRepository.count());
 
             Assert.assertEquals(getPluginConfigurationWithParameters().getLabel(), jpaConf.getLabel());
             Assert.assertEquals(getPluginConfigurationWithParameters().getVersion(), jpaConf.getVersion());
@@ -73,6 +59,17 @@ public class PluginConfigurationTest extends PluginDaoUtility {
                     .forEach(p -> Assert
                             .assertEquals(getPluginConfigurationWithParameters().getParameterConfiguration(p.getName()),
                                           jpaConf.getParameterConfiguration(p.getName())));
+
+            // persist a PluginConfiguration
+            resetId();
+            pluginConfigurationRepository.save(getPluginConfigurationWithDynamicParameter());
+
+            Assert.assertEquals(2, pluginConfigurationRepository.count());
+            Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size()
+                    + getPluginConfigurationWithDynamicParameter().getParameters().size(),
+                                pluginParameterRepository.count());
+            // Assert.assertEquals(3, pluginDynamicValueRepository.count());
+
         } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
@@ -85,6 +82,7 @@ public class PluginConfigurationTest extends PluginDaoUtility {
     public void createAndFindPluginConfigurationWithParameters() {
         try {
             jwtService.injectToken(PROJECT, USERROLE);
+            cleanDb();
 
             // save a plugin configuration
             final PluginConfiguration aPluginConf = pluginConfigurationRepository
@@ -119,6 +117,7 @@ public class PluginConfigurationTest extends PluginDaoUtility {
     public void updatePluginConfigurationWithParameters() {
         try {
             jwtService.injectToken(PROJECT, USERROLE);
+            cleanDb();
 
             // save a plugin configuration
             final PluginConfiguration aPluginConf = pluginConfigurationRepository
@@ -149,18 +148,6 @@ public class PluginConfigurationTest extends PluginDaoUtility {
         } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
-    }
-
-    @Before
-    public void deleteAllFromRepository() {
-        try {
-            jwtService.injectToken(PROJECT, USERROLE);
-        } catch (JwtException e) {
-            Assert.fail(INVALID_JWT);
-        }
-        pluginConfigurationRepository.deleteAll();
-        pluginParameterRepository.findAll().forEach(p -> pluginParameterRepository.delete(p));
-        resetId();
     }
 
 }

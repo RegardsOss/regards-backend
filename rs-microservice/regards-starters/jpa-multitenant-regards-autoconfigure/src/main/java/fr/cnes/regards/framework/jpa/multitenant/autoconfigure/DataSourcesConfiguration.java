@@ -65,12 +65,8 @@ public class DataSourcesConfiguration {
         final Map<String, DataSource> datasources = new HashMap<>();
 
         // Add datasources from bean configuration
-        if (multitenantResolver != null) {
-            final List<TenantConnection> connections = multitenantResolver.getTenantConnections();
-            datasources.putAll(createDataSourcesFromTenants(connections));
-        } else {
-            LOG.warn("No Custom tenant reader defined. Using only properties file to create datasources for MultitenantJpaAutoConfiguration");
-        }
+        final List<TenantConnection> connections = multitenantResolver.getTenantConnections();
+        datasources.putAll(createDataSourcesFromTenants(connections));
 
         // Add datasources configuration from properties file.
         for (final TenantConnection tenant : daoProperties.getTenants()) {

@@ -16,8 +16,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-hateoas</artifactId>
+			<groupId>org.springframework.hateoas</groupId>
+			<artifactId>spring-hateoas</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>

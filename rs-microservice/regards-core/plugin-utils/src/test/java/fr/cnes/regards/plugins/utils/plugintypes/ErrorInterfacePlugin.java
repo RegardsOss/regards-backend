@@ -13,7 +13,7 @@ import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
 /**
  * ISamplePlugin
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 @Plugin(author = "CSSI", description = "Sample plugin test", id = "anErrorPluginInterface", version = "0.0.1")

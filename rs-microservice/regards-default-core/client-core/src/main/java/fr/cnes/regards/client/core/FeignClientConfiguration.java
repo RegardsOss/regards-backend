@@ -5,17 +5,22 @@ package fr.cnes.regards.client.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
+import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import feign.Contract;
 import feign.RequestInterceptor;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
  *
@@ -35,6 +40,9 @@ public class FeignClientConfiguration {
      */
     private static final Logger LOG = LoggerFactory.getLogger(FeignClientConfiguration.class);
 
+    @Autowired
+    JWTService jwtService;
+
     /**
      *
      * Intercepter for Feign client requests. This intercepter add the JWT token into requests header.
@@ -50,7 +58,9 @@ public class FeignClientConfiguration {
             final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
                     .getAuthentication();
             // Insert token into request header
-            pRequestTemplate.header("Authorization", "Bearer " + authentication.getJwt());
+            if (authentication != null) {
+                pRequestTemplate.header("Authorization", "Bearer " + authentication.getJwt());
+            }
 
             LOG.info("Running Feign client request to : " + pRequestTemplate.request().url());
         };
@@ -94,6 +104,11 @@ public class FeignClientConfiguration {
     @Bean
     public Encoder getEncoder() {
         return new GsonEncoder();
+    }
+
+    @Bean
+    public Contract feignContractg() {
+        return new SpringMvcContract();
     }
 
 }

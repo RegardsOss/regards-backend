@@ -25,8 +25,6 @@ import javax.validation.constraints.NotNull;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
- * Class PluginParameter
- *
  * Parameter associated to a plugin configuration <PluginConfiguration>
  *
  * @author Christophe Mertz
@@ -75,9 +73,9 @@ public class PluginParameter implements IIdentifiable<Long> {
     /**
      * The list of values for a dynamic parameters
      */
-    @ElementCollection(targetClass = PluginDynamicValue.class)
-    @CollectionTable(name = "dynParamValue",
-            joinColumns = @JoinColumn(name = "ID", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_ID")))
+    @ElementCollection
+    @CollectionTable(joinColumns = @JoinColumn(name = "ID",
+            foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_DYN_ID")))
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PluginDynamicValue> dynamicsValues;
 
@@ -87,6 +85,7 @@ public class PluginParameter implements IIdentifiable<Long> {
      */
     public PluginParameter() {
         super();
+        name="undefined";
     }
 
     /**

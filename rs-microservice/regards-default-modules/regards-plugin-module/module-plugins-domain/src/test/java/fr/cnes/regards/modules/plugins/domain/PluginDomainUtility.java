@@ -75,7 +75,7 @@ public class PluginDomainUtility {
     /**
      * isActive constant {@link String}
      */
-    protected static final String PARAM_IS_ACTIVE = "isActive";
+    protected static final String PARAM_IS_ACTIVE = "isBoolean";
 
     /**
      * A plugin identifier constant {@link String}
@@ -123,7 +123,7 @@ public class PluginDomainUtility {
 
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setClass(Integer.class);
+        pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
         pluginMetaData.setPluginId("aSamplePlugin");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);

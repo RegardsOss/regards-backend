@@ -18,10 +18,6 @@
 			<groupId>fr.cnes.regards.microservices</groupId>
 			<artifactId>microservice-core</artifactId>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>fr.cnes.regards.framework</groupId> -->
-<!-- 			<artifactId>security-utils</artifactId> -->
-<!-- 		</dependency> -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.plugins</groupId>
 			<artifactId>module-plugins-service</artifactId>
@@ -39,12 +35,12 @@
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.plugins</groupId>
 			<artifactId>module-plugins-test</artifactId>
 			<scope>test</scope>
 			<type>test-jar</type>			
-		</dependency>		
+		</dependency>
 	</dependencies>
 </project>

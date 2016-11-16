@@ -15,7 +15,8 @@ import fr.cnes.regards.framework.swagger.autoconfigure.SwaggerAutoConfiguration;
  *
  */
 // CHECKSTYLE:OFF
-@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules" }, exclude = { SwaggerAutoConfiguration.class })
+@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices" },
+        exclude = { SwaggerAutoConfiguration.class })
 public class TestApplication {
 
     public static void main(final String[] pArgs) {

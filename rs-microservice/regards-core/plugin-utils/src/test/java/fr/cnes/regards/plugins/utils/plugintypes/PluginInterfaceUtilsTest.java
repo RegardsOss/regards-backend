@@ -10,6 +10,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
@@ -21,7 +23,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsTestConstants;
 /**
  * Unit testing of {@link PluginInterfaceUtils}.
  * 
- * @author cmertz
+ * @author Christophe Mertz
  *
  */
 public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
@@ -50,6 +52,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      * Get a {@link ComplexPlugin} with a specific parameters
      */
     @Test
+    @Requirement("REGARDS_DSL_SYS_PLG_020")
+    @Purpose("Load a plugin with a plugin type interface parameter.")
     public void getComplexPlugin() {
         final ComplexPlugin complexPlugin;
         LOGGER.debug(STARTING + this.toString());
@@ -100,6 +104,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      *             throw if an error occurs
      */
     @Test(expected = PluginUtilsException.class)
+    @Requirement("REGARDS_DSL_SYS_PLG_020")
+    @Purpose("Error to load a plugin from with an incompatible interface parameter.")
     public void incompatibleInterfaceError() throws PluginUtilsException {
         LOGGER.debug(STARTING + this.toString());
         /*
@@ -120,6 +126,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      *             throw if an error occurs
      */
     @Test(expected = PluginUtilsException.class)
+    @Requirement("REGARDS_DSL_SYS_PLG_020")
+    @Purpose("Error to load a plugin from with an incompatible interface parameter.")
     public void incompatibleParameterError() throws PluginUtilsException {
         LOGGER.debug(STARTING + this.toString());
         /*

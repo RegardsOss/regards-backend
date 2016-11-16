@@ -26,7 +26,7 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
     private final JWTService jwtService;
 
     public JWTAuthenticationProvider(JWTService pService) {
-        this.jwtService = pService;
+        jwtService = pService;
     }
 
     @Override
@@ -34,8 +34,7 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
 
         try {
             // Fill authentication parsing JWT token
-            final JWTAuthentication auth = jwtService.parseToken((JWTAuthentication) pAuthentication);
-            return auth;
+            return jwtService.parseToken((JWTAuthentication) pAuthentication);
         } catch (JwtException e) {
             throw new InsufficientAuthenticationException(e.getMessage());
         }

@@ -5,6 +5,7 @@
 package fr.cnes.regards.modules.plugins.domain;
 
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -15,6 +16,7 @@ import javax.persistence.Id;
  * @author Christophe Mertz
  *
  */
+@Embeddable
 @Entity(name = "T_PLUGIN_DYN_VALUE")
 public class PluginDynamicValue {
 
@@ -60,6 +62,10 @@ public class PluginDynamicValue {
 
     public final void setId(Long pId) {
         id = pId;
+    }
+
+    public Long getId() {
+        return id;
     }
 
 }

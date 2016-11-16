@@ -4,9 +4,9 @@ package fr.cnes.regards.modules.plugins.dao.stubs;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.framework.test.repository.RepositoryStub;
@@ -18,12 +18,12 @@ import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 
 /***
  * {@link PluginConfiguration} Repository stub.
- * 
+ *
  * @author Christophe Mertz
+ * @author Sébastien Binda
  *
  */
 @Repository
-@Profile("test")
 @Primary
 public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConfiguration>
         implements IPluginConfigurationRepository {
@@ -80,18 +80,18 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
     /**
      * A {@link PluginConfiguration}
      */
-    private PluginConfiguration pluginConfiguration1 = new PluginConfiguration(this.getPluginMetaData(),
+    private final PluginConfiguration pluginConfiguration1 = new PluginConfiguration(this.getPluginMetaData(),
             "a configuration", INTERFACEPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
      */
-    private PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
+    private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
             "second configuration", Arrays.asList(PARAMETER1, PARAMETER2), 0);
 
     public PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setClass(Integer.class);
+        pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
         pluginMetaData.setPluginId("plugin-id");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);
@@ -109,12 +109,12 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
     }
 
     @Override
-    public List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pPluginId) {
-        List<PluginConfiguration> plgConfs = new ArrayList<>();
-
-        entities.stream().filter(p -> p.getPluginId().equals(pPluginId)).forEach(p -> plgConfs.add(p));
-
-        return plgConfs;
+    public List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(final String pPluginId) {
+        try (Stream<PluginConfiguration> stream = getEntities().stream()) {
+            final List<PluginConfiguration> plgConfs = new ArrayList<>();
+            stream.filter(p -> p.getPluginId().equals(pPluginId)).forEach(p -> plgConfs.add(p));
+            return plgConfs;
+        }
     }
 
 }

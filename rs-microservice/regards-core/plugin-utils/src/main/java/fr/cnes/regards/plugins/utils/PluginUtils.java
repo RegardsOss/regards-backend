@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParameter;
  *
  * Plugin utilities
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 public final class PluginUtils {
 
@@ -50,12 +50,10 @@ public final class PluginUtils {
      * the required plugin metadata.
      * 
      * @param pPrefix
-     *            a package prefix used for the search
+     *            a package prefix used for the scan
      * @return all class annotated {@link Plugin}
-     * @throws PluginUtilsException
-     *             a pluginId is found a twice
      */
-    public static Map<String, PluginMetaData> getPlugins(final String pPrefix) throws PluginUtilsException {
+    public static Map<String, PluginMetaData> getPlugins(final String pPrefix) {
         final Map<String, PluginMetaData> plugins = new HashMap<>();
 
         // Scan class path with Reflections library
@@ -73,15 +71,34 @@ public final class PluginUtils {
                 final PluginMetaData pMeta = plugins.get(plugin.getPluginId());
                 final String message = String
                         .format("Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
-                                plugin.getPluginId(), plugin.getPluginClass(), pMeta.getPluginClass());
-                throw new PluginUtilsException(message);
+                                plugin.getPluginId(), plugin.getPluginClassName(), pMeta.getPluginClassName());
+                LOGGER.warn(message);
             }
 
             // Store plugin reference
             plugins.put(plugin.getPluginId(), plugin);
-            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.",
-                                      plugin.getPluginClass().getTypeName(), plugin.getPluginId()));
+
+            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.", plugin.getPluginClassName(),
+                                      plugin.getPluginId()));
         }
+        return plugins;
+    }
+
+    /**
+     * Retrieve all annotated plugin (@see {@link Plugin}) and init a map whose key is the plugin identifier and value
+     * the required plugin metadata.
+     * 
+     * @param pPrefixs
+     *            a list of package prefix used for the scan
+     * @return all class annotated {@link Plugin}
+     */
+    public static Map<String, PluginMetaData> getPlugins(final List<String> pPrefixs) {
+        final Map<String, PluginMetaData> plugins = new HashMap<>();
+
+        for (String p : pPrefixs) {
+            plugins.putAll(getPlugins(p));
+        }
+
         return plugins;
     }
 
@@ -101,7 +118,7 @@ public final class PluginUtils {
 
         // Init plugin metadata
         pluginMetaData = new PluginMetaData();
-        pluginMetaData.setClass(pPluginClass);
+        pluginMetaData.setPluginClassName(pPluginClass.getCanonicalName());
 
         // Manage plugin id
         if ("".equals(plugin.id())) {
@@ -143,7 +160,7 @@ public final class PluginUtils {
 
         try {
             // Make a new instance
-            returnPlugin = (T) pPluginMetadata.getPluginClass().newInstance();
+            returnPlugin = (T) Class.forName(pPluginMetadata.getPluginClassName()).newInstance();
 
             // Post process parameters
             PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPluginParameters);
@@ -151,9 +168,10 @@ public final class PluginUtils {
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | ClassNotFoundException e) {
             throw new PluginUtilsException(
-                    String.format("Cannot instantiate \"%s\"", pPluginMetadata.getPluginClass().getName()), e);
+                    String.format("Cannot instantiate <%s>", pPluginMetadata.getPluginClassName()), e);
+
         }
 
         return returnPlugin;
@@ -193,7 +211,7 @@ public final class PluginUtils {
 
         } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
                 | SecurityException | ClassNotFoundException e) {
-            throw new PluginUtilsException(String.format("Cannot instantiate \"%s\"", pPluginClassName), e);
+            throw new PluginUtilsException(String.format("Cannot instantiate <%s>", pPluginClassName), e);
         }
 
         return returnPlugin;
@@ -242,11 +260,11 @@ public final class PluginUtils {
             if (method.isAnnotationPresent(PluginInit.class)) {
                 // Invoke method
                 ReflectionUtils.makeAccessible(method);
-    
+
                 try {
                     method.invoke(pPluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    LOGGER.error(String.format("Exception while invoking init method on plugin class \"%s\".",
+                    LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
                                                pPluginInstance.getClass()),
                                  e);
                     throw new PluginUtilsException(e);

@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -15,16 +17,17 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
- * Class PluginConfiguration
- *
  * Plugin configuration contains a unique Id, plugin meta-data and parameters.
  *
  */
@@ -33,6 +36,11 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
         indexes = { @Index(name = "IDX_PLUGIN_CONFIGURATION", columnList = "pluginId") })
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_CONF")
 public class PluginConfiguration implements IIdentifiable<Long> {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(PluginConfiguration.class);
 
     /**
      * Unique id
@@ -45,6 +53,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Unique identifier of the plugin. This id is the id defined in the "@Plugin" annotation of the plugin
      * implementation class.
      */
+    @NotNull
     private String pluginId;
 
     /**
@@ -76,12 +85,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Configuration parameters of the plugin
      */
+    @ElementCollection
+    @CollectionTable(
+            joinColumns = @JoinColumn(name = "ID", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_ID")))
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "TA_PLUGIN_PARAMETERS_VALUE",
-            joinColumns = { @JoinColumn(name = "PLUGIN_ID", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_ID")) },
-            inverseJoinColumns = { @JoinColumn(name = "PARAMETER_ID", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAMETER_ID")) })
     private List<PluginParameter> parameters;
 
     /**
@@ -89,6 +96,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public PluginConfiguration() {
         super();
+        pluginId="undefined";
     }
 
     /**
@@ -108,7 +116,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         super();
         pluginId = pPluginMetaData.getPluginId();
         version = pPluginMetaData.getVersion();
-        pluginClassName = pPluginMetaData.getPluginClass().getName();
+        pluginClassName = pPluginMetaData.getPluginClassName();
         parameters = pParameters;
         priorityOrder = pOrder;
         label = pLabel;
@@ -129,7 +137,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         super();
         pluginId = pPluginMetaData.getPluginId();
         version = pPluginMetaData.getVersion();
-        pluginClassName = pPluginMetaData.getPluginClass().getName();
+        pluginClassName = pPluginMetaData.getPluginClassName();
         priorityOrder = pOrder;
         label = pLabel;
         active = Boolean.TRUE;
@@ -171,6 +179,31 @@ public class PluginConfiguration implements IIdentifiable<Long> {
             }
         }
         return value;
+    }
+
+    
+    /**
+     * Log the parameters of the {@link PluginConfiguration}
+     */
+    public void logParams() {
+        LOGGER.info("===> parameters <===");
+        LOGGER.info("  ---> number of dynamic parameters : "
+                + this.getParameters().stream().filter(p -> p.isDynamic()).count());
+        this.getParameters().stream().filter(p -> p.isDynamic()).forEach(p -> {
+            LOGGER.info("  ---> dynamic parameter : " + p.getName() + "-def val:" + p.getValue());
+            if (!p.getDynamicsValuesAsString().isEmpty()) {
+                p.getDynamicsValuesAsString().forEach(v -> LOGGER.info("     --> val=" + v));
+            }
+        });
+        
+        LOGGER.info("  ---> number of no dynamic parameters : "
+                + this.getParameters().stream().filter(p -> !p.isDynamic()).count());
+        this.getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> {
+            LOGGER.info("  ---> parameter : " + p.getName() + "-def val:" + p.getValue());
+            if (!p.getDynamicsValuesAsString().isEmpty()) {
+                p.getDynamicsValuesAsString().forEach(v -> LOGGER.info("     --> val=" + v));
+            }
+        });
     }
 
     public final String getLabel() {

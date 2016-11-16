@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  *
  * Exception for plugin utils package
  *
- * @author cmertz
+ * @author Christophe Mertz
  */
 public class PluginUtilsException extends Exception {
 

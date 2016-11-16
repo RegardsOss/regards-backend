@@ -19,9 +19,9 @@ public class PluginMetaData {
     private String pluginId;
 
     /**
-     * The plugin class
+     * The plugin class name
      */
-    private Class<?> pluginClass;
+    private String pluginClassName;
 
     /**
      * The author of the plugin
@@ -51,12 +51,12 @@ public class PluginMetaData {
         this.pluginId = pPluginId;
     }
 
-    public Class<?> getPluginClass() {
-        return this.pluginClass;
+    public String getPluginClassName() {
+        return pluginClassName;
     }
 
-    public void setClass(Class<?> pPluginClass) {
-        this.pluginClass = pPluginClass;
+    public void setPluginClassName(String pPluginClassName) {
+        this.pluginClassName = pPluginClassName;
     }
 
     public String getAuthor() {
