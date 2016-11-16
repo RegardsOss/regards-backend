@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
@@ -17,6 +18,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.plugins.annotations.Plugin;
 
 /**
@@ -64,20 +66,13 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
 
         try {
             jwtService.injectToken(pScope, RoleAuthority.getSysRole(microserviceName));
-            final ResponseEntity<Void> validateResponse = accountsClient.validatePassword(pEmail, pPassword);
-            switch (validateResponse.getStatusCode()) {
-                case OK:
-                    status = AuthenticationStatus.ACCESS_GRANTED;
-                    break;
-                case UNAUTHORIZED:
-                    status = AuthenticationStatus.ACCESS_DENIED;
-                    errorMessage = "Authentication failed.";
-                    break;
-                default:
-                    errorMessage = String.format("Remote administration request error. Returned code %s",
-                                                 validateResponse.getStatusCode());
-                    LOG.error(errorMessage);
-                    break;
+            final ResponseEntity<AccountStatus> validateResponse = accountsClient.validatePassword(pEmail, pPassword);
+            if (validateResponse.getStatusCode().equals(HttpStatus.OK)
+                    && validateResponse.getBody().equals(AccountStatus.ACTIVE)) {
+                status = AuthenticationStatus.ACCESS_GRANTED;
+            } else {
+                status = AuthenticationStatus.ACCESS_DENIED;
+                errorMessage = "Authentication failed.";
             }
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);

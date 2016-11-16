@@ -162,6 +162,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         }
 
         // Get all available authentication plugins
+        // FIXME : connection for instance does not work if the scope does not exists.
         final List<PluginConfiguration> pluginConfigurations = pluginService
                 .getPluginConfigurationsByType(IAuthenticationPlugin.class);
         for (final PluginConfiguration config : pluginConfigurations) {

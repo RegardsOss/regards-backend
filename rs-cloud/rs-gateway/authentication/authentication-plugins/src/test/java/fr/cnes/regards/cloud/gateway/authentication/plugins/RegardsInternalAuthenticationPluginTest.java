@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.plugins.utils.PluginUtils;
@@ -90,7 +91,7 @@ public class RegardsInternalAuthenticationPluginTest {
             privateField.set(plugin, "test");
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
-            final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.OK);
+            final ResponseEntity<AccountStatus> response = new ResponseEntity<>(AccountStatus.ACTIVE, HttpStatus.OK);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
@@ -136,7 +137,8 @@ public class RegardsInternalAuthenticationPluginTest {
             privateField.set(plugin, "test");
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
-            final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            final ResponseEntity<AccountStatus> response = new ResponseEntity<>(AccountStatus.INACTIVE,
+                    HttpStatus.UNAUTHORIZED);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
@@ -180,7 +182,7 @@ public class RegardsInternalAuthenticationPluginTest {
             privateField.set(plugin, "test");
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
-            final ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+            final ResponseEntity<AccountStatus> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
