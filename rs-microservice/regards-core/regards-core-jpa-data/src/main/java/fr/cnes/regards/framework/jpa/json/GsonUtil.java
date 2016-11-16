@@ -39,7 +39,7 @@ public final class GsonUtil {
         return GSON.toJson(pValue);
     }
 
-    public static JsonElement toJsonNode(final String pValue) {
+    public static JsonElement toJsonNode(final Object pValue) {
         return GSON.toJsonTree(pValue);
     }
 

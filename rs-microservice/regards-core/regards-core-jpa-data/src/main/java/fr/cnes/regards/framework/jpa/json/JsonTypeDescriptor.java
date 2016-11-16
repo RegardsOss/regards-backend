@@ -79,7 +79,7 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
             return (X) toString(value);
         }
         if (Object.class.isAssignableFrom(type)) {
-            return (X) GsonUtil.toJsonNode(toString(value));
+            return (X) GsonUtil.toJsonNode(value);
         }
         throw unknownUnwrap(type);
     }
