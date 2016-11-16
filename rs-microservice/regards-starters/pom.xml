@@ -16,7 +16,7 @@
 	</parent>
 
 	<modules>
-		<module>amqp-regards-autoconfigure</module>
+		<module>amqp-regards</module>
 		<module>amqp-regards-starter</module>
 		<module>swagger-regards-starter</module>
 		<module>websocket-regards-starter</module>

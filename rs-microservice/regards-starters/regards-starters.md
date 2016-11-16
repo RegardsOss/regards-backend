@@ -124,6 +124,18 @@ You can annotated your service or test with the following meta annotation to man
 @MultitenantTransactional
 ```
 
+### Tests
+
+TODO explain test module
+
+
+## Microservice starter
+
+TODO
+
+## Module starter
+
+TODO
 
 ## Security starter
 

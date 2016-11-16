@@ -13,6 +13,8 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
+
 /**
  *
  * Class ResourceAccessAdapter
@@ -27,21 +29,20 @@ public class ResourceAccessAdapter extends TypeAdapter<ResourceAccess> {
     /**
      * Label for name field
      */
-    public static final String NAME_LABEL = "name";
+    protected static final String ROLE_LABEL = "role";
 
     /**
      * Label for description field
      */
-    public static final String DESCRIPTION_LABEL = "description";
+    protected static final String DESCRIPTION_LABEL = "description";
 
     @Override
     public void write(final JsonWriter pOut, final ResourceAccess pValue) throws IOException {
 
         pOut.beginObject();
-        pOut.name(NAME_LABEL).value(pValue.name());
+        pOut.name(ROLE_LABEL).value(pValue.role().toString());
         pOut.name(DESCRIPTION_LABEL).value(pValue.description());
         pOut.endObject();
-
     }
 
     @Override
@@ -51,8 +52,8 @@ public class ResourceAccessAdapter extends TypeAdapter<ResourceAccess> {
         pIn.beginObject();
         while (pIn.hasNext()) {
             switch (pIn.nextName()) {
-                case NAME_LABEL:
-                    attributs.put(NAME_LABEL, pIn.nextString());
+                case ROLE_LABEL:
+                    attributs.put(ROLE_LABEL, DefaultRole.valueOf(pIn.nextString()));
                     break;
                 case DESCRIPTION_LABEL:
                     attributs.put(DESCRIPTION_LABEL, pIn.nextString());
