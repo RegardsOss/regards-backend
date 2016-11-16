@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.service.IPluginService;
@@ -74,8 +74,8 @@ public class PluginController implements IPluginsSignature {
             // A plugintypes is specify, return only the plugin of this plugin type
             try {
                 metadaDatas = pluginService.getPluginsByType(Class.forName(pPluginType));
-            } catch (ClassNotFoundException e) {
-                LOGGER.error(e.getMessage());
+            } catch (final ClassNotFoundException e) {
+                LOGGER.error(e.getMessage(), e);
                 throw new InvalidValueException(e.getMessage());
             }
         }
@@ -96,7 +96,8 @@ public class PluginController implements IPluginsSignature {
     }
 
     @Override
-    public ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(@PathVariable("pluginId") String pPluginId) {
+    public ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(
+            @PathVariable("pluginId") final String pPluginId) {
         final PluginMetaData metaData = pluginService.getPluginMetaDataById(pPluginId);
         final Resource<PluginMetaData> resource = new Resource<>(metaData);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -104,7 +105,7 @@ public class PluginController implements IPluginsSignature {
 
     @Override
     public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurations(
-            @PathVariable("pluginId") String pPluginId) {
+            @PathVariable("pluginId") final String pPluginId) {
         final List<PluginConfiguration> pluginConfs = pluginService.getPluginConfigurationsByType(pPluginId);
         final List<Resource<PluginConfiguration>> resources = pluginConfs.stream().map(p -> new Resource<>(p))
                 .collect(Collectors.toList());
@@ -113,11 +114,11 @@ public class PluginController implements IPluginsSignature {
 
     @Override
     public ResponseEntity<Resource<PluginConfiguration>> savePluginConfiguration(
-            @Valid @RequestBody PluginConfiguration pPluginConfiguration) throws InvalidValueException {
+            @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws InvalidValueException {
         final PluginConfiguration pluginConfiguration;
         try {
             pluginConfiguration = pluginService.savePluginConfiguration(pPluginConfiguration);
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             LOGGER.error("Cannot create the plugin configuration : <" + pPluginConfiguration.getPluginId() + ">", e);
             throw new InvalidValueException(e.getMessage());
         }
@@ -128,14 +129,14 @@ public class PluginController implements IPluginsSignature {
 
     @Override
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
-            @PathVariable("pluginId") String pPluginId, @PathVariable("configId") Long pConfigId)
-            throws EntityNotFoundException {
+            @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId)
+            throws ModuleEntityNotFoundException {
         final PluginConfiguration pluginConfiguration;
         try {
             pluginConfiguration = pluginService.getPluginConfiguration(pConfigId);
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             LOGGER.error("Cannot get the plugin configuration : <" + pConfigId + ">", e);
-            throw new EntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
+            throw new ModuleEntityNotFoundException(pConfigId, PluginConfiguration.class);
         }
         final Resource<PluginConfiguration> resource = new Resource<>(pluginConfiguration);
 
@@ -144,20 +145,22 @@ public class PluginController implements IPluginsSignature {
 
     @Override
     public ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(
-            @PathVariable("pluginId") String pPluginId, @PathVariable("configId") Long pConfigId,
-            @Valid @RequestBody PluginConfiguration pPluginConfiguration)
-            throws EntityNotFoundException, InvalidValueException {
+            @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId,
+            @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws ModuleEntityNotFoundException {
         final PluginConfiguration pluginConfiguration;
-        if (!pPluginId.equals(pPluginConfiguration.getPluginId()) || (pConfigId != pPluginConfiguration.getId())) {
-            throw new InvalidValueException(
-                    "The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
-                            + ">- config id= <" + pConfigId + ">");
+        if (!pPluginId.equals(pPluginConfiguration.getPluginId())) {
+            LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
+                    + ">- config id= <" + pConfigId + ">");
+            throw new ModuleEntityNotFoundException(pPluginId, PluginConfiguration.class);
+        }
+        if (pConfigId != pPluginConfiguration.getId()) {
+            throw new ModuleEntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
         }
         try {
             pluginConfiguration = pluginService.updatePluginConfiguration(pPluginConfiguration);
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             LOGGER.error("Cannot update the plugin configuration : <" + pConfigId + ">", e);
-            throw new EntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
+            throw new ModuleEntityNotFoundException(pConfigId, PluginConfiguration.class);
         }
         final Resource<PluginConfiguration> resource = new Resource<>(pluginConfiguration);
 
@@ -165,14 +168,9 @@ public class PluginController implements IPluginsSignature {
     }
 
     @Override
-    public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") String pPluginId,
-            @PathVariable("configId") Long pConfigId) throws EntityNotFoundException {
-        try {
-            pluginService.deletePluginConfiguration(pConfigId);
-        } catch (PluginUtilsException e) {
-            LOGGER.error("Cannot delete the plugin configuration : <" + pConfigId + ">", e);
-            throw new EntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
-        }
+    public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") final String pPluginId,
+            @PathVariable("configId") final Long pConfigId) throws ModuleEntityNotFoundException {
+        pluginService.deletePluginConfiguration(pConfigId);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

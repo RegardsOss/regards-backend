@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -94,6 +95,7 @@ public class JobHandlerIT {
     }
 
     @Test
+    @Ignore
     public void testExecuteJob() throws InterruptedException {
         final String tenantName = "project1";
 

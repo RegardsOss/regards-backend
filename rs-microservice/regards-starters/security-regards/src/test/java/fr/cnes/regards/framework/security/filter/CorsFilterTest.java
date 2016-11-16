@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  *
  * Cors filter test class
  *
- * @author sbinda
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public class CorsFilterTest {
@@ -133,6 +133,7 @@ public class CorsFilterTest {
         SecurityContextHolder.getContext().setAuthentication(token);
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockedRequest.getMethod()).thenReturn("OPTIONS");
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
 
         final CorsFilter filter = new CorsFilter(new IAuthoritiesProvider() {

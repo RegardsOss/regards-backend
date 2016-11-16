@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  * Base class to realize integration tests using JWT and MockMvc
  *
  * @author svissier
+ * @author Sébastien Binda
  *
  */
 @RunWith(SpringRunner.class)
@@ -65,6 +66,26 @@ public abstract class AbstractRegardsIT {
      * Default user role
      */
     protected static final String DEFAULT_ROLE = "ROLE_DEFAULT";
+
+    /**
+     * JSON path for links in responses
+     */
+    protected static final String JSON_PATH_LINKS = "$.links";
+
+    /**
+     * JSON path for content in responses
+     */
+    protected static final String JSON_PATH_CONTENT = "$.content";
+
+    /**
+     * JSON path root in responses
+     */
+    protected static final String JSON_PATH_ROOT = "$";
+
+    /**
+     * URL Path separator
+     */
+    protected static final String URL_PATH_SEPARATOR = "/";
 
     // CHECKSTYLE:OFF
     /**
@@ -95,7 +116,7 @@ public abstract class AbstractRegardsIT {
     }
 
     protected ResultActions performGet(final String pUrlTemplate, final String pAuthenticationToken,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, RequestParamBuilder pRequestParams,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, final RequestParamBuilder pRequestParams,
             final Object... pUrlVariables) {
         return performRequest(pAuthenticationToken, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage,
                               pRequestParams, pUrlVariables);
@@ -124,7 +145,7 @@ public abstract class AbstractRegardsIT {
     // Automatic default security management methods
 
     protected ResultActions performDefaultGet(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
-            final String pErrorMessage, RequestParamBuilder pRequestParams, final Object... pUrlVariables) {
+            final String pErrorMessage, final RequestParamBuilder pRequestParams, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.GET);
         return performGet(pUrlTemplate, jwt, pMatchers, pErrorMessage, pRequestParams, pUrlVariables);
     }
@@ -187,7 +208,7 @@ public abstract class AbstractRegardsIT {
 
     protected ResultActions performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
             final String pUrlTemplate, final List<ResultMatcher> pMatchers, final String pErrorMessage,
-            RequestParamBuilder pRequestParams, final Object... pUrlVariables) {
+            final RequestParamBuilder pRequestParams, final Object... pUrlVariables) {
 
         // Request parameters is only available on GET request AT THE MOMENT
         Assert.assertTrue(HttpMethod.GET.equals(pHttpMethod));
@@ -246,7 +267,7 @@ public abstract class AbstractRegardsIT {
      *            results
      * @return payload data
      */
-    protected String payload(ResultActions pResultActions) {
+    protected String payload(final ResultActions pResultActions) {
         Assert.assertNotNull(pResultActions);
         final MockHttpServletResponse response = pResultActions.andReturn().getResponse();
         try {
@@ -257,7 +278,7 @@ public abstract class AbstractRegardsIT {
                 throw new AssertionError("Invalid media type " + current);
             }
             // CHECKSTYLE:OFF
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // CHECKSTYLE:ON
             getLogger().error("Cannot parse payload data");
             throw new AssertionError(e);

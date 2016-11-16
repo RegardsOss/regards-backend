@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.plugins.service;
 
 import java.util.List;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
@@ -66,7 +67,7 @@ public interface IPluginService {
     /**
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
-     * 
+     *
      * @param <T>
      *            a plugin instance
      * @param pInterfacePluginType
@@ -109,10 +110,10 @@ public interface IPluginService {
      * @param pPluginId
      *            a specific configuration
      * @return
-     * @throws PluginUtilsException
-     *             throw if an error occurs
+     * @throws ModuleEntityNotFoundException
+     *             Entity to delete does not exists
      */
-    void deletePluginConfiguration(Long pPluginId) throws PluginUtilsException;
+    void deletePluginConfiguration(Long pPluginId) throws ModuleEntityNotFoundException;
 
     /**
      *
@@ -123,8 +124,10 @@ public interface IPluginService {
      * @return the updated {@link PluginConfiguration}
      * @throws PluginUtilsException
      *             throw if an error occurs
+     * @throws ModuleEntityNotFoundException
      */
-    PluginConfiguration updatePluginConfiguration(PluginConfiguration pPlugin) throws PluginUtilsException;
+    PluginConfiguration updatePluginConfiguration(PluginConfiguration pPlugin)
+            throws PluginUtilsException, ModuleEntityNotFoundException;
 
     /**
      *

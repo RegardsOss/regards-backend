@@ -13,6 +13,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.dao.EmptyResultDataAccessException;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -26,6 +29,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * Unit testing of {@link PluginService}.
  *
  * @author Christophe Mertz
+ * @author Sébastien Binda
  */
 public class PluginServiceFailedTest extends PluginServiceUtility {
 
@@ -68,13 +72,16 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * 
      * @throws PluginUtilsException
      *             throw if an error occurs
+     * @throws ModuleEntityNotFoundException
+     *             throw if an error occurs
      */
-    @Test(expected = PluginUtilsException.class)
-    public void deleteAPluginConfigurationUnknown() throws PluginUtilsException {
+    @Test(expected = ModuleEntityNotFoundException.class)
+    public void deleteAPluginConfigurationUnknown() throws PluginUtilsException, ModuleEntityNotFoundException {
         final Long aPluginId = 56789L;
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginId)).thenReturn(false);
         Mockito.doThrow(EmptyResultDataAccessException.class).when(pluginConfRepositoryMocked).delete(aPluginId);
         pluginServiceMocked.deletePluginConfiguration(aPluginId);
+        Assert.fail("There must be an exception thrown");
     }
 
     /**
@@ -154,9 +161,11 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * 
      * @throws PluginUtilsException
      *             throw if an error occurs
+     * @throws ModuleEntityNotFoundException
+     *             test error
      */
-    @Test(expected = PluginUtilsException.class)
-    public void updateAPluginConfigurationUnknown() throws PluginUtilsException {
+    @Test(expected = ModuleEntityNotFoundException.class)
+    public void updateAPluginConfigurationUnknown() throws PluginUtilsException, ModuleEntityNotFoundException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         final Long aPluginId = 999L;
         aPluginConfiguration.setId(aPluginId);
@@ -243,6 +252,8 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      *             throw if an error occurs
      */
     @Test(expected = PluginUtilsException.class)
+    @Requirement("REGARDS_DSL_CMP_PLG_100")
+    @Purpose("Unable to load a plugin with a no active configuration")
     public void getPluginNotActiveConfiguration() throws PluginUtilsException {
 
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();

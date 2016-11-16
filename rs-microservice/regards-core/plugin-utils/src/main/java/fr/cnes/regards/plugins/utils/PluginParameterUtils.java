@@ -139,11 +139,9 @@ public final class PluginParameterUtils {
                     /*
                      * The type of the field is unknown
                      */
-                    if (LOGGER.isWarnEnabled()) {
-                        LOGGER.warn(String.format(
-                                                  "Annotation <%s> not applicable for field type <%s>. System will ignore it.",
-                                                  PluginParameter.class.getName(), field.getType()));
-                    }
+                    LOGGER.warn(String.format(
+                                              "Annotation <%s> not applicable for field type <%s>. System will ignore it.",
+                                              PluginParameter.class.getName(), field.getType()));
                 }
             }
         }
@@ -409,8 +407,8 @@ public final class PluginParameterUtils {
 
         paramValue = pDynamicPlgParam.get().getValue();
 
-        LOGGER.debug(String.format("Starting postProcessDynamicValues : %s - new value= <%s>",
-                                   pDynamicPlgParam.get().getName(), pParamValue));
+        LOGGER.debug(String.format("Ending postProcessDynamicValues : %s - new value= <%s>",
+                                   pDynamicPlgParam.get().getName(), paramValue));
 
         return paramValue;
     }
