@@ -326,7 +326,7 @@ public class AccountServiceTest {
      * @throws InvalidValueException
      *             Thrown when passed id is different from the id of passed account
      */
-    @Test(expected = ModuleEntityNotFoundException.class)
+    @Test(expected = InvalidValueException.class)
     @Requirement("?")
     @Purpose("Check that the system fails when trying to update a account with different id thant the passed one.")
     public void updateAccountDifferentId() throws ModuleEntityNotFoundException, InvalidValueException {
