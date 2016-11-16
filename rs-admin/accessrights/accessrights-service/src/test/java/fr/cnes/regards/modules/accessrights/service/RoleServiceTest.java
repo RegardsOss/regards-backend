@@ -29,6 +29,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
 
 /**
  * Test class for {@link RoleService}.
@@ -74,7 +76,9 @@ public class RoleServiceTest {
     public void init() {
         roleRepository = Mockito.mock(IRoleRepository.class);
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
-        roleService = new RoleService(roleRepository, projectUserRepository);
+        final JWTService jwService = new JWTService();
+        jwService.setSecret("123456789");
+        roleService = new RoleService(roleRepository, projectUserRepository, new LocalTenantResolver(), jwService);
 
         // Clear the repos
         projectUserRepository.deleteAll();

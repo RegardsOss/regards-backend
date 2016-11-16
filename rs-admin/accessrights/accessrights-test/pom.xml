@@ -17,10 +17,6 @@
 			<artifactId>accessrights-dao</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-service</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessrights.service.test;
+package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,9 +29,9 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.stubs.ResourcesAccessRepositoryStub;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.IRoleService;
-import fr.cnes.regards.modules.accessrights.service.ResourcesService;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
+import fr.cnes.regards.modules.accessrights.service.resources.ResourcesService;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  *
@@ -138,9 +138,9 @@ public class ResourcesServiceTest {
         Mockito.when(methodAuthServiceMock.getResources()).thenReturn(resources);
         Mockito.when(discoveryClientMock.getServices()).thenReturn(new ArrayList<>());
 
+        final RoleFactory factory = new RoleFactory();
         Mockito.when(roleServiceMock.retrieveRole(DefaultRole.ADMIN.toString()))
-                .thenReturn(new Role(1L, DefaultRole.ADMIN.toString(), null, new ArrayList<>(), new ArrayList<>(),
-                        new ArrayList<>(), false, true, true, null));
+                .thenReturn(factory.withId(1L).createAdmin());
 
         Assert.assertTrue(resourcesService.collectResources().size() == 3);
         Assert.assertTrue(resourcesRepo.count() == 3);
@@ -181,9 +181,9 @@ public class ResourcesServiceTest {
 
         Mockito.when(discoveryClientMock.getServices()).thenReturn(services);
 
+        final RoleFactory factory = new RoleFactory();
         Mockito.when(roleServiceMock.retrieveRole(DefaultRole.ADMIN.toString()))
-                .thenReturn(new Role(1L, DefaultRole.ADMIN.toString(), null, new ArrayList<>(), new ArrayList<>(),
-                        new ArrayList<>(), false, true, true, null));
+                .thenReturn(factory.withId(1L).createAdmin());
 
         Mockito.doReturn(resources).when(resourcesService).getRemoteResources(Mockito.anyString());
 

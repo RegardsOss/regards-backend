@@ -13,13 +13,19 @@ import java.util.stream.StreamSupport;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -38,6 +44,11 @@ import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 public class RoleService implements IRoleService {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(RoleService.class);
+
+    /**
      * Error message
      */
     private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
@@ -53,27 +64,46 @@ public class RoleService implements IRoleService {
     private final IProjectUserRepository projectUserRepository;
 
     /**
+     * Tenant resolver to access all configured tenant
+     */
+    private final ITenantResolver tenantResolver;
+
+    /**
+     * Security service
+     */
+    private final JWTService jwtService;
+
+    /**
      * The default roles. Autowired by Spring.
      */
     @Resource
     private List<Role> defaultRoles;
 
-    public RoleService(final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository) {
+    public RoleService(final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
+            final ITenantResolver pTenantResolver, final JWTService pJwtService) {
         super();
         roleRepository = pRoleRepository;
         projectUserRepository = pProjectUserRepository;
+        tenantResolver = pTenantResolver;
+        jwtService = pJwtService;
     }
 
     @PostConstruct
     public void init() throws AlreadyExistingException {
-        // Ensure the existence of default roles
-        // If not, add them from their bean definition in defaultRoles.xml
-        // Get all projects in database
-        // for (final Role role : defaultRoles) {
-        // if (!existRole(role)) {
-        // createRole(role);
-        // }
-        // }
+
+        // Ensure the final existence of default final roles
+        // If not, add them final from their bean final definition in final defaultRoles.xml
+        // Get all final projects in database
+        try {
+            for (final String tenant : tenantResolver.getAllTenants()) {
+                jwtService.injectToken(tenant, RoleAuthority.getSysRole("rs-admin"));
+                for (final Role role : defaultRoles) {
+                    roleRepository.save(role);
+                }
+            }
+        } catch (final JwtException e) {
+            LOG.error(e.getMessage(), e);
+        }
     }
 
     @Override
