@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,6 +125,7 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
     /**
      * Check that the system allows the user to request a registration.
      */
+    @Ignore
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system allows the user to request a registration.")
@@ -148,6 +150,7 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
     /**
      * Check that the system allows to validate a registration request.
      */
+    @Ignore
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to validate a registration request.")
@@ -173,6 +176,7 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
     /**
      * Check that the system allows to deny a registration request.
      */
+    @Ignore
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to deny a registration request.")
@@ -195,6 +199,7 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
     /**
      * Check that the system allows to delete a registration request.
      */
+    @Ignore
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to delete a registration request.")
