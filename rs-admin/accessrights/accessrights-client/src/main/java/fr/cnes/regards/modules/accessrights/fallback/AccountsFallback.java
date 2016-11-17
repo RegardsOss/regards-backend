@@ -17,6 +17,7 @@ import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
@@ -173,7 +174,7 @@ public class AccountsFallback implements IAccountsClient {
      * java.lang.String)
      */
     @Override
-    public ResponseEntity<Void> validatePassword(final String pLogin, final String pPassword)
+    public ResponseEntity<AccountStatus> validatePassword(final String pLogin, final String pPassword)
             throws ModuleEntityNotFoundException {
         LOG.error(fallBackErrorMessage);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
