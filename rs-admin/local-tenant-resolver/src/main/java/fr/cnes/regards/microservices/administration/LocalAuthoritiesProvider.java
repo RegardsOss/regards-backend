@@ -10,12 +10,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.IResourcesService;
-import fr.cnes.regards.modules.accessrights.service.IRoleService;
+import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  *
@@ -53,26 +55,29 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<String> getRoleAuthorizedAddress(final String pRole) {
-        final List<String> results = new ArrayList<>();
-        final Role role = roleService.retrieveRole(pRole);
-        if (role != null) {
+    public List<String> getRoleAuthorizedAddress(final String pRole) throws SecurityException {
+        try {
+            final List<String> results = new ArrayList<>();
+            final Role role = roleService.retrieveRole(pRole);
             results.addAll(role.getAuthorizedAddresses());
+            return results;
+        } catch (final ModuleEntityNotFoundException e) {
+            throw new SecurityException("Could not get role authorized addresses", e);
         }
-        return results;
     }
 
     @Override
-    public boolean hasCorsRequestsAccess(final String pRole) {
-        boolean access = false;
-        final Role role = roleService.retrieveRole(pRole);
-        if (role != null) {
-            access = role.isCorsRequestsAuthorized();
+    public boolean hasCorsRequestsAccess(final String pRole) throws SecurityException {
+        try {
+            final Role role = roleService.retrieveRole(pRole);
+            boolean access = role.isCorsRequestsAuthorized();
             if (access && (role.getCorsRequestsAuthorizationEndDate() != null)) {
                 access = LocalDateTime.now().isBefore(role.getCorsRequestsAuthorizationEndDate());
             }
+            return access;
+        } catch (final ModuleEntityNotFoundException e) {
+            throw new SecurityException("Could not get CORS requests access", e);
         }
-        return access;
     }
 
 }

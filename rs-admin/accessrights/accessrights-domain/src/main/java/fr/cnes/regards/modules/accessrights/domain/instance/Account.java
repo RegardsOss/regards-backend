@@ -9,9 +9,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
-import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -26,17 +28,11 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 @SequenceGenerator(name = "accountSequence", initialValue = 1, sequenceName = "SEQ_ACCOUNT")
 public class Account implements IIdentifiable<Long> {
 
-    // TODO : Remove this useless attribute and add the id management in stub for test
-    @Transient
-    private static Long maxAccountId = 0L;
-
-    @NotNull
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accountSequence")
     @Column(name = "id")
     private Long id;
 
-    @NotNull
     @Email
     @Column(name = "email")
     private String email;
@@ -49,139 +45,165 @@ public class Account implements IIdentifiable<Long> {
     @Column(name = "lastName")
     private String lastName;
 
-    @NotBlank
-    @Column(name = "login")
-    private String login;
-
-    @NotBlank
-    @Column(name = "password")
     // TODO: validation du mot de passe
+    // TODO: json ignore dans le sens serveur => client
+    @Column(name = "password")
     private String password;
 
     @NotNull
     @Column(name = "status")
     private AccountStatus status;
 
+    @NotBlank
     @JsonIgnore
     @Column(name = "code")
     private String code;
 
-    public Account() {
+    private Account() {
         super();
         status = AccountStatus.PENDING;
+        code = RandomStringUtils.randomAlphanumeric(10);
     }
 
-    public Account(final String pEmail) {
-        this();
-        id = maxAccountId;
-        maxAccountId++;
-        email = pEmail;
-        login = pEmail;
-    }
-
+    /**
+     * Creates new Account
+     *
+     * @param pEmail
+     *            the email
+     * @param pFirstName
+     *            the first name
+     * @param pLastName
+     *            the last name
+     * @param pPassword
+     *            the password
+     */
     public Account(final String pEmail, final String pFirstName, final String pLastName, final String pPassword) {
-        this(pEmail);
-        firstName = pFirstName;
-        lastName = pLastName;
-        password = pPassword;
-    }
-
-    public Account(final String pEmail, final String pFirstName, final String pLastName, final String pLogin,
-            final String pPassword) {
-        this(pEmail);
-        firstName = pFirstName;
-        lastName = pLastName;
-        login = pLogin;
-        password = pPassword;
-    }
-
-    public Account(final Long pId, final String pEmail, final String pFirstName, final String pLastName,
-            final String pLogin, final String pPassword, final AccountStatus pStatus, final String pCode) {
-        super();
-        id = pId;
+        this();
         email = pEmail;
         firstName = pFirstName;
         lastName = pLastName;
-        login = pLogin;
-        password = pPassword;
-        status = pStatus;
-        code = pCode;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(final String pEmail) {
-        email = pEmail;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(final String pFirstName) {
-        firstName = pFirstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(final String pLastName) {
-        lastName = pLastName;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(final String pLogin) {
-        login = pLogin;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(final String pPassword) {
         password = pPassword;
     }
 
-    public AccountStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(final AccountStatus pStatus) {
-        status = pStatus;
-    }
-
-    public void unlock() {
-        if (status.equals(AccountStatus.LOCKED)) {
-            status = AccountStatus.ACTIVE;
-        }
-    }
-
+    /**
+     * @return the id
+     */
     @Override
     public Long getId() {
         return id;
     }
 
+    /**
+     * @param pId
+     *            the id to set
+     */
     public void setId(final Long pId) {
         id = pId;
     }
 
+    /**
+     * @return the email
+     */
+    public String getEmail() {
+        return email;
+    }
+
+    /**
+     * @param pEmail
+     *            the email to set
+     */
+    public void setEmail(final String pEmail) {
+        email = pEmail;
+    }
+
+    /**
+     * @return the firstName
+     */
+    public String getFirstName() {
+        return firstName;
+    }
+
+    /**
+     * @param pFirstName
+     *            the firstName to set
+     */
+    public void setFirstName(final String pFirstName) {
+        firstName = pFirstName;
+    }
+
+    /**
+     * @return the lastName
+     */
+    public String getLastName() {
+        return lastName;
+    }
+
+    /**
+     * @param pLastName
+     *            the lastName to set
+     */
+    public void setLastName(final String pLastName) {
+        lastName = pLastName;
+    }
+
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * @param pPassword
+     *            the password to set
+     */
+    public void setPassword(final String pPassword) {
+        password = pPassword;
+    }
+
+    /**
+     * @return the status
+     */
+    public AccountStatus getStatus() {
+        return status;
+    }
+
+    /**
+     * @param pStatus
+     *            the status to set
+     */
+    public void setStatus(final AccountStatus pStatus) {
+        status = pStatus;
+    }
+
+    /**
+     * @return the code
+     */
     public String getCode() {
         return code;
     }
 
+    /**
+     * @param pCode
+     *            the code to set
+     */
     public void setCode(final String pCode) {
         code = pCode;
     }
 
     @Override
-    public boolean equals(final Object o) {
-        return (o instanceof Account) && ((Account) o).email.equals(email);
+    public boolean equals(final Object pObject) {
+        if ((pObject == null) || !(pObject instanceof Account)) {
+            return false;
+        }
+        // An account can be uniquely identified by its email
+        final Account other = (Account) pObject;
+        return new EqualsBuilder().append(getEmail(), other.getEmail()).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(getEmail()).toHashCode();
     }
 
 }

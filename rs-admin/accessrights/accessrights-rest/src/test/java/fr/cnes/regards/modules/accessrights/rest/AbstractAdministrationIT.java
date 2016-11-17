@@ -8,9 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ImportResource;
 
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
-import fr.cnes.regards.modules.project.domain.Project;
 
 /**
  *
@@ -18,7 +23,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * Abstract class for all administration integration tets.
  *
- * @author sbinda
+ * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
@@ -28,7 +33,15 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
     /**
      * Test project name
      */
-    public static final String PROJECT_TEST_NAME = "test-1";
+    public static final String PROJECT_TEST_NAME = "test1";
+
+    protected static String token;
+
+    protected static final String ROLE_TEST = "TEST_ROLE";
+
+    protected Role roleTest;
+
+    protected Role publicRole;
 
     /**
      * Project Repository STUB
@@ -37,19 +50,56 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
     private IProjectRepository projectRepository;
 
     /**
+     * Project Repository STUB
+     */
+    @Autowired
+    private IRoleRepository roleRepository;
+
+    /**
+     * Project Repository STUB
+     */
+    @Autowired
+    private IProjectUserRepository projectUserRepository;
+
+    /**
+     * Project Connection Repository STUB
+     */
+    @Autowired
+    private IProjectConnectionRepository projectConnectionRepository;
+
+    /**
      * Method authorization service.
      */
     @Autowired
     private MethodAuthorizationService methodAuthorizationService;
 
+    /**
+     * Project Connection Repository STUB
+     */
+    @Autowired
+    private IAccountRepository accountRepository;
+
     @Before
     public void initProjects() {
+        token = jwtService.generateToken(AbstractAdministrationIT.PROJECT_TEST_NAME, "email", ROLE_TEST, ROLE_TEST);
+        jwtService.injectMockToken(AbstractAdministrationIT.PROJECT_TEST_NAME, DefaultRole.PUBLIC.toString());
 
-        final Project project = new Project(0L, "desc", "icon", true, PROJECT_TEST_NAME);
-        projectRepository.save(project);
+        projectUserRepository.deleteAll();
+
+        // Clear the repos
+        accountRepository.deleteAll();
+
+        // Clean repositories
+        projectConnectionRepository.deleteAll();
+        // projectRepository.deleteAll(); Tenant needed by Accounts delete test
 
         // Refresh method autorization service after add the project
         methodAuthorizationService.refreshAuthorities();
+
+        // Init roles
+        publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
+        roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
+        roleTest = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
         init();
     }

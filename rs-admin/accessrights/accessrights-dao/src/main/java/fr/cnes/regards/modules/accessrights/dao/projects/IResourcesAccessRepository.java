@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.dao.projects;
 import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;

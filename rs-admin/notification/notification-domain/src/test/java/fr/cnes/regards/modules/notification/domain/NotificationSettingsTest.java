@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -19,7 +18,6 @@ import org.junit.Test;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
@@ -83,8 +81,8 @@ public class NotificationSettingsTest {
      */
     @Before
     public void setUpNotification() {
-        user = new ProjectUser(0L, LocalDateTime.now().minusMonths(1), LocalDateTime.now().minusMonths(1),
-                UserStatus.ACCESS_GRANTED, new ArrayList<>(), null, new ArrayList<>(), "user@email.com");
+        user = new ProjectUser("user@email.com", null, new ArrayList<>(),
+                new ArrayList<>());
 
         settings = new NotificationSettings();
         settings.setId(ID);

@@ -26,11 +26,12 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.IRoleService;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.signature.IRolesSignature;
 
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 public class RolesController implements IRolesSignature {
 
     @Autowired
@@ -55,7 +56,8 @@ public class RolesController implements IRolesSignature {
 
     @Override
     @ResourceAccess(description = "Retrieve a role by id")
-    public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName) {
+    public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName)
+            throws ModuleEntityNotFoundException {
         final Role role = roleService.retrieveRole(pRoleName);
         final Resource<Role> resource = new Resource<>(role);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -104,7 +106,8 @@ public class RolesController implements IRolesSignature {
     }
 
     @Override
-    @ResourceAccess(description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id")
+    @ResourceAccess(
+            description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id")
     public ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(
             @PathVariable("role_id") final Long pRoleId) {
         List<ProjectUser> projectUserList = new ArrayList<>();

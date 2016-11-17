@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.emails.signature.IEmailSignature;
 /**
  * Controller defining the REST entry points of the module
  *
- * @author xbrochard
+ * @author Xavier-Alexandre Brochard
  *
  */
 @RestController

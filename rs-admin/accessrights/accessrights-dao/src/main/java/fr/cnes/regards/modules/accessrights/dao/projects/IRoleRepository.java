@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.dao.projects;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,7 +30,7 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      *            <code>True</code> or <code>False</code>
      * @return The found {@link Role}
      */
-    Role findByIsDefault(boolean pIsDefault);
+    Optional<Role> findOneByIsDefault(boolean pIsDefault);
 
     /**
      * Find the unique {@link Role}s where <code>name</code> equal to passed name.<br>
@@ -39,7 +40,7 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      *            The <code>name</code>
      * @return The found {@link Role}
      */
-    Role findOneByName(String pName);
+    Optional<Role> findOneByName(String pName);
 
     /**
      * Find the all {@link Role}s where <code>name</code> is in passed collection.<br>

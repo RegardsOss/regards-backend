@@ -3,6 +3,11 @@
  */
 package fr.cnes.regards.modules.accessrights.domain;
 
+/**
+ * Defines the different statuses/states for an account
+ *
+ * @author Xavier-Alexandre Brochard
+ */
 public enum AccountStatus {
     /**
      * Account is inactive
@@ -25,8 +30,4 @@ public enum AccountStatus {
      */
     PENDING;
 
-    @Override
-    public String toString() {
-        return name();
-    }
 }

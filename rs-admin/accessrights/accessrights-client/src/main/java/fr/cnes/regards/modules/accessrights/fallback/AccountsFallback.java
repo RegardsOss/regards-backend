@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
@@ -100,7 +99,7 @@ public class AccountsFallback implements IAccountsClient {
      * @see fr.cnes.regards.modules.accessrights.signature.IAccountsSignature#removeAccount(java.lang.Long)
      */
     @Override
-    public ResponseEntity<Void> removeAccount(final Long pAccountId) throws EntityException {
+    public ResponseEntity<Void> removeAccount(final Long pAccountId) throws ModuleEntityNotFoundException {
         LOG.error(fallBackErrorMessage);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }

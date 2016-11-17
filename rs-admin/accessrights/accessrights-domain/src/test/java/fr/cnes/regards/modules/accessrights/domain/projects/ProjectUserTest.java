@@ -11,6 +11,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 
 /**
@@ -26,24 +27,9 @@ public class ProjectUserTest {
     private ProjectUser projectUser;
 
     /**
-     * Test id
-     */
-    private final Long id = 0L;
-
-    /**
      * Test email
      */
     private final String email = "email";
-
-    /**
-     * Test lastConnection
-     */
-    private final LocalDateTime lastConnection = LocalDateTime.now();
-
-    /**
-     * Test lastUpdate
-     */
-    private final LocalDateTime lastUpdate = LocalDateTime.now();
 
     /**
      * Test status
@@ -69,7 +55,7 @@ public class ProjectUserTest {
     public void setUp() {
         metaData.add(new MetaData());
         permissions.add(new ResourcesAccess());
-        projectUser = new ProjectUser(id, lastConnection, lastUpdate, status, metaData, role, permissions, email);
+        projectUser = new ProjectUser(email, role, permissions, metaData);
     }
 
     /**
@@ -77,34 +63,32 @@ public class ProjectUserTest {
      */
     @Test
     public void testProjectUser() {
-        final LocalDateTime now = LocalDateTime.now();
         final ProjectUser testUser = new ProjectUser();
         Assert.assertEquals(null, testUser.getId());
         Assert.assertEquals(new ArrayList<>(), testUser.getPermissions());
         Assert.assertEquals(new ArrayList<>(), testUser.getMetaData());
         Assert.assertEquals(UserStatus.WAITING_ACCESS, testUser.getStatus());
-        Assert.assertTrue(now.isBefore(testUser.getLastConnection()) || now.isEqual(testUser.getLastConnection()));
-        Assert.assertTrue(now.isBefore(testUser.getLastUpdate()) || now.isEqual(testUser.getLastUpdate()));
+        Assert.assertEquals(null, testUser.getLastConnection());
+        Assert.assertEquals(null, testUser.getLastUpdate());
         Assert.assertEquals(null, testUser.getRole());
         Assert.assertEquals(null, testUser.getEmail());
     }
 
     /**
      * Test method for
-     * {@link ProjectUser#ProjectUser(Long, LocalDateTime, LocalDateTime, UserStatus, List, Role, List, String)}.
+     * {@link ProjectUser#createProjectUser(Long, LocalDateTime, LocalDateTime, UserStatus, List, Role, List, String)}.
      */
     @Test
     public void testProjectUserWithParams() {
-        final ProjectUser testUser = new ProjectUser(id, lastConnection, lastUpdate, status, metaData, role,
-                permissions, email);
-        Assert.assertEquals(id, testUser.getId());
-        Assert.assertEquals(lastConnection, testUser.getLastConnection());
-        Assert.assertEquals(lastUpdate, testUser.getLastUpdate());
-        Assert.assertEquals(status, testUser.getStatus());
+        final ProjectUser testUser = new ProjectUser(email, role, permissions, metaData);
+        Assert.assertEquals(null, testUser.getId());
+        Assert.assertEquals(null, testUser.getLastConnection());
+        Assert.assertEquals(null, testUser.getLastUpdate());
+        Assert.assertEquals(UserStatus.WAITING_ACCESS, testUser.getStatus());
+        Assert.assertEquals(email, testUser.getEmail());
         Assert.assertEquals(metaData, testUser.getMetaData());
         Assert.assertEquals(role, testUser.getRole());
         Assert.assertEquals(permissions, testUser.getPermissions());
-        Assert.assertEquals(email, testUser.getEmail());
     }
 
     /**
@@ -112,6 +96,8 @@ public class ProjectUserTest {
      */
     @Test
     public void testGetId() {
+        final Long id = 0L;
+        projectUser.setId(id);
         Assert.assertEquals(id, projectUser.getId());
     }
 
@@ -130,7 +116,9 @@ public class ProjectUserTest {
      */
     @Test
     public void testGetLastConnection() {
-        Assert.assertEquals(lastConnection, projectUser.getLastConnection());
+        final LocalDateTime newValue = LocalDateTime.now().minusMinutes(5);
+        projectUser.setLastConnection(newValue);
+        Assert.assertEquals(newValue, projectUser.getLastConnection());
     }
 
     /**
@@ -148,7 +136,9 @@ public class ProjectUserTest {
      */
     @Test
     public void testGetLastUpdate() {
-        Assert.assertEquals(lastUpdate, projectUser.getLastUpdate());
+        final LocalDateTime newValue = LocalDateTime.now().minusHours(2);
+        projectUser.setLastUpdate(newValue);
+        Assert.assertEquals(newValue, projectUser.getLastUpdate());
     }
 
     /**
@@ -199,38 +189,6 @@ public class ProjectUserTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#accept()}.
-     */
-    @Test
-    public void testAccept() {
-        projectUser.accept();
-        Assert.assertEquals(UserStatus.ACCESS_GRANTED, projectUser.getStatus());
-
-        try {
-            projectUser.accept();
-            Assert.fail("Expected IllegalStateException");
-        } catch (final IllegalStateException e) {
-
-        }
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#deny()}.
-     */
-    @Test
-    public void testDeny() {
-        projectUser.deny();
-        Assert.assertEquals(UserStatus.ACCESS_DENIED, projectUser.getStatus());
-
-        try {
-            projectUser.deny();
-            Assert.fail("Expected IllegalStateException ");
-        } catch (final IllegalStateException e) {
-
-        }
-    }
-
-    /**
      * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#getRole()}.
      */
     @Test
@@ -243,7 +201,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetRole() {
-        final Role newRole = new Role(4L);
+        final Role newRole = new Role(DefaultRole.PUBLIC.toString(), null);
         projectUser.setRole(newRole);
         Assert.assertEquals(newRole, projectUser.getRole());
     }

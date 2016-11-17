@@ -15,9 +15,9 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessReposit
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 
-@Repository
-@Profile("test")
-@Primary
+//@Repository
+//@Profile("test")
+//@Primary
 public class ResourcesAccessRepositoryStub extends RepositoryStub<ResourcesAccess>
         implements IResourcesAccessRepository {
 

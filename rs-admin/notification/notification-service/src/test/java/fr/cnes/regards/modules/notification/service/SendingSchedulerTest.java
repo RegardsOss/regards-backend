@@ -133,11 +133,11 @@ public class SendingSchedulerTest {
     @Before
     public void setUp() {
         // Populate first batch of recipients
-        final ProjectUser projectUser0 = new ProjectUser(ZERO, null, null, null, null, null, null, EMAIL0);
-        final ProjectUser projectUser1 = new ProjectUser(ONE, null, null, null, null, null, null, EMAIL1);
-        final ProjectUser projectUser2 = new ProjectUser(TWO, null, null, null, null, null, null, EMAIL2);
-        final ProjectUser projectUser3 = new ProjectUser(THREE, null, null, null, null, null, null, EMAIL3);
-        final ProjectUser projectUser4 = new ProjectUser(FOUR, null, null, null, null, null, null, EMAIL4);
+        final ProjectUser projectUser0 = new ProjectUser(EMAIL0, null, null, null);
+        final ProjectUser projectUser1 = new ProjectUser(EMAIL1, null, null, null);
+        final ProjectUser projectUser2 = new ProjectUser(EMAIL2, null, null, null);
+        final ProjectUser projectUser3 = new ProjectUser(EMAIL3, null, null, null);
+        final ProjectUser projectUser4 = new ProjectUser(EMAIL4, null, null, null);
         projectUsers = new ArrayList<>();
         projectUsers.add(projectUser0);
         projectUsers.add(projectUser1);
@@ -146,9 +146,9 @@ public class SendingSchedulerTest {
         projectUsers.add(projectUser4);
 
         // Roles
-        final Role role0 = new Role(ZERO, "Role0", null, null, new ArrayList<>());
-        final Role role1 = new Role(ONE, "Role1", role0, null, new ArrayList<>());
-        final Role role2 = new Role(TWO, "Role2", role1, null, new ArrayList<>());
+        final Role role0 = new Role("Role0", null);
+        final Role role1 = new Role("Role1", role0);
+        final Role role2 = new Role("Role2", role1);
         roles = new ArrayList<>();
         roles.add(role0);
         roles.add(role1);
@@ -156,13 +156,9 @@ public class SendingSchedulerTest {
 
         // Link users and roles
         projectUser0.setRole(role0);
-        role0.getProjectUsers().add(projectUser0);
         projectUser1.setRole(role1);
-        role1.getProjectUsers().add(projectUser1);
         projectUser2.setRole(role2);
-        role2.getProjectUsers().add(projectUser2);
         projectUser3.setRole(role1);
-        role1.getProjectUsers().add(projectUser3);
 
         // Settings
         settings = new ArrayList<>();

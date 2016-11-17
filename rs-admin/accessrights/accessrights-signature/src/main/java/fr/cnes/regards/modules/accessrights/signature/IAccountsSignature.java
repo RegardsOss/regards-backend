@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
@@ -87,29 +89,40 @@ public interface IAccountsSignature {
      *
      * @param pAccountId
      *            The account <code>id</code>
-     * @throws EntityException
-     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
+     * @throws ModuleException
+     *             - <br>
+     *             {@link ModuleEntityNotFoundException} Thrown if the {@link Account} is still linked to project users
+     *             and therefore cannot be removed<br>
+     *             {@link IllegalActionForAccountStatusException} if the accout is not in status allowing removal
+     * @throws OperationForbiddenException
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Void> removeAccount(@PathVariable("account_id") Long pAccountId) throws EntityException;
+    ResponseEntity<Void> removeAccount(@PathVariable("account_id") Long pAccountId) throws ModuleException;
 
     /**
      * Do not respect REST architecture because the request comes from a mail client, ideally should be a PUT
      *
-     * @param accountId
-     * @param unlockCode
+     * @param pAccountId
+     *            The account id
+     * @param pUnlockCode
+     *            the unlock code
      * @return
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when no {@link Account} could be found with id
+     *             <code>pAccountId</code><br>
+     *             {@link IllegalActionForAccountStatusException} Thrown if the account is not in status LOCKED
      * @throws InvalidValueException
      * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
+     * @throws ModuleException
      */
     @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> unlockAccount(@PathVariable("account_id") Long pAccountId,
-            @PathVariable("unlock_code") String pUnlockCode)
-            throws InvalidValueException, ModuleEntityNotFoundException;
+            @PathVariable("unlock_code") String pUnlockCode) throws InvalidValueException, ModuleException;
 
     /**
      * Change the passord of an {@link Account}.

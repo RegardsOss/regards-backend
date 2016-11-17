@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -115,28 +116,27 @@ public class TestConfiguration {
         addresses.add("127.0.0.1");
         addresses.add("127.0.0.2");
         addresses.add("127.0.0.3");
+        final RoleFactory roleFactory = new RoleFactory();
 
-        Role publicRole = null;
-        if ((publicRole = pRoleRpo.findOneByName(DefaultRole.PUBLIC.toString())) == null) {
-            publicRole = pRoleRpo.save(new Role(0L, DefaultRole.PUBLIC.toString(), null, new ArrayList<>(), addresses,
-                    new ArrayList<>(), false, true, true, LocalDateTime.now().plusDays(5L)));
-        }
-        Role roleToDelete = null;
-        if ((roleToDelete = pRoleRpo.findOneByName(CORS_ROLE_NAME_GRANTED)) != null) {
-            pRoleRpo.delete(roleToDelete.getId());
-        }
-        pRoleRpo.save(new Role(0L, CORS_ROLE_NAME_GRANTED, publicRole, new ArrayList<>(), addresses, new ArrayList<>(),
-                false, true, true, LocalDateTime.now().plusDays(5L)));
-        if ((roleToDelete = pRoleRpo.findOneByName(CORS_ROLE_NAME_INVALID_1)) != null) {
-            pRoleRpo.delete(roleToDelete.getId());
-        }
-        pRoleRpo.save(new Role(0L, CORS_ROLE_NAME_INVALID_1, publicRole, new ArrayList<>(), addresses,
-                new ArrayList<>(), false, true, true, LocalDateTime.now().minusDays(5L)));
-        if ((roleToDelete = pRoleRpo.findOneByName(CORS_ROLE_NAME_INVALID_2)) != null) {
-            pRoleRpo.delete(roleToDelete.getId());
-        }
-        pRoleRpo.save(new Role(0L, CORS_ROLE_NAME_INVALID_2, publicRole, new ArrayList<>(), addresses,
-                new ArrayList<>(), false, true, false, null));
+        roleFactory.withId(0L).withAuthorizedAddresses(addresses).withCorsRequestsAuthorized(true).withDefault(false)
+                .withNative(true);
+
+        final Role publicRole = pRoleRpo.findOneByName(DefaultRole.PUBLIC.toString())
+                .orElseGet(() -> pRoleRpo.save(roleFactory.createPublic()));
+
+        roleFactory.withParentRole(publicRole);
+
+        pRoleRpo.findOneByName(CORS_ROLE_NAME_GRANTED).ifPresent(role -> pRoleRpo.delete(role.getId()));
+        pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_GRANTED)
+                .withCorsRequestsAuthorizationEndDate(LocalDateTime.now().plusDays(5L)).create());
+
+        pRoleRpo.findOneByName(CORS_ROLE_NAME_INVALID_1).ifPresent(role -> pRoleRpo.delete(role.getId()));
+        pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_INVALID_1)
+                .withCorsRequestsAuthorizationEndDate(LocalDateTime.now().minusDays(5L)).create());
+
+        pRoleRpo.findOneByName(CORS_ROLE_NAME_INVALID_2).ifPresent(role -> pRoleRpo.delete(role.getId()));
+        pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_INVALID_2).withCorsRequestsAuthorized(false)
+                .withCorsRequestsAuthorizationEndDate(null).create());
 
         pResourceAccessRepo.deleteAll();
         pResourceAccessRepo.save(new ResourcesAccess(0L, "description", microserviceName, "/resource", HttpVerb.GET));

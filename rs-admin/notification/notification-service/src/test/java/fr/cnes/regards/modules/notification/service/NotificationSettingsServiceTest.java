@@ -12,7 +12,7 @@ import org.mockito.Mockito;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;

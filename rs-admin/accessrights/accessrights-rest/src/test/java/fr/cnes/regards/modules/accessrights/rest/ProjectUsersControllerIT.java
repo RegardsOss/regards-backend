@@ -3,8 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,27 +12,24 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.dao.projects.IMetaDataRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.IProjectUserService;
-import fr.cnes.regards.modules.accessrights.service.IRoleService;
+import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
  *
@@ -42,11 +38,10 @@ import fr.cnes.regards.modules.accessrights.service.IRoleService;
  * Integration tests for ProjectUsers REST Controller.
  *
  * @author svissier
- * @author sbinda
- * @author xbrochar
+ * @author Sébastien Binda
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
-@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class ProjectUsersControllerIT extends AbstractAdministrationIT {
 
     /**
@@ -55,15 +50,21 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     private static final Logger LOG = LoggerFactory.getLogger(ProjectUsersControllerIT.class);
 
     @Autowired
-    private JWTService jwtService;
-
-    @Autowired
     private MethodAuthorizationService authService;
 
-    private String jwt;
+    /**
+     * An email
+     */
+    private static final String EMAIL = "email@test.com";
 
+    /**
+     * The users endpoint
+     */
     private String apiUsers;
 
+    /**
+     * Specific user endpoint
+     */
     private String apiUserId;
 
     private String apiUserEmail;
@@ -79,32 +80,37 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     private String errorMessage;
 
     @Autowired
-    private IProjectUserService projectUserService;
-
-    @Autowired
     private IProjectUserRepository projectUserRepository;
 
     @Autowired
-    private IRoleRepository roleRepository;
+    private RoleService roleService;
 
     @Autowired
-    private IRoleService roleService;
+    private IResourcesAccessRepository resourcesAccessRepository;
+
+    @Autowired
+    private IMetaDataRepository metaDataRepository;
+
+    /**
+     * A project user.<br>
+     * We ensure before each test to have only this exactly project user in db for convenience.
+     */
+    private ProjectUser projectUser;
 
     @Override
     public void init() {
-        final String tenant = AbstractAdministrationIT.PROJECT_TEST_NAME;
-        jwt = jwtService.generateToken(tenant, "email", "SVG", "USER");
-        authService.setAuthorities(tenant, "/users", RequestMethod.GET, "USER");
-        authService.setAuthorities(tenant, "/users", RequestMethod.POST, "USER");
-        authService.setAuthorities(tenant, "/users/{user_email}", RequestMethod.GET, "USER");
-        authService.setAuthorities(tenant, "/users/{user_id}", RequestMethod.PUT, "USER");
-        authService.setAuthorities(tenant, "/users/{user_id}", RequestMethod.DELETE, "USER");
-        authService.setAuthorities(tenant, "/users/{user_id}/metadata", RequestMethod.GET, "USER");
-        authService.setAuthorities(tenant, "/users/{user_id}/metadata", RequestMethod.PUT, "USER");
-        authService.setAuthorities(tenant, "/users/{user_id}/metadata", RequestMethod.DELETE, "USER");
-        authService.setAuthorities(tenant, "/users/{user_login}/permissions", RequestMethod.GET, "USER");
-        authService.setAuthorities(tenant, "/users/{user_login}/permissions", RequestMethod.PUT, "USER");
-        authService.setAuthorities(tenant, "/users/{user_login}/permissions", RequestMethod.DELETE, "USER");
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users", RequestMethod.GET, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users", RequestMethod.POST, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_email:.+}", RequestMethod.GET, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}", RequestMethod.PUT, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}", RequestMethod.DELETE, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}/metadata", RequestMethod.GET, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}/metadata", RequestMethod.PUT, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}/metadata", RequestMethod.DELETE, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_login}/permissions", RequestMethod.GET, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_login}/permissions", RequestMethod.PUT, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_login}/permissions", RequestMethod.DELETE,
+                                   ROLE_TEST);
         apiUsers = "/users";
         apiUserId = apiUsers + "/{user_id}";
         apiUserEmail = apiUsers + "/{user_email}";
@@ -113,6 +119,9 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         apiUserPermissionsBorrowedRole = apiUserPermissions + "?borrowedRoleName=";
         apiUserMetaData = apiUserId + "/metadata";
         errorMessage = "Cannot reach model attributes";
+
+        projectUser = projectUserRepository
+                .save(new ProjectUser(EMAIL, roleTest, roleTest.getPermissions(), new ArrayList<>()));
     }
 
     @Test
@@ -120,175 +129,168 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     @Purpose("Check that the system allows to retrieve all user on a project.")
     public void getAllUsers() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performGet(apiUsers, jwt, expectations, errorMessage);
-
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performGet(apiUsers, token, expectations, errorMessage);
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve a single user on a project.")
-    public void getUser() {
-        final String userMail = projectUserService.retrieveUserList().get(0).getEmail();
-
+    public void getUser() throws UnsupportedEncodingException {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performGet(apiUserEmail, jwt, expectations, errorMessage, userMail);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performGet(apiUserEmail, token, expectations, errorMessage, EMAIL);
 
         expectations.clear();
-        expectations.add(status().isNotFound());
-        performGet(apiUserEmail, jwt, expectations, errorMessage, "user@invalid.fr");
-
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
+        performGet(apiUserEmail, token, expectations, errorMessage, "user@invalid.fr");
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_330")
     @Purpose("Check that the system allows to retrieve a user's metadata.")
     public void getUserMetaData() {
-        final Long userId = projectUserService.retrieveUserList().get(0).getId();
-
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performGet(apiUserMetaData, jwt, expectations, errorMessage, userId);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performGet(apiUserMetaData, token, expectations, errorMessage, projectUser.getId());
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to retrieve a user's permissions.")
     public void getUserPermissions() {
-        final String email = projectUserService.retrieveUserList().get(0).getEmail();
-
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performGet(apiUserPermissions, jwt, expectations, errorMessage, email);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performGet(apiUserPermissions, token, expectations, errorMessage, projectUser.getEmail());
 
         expectations.clear();
-        expectations.add(status().isNotFound());
-        performGet(apiUserPermissions, jwt, expectations, errorMessage, "wrongEmail");
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
+        performGet(apiUserPermissions, token, expectations, errorMessage, "wrongEmail");
     }
 
+    /**
+     * Check that the system prevents a user to connect using a hierarchically superior role.
+     *
+     * @throws ModuleEntityNotFoundException
+     */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_270")
-    @Purpose("Check that the system allows a user to connect using a hierarchically inferior role to its own and handle fail cases.")
-    public void getUserPermissionsWithBorrowedRole() {
-        // Initiate a specific project user for the test
-        Assert.assertTrue(roleRepository.findOneByName(DefaultRole.ADMIN.toString()) != null);
-        final Role role = roleRepository.findOneByName(DefaultRole.ADMIN.toString());
-        final ProjectUser projectUser = new ProjectUser(4824L, null, null, UserStatus.ACCESS_GRANTED, new ArrayList<>(),
-                role, new ArrayList<>(), "email@test.com");
-        // Save it
+    @Purpose("Check that the system prevents a user to connect using a hierarchically superior role.")
+    public void getUserPermissionsWithBorrowedRoleInferior() throws ModuleEntityNotFoundException {
+        // Prepare a project user with role admin
+        final Role roleAdmin = roleService.retrieveRole(DefaultRole.ADMIN.toString());
+        projectUser.setRole(roleAdmin);
         projectUserRepository.save(projectUser);
 
-        // Init the list of test expectations
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        // Get the borrowed role
+        final String borrowedRoleName = DefaultRole.REGISTERED_USER.toString();
+        final Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
 
         // Borrowing a hierarchically inferior role
-        String borrowedRoleName = DefaultRole.REGISTERED_USER.toString();
-        Assert.assertTrue(roleRepository.findOneByName(borrowedRoleName) != null);
-        Role borrowedRole = roleRepository.findOneByName(borrowedRoleName);
-        Assert.assertTrue(roleService.isHierarchicallyInferior(borrowedRole, role));
-        expectations.add(status().isOk());
-        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, jwt, expectations, errorMessage,
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        Assert.assertTrue(roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, token, expectations, errorMessage,
                    projectUser.getEmail());
+    }
+
+    /**
+     * Check that the system allows a user to connect using a hierarchically inferior role.
+     *
+     * @throws EntityNotFoundException
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_270")
+    @Purpose("Check that the system allows a user to connect using a hierarchically inferior role.")
+    public void getUserPermissionsWithBorrowedRoleSuperior() throws ModuleEntityNotFoundException {
+        // Prepare a project user with role admin
+        final Role roleAdmin = roleService.retrieveRole(DefaultRole.ADMIN.toString());
+        projectUser.setRole(roleAdmin);
+        projectUserRepository.save(projectUser);
+
+        // Get the borrowed role
+        final String borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();
+        final Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
 
         // Borrowing a hierarchically superior role
-        borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();
-        Assert.assertTrue(roleRepository.findOneByName(borrowedRoleName) != null);
-        borrowedRole = roleRepository.findOneByName(borrowedRoleName);
-        Assert.assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, role));
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        Assert.assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
         expectations.clear();
-        expectations.add(status().isBadRequest());
-        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, jwt, expectations, errorMessage,
+        expectations.add(MockMvcResultMatchers.status().isBadRequest());
+        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, token, expectations, errorMessage,
                    projectUser.getEmail());
     }
 
     @Test
-    @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_330")
     @Purpose("Check that the system allows to update a user's metadata.")
     public void updateUserMetaData() {
-        final Long userId = projectUserService.retrieveUserList().get(0).getId();
         final List<MetaData> newPermissionList = new ArrayList<>();
-        newPermissionList.add(new MetaData());
-        newPermissionList.add(new MetaData());
+        newPermissionList.add(metaDataRepository.save(new MetaData()));
+        newPermissionList.add(metaDataRepository.save(new MetaData()));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performPut(apiUserMetaData, jwt, newPermissionList, expectations, errorMessage, userId);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performPut(apiUserMetaData, token, newPermissionList, expectations, errorMessage, projectUser.getId());
     }
 
     @Test
-    @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to update a user's permissions.")
     public void updateUserPermissions() {
-        final String email = projectUserService.retrieveUserList().get(0).getEmail();
-
         final List<ResourcesAccess> newPermissionList = new ArrayList<>();
-        newPermissionList.add(new ResourcesAccess(463L, "new", "new", "new", HttpVerb.PUT));
-        newPermissionList.add(new ResourcesAccess(350L, "neww", "neww", "neww", HttpVerb.DELETE));
+        newPermissionList
+                .add(resourcesAccessRepository.save(new ResourcesAccess("desc0", "ms0", "res0", HttpVerb.GET)));
+        newPermissionList
+                .add(resourcesAccessRepository.save(new ResourcesAccess("desc1", "ms1", "res1", HttpVerb.DELETE)));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performPut(apiUserPermissions, jwt, newPermissionList, expectations, errorMessage, email);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performPut(apiUserPermissions, token, newPermissionList, expectations, errorMessage, EMAIL);
     }
 
     @Test
-    @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_330")
     @Purpose("Check that the system allows to delete a user's metadata.")
     public void deleteUserMetaData() {
-        final Long userId = projectUserService.retrieveUserList().get(0).getId();
-
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDelete(apiUserMetaData, jwt, expectations, errorMessage, userId);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performDelete(apiUserMetaData, token, expectations, errorMessage, projectUser.getId());
     }
 
     @Test
-    @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to delete a user's permissions.")
     public void deleteUserPermissions() {
-        final String email = projectUserService.retrieveUserList().get(0).getEmail();
-
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDelete(apiUserPermissions, jwt, expectations, errorMessage, email);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performDelete(apiUserPermissions, token, expectations, errorMessage, projectUser.getEmail());
     }
 
     @Test
-    @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to update a project user and handles fail cases.")
     public void updateUser() {
-        final Long userId = projectUserService.retrieveUserList().get(0).getId();
-        final ProjectUser updated = projectUserService.retrieveUser(userId);
-        updated.setEmail("new@email.com");
+        projectUser.setEmail("new@email.com");
 
-        // if that's the same functional ID and the parameter is valid:
+        // Same id
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performPut(apiUserId, jwt, updated, expectations, errorMessage, userId);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performPut(apiUserId, token, projectUser, expectations, errorMessage, projectUser.getId());
 
-        // if that's not the same functional ID and the parameter is valid:
-        final ProjectUser notSameID = new ProjectUser();
-
+        // Wrong id (99L)
         expectations.clear();
-        expectations.add(status().isBadRequest());
-        performPut(apiUserId, jwt, notSameID, expectations, errorMessage, userId);
+        expectations.add(MockMvcResultMatchers.status().isBadRequest());
+        performPut(apiUserId, token, projectUser, expectations, errorMessage, 99L);
     }
 
     @Test
-    @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to delete a project user.")
     public void deleteUser() {
-        final Long userId = projectUserService.retrieveUserList().get(0).getId();
-
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDelete(apiUserId, jwt, expectations, errorMessage, userId);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performDelete(apiUserId, token, expectations, errorMessage, projectUser.getId());
     }
 
     @Override
