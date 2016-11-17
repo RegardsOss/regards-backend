@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * Test class for {@link RoleService}.
  *
  * @author xbrochar
+ * @author Sébastien Binda
  */
 public class RoleServiceTest {
 
@@ -158,7 +159,9 @@ public class RoleServiceTest {
         expected.setId(id);
         Mockito.when(roleRepository.save(expected)).thenReturn(expected);
 
+        Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.empty()));
         final Role actual = roleService.createRole(expected);
+        Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.of(actual)));
         Mockito.when(roleRepository.findOne(id)).thenReturn(actual);
 
         // Check that the expected and actual role have same values
