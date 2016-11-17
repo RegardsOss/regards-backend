@@ -3,6 +3,16 @@
  */
 package fr.cnes.regards.framework.module.rest.exception;
 
+/**
+ *
+ * TODO: remove from project is no impact
+ *
+ * @deprecated to be deleted
+ *
+ * @author Sylvain Vissiere-Guerinet
+ *
+ */
+@Deprecated
 public class InvalidValueException extends Exception {
 
     /**

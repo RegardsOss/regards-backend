@@ -8,17 +8,14 @@ package fr.cnes.regards.framework.module.rest.exception;
  * Use on update endpoint if identifier in url path doesn't match identifier in request body
  *
  * @author Marc Sordi
- *
- * @deprecated use {@link EntityInconsistentIdentifierException}
+ * @author Sylvain Vissiere-Guerinet
  *
  */
-@Deprecated
-public class ModuleInconsistentEntityIdentifierException extends ModuleException {
+public class EntityInconsistentIdentifierException extends EntityException {
 
     private static final long serialVersionUID = -2244195392447606535L;
 
-    public ModuleInconsistentEntityIdentifierException(final Long pPathId, final Long pBodyId,
-            final Class<?> pEntityClass) {
+    public EntityInconsistentIdentifierException(final Long pPathId, final Long pBodyId, final Class<?> pEntityClass) {
         // CHECKSTYLE:OFF
         super(String.format(
                             "Inconsistent entity update request for \"%s\". Path identifier \"%s\" does not match request body identifier \"%s\".",
