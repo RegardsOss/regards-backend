@@ -74,7 +74,8 @@ public class IpFilter extends OncePerRequestFilter {
             final List<String> authorizedAddresses = new ArrayList<>();
             if (!roles.isEmpty()) {
                 for (final RoleAuthority role : roles) {
-                    authorizedAddresses.addAll(authoritiesProvider.getRoleAuthorizedAddress(role.getAuthority()));
+                    authorizedAddresses.addAll(authoritiesProvider
+                            .getRoleAuthorizedAddress(RoleAuthority.getRoleName(role.getAuthority())));
                 }
                 if (!checkAccessByAddress(authorizedAddresses, pRequest.getRemoteAddr())) {
                     final String message = String.format("[REGARDS IP FILTER] - %s - Authorization denied",
@@ -93,7 +94,7 @@ public class IpFilter extends OncePerRequestFilter {
             }
         } catch (final SecurityException e) {
             final String message = "[REGARDS IP FILTER] Error on access resolution: " + e.getMessage();
-            LOG.debug(message, e);
+            LOG.error(message, e);
             pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
         }
     }
