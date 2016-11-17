@@ -7,9 +7,12 @@ package fr.cnes.regards.framework.module.rest.exception;
  *
  * Exception may occur when trying to delete a parent entity already linked to child entities.
  *
+ * @deprecated use {@link EntityNotEmptyException}
+ *
  * @author Marc Sordi
  *
  */
+@Deprecated
 public class ModuleEntityNotEmptyException extends ModuleException {
 
     private static final long serialVersionUID = 1642202168751223657L;

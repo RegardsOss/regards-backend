@@ -63,12 +63,13 @@ public class SampleErrorPlugin implements ISamplePlugin {
 
     /**
      * Init method
+     * @throws PluginUtilsException 
      */
     @PluginInit
-    private void aInit() {
+    private void aInit() throws PluginUtilsException {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + this.suffix + "|active:"
                 + this.isActive + "|coeff:" + this.coef);
-        throw new IllegalArgumentException();
+        throw new PluginUtilsException("error");
     }
 
 }

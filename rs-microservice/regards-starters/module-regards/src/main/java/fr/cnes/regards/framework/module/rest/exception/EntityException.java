@@ -12,7 +12,7 @@ package fr.cnes.regards.framework.module.rest.exception;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public class EntityException extends Exception {
+public class EntityException extends ModuleException {
 
     /**
      * serialVersionUID field.

@@ -11,7 +11,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 
 /***
@@ -32,47 +31,42 @@ public class PluginConfigurationTest extends PluginDaoUtility {
      */
     @Test
     public void createPluginConfiguration() {
-        try {
-            jwtService.injectToken(PROJECT, USERROLE);
-            cleanDb();
 
-            // persist a PluginConfiguration
-            final PluginConfiguration jpaConf = pluginConfigurationRepository
-                    .save(getPluginConfigurationWithParameters());
+        injectToken(PROJECT);
+        cleanDb();
 
-            Assert.assertEquals(1, pluginConfigurationRepository.count());
-            Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
-                                pluginParameterRepository.count());
+        // persist a PluginConfiguration
+        final PluginConfiguration jpaConf = pluginConfigurationRepository.save(getPluginConfigurationWithParameters());
 
-            // Assert.assertEquals(0, pluginDynamicValueRepository.count());
+        Assert.assertEquals(1, pluginConfigurationRepository.count());
+        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
+                            pluginParameterRepository.count());
 
-            Assert.assertEquals(getPluginConfigurationWithParameters().getLabel(), jpaConf.getLabel());
-            Assert.assertEquals(getPluginConfigurationWithParameters().getVersion(), jpaConf.getVersion());
-            Assert.assertEquals(getPluginConfigurationWithParameters().getPluginId(), jpaConf.getPluginId());
-            Assert.assertEquals(getPluginConfigurationWithParameters().isActive(), jpaConf.isActive());
-            Assert.assertEquals(getPluginConfigurationWithParameters().getPluginClassName(),
-                                jpaConf.getPluginClassName());
-            Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
-                                pluginParameterRepository.count());
-            Assert.assertEquals(getPluginConfigurationWithParameters().getPriorityOrder(), jpaConf.getPriorityOrder());
-            getPluginConfigurationWithParameters().getParameters()
-                    .forEach(p -> Assert
-                            .assertEquals(getPluginConfigurationWithParameters().getParameterConfiguration(p.getName()),
-                                          jpaConf.getParameterConfiguration(p.getName())));
+        // Assert.assertEquals(0, pluginDynamicValueRepository.count());
 
-            // persist a PluginConfiguration
-            resetId();
-            pluginConfigurationRepository.save(getPluginConfigurationWithDynamicParameter());
+        Assert.assertEquals(getPluginConfigurationWithParameters().getLabel(), jpaConf.getLabel());
+        Assert.assertEquals(getPluginConfigurationWithParameters().getVersion(), jpaConf.getVersion());
+        Assert.assertEquals(getPluginConfigurationWithParameters().getPluginId(), jpaConf.getPluginId());
+        Assert.assertEquals(getPluginConfigurationWithParameters().isActive(), jpaConf.isActive());
+        Assert.assertEquals(getPluginConfigurationWithParameters().getPluginClassName(), jpaConf.getPluginClassName());
+        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
+                            pluginParameterRepository.count());
+        Assert.assertEquals(getPluginConfigurationWithParameters().getPriorityOrder(), jpaConf.getPriorityOrder());
+        getPluginConfigurationWithParameters().getParameters()
+                .forEach(p -> Assert
+                        .assertEquals(getPluginConfigurationWithParameters().getParameterConfiguration(p.getName()),
+                                      jpaConf.getParameterConfiguration(p.getName())));
 
-            Assert.assertEquals(2, pluginConfigurationRepository.count());
-            Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size()
-                    + getPluginConfigurationWithDynamicParameter().getParameters().size(),
-                                pluginParameterRepository.count());
-            // Assert.assertEquals(3, pluginDynamicValueRepository.count());
+        // persist a PluginConfiguration
+        resetId();
+        pluginConfigurationRepository.save(getPluginConfigurationWithDynamicParameter());
 
-        } catch (JwtException e) {
-            Assert.fail(INVALID_JWT);
-        }
+        Assert.assertEquals(2, pluginConfigurationRepository.count());
+        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size()
+                + getPluginConfigurationWithDynamicParameter().getParameters().size(),
+                            pluginParameterRepository.count());
+        // Assert.assertEquals(3, pluginDynamicValueRepository.count());
+
     }
 
     /**
@@ -80,34 +74,30 @@ public class PluginConfigurationTest extends PluginDaoUtility {
      */
     @Test
     public void createAndFindPluginConfigurationWithParameters() {
-        try {
-            jwtService.injectToken(PROJECT, USERROLE);
-            cleanDb();
+        injectToken(PROJECT);
+        cleanDb();
 
-            // save a plugin configuration
-            final PluginConfiguration aPluginConf = pluginConfigurationRepository
-                    .save(getPluginConfigurationWithParameters());
-            Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
-                                pluginParameterRepository.count());
-            Assert.assertEquals(1, pluginConfigurationRepository.count());
+        // save a plugin configuration
+        final PluginConfiguration aPluginConf = pluginConfigurationRepository
+                .save(getPluginConfigurationWithParameters());
+        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
+                            pluginParameterRepository.count());
+        Assert.assertEquals(1, pluginConfigurationRepository.count());
 
-            // find it
-            final PluginConfiguration jpaConf = pluginConfigurationRepository.findOne(aPluginConf.getId());
+        // find it
+        final PluginConfiguration jpaConf = pluginConfigurationRepository.findOne(aPluginConf.getId());
 
-            // compare the initial conf with the results of the search
-            Assert.assertEquals(aPluginConf.getLabel(), jpaConf.getLabel());
-            Assert.assertEquals(aPluginConf.getVersion(), jpaConf.getVersion());
-            Assert.assertEquals(aPluginConf.getPluginId(), jpaConf.getPluginId());
-            Assert.assertEquals(aPluginConf.isActive(), jpaConf.isActive());
-            Assert.assertEquals(aPluginConf.getPluginClassName(), jpaConf.getPluginClassName());
-            Assert.assertEquals(aPluginConf.getParameters().size(), pluginParameterRepository.count());
-            Assert.assertEquals(aPluginConf.getPriorityOrder(), jpaConf.getPriorityOrder());
-            aPluginConf.getParameters()
-                    .forEach(p -> Assert.assertEquals(aPluginConf.getParameterConfiguration(p.getName()),
-                                                      jpaConf.getParameterConfiguration(p.getName())));
-        } catch (JwtException e) {
-            Assert.fail(INVALID_JWT);
-        }
+        // compare the initial conf with the results of the search
+        Assert.assertEquals(aPluginConf.getLabel(), jpaConf.getLabel());
+        Assert.assertEquals(aPluginConf.getVersion(), jpaConf.getVersion());
+        Assert.assertEquals(aPluginConf.getPluginId(), jpaConf.getPluginId());
+        Assert.assertEquals(aPluginConf.isActive(), jpaConf.isActive());
+        Assert.assertEquals(aPluginConf.getPluginClassName(), jpaConf.getPluginClassName());
+        Assert.assertEquals(aPluginConf.getParameters().size(), pluginParameterRepository.count());
+        Assert.assertEquals(aPluginConf.getPriorityOrder(), jpaConf.getPriorityOrder());
+        aPluginConf.getParameters().forEach(p -> Assert.assertEquals(aPluginConf.getParameterConfiguration(p.getName()),
+                                                                     jpaConf.getParameterConfiguration(p.getName())));
+
     }
 
     /**
@@ -115,39 +105,33 @@ public class PluginConfigurationTest extends PluginDaoUtility {
      */
     @Test
     public void updatePluginConfigurationWithParameters() {
-        try {
-            jwtService.injectToken(PROJECT, USERROLE);
-            cleanDb();
+        injectToken(PROJECT);
+        cleanDb();
 
-            // save a plugin configuration
-            final PluginConfiguration aPluginConf = pluginConfigurationRepository
-                    .save(getPluginConfigurationWithParameters());
+        // save a plugin configuration
+        final PluginConfiguration aPluginConf = pluginConfigurationRepository
+                .save(getPluginConfigurationWithParameters());
 
-            // set two new parameters to the plugin configuration
-            aPluginConf.setParameters(Arrays.asList(PARAMETER2));
+        // set two new parameters to the plugin configuration
+        aPluginConf.setParameters(Arrays.asList(PARAMETER2));
 
-            // update the plugin configuration
-            final PluginConfiguration jpaConf = pluginConfigurationRepository.save(aPluginConf);
+        // update the plugin configuration
+        final PluginConfiguration jpaConf = pluginConfigurationRepository.save(aPluginConf);
 
-            Assert.assertEquals(1, pluginConfigurationRepository.count());
+        Assert.assertEquals(1, pluginConfigurationRepository.count());
 
-            // compare the initial conf with the results of the search
-            Assert.assertEquals(aPluginConf.getLabel(), jpaConf.getLabel());
-            Assert.assertEquals(aPluginConf.getVersion(), jpaConf.getVersion());
-            Assert.assertEquals(aPluginConf.getPluginId(), jpaConf.getPluginId());
-            Assert.assertEquals(aPluginConf.isActive(), jpaConf.isActive());
-            Assert.assertEquals(aPluginConf.getPluginClassName(), jpaConf.getPluginClassName());
-            Assert.assertEquals(aPluginConf.getPriorityOrder(), jpaConf.getPriorityOrder());
-            aPluginConf.getParameters()
-                    .forEach(p -> Assert.assertEquals(aPluginConf.getParameterConfiguration(p.getName()),
-                                                      jpaConf.getParameterConfiguration(p.getName())));
+        // compare the initial conf with the results of the search
+        Assert.assertEquals(aPluginConf.getLabel(), jpaConf.getLabel());
+        Assert.assertEquals(aPluginConf.getVersion(), jpaConf.getVersion());
+        Assert.assertEquals(aPluginConf.getPluginId(), jpaConf.getPluginId());
+        Assert.assertEquals(aPluginConf.isActive(), jpaConf.isActive());
+        Assert.assertEquals(aPluginConf.getPluginClassName(), jpaConf.getPluginClassName());
+        Assert.assertEquals(aPluginConf.getPriorityOrder(), jpaConf.getPriorityOrder());
+        aPluginConf.getParameters().forEach(p -> Assert.assertEquals(aPluginConf.getParameterConfiguration(p.getName()),
+                                                                     jpaConf.getParameterConfiguration(p.getName())));
 
-            INTERFACEPARAMETERS.forEach(p -> pluginParameterRepository.delete(p));
-            Assert.assertEquals(aPluginConf.getParameters().size(), pluginParameterRepository.count());
-
-        } catch (JwtException e) {
-            Assert.fail(INVALID_JWT);
-        }
+        INTERFACEPARAMETERS.forEach(p -> pluginParameterRepository.delete(p));
+        Assert.assertEquals(aPluginConf.getParameters().size(), pluginParameterRepository.count());
     }
 
 }

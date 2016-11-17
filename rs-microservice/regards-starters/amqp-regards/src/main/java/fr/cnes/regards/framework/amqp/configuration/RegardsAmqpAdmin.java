@@ -19,12 +19,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 
 /**
  * @author svissier
  *
  */
 public class RegardsAmqpAdmin {
+
+    private static final String REGARDS_NAMESPACE = "Regards.amqp.";
 
     /**
      * _
@@ -77,7 +80,7 @@ public class RegardsAmqpAdmin {
         final String[] rabbitHostAndPort = parseRabbitAddresses(rabbitAddresses);
         final CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHostAndPort[0],
                 Integer.parseInt(rabbitHostAndPort[1]));
-        connectionFactory.setVirtualHost(pVhost);
+        connectionFactory.setVirtualHost(RabbitVirtualHostUtils.getVhostName(pVhost));
         return connectionFactory;
     }
 
@@ -90,9 +93,9 @@ public class RegardsAmqpAdmin {
 
     public Exchange declareExchange(Class<?> pEvt, AmqpCommunicationMode pAmqpCommunicationMode, String pTenant,
             AmqpCommunicationTarget pAmqpCommunicationTarget) {
-        final Exchange exchange = instantiateExchange(pEvt.getName(), pAmqpCommunicationMode,
-                                                      pAmqpCommunicationTarget);
-        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(), pTenant);
+        final Exchange exchange = instantiateExchange(pEvt.getName(), pAmqpCommunicationMode, pAmqpCommunicationTarget);
+        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(),
+                                  RabbitVirtualHostUtils.getVhostName(pTenant));
         rabbitAdmin.declareExchange(exchange);
         SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
         return exchange;
@@ -115,7 +118,8 @@ public class RegardsAmqpAdmin {
     public Queue declareQueue(Class<?> pEvtClass, AmqpCommunicationMode pAmqpCommunicationMode, String pTenant,
             AmqpCommunicationTarget pAmqpCommunicationTarget) {
         final Queue queue = instanciateQueue(pEvtClass, pAmqpCommunicationMode, pAmqpCommunicationTarget);
-        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(), pTenant);
+        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(),
+                                  RabbitVirtualHostUtils.getVhostName(pTenant));
         rabbitAdmin.declareQueue(queue);
         SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
         return queue;
@@ -214,7 +218,8 @@ public class RegardsAmqpAdmin {
     public Binding declareBinding(Queue pQueue, Exchange pExchange, AmqpCommunicationMode pAmqpCommunicationMode,
             String pTenant) {
         final Binding binding = instantiateBinding(pQueue, pExchange, pAmqpCommunicationMode);
-        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(), pTenant);
+        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(),
+                                  RabbitVirtualHostUtils.getVhostName(pTenant));
         rabbitAdmin.declareBinding(binding);
         SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
         return binding;

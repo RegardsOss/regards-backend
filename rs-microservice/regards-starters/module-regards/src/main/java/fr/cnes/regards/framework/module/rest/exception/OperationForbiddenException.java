@@ -8,7 +8,9 @@ package fr.cnes.regards.framework.module.rest.exception;
  *
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
+ * @deprecated use {@link EntityOperationForbiddenException}
  */
+@Deprecated
 public class OperationForbiddenException extends EntityException {
 
     /**

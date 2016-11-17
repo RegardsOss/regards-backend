@@ -48,7 +48,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         // Log the parameters of the first plugin
         pluginMetaData.getParameters().stream().forEach(s -> LOGGER.info(s));
-        
+
         LOGGER.debug(ENDING + this.toString());
     }
 
@@ -119,6 +119,36 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
          * Use the plugin
          */
         Assert.assertTrue(0 > samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
+                                               Integer.parseInt(PluginUtilsTest.CINQ)));
+        Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
+        LOGGER.debug(ENDING + this.toString());
+    }
+
+    @Test
+    public void getSamplePluginDynamicParameterNull() {
+        SamplePlugin samplePlugin = null;
+
+        LOGGER.debug(STARTING + this.toString());
+
+        /*
+         * Set all parameters
+         */
+        final List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
+                .addParameterDynamic(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
+                .addParameter(SamplePlugin.SUFFIXE, "chris_test_2").getParameters();
+        try {
+            // instantiate plugin
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, null);
+        } catch (final PluginUtilsException e) {
+            Assert.fail();
+        }
+        Assert.assertNotNull(samplePlugin);
+
+        /*
+         * Use the plugin
+         */
+        Assert.assertTrue(0 < samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
                                                Integer.parseInt(PluginUtilsTest.CINQ)));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
         LOGGER.debug(ENDING + this.toString());

@@ -11,7 +11,9 @@ package fr.cnes.regards.framework.module.rest.exception;
  *
  * @author CS
  * @since 1.0-SNAPSHOT
+ * @deprecated use {@link EntityInvalidException}
  */
+@Deprecated
 public class InvalidEntityException extends EntityException {
 
     /**

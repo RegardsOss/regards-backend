@@ -41,6 +41,7 @@ import fr.cnes.regards.framework.amqp.test.domain.RestExchange;
 import fr.cnes.regards.framework.amqp.test.domain.RestQueue;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 
 /**
  * @author svissier
@@ -101,6 +102,7 @@ public class RegardsAmqpAdminIT {
             CachingConnectionFactory cf = regardsAmqpAdmin.createConnectionFactory(TENANT1);
             rabbitVirtualHostUtils.addVhost(TENANT1, cf);
 
+            List<RestBinding> baseDeclaredBindings = retrieveBinding(TENANT1);
             Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
                                                                  TENANT1, AmqpCommunicationTarget.INTERNAL);
             Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT1,
@@ -108,13 +110,15 @@ public class RegardsAmqpAdminIT {
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_ONE, TENANT1);
             List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
             RestBinding restBinding = declaredBindings.get(0);
-            Assert.assertEquals(2, declaredBindings.size());
-            Assert.assertEquals(TENANT1, restBinding.getVhost());
+            // because of default amqp exhange on rabbitMQ, it adds 2 binding and not only 1
+            Assert.assertEquals(baseDeclaredBindings.size() + 2, declaredBindings.size());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restBinding.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
             rabbitVirtualHostUtils.addVhost(TENANT2, cf);
 
+            baseDeclaredBindings = retrieveBinding(TENANT2);
             exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT2,
                                                         AmqpCommunicationTarget.INTERNAL);
             queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT2,
@@ -122,19 +126,20 @@ public class RegardsAmqpAdminIT {
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_ONE, TENANT2);
             declaredBindings = retrieveBinding(TENANT2);
             restBinding = declaredBindings.get(0);
-            Assert.assertEquals(2, declaredBindings.size());
-            Assert.assertEquals(TENANT2, restBinding.getVhost());
+            Assert.assertEquals(baseDeclaredBindings.size() + 2, declaredBindings.size());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restBinding.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQBindingException e) {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -145,6 +150,7 @@ public class RegardsAmqpAdminIT {
             CachingConnectionFactory cf = regardsAmqpAdmin.createConnectionFactory(TENANT1);
             rabbitVirtualHostUtils.addVhost(TENANT1, cf);
 
+            List<RestBinding> baseDeclaredBindings = retrieveBinding(TENANT1);
             Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
                                                                  TENANT1, AmqpCommunicationTarget.INTERNAL);
             Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT1,
@@ -152,13 +158,15 @@ public class RegardsAmqpAdminIT {
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT1);
             List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
             RestBinding restBinding = declaredBindings.get(0);
-            Assert.assertEquals(2, declaredBindings.size());
-            Assert.assertEquals(TENANT1, restBinding.getVhost());
+            // because of default exhange
+            Assert.assertEquals(baseDeclaredBindings.size() + 2, declaredBindings.size());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restBinding.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
             rabbitVirtualHostUtils.addVhost(TENANT2, cf);
 
+            baseDeclaredBindings = retrieveBinding(TENANT2);
             exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT2,
                                                         AmqpCommunicationTarget.INTERNAL);
             queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT2,
@@ -166,19 +174,21 @@ public class RegardsAmqpAdminIT {
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT2);
             declaredBindings = retrieveBinding(TENANT2);
             restBinding = declaredBindings.get(0);
-            Assert.assertEquals(2, declaredBindings.size());
-            Assert.assertEquals(TENANT2, restBinding.getVhost());
+            // because of default exchange
+            Assert.assertEquals(baseDeclaredBindings.size() + 2, declaredBindings.size());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restBinding.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQBindingException e) {
             Assert.fail("Failed to clean " + TENANT1);
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -197,7 +207,7 @@ public class RegardsAmqpAdminIT {
             List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
             RestBinding restBinding = declaredBindings.get(0);
             Assert.assertEquals(2, declaredBindings.size());
-            Assert.assertEquals(TENANT1, restBinding.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restBinding.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
@@ -211,18 +221,19 @@ public class RegardsAmqpAdminIT {
             declaredBindings = retrieveBinding(TENANT2);
             restBinding = declaredBindings.get(0);
             Assert.assertEquals(2, declaredBindings.size());
-            Assert.assertEquals(TENANT2, restBinding.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restBinding.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQBindingException e) {
             Assert.fail("Failed to clean " + TENANT1);
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -241,7 +252,7 @@ public class RegardsAmqpAdminIT {
             List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
             RestBinding restBinding = declaredBindings.get(0);
             Assert.assertEquals(2, declaredBindings.size());
-            Assert.assertEquals(TENANT1, restBinding.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restBinding.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
@@ -255,18 +266,19 @@ public class RegardsAmqpAdminIT {
             declaredBindings = retrieveBinding(TENANT2);
             restBinding = declaredBindings.get(0);
             Assert.assertEquals(2, declaredBindings.size());
-            Assert.assertEquals(TENANT2, restBinding.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restBinding.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQBindingException e) {
             Assert.fail("Failed to clean " + TENANT1);
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -288,8 +300,8 @@ public class RegardsAmqpAdminIT {
         };
         // CHECKSTYLE:ON
         final ResponseEntity<List<RestBinding>> response = restTemplate
-                .exchange(rabbitVirtualHostUtils.getRabbitApiEndpoint() + "/bindings" + SLASH + pTenant1,
-                          HttpMethod.GET, request, typeRef);
+                .exchange(rabbitVirtualHostUtils.getRabbitApiEndpoint() + "/bindings" + SLASH
+                        + RabbitVirtualHostUtils.getVhostName(pTenant1), HttpMethod.GET, request, typeRef);
         final int statusValue = response.getStatusCodeValue();
         if (!rabbitVirtualHostUtils.isSuccess(statusValue)) {
             throw new GettingRabbitMQBindingException("GET binding of " + pTenant1);
@@ -300,20 +312,21 @@ public class RegardsAmqpAdminIT {
     /**
      * delete the virtual host if existing
      *
-     * @param pTenant1
+     * @param pTenant
      *            tenant to clean
      * @throws CleaningRabbitMQVhostException
      *             any issues that could occur
      */
-    private void cleanRabbit(String pTenant1) throws CleaningRabbitMQVhostException {
+    private void cleanRabbit(String pTenant) throws CleaningRabbitMQVhostException {
         final List<String> existingVhost = rabbitVirtualHostUtils.retrieveVhostList();
-        if (existingVhost.stream().filter(vhost -> vhost.equals(pTenant1)).findAny().isPresent()) {
+        final String vhostName = RabbitVirtualHostUtils.getVhostName(pTenant);
+        if (existingVhost.stream().filter(vhost -> vhost.equals(vhostName)).findAny().isPresent()) {
             final HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.add(HttpHeaders.AUTHORIZATION, rabbitVirtualHostUtils.setBasic());
             final HttpEntity<Void> request = new HttpEntity<>(headers);
             final ResponseEntity<String> response = restTemplate
-                    .exchange(rabbitVirtualHostUtils.getRabbitApiVhostEndpoint() + SLASH + pTenant1, HttpMethod.DELETE,
+                    .exchange(rabbitVirtualHostUtils.getRabbitApiVhostEndpoint() + SLASH + vhostName, HttpMethod.DELETE,
                               request, String.class);
             final int statusValue = response.getStatusCodeValue();
             // if successful or 404 then the broker is clean
@@ -337,7 +350,7 @@ public class RegardsAmqpAdminIT {
             RestExchange restExchange = declaredExchanges.get(0);
             // 1 + all default = 8
             Assert.assertEquals(8, declaredExchanges.size());
-            Assert.assertEquals(TENANT1, restExchange.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restExchange.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
@@ -350,18 +363,19 @@ public class RegardsAmqpAdminIT {
             restExchange = declaredExchanges.get(0);
             // 1 + all default = 8
             Assert.assertEquals(8, declaredExchanges.size());
-            Assert.assertEquals(TENANT2, restExchange.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restExchange.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQExchangeException e) {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -372,38 +386,41 @@ public class RegardsAmqpAdminIT {
             CachingConnectionFactory cf = regardsAmqpAdmin.createConnectionFactory(TENANT1);
             rabbitVirtualHostUtils.addVhost(TENANT1, cf);
 
+            List<RestExchange> baseDeclaredExchanges = retrieveExchange(TENANT1);
             Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
                                                                  TENANT1, AmqpCommunicationTarget.INTERNAL);
             List<RestExchange> declaredExchanges = retrieveExchange(TENANT1);
-            // TODO: get newly declared exchange not one of the default
+
             RestExchange restExchange = declaredExchanges.get(0);
-            // 1 + all default = 8
-            Assert.assertEquals(8, declaredExchanges.size());
-            Assert.assertEquals(TENANT1, restExchange.getVhost());
+
+            Assert.assertEquals(baseDeclaredExchanges.size() + 1, declaredExchanges.size());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restExchange.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
             rabbitVirtualHostUtils.addVhost(TENANT2, cf);
 
+            baseDeclaredExchanges = retrieveExchange(TENANT2);
             exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT2,
                                                         AmqpCommunicationTarget.INTERNAL);
             declaredExchanges = retrieveExchange(TENANT2);
-            // TODO: get newly declared exchange not one of the default
+
             restExchange = declaredExchanges.get(0);
-            // 1 + all default = 8
-            Assert.assertEquals(8, declaredExchanges.size());
-            Assert.assertEquals(TENANT2, restExchange.getVhost());
+
+            Assert.assertEquals(baseDeclaredExchanges.size() + 1, declaredExchanges.size());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restExchange.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQExchangeException e) {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -421,7 +438,7 @@ public class RegardsAmqpAdminIT {
             RestExchange restExchange = declaredExchanges.get(0);
             // 1 + all default = 8
             Assert.assertEquals(8, declaredExchanges.size());
-            Assert.assertEquals(TENANT1, restExchange.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restExchange.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
@@ -434,18 +451,19 @@ public class RegardsAmqpAdminIT {
             restExchange = declaredExchanges.get(0);
             // 1 + all default
             Assert.assertEquals(8, declaredExchanges.size());
-            Assert.assertEquals(TENANT2, restExchange.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restExchange.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQExchangeException e) {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -463,7 +481,7 @@ public class RegardsAmqpAdminIT {
             RestExchange restExchange = declaredExchanges.get(0);
             // 1 + all = 8 default
             Assert.assertEquals(8, declaredExchanges.size());
-            Assert.assertEquals(TENANT1, restExchange.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restExchange.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
@@ -476,18 +494,19 @@ public class RegardsAmqpAdminIT {
             restExchange = declaredExchanges.get(0);
             // 1 + all default = 8
             Assert.assertEquals(8, declaredExchanges.size());
-            Assert.assertEquals(TENANT2, restExchange.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restExchange.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQExchangeException e) {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -509,8 +528,8 @@ public class RegardsAmqpAdminIT {
         };
         // CHECKSTYLE:ON
         final ResponseEntity<List<RestExchange>> response = restTemplate
-                .exchange(rabbitVirtualHostUtils.getRabbitApiEndpoint() + "/exchanges" + SLASH + pTenant2,
-                          HttpMethod.GET, request, typeRef);
+                .exchange(rabbitVirtualHostUtils.getRabbitApiEndpoint() + "/exchanges" + SLASH
+                        + RabbitVirtualHostUtils.getVhostName(pTenant2), HttpMethod.GET, request, typeRef);
         final int statusValue = response.getStatusCodeValue();
         if (!rabbitVirtualHostUtils.isSuccess(statusValue)) {
             throw new GettingRabbitMQExchangeException("GET exchanges of " + pTenant2);
@@ -530,7 +549,7 @@ public class RegardsAmqpAdminIT {
             List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
             RestQueue restQueue = declaredQueues.get(0);
             Assert.assertEquals(1, declaredQueues.size());
-            Assert.assertEquals(TENANT1, restQueue.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restQueue.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
@@ -541,18 +560,19 @@ public class RegardsAmqpAdminIT {
             declaredQueues = retrieveQueues(TENANT2);
             restQueue = declaredQueues.get(0);
             Assert.assertEquals(1, declaredQueues.size());
-            Assert.assertEquals(TENANT2, restQueue.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restQueue.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQQueueException e) {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -570,7 +590,7 @@ public class RegardsAmqpAdminIT {
             RestQueue restQueue = declaredQueues.get(0);
             // TODO: 1 + al default
             Assert.assertEquals(1, declaredQueues.size());
-            Assert.assertEquals(TENANT1, restQueue.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restQueue.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
@@ -581,18 +601,19 @@ public class RegardsAmqpAdminIT {
             declaredQueues = retrieveQueues(TENANT2);
             restQueue = declaredQueues.get(0);
             Assert.assertEquals(1, declaredQueues.size());
-            Assert.assertEquals(TENANT2, restQueue.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restQueue.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQQueueException e) {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -608,7 +629,7 @@ public class RegardsAmqpAdminIT {
             List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
             RestQueue restQueue = declaredQueues.get(0);
             Assert.assertEquals(1, declaredQueues.size());
-            Assert.assertEquals(TENANT1, restQueue.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restQueue.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
@@ -619,18 +640,19 @@ public class RegardsAmqpAdminIT {
             declaredQueues = retrieveQueues(TENANT2);
             restQueue = declaredQueues.get(0);
             Assert.assertEquals(1, declaredQueues.size());
-            Assert.assertEquals(TENANT2, restQueue.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restQueue.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQQueueException e) {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -646,7 +668,7 @@ public class RegardsAmqpAdminIT {
             List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
             RestQueue restQueue = declaredQueues.get(0);
             Assert.assertEquals(1, declaredQueues.size());
-            Assert.assertEquals(TENANT1, restQueue.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT1), restQueue.getVhost());
 
             cleanRabbit(TENANT2);
             cf = regardsAmqpAdmin.createConnectionFactory(TENANT2);
@@ -657,18 +679,19 @@ public class RegardsAmqpAdminIT {
             declaredQueues = retrieveQueues(TENANT2);
             restQueue = declaredQueues.get(0);
             Assert.assertEquals(1, declaredQueues.size());
-            Assert.assertEquals(TENANT2, restQueue.getVhost());
+            Assert.assertEquals(RabbitVirtualHostUtils.getVhostName(TENANT2), restQueue.getVhost());
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQQueueException e) {
             Assert.fail("Failed to clean Tenant");
         } catch (RabbitMQVhostException e) {
             Assert.fail("Failed to add virtualhost " + TENANT1);
-        }
-        try {
-            cleanRabbit(TENANT1);
-            cleanRabbit(TENANT2);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TENANT1);
+                cleanRabbit(TENANT2);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -690,8 +713,8 @@ public class RegardsAmqpAdminIT {
         };
         // CHECKSTYLE:ON
         final ResponseEntity<List<RestQueue>> response = restTemplate
-                .exchange(rabbitVirtualHostUtils.getRabbitApiEndpoint() + "/queues" + SLASH + pTenant2, HttpMethod.GET,
-                          request, typeRef);
+                .exchange(rabbitVirtualHostUtils.getRabbitApiEndpoint() + "/queues" + SLASH
+                        + RabbitVirtualHostUtils.getVhostName(pTenant2), HttpMethod.GET, request, typeRef);
         final int statusValue = response.getStatusCodeValue();
         if (!rabbitVirtualHostUtils.isSuccess(statusValue)) {
             throw new GettingRabbitMQQueueException("GET queues of " + pTenant2);

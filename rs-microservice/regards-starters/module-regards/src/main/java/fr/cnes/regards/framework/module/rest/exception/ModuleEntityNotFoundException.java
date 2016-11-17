@@ -8,7 +8,10 @@ package fr.cnes.regards.framework.module.rest.exception;
  *
  * @author Marc Sordi
  *
+ *
+ * @deprecated use {@link EntityNotFoundException}
  */
+@Deprecated
 public class ModuleEntityNotFoundException extends ModuleException {
 
     private static final long serialVersionUID = 8218291903574163437L;

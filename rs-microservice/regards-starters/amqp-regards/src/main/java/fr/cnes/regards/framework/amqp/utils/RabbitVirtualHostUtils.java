@@ -158,7 +158,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
 
     @Override
     public void addVhost(String pName, CachingConnectionFactory pConnectionFactory) throws RabbitMQVhostException {
-        simpleRoutingConnectionFactory.addTargetConnectionFactory(REGARDS_NAMESPACE + pName, pConnectionFactory);
+        simpleRoutingConnectionFactory.addTargetConnectionFactory(getVhostName(pName), pConnectionFactory);
         addVhost(pName);
     }
 
@@ -172,7 +172,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
             final HttpEntity<Void> request = new HttpEntity<>(headers);
             // vhost on rabbitmq are defined by a PUT request on /vhosts/{name}
             final ResponseEntity<String> response = restTemplate
-                    .exchange(getRabbitApiVhostEndpoint() + SLASH + REGARDS_NAMESPACE + pName, HttpMethod.PUT, request,
+                    .exchange(getRabbitApiVhostEndpoint() + SLASH + getVhostName(pName), HttpMethod.PUT, request,
                               String.class);
             final int statusValue = response.getStatusCodeValue();
             if (!isSuccess(statusValue)) {
@@ -199,7 +199,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
 
     @Override
     public String getRabbitApiPermissionVhostEndpoint(String pVhost) {
-        return getRabbitApiEndpoint() + "/permissions/" + pVhost + SLASH + rabbitmqUserName;
+        return getRabbitApiEndpoint() + "/permissions/" + getVhostName(pVhost) + SLASH + rabbitmqUserName;
     }
 
     @Override
@@ -222,5 +222,14 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
             isRunning = false;
         }
         return isRunning;
+    }
+
+    /**
+     * @param pTenant
+     *            Tenant wanted
+     * @return fully qualified name of vhost accord to namespace
+     */
+    public static String getVhostName(String pTenant) {
+        return REGARDS_NAMESPACE + pTenant;
     }
 }

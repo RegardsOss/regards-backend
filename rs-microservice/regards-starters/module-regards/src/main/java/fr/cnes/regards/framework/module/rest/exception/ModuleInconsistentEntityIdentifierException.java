@@ -9,7 +9,10 @@ package fr.cnes.regards.framework.module.rest.exception;
  *
  * @author Marc Sordi
  *
+ * @deprecated use {@link EntityInconsistentIdentifierException}
+ *
  */
+@Deprecated
 public class ModuleInconsistentEntityIdentifierException extends ModuleException {
 
     private static final long serialVersionUID = -2244195392447606535L;

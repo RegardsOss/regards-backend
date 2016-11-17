@@ -9,9 +9,12 @@ package fr.cnes.regards.framework.module.rest.exception;
  *
  * Exception to indicates that the entity already exists.
  *
+ * @deprecated use {@link EntityAlreadyExistsException}
+ *
  * @author CS
  * @since 1.0-SNAPSHOT
  */
+@Deprecated
 public class AlreadyExistingException extends EntityException {
 
     /**

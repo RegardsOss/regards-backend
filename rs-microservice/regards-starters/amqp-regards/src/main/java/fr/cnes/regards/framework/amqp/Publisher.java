@@ -17,6 +17,7 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
@@ -141,7 +142,7 @@ public class Publisher implements IPublisher {
         }
         final TenantWrapper<T> messageSended = new TenantWrapper<>(pEvt, pTenant);
         // bind the connection to the right vHost ie tenant to publish the message
-        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), pTenant);
+        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), RabbitVirtualHostUtils.getVhostName(pTenant));
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(exchange.getName(), evtClass.getName(), messageSended, pMessage -> {
             final MessageProperties propertiesWithPriority = pMessage.getMessageProperties();

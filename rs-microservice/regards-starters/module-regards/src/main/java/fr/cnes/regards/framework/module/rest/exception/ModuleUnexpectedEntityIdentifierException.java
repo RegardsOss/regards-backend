@@ -8,8 +8,9 @@ package fr.cnes.regards.framework.module.rest.exception;
  * Error occurs when entity has to be created but already has an identifier!
  *
  * @author Marc Sordi
- *
+ * @deprecated use {@link EntityUnexpectedIdentifierException}
  */
+@Deprecated
 public class ModuleUnexpectedEntityIdentifierException extends ModuleException {
 
     /**

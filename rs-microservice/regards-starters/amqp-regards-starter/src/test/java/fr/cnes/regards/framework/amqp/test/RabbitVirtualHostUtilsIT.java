@@ -27,6 +27,7 @@ import org.springframework.web.client.RestTemplate;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 
 /**
  * @author svissier
@@ -86,15 +87,17 @@ public class RabbitVirtualHostUtilsIT {
 
             final List<String> secondRetrieve = rabbitVirtualHostUtils.retrieveVhostList();
             Assert.assertEquals(firstRetrieve.size(), secondRetrieve.size() - 1);
-            Assert.assertTrue(secondRetrieve.stream().filter(v -> v.equals(TEST_VHOST)).findAny().isPresent());
+            Assert.assertTrue(secondRetrieve.stream()
+                    .filter(v -> v.equals(RabbitVirtualHostUtils.getVhostName(TEST_VHOST))).findAny().isPresent());
         } catch (RabbitMQVhostException e) {
             Assert.fail();
             LOGGER.error("Issue during adding the Vhost", e);
-        }
-        try {
-            cleanRabbit(TEST_VHOST);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+        } finally {
+            try {
+                cleanRabbit(TEST_VHOST);
+            } catch (CleaningRabbitMQVhostException e) {
+                LOGGER.debug("Issue during cleaning the broker", e);
+            }
         }
     }
 
@@ -108,13 +111,14 @@ public class RabbitVirtualHostUtilsIT {
      */
     private void cleanRabbit(String pTenant1) throws CleaningRabbitMQVhostException {
         final List<String> existingVhost = rabbitVirtualHostUtils.retrieveVhostList();
-        if (existingVhost.stream().filter(vhost -> vhost.equals(pTenant1)).findAny().isPresent()) {
+        final String vhostName = RabbitVirtualHostUtils.getVhostName(pTenant1);
+        if (existingVhost.stream().filter(vhost -> vhost.equals(vhostName)).findAny().isPresent()) {
             final HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.add(HttpHeaders.AUTHORIZATION, rabbitVirtualHostUtils.setBasic());
             final HttpEntity<Void> request = new HttpEntity<>(headers);
             final ResponseEntity<String> response = restTemplate
-                    .exchange(rabbitVirtualHostUtils.getRabbitApiVhostEndpoint() + SLASH + pTenant1, HttpMethod.DELETE,
+                    .exchange(rabbitVirtualHostUtils.getRabbitApiVhostEndpoint() + SLASH + vhostName, HttpMethod.DELETE,
                               request, String.class);
             final int statusValue = response.getStatusCodeValue();
             // if successful or 404 then the broker is clean

@@ -14,6 +14,7 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 
 /**
  *
@@ -72,7 +73,7 @@ public class Poller {
                                                           pAmqpCommunicationTarget);
         regardsAmqpAdmin.declareBinding(queue, exchange, pAmqpCommunicationMode, pTenant);
 
-        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), pTenant);
+        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), RabbitVirtualHostUtils.getVhostName(pTenant));
         // the CannotCastException should be thrown that mean someone/something tempered with the broker queue
         @SuppressWarnings("unchecked")
         final TenantWrapper<T> evt = (TenantWrapper<T>) rabbitTemplate.receiveAndConvert(regardsAmqpAdmin
