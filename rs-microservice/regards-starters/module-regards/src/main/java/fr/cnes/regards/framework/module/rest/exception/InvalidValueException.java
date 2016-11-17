@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.framework.module.rest.exception;
 
+@Deprecated
 public class InvalidValueException extends Exception {
 
     /**
@@ -14,7 +15,7 @@ public class InvalidValueException extends Exception {
         super();
     }
 
-    public InvalidValueException(String message) {
+    public InvalidValueException(final String message) {
         super(message);
     }
 }

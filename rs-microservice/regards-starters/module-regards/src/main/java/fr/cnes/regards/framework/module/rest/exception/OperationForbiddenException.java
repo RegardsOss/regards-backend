@@ -9,7 +9,7 @@ package fr.cnes.regards.framework.module.rest.exception;
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
-public class OperationForbiddenException extends EntityException {
+public class OperationForbiddenException extends ModuleException {
 
     /**
      * Serial
