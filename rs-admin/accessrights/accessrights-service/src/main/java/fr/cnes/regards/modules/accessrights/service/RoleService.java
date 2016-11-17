@@ -89,7 +89,9 @@ public class RoleService implements IRoleService {
             for (final String tenant : tenantResolver.getAllTenants()) {
                 jwtService.injectToken(tenant, RoleAuthority.getSysRole("rs-admin"));
                 for (final Role role : defaultRoles) {
-                    roleRepository.save(role);
+                    if (roleRepository.findOneByName(role.getName()) == null) {
+                        roleRepository.save(role);
+                    }
                 }
             }
         } catch (final JwtException e) {

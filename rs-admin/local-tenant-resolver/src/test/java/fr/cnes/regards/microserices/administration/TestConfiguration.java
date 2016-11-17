@@ -115,13 +115,26 @@ public class TestConfiguration {
         addresses.add("127.0.0.1");
         addresses.add("127.0.0.2");
         addresses.add("127.0.0.3");
-        pRoleRpo.deleteAll();
-        final Role publicRole = pRoleRpo.save(new Role(0L, DefaultRole.PUBLIC.toString(), null, new ArrayList<>(),
-                addresses, new ArrayList<>(), false, true, true, LocalDateTime.now().plusDays(5L)));
+
+        Role publicRole = null;
+        if ((publicRole = pRoleRpo.findOneByName(DefaultRole.PUBLIC.toString())) == null) {
+            publicRole = pRoleRpo.save(new Role(0L, DefaultRole.PUBLIC.toString(), null, new ArrayList<>(), addresses,
+                    new ArrayList<>(), false, true, true, LocalDateTime.now().plusDays(5L)));
+        }
+        Role roleToDelete = null;
+        if ((roleToDelete = pRoleRpo.findOneByName(CORS_ROLE_NAME_GRANTED)) != null) {
+            pRoleRpo.delete(roleToDelete.getId());
+        }
         pRoleRpo.save(new Role(0L, CORS_ROLE_NAME_GRANTED, publicRole, new ArrayList<>(), addresses, new ArrayList<>(),
                 false, true, true, LocalDateTime.now().plusDays(5L)));
+        if ((roleToDelete = pRoleRpo.findOneByName(CORS_ROLE_NAME_INVALID_1)) != null) {
+            pRoleRpo.delete(roleToDelete.getId());
+        }
         pRoleRpo.save(new Role(0L, CORS_ROLE_NAME_INVALID_1, publicRole, new ArrayList<>(), addresses,
                 new ArrayList<>(), false, true, true, LocalDateTime.now().minusDays(5L)));
+        if ((roleToDelete = pRoleRpo.findOneByName(CORS_ROLE_NAME_INVALID_2)) != null) {
+            pRoleRpo.delete(roleToDelete.getId());
+        }
         pRoleRpo.save(new Role(0L, CORS_ROLE_NAME_INVALID_2, publicRole, new ArrayList<>(), addresses,
                 new ArrayList<>(), false, true, false, null));
 
