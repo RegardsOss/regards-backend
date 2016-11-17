@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.plugins.utils.plugintypes;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -45,6 +46,51 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
         Assert.assertTrue(pluginInterfaces.size() > 0);
+        LOGGER.debug(ENDING + this.toString());
+    }
+
+    /**
+     * Load plugins in an empty package
+     */
+    @Test
+    public void loadPluginsInterfaceEmpty() {
+        LOGGER.debug(STARTING + this.toString());
+        // Get all the plugin interfaces
+        final List<String> pluginInterfaces = PluginInterfaceUtils
+                .getInterfaces("fr.cnes.regards.plugins.utils.plugintypes.empty");
+        Assert.assertNotNull(pluginInterfaces);
+        Assert.assertTrue(pluginInterfaces.isEmpty());
+        LOGGER.debug(ENDING + this.toString());
+    }
+
+    /**
+     * Load all plugins in several packages
+     */
+    @Test
+    public void loadPluginsInterfaceSeveralPrefix() {
+        LOGGER.debug(STARTING + this.toString());
+        // Get all the plugin interfaces
+        final List<String> pluginInterfaces = PluginInterfaceUtils
+                .getInterfaces(Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
+        Assert.assertNotNull(pluginInterfaces);
+        pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
+        Assert.assertTrue(pluginInterfaces.size() > 0);
+        LOGGER.debug(ENDING + this.toString());
+    }
+
+    /**
+     * Load plugin in empty several packages
+     */
+    @Test
+    public void loadNoPluginsInterfaceSeveralPrefix() {
+        LOGGER.debug(STARTING + this.toString());
+        // Get all the plugin interfaces
+        final List<String> pluginInterfaces = PluginInterfaceUtils
+                .getInterfaces(Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes.empty",
+                                             "fr.cnes.regards.plugins.utils.plugintypes.empty.sub",
+                                             "fr.cnes.regards.plugins.utils.plugintypes.empty.sub2"));
+        Assert.assertNotNull(pluginInterfaces);
+        Assert.assertTrue(pluginInterfaces.isEmpty());
         LOGGER.debug(ENDING + this.toString());
     }
 

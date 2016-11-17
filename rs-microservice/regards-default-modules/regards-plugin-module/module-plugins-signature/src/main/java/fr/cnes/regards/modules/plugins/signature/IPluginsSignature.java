@@ -142,18 +142,13 @@ public interface IPluginsSignature {
      *
      * @throws ModuleEntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
-     * 
-     * @throws InvalidValueException
-     *             the {@link PluginConfiguration} is incoherent with the path parameter
-     * @throws ModuleEntityNotFoundException
-     *
      */
     @RequestMapping(value = "/plugins/{pluginId}/config/{configId}", method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(@PathVariable("pluginId") String pPluginId,
             @PathVariable("configId") Long pConfigId, @Valid @RequestBody PluginConfiguration pPluginConfiguration)
-            throws InvalidValueException, ModuleEntityNotFoundException;
+            throws ModuleEntityNotFoundException;
 
     /**
      * Delete a {@link PluginConfiguration}.

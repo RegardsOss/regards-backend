@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -69,26 +70,32 @@ public class IpFilter extends OncePerRequestFilter {
         @SuppressWarnings("unchecked")
         final Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication.getAuthorities();
 
-        final List<String> authorizedAddresses = new ArrayList<>();
-        if (!roles.isEmpty()) {
-            for (final RoleAuthority role : roles) {
-                authorizedAddresses.addAll(authoritiesProvider.getRoleAuthorizedAddress(role.getAuthority()));
-            }
-            if (!checkAccessByAddress(authorizedAddresses, pRequest.getRemoteAddr())) {
-                final String message = String.format("[REGARDS IP FILTER] - %s - Authorization denied",
-                                                     pRequest.getRemoteAddr());
-                LOG.error(message);
-                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+        try {
+            final List<String> authorizedAddresses = new ArrayList<>();
+            if (!roles.isEmpty()) {
+                for (final RoleAuthority role : roles) {
+                    authorizedAddresses.addAll(authoritiesProvider.getRoleAuthorizedAddress(role.getAuthority()));
+                }
+                if (!checkAccessByAddress(authorizedAddresses, pRequest.getRemoteAddr())) {
+                    final String message = String.format("[REGARDS IP FILTER] - %s - Authorization denied",
+                                                         pRequest.getRemoteAddr());
+                    LOG.error(message);
+                    pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+                } else {
+                    LOG.info(String.format("[REGARDS IP FILTER] - %s - Authorization granted",
+                                           pRequest.getRemoteAddr()));
+
+                    // Continue the filtering chain
+                    pFilterChain.doFilter(pRequest, pResponse);
+                }
             } else {
-                LOG.info(String.format("[REGARDS IP FILTER] - %s - Authorization granted", pRequest.getRemoteAddr()));
-
-                // Continue the filtering chain
-                pFilterChain.doFilter(pRequest, pResponse);
+                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "No Authority Role defined");
             }
-        } else {
-            pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "No Authority Role defined");
+        } catch (final SecurityException e) {
+            final String message = "[REGARDS IP FILTER] Error on access resolution: " + e.getMessage();
+            LOG.debug(message, e);
+            pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
         }
-
     }
 
     /**
