@@ -29,13 +29,15 @@ public class RoleAuthorizedAdressesConverter implements AttributeConverter<List<
     @Override
     public String convertToDatabaseColumn(final List<String> pValues) {
         String result = null;
+        final StringBuilder builder = new StringBuilder();
         if ((pValues != null) && !pValues.isEmpty()) {
             for (final String value : pValues) {
-                if (result != null) {
-                    result += SPLIT_CAR;
+                if (!builder.toString().isEmpty()) {
+                    builder.append(SPLIT_CAR);
                 }
-                result += value;
+                builder.append(value);
             }
+            result = builder.toString();
         }
         return result;
     }
