@@ -42,7 +42,7 @@ public class PluginUtilsBean implements IPluginUtilsBean, BeanFactoryAware {
                 try {
                     field.set(pPluginInstance, effectiveVal);
                 } catch (IllegalArgumentException | IllegalAccessException e) {
-                    throw new PluginUtilsException(e.getMessage());
+                    throw new PluginUtilsException("Unable to set the field <"+field.getName()+">.", e);
                 }
             }
         }

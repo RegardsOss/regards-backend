@@ -11,9 +11,8 @@ package fr.cnes.regards.framework.module.rest.exception;
  *
  * @author CS
  * @since 1.0-SNAPSHOT
- * @deprecated use {@link ModuleEntityNotFoundException} instead (a module aware exception)
+ *
  */
-@Deprecated
 public class EntityNotFoundException extends EntityException {
 
     /**

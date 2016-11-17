@@ -7,15 +7,13 @@ package fr.cnes.regards.framework.module.rest.exception;
  * Entity does not have any identifier
  *
  * @author Marc Sordi
- * @deprecated use {@link EntityNotIdentifiableException}
+ * @author Sylvain Vissiere-Guerinet
  */
-@Deprecated
-public class ModuleEntityNotIdentifiableException extends ModuleException {
+public class EntityNotIdentifiableException extends EntityException {
 
     private static final long serialVersionUID = -1220166163207297225L;
 
-    public ModuleEntityNotIdentifiableException(String pErrorMessage) {
+    public EntityNotIdentifiableException(String pErrorMessage) {
         super(pErrorMessage);
     }
-
 }

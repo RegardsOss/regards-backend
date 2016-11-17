@@ -7,11 +7,10 @@ package fr.cnes.regards.framework.module.rest.exception;
  * Exception to indicate that the operation is forbidden on entity.
  *
  * @author Xavier-Alexandre Brochard
+ * @author Sylvain Vissiere-Guerinet
  * @since 1.0-SNAPSHOT
- * @deprecated use {@link EntityOperationForbiddenException}
  */
-@Deprecated
-public class OperationForbiddenException extends EntityException {
+public class EntityOperationForbiddenException extends EntityException {
 
     /**
      * Serial
@@ -29,9 +28,10 @@ public class OperationForbiddenException extends EntityException {
      *            Message describing the forbidden operation
      * @since 1.0-SNAPSHOT
      */
-    public OperationForbiddenException(final String pEntityIdentifier, final Class<?> pEntityClass,
+    public EntityOperationForbiddenException(final String pEntityIdentifier, final Class<?> pEntityClass,
             final String pMessage) {
         super(String.format("Operation on entity %s with id: %s is forbidden: %s", pEntityClass.getName(),
                             pEntityIdentifier, pMessage));
     }
+
 }

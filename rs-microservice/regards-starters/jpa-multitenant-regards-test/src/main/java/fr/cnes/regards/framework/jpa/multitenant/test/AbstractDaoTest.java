@@ -3,6 +3,9 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.test;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
@@ -33,6 +36,12 @@ public abstract class AbstractDaoTest {
     private static final String DEFAULT_ROLE = "ROLE_USER";
 
     /**
+     * JPA entity manager : use it to flush context to prevent false positive
+     */
+    @PersistenceContext
+    protected EntityManager entityManager;
+
+    /**
      * JWT service
      */
     @Autowired
@@ -45,5 +54,4 @@ public abstract class AbstractDaoTest {
     protected void injectToken(String pTenant) {
         jwtService.injectMockToken(pTenant, DEFAULT_ROLE);
     }
-
 }

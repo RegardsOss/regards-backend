@@ -4,17 +4,15 @@
 package fr.cnes.regards.framework.module.rest.exception;
 
 /**
- *
  * Class InvalidEntityException
  *
  * Exception to indicates that the entity requested is invalid.
  *
  * @author CS
+ * @author Sylvain Vissiere-Guerinet
  * @since 1.0-SNAPSHOT
- * @deprecated use {@link EntityInvalidException}
  */
-@Deprecated
-public class InvalidEntityException extends EntityException {
+public class EntityInvalidException extends EntityException {
 
     /**
      * serialVersionUID field.
@@ -32,7 +30,7 @@ public class InvalidEntityException extends EntityException {
      *            Entity error message
      * @since 1.0-SNAPSHOT
      */
-    public InvalidEntityException(final String pMessage) {
+    public EntityInvalidException(final String pMessage) {
         super(pMessage);
     }
 
