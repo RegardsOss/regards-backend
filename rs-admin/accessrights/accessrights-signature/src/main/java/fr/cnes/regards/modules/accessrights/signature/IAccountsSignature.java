@@ -22,9 +22,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
@@ -60,7 +60,7 @@ public interface IAccountsSignature {
      *            email of the account to retrieve
      * @return Account
      */
-    @RequestMapping(value = "/account/{account_email}", method = RequestMethod.GET,
+    @RequestMapping(value = "/account/{account_email:.+}", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Resource<Account>> retrieveAccounByEmail(@PathVariable("account_email") String pAccountEmail);

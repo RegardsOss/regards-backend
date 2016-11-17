@@ -86,6 +86,8 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
     private String apiAccountId;
 
+    private String apiAccountEmail;
+
     private String apiAccountSetting;
 
     private String apiUnlockAccount;
@@ -129,6 +131,8 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}", RequestMethod.GET, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}", RequestMethod.PUT, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}", RequestMethod.DELETE, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/account/{account_email:.+}", RequestMethod.GET,
+                                   ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/code", RequestMethod.GET, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}/password/{reset_code}", RequestMethod.PUT,
                                    ROLE_TEST);
@@ -141,6 +145,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         errorMessage = "Cannot reach model attributes";
         apiAccounts = "/accounts";
         apiAccountId = apiAccounts + "/{account_id}";
+        apiAccountEmail = apiAccounts + "/account/{account_email}";
         apiAccountSetting = apiAccounts + "/settings";
         apiUnlockAccount = apiAccountId + "/unlock/{unlock_code}";
         apiChangePassword = apiAccountId + "/password/{reset_code}";
@@ -202,6 +207,19 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         expectations.clear();
         expectations.add(status().isNotFound());
         performGet(apiAccountId, token, expectations, errorMessage, Integer.MAX_VALUE);
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_300")
+    @Purpose("Check that the system allows to retrieve a specific user for an instance and handle fail cases.")
+    public void getAccountByEmail() throws AlreadyExistingException {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performGet(apiAccountEmail, token, expectations, errorMessage, account.getEmail());
+
+        expectations.clear();
+        expectations.add(status().isNotFound());
+        performGet(apiAccountEmail, token, expectations, errorMessage, "error@regards.fr");
     }
 
     @Ignore
