@@ -17,7 +17,9 @@ import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -29,8 +31,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
 
 /**
  * Test class for {@link RoleService}.
@@ -109,11 +109,14 @@ public class RoleServiceTest {
 
     /**
      * Check that the allows to retrieve a single role.
+     * 
+     * @throws ModuleEntityNotFoundException
+     *             when no role with passed name could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the allows to retrieve a single role.")
-    public void retrieveRole() {
+    public void retrieveRole() throws ModuleEntityNotFoundException {
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
         final Role actual = roleService.retrieveRole(NAME);
 

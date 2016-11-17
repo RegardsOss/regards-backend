@@ -353,12 +353,12 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().string("\"" + AccountStatus.ACTIVE.toString() + "\""));
-        performGet(apiValidatePassword, jwt, expectations, errorMessage, login, rightPassword);
+        performGet(apiValidatePassword, jwt, expectations, errorMessage, EMAIL, PASSWORD);
 
         expectations.clear();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().string("\"" + AccountStatus.INACTIVE.toString() + "\""));
-        performGet(apiValidatePassword, jwt, expectations, errorMessage, login, wrongPassword);
+        performGet(apiValidatePassword, jwt, expectations, errorMessage, EMAIL, wrongPassword);
 
         final String wrongEmail = "wrongEmail";
         Assert.assertFalse(accountService.existAccount(wrongEmail));

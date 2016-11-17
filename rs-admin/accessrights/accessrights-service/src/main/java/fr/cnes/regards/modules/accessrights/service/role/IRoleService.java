@@ -34,9 +34,11 @@ public interface IRoleService {
      * @param pRoleName
      *            role name to retrieve
      * @return The {@link Role}'s
+     * @throws ModuleEntityNotFoundException
+     *             when no role with passed name could be found
      * @since 1.0-SNAPSHOT
      */
-    Role retrieveRole(String pRoleName);
+    Role retrieveRole(String pRoleName) throws ModuleEntityNotFoundException;
 
     /**
      * Return the single <code>default</code> {@link Role}.

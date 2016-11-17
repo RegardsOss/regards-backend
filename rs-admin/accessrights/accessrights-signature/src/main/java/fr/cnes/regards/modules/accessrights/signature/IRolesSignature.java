@@ -61,10 +61,13 @@ public interface IRolesSignature {
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
      * @return The {@link Role} wrapped in an {@link ResponseEntity}
+     * @throws ModuleEntityNotFoundException
+     *             when no role with passed name could be found
      */
     @RequestMapping(value = "/{role_name}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") String pRoleName);
+    ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") String pRoleName)
+            throws ModuleEntityNotFoundException;
 
     /**
      * Define the endpoint for updating the {@link Role} of id <code>pRoleId</code>.
