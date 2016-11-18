@@ -71,11 +71,8 @@ public class IpFilter extends OncePerRequestFilter {
         final Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication.getAuthorities();
 
         try {
-            final List<String> authorizedAddresses = new ArrayList<>();
             if (!roles.isEmpty()) {
-                for (final RoleAuthority role : roles) {
-                    authorizedAddresses.addAll(authoritiesProvider.getRoleAuthorizedAddress(role.getAuthority()));
-                }
+                final List<String> authorizedAddresses = retrieveRoleAuthorizedAddresses(roles);
                 if (!checkAccessByAddress(authorizedAddresses, pRequest.getRemoteAddr())) {
                     final String message = String.format("[REGARDS IP FILTER] - %s - Authorization denied",
                                                          pRequest.getRemoteAddr());
@@ -93,9 +90,33 @@ public class IpFilter extends OncePerRequestFilter {
             }
         } catch (final SecurityException e) {
             final String message = "[REGARDS IP FILTER] Error on access resolution: " + e.getMessage();
-            LOG.debug(message, e);
+            LOG.error(message, e);
             pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
         }
+    }
+
+    /**
+     *
+     * Retrieve authorized addresses for the given roles.
+     *
+     * @param pRoles
+     *            roles
+     * @return authorized addresses
+     * @throws SecurityException
+     *             Error retrieving role informations
+     * @since 1.0-SNAPSHOT
+     */
+    private List<String> retrieveRoleAuthorizedAddresses(final Collection<RoleAuthority> pRoles)
+            throws SecurityException {
+        final List<String> authorizedAddresses = new ArrayList<>();
+        for (final RoleAuthority role : pRoles) {
+            // Role is a sys role then there is no ip limitation
+            if (!RoleAuthority.isSysRole(role.getAuthority())) {
+                authorizedAddresses.addAll(authoritiesProvider
+                        .getRoleAuthorizedAddress(RoleAuthority.getRoleName(role.getAuthority())));
+            }
+        }
+        return authorizedAddresses;
     }
 
     /**

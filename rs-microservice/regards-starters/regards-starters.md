@@ -16,7 +16,7 @@ regards.amqp.management.port= 15672 # port of the managing plugin of the broker
 ## Cloud starter
 
 ```properties
-regards.cloud.name=false # Disable cloud support
+regards.cloud.enabled=false # Disable cloud support
 ```
 
 ## HATEOAS starter

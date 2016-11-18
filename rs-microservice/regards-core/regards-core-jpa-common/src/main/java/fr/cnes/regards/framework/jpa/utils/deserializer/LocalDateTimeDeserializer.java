@@ -15,8 +15,9 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
  * Deserializer for LocalDateTime serializing using ISO-8601
  *
  * @author svissier
- *
+ * @deprecated use Gson serializer instead
  */
+@Deprecated
 public class LocalDateTimeDeserializer extends JsonDeserializer<LocalDateTime> {
 
     /*

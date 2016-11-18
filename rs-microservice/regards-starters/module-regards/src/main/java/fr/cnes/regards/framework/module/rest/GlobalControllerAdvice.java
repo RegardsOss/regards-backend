@@ -11,6 +11,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -37,11 +38,17 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  *
  * @author CS SI
  * @author Marc Sordi
+ * @author Sébastien Binda
  * @since 1.1-SNAPSHOT
  */
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalControllerAdvice {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ServerErrorResponse> handleArgumentValidationFailedException(final ModuleException pEx) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(pEx.getMessage()));
+    }
 
     @ExceptionHandler(ModuleException.class)
     public ResponseEntity<ServerErrorResponse> handleModelException(final ModuleException pEx) {
@@ -70,7 +77,7 @@ public class GlobalControllerAdvice {
     }
 
     @ExceptionHandler(ModuleEntityNotEmptyException.class)
-    public ResponseEntity<ServerErrorResponse> entityNotEmpty(ModuleEntityNotEmptyException pException) {
+    public ResponseEntity<ServerErrorResponse> entityNotEmpty(final ModuleEntityNotEmptyException pException) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pException.getMessage()));
     }
 
@@ -80,7 +87,8 @@ public class GlobalControllerAdvice {
     }
 
     @ExceptionHandler(ModuleEntityNotIdentifiableException.class)
-    public ResponseEntity<ServerErrorResponse> entityNotIdentifiable(ModuleEntityNotIdentifiableException pException) {
+    public ResponseEntity<ServerErrorResponse> entityNotIdentifiable(
+            final ModuleEntityNotIdentifiableException pException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
@@ -93,7 +101,7 @@ public class GlobalControllerAdvice {
      * Exception handler returning the code 404 when an element accessed does not exists (for example in a stream).
      */
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<ServerErrorResponse> noSuchElement(NoSuchElementException pException) {
+    public ResponseEntity<ServerErrorResponse> noSuchElement(final NoSuchElementException pException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
@@ -101,7 +109,7 @@ public class GlobalControllerAdvice {
      * Exception handler returning the code 409 when trying to create an already existing entity.
      */
     @ExceptionHandler(AlreadyExistingException.class)
-    public ResponseEntity<ServerErrorResponse> dataAlreadyExisting(AlreadyExistingException pException) {
+    public ResponseEntity<ServerErrorResponse> dataAlreadyExisting(final AlreadyExistingException pException) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pException.getMessage()));
     }
 
@@ -109,15 +117,15 @@ public class GlobalControllerAdvice {
      * Exception handler returning the code 400 when the request is somehow malformed or invalid.
      */
     @ExceptionHandler(InvalidValueException.class)
-    public ResponseEntity<ServerErrorResponse> invalidValue(InvalidValueException pException) {
+    public ResponseEntity<ServerErrorResponse> invalidValue(final InvalidValueException pException) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(pException.getMessage()));
     }
 
-    /**
+    /*
      * Exception handler returning the code 422 when an entity in request violates its validation constraints.
      */
     @ExceptionHandler(InvalidEntityException.class)
-    public ResponseEntity<ServerErrorResponse> manualValidation(InvalidEntityException pException) {
+    public ResponseEntity<ServerErrorResponse> manualValidation(final InvalidEntityException pException) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(new ServerErrorResponse(pException.getMessage()));
     }
@@ -149,9 +157,8 @@ public class GlobalControllerAdvice {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
     }
 
-    /**
-     * Exception handler returning the code 403 when an operation on an entity is forbidden.<br>
-     * Thrown by Hibernate.
+    /*
+     * Exception handler returning the code 403 when an operation on an entity is forbidden.<br> Thrown by Hibernate.
      */
     @ExceptionHandler(EntityOperationForbiddenException.class)
     public ResponseEntity<ServerErrorResponse> operationForbidden(final EntityOperationForbiddenException pException) {

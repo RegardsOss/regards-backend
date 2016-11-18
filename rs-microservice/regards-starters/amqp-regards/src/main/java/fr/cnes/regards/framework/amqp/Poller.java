@@ -48,6 +48,8 @@ public class Poller {
 
     /**
      *
+     * TODO: desactivate auto-ack and add an ack method
+     *
      * @param <T>
      *            event published
      * @param pTenant
@@ -62,7 +64,6 @@ public class Poller {
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
-
     public <T> TenantWrapper<T> poll(String pTenant, Class<T> pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
             AmqpCommunicationTarget pAmqpCommunicationTarget) throws RabbitMQVhostException {
 

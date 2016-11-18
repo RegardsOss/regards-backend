@@ -4,6 +4,12 @@
 package fr.cnes.regards.framework.amqp.exception;
 
 /**
+ *
+ * exceptions that reflect a problem while interacting with the message broker. Mainly while adding a virtual
+ * host(tenant)
+ *
+ * FIXME: should be runtimeException?
+ *
  * @author svissier
  *
  */

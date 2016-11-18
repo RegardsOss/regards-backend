@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
@@ -28,8 +28,9 @@ public class MicroserviceWebConfiguration extends WebMvcConfigurerAdapter {
     }
 
     @Override
-    public void configurePathMatch(final PathMatchConfigurer pMatcher) {
-        pMatcher.setUseRegisteredSuffixPatternMatch(true);
+    public void configureContentNegotiation(final ContentNegotiationConfigurer pConfigurer) {
+        // Avoid to match uri path extension with a content negociator.
+        pConfigurer.favorPathExtension(false);
     }
 
 }

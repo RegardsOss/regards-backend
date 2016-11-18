@@ -57,6 +57,23 @@ public class RoleAuthority implements GrantedAuthority {
 
     /**
      *
+     * Remove Authority ROLE_ prefix to get real role name
+     *
+     * @param pRoleAuthorityName
+     *            Authrotity role name with ROLE_PREFIX
+     * @return role name
+     * @since 1.0-SNAPSHOT
+     */
+    public static String getRoleName(final String pRoleAuthorityName) {
+        String roleName = pRoleAuthorityName;
+        if ((pRoleAuthorityName != null) && pRoleAuthorityName.startsWith(ROLE_PREFIX)) {
+            roleName = roleName.substring(ROLE_PREFIX.length());
+        }
+        return roleName;
+    }
+
+    /**
+     *
      * Retrieve the SYS ROLE for the current microservice. SYS ROLE is a specific role that permit access to all
      * administration endpoints.
      *
