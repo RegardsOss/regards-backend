@@ -24,7 +24,9 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.Authenticatio
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthenticationManager;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -135,13 +137,16 @@ public class Oauth2AuthenticationManagerTest {
      *             test error
      * @throws AlreadyExistingException
      *             test error
+     * @throws ModuleAlreadyExistsException
+     * @throws EntityTransitionForbiddenException
      *
      * @since 1.0-SNAPSHOT
      */
     @Purpose("Check oauth2 authentication process using default authentication plugin")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Test
-    public void testOauth2AuthenticationDefaultProcess() throws AlreadyExistingException, InvalidEntityException {
+    public void testOauth2AuthenticationDefaultProcess() throws AlreadyExistingException, InvalidEntityException,
+            EntityTransitionForbiddenException, ModuleAlreadyExistsException {
         auth = Mockito.mock(JWTAuthentication.class);
         Mockito.when(auth.getName()).thenReturn("name");
         Mockito.when(auth.getCredentials()).thenReturn("password");
