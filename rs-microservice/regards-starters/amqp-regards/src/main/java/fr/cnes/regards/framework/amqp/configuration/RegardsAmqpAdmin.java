@@ -88,6 +88,7 @@ public class RegardsAmqpAdmin {
      * @return ip:port of microservice instance
      */
     public String getUniqueName() {
+        // TODO: add +UNSERSCORE+MODULEID
         return instanceIdentifier;
     }
 

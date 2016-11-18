@@ -16,7 +16,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
  *
  * @author svissier
  *
+ * @deprecated use Gson serializer instead
  */
+@Deprecated
 public class LocalDateTimeSerializer extends JsonSerializer<LocalDateTime> {
 
     /*
