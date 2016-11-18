@@ -3,10 +3,10 @@
  */
 package fr.cnes.regards.modules.accessrights.service.account;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
@@ -29,8 +29,9 @@ public interface IAccountTransitions {
      *             Thrown when an account with same <code>email</code> already exists
      * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not in status PENDING
+     * @return the created account
      */
-    default void requestAccount(final AccessRequestDTO pAccessRequestDTO)
+    default Account requestAccount(final AccessRequestDTO pAccessRequestDTO)
             throws ModuleAlreadyExistsException, EntityTransitionForbiddenException {
         throw new EntityTransitionForbiddenException(pAccessRequestDTO.getEmail(), Account.class, null,
                 Thread.currentThread().getStackTrace()[1].getMethodName());

@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.accessrights.service.account;
 
 import java.util.List;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
@@ -16,7 +15,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  *
  * @author CS SI
  */
-public interface IAccountService extends IAccountTransitions {
+public interface IAccountService {
 
     /**
      * Retrieve the list of all {@link Account}s.
@@ -26,15 +25,26 @@ public interface IAccountService extends IAccountTransitions {
     List<Account> retrieveAccountList();
 
     /**
-     * Create a new {@link Account}.
+     * Retrieve the {@link Account} of passed <code>id</code>.
      *
-     * @param pNewAccount
-     *            The new {@link Account} to create
-     * @return The created account
-     * @throws AlreadyExistingException
-     *             Thrown when an {@link Account} with same id already exists
+     * @param pAccountId
+     *            The {@link Account}'s <code>id</code>
+     * @throws ModuleEntityNotFoundException
+     *             Thrown if no {@link Account} with passed <code>id</code> could be found
+     * @return The account
      */
-    Account createAccount(Account pNewAccount) throws AlreadyExistingException;
+    Account retrieveAccount(Long pAccountId) throws ModuleEntityNotFoundException;
+
+    /**
+     * Retrieve the {@link Account} of passed <code>email</code>
+     *
+     * @param pEmail
+     *            The {@link Account}'s <code>email</code>
+     * @return the account
+     * @throws ModuleEntityNotFoundException
+     *             Thrown if no {@link Account} with passed <code>email</code> could be found
+     */
+    Account retrieveAccountByEmail(String pEmail) throws ModuleEntityNotFoundException;
 
     /**
      * Return <code>true</code> if an {@link Account} of passed <code>id</code> exists.
@@ -53,17 +63,6 @@ public interface IAccountService extends IAccountTransitions {
      * @return <code>true</code> if exists, else <code>false</code>
      */
     boolean existAccount(String pEmail);
-
-    /**
-     * Retrieve the {@link Account} of passed <code>id</code>.
-     *
-     * @param pAccountId
-     *            The {@link Account}'s <code>id</code>
-     * @throws ModuleEntityNotFoundException
-     *             Thrown if no {@link Account} with passed <code>id</code> could be found
-     * @return The account
-     */
-    Account retrieveAccount(Long pAccountId) throws ModuleEntityNotFoundException;
 
     /**
      * Update an {@link Account} with passed values.
@@ -108,17 +107,6 @@ public interface IAccountService extends IAccountTransitions {
      */
     void changeAccountPassword(Long pAccountId, String pResetCode, String pNewPassword)
             throws InvalidValueException, ModuleEntityNotFoundException;
-
-    /**
-     * Retrieve the {@link Account} of passed <code>email</code>
-     *
-     * @param pEmail
-     *            The {@link Account}'s <code>email</code>
-     * @return the account
-     * @throws ModuleEntityNotFoundException
-     *             Thrown if no {@link Account} with passed <code>email</code> could be found
-     */
-    Account retrieveAccountByEmail(String pEmail) throws ModuleEntityNotFoundException;
 
     /**
      * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -104,8 +105,12 @@ public class ProjectUserService implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUser(java.lang.Long)
      */
     @Override
-    public ProjectUser retrieveUser(final Long pUserId) {
+    public ProjectUser retrieveUser(final Long pUserId) throws EntityNotFoundException {
         final ProjectUser user = projectUserRepository.findOne(pUserId);
+        // Check found
+        if (user == null) {
+            throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
+        }
         // Filter out hidden meta data
         try (final Stream<MetaData> stream = user.getMetaData().stream()) {
             user.setMetaData(stream.filter(keepVisibleMetaData).collect(Collectors.toList()));
@@ -178,16 +183,6 @@ public class ProjectUserService implements IProjectUserService {
     /*
      * (non-Javadoc)
      *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#removeUser(java.lang.Long)
-     */
-    @Override
-    public void removeUser(final Long pUserId) {
-        projectUserRepository.delete(pUserId);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see
      * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#updateUserAccessRights(java.lang.
      * String, java.util.List)
@@ -229,7 +224,7 @@ public class ProjectUserService implements IProjectUserService {
      * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserMetaData(java.lang.Long)
      */
     @Override
-    public List<MetaData> retrieveUserMetaData(final Long pUserId) {
+    public List<MetaData> retrieveUserMetaData(final Long pUserId) throws EntityNotFoundException {
         final ProjectUser user = retrieveUser(pUserId);
         return user.getMetaData();
     }
@@ -242,7 +237,8 @@ public class ProjectUserService implements IProjectUserService {
      * java.util.List)
      */
     @Override
-    public void updateUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData) {
+    public void updateUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData)
+            throws EntityNotFoundException {
         final ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(pUpdatedUserMetaData);
         save(user);
@@ -255,7 +251,7 @@ public class ProjectUserService implements IProjectUserService {
      * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#removeUserMetaData(java.lang.Long)
      */
     @Override
-    public void removeUserMetaData(final Long pUserId) {
+    public void removeUserMetaData(final Long pUserId) throws EntityNotFoundException {
         final ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(new ArrayList<>());
         save(user);

@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -21,7 +19,6 @@ abstract class AbstractDeletableState implements IProjectUserTransitions {
     /**
      * Repository managing {@link ProjectUser}s. Autowired by Spring.
      */
-    @Autowired
     private final IProjectUserRepository projectUserRepository;
 
     /**

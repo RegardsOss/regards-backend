@@ -3,15 +3,14 @@
  */
 package fr.cnes.regards.modules.accessrights.service.account;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -25,15 +24,14 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  * @since 1.1-SNAPSHOT
  */
 @Service
-@Transactional
+@Primary
 public class AccountWorkflowManager implements IAccountTransitions {
 
     /**
-     * Factory class for creating the right state (i.e. implementation of the {@link IAccountTransitions}) according to
-     * the account status
+     * Class providing the right state (i.e. implementation of the {@link IAccountTransitions}) according to the account
+     * status
      */
-    @Autowired
-    private final AccountStateFactory accountStateFactory;
+    private final AccountStateProvider accountStateProvider;
 
     /**
      * CRUD repository handling {@link Account}s. Autowired by Spring.
@@ -43,15 +41,15 @@ public class AccountWorkflowManager implements IAccountTransitions {
     /**
      * Constructor
      *
-     * @param pAccountStateFactory
+     * @param pAccountStateProvider
      *            the state factory
      * @param pAccountRepository
      *            the account repository
      */
-    public AccountWorkflowManager(final AccountStateFactory pAccountStateFactory,
+    public AccountWorkflowManager(final AccountStateProvider pAccountStateProvider,
             final IAccountRepository pAccountRepository) {
         super();
-        accountStateFactory = pAccountStateFactory;
+        accountStateProvider = pAccountStateProvider;
         accountRepository = pAccountRepository;
     }
 
@@ -63,10 +61,10 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * accessrights.domain.AccessRequestDTO)
      */
     @Override
-    public void requestAccount(final AccessRequestDTO pDto)
+    public Account requestAccount(final AccessRequestDTO pDto)
             throws ModuleAlreadyExistsException, EntityTransitionForbiddenException {
         // Check existence
-        if (!accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
+        if (accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
             throw new ModuleAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
         }
         // Create the new account
@@ -76,7 +74,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
         Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),
                       "Trying to create an Account with other status than PENDING.");
         // Save
-        accountRepository.save(account);
+        return accountRepository.save(account);
     }
 
     /*
@@ -87,7 +85,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      */
     @Override
     public void makeAdminDecision(final Account pAccount) throws EntityTransitionForbiddenException {
-        accountStateFactory.createState(pAccount).makeAdminDecision(pAccount);
+        accountStateProvider.getState(pAccount).makeAdminDecision(pAccount);
     }
 
     /*
@@ -99,7 +97,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      */
     @Override
     public void emailValidation(final Account pAccount) throws EntityTransitionForbiddenException {
-        accountStateFactory.createState(pAccount).emailValidation(pAccount);
+        accountStateProvider.getState(pAccount).emailValidation(pAccount);
     }
 
     /*
@@ -111,7 +109,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      */
     @Override
     public void lockAccount(final Account pAccount) throws EntityTransitionForbiddenException {
-        accountStateFactory.createState(pAccount).lockAccount(pAccount);
+        accountStateProvider.getState(pAccount).lockAccount(pAccount);
     }
 
     /*
@@ -124,7 +122,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
     @Override
     public void unlockAccount(final Account pAccount, final String pUnlockCode)
             throws EntityTransitionForbiddenException, InvalidValueException {
-        accountStateFactory.createState(pAccount).unlockAccount(pAccount, pUnlockCode);
+        accountStateProvider.getState(pAccount).unlockAccount(pAccount, pUnlockCode);
     }
 
     /*
@@ -136,7 +134,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      */
     @Override
     public void inactiveAccount(final Account pAccount) throws EntityTransitionForbiddenException {
-        accountStateFactory.createState(pAccount).inactiveAccount(pAccount);
+        accountStateProvider.getState(pAccount).inactiveAccount(pAccount);
     }
 
     /*
@@ -148,7 +146,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      */
     @Override
     public void activeAccount(final Account pAccount) throws EntityTransitionForbiddenException {
-        accountStateFactory.createState(pAccount).activeAccount(pAccount);
+        accountStateProvider.getState(pAccount).activeAccount(pAccount);
     }
 
     /*
@@ -159,7 +157,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      */
     @Override
     public void delete(final Account pAccount) throws ModuleException {
-        accountStateFactory.createState(pAccount).delete(pAccount);
+        accountStateProvider.getState(pAccount).delete(pAccount);
     }
 
 }

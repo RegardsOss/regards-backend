@@ -1,10 +1,19 @@
 package fr.cnes.regards.modules.accessrights.domain;
 
 import java.util.List;
+import java.util.Optional;
 
+import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
+/**
+ * Dto class wrapping data required for both account and project user creation.
+ *
+ * @author Xavier-Alexandre Brochard
+ */
 public class AccessRequestDTO {
 
     /**
@@ -41,6 +50,48 @@ public class AccessRequestDTO {
      * The role name
      */
     private String roleName;
+
+    /**
+     * Default constructor
+     */
+    public AccessRequestDTO() {
+        super();
+    }
+
+    /**
+     * Create a dto from the passed account
+     *
+     * @param pAccount
+     *            the account containing values
+     */
+    public AccessRequestDTO(final Account pAccount) {
+        super();
+        email = pAccount.getEmail();
+        firstName = pAccount.getFirstName();
+        lastName = pAccount.getLastName();
+        password = pAccount.getPassword();
+    }
+
+    /**
+     * Create a dto from the passed project user
+     *
+     * @param pProjectUser
+     *            the project user containing values
+     */
+    public AccessRequestDTO(final ProjectUser pProjectUser) {
+        email = pProjectUser.getEmail();
+        metaData = pProjectUser.getMetaData();
+        permissions = pProjectUser.getPermissions();
+        final Optional<Role> role = Optional.ofNullable(pProjectUser.getRole());
+        roleName = role.orElse(null).getName();
+    }
+
+    /**
+     * @return an account with values from the dto
+     */
+    public Account toAccount() {
+        return new Account(email, firstName, lastName, password);
+    }
 
     /**
      * @return the email

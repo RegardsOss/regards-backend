@@ -32,18 +32,6 @@ public class AccessDeniedState extends AbstractDeletableState {
     /*
      * (non-Javadoc)
      *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserTransitions#denyAccess(fr.cnes.regards.
-     * modules.accessrights.domain.projects.ProjectUser)
-     */
-    @Override
-    public void denyAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
-        pProjectUser.setStatus(UserStatus.ACCESS_DENIED);
-        getProjectUserRepository().save(pProjectUser);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see
      * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserTransitions#grantAccess(fr.cnes.regards.
      * modules.accessrights.domain.projects.ProjectUser)

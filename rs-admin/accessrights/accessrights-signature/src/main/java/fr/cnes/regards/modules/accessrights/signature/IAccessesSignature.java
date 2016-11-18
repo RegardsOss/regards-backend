@@ -16,9 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -44,12 +45,14 @@ public interface IAccessesSignature {
      *             When a project user with passed <code>email</code> already exists
      * @throws EntityTransitionForbiddenException
      *             TODO
+     * @throws ModuleEntityNotFoundException
+     *             When no role with passed name could be found
      * @return the passed Dto
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     ResponseEntity<Resource<AccessRequestDTO>> requestAccess(@Valid @RequestBody AccessRequestDTO pAccessRequest)
-            throws ModuleAlreadyExistsException, EntityTransitionForbiddenException, ModuleEntityNotFoundException;
+            throws EntityTransitionForbiddenException, ModuleAlreadyExistsException, ModuleEntityNotFoundException;
 
     /**
      * Grants access to the project user
@@ -61,17 +64,19 @@ public interface IAccessesSignature {
      * @throws EntityTransitionForbiddenException
      *             when the project user has a <code>status</code> not allowing access granting
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT)
     ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId)
-            throws OperationNotSupportedException, ModuleEntityNotFoundException, EntityTransitionForbiddenException;
+            throws OperationNotSupportedException, ModuleEntityNotFoundException, EntityTransitionForbiddenException,
+            EntityNotFoundException;
 
     /**
      * Denies access to the project user
      *
      * @param pAccessId
      *            the project user id
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             when no project user of passed <code>id</code> could be found
      * @throws EntityTransitionForbiddenException
      *             when the project user has a <code>status</code> not allowing access denial
@@ -80,14 +85,14 @@ public interface IAccessesSignature {
     @ResponseBody
     @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT)
     ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId)
-            throws ModuleEntityNotFoundException, EntityTransitionForbiddenException;
+            throws EntityTransitionForbiddenException, EntityNotFoundException;
 
     /**
      * Rejects the access request
      *
      * @param pAccessId
      *            the project user id
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             when no project user of passed <code>id</code> could be found
      * @throws EntityTransitionForbiddenException
      *             when the project user has a <code>status</code> not allowing access rejection
@@ -96,7 +101,7 @@ public interface IAccessesSignature {
     @ResponseBody
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE)
     ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId)
-            throws ModuleEntityNotFoundException, EntityTransitionForbiddenException;
+            throws EntityTransitionForbiddenException, EntityNotFoundException;
 
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.GET)

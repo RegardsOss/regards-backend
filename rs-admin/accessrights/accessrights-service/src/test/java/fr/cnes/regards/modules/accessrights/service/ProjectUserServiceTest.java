@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -164,13 +166,16 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to retrieve a specific user without exposing hidden meta data.
+     *
+     * @throws EntityNotFoundException
+     *             When no user with passed id could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system allows to retrieve a specific user without exposing hidden meta data.")
-    public void retrieveUser() {
+    public void retrieveUser() throws EntityNotFoundException {
         // Define user as in db
         final MetaData metaData0 = new MetaData();
         metaData0.setVisibility(UserVisibility.HIDDEN);
@@ -247,7 +252,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system fails when trying to retrieve a user with unknown email.")
     public void retrieveOneByEmailNotFound() throws ModuleEntityNotFoundException {
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(null);
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
 
         // Trigger the exception
         projectUserService.retrieveOneByEmail(EMAIL);
@@ -283,6 +288,36 @@ public class ProjectUserServiceTest {
 
         // Check that the repository's method was called with right arguments
         Mockito.verify(projectUserRepository).findOneByEmail(EMAIL);
+    }
+
+    /**
+     * Check that the system allows to retrieve all access requests for a project.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_310")
+    @Purpose("Check that the system allows to retrieve all access requests for a project.")
+    public void retrieveAccessRequestList() {
+        // Populate all projects users (which can be access requests or not)
+        final List<ProjectUser> accessRequests = new ArrayList<>();
+        accessRequests.add(new ProjectUser(null, null, null, null));
+        accessRequests.add(new ProjectUser(null, null, null, null));
+        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(accessRequests);
+
+        try (final Stream<ProjectUser> stream = accessRequests.stream()) {
+            // Prepare the list of expect values
+            final List<ProjectUser> expected = stream.filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS))
+                    .collect(Collectors.toList());
+
+            // Retrieve actual values
+            final List<ProjectUser> actual = projectUserService.retrieveAccessRequestList();
+
+            // Lists must be equal
+            Assert.assertEquals(expected, actual);
+
+            // Check that the repository's method was called with right arguments
+            Mockito.verify(projectUserRepository).findByStatus(UserStatus.WAITING_ACCESS);
+
+        }
     }
 
     /**
@@ -352,22 +387,6 @@ public class ProjectUserServiceTest {
     }
 
     /**
-     * Check that the system allows to delete a project user.
-     */
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_300")
-    @Requirement("REGARDS_DSL_ADM_ADM_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_320")
-    @Purpose("Check that the system allows to delete a project user.")
-    public void removeUser() {
-        // Try to update a user
-        projectUserService.removeUser(ID);
-
-        // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).delete(ID);
-    }
-
-    /**
      * Check that the system fails when trying to override a not exisiting user's access rights.
      *
      * @throws EntityNotFoundException
@@ -379,7 +398,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system fails when trying to override a not exisiting user's access rights.")
     public void updateUserAccessRightsEntityNotFound() throws ModuleEntityNotFoundException {
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(null);
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
 
         // Trigger the exception
         projectUserService.updateUserAccessRights(EMAIL, new ArrayList<>());

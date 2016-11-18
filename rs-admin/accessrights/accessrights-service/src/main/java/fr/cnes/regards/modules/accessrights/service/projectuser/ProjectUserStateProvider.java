@@ -10,13 +10,13 @@ import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
- * Factory class returning the right {@link IProjectUserTransitions} for the passed {@link ProjectUser} according to its
+ * Class providing the right {@link IProjectUserTransitions} for the passed {@link ProjectUser} according to its
  * <code>state</code> field.
  *
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class ProjectUserStateFactory {
+public class ProjectUserStateProvider {
 
     /**
      * Waiting access state

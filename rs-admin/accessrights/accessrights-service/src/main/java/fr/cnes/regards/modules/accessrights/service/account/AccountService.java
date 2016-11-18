@@ -12,16 +12,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserTransitions;
 
 /**
- * {@link IProjectUserTransitions} implementation.
+ * {@link IAccountService} implementation.
  *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
@@ -48,58 +46,61 @@ public class AccountService implements IAccountService {
     private final IAccountRepository accountRepository;
 
     /**
-     * Factory class for retrieving an account's state from its status
-     */
-    private final AccountStateFactory accountStateFactory;
-
-    /**
      * Creates a new instance with passed deps
      *
      * @param pAccountRepository
      *            The account repository
-     * @param pAccountStateFactory
-     *            The account state factory
      */
-    public AccountService(final IAccountRepository pAccountRepository, final AccountStateFactory pAccountStateFactory) {
+    public AccountService(final IAccountRepository pAccountRepository) {
         super();
         accountRepository = pAccountRepository;
-        accountStateFactory = pAccountStateFactory;
     }
 
     @PostConstruct
-    public void initialize() throws AlreadyExistingException {
+    public void initialize() {
         if (!this.existAccount(rootAdminUserLogin)) {
-            createAccount(new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
+            accountRepository.save(new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
                     rootAdminUserPassword));
         }
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#retrieveAccountList()
+     */
     @Override
     public List<Account> retrieveAccountList() {
         return accountRepository.findAll();
     }
 
-    @Override
-    public Account createAccount(final Account pNewAccount) throws AlreadyExistingException {
-        if (existAccount(pNewAccount.getEmail())) {
-            throw new AlreadyExistingException(pNewAccount.getEmail());
-        }
-        final Account toCreate = new Account(pNewAccount.getEmail(), pNewAccount.getFirstName(),
-                pNewAccount.getLastName(), pNewAccount.getPassword());
-        return accountRepository.save(toCreate);
-    }
-
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#existAccount(java.lang.Long)
+     */
     @Override
     public boolean existAccount(final Long pId) {
         return accountRepository.exists(pId);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#retrieveAccount(java.lang.Long)
+     */
     @Override
     public Account retrieveAccount(final Long pAccountId) throws ModuleEntityNotFoundException {
         final Optional<Account> account = Optional.ofNullable(accountRepository.findOne(pAccountId));
         return account.orElseThrow(() -> new ModuleEntityNotFoundException(pAccountId.toString(), Account.class));
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#updateAccount(java.lang.Long,
+     * fr.cnes.regards.modules.accessrights.domain.instance.Account)
+     */
     @Override
     public void updateAccount(final Long pAccountId, final Account pUpdatedAccount)
             throws ModuleEntityNotFoundException, InvalidValueException {
@@ -112,6 +113,12 @@ public class AccountService implements IAccountService {
         accountRepository.save(pUpdatedAccount);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#sendAccountCode(java.lang.String,
+     * fr.cnes.regards.modules.accessrights.domain.CodeType)
+     */
     @Override
     public void sendAccountCode(final String pEmail, final CodeType pType) throws ModuleEntityNotFoundException {
         if (!existAccount(pEmail)) {
@@ -121,6 +128,12 @@ public class AccountService implements IAccountService {
         // TODO: sendEmail(pEmail,account.getCode();
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#changeAccountPassword(java.lang.Long,
+     * java.lang.String, java.lang.String)
+     */
     @Override
     public void changeAccountPassword(final Long pAccountId, final String pResetCode, final String pNewPassword)
             throws ModuleEntityNotFoundException, InvalidValueException {
@@ -130,12 +143,24 @@ public class AccountService implements IAccountService {
         accountRepository.save(account);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.service.account.IAccountService#retrieveAccountByEmail(java.lang.String)
+     */
     @Override
     public Account retrieveAccountByEmail(final String pEmail) throws ModuleEntityNotFoundException {
         return accountRepository.findOneByEmail(pEmail)
                 .orElseThrow(() -> new ModuleEntityNotFoundException(pEmail, Account.class));
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#validatePassword(java.lang.String,
+     * java.lang.String)
+     */
     @Override
     public boolean validatePassword(final String pEmail, final String pPassword) throws ModuleEntityNotFoundException {
         return accountRepository.findOneByEmail(pEmail)
@@ -143,6 +168,11 @@ public class AccountService implements IAccountService {
                 .equals(pPassword);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#existAccount(java.lang.String)
+     */
     @Override
     public boolean existAccount(final String pEmail) {
         return accountRepository.findOneByEmail(pEmail).isPresent();
