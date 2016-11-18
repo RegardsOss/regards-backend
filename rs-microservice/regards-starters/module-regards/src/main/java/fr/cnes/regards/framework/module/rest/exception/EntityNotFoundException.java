@@ -23,17 +23,11 @@ public class EntityNotFoundException extends EntityException {
      */
     private static final long serialVersionUID = -7255117056559968468L;
 
-    /**
-     *
-     * Constructor
-     *
-     * @param pEntityIdentifier
-     *            Entity identifier
-     * @param pEntityClass
-     *            Entity class
-     * @since 1.0-SNAPSHOT
-     */
     public EntityNotFoundException(final String pEntityIdentifier, final Class<?> pEntityClass) {
         super(String.format("Entity %s with id : %s doesn't exists", pEntityClass.getName(), pEntityIdentifier));
+    }
+
+    public EntityNotFoundException(final Long pEntityIdentifier, final Class<?> pEntityClass) {
+        this(String.valueOf(pEntityIdentifier), pEntityClass);
     }
 }
