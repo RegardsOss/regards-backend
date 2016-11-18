@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.role;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -118,10 +119,11 @@ public class RoleService implements IRoleService {
 
         // Define a consumer creating (if needed) all default roles on current tenant
         final Consumer<? super String> createDefaultRolesOnTenant = t -> {
-            LOG.info("CREATING DEFAULT ROLES FOR TENANT " + t);
             try (Stream<Role> rolesStream = defaultRoles.stream()) {
+                // Check if public role already exists
+                final Optional<Role> publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString());
                 rolesStream.filter(r -> !existByName(r.getName())).forEach(role -> {
-                    LOG.info("CREATING DEFAULT ROLE " + role.getName());
+                    publicRole.ifPresent(pub -> role.setParentRole(pub));
                     roleRepository.save(role);
                 });
             }
