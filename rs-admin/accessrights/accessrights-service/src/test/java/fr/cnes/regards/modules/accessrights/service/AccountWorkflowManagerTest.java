@@ -161,7 +161,7 @@ public class AccountWorkflowManagerTest {
      */
     @Test(expected = EntityTransitionForbiddenException.class)
     @Purpose("Check that the system prevents from deleting an account for certain status (ACCEPTED...).")
-    public void removeAccountWrongStatus() throws ModuleException {
+    public void removeAccount_wrongStatus() throws ModuleException {
         // Mock
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);

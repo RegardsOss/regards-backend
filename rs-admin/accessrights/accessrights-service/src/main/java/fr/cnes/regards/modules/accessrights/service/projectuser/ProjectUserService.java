@@ -52,11 +52,6 @@ public class ProjectUserService implements IProjectUserService {
     private final IRoleService roleService;
 
     /**
-     * Workflow manager of the project users
-     */
-    private final ProjectUserWorkflowManager projectUserWorkflowManager;
-
-    /**
      * A filter on meta data to keep visible ones only
      */
     private final Predicate<? super MetaData> keepVisibleMetaData = m -> !UserVisibility.HIDDEN
@@ -76,17 +71,13 @@ public class ProjectUserService implements IProjectUserService {
      *            The role service
      * @param pInstanceAdminUserEmail
      *            The instance admin user email
-     * @param pProjectUserWorkflowManager
-     *            The workflow manager for project users
      */
     public ProjectUserService(final IProjectUserRepository pProjectUserRepository, final IRoleService pRoleService,
-            @Value("${regards.accounts.root.user.login}") final String pInstanceAdminUserEmail,
-            final ProjectUserWorkflowManager pProjectUserWorkflowManager) {
+            @Value("${regards.accounts.root.user.login}") final String pInstanceAdminUserEmail) {
         super();
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         instanceAdminUserEmail = pInstanceAdminUserEmail;
-        projectUserWorkflowManager = pProjectUserWorkflowManager;
     }
 
     /*
@@ -193,10 +184,11 @@ public class ProjectUserService implements IProjectUserService {
         final ProjectUser user = projectUserRepository.findOneByEmail(pLogin)
                 .orElseThrow(() -> new ModuleEntityNotFoundException(pLogin, ProjectUser.class));
 
-        try (Stream<ResourcesAccess> previous = user.getPermissions().stream();
-                Stream<ResourcesAccess> updated = pUpdatedUserAccessRights.stream()) {
-            user.setPermissions(Stream.concat(updated, previous)
-                    .filter(RegardsStreamUtils.distinctByKey(r -> r.getId())).collect(Collectors.toList()));
+        try (final Stream<ResourcesAccess> previous = user.getPermissions().stream();
+                final Stream<ResourcesAccess> updated = pUpdatedUserAccessRights.stream();
+                final Stream<ResourcesAccess> merged = Stream.concat(updated, previous)) {
+            user.setPermissions(merged.filter(RegardsStreamUtils.distinctByKey(r -> r.getId()))
+                    .collect(Collectors.toList()));
         }
 
         save(user);

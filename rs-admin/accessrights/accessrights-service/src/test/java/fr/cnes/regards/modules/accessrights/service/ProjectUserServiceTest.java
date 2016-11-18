@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -97,11 +96,6 @@ public class ProjectUserServiceTest {
     private IProjectUserService projectUserService;
 
     /**
-     * The project users workflow manager
-     */
-    private ProjectUserWorkflowManager projectUserWorkflowManager;
-
-    /**
      * Mocked CRUD repository managing {@link ProjectUser}s
      */
     private IProjectUserRepository projectUserRepository;
@@ -133,8 +127,7 @@ public class ProjectUserServiceTest {
         roleService = Mockito.mock(IRoleService.class);
 
         // Construct the tested service
-        projectUserService = new ProjectUserService(projectUserRepository, roleService, "instance_admin@regards.fr",
-                projectUserWorkflowManager);
+        projectUserService = new ProjectUserService(projectUserRepository, roleService, "instance_admin@regards.fr");
     }
 
     /**

@@ -135,6 +135,7 @@ public class ProjectUser implements IIdentifiable<Long> {
         role = pRole;
         permissions = pPermissions;
         metaData = pMetaData;
+        status = UserStatus.WAITING_ACCESS;
     }
 
     /**

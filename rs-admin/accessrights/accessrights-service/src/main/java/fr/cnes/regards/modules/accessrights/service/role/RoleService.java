@@ -123,7 +123,7 @@ public class RoleService implements IRoleService {
                 // Check if public role already exists
                 final Optional<Role> publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString());
                 rolesStream.filter(r -> !existByName(r.getName())).forEach(role -> {
-                    publicRole.ifPresent(pub -> role.setParentRole(pub));
+                    publicRole.ifPresent(role::setParentRole);
                     roleRepository.save(role);
                 });
             }
@@ -212,11 +212,12 @@ public class RoleService implements IRoleService {
         }
         final Role role = roleRepository.findOne(pRoleId);
         final List<ResourcesAccess> permissions = role.getPermissions();
+        final Predicate<ResourcesAccess> filter = RegardsStreamUtils.distinctByKey(r -> r.getId());
 
         try (final Stream<ResourcesAccess> previous = permissions.stream();
-                final Stream<ResourcesAccess> toMerge = pResourcesAccessList.stream()) {
-            final Predicate<ResourcesAccess> filter = RegardsStreamUtils.distinctByKey(r -> r.getId());
-            role.setPermissions(Stream.concat(toMerge, previous).filter(filter).collect(Collectors.toList()));
+                final Stream<ResourcesAccess> toMerge = pResourcesAccessList.stream();
+                final Stream<ResourcesAccess> merged = Stream.concat(toMerge, previous)) {
+            role.setPermissions(merged.filter(filter).collect(Collectors.toList()));
             roleRepository.save(role);
         }
 

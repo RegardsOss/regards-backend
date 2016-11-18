@@ -91,7 +91,7 @@ public class AccessSettingsServiceTest {
     @Test(expected = ModuleEntityNotFoundException.class)
     @Requirement("?")
     @Purpose("Check that the system fails when trying to update a non existing access settings.")
-    public void updateEntityNotFound() throws ModuleEntityNotFoundException {
+    public void update_entityNotFound() throws ModuleEntityNotFoundException {
         // Define expected
         final Long id = 99L;
         final AccessSettings settings = new AccessSettings();

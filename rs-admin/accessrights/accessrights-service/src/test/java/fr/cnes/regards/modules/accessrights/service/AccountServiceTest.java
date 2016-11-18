@@ -114,7 +114,7 @@ public class AccountServiceTest {
      */
     @Test(expected = ModuleEntityNotFoundException.class)
     @Purpose("Check that the system allows to create a new account.")
-    public void updateAccountNotFound() throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateAccount_notFound() throws ModuleEntityNotFoundException, InvalidValueException {
         // Prepare account
         account.setId(ID);
 
@@ -135,7 +135,7 @@ public class AccountServiceTest {
      */
     @Test(expected = InvalidValueException.class)
     @Purpose("Check that the system fails when trying to update a account with different id thant the passed one.")
-    public void updateAccountDifferentId() throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateAccount_differentId() throws ModuleEntityNotFoundException, InvalidValueException {
         // Prepare the account
         account.setId(ID);
 
