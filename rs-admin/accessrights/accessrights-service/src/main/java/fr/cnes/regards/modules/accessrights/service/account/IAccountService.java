@@ -16,7 +16,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  *
  * @author CS SI
  */
-public interface IAccountService extends IAccountState {
+public interface IAccountService extends IAccountTransitions {
 
     /**
      * Retrieve the list of all {@link Account}s.

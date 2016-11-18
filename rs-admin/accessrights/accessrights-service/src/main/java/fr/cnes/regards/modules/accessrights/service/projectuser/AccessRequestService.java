@@ -3,13 +3,11 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
-import java.util.List;
-import java.util.stream.Stream;
-
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -24,6 +22,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @author CS SI
  */
 @Service
+@Deprecated
 public class AccessRequestService implements IAccessRequestService {
 
     /**
@@ -60,20 +59,17 @@ public class AccessRequestService implements IAccessRequestService {
     }
 
     @Override
-    public List<ProjectUser> retrieveAccessRequestList() {
-        return projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS);
-    }
-
-    @Override
-    public AccessRequestDTO requestAccess(final AccessRequestDTO pDto) throws AlreadyExistingException {
+    public AccessRequestDTO requestAccess(final AccessRequestDTO pDto)
+            throws AlreadyExistingException, ModuleEntityNotFoundException {
         if (existsByEmail(pDto.getEmail())) {
             throw new AlreadyExistingException(
                     pDto.getEmail() + " already has made an access request for this project");
         }
 
         // If no role provided, set to default role
-        if (pDto.getRole() == null) {
-            pDto.setRole(roleService.getDefaultRole());
+        if (pDto.getRoleName() == null) {
+        } else {
+            pDto.setRoleName(DefaultRole.PUBLIC.toString());
         }
 
         // If no associated account
@@ -90,7 +86,7 @@ public class AccessRequestService implements IAccessRequestService {
         final ProjectUser projectUser = new ProjectUser();
         projectUser.setEmail(pDto.getEmail());
         projectUser.setPermissions(pDto.getPermissions());
-        projectUser.setRole(pDto.getRole());
+        projectUser.setRole(roleService.retrieveRole(pDto.getRoleName()));
         projectUser.setMetaData(pDto.getMetaData());
         projectUser.setStatus(UserStatus.WAITING_ACCESS);
 
@@ -124,9 +120,10 @@ public class AccessRequestService implements IAccessRequestService {
 
     @Override
     public boolean exists(final Long pId) {
-        try (Stream<ProjectUser> stream = retrieveAccessRequestList().stream()) {
-            return stream.filter(p -> p.getId().equals(pId)).findFirst().isPresent();
-        }
+        // try (Stream<ProjectUser> stream = retrieveAccessRequestList().stream()) {
+        // return stream.filter(p -> p.getId().equals(pId)).findFirst().isPresent();
+        // }
+        return false;
     }
 
     /*
@@ -136,9 +133,10 @@ public class AccessRequestService implements IAccessRequestService {
      */
     @Override
     public boolean existsByEmail(final String pEmail) {
-        try (Stream<ProjectUser> stream = retrieveAccessRequestList().stream()) {
-            return stream.filter(p -> p.getEmail().equals(pEmail)).findFirst().isPresent();
-        }
+        // try (Stream<ProjectUser> stream = retrieveAccessRequestList().stream()) {
+        // return stream.filter(p -> p.getEmail().equals(pEmail)).findFirst().isPresent();
+        // }
+        return false;
     }
 
     /**
@@ -152,10 +150,11 @@ public class AccessRequestService implements IAccessRequestService {
      *             Thrown when a project user with passed id could not be found
      */
     private ProjectUser findById(final Long pId) throws ModuleEntityNotFoundException {
-        try (Stream<ProjectUser> stream = retrieveAccessRequestList().stream()) {
-            return stream.filter(p -> p.getId() == pId).findFirst()
-                    .orElseThrow(() -> new ModuleEntityNotFoundException(pId.toString(), ProjectUser.class));
-        }
+        // try (Stream<ProjectUser> stream = retrieveAccessRequestList().stream()) {
+        // return stream.filter(p -> p.getId() == pId).findFirst()
+        // .orElseThrow(() -> new ModuleEntityNotFoundException(pId.toString(), ProjectUser.class));
+        // }
+        return null;
     }
 
 }

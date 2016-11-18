@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleForbiddenTransitionException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -29,7 +30,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
  *
  * @author Xavier-Alexandre Brochard
  */
-abstract class AbstractDeletableState implements IAccountState {
+abstract class AbstractDeletableState implements IAccountTransitions {
 
     /**
      * Class logger
@@ -91,8 +92,8 @@ abstract class AbstractDeletableState implements IAccountState {
                 doDelete(pAccount);
                 break;
             default:
-                throw new IllegalActionForAccountStatusException(pAccount,
-                        Thread.currentThread().getStackTrace()[1].getMethodName());
+                throw new ModuleForbiddenTransitionException(pAccount.getId().toString(), ProjectUser.class,
+                        pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
         }
     }
 

@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -33,6 +34,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -93,6 +95,11 @@ public class ProjectUserServiceTest {
     private IProjectUserService projectUserService;
 
     /**
+     * The project users workflow manager
+     */
+    private ProjectUserWorkflowManager projectUserWorkflowManager;
+
+    /**
      * Mocked CRUD repository managing {@link ProjectUser}s
      */
     private IProjectUserRepository projectUserRepository;
@@ -124,7 +131,8 @@ public class ProjectUserServiceTest {
         roleService = Mockito.mock(IRoleService.class);
 
         // Construct the tested service
-        projectUserService = new ProjectUserService(projectUserRepository, roleService, "instance_admin@regards.fr");
+        projectUserService = new ProjectUserService(projectUserRepository, roleService, "instance_admin@regards.fr",
+                projectUserWorkflowManager);
     }
 
     /**
@@ -214,7 +222,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to retrieve a specific user by email.")
     public void retrieveOneByEmail() throws ModuleEntityNotFoundException {
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(projectUser);
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Retrieve actual value
         final ProjectUser actual = projectUserService.retrieveOneByEmail(EMAIL);
@@ -247,13 +255,16 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to retrieve the current logged user.
+     *
+     * @throws ModuleEntityNotFoundException
+     *             thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system allows to retrieve the current logged user.")
-    public void retrieveCurrentUser() {
+    public void retrieveCurrentUser() throws ModuleEntityNotFoundException {
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
         final UserDetails details = new UserDetails();
@@ -262,7 +273,7 @@ public class ProjectUserServiceTest {
         SecurityContextHolder.getContext().setAuthentication(jwtAuth);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(projectUser);
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Retrieve actual value
         final ProjectUser actual = projectUserService.retrieveCurrentUser();
@@ -386,7 +397,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to override role's access rights for a user.")
     public void updateUserAccessRights() throws ModuleEntityNotFoundException {
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(projectUser);
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Define updated permissions
         final List<ResourcesAccess> input = new ArrayList<>();
@@ -439,7 +450,7 @@ public class ProjectUserServiceTest {
         final Role borrowedRole = new Role();
 
         // Mock the repository
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(projectUser);
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
         Mockito.when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
         // Make sure the borrowed role is not hierarchically inferior
         Mockito.when(roleService.isHierarchicallyInferior(borrowedRole, projectUser.getRole())).thenReturn(false);
@@ -475,7 +486,7 @@ public class ProjectUserServiceTest {
         borrowedRole.setPermissions(borrowedRolePermissions);
 
         // Mock the repository
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(projectUser);
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
         Mockito.when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
         Mockito.when(roleService.retrieveRoleResourcesAccessList(borrowedRoleId)).thenReturn(borrowedRolePermissions);
 
@@ -519,7 +530,7 @@ public class ProjectUserServiceTest {
         projectUser.getRole().setPermissions(permissions);
 
         // Mock the repository
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(projectUser);
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
         Mockito.when(roleService.retrieveRoleResourcesAccessList(projectUser.getRole().getId()))
                 .thenReturn(permissions);
 

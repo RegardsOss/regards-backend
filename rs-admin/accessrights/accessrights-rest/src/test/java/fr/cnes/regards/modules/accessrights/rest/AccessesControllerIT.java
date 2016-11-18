@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.accessrights.rest;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +18,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessRequestService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
 /**
  *
@@ -98,10 +97,10 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
     private String errorMessage;
 
     /**
-     * The autowired {@link IAccessRequestService} implementation.
+     * The autowired {@link IProjectUserService} implementation.
      */
     @Autowired
-    private IAccessRequestService accessRequestService;
+    private IProjectUserService projectUserService;
 
     /**
      * Do some setup before each test
@@ -156,7 +155,7 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
         newAccessRequest.setFirstName("Firstname");
         newAccessRequest.setLastName("Lastname");
         newAccessRequest.setPassword("password");
-        newAccessRequest.setRole(new Role());
+        newAccessRequest.setRoleName(DefaultRole.PUBLIC.toString());
         newAccessRequest.setPermissions(new ArrayList<>());
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -176,8 +175,7 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to validate a registration request.")
     public void acceptAccessRequest() {
-        final Long accessRequestId = accessRequestService.retrieveAccessRequestList().get(0).getId();
-        Assert.assertFalse(!accessRequestService.exists(accessRequestId));
+        final Long accessRequestId = projectUserService.retrieveAccessRequestList().get(0).getId();
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -202,7 +200,7 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to deny a registration request.")
     public void denyAccessRequest() {
-        final Long accessRequestId = accessRequestService.retrieveAccessRequestList().get(0).getId();
+        final Long accessRequestId = projectUserService.retrieveAccessRequestList().get(0).getId();
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -229,7 +227,7 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
         expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDelete(apiAccessId, jwt, expectations, errorMessage, Long.MAX_VALUE);
 
-        final Long accessRequestId = accessRequestService.retrieveAccessRequestList().get(0).getId();
+        final Long accessRequestId = projectUserService.retrieveAccessRequestList().get(0).getId();
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());

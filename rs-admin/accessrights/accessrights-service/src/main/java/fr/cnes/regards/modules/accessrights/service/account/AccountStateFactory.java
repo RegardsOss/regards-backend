@@ -10,7 +10,7 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
- * Factory class returning the right {@link IAccountState} for the passed {@link Account} according to its
+ * Factory class returning the right {@link IAccountTransitions} for the passed {@link Account} according to its
  * <code>state</code> field.
  *
  * @author Xavier-Alexandre Brochard
@@ -55,8 +55,8 @@ public class AccountStateFactory {
      *            The account status
      * @return the account state object
      */
-    public IAccountState createState(final AccountStatus pStatus) {
-        final IAccountState state;
+    public IAccountTransitions createState(final AccountStatus pStatus) {
+        final IAccountTransitions state;
         switch (pStatus) {
             case PENDING:
                 state = pendingState;
@@ -87,7 +87,7 @@ public class AccountStateFactory {
      *            The account
      * @return the account state object
      */
-    public IAccountState createState(final Account pAccount) {
+    public IAccountTransitions createState(final Account pAccount) {
         return createState(pAccount.getStatus());
     }
 

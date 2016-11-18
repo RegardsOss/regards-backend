@@ -7,6 +7,7 @@ import java.util.List;
 
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -17,7 +18,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @author CS SI
  *
  */
-public interface IProjectUserService {
+public interface IProjectUserService extends IProjectUserTransitions {
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
@@ -50,8 +51,11 @@ public interface IProjectUserService {
      * Retrieve the current {@link ProjectUser}.
      *
      * @return The project user
+     * @throws ModuleEntityNotFoundException
+     *             Thrown when no {@link ProjectUser} with <code>email</code> equal to the one set in current tenant
+     *             could be found
      */
-    ProjectUser retrieveCurrentUser();
+    ProjectUser retrieveCurrentUser() throws ModuleEntityNotFoundException;
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.
@@ -166,4 +170,12 @@ public interface IProjectUserService {
      * @return <code>True</code> exists, else <code>False</code>
      */
     boolean existUser(String pLogin);
+
+    /**
+     * Retrieve all access requests.
+     *
+     * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
+     */
+    List<ProjectUser> retrieveAccessRequestList();
+
 }

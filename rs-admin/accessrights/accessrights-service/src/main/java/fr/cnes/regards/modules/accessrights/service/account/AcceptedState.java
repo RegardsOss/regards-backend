@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.account;
 
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleForbiddenTransitionException;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
@@ -13,10 +14,10 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class AcceptedState implements IAccountState {
+public class AcceptedState implements IAccountTransitions {
 
     @Override
-    public void emailValidation(final Account pAccount) throws IllegalActionForAccountStatusException {
+    public void emailValidation(final Account pAccount) throws ModuleForbiddenTransitionException {
         // TODO Auto-generated method stub
     }
 

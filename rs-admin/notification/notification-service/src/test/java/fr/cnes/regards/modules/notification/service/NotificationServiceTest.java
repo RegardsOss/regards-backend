@@ -214,11 +214,13 @@ public class NotificationServiceTest {
 
     /**
      * Check that the system allows to retrieve all notifications.
+     * 
+     * @throws ModuleEntityNotFoundException
      */
     @Test
     @Requirement("?")
     @Purpose("Check that the system allows to retrieve all notifications.")
-    public void retrieveNotifications() {
+    public void retrieveNotifications() throws ModuleEntityNotFoundException {
         // Define expected
         final List<Notification> expected = new ArrayList<>();
         expected.add(new Notification());

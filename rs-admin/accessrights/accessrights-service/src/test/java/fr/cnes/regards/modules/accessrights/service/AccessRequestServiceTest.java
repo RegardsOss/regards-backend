@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.AccessRequestService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -82,6 +83,11 @@ public class AccessRequestServiceTest {
     private IProjectUserRepository projectUserRepository;
 
     /**
+     * Mock repository of tested service
+     */
+    private IProjectUserService projectUserService;
+
+    /**
      * Mock account servvice
      */
     private IAccountService accountService;
@@ -120,7 +126,7 @@ public class AccessRequestServiceTest {
         dto.setMetaData(META_DATA);
         dto.setPassword(PASSOWRD);
         dto.setPermissions(PERMISSIONS);
-        dto.setRole(ROLE);
+        dto.setRoleName(ROLE.getName());
 
         // Prepare the project user we expect to be created by the access request
         projectUser = new ProjectUser();
@@ -150,7 +156,7 @@ public class AccessRequestServiceTest {
                     .collect(Collectors.toList());
 
             // Retrieve actual values
-            final List<ProjectUser> actual = accessRequestService.retrieveAccessRequestList();
+            final List<ProjectUser> actual = projectUserService.retrieveAccessRequestList();
 
             // Lists must be equal
             Assert.assertEquals(expected, actual);
@@ -166,11 +172,12 @@ public class AccessRequestServiceTest {
      *
      * @throws AlreadyExistingException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
+     * @throws ModuleEntityNotFoundException
      */
     @Test(expected = AlreadyExistingException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system fails when receiving a duplicate access request.")
-    public void requestAccessAlreadyExisting() throws AlreadyExistingException {
+    public void requestAccessAlreadyExisting() throws AlreadyExistingException, ModuleEntityNotFoundException {
         // Prepare the duplicate
         final List<ProjectUser> projectUsers = new ArrayList<>();
         projectUsers.add(projectUser);
@@ -189,11 +196,12 @@ public class AccessRequestServiceTest {
      *
      * @throws AlreadyExistingException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
+     * @throws ModuleEntityNotFoundException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system allows the user to request a registration by creating a new project user.")
-    public void requestAccess() throws AlreadyExistingException {
+    public void requestAccess() throws AlreadyExistingException, ModuleEntityNotFoundException {
         // Call the service
         accessRequestService.requestAccess(dto);
 
@@ -207,13 +215,14 @@ public class AccessRequestServiceTest {
      *
      * @throws AlreadyExistingException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
+     * @throws ModuleEntityNotFoundException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system set PUBLIC role as default when requesting access.")
-    public void requestAccessNullRole() throws AlreadyExistingException {
+    public void requestAccessNullRole() throws AlreadyExistingException, ModuleEntityNotFoundException {
         // Prepare the access request
-        dto.setRole(null);
+        dto.setRoleName(null);
 
         // Mock role repository
         final Role publicRole = new Role("Public", null);
@@ -235,11 +244,12 @@ public class AccessRequestServiceTest {
      *
      * @throws AlreadyExistingException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
+     * @throws ModuleEntityNotFoundException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system creates an Account when requesting an access if none already exists.")
-    public void requestAccessNoAccount() throws AlreadyExistingException {
+    public void requestAccessNoAccount() throws AlreadyExistingException, ModuleEntityNotFoundException {
         // Make sure no account exists in order to make the service create a new one
         Mockito.when(accountService.existAccount(EMAIL)).thenReturn(false);
 

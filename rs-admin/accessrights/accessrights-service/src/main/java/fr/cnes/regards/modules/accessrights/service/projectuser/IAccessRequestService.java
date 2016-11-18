@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
-import java.util.List;
-
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
@@ -22,13 +20,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 public interface IAccessRequestService {
 
     /**
-     * Retrieve all access requests.
-     *
-     * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
-     */
-    List<ProjectUser> retrieveAccessRequestList();
-
-    /**
      * Request a new access, that is to say create a new {@link ProjectUser} with <code>status</code>
      * {@link UserStatus#WAITING_ACCESS}.
      *
@@ -38,8 +29,10 @@ public interface IAccessRequestService {
      * @return All passed information
      * @throws AlreadyExistingException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
+     * @throws ModuleEntityNotFoundException
      */
-    AccessRequestDTO requestAccess(AccessRequestDTO pDto) throws AlreadyExistingException;
+    AccessRequestDTO requestAccess(AccessRequestDTO pDto)
+            throws AlreadyExistingException, ModuleEntityNotFoundException;
 
     /**
      * Remove the access request of passed <code>id</code>.

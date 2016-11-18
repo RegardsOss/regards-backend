@@ -17,7 +17,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
  * @since 1.1-SNAPSHOT
  */
 @Component
-public class PendingState implements IAccountState {
+public class PendingState implements IAccountTransitions {
 
     /**
      * Account Repository. Autowired by Spring.

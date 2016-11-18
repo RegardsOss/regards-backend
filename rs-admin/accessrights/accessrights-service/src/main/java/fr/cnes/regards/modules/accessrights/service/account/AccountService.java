@@ -15,13 +15,13 @@ import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactiona
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserTransitions;
 
 /**
- * {@link IAccountState} implementation.
+ * {@link IProjectUserTransitions} implementation.
  *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
@@ -132,28 +132,20 @@ public class AccountService implements IAccountService {
 
     @Override
     public Account retrieveAccountByEmail(final String pEmail) throws ModuleEntityNotFoundException {
-        final Account account = accountRepository.findOneByEmail(pEmail);
-        if (account == null) {
-            throw new ModuleEntityNotFoundException(pEmail, Account.class);
-        }
-        return account;
+        return accountRepository.findOneByEmail(pEmail)
+                .orElseThrow(() -> new ModuleEntityNotFoundException(pEmail, Account.class));
     }
 
     @Override
     public boolean validatePassword(final String pEmail, final String pPassword) throws ModuleEntityNotFoundException {
-        final Optional<Account> account = Optional.ofNullable(accountRepository.findOneByEmail(pEmail));
-        return account.orElseThrow(() -> new ModuleEntityNotFoundException(pEmail, Account.class)).getPassword()
+        return accountRepository.findOneByEmail(pEmail)
+                .orElseThrow(() -> new ModuleEntityNotFoundException(pEmail, Account.class)).getPassword()
                 .equals(pPassword);
     }
 
     @Override
     public boolean existAccount(final String pEmail) {
-        boolean exists = false;
-        final Account account = accountRepository.findOneByEmail(pEmail);
-        if (account != null) {
-            exists = true;
-        }
-        return exists;
+        return accountRepository.findOneByEmail(pEmail).isPresent();
     }
 
     /**
@@ -170,86 +162,6 @@ public class AccountService implements IAccountService {
         if (!pAccount.getCode().equals(pCode)) {
             throw new InvalidValueException("this is not the right code");
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.account.IAccountState#makeAdminDecision(fr.cnes.regards.modules.
-     * accessrights.domain.instance.Account)
-     */
-    @Override
-    public void makeAdminDecision(final Account pAccount) throws IllegalActionForAccountStatusException {
-        accountStateFactory.createState(pAccount).emailValidation(pAccount);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountState#emailValidation(fr.cnes.regards.modules.
-     * accessrights.domain.instance.Account)
-     */
-    @Override
-    public void emailValidation(final Account pAccount) throws IllegalActionForAccountStatusException {
-        accountStateFactory.createState(pAccount).emailValidation(pAccount);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountState#lockAccount(fr.cnes.regards.modules.
-     * accessrights.domain.instance.Account)
-     */
-    @Override
-    public void lockAccount(final Account pAccount) throws IllegalActionForAccountStatusException {
-        accountStateFactory.createState(pAccount).lockAccount(pAccount);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountState#unlockAccount(fr.cnes.regards.modules.
-     * accessrights.domain.instance.Account)
-     */
-    @Override
-    public void unlockAccount(final Account pAccount, final String pUnlockCode)
-            throws IllegalActionForAccountStatusException, InvalidValueException {
-        accountStateFactory.createState(pAccount).unlockAccount(pAccount, pUnlockCode);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountState#inactiveAccount(fr.cnes.regards.modules.
-     * accessrights.domain.instance.Account)
-     */
-    @Override
-    public void inactiveAccount(final Account pAccount) throws IllegalActionForAccountStatusException {
-        accountStateFactory.createState(pAccount).inactiveAccount(pAccount);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountState#activeAccount(fr.cnes.regards.modules.
-     * accessrights.domain.instance.Account)
-     */
-    @Override
-    public void activeAccount(final Account pAccount) throws IllegalActionForAccountStatusException {
-        accountStateFactory.createState(pAccount).activeAccount(pAccount);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.account.IAccountState#delete(fr.cnes.regards.modules.accessrights.
-     * domain.instance.Account)
-     */
-    @Override
-    public void delete(final Account pAccount) throws ModuleException {
-        accountStateFactory.createState(pAccount).delete(pAccount);
     }
 
 }

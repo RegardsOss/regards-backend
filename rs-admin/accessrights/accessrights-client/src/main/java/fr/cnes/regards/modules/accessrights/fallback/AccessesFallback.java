@@ -5,8 +5,6 @@ package fr.cnes.regards.modules.accessrights.fallback;
 
 import java.util.List;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
@@ -14,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.IAccessesClient;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
@@ -50,26 +47,25 @@ public class AccessesFallback implements IAccessesClient {
     }
 
     @Override
-    public ResponseEntity<Resource<AccessRequestDTO>> requestAccess(final AccessRequestDTO pAccessRequest)
-            throws AlreadyExistingException {
+    public ResponseEntity<Resource<AccessRequestDTO>> requestAccess(final AccessRequestDTO pAccessRequest) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public ResponseEntity<Void> acceptAccessRequest(final Long pAccessId) throws OperationNotSupportedException {
+    public ResponseEntity<Void> acceptAccessRequest(final Long pAccessId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public ResponseEntity<Void> denyAccessRequest(final Long pAccessId) throws OperationNotSupportedException {
+    public ResponseEntity<Void> denyAccessRequest(final Long pAccessId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public ResponseEntity<Void> removeAccessRequest(final Long pAccessId) throws ModuleEntityNotFoundException {
+    public ResponseEntity<Void> removeAccessRequest(final Long pAccessId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
