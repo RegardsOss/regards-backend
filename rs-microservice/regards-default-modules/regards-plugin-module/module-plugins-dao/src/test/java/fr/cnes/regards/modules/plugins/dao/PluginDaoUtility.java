@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -20,7 +21,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
  * @author Christophe Mertz
  *
  */
-public class PluginDaoUtility {
+public class PluginDaoUtility extends AbstractDaoTest {
 
     /**
      * Class logger

@@ -121,7 +121,8 @@ public class CorsFilter extends OncePerRequestFilter {
             if (!roles.isEmpty()) {
                 boolean access = false;
                 for (final RoleAuthority role : roles) {
-                    access = access || authoritiesProvider.hasCorsRequestsAccess(role.getAuthority());
+                    access = access || authoritiesProvider
+                            .hasCorsRequestsAccess(RoleAuthority.getRoleName(role.getAuthority()));
                 }
                 if (!access) {
                     if (OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
