@@ -15,7 +15,7 @@ import javax.persistence.Converter;
  *
  * Convert from List<String> to String for database access
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Converter
@@ -28,11 +28,16 @@ public class RoleAuthorizedAdressesConverter implements AttributeConverter<List<
 
     @Override
     public String convertToDatabaseColumn(final List<String> pValues) {
-        String result = "";
-        if (pValues != null) {
+        String result = null;
+        final StringBuilder builder = new StringBuilder();
+        if ((pValues != null) && !pValues.isEmpty()) {
             for (final String value : pValues) {
-                result += value + SPLIT_CAR;
+                if (!builder.toString().isEmpty()) {
+                    builder.append(SPLIT_CAR);
+                }
+                builder.append(value);
             }
+            result = builder.toString();
         }
         return result;
     }
@@ -40,10 +45,12 @@ public class RoleAuthorizedAdressesConverter implements AttributeConverter<List<
     @Override
     public List<String> convertToEntityAttribute(final String pValue) {
         final List<String> result = new ArrayList<>();
-        final String[] listOfValues = pValue.split(SPLIT_CAR);
-        if (listOfValues.length > 0) {
-            for (final String value : listOfValues) {
-                result.add(value);
+        if (pValue != null) {
+            final String[] listOfValues = pValue.split(SPLIT_CAR);
+            if (listOfValues.length > 0) {
+                for (final String value : listOfValues) {
+                    result.add(value);
+                }
             }
         }
         return result;

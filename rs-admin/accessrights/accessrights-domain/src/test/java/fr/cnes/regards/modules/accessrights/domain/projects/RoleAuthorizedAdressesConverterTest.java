@@ -29,7 +29,7 @@ public class RoleAuthorizedAdressesConverterTest {
     /**
      * String used to test the converter
      */
-    private final String string = "value1;value2 ; value3;value 4;value5;value6;";
+    private final String string = "value1;value2 ; value3;value 4;value5;value6";
 
     @Before
     public void setUp() {
@@ -46,7 +46,8 @@ public class RoleAuthorizedAdressesConverterTest {
      */
     @Test
     public void testConvertToDatabaseColumn() {
-        Assert.assertEquals("", converter.convertToDatabaseColumn(null));
+        Assert.assertEquals(null, converter.convertToDatabaseColumn(null));
+        Assert.assertEquals(null, converter.convertToDatabaseColumn(new ArrayList<>()));
         Assert.assertEquals(string, converter.convertToDatabaseColumn(strings));
     }
 

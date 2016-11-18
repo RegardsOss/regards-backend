@@ -116,22 +116,25 @@ public class TestConfiguration {
         addresses.add("127.0.0.1");
         addresses.add("127.0.0.2");
         addresses.add("127.0.0.3");
-        pRoleRpo.deleteAll();
-
-        final LocalDateTime endDate = LocalDateTime.now().plusDays(5L);
-
         final RoleFactory roleFactory = new RoleFactory();
-        roleFactory.withId(0L).withAuthorizedAddresses(addresses).withCorsRequestsAuthorized(true)
-                .withCorsRequestsAuthorizationEndDate(endDate).withDefault(false).withNative(true)
-                .withCorsRequestsAuthorized(true);
 
-        final Role publicRole = pRoleRpo.save(roleFactory.createPublic());
+        roleFactory.withId(0L).withAuthorizedAddresses(addresses).withCorsRequestsAuthorized(true).withDefault(false)
+                .withNative(true);
 
-        pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_GRANTED).withParentRole(publicRole).create());
+        final Role publicRole = pRoleRpo.findOneByName(DefaultRole.PUBLIC.toString())
+                .orElseGet(() -> pRoleRpo.save(roleFactory.createPublic()));
 
+        roleFactory.withParentRole(publicRole);
+
+        pRoleRpo.findOneByName(CORS_ROLE_NAME_GRANTED).ifPresent(role -> pRoleRpo.delete(role.getId()));
+        pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_GRANTED)
+                .withCorsRequestsAuthorizationEndDate(LocalDateTime.now().plusDays(5L)).create());
+
+        pRoleRpo.findOneByName(CORS_ROLE_NAME_INVALID_1).ifPresent(role -> pRoleRpo.delete(role.getId()));
         pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_INVALID_1)
                 .withCorsRequestsAuthorizationEndDate(LocalDateTime.now().minusDays(5L)).create());
 
+        pRoleRpo.findOneByName(CORS_ROLE_NAME_INVALID_2).ifPresent(role -> pRoleRpo.delete(role.getId()));
         pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_INVALID_2).withCorsRequestsAuthorized(false)
                 .withCorsRequestsAuthorizationEndDate(null).create());
 

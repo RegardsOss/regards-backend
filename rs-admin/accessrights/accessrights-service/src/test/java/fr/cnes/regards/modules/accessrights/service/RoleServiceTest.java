@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * Test class for {@link RoleService}.
  *
  * @author xbrochar
+ * @author Sébastien Binda
  */
 public class RoleServiceTest {
 
@@ -78,7 +79,8 @@ public class RoleServiceTest {
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         final JWTService jwService = new JWTService();
         jwService.setSecret("123456789");
-        roleService = new RoleService(roleRepository, projectUserRepository, new LocalTenantResolver(), jwService);
+        roleService = new RoleService("rs-test", roleRepository, projectUserRepository, new LocalTenantResolver(),
+                jwService);
 
         // Clear the repos
         projectUserRepository.deleteAll();
@@ -109,7 +111,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the allows to retrieve a single role.
-     * 
+     *
      * @throws ModuleEntityNotFoundException
      *             when no role with passed name could be found
      */
@@ -157,7 +159,9 @@ public class RoleServiceTest {
         expected.setId(id);
         Mockito.when(roleRepository.save(expected)).thenReturn(expected);
 
+        Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.empty()));
         final Role actual = roleService.createRole(expected);
+        Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.of(actual)));
         Mockito.when(roleRepository.findOne(id)).thenReturn(actual);
 
         // Check that the expected and actual role have same values

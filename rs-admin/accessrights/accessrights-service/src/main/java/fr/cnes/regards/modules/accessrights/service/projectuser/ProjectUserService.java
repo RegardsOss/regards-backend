@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
  * {@link IProjectUserService} implementation
  *
  * @author xbrochar
+ * @author Sébastien Binda
  */
 @Service
 public class ProjectUserService implements IProjectUserService {
@@ -165,7 +166,7 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
             throws InvalidValueException, ModuleEntityNotFoundException {
-        if (pUpdatedProjectUser.getId() != pUserId) {
+        if (!pUpdatedProjectUser.getId().equals(pUserId)) {
             throw new InvalidValueException("Account id specified differs from updated account id");
         }
         if (!existUser(pUserId)) {

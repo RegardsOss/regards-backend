@@ -10,6 +10,7 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -32,6 +33,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParent
  * Models a user's role.
  *
  * @author Xavier-Alexandre Brochard
+ * @author Sébastien Binda
  */
 @Entity
 @Table(name = "T_ROLE", indexes = { @Index(name = "IDX_ROLE_NAME", columnList = "name") })
@@ -67,7 +69,7 @@ public class Role implements IIdentifiable<Long> {
      * Role permissions
      */
     @Valid
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "TA_RESOURCES_ROLES", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
             inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
     private List<ResourcesAccess> permissions;

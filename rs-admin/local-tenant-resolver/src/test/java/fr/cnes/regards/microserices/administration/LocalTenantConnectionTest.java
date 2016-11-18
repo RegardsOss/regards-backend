@@ -39,7 +39,8 @@ public class LocalTenantConnectionTest {
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
-    @Purpose("Check for multitenant throught local resolver")
+    @Purpose("Check for multitenant throught local resolver."
+            + " The the tenant resolver should create a datasource not defined in application.properties")
     @Test
     public void checkJpaTenants() {
 

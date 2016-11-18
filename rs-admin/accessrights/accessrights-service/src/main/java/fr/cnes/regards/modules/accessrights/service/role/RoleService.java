@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.role;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
@@ -39,6 +41,7 @@ import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
  * {@link IRoleService} implementation
  *
  * @author Xavier-Alexandre Brochard
+ * @author Sébastien Binda
  *
  */
 @Service
@@ -53,6 +56,11 @@ public class RoleService implements IRoleService {
      * Error message
      */
     private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
+
+    /**
+     * Current microservice name
+     */
+    private final String microserviceName;
 
     /**
      * CRUD repository managing {@link Role}s. Autowired by Spring.
@@ -80,13 +88,15 @@ public class RoleService implements IRoleService {
     @Resource
     private List<Role> defaultRoles;
 
-    public RoleService(final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
+    public RoleService(@Value("${spring.application.name}") final String pMicroserviceName,
+            final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
             final ITenantResolver pTenantResolver, final JWTService pJwtService) {
         super();
         roleRepository = pRoleRepository;
         projectUserRepository = pProjectUserRepository;
         tenantResolver = pTenantResolver;
         jwtService = pJwtService;
+        microserviceName = pMicroserviceName;
     }
 
     /**
@@ -101,7 +111,7 @@ public class RoleService implements IRoleService {
         // Define a consumer injecting the passed tenant in the context
         final Consumer<? super String> injectTenant = tenant -> {
             try {
-                jwtService.injectToken(tenant, RoleAuthority.getSysRole("rs-admin"));
+                jwtService.injectToken(tenant, RoleAuthority.getSysRole(microserviceName));
             } catch (final JwtException e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -110,7 +120,12 @@ public class RoleService implements IRoleService {
         // Define a consumer creating (if needed) all default roles on current tenant
         final Consumer<? super String> createDefaultRolesOnTenant = t -> {
             try (Stream<Role> rolesStream = defaultRoles.stream()) {
-                rolesStream.filter(r -> !existByName(r.getName())).forEach(roleRepository::save);
+                // Check if public role already exists
+                final Optional<Role> publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString());
+                rolesStream.filter(r -> !existByName(r.getName())).forEach(role -> {
+                    publicRole.ifPresent(pub -> role.setParentRole(pub));
+                    roleRepository.save(role);
+                });
             }
         };
 
@@ -249,7 +264,7 @@ public class RoleService implements IRoleService {
 
     @Override
     public boolean existByName(final String pName) {
-        return roleRepository.findOneByName(pName) != null;
+        return roleRepository.findOneByName(pName).isPresent();
     }
 
     @Override
