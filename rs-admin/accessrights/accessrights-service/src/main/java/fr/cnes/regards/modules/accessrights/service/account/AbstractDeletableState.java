@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleForbiddenTransitionException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -92,7 +92,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
                 doDelete(pAccount);
                 break;
             default:
-                throw new ModuleForbiddenTransitionException(pAccount.getId().toString(), ProjectUser.class,
+                throw new EntityTransitionForbiddenException(pAccount.getId().toString(), ProjectUser.class,
                         pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
         }
     }

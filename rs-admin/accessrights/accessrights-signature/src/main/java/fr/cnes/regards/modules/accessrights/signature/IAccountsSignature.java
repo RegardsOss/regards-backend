@@ -93,7 +93,7 @@ public interface IAccountsSignature {
      *             - <br>
      *             {@link ModuleEntityNotFoundException} Thrown if the {@link Account} is still linked to project users
      *             and therefore cannot be removed<br>
-     *             {@link ModuleForbiddenTransitionException} if the accout is not in status allowing removal
+     *             {@link EntityTransitionForbiddenException} if the accout is not in status allowing removal
      * @throws OperationForbiddenException
      */
     @ResponseBody
@@ -112,7 +112,7 @@ public interface IAccountsSignature {
      *             <br>
      *             {@link EntityNotFoundException} Thrown when no {@link Account} could be found with id
      *             <code>pAccountId</code><br>
-     *             {@link ModuleForbiddenTransitionException} Thrown if the account is not in status LOCKED
+     *             {@link EntityTransitionForbiddenException} Thrown if the account is not in status LOCKED
      * @throws InvalidValueException
      * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>

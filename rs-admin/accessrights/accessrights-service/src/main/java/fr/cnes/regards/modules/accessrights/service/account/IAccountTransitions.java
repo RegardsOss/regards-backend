@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.accessrights.service.account;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleForbiddenTransitionException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
@@ -27,12 +27,12 @@ public interface IAccountTransitions {
      *            The DTO containing all information to create the new {@link Account}
      * @throws ModuleAlreadyExistsException
      *             Thrown when an account with same <code>email</code> already exists
-     * @throws ModuleForbiddenTransitionException
+     * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not in status PENDING
      */
     default void requestAccount(final AccessRequestDTO pAccessRequestDTO)
-            throws ModuleAlreadyExistsException, ModuleForbiddenTransitionException {
-        throw new ModuleForbiddenTransitionException(pAccessRequestDTO.getEmail(), Account.class, null,
+            throws ModuleAlreadyExistsException, EntityTransitionForbiddenException {
+        throw new EntityTransitionForbiddenException(pAccessRequestDTO.getEmail(), Account.class, null,
                 Thread.currentThread().getStackTrace()[1].getMethodName());
     };
 
@@ -41,11 +41,11 @@ public interface IAccountTransitions {
      *
      * @param pAccount
      *            The {@link Account}
-     * @throws ModuleForbiddenTransitionException
+     * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not in status PENDING
      */
-    default void makeAdminDecision(final Account pAccount) throws ModuleForbiddenTransitionException {
-        throw new ModuleForbiddenTransitionException(pAccount.getId().toString(), Account.class,
+    default void makeAdminDecision(final Account pAccount) throws EntityTransitionForbiddenException {
+        throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };
 
@@ -54,11 +54,11 @@ public interface IAccountTransitions {
      *
      * @param pAccount
      *            The {@link Account}
-     * @throws ModuleForbiddenTransitionException
+     * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not in status ACCEPTED
      */
-    default void emailValidation(final Account pAccount) throws ModuleForbiddenTransitionException {
-        throw new ModuleForbiddenTransitionException(pAccount.getId().toString(), Account.class,
+    default void emailValidation(final Account pAccount) throws EntityTransitionForbiddenException {
+        throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };
 
@@ -67,11 +67,11 @@ public interface IAccountTransitions {
      *
      * @param pAccount
      *            The {@link Account}
-     * @throws ModuleForbiddenTransitionException
+     * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not in status LOCKED
      */
-    default void lockAccount(final Account pAccount) throws ModuleForbiddenTransitionException {
-        throw new ModuleForbiddenTransitionException(pAccount.getId().toString(), Account.class,
+    default void lockAccount(final Account pAccount) throws EntityTransitionForbiddenException {
+        throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };
 
@@ -82,14 +82,14 @@ public interface IAccountTransitions {
      *            The {@link Account}
      * @param pUnlockCode
      *            The unlock code. Must match to account's <code>code</code> field
-     * @throws ModuleForbiddenTransitionException
+     * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not in status LOCKED
      * @throws InvalidValueException
      *             Thrown when the code does not match the account's <code>code</code> field
      */
     default void unlockAccount(final Account pAccount, final String pUnlockCode)
-            throws ModuleForbiddenTransitionException, InvalidValueException {
-        throw new ModuleForbiddenTransitionException(pAccount.getId().toString(), Account.class,
+            throws EntityTransitionForbiddenException, InvalidValueException {
+        throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };
 
@@ -98,11 +98,11 @@ public interface IAccountTransitions {
      *
      * @param pAccount
      *            The {@link Account}
-     * @throws ModuleForbiddenTransitionException
+     * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not in status INACTIVE
      */
-    default void inactiveAccount(final Account pAccount) throws ModuleForbiddenTransitionException {
-        throw new ModuleForbiddenTransitionException(pAccount.getId().toString(), Account.class,
+    default void inactiveAccount(final Account pAccount) throws EntityTransitionForbiddenException {
+        throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };
 
@@ -111,11 +111,11 @@ public interface IAccountTransitions {
      *
      * @param pAccount
      *            The {@link Account}
-     * @throws ModuleForbiddenTransitionException
+     * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not in status ACTIVE
      */
-    default void activeAccount(final Account pAccount) throws ModuleForbiddenTransitionException {
-        throw new ModuleForbiddenTransitionException(pAccount.getId().toString(), Account.class,
+    default void activeAccount(final Account pAccount) throws EntityTransitionForbiddenException {
+        throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };
 
@@ -127,10 +127,10 @@ public interface IAccountTransitions {
      *            The account
      * @throws ModuleException
      *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.<br>
-     *             {@link ModuleForbiddenTransitionException} Thrown if the {@link Account} is not in state ACTIVE.
+     *             {@link EntityTransitionForbiddenException} Thrown if the {@link Account} is not in state ACTIVE.
      */
     default void delete(final Account pAccount) throws ModuleException {
-        throw new ModuleForbiddenTransitionException(pAccount.getId().toString(), Account.class,
+        throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };
 }

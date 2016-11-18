@@ -20,7 +20,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleForbiddenTransitionException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -185,7 +185,7 @@ public class AccountServiceTest {
      * @throws ModuleException
      *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
      */
-    @Test(expected = ModuleForbiddenTransitionException.class)
+    @Test(expected = EntityTransitionForbiddenException.class)
     @Purpose("Check that the system prevents from deleting an account for certain status (ACCEPTED...).")
     public void removeAccountWrongStatus() throws ModuleException {
         // Mock
@@ -342,13 +342,13 @@ public class AccountServiceTest {
      *
      * @throws InvalidValueException
      *             Thrown when passed id is different from the id of passed account
-     * @throws ModuleForbiddenTransitionException
+     * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not of status LOCKED
      */
-    @Test(expected = ModuleForbiddenTransitionException.class)
+    @Test(expected = EntityTransitionForbiddenException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system does unlock not locked accounts and feedbacks the caller.")
-    public void unlockAccountNotLocked() throws InvalidValueException, ModuleForbiddenTransitionException {
+    public void unlockAccountNotLocked() throws InvalidValueException, EntityTransitionForbiddenException {
         // Prepare the error case
         account.setStatus(AccountStatus.ACTIVE);
 
@@ -369,14 +369,14 @@ public class AccountServiceTest {
      *             Thrown when no {@link Account} with passed if could be found
      * @throws InvalidValueException
      *             Thrown when passed id is different from the id of passed account
-     * @throws ModuleForbiddenTransitionException
+     * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not of status LOCKED
      */
     @Test(expected = InvalidValueException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system does not unlock a locked account if the wrong code is passed.")
     public void unlockAccountWrongCode()
-            throws EntityNotFoundException, InvalidValueException, ModuleForbiddenTransitionException {
+            throws EntityNotFoundException, InvalidValueException, EntityTransitionForbiddenException {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
@@ -397,14 +397,14 @@ public class AccountServiceTest {
      *             Thrown when no {@link Account} with passed if could be found
      * @throws InvalidValueException
      *             Thrown when passed id is different from the id of passed account
-     * @throws ModuleForbiddenTransitionException
+     * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not of status LOCKED
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows a user to unlock its account with a code.")
     public void unlockAccountRightCode()
-            throws ModuleEntityNotFoundException, InvalidValueException, ModuleForbiddenTransitionException {
+            throws ModuleEntityNotFoundException, InvalidValueException, EntityTransitionForbiddenException {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);

@@ -11,7 +11,7 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleForbiddenTransitionException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -71,7 +71,7 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
      */
     @Override
     public void requestProjectAccess(final AccessRequestDTO pDto)
-            throws ModuleForbiddenTransitionException, ModuleEntityNotFoundException, ModuleAlreadyExistsException {
+            throws EntityTransitionForbiddenException, ModuleEntityNotFoundException, ModuleAlreadyExistsException {
         // Check existence
         if (!projectUserRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
             throw new ModuleAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
@@ -102,7 +102,7 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
      * modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void qualifyAccess(final ProjectUser pProjectUser) throws ModuleForbiddenTransitionException {
+    public void qualifyAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         projectUserStateFactory.createState(pProjectUser).qualifyAccess(pProjectUser);
     }
 
@@ -114,7 +114,7 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
      * modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void inactiveAccess(final ProjectUser pProjectUser) throws ModuleForbiddenTransitionException {
+    public void inactiveAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         projectUserStateFactory.createState(pProjectUser).inactiveAccess(pProjectUser);
     }
 
@@ -126,7 +126,7 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
      * modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void activeAccess(final ProjectUser pProjectUser) throws ModuleForbiddenTransitionException {
+    public void activeAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         projectUserStateFactory.createState(pProjectUser).activeAccess(pProjectUser);
     }
 
@@ -137,7 +137,7 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
      * modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void denyAccess(final ProjectUser pProjectUser) throws ModuleForbiddenTransitionException {
+    public void denyAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         projectUserStateFactory.createState(pProjectUser).denyAccess(pProjectUser);
     }
 
@@ -149,7 +149,7 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
      * modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void grantAccess(final ProjectUser pProjectUser) throws ModuleForbiddenTransitionException {
+    public void grantAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         projectUserStateFactory.createState(pProjectUser).grantAccess(pProjectUser);
     }
 
@@ -161,7 +161,7 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
      * modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void removeAccess(final ProjectUser pProjectUser) throws ModuleForbiddenTransitionException {
+    public void removeAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         projectUserStateFactory.createState(pProjectUser).removeAccess(pProjectUser);
     }
 }

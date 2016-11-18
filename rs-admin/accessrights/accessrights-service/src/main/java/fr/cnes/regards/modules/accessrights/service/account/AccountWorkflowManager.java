@@ -11,7 +11,7 @@ import org.springframework.util.Assert;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleForbiddenTransitionException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -64,7 +64,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      */
     @Override
     public void requestAccount(final AccessRequestDTO pDto)
-            throws ModuleAlreadyExistsException, ModuleForbiddenTransitionException {
+            throws ModuleAlreadyExistsException, EntityTransitionForbiddenException {
         // Check existence
         if (!accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
             throw new ModuleAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
@@ -86,7 +86,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * modules. accessrights.domain.instance.Account)
      */
     @Override
-    public void makeAdminDecision(final Account pAccount) throws ModuleForbiddenTransitionException {
+    public void makeAdminDecision(final Account pAccount) throws EntityTransitionForbiddenException {
         accountStateFactory.createState(pAccount).makeAdminDecision(pAccount);
     }
 
@@ -98,7 +98,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * accessrights.domain.instance.Account)
      */
     @Override
-    public void emailValidation(final Account pAccount) throws ModuleForbiddenTransitionException {
+    public void emailValidation(final Account pAccount) throws EntityTransitionForbiddenException {
         accountStateFactory.createState(pAccount).emailValidation(pAccount);
     }
 
@@ -110,7 +110,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * accessrights.domain.instance.Account)
      */
     @Override
-    public void lockAccount(final Account pAccount) throws ModuleForbiddenTransitionException {
+    public void lockAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         accountStateFactory.createState(pAccount).lockAccount(pAccount);
     }
 
@@ -123,7 +123,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      */
     @Override
     public void unlockAccount(final Account pAccount, final String pUnlockCode)
-            throws ModuleForbiddenTransitionException, InvalidValueException {
+            throws EntityTransitionForbiddenException, InvalidValueException {
         accountStateFactory.createState(pAccount).unlockAccount(pAccount, pUnlockCode);
     }
 
@@ -135,7 +135,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * accessrights.domain.instance.Account)
      */
     @Override
-    public void inactiveAccount(final Account pAccount) throws ModuleForbiddenTransitionException {
+    public void inactiveAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         accountStateFactory.createState(pAccount).inactiveAccount(pAccount);
     }
 
@@ -147,7 +147,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * accessrights.domain.instance.Account)
      */
     @Override
-    public void activeAccount(final Account pAccount) throws ModuleForbiddenTransitionException {
+    public void activeAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         accountStateFactory.createState(pAccount).activeAccount(pAccount);
     }
 

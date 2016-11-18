@@ -5,7 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.projectuser;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleForbiddenTransitionException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
@@ -36,7 +36,7 @@ abstract class AbstractDeletableState implements IProjectUserTransitions {
     }
 
     @Override
-    public void removeAccess(final ProjectUser pProjectUser) throws ModuleForbiddenTransitionException {
+    public void removeAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         switch (pProjectUser.getStatus()) {
             case WAITING_ACCESS:
             case ACCESS_DENIED:
@@ -45,7 +45,7 @@ abstract class AbstractDeletableState implements IProjectUserTransitions {
                 doDelete(pProjectUser);
                 break;
             default:
-                throw new ModuleForbiddenTransitionException(pProjectUser.getId().toString(), ProjectUser.class,
+                throw new EntityTransitionForbiddenException(pProjectUser.getId().toString(), ProjectUser.class,
                         pProjectUser.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
         }
     }
