@@ -16,6 +16,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.hateoas.DefaultResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
@@ -106,8 +107,10 @@ public class ProjectConnectionControllerTest {
         final MethodAuthorizationService methodMocked = Mockito.mock(MethodAuthorizationService.class);
         Mockito.when(methodMocked.hasAccess(Mockito.any(), Mockito.any())).thenReturn(true);
 
+        final IPublisher mockPublisher = Mockito.mock(IPublisher.class);
+
         projectConnectionController = new ProjectConnectionController(
-                new ProjectConnectionService(projectRepo, projectConnRepo, null, "rs-admin"),
+                new ProjectConnectionService(projectRepo, projectConnRepo, null, "rs-admin", mockPublisher),
                 new DefaultResourceService(methodMocked));
 
         // Initialization of in-lines entities

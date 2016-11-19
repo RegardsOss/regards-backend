@@ -10,6 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.jpa.multitenant.event.NewTenantEvent;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
@@ -26,6 +31,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
+ * @author Sébastien Binda
  *
  * @since 1.0-SNAPSHOT
  */
@@ -58,6 +64,11 @@ public class ProjectConnectionService implements IProjectConnectionService {
     private final MultitenantDaoProperties defaultProperties;
 
     /**
+     * AMQP message publisher
+     */
+    private final IPublisher publisher;
+
+    /**
      * The constructor.
      *
      * @param pProjectRepository
@@ -68,26 +79,32 @@ public class ProjectConnectionService implements IProjectConnectionService {
      *            multitenant DAO properties form config file
      * @param pMicroserviceName
      *            current microservice name
+     * @param pPublisher
+     *            Amqp publisher
      */
     public ProjectConnectionService(final IProjectRepository pProjectRepository,
             final IProjectConnectionRepository pProjectConnectionRepository,
             final MultitenantDaoProperties pDefaultProperties,
-            @Value("${spring.application.name}") final String pMicroserviceName) {
+            @Value("${spring.application.name}") final String pMicroserviceName, final IPublisher pPublisher) {
         super();
         projectRepository = pProjectRepository;
         projectConnectionRepository = pProjectConnectionRepository;
         defaultProperties = pDefaultProperties;
         microserviceName = pMicroserviceName;
+        publisher = pPublisher;
     }
 
     /**
      *
      * Initialize projects.
      *
+     * @throws RabbitMQVhostException
+     *
      * @since 1.0-SNAPHOT
      */
     @PostConstruct
-    public void projectsInitialization() {
+    public void projectsInitialization() throws RabbitMQVhostException {
+
         // Create project from properties files it does not exists yet
         for (final TenantConnection tenant : defaultProperties.getTenants()) {
             if (projectRepository.findOneByName(tenant.getName()) == null) {
@@ -130,6 +147,16 @@ public class ProjectConnectionService implements IProjectConnectionService {
             }
         } else {
             throw new ModuleEntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
+        }
+
+        // Send event to all microservices that a new connection is available for a new project
+        try {
+            final TenantConnection tenant = new TenantConnection(connection.getProject().getName(), connection.getUrl(),
+                    connection.getUserName(), connection.getPassword(), connection.getDriverClassName());
+            publisher.publish(new NewTenantEvent(tenant, connection.getMicroservice()),
+                              AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.EXTERNAL);
+        } catch (final RabbitMQVhostException e) {
+            LOG.error(e.getMessage(), e);
         }
 
         return connection;

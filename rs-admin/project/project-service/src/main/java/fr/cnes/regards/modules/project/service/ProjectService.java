@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
@@ -23,11 +25,17 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
+ * @author Sébastien Binda
  *
  * @since 1.0-SNAPSHOT
  */
 @Service
 public class ProjectService implements IProjectService {
+
+    /**
+     * Class logger
+     */
+    private final static Logger LOG = LoggerFactory.getLogger(ProjectService.class);
 
     /**
      * JPA Repository to query projects from database
@@ -90,6 +98,7 @@ public class ProjectService implements IProjectService {
         if (theProject != null) {
             throw new AlreadyExistingException(pNewProject.getName());
         }
+
         return projectRepository.save(pNewProject);
     }
 

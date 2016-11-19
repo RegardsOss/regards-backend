@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 /**
  * Define the common interface of REST clients for {@link Account}s.
  *
- * @author CS SI
+ * @author Sébastien Binda
  */
 @RequestMapping(path = "/accounts")
 public interface IAccountsSignature {
@@ -60,7 +60,7 @@ public interface IAccountsSignature {
      *            email of the account to retrieve
      * @return Account
      */
-    @RequestMapping(value = "/account/{account_email:.+}", method = RequestMethod.GET,
+    @RequestMapping(value = "/account/{account_email}", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Resource<Account>> retrieveAccounByEmail(@PathVariable("account_email") String pAccountEmail);

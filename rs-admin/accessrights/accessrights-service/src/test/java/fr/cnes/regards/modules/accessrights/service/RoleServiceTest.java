@@ -80,7 +80,7 @@ public class RoleServiceTest {
         final JWTService jwService = new JWTService();
         jwService.setSecret("123456789");
         roleService = new RoleService("rs-test", roleRepository, projectUserRepository, new LocalTenantResolver(),
-                jwService);
+                jwService, null);
 
         // Clear the repos
         projectUserRepository.deleteAll();

@@ -101,7 +101,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     public void init() {
         authService.setAuthorities(PROJECT_TEST_NAME, "/users", RequestMethod.GET, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/users", RequestMethod.POST, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_email:.+}", RequestMethod.GET, ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_email}", RequestMethod.GET, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}", RequestMethod.PUT, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}", RequestMethod.DELETE, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}/metadata", RequestMethod.GET, ROLE_TEST);

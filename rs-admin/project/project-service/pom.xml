@@ -15,6 +15,11 @@
 	</parent>
 
 	<dependencies>
+		<!-- Framework dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>amqp-regards</artifactId>
+		</dependency>
 		<!-- Microservice internal dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>

@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -77,6 +80,30 @@ public class TestConfiguration {
      */
     @Value("${spring.application.name}")
     private String microserviceName;
+
+    /**
+     *
+     * Initialize a Mock for AMQP Publisher
+     *
+     * @return IPublisher
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    public IPublisher mockPublisher() {
+        return Mockito.mock(IPublisher.class);
+    }
+
+    /**
+     *
+     * Initialize a Mock for AMQP Subsriber
+     *
+     * @return ISubscriber
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    public ISubscriber mockSubscriber() {
+        return Mockito.mock(ISubscriber.class);
+    }
 
     /**
      *
