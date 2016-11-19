@@ -15,27 +15,42 @@
 	</parent>
 
 	<dependencies>
+		<!-- Spring -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<!-- REGARDS -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-autoconfigure</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-common</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
+			<artifactId>jpa-multitenant-regards</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
+			<optional>true</optional>
 		</dependency>
+		<!-- COTS -->
 		<dependency>
 			<groupId>javax.el</groupId>
 			<artifactId>javax.el-api</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<!-- Tests -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
