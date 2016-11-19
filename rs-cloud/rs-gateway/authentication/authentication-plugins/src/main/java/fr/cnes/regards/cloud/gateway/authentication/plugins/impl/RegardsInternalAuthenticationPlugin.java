@@ -67,18 +67,24 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
         try {
             jwtService.injectToken(pScope, RoleAuthority.getSysRole(microserviceName));
             final ResponseEntity<AccountStatus> validateResponse = accountsClient.validatePassword(pEmail, pPassword);
-            if (validateResponse.getStatusCode().equals(HttpStatus.OK)
-                    && validateResponse.getBody().equals(AccountStatus.ACTIVE)) {
-                status = AuthenticationStatus.ACCESS_GRANTED;
+            if (validateResponse.getStatusCode().equals(HttpStatus.OK)) {
+                if (validateResponse.getBody().equals(AccountStatus.ACTIVE)) {
+                    status = AuthenticationStatus.ACCESS_GRANTED;
+                } else {
+                    status = AuthenticationStatus.ACCESS_DENIED;
+                    errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Authentication failed.";
+                }
             } else {
                 status = AuthenticationStatus.ACCESS_DENIED;
-                errorMessage = "Authentication failed.";
+                errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Request error code : "
+                        + validateResponse.getStatusCode().toString();
             }
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);
         } catch (final ModuleEntityNotFoundException e) {
             LOG.error(e.getMessage(), e);
-            errorMessage = String.format("Accound %s doesn't exists", pEmail);
+            errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
+                                         pEmail);
             LOG.error(errorMessage);
             status = AuthenticationStatus.ACCOUNT_NOT_FOUD;
         }
