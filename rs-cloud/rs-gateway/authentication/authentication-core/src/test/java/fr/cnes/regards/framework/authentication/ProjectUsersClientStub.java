@@ -63,21 +63,20 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(final Long pUserId)
-            throws ModuleEntityNotFoundException {
+    public ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(final Long pUserId) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<Void> updateProjectUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData)
-            throws ModuleEntityNotFoundException {
+    public ResponseEntity<Void> updateProjectUserMetaData(final Long pUserId,
+            final List<MetaData> pUpdatedUserMetaData) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<Void> removeProjectUserMetaData(final Long pUserId) throws ModuleEntityNotFoundException {
+    public ResponseEntity<Void> removeProjectUserMetaData(final Long pUserId) {
         // TODO Auto-generated method stub
         return null;
     }

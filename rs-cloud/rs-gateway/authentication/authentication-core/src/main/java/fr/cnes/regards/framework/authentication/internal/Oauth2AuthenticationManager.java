@@ -29,8 +29,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -212,7 +212,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
             try {
                 accountClient.createAccount(new Account(details.getEmail(), "", "", null));
-            } catch (AlreadyExistingException | InvalidEntityException e) {
+            } catch (EntityTransitionForbiddenException | ModuleAlreadyExistsException e) {
                 LOG.error(e.getMessage(), e);
             }
         }
