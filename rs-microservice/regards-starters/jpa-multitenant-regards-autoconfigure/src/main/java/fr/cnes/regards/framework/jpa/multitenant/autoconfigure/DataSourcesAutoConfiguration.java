@@ -27,18 +27,18 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  *
  * Configuration class to define the default PostgresSQL Data base
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Configuration
 @EnableConfigurationProperties(MultitenantDaoProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
-public class DataSourcesConfiguration {
+public class DataSourcesAutoConfiguration {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourcesConfiguration.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DataSourcesAutoConfiguration.class);
 
     /**
      * Microservice globale configuration

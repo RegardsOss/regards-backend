@@ -13,9 +13,11 @@ import javax.sql.DataSource;
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.cfg.Environment;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
+import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
@@ -31,9 +33,12 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import fr.cnes.regards.framework.amqp.Subscriber;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifierResolverImpl;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
@@ -47,8 +52,10 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(excludeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "multitenantsEntityManagerFactory", transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
+@EnableJpaRepositories(
+        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+        basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
+        transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties(JpaProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
@@ -58,6 +65,12 @@ public class MultitenantJpaAutoConfiguration {
      * JPA Persistence unit name. Used to separate multiples databases.
      */
     private static final String PERSITENCE_UNIT_NAME = "multitenant";
+
+    /**
+     * Current microservice name
+     */
+    @Value("${spring.application.name}")
+    private String microserviceName;
 
     /**
      * Data sources pool
@@ -77,6 +90,12 @@ public class MultitenantJpaAutoConfiguration {
      */
     @Autowired
     private JpaProperties jpaProperties;
+
+    /**
+     * AMQP Message subscriber
+     */
+    @Autowired(required = false)
+    private Subscriber amqpSubscriber;
 
     /**
      * Multitenant connection provider
@@ -100,6 +119,31 @@ public class MultitenantJpaAutoConfiguration {
      */
     public MultitenantJpaAutoConfiguration() throws MultiDataBasesException {
         DaoUtils.checkClassPath(DaoUtils.PACKAGES_TO_SCAN);
+    }
+
+    /**
+     *
+     * Create the tenant resolver. Select the tenant when a connection is needed.
+     *
+     * @return {@link CurrentTenantIdentifierResolverImpl}
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    public CurrentTenantIdentifierResolver currentTenantIdentifierResolver() {
+        return new CurrentTenantIdentifierResolverImpl();
+    }
+
+    /**
+     *
+     * Create the connection provider. Used to select datasource for a given tenant
+     *
+     * @return {@link DataSourceBasedMultiTenantConnectionProviderImpl}
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    public AbstractDataSourceBasedMultiTenantConnectionProviderImpl connectionProvider() {
+        return new DataSourceBasedMultiTenantConnectionProviderImpl(configuration, dataSources, amqpSubscriber,
+                microserviceName);
     }
 
     /**
