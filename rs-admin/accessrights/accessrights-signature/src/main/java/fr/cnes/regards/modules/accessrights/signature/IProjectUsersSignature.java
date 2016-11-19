@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -76,25 +78,29 @@ public interface IProjectUsersSignature {
      *
      * @param pUserId
      *            The {@link ProjectUser}'s <code>id</code>
+     * @throws EntityTransitionForbiddenException
+     *             when the project user has a <code>status</code> not allowing removal
+     * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long pUserId);
+    ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long pUserId)
+            throws EntityTransitionForbiddenException, EntityNotFoundException;
 
     /**
      * Return the {@link List} of {@link MetaData} on the {@link ProjectUser} of passed <code>id</code>.
      *
      * @param pUserId
      *            The {@link ProjectUser}'s <code>id</code>
-     * @return
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     * @return
      */
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(@PathVariable("user_id") Long pUserId)
-            throws ModuleEntityNotFoundException;
+            throws EntityNotFoundException;
 
     /**
      * Set the passed {@link MetaData} onto the {@link ProjectUser} of passed <code>id</code>.
@@ -103,26 +109,28 @@ public interface IProjectUsersSignature {
      *            The {@link ProjectUser}'s <code>id</code>
      * @param pUpdatedUserMetaData
      *            The {@link List} of {@link MetaData} to set
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") Long pUserId,
-            @Valid @RequestBody List<MetaData> pUpdatedUserMetaData) throws ModuleEntityNotFoundException;
+            @Valid @RequestBody List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException;
 
     /**
      * Clear the {@link List} of {@link MetaData} of the {@link ProjectUser} with passed <code>id</code>.
      *
      * @param pUserId
      *            The {@link ProjectUser} <code>id</code>
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
+    @ResponseBody
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     ResponseEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") Long pUserId)
-            throws ModuleEntityNotFoundException;
+            throws EntityNotFoundException;
 
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.

@@ -12,10 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
@@ -62,8 +58,7 @@ public class AccountsFallback implements IAccountsClient {
      * accessrights.domain.instance.Account)
      */
     @Override
-    public ResponseEntity<Resource<Account>> createAccount(final Account pNewAccount)
-            throws AlreadyExistingException, InvalidEntityException {
+    public ResponseEntity<Resource<Account>> createAccount(final Account pNewAccount) {
         LOG.error(fallBackErrorMessage);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -74,8 +69,7 @@ public class AccountsFallback implements IAccountsClient {
      * @see fr.cnes.regards.modules.accessrights.signature.IAccountsSignature#retrieveAccount(java.lang.Long)
      */
     @Override
-    public ResponseEntity<Resource<Account>> retrieveAccount(final Long pAccountId)
-            throws ModuleEntityNotFoundException {
+    public ResponseEntity<Resource<Account>> retrieveAccount(final Long pAccountId) {
         LOG.error(fallBackErrorMessage);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -87,8 +81,7 @@ public class AccountsFallback implements IAccountsClient {
      * fr.cnes.regards.modules.accessrights.domain.instance.Account)
      */
     @Override
-    public ResponseEntity<Void> updateAccount(final Long pAccountId, final Account pUpdatedAccount)
-            throws ModuleEntityNotFoundException, InvalidValueException {
+    public ResponseEntity<Void> updateAccount(final Long pAccountId, final Account pUpdatedAccount) {
         LOG.error(fallBackErrorMessage);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -99,7 +92,7 @@ public class AccountsFallback implements IAccountsClient {
      * @see fr.cnes.regards.modules.accessrights.signature.IAccountsSignature#removeAccount(java.lang.Long)
      */
     @Override
-    public ResponseEntity<Void> removeAccount(final Long pAccountId) throws ModuleEntityNotFoundException {
+    public ResponseEntity<Void> removeAccount(final Long pAccountId) {
         LOG.error(fallBackErrorMessage);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -111,8 +104,7 @@ public class AccountsFallback implements IAccountsClient {
      * java.lang.String)
      */
     @Override
-    public ResponseEntity<Void> unlockAccount(final Long pAccountId, final String pUnlockCode)
-            throws InvalidValueException, ModuleEntityNotFoundException {
+    public ResponseEntity<Void> unlockAccount(final Long pAccountId, final String pUnlockCode) {
         LOG.error(fallBackErrorMessage);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -125,7 +117,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<Void> changeAccountPassword(final Long pAccountId, final String pResetCode,
-            final String pNewPassword) throws InvalidValueException, ModuleEntityNotFoundException {
+            final String pNewPassword) {
         LOG.error(fallBackErrorMessage);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -137,8 +129,7 @@ public class AccountsFallback implements IAccountsClient {
      * fr.cnes.regards.modules.accessrights.domain.CodeType)
      */
     @Override
-    public ResponseEntity<Void> sendAccountCode(final String pEmail, final CodeType pType)
-            throws ModuleEntityNotFoundException {
+    public ResponseEntity<Void> sendAccountCode(final String pEmail, final CodeType pType) {
         LOG.error(fallBackErrorMessage);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -174,8 +165,7 @@ public class AccountsFallback implements IAccountsClient {
      * java.lang.String)
      */
     @Override
-    public ResponseEntity<AccountStatus> validatePassword(final String pLogin, final String pPassword)
-            throws ModuleEntityNotFoundException {
+    public ResponseEntity<AccountStatus> validatePassword(final String pLogin, final String pPassword) {
         LOG.error(fallBackErrorMessage);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }

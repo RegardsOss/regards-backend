@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
@@ -82,8 +81,7 @@ public class NotificationFallback implements INotificationClient {
      * fr.cnes.regards.modules.notification.domain.NotificationStatus)
      */
     @Override
-    public void updateNotificationStatus(final Long pId, final NotificationStatus pStatus)
-            throws EntityNotFoundException {
+    public void updateNotificationStatus(final Long pId, final NotificationStatus pStatus) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
     }
 
@@ -116,7 +114,7 @@ public class NotificationFallback implements INotificationClient {
      * modules.notification.domain.dto.NotificationSettingsDTO)
      */
     @Override
-    public void updateNotificationSettings(final NotificationSettingsDTO pDto) throws EntityNotFoundException {
+    public void updateNotificationSettings(final NotificationSettingsDTO pDto) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
     }
 

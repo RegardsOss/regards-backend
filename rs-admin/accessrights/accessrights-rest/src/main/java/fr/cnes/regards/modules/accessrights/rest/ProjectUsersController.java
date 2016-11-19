@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -27,6 +29,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.signature.IProjectUsersSignature;
 
 /**
@@ -41,8 +44,17 @@ import fr.cnes.regards.modules.accessrights.signature.IProjectUsersSignature;
         documentation = "http://test")
 public class ProjectUsersController implements IProjectUsersSignature {
 
+    /**
+     * Service handling project users
+     */
     @Autowired
     private IProjectUserService projectUserService;
+
+    /**
+     * Workflow manager for project users
+     */
+    @Autowired
+    private ProjectUserWorkflowManager projectUserWorkflowManager;
 
     @Override
     @ResourceAccess(description = "retrieve the list of users of the project")
@@ -73,15 +85,17 @@ public class ProjectUsersController implements IProjectUsersSignature {
 
     @Override
     @ResourceAccess(description = "remove the project user from the instance")
-    public ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") final Long userId) {
-        projectUserService.removeUser(userId);
+    public ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") final Long pUserId)
+            throws EntityTransitionForbiddenException, EntityNotFoundException {
+        final ProjectUser projectUser = projectUserService.retrieveUser(pUserId);
+        projectUserWorkflowManager.removeAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "retrieve the list of all metadata of the user")
     public ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(
-            @PathVariable("user_id") final Long pUserId) throws ModuleEntityNotFoundException {
+            @PathVariable("user_id") final Long pUserId) throws EntityNotFoundException {
         final List<MetaData> metaDatas = projectUserService.retrieveUserMetaData(pUserId);
         final List<Resource<MetaData>> resources = metaDatas.stream().map(m -> new Resource<>(m))
                 .collect(Collectors.toList());
@@ -91,7 +105,7 @@ public class ProjectUsersController implements IProjectUsersSignature {
     @Override
     @ResourceAccess(description = "update the list of all metadata of the user")
     public ResponseEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") final Long userId,
-            @Valid @RequestBody final List<MetaData> pUpdatedUserMetaData) throws ModuleEntityNotFoundException {
+            @Valid @RequestBody final List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException {
         projectUserService.updateUserMetaData(userId, pUpdatedUserMetaData);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -99,7 +113,7 @@ public class ProjectUsersController implements IProjectUsersSignature {
     @Override
     @ResourceAccess(description = "remove all the metadata of the user")
     public ResponseEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") final Long userId)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         projectUserService.removeUserMetaData(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

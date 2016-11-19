@@ -10,13 +10,13 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
- * Factory class returning the right {@link IAccountState} for the passed {@link Account} according to its
+ * Provider class returning the right {@link IAccountTransitions} for the passed {@link Account} according to its
  * <code>state</code> field.
  *
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class AccountStateFactory {
+public class AccountStateProvider {
 
     /**
      * Pending state
@@ -25,16 +25,16 @@ public class AccountStateFactory {
     private PendingState pendingState;
 
     /**
-     * Active state
-     */
-    @Autowired
-    private ActiveState activeState;
-
-    /**
      * Accepted state
      */
     @Autowired
     private AcceptedState acceptedState;
+
+    /**
+     * Active state
+     */
+    @Autowired
+    private ActiveState activeState;
 
     /**
      * Inactive state
@@ -49,14 +49,14 @@ public class AccountStateFactory {
     private LockedState lockedState;
 
     /**
-     * Creates the right account state based on the passed status
+     * Get the right account state based on the passed status
      *
      * @param pStatus
      *            The account status
      * @return the account state object
      */
-    public IAccountState createState(final AccountStatus pStatus) {
-        final IAccountState state;
+    public IAccountTransitions getState(final AccountStatus pStatus) {
+        final IAccountTransitions state;
         switch (pStatus) {
             case PENDING:
                 state = pendingState;
@@ -81,14 +81,14 @@ public class AccountStateFactory {
     }
 
     /**
-     * Creates the right account state based on the passed account's status
+     * Get the right account state based on the passed account's status
      *
      * @param pAccount
      *            The account
      * @return the account state object
      */
-    public IAccountState createState(final Account pAccount) {
-        return createState(pAccount.getStatus());
+    public IAccountTransitions getState(final Account pAccount) {
+        return getState(pAccount.getStatus());
     }
 
 }

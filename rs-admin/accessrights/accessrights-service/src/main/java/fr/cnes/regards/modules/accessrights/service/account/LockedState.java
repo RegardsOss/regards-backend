@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.account;
 
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -40,7 +41,7 @@ public class LockedState extends AbstractDeletableState {
 
     @Override
     public void unlockAccount(final Account pAccount, final String pUnlockCode)
-            throws IllegalActionForAccountStatusException, InvalidValueException {
+            throws EntityTransitionForbiddenException, InvalidValueException {
         if (!pAccount.getCode().equals(pUnlockCode)) {
             throw new InvalidValueException("The provided unlock code is wrong.");
         }

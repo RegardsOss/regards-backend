@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -33,6 +35,11 @@ import fr.cnes.regards.modules.accessrights.signature.IRolesSignature;
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
 public class RolesController implements IRolesSignature {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(RolesController.class);
 
     @Autowired
     private IRoleService roleService;
@@ -114,8 +121,7 @@ public class RolesController implements IRolesSignature {
         try {
             projectUserList = roleService.retrieveRoleProjectUserList(pRoleId);
         } catch (final ModuleEntityNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOG.error("Unable to retrieve the project user list", e);
         }
         final List<Resource<ProjectUser>> resources = projectUserList.stream().map(pu -> new Resource<>(pu))
                 .collect(Collectors.toList());

@@ -82,7 +82,7 @@ public class AccessRequestDTOTest {
         access.setPermissions(permissions);
 
         role = new Role(DefaultRole.ADMIN.toString(), null);
-        access.setRole(role);
+        access.setRoleName(role.getName());
     }
 
     /**
@@ -137,8 +137,8 @@ public class AccessRequestDTOTest {
      * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#getRole()}.
      */
     @Test
-    public void testGetRole() {
-        Assert.assertEquals(role, access.getRole());
+    public void testGetRoleName() {
+        Assert.assertEquals(role.getName(), access.getRoleName());
     }
 
     /**
@@ -211,10 +211,10 @@ public class AccessRequestDTOTest {
      * Test method for {@link AccessRequestDTO#setRole(Role)}.
      */
     @Test
-    public void testSetRole() {
-        final Role newRole = new Role(DefaultRole.REGISTERED_USER.toString(), role);
-        access.setRole(newRole);
-        Assert.assertEquals(newRole, access.getRole());
+    public void testSetRoleName() {
+        final String newRoleName = DefaultRole.REGISTERED_USER.toString();
+        access.setRoleName(newRoleName);
+        Assert.assertEquals(newRoleName, access.getRoleName());
     }
 
 }

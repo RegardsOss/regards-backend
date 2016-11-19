@@ -18,17 +18,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
+import fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions;
 import fr.cnes.regards.modules.accessrights.signature.IAccountsSignature;
 
 @RestController
@@ -38,6 +41,9 @@ public class AccountsController implements IAccountsSignature {
 
     @Autowired
     private IAccountService accountService;
+
+    @Autowired
+    private IAccountTransitions accountWorkflowManager;
 
     @Autowired
     private IAccountSettingsService accountSettingsService;
@@ -54,8 +60,9 @@ public class AccountsController implements IAccountsSignature {
     @Override
     @ResourceAccess(description = "create an new account")
     public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount)
-            throws AlreadyExistingException {
-        final Account created = accountService.createAccount(pNewAccount);
+            throws EntityTransitionForbiddenException, ModuleAlreadyExistsException {
+        final AccessRequestDTO dto = new AccessRequestDTO(pNewAccount);
+        final Account created = accountWorkflowManager.requestAccount(dto);
         final Resource<Account> resource = new Resource<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
@@ -99,16 +106,16 @@ public class AccountsController implements IAccountsSignature {
     public ResponseEntity<Void> removeAccount(@PathVariable("account_id") final Long pAccountId)
             throws ModuleException {
         final Account account = accountService.retrieveAccount(pAccountId);
-        accountService.delete(account);
+        accountWorkflowManager.delete(account);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     @ResourceAccess(description = "unlock the account account_id according to the code unlock_code")
     public ResponseEntity<Void> unlockAccount(@PathVariable("account_id") final Long pAccountId,
-            @PathVariable("unlock_code") final String unlockCode) throws ModuleException, InvalidValueException {
+            @PathVariable("unlock_code") final String pUnlockCode) throws ModuleException, InvalidValueException {
         final Account account = accountService.retrieveAccount(pAccountId);
-        accountService.unlockAccount(account, unlockCode);
+        accountWorkflowManager.unlockAccount(account, pUnlockCode);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

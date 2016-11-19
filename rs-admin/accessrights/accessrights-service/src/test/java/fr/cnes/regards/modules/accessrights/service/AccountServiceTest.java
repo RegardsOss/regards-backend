@@ -4,9 +4,7 @@
 package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -14,32 +12,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
-import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.AccountService;
-import fr.cnes.regards.modules.accessrights.service.account.AccountStateFactory;
-import fr.cnes.regards.modules.accessrights.service.account.ActiveState;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountState;
-import fr.cnes.regards.modules.accessrights.service.account.IllegalActionForAccountStatusException;
-import fr.cnes.regards.modules.accessrights.service.account.LockedState;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserTransitions;
 
 /**
- * Test class for {@link IAccountState}.
+ * Test class for {@link IProjectUserTransitions}.
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -76,16 +59,6 @@ public class AccountServiceTest {
     private static final String PASSWORD = "password";
 
     /**
-     * Dummy unlock code
-     */
-    private static final String CODE = "code";
-
-    /**
-     * Dummy tenants
-     */
-    private static final Set<String> TENANTS = new HashSet<>(Arrays.asList("tenant0", "tenant1"));
-
-    /**
      * Tested service
      */
     private IAccountService accountService;
@@ -96,26 +69,6 @@ public class AccountServiceTest {
     private IAccountRepository accountRepository;
 
     /**
-     * Mocked service managing {@link ProjectUser}s
-     */
-    private IProjectUserService projectUserService;
-
-    /**
-     * Mocked tenant resolver
-     */
-    private ITenantResolver tenantResolver;
-
-    /**
-     * Mocked JWT Service
-     */
-    private JWTService jwtService;
-
-    /**
-     * Mocked account state factory
-     */
-    private AccountStateFactory accountStateFactory;
-
-    /**
      * Do some setup before each test
      */
     @Before
@@ -123,20 +76,15 @@ public class AccountServiceTest {
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
         // Mock dependencies
         accountRepository = Mockito.mock(IAccountRepository.class);
-        projectUserService = Mockito.mock(IProjectUserService.class);
-        tenantResolver = Mockito.mock(ITenantResolver.class);
-        jwtService = Mockito.mock(JWTService.class);
-        accountStateFactory = Mockito.mock(AccountStateFactory.class);
 
         // Construct serivice with mock deps
-        accountService = new AccountService(accountRepository, accountStateFactory);
+        accountService = new AccountService(accountRepository);
     }
 
     /**
      * Check that the system allows to retrieve all accounts of an instance.
      */
     @Test
-    @Requirement("?")
     @Purpose("Check that the system allows to retrieve all accounts of an instance.")
     public void retrieveAccountList() {
         // Define expected
@@ -156,146 +104,6 @@ public class AccountServiceTest {
         Mockito.verify(accountRepository).findAll();
     }
 
-    // /**
-    // * Check that the system silently fails when trying to delete an not existing account.
-    // *
-    // * @throws EntityException
-    // * Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
-    // */
-    // @Test
-    // @Requirement("?")
-    // @Purpose("Check that the system silently fails when trying to delete an not existing account.")
-    // public void removeAccountNotFound() throws EntityException {
-    // // Prepare the case
-    // account.setStatus(AccountStatus.ACTIVE);
-    //
-    // // Mock
-    // Mockito.when(accountRepository.findOne(ID)).thenReturn(null);
-    // Mockito.when(accountStateFactory.createState(account))
-    // .thenReturn(new ActiveState(projectUserService, accountRepository, jwtService, tenantResolver));
-    //
-    // // Call the tested method
-    // accountService.delete(account);
-    //
-    // // Verify deps calls
-    // Mockito.verify(accountRepository).findOne(ID);
-    // }
-
-    /**
-     * Check that the system prevents from deleting an account if it is still linked to project users.
-     *
-     * @throws OperationForbiddenException
-     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
-     */
-    @Test(expected = OperationForbiddenException.class)
-    @Requirement("?")
-    @Purpose("Check that the system prevents from deleting an account if it is still linked to project users.")
-    public void removeAccountUndeletable() throws ModuleException {
-        // Prepare the case
-        account.setId(ID);
-        account.setStatus(AccountStatus.ACTIVE);
-
-        // Mock
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
-        Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(true);
-        Mockito.when(accountStateFactory.createState(account))
-                .thenReturn(new ActiveState(projectUserService, accountRepository, jwtService, tenantResolver));
-
-        // Trigger the exception
-        accountService.delete(account);
-    }
-
-    /**
-     * Check that the system prevents from deleting an account for certain status (ACCEPTED...).
-     *
-     * @throws EntityException
-     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
-     */
-    @Test(expected = IllegalActionForAccountStatusException.class)
-    @Requirement("?")
-    @Purpose("Check that the system prevents from deleting an account for certain status (ACCEPTED...).")
-    public void removeAccountWrongStatus() throws ModuleException {
-        // Mock
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
-        Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
-        Mockito.when(accountStateFactory.createState(account))
-                .thenReturn(new ActiveState(projectUserService, accountRepository, jwtService, tenantResolver));
-
-        // Prepare the case
-        account.setId(ID);
-        account.setStatus(AccountStatus.ACCEPTED);
-
-        // Trigger the exception
-        accountService.delete(account);
-    }
-
-    /**
-     * Check that the system allows to delete an account.
-     *
-     * @throws EntityException
-     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
-     */
-    @Test
-    @Requirement("?")
-    @Purpose("Check that the system allows to delete an account.")
-    public void removeAccount() throws ModuleException {
-        // Prepare the case
-        account.setId(ID);
-        account.setStatus(AccountStatus.ACTIVE);
-
-        // Mock
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
-        Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
-        Mockito.when(accountStateFactory.createState(account))
-                .thenReturn(new ActiveState(projectUserService, accountRepository, jwtService, tenantResolver));
-
-        // Call the method
-        accountService.delete(account);
-
-        // Verify the repository was correctly called
-        Mockito.verify(accountRepository).delete(ID);
-    }
-
-    /**
-     * Check that the system fails when trying to create an account of already existing email.
-     *
-     * @throws AlreadyExistingException
-     *             Thrown when an account with same email already exists
-     */
-    @Test(expected = AlreadyExistingException.class)
-    @Requirement("?")
-    @Purpose("Check that the system fails when trying to create an account of already existing email.")
-    public void createAccountAlreadyExisting() throws AlreadyExistingException {
-        // Mock
-        Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(account);
-
-        // Trigger the exception
-        accountService.createAccount(account);
-    }
-
-    /**
-     * Check that the system allows to create a new account.
-     *
-     * @throws AlreadyExistingException
-     *             Thrown when an account with same email already exists
-     */
-    @Test
-    @Requirement("?")
-    @Purpose("Check that the system allows to create a new account.")
-    public void createAccount() throws AlreadyExistingException {
-        // Mock
-        Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(null);
-
-        // Call tested method
-        accountService.createAccount(account);
-
-        // Verify the repository was correctly called
-        Mockito.verify(accountRepository).save(Mockito.refEq(account, "id", "status", "code"));
-    }
-
     /**
      * Check that the system fails when trying to update a not existing account
      *
@@ -305,9 +113,8 @@ public class AccountServiceTest {
      *             Thrown when passed id is different from the id of passed account
      */
     @Test(expected = ModuleEntityNotFoundException.class)
-    @Requirement("?")
     @Purpose("Check that the system allows to create a new account.")
-    public void updateAccountNotFound() throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateAccount_notFound() throws ModuleEntityNotFoundException, InvalidValueException {
         // Prepare account
         account.setId(ID);
 
@@ -327,9 +134,8 @@ public class AccountServiceTest {
      *             Thrown when passed id is different from the id of passed account
      */
     @Test(expected = InvalidValueException.class)
-    @Requirement("?")
     @Purpose("Check that the system fails when trying to update a account with different id thant the passed one.")
-    public void updateAccountDifferentId() throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateAccount_differentId() throws ModuleEntityNotFoundException, InvalidValueException {
         // Prepare the account
         account.setId(ID);
 
@@ -353,7 +159,6 @@ public class AccountServiceTest {
      *             Thrown when passed id is different from the id of passed account
      */
     @Test
-    @Requirement("?")
     @Purpose("Check that the system allows to update an account.")
     public void updateAccount() throws ModuleEntityNotFoundException, InvalidValueException {
         // Prepare the case
@@ -368,96 +173,6 @@ public class AccountServiceTest {
         accountService.updateAccount(ID, account);
 
         // Check the repository was called to save
-        Mockito.verify(accountRepository).save(Mockito.refEq(account));
-    }
-
-    /**
-     * Check that the system does unlock not locked accounts and feedbacks the caller.
-     *
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Account} with passed if could be found
-     * @throws InvalidValueException
-     *             Thrown when passed id is different from the id of passed account
-     * @throws IllegalActionForAccountStatusException
-     *             Thrown when the account is not of status LOCKED
-     */
-    @Test(expected = IllegalActionForAccountStatusException.class)
-    @Requirement("REGARDS_DSL_ADM_ADM_450")
-    @Purpose("Check that the system does unlock not locked accounts and feedbacks the caller.")
-    public void unlockAccountNotLocked()
-            throws EntityNotFoundException, InvalidValueException, IllegalActionForAccountStatusException {
-        // Prepare the error case
-        account.setStatus(AccountStatus.ACTIVE);
-
-        // Mock
-        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateFactory.createState(account))
-                .thenReturn(new ActiveState(projectUserService, accountRepository, jwtService, tenantResolver));
-
-        // Trigger exception
-        accountService.unlockAccount(account, CODE);
-    }
-
-    /**
-     * Check that the system does not unlock a locked account if the wrong code is passed.
-     *
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Account} with passed if could be found
-     * @throws InvalidValueException
-     *             Thrown when passed id is different from the id of passed account
-     * @throws IllegalActionForAccountStatusException
-     *             Thrown when the account is not of status LOCKED
-     */
-    @Test(expected = InvalidValueException.class)
-    @Requirement("REGARDS_DSL_ADM_ADM_450")
-    @Purpose("Check that the system does not unlock a locked account if the wrong code is passed.")
-    public void unlockAccountWrongCode()
-            throws EntityNotFoundException, InvalidValueException, IllegalActionForAccountStatusException {
-        // Mock
-        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateFactory.createState(account))
-                .thenReturn(new LockedState(projectUserService, accountRepository, jwtService, tenantResolver));
-
-        // Prepare the case
-        account.setStatus(AccountStatus.LOCKED);
-
-        // Trigger exception
-        accountService.unlockAccount(account, "wrongCode");
-    }
-
-    /**
-     * Check that the system allows a user to unlock its account with a code.
-     *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when no {@link Account} with passed if could be found
-     * @throws InvalidValueException
-     *             Thrown when passed id is different from the id of passed account
-     * @throws IllegalActionForAccountStatusException
-     *             Thrown when the account is not of status LOCKED
-     */
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_450")
-    @Purpose("Check that the system allows a user to unlock its account with a code.")
-    public void unlockAccountRightCode()
-            throws ModuleEntityNotFoundException, InvalidValueException, IllegalActionForAccountStatusException {
-        // Mock
-        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateFactory.createState(account))
-                .thenReturn(new LockedState(projectUserService, accountRepository, jwtService, tenantResolver));
-
-        // Prepare the case
-        account.setStatus(AccountStatus.LOCKED);
-        account.setCode(CODE);
-
-        // Call tested method
-        accountService.unlockAccount(account, CODE);
-
-        // Check
-        final Account actual = accountService.retrieveAccount(ID);
-        Assert.assertEquals(AccountStatus.ACTIVE, actual.getStatus());
         Mockito.verify(accountRepository).save(Mockito.refEq(account));
     }
 }

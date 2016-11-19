@@ -137,7 +137,7 @@ public class RoleServiceTest {
     @Test(expected = AlreadyExistingException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to create an already existing role.")
-    public void createRoleDuplicate() throws AlreadyExistingException {
+    public void createRole_duplicate() throws AlreadyExistingException {
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
         final Role duplicate = new Role(NAME, null);
@@ -182,7 +182,7 @@ public class RoleServiceTest {
     @Test(expected = ModuleEntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to update a role which does not exist.")
-    public void updateRoleNotExistent() throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateRole_notExistent() throws ModuleEntityNotFoundException, InvalidValueException {
         final Long id = 58354L;
         final Role notExistent = new Role();
         notExistent.setId(id);
@@ -300,7 +300,7 @@ public class RoleServiceTest {
     @Test(expected = ModuleEntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to update permissions of a role which does not exist.")
-    public void updateRoleResourcesAccessNotExistent() throws ModuleEntityNotFoundException {
+    public void updateRoleResourcesAccess_notExistent() throws ModuleEntityNotFoundException {
         final Long id = 44255L;
 
         Mockito.when(roleRepository.exists(id)).thenReturn(false);
@@ -319,7 +319,7 @@ public class RoleServiceTest {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to add resources accesses on a role.")
-    public void updateRoleResourcesAccessAddingResourcesAccess() throws ModuleEntityNotFoundException {
+    public void updateRoleResourcesAccess_addingResourcesAccess() throws ModuleEntityNotFoundException {
         // Mock
         Mockito.when(roleRepository.exists(ID)).thenReturn(true);
         Mockito.when(roleRepository.findOne(ID)).thenReturn(rolePublic);
@@ -354,7 +354,7 @@ public class RoleServiceTest {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update resources accesses of a role.")
-    public void updateRoleResourcesAccessUpdatingResourcesAccess() throws ModuleEntityNotFoundException {
+    public void updateRoleResourcesAccess_updatingResourcesAccess() throws ModuleEntityNotFoundException {
         final Long roleId = 0L;
         final List<ResourcesAccess> initRAs = new ArrayList<>();
         initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));

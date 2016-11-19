@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
@@ -37,15 +37,15 @@ import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 @RequestMapping(path = "/accounts")
 public interface IAccountsSignature {
 
-    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<Resource<Account>>> retrieveAccountList();
 
+    @ResponseBody
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody Account pNewAccount)
-            throws AlreadyExistingException, InvalidEntityException;
+            throws EntityTransitionForbiddenException, ModuleAlreadyExistsException;
 
     @RequestMapping(value = "/{account_id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -93,7 +93,7 @@ public interface IAccountsSignature {
      *             - <br>
      *             {@link ModuleEntityNotFoundException} Thrown if the {@link Account} is still linked to project users
      *             and therefore cannot be removed<br>
-     *             {@link IllegalActionForAccountStatusException} if the accout is not in status allowing removal
+     *             {@link EntityTransitionForbiddenException} if the accout is not in status allowing removal
      * @throws OperationForbiddenException
      */
     @ResponseBody
@@ -112,7 +112,7 @@ public interface IAccountsSignature {
      *             <br>
      *             {@link EntityNotFoundException} Thrown when no {@link Account} could be found with id
      *             <code>pAccountId</code><br>
-     *             {@link IllegalActionForAccountStatusException} Thrown if the account is not in status LOCKED
+     *             {@link EntityTransitionForbiddenException} Thrown if the account is not in status LOCKED
      * @throws InvalidValueException
      * @throws ModuleEntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>

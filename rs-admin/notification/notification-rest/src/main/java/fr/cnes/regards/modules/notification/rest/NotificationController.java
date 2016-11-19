@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
@@ -33,7 +34,8 @@ import fr.cnes.regards.modules.notification.signature.INotificationSignature;
  *
  */
 @RestController
-@ModuleInfo(name = "notification", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "notification", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 public class NotificationController implements INotificationSignature {
 
     /**
@@ -55,7 +57,7 @@ public class NotificationController implements INotificationSignature {
      */
     @Override
     @ResourceAccess(description = "Retrieve the list of notifications for the logged user")
-    public ResponseEntity<List<Notification>> retrieveNotifications() {
+    public ResponseEntity<List<Notification>> retrieveNotifications() throws ModuleEntityNotFoundException {
         final List<Notification> notifications = notificationService.retrieveNotifications();
         return new ResponseEntity<>(notifications, HttpStatus.OK);
     }
@@ -118,7 +120,7 @@ public class NotificationController implements INotificationSignature {
      */
     @Override
     @ResourceAccess(description = "Define the endpoint for retrieving the notification settings for the logged user")
-    public ResponseEntity<NotificationSettings> retrieveNotificationSettings() {
+    public ResponseEntity<NotificationSettings> retrieveNotificationSettings() throws ModuleEntityNotFoundException {
         final NotificationSettings settings = notificationSettingsService.retrieveNotificationSettings();
         return new ResponseEntity<>(settings, HttpStatus.OK);
     }
@@ -132,7 +134,8 @@ public class NotificationController implements INotificationSignature {
      */
     @Override
     @ResourceAccess(description = "Define the endpoint for updating the notification status")
-    public void updateNotificationSettings(final NotificationSettingsDTO pNotificationSettings) {
+    public void updateNotificationSettings(final NotificationSettingsDTO pNotificationSettings)
+            throws ModuleEntityNotFoundException {
         notificationSettingsService.updateNotificationSettings(pNotificationSettings);
     }
 

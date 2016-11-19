@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.dao.projects;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,9 +29,9 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      *
      * @param pEmail
      *            The {@link ProjectUser}'s <code>email</code>
-     * @return The single {@link ProjectUser} with passed <code>email</code>
+     * @return The optional {@link ProjectUser} with passed <code>email</code>
      */
-    ProjectUser findOneByEmail(String pEmail);
+    Optional<ProjectUser> findOneByEmail(String pEmail);
 
     /**
      * Find all {@link ProjectUser}s with passed <code>status</code>.<br>

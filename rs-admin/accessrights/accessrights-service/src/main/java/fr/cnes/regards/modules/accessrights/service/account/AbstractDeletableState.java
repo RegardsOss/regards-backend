@@ -10,10 +10,10 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
  *
  * @author Xavier-Alexandre Brochard
  */
-abstract class AbstractDeletableState implements IAccountState {
+abstract class AbstractDeletableState implements IAccountTransitions {
 
     /**
      * Class logger
@@ -39,25 +39,21 @@ abstract class AbstractDeletableState implements IAccountState {
     /**
      * Service managing {@link ProjectUser}s. Autowired by Spring.
      */
-    @Autowired
     private final IProjectUserService projectUserService;
 
     /**
      * Repository
      */
-    @Autowired
     private final IAccountRepository accountRepository;
 
     /**
      * JWT Service. Autowired by Spring.
      */
-    @Autowired
     private final JWTService jwtService;
 
     /**
      * Tenant resolver
      */
-    @Autowired
     private final ITenantResolver tenantResolver;
 
     /**
@@ -91,8 +87,8 @@ abstract class AbstractDeletableState implements IAccountState {
                 doDelete(pAccount);
                 break;
             default:
-                throw new IllegalActionForAccountStatusException(pAccount,
-                        Thread.currentThread().getStackTrace()[1].getMethodName());
+                throw new EntityTransitionForbiddenException(pAccount.getId().toString(), ProjectUser.class,
+                        pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
         }
     }
 
@@ -101,10 +97,10 @@ abstract class AbstractDeletableState implements IAccountState {
      *
      * @param pAccount
      *            the account
-     * @throws OperationForbiddenException
+     * @throws EntityOperationForbiddenException
      *             when the account is linked to at least a project user
      */
-    private void doDelete(final Account pAccount) throws OperationForbiddenException {
+    private void doDelete(final Account pAccount) throws EntityOperationForbiddenException {
         // Get all tenants
         final Set<String> tenants = tenantResolver.getAllTenants();
 
@@ -122,7 +118,7 @@ abstract class AbstractDeletableState implements IAccountState {
 
         try (Stream<String> stream = tenants.stream()) {
             if (stream.peek(injectTenant).anyMatch(hasProjectUser)) {
-                throw new OperationForbiddenException(pAccount.getId().toString(), Account.class,
+                throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class,
                         "Cannot remove account because it is linked to at least on project user.");
             } else {
                 accountRepository.delete(pAccount.getId());

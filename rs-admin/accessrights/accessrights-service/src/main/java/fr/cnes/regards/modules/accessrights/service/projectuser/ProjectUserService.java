@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -79,14 +80,28 @@ public class ProjectUserService implements IProjectUserService {
         instanceAdminUserEmail = pInstanceAdminUserEmail;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserList()
+     */
     @Override
     public List<ProjectUser> retrieveUserList() {
         return projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUser(java.lang.Long)
+     */
     @Override
-    public ProjectUser retrieveUser(final Long pUserId) {
+    public ProjectUser retrieveUser(final Long pUserId) throws EntityNotFoundException {
         final ProjectUser user = projectUserRepository.findOne(pUserId);
+        // Check found
+        if (user == null) {
+            throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
+        }
         // Filter out hidden meta data
         try (final Stream<MetaData> stream = user.getMetaData().stream()) {
             user.setMetaData(stream.filter(keepVisibleMetaData).collect(Collectors.toList()));
@@ -106,10 +121,8 @@ public class ProjectUserService implements IProjectUserService {
             user = new ProjectUser(pUserEmail, new Role(RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null),
                     new ArrayList<>(), new ArrayList<>());
         } else {
-            user = projectUserRepository.findOneByEmail(pUserEmail);
-            if (user == null) {
-                throw new ModuleEntityNotFoundException(pUserEmail, ProjectUser.class);
-            }
+            user = projectUserRepository.findOneByEmail(pUserEmail)
+                    .orElseThrow(() -> new ModuleEntityNotFoundException(pUserEmail, ProjectUser.class));
             // Filter out hidden meta data
             try (final Stream<MetaData> stream = user.getMetaData().stream()) {
                 stream.filter(keepVisibleMetaData);
@@ -124,11 +137,28 @@ public class ProjectUserService implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.role.IProjectUserService#retrieveCurrentUser()
      */
     @Override
-    public ProjectUser retrieveCurrentUser() {
+    public ProjectUser retrieveCurrentUser() throws ModuleEntityNotFoundException {
         final String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return projectUserRepository.findOneByEmail(email);
+        return projectUserRepository.findOneByEmail(email)
+                .orElseThrow(() -> new ModuleEntityNotFoundException("Current user", ProjectUser.class));
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveAccessRequestList()
+     */
+    @Override
+    public List<ProjectUser> retrieveAccessRequestList() {
+        return projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#updateUser(java.lang.Long,
+     * fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
+     */
     @Override
     public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
             throws InvalidValueException, ModuleEntityNotFoundException {
@@ -141,55 +171,91 @@ public class ProjectUserService implements IProjectUserService {
         save(pUpdatedProjectUser);
     }
 
-    @Override
-    public void removeUser(final Long pUserId) {
-        projectUserRepository.delete(pUserId);
-    }
-
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#updateUserAccessRights(java.lang.
+     * String, java.util.List)
+     */
     @Override
     public void updateUserAccessRights(final String pLogin, final List<ResourcesAccess> pUpdatedUserAccessRights)
             throws ModuleEntityNotFoundException {
-        if (!existUser(pLogin)) {
-            throw new ModuleEntityNotFoundException(pLogin, ProjectUser.class);
-        }
-        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin);
+        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin)
+                .orElseThrow(() -> new ModuleEntityNotFoundException(pLogin, ProjectUser.class));
 
-        try (Stream<ResourcesAccess> previous = user.getPermissions().stream();
-                Stream<ResourcesAccess> updated = pUpdatedUserAccessRights.stream()) {
-            user.setPermissions(Stream.concat(updated, previous)
-                    .filter(RegardsStreamUtils.distinctByKey(r -> r.getId())).collect(Collectors.toList()));
+        try (final Stream<ResourcesAccess> previous = user.getPermissions().stream();
+                final Stream<ResourcesAccess> updated = pUpdatedUserAccessRights.stream();
+                final Stream<ResourcesAccess> merged = Stream.concat(updated, previous)) {
+            user.setPermissions(merged.filter(RegardsStreamUtils.distinctByKey(r -> r.getId()))
+                    .collect(Collectors.toList()));
         }
 
         save(user);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#removeUserAccessRights(java.lang.
+     * String)
+     */
     @Override
-    public void removeUserAccessRights(final String pLogin) {
-        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin);
+    public void removeUserAccessRights(final String pLogin) throws ModuleEntityNotFoundException {
+        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin)
+                .orElseThrow(() -> new ModuleEntityNotFoundException(pLogin, ProjectUser.class));
         user.setPermissions(new ArrayList<>());
         save(user);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserMetaData(java.lang.Long)
+     */
     @Override
-    public List<MetaData> retrieveUserMetaData(final Long pUserId) {
+    public List<MetaData> retrieveUserMetaData(final Long pUserId) throws EntityNotFoundException {
         final ProjectUser user = retrieveUser(pUserId);
         return user.getMetaData();
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#updateUserMetaData(java.lang.Long,
+     * java.util.List)
+     */
     @Override
-    public void updateUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData) {
+    public void updateUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData)
+            throws EntityNotFoundException {
         final ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(pUpdatedUserMetaData);
         save(user);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#removeUserMetaData(java.lang.Long)
+     */
     @Override
-    public void removeUserMetaData(final Long pUserId) {
+    public void removeUserMetaData(final Long pUserId) throws EntityNotFoundException {
         final ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(new ArrayList<>());
         save(user);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveProjectUserAccessRights(java
+     * .lang.String, java.lang.String)
+     */
     @Override
     public List<ResourcesAccess> retrieveProjectUserAccessRights(final String pEmail, final String pBorrowedRoleName)
             throws InvalidValueException, ModuleEntityNotFoundException {
@@ -220,12 +286,21 @@ public class ProjectUserService implements IProjectUserService {
         return merged;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#existUser(java.lang.String)
+     */
     @Override
     public boolean existUser(final String pEmail) {
-        final ProjectUser projectUser = projectUserRepository.findOneByEmail(pEmail);
-        return projectUser != null;
+        return projectUserRepository.findOneByEmail(pEmail).isPresent();
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#existUser(java.lang.Long)
+     */
     @Override
     public boolean existUser(final Long pId) {
         return projectUserRepository.exists(pId);

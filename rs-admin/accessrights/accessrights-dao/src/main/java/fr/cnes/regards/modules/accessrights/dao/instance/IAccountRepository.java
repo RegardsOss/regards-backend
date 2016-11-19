@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.instance;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -26,8 +28,8 @@ public interface IAccountRepository extends JpaRepository<Account, Long> {
      *
      * @param pEmail
      *            The {@link Account}'s <code>email</code>
-     * @return The single {@link Account} with passed <code>email</code>
+     * @return An optional account
      */
-    Account findOneByEmail(String pEmail);
+    Optional<Account> findOneByEmail(String pEmail);
 
 }

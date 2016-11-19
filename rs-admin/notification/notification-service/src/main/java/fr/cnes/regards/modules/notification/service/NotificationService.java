@@ -100,7 +100,7 @@ public class NotificationService implements INotificationService {
      * @see fr.cnes.regards.modules.notification.service.INotificationService#retrieveNotifications()
      */
     @Override
-    public List<Notification> retrieveNotifications() {
+    public List<Notification> retrieveNotifications() throws ModuleEntityNotFoundException {
         final ProjectUser projectUser = projectUserService.retrieveCurrentUser();
         final Role role = projectUser.getRole();
         return notificationRepository.findByRecipientsContaining(projectUser, role);

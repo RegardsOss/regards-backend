@@ -5,8 +5,7 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,27 +13,37 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.AccessRequestService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.AccessDeniedState;
+import fr.cnes.regards.modules.accessrights.service.projectuser.AccessGrantedState;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserStateProvider;
+import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserWorkflowManager;
+import fr.cnes.regards.modules.accessrights.service.projectuser.WaitingAccessState;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
- * Test class for {@link AccessRequestService}.
+ * Test class for {@link ProjectUserWorkflowManager}.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
-public class AccessRequestServiceTest {
+/**
+ *
+ * @author Xavier-Alexandre Brochard
+ */
+public class ProjectUserWorkflowManagerTest {
 
     /**
      * Stub constant value for an email
@@ -72,24 +81,24 @@ public class AccessRequestServiceTest {
     private static final Role ROLE = new Role("role name", null);
 
     /**
-     * The tested service
-     */
-    private AccessRequestService accessRequestService;
-
-    /**
      * Mock repository of tested service
      */
     private IProjectUserRepository projectUserRepository;
 
     /**
-     * Mock account servvice
+     * Workflow manager for project users. Tested service.
      */
-    private IAccountService accountService;
+    private ProjectUserWorkflowManager projectUserWorkflowManager;
 
     /**
      * Mock role servvice
      */
     private IRoleService roleService;
+
+    /**
+     * Mock account servvice
+     */
+    private IAccountService accountService;
 
     /**
      * The dto used to make an access request
@@ -102,15 +111,29 @@ public class AccessRequestServiceTest {
     private ProjectUser projectUser;
 
     /**
+     * Mocked project user state provider
+     */
+    private ProjectUserStateProvider projectUserStateProvider;
+
+    /**
+     * Mocked access settings service
+     */
+    private IAccessSettingsService accessSettingsService;
+
+    /**
      * Do some setup before each test
      */
     @Before
     public void setUp() {
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
-        accountService = Mockito.mock(IAccountService.class);
         roleService = Mockito.mock(IRoleService.class);
+        accountService = Mockito.mock(IAccountService.class);
+        projectUserStateProvider = Mockito.mock(ProjectUserStateProvider.class);
+        accessSettingsService = Mockito.mock(IAccessSettingsService.class);
 
-        accessRequestService = new AccessRequestService(projectUserRepository, accountService, roleService);
+        // Create the tested service
+        projectUserWorkflowManager = new ProjectUserWorkflowManager(projectUserStateProvider, projectUserRepository,
+                roleService, accountService);
 
         // Prepare the access request
         dto = new AccessRequestDTO();
@@ -120,7 +143,7 @@ public class AccessRequestServiceTest {
         dto.setMetaData(META_DATA);
         dto.setPassword(PASSOWRD);
         dto.setPermissions(PERMISSIONS);
-        dto.setRole(ROLE);
+        dto.setRoleName(ROLE.getName());
 
         // Prepare the project user we expect to be created by the access request
         projectUser = new ProjectUser();
@@ -132,70 +155,55 @@ public class AccessRequestServiceTest {
     }
 
     /**
-     * Check that the system allows to retrieve all access requests for a project.
-     */
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_310")
-    @Purpose("Check that the system allows to retrieve all access requests for a project.")
-    public void retrieveAccessRequestList() {
-        // Populate all projects users (which can be access requests or not)
-        final List<ProjectUser> accessRequests = new ArrayList<>();
-        accessRequests.add(new ProjectUser(null, null, null, null));
-        accessRequests.add(new ProjectUser(null, null, null, null));
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(accessRequests);
-
-        try (final Stream<ProjectUser> stream = accessRequests.stream()) {
-            // Prepare the list of expect values
-            final List<ProjectUser> expected = stream.filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS))
-                    .collect(Collectors.toList());
-
-            // Retrieve actual values
-            final List<ProjectUser> actual = accessRequestService.retrieveAccessRequestList();
-
-            // Lists must be equal
-            Assert.assertEquals(expected, actual);
-
-            // Check that the repository's method was called with right arguments
-            Mockito.verify(projectUserRepository).findByStatus(UserStatus.WAITING_ACCESS);
-
-        }
-    }
-
-    /**
-     * Check that the system fails when receiving a duplicate access request.
+     * Check that the system fails when receiving an access request with an already used email.
      *
-     * @throws AlreadyExistingException
+     * @throws ModuleEntityNotFoundException
+     *             if the passed role culd not be found
+     * @throws ModuleAlreadyExistsException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
+     * @throws EntityTransitionForbiddenException
+     *             when illegal transition call
      */
-    @Test(expected = AlreadyExistingException.class)
+    @Test(expected = ModuleAlreadyExistsException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_510")
-    @Purpose("Check that the system fails when receiving a duplicate access request.")
-    public void requestAccessAlreadyExisting() throws AlreadyExistingException {
+    @Purpose("Check that the system fails when receiving an access request with an already used email.")
+    public void requestAccess_emailAlreadyInUse()
+            throws EntityTransitionForbiddenException, ModuleEntityNotFoundException, ModuleAlreadyExistsException {
         // Prepare the duplicate
         final List<ProjectUser> projectUsers = new ArrayList<>();
         projectUsers.add(projectUser);
-        // projectUsers.add(new ProjectUser(0L, null, null, UserStatus.WAITING_ACCESS, null, null, null, EMAIL));
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(projectUsers);
+        Mockito.when(accountService.existAccount(EMAIL)).thenReturn(true);
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(new ProjectUser()));
 
         // Make sur they have the same email, in order to throw the expected exception
         Assert.assertTrue(projectUser.getEmail().equals(dto.getEmail()));
 
         // Trigger the exception
-        accessRequestService.requestAccess(dto);
+        projectUserWorkflowManager.requestProjectAccess(dto);
     }
 
     /**
      * Check that the system allows the user to request a registration.
      *
-     * @throws AlreadyExistingException
+     * @throws ModuleEntityNotFoundException
+     *             if the passed role could not be found
+     * @throws ModuleAlreadyExistsException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
+     * @throws EntityTransitionForbiddenException
+     *             when illegal transition call
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system allows the user to request a registration by creating a new project user.")
-    public void requestAccess() throws AlreadyExistingException {
+    public void requestAccess()
+            throws EntityTransitionForbiddenException, ModuleEntityNotFoundException, ModuleAlreadyExistsException {
+        // Mock
+        Mockito.when(accountService.existAccount(EMAIL)).thenReturn(true);
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
+        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
+
         // Call the service
-        accessRequestService.requestAccess(dto);
+        projectUserWorkflowManager.requestProjectAccess(dto);
 
         // Check that the repository's method was called to create a project user containing values from the DTO and
         // with status WAITING_ACCESS. We therefore exclude id, lastConnection and lastUpdate which we do not care about
@@ -205,25 +213,32 @@ public class AccessRequestServiceTest {
     /**
      * Check that the system set PUBLIC role as default when requesting access.
      *
-     * @throws AlreadyExistingException
+     * @throws ModuleEntityNotFoundException
+     *             if the passed role could not be found
+     * @throws ModuleAlreadyExistsException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
+     * @throws EntityTransitionForbiddenException
+     *             when illegal transition call
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system set PUBLIC role as default when requesting access.")
-    public void requestAccessNullRole() throws AlreadyExistingException {
+    public void requestAccess_nullRoleName()
+            throws EntityTransitionForbiddenException, ModuleEntityNotFoundException, ModuleAlreadyExistsException {
         // Prepare the access request
-        dto.setRole(null);
+        dto.setRoleName(null);
 
-        // Mock role repository
+        // Mock
         final Role publicRole = new Role("Public", null);
         Mockito.when(roleService.getDefaultRole()).thenReturn(publicRole);
+        Mockito.when(accountService.existAccount(EMAIL)).thenReturn(true);
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
 
         // Prepare expected result
         projectUser.setRole(publicRole);
 
         // Call the service
-        accessRequestService.requestAccess(dto);
+        projectUserWorkflowManager.requestProjectAccess(dto);
 
         // Check that the repository's method was called to create a project user containing values from the DTO and
         // with status WAITING_ACCESS. We therefore exclude id, lastConnection and lastUpdate which we do not care about
@@ -232,112 +247,63 @@ public class AccessRequestServiceTest {
 
     /**
      * Check that the system creates an Account when requesting an access if none already exists.
-     *
-     * @throws AlreadyExistingException
-     *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
      */
-    @Test
+    @Test(expected = ModuleEntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system creates an Account when requesting an access if none already exists.")
-    public void requestAccessNoAccount() throws AlreadyExistingException {
+    public void requestAccess_noAccount() throws EntityTransitionForbiddenException, ModuleEntityNotFoundException,
+            ModuleAlreadyExistsException, AlreadyExistingException {
         // Make sure no account exists in order to make the service create a new one
         Mockito.when(accountService.existAccount(EMAIL)).thenReturn(false);
 
-        // Prepare the account we exepect to be created
-        // final Account account = new Account();
-        final Account account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSOWRD);
-
-        // Call the service
-        accessRequestService.requestAccess(dto);
-
-        // Check that the AccountService#createAccount method was called to create an account containing values from the
-        // DTO and with status PENDING. We therefore exclude id and code which we do not care about.
-        Mockito.verify(accountService).createAccount(Mockito.refEq(account, "id", "code"));
-    }
-
-    /**
-     * Check that the system fails when trying to delete an inexistent registration request.
-     *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
-     */
-    @Test(expected = ModuleEntityNotFoundException.class)
-    @Requirement("REGARDS_DSL_ADM_ADM_520")
-    @Purpose("Check that the system fails when trying to delete an inexistent registration request.")
-    public void removeAccessRequestNotFound() throws ModuleEntityNotFoundException {
-        final Long id = 0L;
-
-        // Mock repository's content
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(new ArrayList<>());
-
         // Trigger the exception
-        accessRequestService.removeAccessRequest(id);
+        projectUserWorkflowManager.requestProjectAccess(dto);
     }
 
     /**
      * Check that the system allows to delete a registration request.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityTransitionForbiddenException
      *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to delete a registration request.")
-    public void removeAccessRequest() throws ModuleEntityNotFoundException {
-        final Long id = 0L;
-        projectUser.setId(id);
+    public void removeAccess() throws EntityTransitionForbiddenException {
         final List<ProjectUser> asList = new ArrayList<>();
         asList.add(projectUser);
 
         // Mock repository's content
         Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(asList);
+        Mockito.when(projectUserStateProvider.createState(projectUser))
+                .thenReturn(new WaitingAccessState(projectUserRepository, accessSettingsService));
 
         // Call the tested method
-        accessRequestService.removeAccessRequest(id);
+        projectUserWorkflowManager.removeAccess(projectUser);
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).delete(id);
+        Mockito.verify(projectUserRepository).delete(projectUser.getId());
     }
 
     /**
-     * Check that the system fails when trying to accept an inexistent registration request.
+     * Check that the system allows to grant access to a previously access denied project user.
      *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
-     */
-    @Test(expected = ModuleEntityNotFoundException.class)
-    @Requirement("REGARDS_DSL_ADM_ADM_520")
-    @Purpose("Check that the system fails when trying to accept an inexistent registration request.")
-    public void acceptAccessRequestNotFound() throws ModuleEntityNotFoundException {
-        final Long id = 0L;
-
-        // Mock repository's content
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(new ArrayList<>());
-
-        // Trigger the exception
-        accessRequestService.acceptAccessRequest(id);
-    }
-
-    /**
-     * Check that the system allows to validate a registration request.
-     *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
+     * @throws EntityTransitionForbiddenException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to validate a registration request.")
-    public void acceptAccessRequest() throws ModuleEntityNotFoundException {
-        final Long id = 0L;
-        projectUser.setId(id);
+    public void grantAccess() throws EntityTransitionForbiddenException {
         final List<ProjectUser> asList = new ArrayList<>();
         asList.add(projectUser);
 
         // Mock repository's content by making sure the request exists
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(asList);
+        Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_DENIED)).thenReturn(asList);
+        Mockito.when(projectUserStateProvider.createState(projectUser))
+                .thenReturn(new AccessDeniedState(projectUserRepository));
 
         // Call the tested method
-        accessRequestService.acceptAccessRequest(id);
+        projectUserWorkflowManager.grantAccess(projectUser);
 
         // Check that the AccountService#createAccount method was called to create an account containing values from the
         // DTO and with status PENDING. We therefore exclude id, lastConnection and lastUpdate which we do not care
@@ -347,44 +313,25 @@ public class AccessRequestServiceTest {
     }
 
     /**
-     * Check that the system fails when trying to deny a inexistent registration request.
-     *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
-     */
-    @Test(expected = ModuleEntityNotFoundException.class)
-    @Requirement("REGARDS_DSL_ADM_ADM_520")
-    @Purpose("Check that the system fails when trying to deny a inexistent registration request.")
-    public void denyAccessRequestNotFound() throws ModuleEntityNotFoundException {
-        final Long id = 0L;
-
-        // Mock repository's content
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(new ArrayList<>());
-
-        // Trigger the exception
-        accessRequestService.denyAccessRequest(id);
-    }
-
-    /**
      * Check that the system allows to deny a registration request.
      *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
+     * @throws EntityTransitionForbiddenException
+     *
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to deny a registration request.")
-    public void denyAccessRequest() throws ModuleEntityNotFoundException {
-        final Long id = 0L;
-        projectUser.setId(id);
+    public void denyAccess() throws EntityTransitionForbiddenException {
         final List<ProjectUser> asList = new ArrayList<>();
         asList.add(projectUser);
 
         // Mock repository's content by making sure the request exists
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(asList);
+        Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED)).thenReturn(asList);
+        Mockito.when(projectUserStateProvider.createState(projectUser))
+                .thenReturn(new AccessGrantedState(projectUserRepository));
 
         // Call the tested method
-        accessRequestService.denyAccessRequest(id);
+        projectUserWorkflowManager.denyAccess(projectUser);
 
         // Check that the AccountService#createAccount method was called to create an account containing values from the
         // DTO and with status PENDING. We therefore exclude id, lastConnection and lastUpdate which we do not care
@@ -393,28 +340,4 @@ public class AccessRequestServiceTest {
         Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
     }
 
-    @Test
-    public void existsByEmailTrue() {
-        final Long id = 0L;
-        projectUser.setId(id);
-        final List<ProjectUser> asList = new ArrayList<>();
-        asList.add(projectUser);
-
-        // Mock repository's content by making sure the request exists
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(asList);
-
-        // Check result
-        Assert.assertTrue(accessRequestService.exists(id));
-    }
-
-    @Test
-    public void existsByEmailFalse() {
-        final Long id = 0L;
-
-        // Mock repository's content by making sure the request exists
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(new ArrayList<>());
-
-        // Check result
-        Assert.assertFalse(accessRequestService.exists(id));
-    }
 }

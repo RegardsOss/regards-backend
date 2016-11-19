@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.account;
 
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
@@ -39,13 +40,13 @@ public class ActiveState extends AbstractDeletableState {
     }
 
     @Override
-    public void lockAccount(final Account pAccount) throws IllegalActionForAccountStatusException {
+    public void lockAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         pAccount.setStatus(AccountStatus.LOCKED);
         getAccountRepository().save(pAccount);
     }
 
     @Override
-    public void inactiveAccount(final Account pAccount) throws IllegalActionForAccountStatusException {
+    public void inactiveAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         pAccount.setStatus(AccountStatus.INACTIVE);
         getAccountRepository().save(pAccount);
     }

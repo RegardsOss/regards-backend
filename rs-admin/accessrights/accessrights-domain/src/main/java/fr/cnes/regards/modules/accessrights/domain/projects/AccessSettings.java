@@ -9,7 +9,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -27,7 +26,6 @@ public class AccessSettings implements IIdentifiable<Long> {
     /**
      * The settings unique id
      */
-    @NotNull
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accessSettingsSequence")
     @Column(name = "id")
@@ -101,7 +99,7 @@ public class AccessSettings implements IIdentifiable<Long> {
         final int prime = 31;
         int result = 1;
 
-        result = (prime * result);
+        result = prime * result;
         if (mode != null) {
             result += mode.hashCode();
         }

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -222,7 +221,6 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         performGet(apiAccountEmail, token, expectations, errorMessage, "error@regards.fr");
     }
 
-    @Ignore
     @Test
     @Purpose("Check that the system allows to update account settings.")
     public void updateAccountSetting() {
@@ -313,8 +311,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system prevents from deleting an account linked to any project users.")
-    public void deleteAccountNotAllowedBecauseOfLinkedProjectUser() throws ModuleEntityNotFoundException {
-
+    public void deleteAccount_notAllowedBecauseOfLinkedProjectUser() throws ModuleEntityNotFoundException {
         jwtService.injectMockToken(AbstractAdministrationIT.PROJECT_TEST_NAME, ROLE_TEST);
         projectUserRepository.save(new ProjectUser(EMAIL, roleTest, roleTest.getPermissions(), new ArrayList<>()));
 
