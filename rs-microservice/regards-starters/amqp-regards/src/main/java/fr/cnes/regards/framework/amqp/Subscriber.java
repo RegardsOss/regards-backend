@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolve
  * @author svissier
  *
  */
-public class Subscriber {
+public class Subscriber implements ISubscriber {
 
     /**
      * method from {@link fr.cnes.regards.framework.amqp.domain.IHandler}
@@ -52,8 +52,8 @@ public class Subscriber {
      */
     private final ITenantResolver tenantResolver;
 
-    public Subscriber(RegardsAmqpAdmin pRegardsAmqpAdmin, IRabbitVirtualHostUtils pRabbitVirtualHostUtils,
-            Jackson2JsonMessageConverter pJackson2JsonMessageConverter, ITenantResolver pTenantResolver) {
+    public Subscriber(final RegardsAmqpAdmin pRegardsAmqpAdmin, final IRabbitVirtualHostUtils pRabbitVirtualHostUtils,
+            final Jackson2JsonMessageConverter pJackson2JsonMessageConverter, final ITenantResolver pTenantResolver) {
         super();
         regardsAmqpAdmin = pRegardsAmqpAdmin;
         rabbitVirtualHostUtils = pRabbitVirtualHostUtils;
@@ -83,7 +83,7 @@ public class Subscriber {
             throws RabbitMQVhostException {
         final Set<String> tenants = tenantResolver.getAllTenants();
         jackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
-        for (String tenant : tenants) {
+        for (final String tenant : tenants) {
             // CHECKSTYLE:OFF
             final SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(pEvt, tenant,
                                                                                                       jackson2JsonMessageConverter,
