@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.jobs.domain;
 
 /**
  * Event types between a running job and JobHandler
+ * 
+ * @author Léo Mieulet
  */
 public enum EventType {
     /**

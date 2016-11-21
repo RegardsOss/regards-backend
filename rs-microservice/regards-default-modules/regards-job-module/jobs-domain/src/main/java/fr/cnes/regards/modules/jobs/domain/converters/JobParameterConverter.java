@@ -3,7 +3,9 @@
  */
 package fr.cnes.regards.modules.jobs.domain.converters;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
@@ -16,6 +18,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.cnes.regards.modules.jobs.domain.JobParameters;
 
+/**
+ * 
+ * @author Léo Mieulet
+ * @author Christophe Mertz
+ *
+ */
 @Converter(autoApply = true)
 public class JobParameterConverter implements AttributeConverter<JobParameters, String> {
 
@@ -31,12 +39,14 @@ public class JobParameterConverter implements AttributeConverter<JobParameters, 
 
     @Override
     public String convertToDatabaseColumn(final JobParameters pAttribute) {
-        mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
         String json = "";
-        try {
-            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(pAttribute.getParameters());
-        } catch (final Exception e) {
-            LOG.error("Failed to convert JobParameter POJO to string", e);
+        if (pAttribute != null) {
+            mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+            try {
+                json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(pAttribute.getParameters());
+            } catch (final IOException e) {
+                LOG.error("Failed to convert JobParameter POJO to string", e);
+            }
         }
         return json;
     }
@@ -48,10 +58,10 @@ public class JobParameterConverter implements AttributeConverter<JobParameters, 
         try {
             final Map<String, Object> map = mapper.readValue(pDbData, new TypeReference<Map<String, Object>>() {
             });
-            for (final String key : map.keySet()) {
-                jobParameters.add(key, map.get(key));
+            for (final Entry<String, Object> anEntry : map.entrySet()) {
+                jobParameters.add(anEntry.getKey(), anEntry.getValue());
             }
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             LOG.error("Failed to convert JobParameter persisted string to POJO", e);
         }
         return jobParameters;

@@ -7,9 +7,11 @@ import java.util.List;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
@@ -19,6 +21,7 @@ import fr.cnes.regards.modules.jobs.domain.Output;
  * REST interface to define the entry points of the module.
  *
  */
+@RequestMapping("/jobs")
 public interface IJobInfoSignature {
 
     /**
@@ -26,7 +29,7 @@ public interface IJobInfoSignature {
      *
      * @return A {@link List} of jobInfo as {@link JobInfo} wrapped in an {@link HttpEntity}
      */
-    @GetMapping("/jobs")
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<Resource<JobInfo>>> retrieveJobs();
 
     /**
@@ -36,18 +39,18 @@ public interface IJobInfoSignature {
      *            filter by that state
      * @return job list
      */
-    @GetMapping("/jobs/state/{state}")
-    ResponseEntity<List<Resource<JobInfo>>> retrieveJobsByState(JobStatus state);
+    @RequestMapping(value = "/state/{state}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<Resource<JobInfo>>> retrieveJobsByState(@PathVariable("jobId") JobStatus state);
 
     /**
-     * Define the endpoint to retrieve an JobInfo
+     * Define the endpoint to retrieve a JobInfo
      *
      * @param pJobInfoId
      *            The jobInfo id
      * @return the corresponding jobInfo
      */
-    @GetMapping("/jobs/{job_id}")
-    ResponseEntity<Resource<JobInfo>> retrieveJobInfo(Long pJobInfoId);
+    @RequestMapping(value = "/{jobId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Resource<JobInfo>> retrieveJobInfo(@PathVariable("jobId") Long pJobInfoId);
 
     /**
      * Define the endpoint to stop a job
@@ -56,8 +59,8 @@ public interface IJobInfoSignature {
      *            The jobInfo id
      * @return jobInfo
      */
-    @DeleteMapping("/jobs/{job_id}")
-    ResponseEntity<Resource<JobInfo>> stopJob(Long pJobInfoId);
+    @RequestMapping(value = "/{jobId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Resource<JobInfo>> stopJob(@PathVariable("jobId") Long pJobInfoId);
 
     /**
      * Define the endpoint to retrieve job results
@@ -66,7 +69,7 @@ public interface IJobInfoSignature {
      *            The jobInfo id
      * @return the list of result for that JobInfo
      */
-    @GetMapping("/jobs/{job_id}/results}")
-    ResponseEntity<List<Output>> getJobResults(Long pJobInfoId);
+    @RequestMapping(value = "/{jobId}/results", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<Output>> getJobResults(@PathVariable("jobId") Long pJobInfoId);
 
 }

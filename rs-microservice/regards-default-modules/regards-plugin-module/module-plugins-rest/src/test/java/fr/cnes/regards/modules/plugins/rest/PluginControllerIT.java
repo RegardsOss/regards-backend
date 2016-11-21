@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +51,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     private static final Long AN_ID = 050L;
 
-    private static final String LABEL = "a plugin configuraion for the test";
+    private static final String LABEL = "a plugin configuration for the test";
 
     private static final List<PluginParameter> PARAMETERS = PluginParametersFactory.build()
             .addParameterDynamic("param31", "value31").addParameter("param32", "value32")

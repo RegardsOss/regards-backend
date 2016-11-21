@@ -1,5 +1,5 @@
-/**
- *
+/*
+ * LICENSE_PLACEHOLDER
  */
 package fr.cnes.regards.modules.jobs.domain;
 
@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  *
  */
 public class JobConfiguration {
@@ -48,7 +48,7 @@ public class JobConfiguration {
     private String className;
 
     /**
-     *
+     * Default constructor
      */
     public JobConfiguration() {
         super();

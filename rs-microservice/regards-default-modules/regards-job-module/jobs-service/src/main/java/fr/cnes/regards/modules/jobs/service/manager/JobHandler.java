@@ -24,11 +24,12 @@ import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.jobs.domain.StatusInfo;
 import fr.cnes.regards.modules.jobs.service.systemservice.IJobInfoSystemService;
+import fr.cnes.regards.modules.jobs.service.systemservice.JobInfoSystemService;
 
 /**
  * Service to manipulate Job and JobInfo Contains a threadPool to manage the lifecycle of our jobs
  *
- * @author lmieulet
+ * @author Léo Mieulet
  */
 @Component
 public class JobHandler implements IJobHandler {
@@ -81,6 +82,12 @@ public class JobHandler implements IJobHandler {
      */
     private final JobMonitor jobMonitor;
 
+    /**
+     * Constructor with a {@link JobInfoSystemService}
+     * 
+     * @param pJobInfoSystemService
+     *            a {@link JobInfoSystemService}
+     */
     public JobHandler(final IJobInfoSystemService pJobInfoSystemService) {
         threads = new HashMap<>();
         jobInfoSystemService = pJobInfoSystemService;
@@ -137,8 +144,8 @@ public class JobHandler implements IJobHandler {
     }
 
     @Override
-    public StatusInfo execute(final String tenantName, final Long jobInfoId) {
-        final JobInfo jobInfo = jobInfoSystemService.findJobInfo(tenantName, jobInfoId);
+    public StatusInfo execute(final String pTenant, final Long pJobInfoId) {
+        final JobInfo jobInfo = jobInfoSystemService.findJobInfo(pTenant, pJobInfoId);
         StatusInfo resultingStatus = null;
         if (jobInfo != null) {
             boolean hasFailed = true;
@@ -147,13 +154,13 @@ public class JobHandler implements IJobHandler {
                 newJob = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
                 // Add the queue event to the thread to let it send IEvent the current JobHandler
                 newJob.setQueueEvent(jobMonitor.getQueueEvent());
-                newJob.setJobInfoId(jobInfoId);
-                newJob.setTenantName(tenantName);
+                newJob.setJobInfoId(pJobInfoId);
+                newJob.setTenantName(pTenant);
                 newJob.setParameters(jobInfo.getParameters());
                 hasFailed = false;
                 final Thread thread = threadPoolExecutorFactoryBean.createThread(newJob);
                 thread.start();
-                threads.put(jobInfoId, new CoupleThreadTenantName(tenantName, thread));
+                threads.put(pJobInfoId, new CoupleThreadTenantName(pTenant, thread));
             } catch (final InstantiationException e) {
                 LOG.error(String.format("Failed to instantiate the class %s", jobInfo.getClassName()), e);
             } catch (final IllegalAccessException e) {
@@ -166,7 +173,7 @@ public class JobHandler implements IJobHandler {
                 } else {
                     jobInfo.getStatus().setJobStatus(JobStatus.RUNNING);
                 }
-                jobInfoSystemService.updateJobInfo(tenantName, jobInfo);
+                jobInfoSystemService.updateJobInfo(pTenant, jobInfo);
             }
             resultingStatus = jobInfo.getStatus();
         }

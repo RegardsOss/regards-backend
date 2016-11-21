@@ -7,24 +7,25 @@ import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import fr.cnes.regards.framework.jpa.utils.deserializer.LocalDateTimeDeserializer;
-import fr.cnes.regards.framework.jpa.utils.serializer.LocalDateTimeSerializer;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 
 /**
  * Store job status
+ * 
+ * @author Léo Mieulet
+ * @author Christophe Mertz
  */
 @Entity(name = "T_JOB_STATUS_INFO")
 @SequenceGenerator(name = "statusInfoSequence", initialValue = 1, sequenceName = "SEQ_JOB_STATUS_INFO")
-public class StatusInfo {
+public class StatusInfo implements IIdentifiable<Long> {
 
     /**
      * Job StatusInfo id
@@ -69,6 +70,7 @@ public class StatusInfo {
      * the job status
      */
     @Column(name = "status")
+    @Enumerated(value=EnumType.ORDINAL)
     private JobStatus status;
 
     /**
@@ -109,12 +111,10 @@ public class StatusInfo {
         percentCompleted = pPercentCompleted;
     }
 
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
     public LocalDateTime getStartDate() {
         return startDate;
     }
 
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     public void setStartDate(final LocalDateTime pStartDate) {
         startDate = pStartDate;
     }
@@ -127,13 +127,16 @@ public class StatusInfo {
         status = pStatus;
     }
 
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
     public LocalDateTime getStopDate() {
         return stopDate;
     }
 
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     public void setStopDate(final LocalDateTime pStopDate) {
         stopDate = pStopDate;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
     }
 }

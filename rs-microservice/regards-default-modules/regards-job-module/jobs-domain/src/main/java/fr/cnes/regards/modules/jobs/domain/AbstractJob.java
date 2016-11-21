@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.jobs.domain;
 import java.util.concurrent.BlockingQueue;
 
 /**
- *
+ * @author Léo Mieulet
  */
 public abstract class AbstractJob implements IJob {
 
@@ -43,6 +43,7 @@ public abstract class AbstractJob implements IJob {
      * @param pValue
      *            data related to the event
      * @throws InterruptedException
+     *             If interrupted while waiting
      */
     protected void sendEvent(final EventType pEventType, final Object pValue) throws InterruptedException {
         queueEvent.put(new Event(pEventType, pValue, jobInfoId, tenantName));
@@ -52,6 +53,7 @@ public abstract class AbstractJob implements IJob {
      * @param pEventType
      *            the event type
      * @throws InterruptedException
+     *             If interrupted while waiting
      */
     protected void sendEvent(final EventType pEventType) throws InterruptedException {
         queueEvent.put(new Event(pEventType, null, jobInfoId, tenantName));

@@ -4,6 +4,8 @@
 package fr.cnes.regards.modules.jobs.domain;
 
 /**
+ * 
+ * @author Léo Mieulet
  *
  */
 public class Event implements IEvent {
@@ -35,6 +37,8 @@ public class Event implements IEvent {
      *            to store some data
      * @param pJobInfoId
      *            the jobInfo id
+     * @param pTenantName
+     *            the tenant name
      */
     public Event(final EventType pEventType, final Object pData, final Long pJobInfoId, final String pTenantName) {
         super();

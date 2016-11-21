@@ -3,6 +3,11 @@
  */
 package fr.cnes.regards.modules.jobs.domain;
 
+/**
+ * 
+ * @author Léo Mieulet
+ *
+ */
 public interface IEvent {
 
     public Object getData();

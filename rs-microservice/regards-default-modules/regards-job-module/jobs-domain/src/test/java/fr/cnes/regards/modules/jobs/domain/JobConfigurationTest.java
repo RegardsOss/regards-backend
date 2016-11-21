@@ -31,10 +31,8 @@ public class JobConfigurationTest {
         jobConfiguration.setStatusInfo(statusInfo);
         final int priority = 1;
         jobConfiguration.setPriority(priority);
-        final int percentCompleted = 33;
         final String className = "fr.cnes.Class";
         jobConfiguration.setClassName(className);
-        final JobStatus status = JobStatus.FAILED;
         final Path workspace = FileSystems.getDefault().getPath("logs", "access.log");
         jobConfiguration.setWorkspace(workspace);
         Assertions.assertThat(jobConfiguration.getExpirationDate()).isEqualTo(now);

@@ -7,6 +7,8 @@ import java.net.URI;
 
 /**
  * Job output
+ * 
+ * @author Léo Mieulet
  */
 public class Output {
 

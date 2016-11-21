@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
@@ -15,8 +15,9 @@ import fr.cnes.regards.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.jobs.service.manager.JobMonitor;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  */
+@Service
 public class JobInfoSystemService implements IJobInfoSystemService {
 
     /**
@@ -25,9 +26,8 @@ public class JobInfoSystemService implements IJobInfoSystemService {
     private static final Logger LOG = LoggerFactory.getLogger(JobMonitor.class);
 
     /**
-     * DAO autowired by Spring
+     * {@link JobInfo} JPA Repository
      */
-    @Autowired
     private final IJobInfoRepository jobInfoRepository;
 
     /**

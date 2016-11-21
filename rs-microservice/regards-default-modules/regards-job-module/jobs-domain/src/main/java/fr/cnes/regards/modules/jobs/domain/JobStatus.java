@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.jobs.domain;
 
 /**
  * JobInfo status
+ * 
+ * @author Léo Mieulet
  */
 public enum JobStatus {
 

@@ -7,7 +7,7 @@ import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  */
 public interface IJobInfoSystemService {
 
