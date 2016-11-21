@@ -84,8 +84,9 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * modules. accessrights.domain.instance.Account)
      */
     @Override
-    public void makeAdminDecision(final Account pAccount) throws EntityTransitionForbiddenException {
-        accountStateProvider.getState(pAccount).makeAdminDecision(pAccount);
+    public void makeAdminDecision(final Account pAccount, final boolean pAccepted)
+            throws EntityTransitionForbiddenException {
+        accountStateProvider.getState(pAccount).makeAdminDecision(pAccount, pAccepted);
     }
 
     /*

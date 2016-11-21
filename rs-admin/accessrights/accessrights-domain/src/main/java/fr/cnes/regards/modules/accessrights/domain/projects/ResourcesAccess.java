@@ -62,8 +62,9 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     }
 
     public ResourcesAccess(final Long pResourcesAccessId) {
-        this();
+        super();
         id = pResourcesAccessId;
+        verb = HttpVerb.GET;
     }
 
     public ResourcesAccess(final Long pResourcesAccessId, final String pDescription, final String pMicroservice,

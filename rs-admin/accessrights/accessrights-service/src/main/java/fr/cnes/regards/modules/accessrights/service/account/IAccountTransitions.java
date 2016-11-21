@@ -42,10 +42,13 @@ public interface IAccountTransitions {
      *
      * @param pAccount
      *            The {@link Account}
+     * @param pAccepted
+     *            Does the admin accept this registration or not?
      * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not in status PENDING
      */
-    default void makeAdminDecision(final Account pAccount) throws EntityTransitionForbiddenException {
+    default void makeAdminDecision(final Account pAccount, final boolean pAccepted)
+            throws EntityTransitionForbiddenException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };

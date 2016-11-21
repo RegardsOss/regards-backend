@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParent
 public class Role implements IIdentifiable<Long> {
 
     /**
-     * Role indentifier
+     * Role identifier
      */
     @Id
     @Column
