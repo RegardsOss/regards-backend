@@ -121,8 +121,9 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
      * modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void qualifyAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
-        projectUserStateProvider.createState(pProjectUser).qualifyAccess(pProjectUser);
+    public void qualifyAccess(final ProjectUser pProjectUser, final AccessQualification pQualification)
+            throws EntityTransitionForbiddenException {
+        projectUserStateProvider.createState(pProjectUser).qualifyAccess(pProjectUser, pQualification);
     }
 
     /*

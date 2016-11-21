@@ -25,11 +25,14 @@ import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.AccountStateProvider;
 import fr.cnes.regards.modules.accessrights.service.account.AccountWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.account.ActiveState;
+import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.service.account.LockedState;
+import fr.cnes.regards.modules.accessrights.service.account.PendingState;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
 
@@ -81,6 +84,11 @@ public class AccountWorkflowManagerTest {
     private static final Set<String> TENANTS = new HashSet<>(Arrays.asList("tenant0", "tenant1"));
 
     /**
+     * Dummy account settings
+     */
+    private static AccountSettings accountSettings;
+
+    /**
      * Tested service
      */
     private AccountWorkflowManager accountWorkflowManager;
@@ -111,20 +119,28 @@ public class AccountWorkflowManagerTest {
     private AccountStateProvider accountStateProvider;
 
     /**
+     * Mock Account Settings Repository
+     */
+    private IAccountSettingsService accountSettingsService;
+
+    /**
      * Do some setup before each test
      */
     @Before
     public void setUp() {
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
+        accountSettings = new AccountSettings();
         // Mock dependencies
         accountRepository = Mockito.mock(IAccountRepository.class);
         projectUserService = Mockito.mock(IProjectUserService.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
         jwtService = Mockito.mock(JWTService.class);
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
+        accountSettingsService = Mockito.mock(IAccountSettingsService.class);
 
         // Construct the tested service with mock deps
-        accountWorkflowManager = new AccountWorkflowManager(accountStateProvider, accountRepository);
+        accountWorkflowManager = new AccountWorkflowManager(accountStateProvider, accountRepository,
+                accountSettingsService);
     }
 
     /**
@@ -232,9 +248,11 @@ public class AccountWorkflowManagerTest {
      */
     @Test
     @Purpose("Check that the system allows to create a new account.")
-    public void requestAccount() throws EntityAlreadyExistsException {
+    public void requestAccountManual() throws EntityAlreadyExistsException {
         // Mock
         Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
+        Mockito.when(accountSettingsService.retrieve()).thenReturn(accountSettings);
+        accountSettings.setMode("manual");
 
         // Call tested method
         final AccessRequestDTO dto = new AccessRequestDTO();
@@ -246,6 +264,36 @@ public class AccountWorkflowManagerTest {
 
         // Verify the repository was correctly called
         Mockito.verify(accountRepository).save(Mockito.refEq(account, "id", CODE));
+    }
+
+    /**
+     * Check that the system allows to create a new account and auto-accept it if configured so.
+     *
+     * @throws EntityAlreadyExistsException
+     *             Thrown when an account with same email already exists
+     */
+    @Test
+    @Purpose("Check that the system allows to create a new account and auto-accept it if configured so.")
+    public void requestAccountAutoAccept() throws EntityAlreadyExistsException {
+        // Mock
+        Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
+        Mockito.when(accountSettingsService.retrieve()).thenReturn(accountSettings);
+        accountSettings.setMode("auto-accept");
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new PendingState(accountRepository, accountSettingsService));
+
+        // Call tested method
+        final AccessRequestDTO dto = new AccessRequestDTO();
+        dto.setEmail(EMAIL);
+        dto.setFirstName(FIRST_NAME);
+        dto.setLastName(LAST_NAME);
+        dto.setPassword(PASSWORD);
+        accountWorkflowManager.requestAccount(dto);
+
+        // In auto-accept mode, we expect the account to be directly saved as accepted
+        account.setStatus(AccountStatus.ACCEPTED);
+        // Verify the repository was correctly called
+        Mockito.verify(accountRepository, Mockito.times(2)).save(Mockito.refEq(account, "id", CODE));
     }
 
     /**

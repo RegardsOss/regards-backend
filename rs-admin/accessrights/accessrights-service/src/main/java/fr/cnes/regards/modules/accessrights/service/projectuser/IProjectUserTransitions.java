@@ -42,10 +42,13 @@ public interface IProjectUserTransitions {
      *
      * @param pProjectUser
      *            the project user
+     * @param pQualification
+     *            what decision is taken on this project user
      * @throws EntityTransitionForbiddenException
      *             when the project user is not in status WAITING_ACCESS
      */
-    default void qualifyAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
+    default void qualifyAccess(final ProjectUser pProjectUser, final AccessQualification pQualification)
+            throws EntityTransitionForbiddenException {
         throw new EntityTransitionForbiddenException(pProjectUser.getId().toString(), ProjectUser.class,
                 pProjectUser.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     }

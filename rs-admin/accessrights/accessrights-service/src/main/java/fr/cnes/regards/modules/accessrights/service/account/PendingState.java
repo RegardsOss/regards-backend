@@ -49,7 +49,7 @@ public class PendingState implements IAccountTransitions {
         final AccountSettings settings = accountSettingsService.retrieve();
 
         if (pAccepted || "auto-accept".equals(settings.getMode())) {
-            pAccount.setStatus(AccountStatus.ACTIVE);
+            pAccount.setStatus(AccountStatus.ACCEPTED);
             accountRepository.save(pAccount);
         } else {
             accountRepository.delete(pAccount);
