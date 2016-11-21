@@ -28,10 +28,6 @@
 			<artifactId>spring-context</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.netflix.feign</groupId>
-			<artifactId>feign-core</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.utils</groupId>
 			<artifactId>plugin-utils</artifactId>
 		</dependency>

@@ -80,6 +80,9 @@ public class DataSourcesAutoConfiguration {
                                                                tenant.getUserName(), tenant.getPassword());
             }
             if (!datasources.containsKey(tenant.getName())) {
+                // Initialize connection in the administration service
+                multitenantResolver.addTenantConnection(tenant);
+                // Add datasource to managed datasources pool
                 datasources.put(tenant.getName(), datasource);
             } else {
                 LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getName()));

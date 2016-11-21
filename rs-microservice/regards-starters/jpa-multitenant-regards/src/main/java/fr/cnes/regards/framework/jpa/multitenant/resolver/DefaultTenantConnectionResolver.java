@@ -33,4 +33,9 @@ public class DefaultTenantConnectionResolver implements ITenantConnectionResolve
         return new ArrayList<>();
     }
 
+    @Override
+    public void addTenantConnection(final TenantConnection pTenantConnection) {
+        LOG.warn("No Tenant connections resolver defined. Tenant connection is not persisted.");
+    }
+
 }
