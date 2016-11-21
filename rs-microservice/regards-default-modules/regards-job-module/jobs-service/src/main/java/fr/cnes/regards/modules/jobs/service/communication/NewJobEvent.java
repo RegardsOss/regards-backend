@@ -4,7 +4,7 @@
 package fr.cnes.regards.modules.jobs.service.communication;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  */
 public class NewJobEvent {
 

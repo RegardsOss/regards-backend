@@ -12,7 +12,7 @@ import javax.persistence.Converter;
 /**
  * Path converter utils
  *
- * @author lmieulet
+ * @author Léo Mieulet
  *
  */
 

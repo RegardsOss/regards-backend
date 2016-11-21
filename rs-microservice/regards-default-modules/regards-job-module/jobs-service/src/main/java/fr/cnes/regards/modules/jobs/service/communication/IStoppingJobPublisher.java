@@ -4,15 +4,17 @@
 package fr.cnes.regards.modules.jobs.service.communication;
 
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.modules.jobs.domain.JobInfo;
 
 /**
- *
+ *  @author Léo Mieulet
  */
+@FunctionalInterface
 public interface IStoppingJobPublisher {
 
     /**
      * @param pJobInfoId
-     *            the jobInfo id
+     *            the {@link JobInfo} id
      * @throws RabbitMQVhostException
      *             rabbit host not found
      */

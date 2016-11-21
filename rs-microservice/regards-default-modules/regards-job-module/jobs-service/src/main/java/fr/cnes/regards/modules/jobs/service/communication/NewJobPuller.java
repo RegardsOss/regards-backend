@@ -13,7 +13,7 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  */
 public class NewJobPuller implements INewJobPuller {
 

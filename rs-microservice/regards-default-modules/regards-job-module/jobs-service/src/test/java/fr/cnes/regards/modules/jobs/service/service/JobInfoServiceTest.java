@@ -20,7 +20,7 @@ import fr.cnes.regards.modules.jobs.service.communication.INewJobPublisher;
 import fr.cnes.regards.modules.jobs.service.communication.IStoppingJobPublisher;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  */
 public class JobInfoServiceTest {
 

@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.jobs.domain.StatusInfo;
 /**
  * Provide a job pool
  * 
- * @author lmieulet
+ * @author Léo Mieulet
  */
 public interface IJobHandler {
 

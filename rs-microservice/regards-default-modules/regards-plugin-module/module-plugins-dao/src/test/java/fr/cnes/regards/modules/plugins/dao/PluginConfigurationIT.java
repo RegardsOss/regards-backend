@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { PluginDaoTestConfig.class })
 @DirtiesContext
-public class PluginConfigurationTest extends PluginDaoUtility {
+public class PluginConfigurationIT extends PluginDaoUtility {
 
     /**
      * Unit test of creation {@link PluginConfiguration}

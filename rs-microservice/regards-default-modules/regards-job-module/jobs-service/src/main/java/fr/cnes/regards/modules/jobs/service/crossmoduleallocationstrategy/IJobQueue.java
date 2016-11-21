@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy;
 /**
  * The JobAllocationStrategy plugin returns JobQueue to allocate a number of slot per tenant
  * 
- * @author lmieulet
+ * @author Léo Mieulet
  */
 public interface IJobQueue {
 

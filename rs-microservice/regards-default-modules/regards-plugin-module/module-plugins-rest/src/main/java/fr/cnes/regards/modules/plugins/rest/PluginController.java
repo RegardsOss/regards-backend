@@ -45,7 +45,7 @@ public class PluginController implements IPluginsSignature {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginController.class);
 
     /**
-     * Business service for Project entities.
+     * Business service for Plugin.
      */
     private final IPluginService pluginService;
 

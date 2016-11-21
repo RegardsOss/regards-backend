@@ -1,5 +1,5 @@
-/**
- *
+/*
+ * LICENSE_PLACEHOLDER
  */
 package fr.cnes.regards.modules.jobs.domain;
 
@@ -11,7 +11,7 @@ import javax.persistence.Convert;
 import fr.cnes.regards.modules.jobs.domain.converters.JobParameterConverter;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  *
  */
 @Convert(converter = JobParameterConverter.class)
@@ -22,6 +22,9 @@ public class JobParameters {
      */
     private final Map<String, Object> parameters;
 
+    /**
+     * Default constructor
+     */
     public JobParameters() {
         super();
         parameters = new HashMap<>();

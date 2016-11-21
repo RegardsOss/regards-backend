@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.JobAll
 import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  */
 public class JobPuller {
 
