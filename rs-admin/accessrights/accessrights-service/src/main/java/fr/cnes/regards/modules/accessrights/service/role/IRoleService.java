@@ -167,4 +167,9 @@ public interface IRoleService {
      */
     boolean isHierarchicallyInferior(Role pRole, Role pOther);
 
+    /**
+     *
+     */
+    void initDefaultRoles();
+
 }

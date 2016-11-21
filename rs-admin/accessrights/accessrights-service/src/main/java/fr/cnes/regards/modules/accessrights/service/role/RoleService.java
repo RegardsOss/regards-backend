@@ -123,8 +123,14 @@ public class RoleService implements IRoleService {
         subscriber.subscribeTo(NewProjectConnectionEvent.class, new NewProjectConnectionEventHandler(jwtService, this),
                                AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.INTERNAL);
 
-        // Ensure the final existence of default final roles
-        // If not, add them final from their bean final definition in final defaultRoles.xml
+        initDefaultRoles();
+    }
+
+    /**
+     * Ensure the existence of default roles. If not, add them from their bean definition in defaultRoles.xml
+     */
+    @Override
+    public void initDefaultRoles() {
 
         // Define a consumer injecting the passed tenant in the context
         final Consumer<? super String> injectTenant = tenant -> {
@@ -167,7 +173,6 @@ public class RoleService implements IRoleService {
         try (Stream<String> tenantsStream = tenantResolver.getAllTenants().stream()) {
             tenantsStream.peek(injectTenant).forEach(createDefaultRolesOnTenantNew);
         }
-
     }
 
     @Override
