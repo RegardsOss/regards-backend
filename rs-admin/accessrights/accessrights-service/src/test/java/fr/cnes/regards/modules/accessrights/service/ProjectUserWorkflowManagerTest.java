@@ -12,10 +12,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -157,18 +157,17 @@ public class ProjectUserWorkflowManagerTest {
     /**
      * Check that the system fails when receiving an access request with an already used email.
      *
-     * @throws ModuleEntityNotFoundException
-     *             if the passed role culd not be found
-     * @throws ModuleAlreadyExistsException
-     *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
-     * @throws EntityTransitionForbiddenException
-     *             when illegal transition call
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} if the passed role culd not be found<br>
+     *             {@link EntityAlreadyExistsException} Thrown if a {@link ProjectUser} with same <code>email</code>
+     *             already exists<br>
+     *             {@link EntityTransitionForbiddenException} when illegal transition call<br>
      */
-    @Test(expected = ModuleAlreadyExistsException.class)
+    @Test(expected = EntityAlreadyExistsException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system fails when receiving an access request with an already used email.")
-    public void requestAccess_emailAlreadyInUse()
-            throws EntityTransitionForbiddenException, ModuleEntityNotFoundException, ModuleAlreadyExistsException {
+    public void requestAccessEmailAlreadyInUse() throws EntityException {
         // Prepare the duplicate
         final List<ProjectUser> projectUsers = new ArrayList<>();
         projectUsers.add(projectUser);
@@ -185,18 +184,17 @@ public class ProjectUserWorkflowManagerTest {
     /**
      * Check that the system allows the user to request a registration.
      *
-     * @throws ModuleEntityNotFoundException
-     *             if the passed role could not be found
-     * @throws ModuleAlreadyExistsException
-     *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
-     * @throws EntityTransitionForbiddenException
-     *             when illegal transition call
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} if the passed role culd not be found<br>
+     *             {@link EntityAlreadyExistsException} Thrown if a {@link ProjectUser} with same <code>email</code>
+     *             already exists<br>
+     *             {@link EntityTransitionForbiddenException} when illegal transition call<br>
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system allows the user to request a registration by creating a new project user.")
-    public void requestAccess()
-            throws EntityTransitionForbiddenException, ModuleEntityNotFoundException, ModuleAlreadyExistsException {
+    public void requestAccess() throws EntityException {
         // Mock
         Mockito.when(accountService.existAccount(EMAIL)).thenReturn(true);
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
@@ -213,18 +211,17 @@ public class ProjectUserWorkflowManagerTest {
     /**
      * Check that the system set PUBLIC role as default when requesting access.
      *
-     * @throws ModuleEntityNotFoundException
-     *             if the passed role could not be found
-     * @throws ModuleAlreadyExistsException
-     *             Thrown if a {@link ProjectUser} with same <code>email</code> already exists
-     * @throws EntityTransitionForbiddenException
-     *             when illegal transition call
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} if the passed role culd not be found<br>
+     *             {@link EntityAlreadyExistsException} Thrown if a {@link ProjectUser} with same <code>email</code>
+     *             already exists<br>
+     *             {@link EntityTransitionForbiddenException} when illegal transition call<br>
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system set PUBLIC role as default when requesting access.")
-    public void requestAccess_nullRoleName()
-            throws EntityTransitionForbiddenException, ModuleEntityNotFoundException, ModuleAlreadyExistsException {
+    public void requestAccessNullRoleName() throws EntityException {
         // Prepare the access request
         dto.setRoleName(null);
 
@@ -247,12 +244,18 @@ public class ProjectUserWorkflowManagerTest {
 
     /**
      * Check that the system creates an Account when requesting an access if none already exists.
+     *
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} if the passed role culd not be found<br>
+     *             {@link EntityAlreadyExistsException} Thrown if a {@link ProjectUser} with same <code>email</code>
+     *             already exists<br>
+     *             {@link EntityTransitionForbiddenException} when illegal transition call<br>
      */
-    @Test(expected = ModuleEntityNotFoundException.class)
+    @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system creates an Account when requesting an access if none already exists.")
-    public void requestAccess_noAccount() throws EntityTransitionForbiddenException, ModuleEntityNotFoundException,
-            ModuleAlreadyExistsException, AlreadyExistingException {
+    public void requestAccessNoAccount() throws EntityException {
         // Make sure no account exists in order to make the service create a new one
         Mockito.when(accountService.existAccount(EMAIL)).thenReturn(false);
 
@@ -289,6 +292,7 @@ public class ProjectUserWorkflowManagerTest {
      * Check that the system allows to grant access to a previously access denied project user.
      *
      * @throws EntityTransitionForbiddenException
+     *             when the project user is not in status ACCESS_DENIED
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
@@ -316,6 +320,7 @@ public class ProjectUserWorkflowManagerTest {
      * Check that the system allows to deny a registration request.
      *
      * @throws EntityTransitionForbiddenException
+     *             when the project user is not in status ACCESS_GRANTED
      *
      */
     @Test

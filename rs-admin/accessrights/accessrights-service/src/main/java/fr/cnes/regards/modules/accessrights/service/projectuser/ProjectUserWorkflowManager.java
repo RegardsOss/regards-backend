@@ -9,9 +9,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -80,16 +81,15 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
      * regards.modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void requestProjectAccess(final AccessRequestDTO pDto)
-            throws EntityTransitionForbiddenException, ModuleEntityNotFoundException, ModuleAlreadyExistsException {
+    public void requestProjectAccess(final AccessRequestDTO pDto) throws EntityException {
         // Check that an associated account exitsts
         if (!accountService.existAccount(pDto.getEmail())) {
-            throw new ModuleEntityNotFoundException(pDto.getEmail(), Account.class);
+            throw new EntityNotFoundException(pDto.getEmail(), Account.class);
         }
 
         // Check that no project user with same email exists
         if (projectUserRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
-            throw new ModuleAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
+            throw new EntityAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
         }
 
         // Retrieve the role - if null, use default role

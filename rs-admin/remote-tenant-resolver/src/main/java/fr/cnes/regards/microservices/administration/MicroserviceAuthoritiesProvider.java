@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
@@ -86,7 +86,7 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
                 }
             }
             return addresses;
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             throw new SecurityException("Could not get role authorized addesses", e);
         }
     }
@@ -104,7 +104,7 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
             } else {
                 return true;
             }
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             throw new SecurityException("Could not get cors requests access", e);
         }
     }

@@ -7,9 +7,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
@@ -61,11 +61,10 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * accessrights.domain.AccessRequestDTO)
      */
     @Override
-    public Account requestAccount(final AccessRequestDTO pDto)
-            throws ModuleAlreadyExistsException, EntityTransitionForbiddenException {
+    public Account requestAccount(final AccessRequestDTO pDto) throws EntityAlreadyExistsException {
         // Check existence
         if (accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
-            throw new ModuleAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
+            throw new EntityAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
         }
         // Create the new account
         final Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
@@ -122,7 +121,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      */
     @Override
     public void unlockAccount(final Account pAccount, final String pUnlockCode)
-            throws EntityTransitionForbiddenException, InvalidValueException {
+            throws EntityOperationForbiddenException {
         accountStateProvider.getState(pAccount).unlockAccount(pAccount, pUnlockCode);
     }
 

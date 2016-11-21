@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
@@ -85,13 +85,13 @@ public class AccessSettingsServiceTest {
     /**
      * Check that the system fails when trying to update a non existing access settings.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when an {@link AccountSettings} with passed id could not be found
      */
-    @Test(expected = ModuleEntityNotFoundException.class)
+    @Test(expected = EntityNotFoundException.class)
     @Requirement("?")
     @Purpose("Check that the system fails when trying to update a non existing access settings.")
-    public void update_entityNotFound() throws ModuleEntityNotFoundException {
+    public void updateEntityNotFound() throws EntityNotFoundException {
         // Define expected
         final Long id = 99L;
         final AccessSettings settings = new AccessSettings();
@@ -111,13 +111,13 @@ public class AccessSettingsServiceTest {
     /**
      * Check that the system allows to update access settings in regular case.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when an {@link AccountSettings} with passed id could not be found
      */
     @Test
     @Requirement("?")
     @Purpose("Check that the system allows to update access settings in regular case.")
-    public void update() throws ModuleEntityNotFoundException {
+    public void update() throws EntityNotFoundException {
         // Define expected
         final Long id = 0L;
         final AccessSettings expected = new AccessSettings();

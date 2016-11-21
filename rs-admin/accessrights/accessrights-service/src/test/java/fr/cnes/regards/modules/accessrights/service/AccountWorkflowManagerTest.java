@@ -12,12 +12,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -137,7 +135,7 @@ public class AccountWorkflowManagerTest {
      */
     @Test(expected = EntityOperationForbiddenException.class)
     @Purpose("Check that the system prevents from deleting an account if it is still linked to project users.")
-    public void removeAccount_notDeletable() throws ModuleException {
+    public void removeAccountNotDeletable() throws ModuleException {
         // Prepare the case
         account.setId(ID);
         account.setStatus(AccountStatus.ACTIVE);
@@ -161,7 +159,7 @@ public class AccountWorkflowManagerTest {
      */
     @Test(expected = EntityTransitionForbiddenException.class)
     @Purpose("Check that the system prevents from deleting an account for certain status (ACCEPTED...).")
-    public void removeAccount_wrongStatus() throws ModuleException {
+    public void removeAccountWrongStatus() throws ModuleException {
         // Mock
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
@@ -206,11 +204,15 @@ public class AccountWorkflowManagerTest {
 
     /**
      * Check that the system fails when trying to create an account of already existing email.
+     *
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityTransitionForbiddenException} If the account is not in valid status <br>
+     *             {@link EntityAlreadyExistsException} If an account with same email already exists<br>
      */
-    @Test(expected = ModuleAlreadyExistsException.class)
+    @Test(expected = EntityAlreadyExistsException.class)
     @Purpose("Check that the system fails when trying to create an account of already existing email.")
-    public void requestAccount_emailAlreadyUsed()
-            throws EntityTransitionForbiddenException, ModuleAlreadyExistsException {
+    public void requestAccountEmailAlreadyUsed() throws EntityException {
         // Mock
         Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(account));
 
@@ -225,13 +227,12 @@ public class AccountWorkflowManagerTest {
     /**
      * Check that the system allows to create a new account.
      *
-     * @throws EntityTransitionForbiddenException
-     * @throws ModuleAlreadyExistsException
+     * @throws EntityAlreadyExistsException
      *             Thrown when an account with same email already exists
      */
     @Test
     @Purpose("Check that the system allows to create a new account.")
-    public void requestAccount() throws EntityTransitionForbiddenException, ModuleAlreadyExistsException {
+    public void requestAccount() throws EntityAlreadyExistsException {
         // Mock
         Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
 
@@ -244,21 +245,20 @@ public class AccountWorkflowManagerTest {
         accountWorkflowManager.requestAccount(dto);
 
         // Verify the repository was correctly called
-        Mockito.verify(accountRepository).save(Mockito.refEq(account, "id", "code"));
+        Mockito.verify(accountRepository).save(Mockito.refEq(account, "id", CODE));
     }
 
     /**
      * Check that the system does unlock not locked accounts and feedbacks the caller.
      *
-     * @throws InvalidValueException
-     *             Thrown when passed id is different from the id of passed account
-     * @throws EntityTransitionForbiddenException
-     *             Thrown when the account is not of status LOCKED
+     * @throws EntityOperationForbiddenException
+     *             Thrown when passed id is different from the id of passed account<br>
+     *             {@link EntityTransitionForbiddenException} Thrown when the account is not of status LOCKED<br>
      */
     @Test(expected = EntityTransitionForbiddenException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system does unlock not locked accounts and feedbacks the caller.")
-    public void unlockAccount_notLocked() throws InvalidValueException, EntityTransitionForbiddenException {
+    public void unlockAccountNotLocked() throws EntityOperationForbiddenException {
         // Prepare the error case
         account.setId(ID);
         account.setStatus(AccountStatus.ACTIVE);
@@ -276,18 +276,14 @@ public class AccountWorkflowManagerTest {
     /**
      * Check that the system does not unlock a locked account if the wrong code is passed.
      *
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Account} with passed if could be found
-     * @throws InvalidValueException
-     *             Thrown when passed id is different from the id of passed account
-     * @throws EntityTransitionForbiddenException
-     *             Thrown when the account is not of status LOCKED
+     * @throws EntityOperationForbiddenException
+     *             Thrown when passed id is different from the id of passed account<br>
+     *             {@link EntityTransitionForbiddenException} Thrown when the account is not of status LOCKED<br>
      */
-    @Test(expected = InvalidValueException.class)
+    @Test(expected = EntityOperationForbiddenException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system does not unlock a locked account if the wrong code is passed.")
-    public void unlockAccount_wrongCode()
-            throws EntityNotFoundException, InvalidValueException, EntityTransitionForbiddenException {
+    public void unlockAccountWrongCode() throws EntityOperationForbiddenException {
         // Prepare the case
         account.setId(ID);
         account.setStatus(AccountStatus.LOCKED);
@@ -305,18 +301,14 @@ public class AccountWorkflowManagerTest {
     /**
      * Check that the system allows a user to unlock its account with a code.
      *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when no {@link Account} with passed if could be found
-     * @throws InvalidValueException
-     *             Thrown when passed id is different from the id of passed account
-     * @throws EntityTransitionForbiddenException
-     *             Thrown when the account is not of status LOCKED
+     * @throws EntityOperationForbiddenException
+     *             Thrown when passed id is different from the id of passed account<br>
+     *             {@link EntityTransitionForbiddenException} Thrown when the account is not of status LOCKED<br>
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows a user to unlock its account with a code.")
-    public void unlockAccount()
-            throws ModuleEntityNotFoundException, InvalidValueException, EntityTransitionForbiddenException {
+    public void unlockAccount() throws EntityOperationForbiddenException {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);

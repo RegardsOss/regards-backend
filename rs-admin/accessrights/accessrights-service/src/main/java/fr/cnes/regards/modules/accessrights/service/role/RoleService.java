@@ -24,10 +24,11 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -145,7 +146,8 @@ public class RoleService implements IRoleService {
         final UnaryOperator<Role> replaceWithRoleFromDb = r -> {
             try {
                 return retrieveRole(r.getName());
-            } catch (final ModuleEntityNotFoundException e) {
+            } catch (final EntityNotFoundException e) {
+                LOG.info("Could not find a role in DB, fallback to xml definition.", e);
                 return r;
             }
         };
@@ -183,36 +185,35 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Role createRole(final Role pNewRole) throws AlreadyExistingException {
+    public Role createRole(final Role pNewRole) throws EntityAlreadyExistsException {
         if (existByName(pNewRole.getName())) {
-            throw new AlreadyExistingException(pNewRole.getName());
+            throw new EntityAlreadyExistsException(pNewRole.getName());
         }
         return roleRepository.save(pNewRole);
     }
 
     @Override
-    public Role retrieveRole(final String pRoleName) throws ModuleEntityNotFoundException {
+    public Role retrieveRole(final String pRoleName) throws EntityNotFoundException {
         return roleRepository.findOneByName(pRoleName)
-                .orElseThrow(() -> new ModuleEntityNotFoundException(pRoleName, Role.class));
+                .orElseThrow(() -> new EntityNotFoundException(pRoleName, Role.class));
     }
 
     @Override
-    public void updateRole(final Long pRoleId, final Role pUpdatedRole)
-            throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateRole(final Long pRoleId, final Role pUpdatedRole) throws EntityException {
         if (!pRoleId.equals(pUpdatedRole.getId())) {
-            throw new InvalidValueException();
+            throw new EntityInconsistentIdentifierException(pRoleId, pUpdatedRole.getId(), Role.class);
         }
         if (!existRole(pRoleId)) {
-            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
         roleRepository.save(pUpdatedRole);
     }
 
     @Override
-    public void removeRole(final Long pRoleId) throws OperationForbiddenException {
+    public void removeRole(final Long pRoleId) throws EntityOperationForbiddenException {
         final Role previous = roleRepository.findOne(pRoleId);
         if ((previous != null) && previous.isNative()) {
-            throw new OperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
+            throw new EntityOperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
         }
         roleRepository.delete(pRoleId);
     }
@@ -225,10 +226,9 @@ public class RoleService implements IRoleService {
      * @see REGARDS_DSL_ADM_ADM_260
      */
     @Override
-    public List<ResourcesAccess> retrieveRoleResourcesAccessList(final Long pRoleId)
-            throws ModuleEntityNotFoundException {
+    public List<ResourcesAccess> retrieveRoleResourcesAccessList(final Long pRoleId) throws EntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
 
         final List<Role> roleAndHisAncestors = new ArrayList<>();
@@ -245,9 +245,9 @@ public class RoleService implements IRoleService {
 
     @Override
     public Role updateRoleResourcesAccess(final Long pRoleId, final List<ResourcesAccess> pResourcesAccessList)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
         final Role role = roleRepository.findOne(pRoleId);
         final List<ResourcesAccess> permissions = role.getPermissions();
@@ -264,9 +264,9 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void clearRoleResourcesAccess(final Long pRoleId) throws ModuleEntityNotFoundException {
+    public void clearRoleResourcesAccess(final Long pRoleId) throws EntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
         final Role role = roleRepository.findOne(pRoleId);
         role.setPermissions(new ArrayList<>());
@@ -274,9 +274,9 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public List<ProjectUser> retrieveRoleProjectUserList(final Long pRoleId) throws ModuleEntityNotFoundException {
+    public List<ProjectUser> retrieveRoleProjectUserList(final Long pRoleId) throws EntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
         final List<Role> roleAndHisAncestors = new ArrayList<>();
 

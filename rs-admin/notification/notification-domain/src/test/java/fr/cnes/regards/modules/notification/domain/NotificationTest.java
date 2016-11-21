@@ -20,7 +20,6 @@ import org.junit.Test;
 
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
@@ -122,7 +121,6 @@ public class NotificationTest {
      * Check the POJO getters/setters.
      */
     @Test
-    @Requirement("?")
     @Purpose("Check the POJO getters/setters.")
     public void testGettersSetters() {
         Assert.assertTrue(notification.getId().equals(ID));
@@ -139,7 +137,6 @@ public class NotificationTest {
      * Check that the system fails when a blank message is set.
      */
     @Test
-    @Requirement("?")
     @Purpose("Check that the system fails when a blank message is set.")
     public void messageIsBlank() {
         // Init the malformed object
@@ -156,7 +153,6 @@ public class NotificationTest {
      * Check that the system fails when the project user recipients field is null.
      */
     @Test
-    @Requirement("?")
     @Purpose("Check that the system fails when the project user recipients field is null.")
     public void projectUsersIsNull() {
         // Init the malformed object
@@ -173,7 +169,6 @@ public class NotificationTest {
      * Check that the system fails when the role recipients field is null.
      */
     @Test
-    @Requirement("?")
     @Purpose("Check that the system fails when the role recipients field is null.")
     public void rolesIsNull() {
         // Init the malformed object
@@ -190,7 +185,6 @@ public class NotificationTest {
      * Check that the system fails when a blank sender is set.
      */
     @Test
-    @Requirement("?")
     @Purpose("Check that the system fails when a blank sender is set.")
     public void senderIsBlank() {
         // Init the malformed object
@@ -207,7 +201,6 @@ public class NotificationTest {
      * Check that the system fails when the status field is null.
      */
     @Test
-    @Requirement("?")
     @Purpose("Check that the system fails when the status field is null.")
     public void statusIsNull() {
         // Init the malformed object

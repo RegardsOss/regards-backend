@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -30,11 +29,11 @@ public interface INotificationSignature {
      * Define the endpoint for retrieving the list of notifications for the logged user
      *
      * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Notification>> retrieveNotifications() throws ModuleEntityNotFoundException;
+    ResponseEntity<List<Notification>> retrieveNotifications() throws EntityNotFoundException;
 
     /**
      * Define the endpoint for creating a new notification in db for later sending by a scheluder.
@@ -90,21 +89,21 @@ public interface INotificationSignature {
      * Define the endpoint for retrieving the notification configuration parameters for the logged user
      *
      * @return The {@link NotificationSettings} wrapped in a {@link ResponseEntity}
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
-    ResponseEntity<NotificationSettings> retrieveNotificationSettings() throws ModuleEntityNotFoundException;
+    ResponseEntity<NotificationSettings> retrieveNotificationSettings() throws EntityNotFoundException;
 
     /**
      * Define the endpoint for updating the {@link Notification#status}
      *
      * @param pDto
      *            The facade exposing user updatable fields of notification settings
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when no notification settings with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/settings", method = RequestMethod.PUT)
-    void updateNotificationSettings(NotificationSettingsDTO pDto) throws ModuleEntityNotFoundException;
+    void updateNotificationSettings(NotificationSettingsDTO pDto) throws EntityNotFoundException;
 
 }

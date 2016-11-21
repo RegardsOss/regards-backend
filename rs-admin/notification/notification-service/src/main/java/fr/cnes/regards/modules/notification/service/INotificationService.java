@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -24,10 +23,10 @@ public interface INotificationService {
      * Retrieve the list of notifications intended for the logged user, trough the project user or their role.
      *
      * @return A {@link List} of {@link Notification}
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
-    List<Notification> retrieveNotifications() throws ModuleEntityNotFoundException;
+    List<Notification> retrieveNotifications() throws EntityNotFoundException;
 
     /**
      * Save a new notification in db for later sending by a scheluder.

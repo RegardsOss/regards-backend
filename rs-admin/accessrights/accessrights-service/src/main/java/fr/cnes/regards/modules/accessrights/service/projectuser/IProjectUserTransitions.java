@@ -3,8 +3,9 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -24,15 +25,13 @@ public interface IProjectUserTransitions {
      *
      * @param pAccessRequestDTO
      *            The DTO containing all information to create the new {@link ProjectUser}
-     * @throws EntityTransitionForbiddenException
-     *             If the account has a not null status
-     * @throws ModuleEntityNotFoundException
-     *             If no role with passed name could be found
-     * @throws ModuleAlreadyExistsException
-     *             If a project user with passed email already exists
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityTransitionForbiddenException} If the account has a not null status<br>
+     *             {@link EntityNotFoundException} If no role with passed name could be found<br>
+     *             {@link EntityAlreadyExistsException} If a project user with passed email already exists<br>
      */
-    default void requestProjectAccess(final AccessRequestDTO pAccessRequestDTO)
-            throws EntityTransitionForbiddenException, ModuleEntityNotFoundException, ModuleAlreadyExistsException {
+    default void requestProjectAccess(final AccessRequestDTO pAccessRequestDTO) throws EntityException {
         throw new EntityTransitionForbiddenException(pAccessRequestDTO.getEmail(), ProjectUser.class, null,
                 Thread.currentThread().getStackTrace()[1].getMethodName());
     }

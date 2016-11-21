@@ -17,9 +17,10 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
@@ -210,7 +211,7 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system allows to retrieve a specific user by email.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @Test
@@ -218,7 +219,7 @@ public class ProjectUserServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system allows to retrieve a specific user by email.")
-    public void retrieveOneByEmail() throws ModuleEntityNotFoundException {
+    public void retrieveOneByEmail() throws EntityNotFoundException {
         // Mock the repository returned value
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
@@ -235,15 +236,15 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system fails when trying to retrieve a user with unknown email.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
-    @Test(expected = ModuleEntityNotFoundException.class)
+    @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system fails when trying to retrieve a user with unknown email.")
-    public void retrieveOneByEmailNotFound() throws ModuleEntityNotFoundException {
+    public void retrieveOneByEmailNotFound() throws EntityNotFoundException {
         // Mock the repository returned value
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
 
@@ -254,7 +255,7 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system allows to retrieve the current logged user.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
     @Test
@@ -262,7 +263,7 @@ public class ProjectUserServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system allows to retrieve the current logged user.")
-    public void retrieveCurrentUser() throws ModuleEntityNotFoundException {
+    public void retrieveCurrentUser() throws EntityNotFoundException {
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
         final UserDetails details = new UserDetails();
@@ -316,17 +317,18 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system fails when trying to update a non existing project user.
      *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when an {@link AccountSettings} with passed id could not be found
-     * @throws InvalidValueException
-     *             Thrown when user id differs from the passed id
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when an {@link AccountSettings} with passed id could not be
+     *             found<br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when user id differs from the passed id<br>
      */
-    @Test(expected = ModuleEntityNotFoundException.class)
+    @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system fails when trying to update a non existing project user.")
-    public void updateUserEntityNotFound() throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateUserEntityNotFound() throws EntityException {
         // Mock the repository returned value
         Mockito.when(projectUserRepository.exists(ID)).thenReturn(false);
 
@@ -337,17 +339,18 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system fails when user id differs from the passe id.
      *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when an {@link AccountSettings} with passed id could not be found
-     * @throws InvalidValueException
-     *             Thrown when user id differs from the passed id
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when an {@link AccountSettings} with passed id could not be
+     *             found<br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when user id differs from the passed id<br>
      */
-    @Test(expected = InvalidValueException.class)
+    @Test(expected = EntityInconsistentIdentifierException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system fails when user id differs from the passed id.")
-    public void updateUserInvalidValue() throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateUserInvalidValue() throws EntityException {
         // Mock the repository returned value
         Mockito.when(projectUserRepository.exists(ID)).thenReturn(true);
 
@@ -358,17 +361,18 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system allows to update a project user.
      *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when an {@link AccountSettings} with passed id could not be found
-     * @throws InvalidValueException
-     *             Thrown when user id differs from the passed id
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when an {@link AccountSettings} with passed id could not be
+     *             found<br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when user id differs from the passed id<br>
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system allows to update a project user.")
-    public void updateUser() throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateUser() throws EntityException {
         // Mock repository
         Mockito.when(projectUserRepository.exists(ID)).thenReturn(true);
 
@@ -385,11 +389,11 @@ public class ProjectUserServiceTest {
      * @throws EntityNotFoundException
      *             Thrown when no user of passed login could be found
      */
-    @Test(expected = ModuleEntityNotFoundException.class)
+    @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Requirement("REGARDS_DSL_ADM_ADM_480")
     @Purpose("Check that the system fails when trying to override a not exisiting user's access rights.")
-    public void updateUserAccessRightsEntityNotFound() throws ModuleEntityNotFoundException {
+    public void updateUserAccessRightsEntityNotFound() throws EntityNotFoundException {
         // Mock the repository returned value
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
 
@@ -400,14 +404,14 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system allows to override role's access rights for a user.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when no user of passed login could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Requirement("REGARDS_DSL_ADM_ADM_480")
     @Purpose("Check that the system allows to override role's access rights for a user.")
-    public void updateUserAccessRights() throws ModuleEntityNotFoundException {
+    public void updateUserAccessRights() throws EntityNotFoundException {
         // Mock the repository returned value
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
@@ -445,18 +449,14 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system fail when trying to retrieve a user's permissions using a role not hierarchically inferior.
      *
-     * @throws InvalidValueException
-     *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
-     *             <code>role</code>.
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     * @throws EntityException
+     *             various exceptions
      */
-    @Test(expected = InvalidValueException.class)
+    @Test(expected = EntityOperationForbiddenException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_260")
     @Purpose("Check that the system fail when trying to retrieve "
             + "a user's permissions using a role not hierarchically inferior.")
-    public void retrieveProjectUserAccessRightsBorrowedRoleNotInferior()
-            throws InvalidValueException, ModuleEntityNotFoundException {
+    public void retrieveProjectUserAccessRightsBorrowedRoleNotInferior() throws EntityException {
         // Define borrowed role
         final String borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();
         final Role borrowedRole = new Role();
@@ -474,17 +474,13 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system allows to retrieve all permissions a of user using a borrowed role.
      *
-     * @throws InvalidValueException
-     *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
-     *             <code>role</code>.
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found.
+     * @throws EntityException
+     *             various exceptions
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_260")
     @Purpose("Check that the system allows to retrieve all permissions a of user using a borrowed role.")
-    public void retrieveProjectUserAccessRightsWithBorrowedRole()
-            throws InvalidValueException, ModuleEntityNotFoundException {
+    public void retrieveProjectUserAccessRightsWithBorrowedRole() throws EntityException {
         // Define borrowed role
         final Long borrowedRoleId = 99L;
         final String borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();
@@ -522,16 +518,13 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system allows to retrieve all permissions a of user.
      *
-     * @throws InvalidValueException
-     *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
-     *             <code>role</code>.
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found.
+     * @throws EntityException
+     *             various exceptions
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_260")
     @Purpose("Check that the system allows to retrieve all permissions a of user.")
-    public void retrieveProjectUserAccessRights() throws InvalidValueException, ModuleEntityNotFoundException {
+    public void retrieveProjectUserAccessRights() throws EntityException {
         // Define the user's role permissions
         final List<ResourcesAccess> permissions = new ArrayList<>();
         permissions.add(new ResourcesAccess(11L));

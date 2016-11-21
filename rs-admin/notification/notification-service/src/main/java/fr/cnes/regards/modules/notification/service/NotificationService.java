@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -100,7 +99,7 @@ public class NotificationService implements INotificationService {
      * @see fr.cnes.regards.modules.notification.service.INotificationService#retrieveNotifications()
      */
     @Override
-    public List<Notification> retrieveNotifications() throws ModuleEntityNotFoundException {
+    public List<Notification> retrieveNotifications() throws EntityNotFoundException {
         final ProjectUser projectUser = projectUserService.retrieveCurrentUser();
         final Role role = projectUser.getRole();
         return notificationRepository.findByRecipientsContaining(projectUser, role);
@@ -207,7 +206,7 @@ public class NotificationService implements INotificationService {
                 try (Stream<Resource<ProjectUser>> stream = rolesClient.retrieveRoleProjectUserList(r.getId()).getBody()
                         .stream()) {
                     result = rolesClient.retrieveRoleProjectUserList(r.getId()).getBody().stream();
-                } catch (final ModuleEntityNotFoundException e) {
+                } catch (final EntityNotFoundException e) {
                     LOG.warn(e.getMessage(), e);
                     result = Stream.empty();
                 }

@@ -5,9 +5,10 @@ package fr.cnes.regards.modules.accessrights.service.projectuser;
 
 import java.util.List;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
@@ -44,21 +45,21 @@ public interface IProjectUserService {
      *
      * @param pEmail
      *            The {@link ProjectUser}'s <code>email</code>
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      * @return The project user
      */
-    ProjectUser retrieveOneByEmail(String pEmail) throws ModuleEntityNotFoundException;
+    ProjectUser retrieveOneByEmail(String pEmail) throws EntityNotFoundException;
 
     /**
      * Retrieve the current {@link ProjectUser}.
      *
      * @return The project user
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with <code>email</code> equal to the one set in current tenant
      *             could be found
      */
-    ProjectUser retrieveCurrentUser() throws ModuleEntityNotFoundException;
+    ProjectUser retrieveCurrentUser() throws EntityNotFoundException;
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.
@@ -67,13 +68,14 @@ public interface IProjectUserService {
      *            The {@link ProjectUser} <code>id</code>
      * @param pUpdatedProjectUser
      *            The new {@link ProjectUser}
-     * @throws InvalidValueException
-     *             Thrown when <code>pUserId</code> differs from the id of <code>pUpdatedProjectUser</code>
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when <code>pUserId</code> differs from the id of
+     *             <code>pUpdatedProjectUser</code><br>
+     *             {@link EntityNotFoundException} Thrown when no {@link ProjectUser} with passed <code>id</code> could
+     *             be found<br>
      */
-    void updateUser(Long pUserId, ProjectUser pUpdatedProjectUser)
-            throws InvalidValueException, ModuleEntityNotFoundException;
+    void updateUser(Long pUserId, ProjectUser pUpdatedProjectUser) throws EntityException;
 
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
@@ -83,14 +85,15 @@ public interface IProjectUserService {
      * @param pBorrowedRoleName
      *            The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
      * @return The list of resources access
-     * @throws InvalidValueException
-     *             Thrown when the passed {@link Role} is not hierarchically inferior to the true {@link ProjectUser}'s
-     *             <code>role</code>.
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityOperationForbiddenException} Thrown when the passed {@link Role} is not hierarchically
+     *             inferior to the true {@link ProjectUser}'s <code>role</code><br>
+     *             {@link EntityNotFoundException} Thrown when no {@link ProjectUser} with passed <code>id</code> could
+     *             be found<br>
      */
     List<ResourcesAccess> retrieveProjectUserAccessRights(String pEmail, String pBorrowedRoleName)
-            throws InvalidValueException, ModuleEntityNotFoundException;
+            throws EntityException;
 
     /**
      * Update the the {@link List} of <code>permissions</code>.
@@ -99,21 +102,21 @@ public interface IProjectUserService {
      *            The {@link ProjectUser}'s <code>login</code>
      * @param pUpdatedUserAccessRights
      *            The {@link List} of {@link ResourcesAccess} to set
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     void updateUserAccessRights(String pLogin, List<ResourcesAccess> pUpdatedUserAccessRights)
-            throws ModuleEntityNotFoundException;
+            throws EntityNotFoundException;
 
     /**
      * Clear the {@link List} of {@link ResourcesAccess} of the {@link ProjectUser} with passed <code>login</code>.
      *
      * @param pLogin
      *            The {@link ProjectUser} <code>login</code>
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
-    void removeUserAccessRights(String pLogin) throws ModuleEntityNotFoundException;
+    void removeUserAccessRights(String pLogin) throws EntityNotFoundException;
 
     /**
      * Return the {@link List} of {@link MetaData} on the {@link ProjectUser} of passed <code>id</code>.

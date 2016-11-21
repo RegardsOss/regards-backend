@@ -12,8 +12,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -90,9 +92,9 @@ public class AccountService implements IAccountService {
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#retrieveAccount(java.lang.Long)
      */
     @Override
-    public Account retrieveAccount(final Long pAccountId) throws ModuleEntityNotFoundException {
+    public Account retrieveAccount(final Long pAccountId) throws EntityNotFoundException {
         final Optional<Account> account = Optional.ofNullable(accountRepository.findOne(pAccountId));
-        return account.orElseThrow(() -> new ModuleEntityNotFoundException(pAccountId.toString(), Account.class));
+        return account.orElseThrow(() -> new EntityNotFoundException(pAccountId.toString(), Account.class));
     }
 
     /*
@@ -102,13 +104,12 @@ public class AccountService implements IAccountService {
      * fr.cnes.regards.modules.accessrights.domain.instance.Account)
      */
     @Override
-    public void updateAccount(final Long pAccountId, final Account pUpdatedAccount)
-            throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateAccount(final Long pAccountId, final Account pUpdatedAccount) throws EntityException {
         if (!pUpdatedAccount.getId().equals(pAccountId)) {
-            throw new InvalidValueException("Account id specified differs from updated account id");
+            throw new EntityInconsistentIdentifierException(pAccountId, pUpdatedAccount.getId(), Account.class);
         }
         if (!existAccount(pAccountId)) {
-            throw new ModuleEntityNotFoundException(pAccountId.toString(), Account.class);
+            throw new EntityNotFoundException(pAccountId.toString(), Account.class);
         }
         accountRepository.save(pUpdatedAccount);
     }
@@ -120,9 +121,9 @@ public class AccountService implements IAccountService {
      * fr.cnes.regards.modules.accessrights.domain.CodeType)
      */
     @Override
-    public void sendAccountCode(final String pEmail, final CodeType pType) throws ModuleEntityNotFoundException {
+    public void sendAccountCode(final String pEmail, final CodeType pType) throws EntityNotFoundException {
         if (!existAccount(pEmail)) {
-            throw new ModuleEntityNotFoundException(pEmail, Account.class);
+            throw new EntityNotFoundException(pEmail, Account.class);
         }
         final Account account = retrieveAccountByEmail(pEmail);
         // TODO: sendEmail(pEmail,account.getCode();
@@ -136,7 +137,7 @@ public class AccountService implements IAccountService {
      */
     @Override
     public void changeAccountPassword(final Long pAccountId, final String pResetCode, final String pNewPassword)
-            throws ModuleEntityNotFoundException, InvalidValueException {
+            throws EntityException {
         final Account account = retrieveAccount(pAccountId);
         checkCode(account, pResetCode);
         account.setPassword(pNewPassword);
@@ -150,9 +151,9 @@ public class AccountService implements IAccountService {
      * fr.cnes.regards.modules.accessrights.service.account.IAccountService#retrieveAccountByEmail(java.lang.String)
      */
     @Override
-    public Account retrieveAccountByEmail(final String pEmail) throws ModuleEntityNotFoundException {
+    public Account retrieveAccountByEmail(final String pEmail) throws EntityNotFoundException {
         return accountRepository.findOneByEmail(pEmail)
-                .orElseThrow(() -> new ModuleEntityNotFoundException(pEmail, Account.class));
+                .orElseThrow(() -> new EntityNotFoundException(pEmail, Account.class));
     }
 
     /*
@@ -162,10 +163,9 @@ public class AccountService implements IAccountService {
      * java.lang.String)
      */
     @Override
-    public boolean validatePassword(final String pEmail, final String pPassword) throws ModuleEntityNotFoundException {
+    public boolean validatePassword(final String pEmail, final String pPassword) throws EntityNotFoundException {
         return accountRepository.findOneByEmail(pEmail)
-                .orElseThrow(() -> new ModuleEntityNotFoundException(pEmail, Account.class)).getPassword()
-                .equals(pPassword);
+                .orElseThrow(() -> new EntityNotFoundException(pEmail, Account.class)).getPassword().equals(pPassword);
     }
 
     /*
@@ -185,12 +185,12 @@ public class AccountService implements IAccountService {
      *            The account
      * @param pCode
      *            The code to check
-     * @throws InvalidValueException
+     * @throws EntityOperationForbiddenException
      *             Thrown if the passed code differs from the one set on the account
      */
-    private void checkCode(final Account pAccount, final String pCode) throws InvalidValueException {
+    private void checkCode(final Account pAccount, final String pCode) throws EntityOperationForbiddenException {
         if (!pAccount.getCode().equals(pCode)) {
-            throw new InvalidValueException("this is not the right code");
+            throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, "Incorrect code");
         }
     }
 

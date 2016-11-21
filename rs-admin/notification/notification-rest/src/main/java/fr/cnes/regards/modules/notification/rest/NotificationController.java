@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
@@ -57,7 +56,7 @@ public class NotificationController implements INotificationSignature {
      */
     @Override
     @ResourceAccess(description = "Retrieve the list of notifications for the logged user")
-    public ResponseEntity<List<Notification>> retrieveNotifications() throws ModuleEntityNotFoundException {
+    public ResponseEntity<List<Notification>> retrieveNotifications() throws EntityNotFoundException {
         final List<Notification> notifications = notificationService.retrieveNotifications();
         return new ResponseEntity<>(notifications, HttpStatus.OK);
     }
@@ -120,7 +119,7 @@ public class NotificationController implements INotificationSignature {
      */
     @Override
     @ResourceAccess(description = "Define the endpoint for retrieving the notification settings for the logged user")
-    public ResponseEntity<NotificationSettings> retrieveNotificationSettings() throws ModuleEntityNotFoundException {
+    public ResponseEntity<NotificationSettings> retrieveNotificationSettings() throws EntityNotFoundException {
         final NotificationSettings settings = notificationSettingsService.retrieveNotificationSettings();
         return new ResponseEntity<>(settings, HttpStatus.OK);
     }
@@ -135,7 +134,7 @@ public class NotificationController implements INotificationSignature {
     @Override
     @ResourceAccess(description = "Define the endpoint for updating the notification status")
     public void updateNotificationSettings(final NotificationSettingsDTO pNotificationSettings)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         notificationSettingsService.updateNotificationSettings(pNotificationSettings);
     }
 

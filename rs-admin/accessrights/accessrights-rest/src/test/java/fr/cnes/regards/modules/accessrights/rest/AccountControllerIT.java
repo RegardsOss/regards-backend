@@ -22,7 +22,8 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -198,7 +199,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system allows to retrieve a specific user for an instance and handle fail cases.")
-    public void getAccount() throws AlreadyExistingException {
+    public void getAccount() throws EntityAlreadyExistsException {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiAccountId, token, expectations, errorMessage, account.getId());
@@ -211,7 +212,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system allows to retrieve a specific user for an instance and handle fail cases.")
-    public void getAccountByEmail() throws AlreadyExistingException {
+    public void getAccountByEmail() throws EntityAlreadyExistsException {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiAccountEmail, token, expectations, errorMessage, account.getEmail());
@@ -247,7 +248,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     @Requirement("REGARDS_DSL_ADM_ADM_470")
     @Purpose("Check that the system allows to provide a reset/unlock code associated to an instance user.")
-    public void getCode() throws AlreadyExistingException {
+    public void getCode() throws EntityAlreadyExistsException {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performGet(apiAccountCode + "?email=" + account.getEmail() + "&type=UNLOCK", token, expectations, errorMessage);
@@ -256,7 +257,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system allows to update user for an instance and handle fail cases.")
-    public void updateAccount() throws AlreadyExistingException {
+    public void updateAccount() throws EntityAlreadyExistsException {
         // Prepare the account
         account.setFirstName("AnOtherFirstName");
 
@@ -281,7 +282,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to unlock an instance user's account.")
-    public void unlockAccount() throws AlreadyExistingException {
+    public void unlockAccount() throws EntityAlreadyExistsException {
         // Prepare the account
         account.setStatus(AccountStatus.LOCKED);
         accountRepository.save(account);
@@ -294,7 +295,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_470")
     @Purpose("Check that the system allows to reset an instance user's password.")
-    public void changeAccountPassword() throws AlreadyExistingException {
+    public void changeAccountPassword() throws EntityAlreadyExistsException {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performPut(apiChangePassword, token, "newPassword", expectations, errorMessage, account.getId(),
@@ -311,7 +312,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system prevents from deleting an account linked to any project users.")
-    public void deleteAccount_notAllowedBecauseOfLinkedProjectUser() throws ModuleEntityNotFoundException {
+    public void deleteAccount_notAllowedBecauseOfLinkedProjectUser() throws EntityNotFoundException {
         jwtService.injectMockToken(AbstractAdministrationIT.PROJECT_TEST_NAME, ROLE_TEST);
         projectUserRepository.save(new ProjectUser(EMAIL, roleTest, roleTest.getPermissions(), new ArrayList<>()));
 

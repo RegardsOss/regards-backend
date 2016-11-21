@@ -22,9 +22,8 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -108,7 +107,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to create a role and handle fail cases.")
-    public void createRole() throws OperationForbiddenException, ModuleEntityNotFoundException {
+    public void createRole() throws EntityException {
         final String newRoleName = "NEW_ROLE";
         if (roleService.existByName(newRoleName)) {
             final Role toDelete = roleService.retrieveRole(newRoleName);
@@ -142,7 +141,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update a role and handle fail cases.")
-    public void updateRole() throws AlreadyExistingException {
+    public void updateRole() {
         // Grab a role and change something
         roleTest.setCorsRequestsAuthorizationEndDate(LocalDateTime.now().plusDays(2));
 
@@ -174,12 +173,11 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     /**
      * Check that the system allows to delete a role.
      *
-     * @throws AlreadyExistingException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to delete a role.")
-    public void removeRole() throws AlreadyExistingException {
+    public void removeRole() {
         // Create a non-native role
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -198,7 +196,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update resources accesses of a role.")
-    public void updateRoleResourcesAccess() throws ModuleEntityNotFoundException {
+    public void updateRoleResourcesAccess() throws EntityNotFoundException {
 
         final List<ResourcesAccess> newPermissionList = roleService.retrieveRoleResourcesAccessList(roleTest.getId());
 
