@@ -169,14 +169,14 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     }
 
     /**
-     * Check that the system prevents a user to connect using a hierarchically superior role.
+     * Check that the system allows a user to connect using a hierarchically inferior role.
      *
      * @throws ModuleEntityNotFoundException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_270")
-    @Purpose("Check that the system prevents a user to connect using a hierarchically superior role.")
-    public void getUserPermissionsWithBorrowedRoleInferior() throws ModuleEntityNotFoundException {
+    @Purpose("Check that the system allows a user to connect using a hierarchically inferior role.")
+    public void getUserPermissions_withBorrowedRoleInferior() throws ModuleEntityNotFoundException {
         // Prepare a project user with role admin
         final Role roleAdmin = roleService.retrieveRole(DefaultRole.ADMIN.toString());
         projectUser.setRole(roleAdmin);
@@ -195,14 +195,14 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     }
 
     /**
-     * Check that the system allows a user to connect using a hierarchically inferior role.
+     * Check that the system prevents a user to connect using a hierarchically superior role.
      *
      * @throws EntityNotFoundException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_270")
-    @Purpose("Check that the system allows a user to connect using a hierarchically inferior role.")
-    public void getUserPermissionsWithBorrowedRoleSuperior() throws ModuleEntityNotFoundException {
+    @Purpose("Check that the system prevents a user to connect using a hierarchically superior role.")
+    public void getUserPermissions_withBorrowedRoleSuperior() throws ModuleEntityNotFoundException {
         // Prepare a project user with role admin
         final Role roleAdmin = roleService.retrieveRole(DefaultRole.ADMIN.toString());
         projectUser.setRole(roleAdmin);

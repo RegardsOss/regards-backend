@@ -5,9 +5,9 @@ package fr.cnes.regards.modules.accessrights.service.role;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -104,9 +104,8 @@ public class RoleService implements IRoleService {
      */
     @PostConstruct
     public void init() {
-
-        // Ensure the final existence of default final roles
-        // If not, add them final from their bean final definition in final defaultRoles.xml
+        // Ensure the existence of default roles
+        // If not, add them from their bean definition in defaultRoles.xml
 
         // Define a consumer injecting the passed tenant in the context
         final Consumer<? super String> injectTenant = tenant -> {
@@ -117,21 +116,37 @@ public class RoleService implements IRoleService {
             }
         };
 
-        // Define a consumer creating (if needed) all default roles on current tenant
-        final Consumer<? super String> createDefaultRolesOnTenant = t -> {
-            try (Stream<Role> rolesStream = defaultRoles.stream()) {
-                // Check if public role already exists
-                final Optional<Role> publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString());
-                rolesStream.filter(r -> !existByName(r.getName())).forEach(role -> {
-                    publicRole.ifPresent(role::setParentRole);
-                    roleRepository.save(role);
-                });
+        // Return the role with same name in db if exists
+        final UnaryOperator<Role> replaceWithRoleFromDb = r -> {
+            try {
+                return retrieveRole(r.getName());
+            } catch (final ModuleEntityNotFoundException e) {
+                return r;
             }
+        };
+
+        // For passed role, replace parent with its equivalent from the defaultRoles list
+        final Consumer<Role> setParentFromDefaultRoles = r -> {
+            if (r.getParentRole() != null) {
+                final Role parent = defaultRoles.stream().filter(el -> el.getName().equals(r.getParentRole().getName()))
+                        .findFirst().orElse(null);
+                r.setParentRole(parent);
+            }
+        };
+
+        // Define a consumer creating if needed all default roles on current tenant
+        final Consumer<? super String> createDefaultRolesOnTenantNew = t -> {
+            // Replace all default roles with their db version if exists
+            defaultRoles.replaceAll(replaceWithRoleFromDb);
+            // Re-plug the parent roles
+            defaultRoles.forEach(setParentFromDefaultRoles);
+            // Save everything
+            defaultRoles.forEach(roleRepository::save);
         };
 
         // For each tenant, inject tenant in context and create (if needed) default roles
         try (Stream<String> tenantsStream = tenantResolver.getAllTenants().stream()) {
-            tenantsStream.peek(injectTenant).forEach(createDefaultRolesOnTenant);
+            tenantsStream.peek(injectTenant).forEach(createDefaultRolesOnTenantNew);
         }
 
     }
@@ -285,17 +300,6 @@ public class RoleService implements IRoleService {
         }
     }
 
-    @Override
-    public void initDefaultRoles() {
-        final RoleFactory factory = new RoleFactory();
-        factory.doNotAutoCreateParents();
-        final Role rolePublic = roleRepository.save(factory.createPublic());
-        final Role roleRegisteredUser = roleRepository.save(factory.withParentRole(rolePublic).createRegisteredUser());
-        final Role roleAdmin = roleRepository.save(factory.withParentRole(roleRegisteredUser).createAdmin());
-        final Role roleProjectAdmin = roleRepository.save(factory.withParentRole(roleAdmin).createProjectAdmin());
-        roleRepository.save(factory.withParentRole(roleProjectAdmin).createInstanceAdmin());
-    }
-
     /**
      * @return the role public. Create it if not found
      */
@@ -303,17 +307,6 @@ public class RoleService implements IRoleService {
         final RoleFactory factory = new RoleFactory();
         return roleRepository.findOneByName(DefaultRole.PUBLIC.toString())
                 .orElseGet(() -> roleRepository.save(factory.createPublic()));
-    }
-
-    /**
-     * Return a predicate allowing to filter a roles stream on name
-     *
-     * @param pName
-     *            the role name
-     * @return the predicate
-     */
-    private Predicate<? super Role> createFilterOnName(final String pName) {
-        return r -> pName.equals(r.getName());
     }
 
 }

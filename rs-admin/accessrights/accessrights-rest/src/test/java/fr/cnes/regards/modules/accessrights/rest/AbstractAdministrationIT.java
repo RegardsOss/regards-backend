@@ -14,6 +14,7 @@ import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 
@@ -50,10 +51,16 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
     private IProjectRepository projectRepository;
 
     /**
-     * Project Repository STUB
+     * Role repository
      */
     @Autowired
     private IRoleRepository roleRepository;
+
+    /**
+     * Role service
+     */
+    @Autowired
+    private RoleService roleService;
 
     /**
      * Project Repository STUB
@@ -84,14 +91,10 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
         token = jwtService.generateToken(AbstractAdministrationIT.PROJECT_TEST_NAME, "email", ROLE_TEST, ROLE_TEST);
         jwtService.injectMockToken(AbstractAdministrationIT.PROJECT_TEST_NAME, DefaultRole.PUBLIC.toString());
 
-        projectUserRepository.deleteAll();
-
         // Clear the repos
+        projectUserRepository.deleteAll();
         accountRepository.deleteAll();
-
-        // Clean repositories
         projectConnectionRepository.deleteAll();
-        // projectRepository.deleteAll(); Tenant needed by Accounts delete test
 
         // Refresh method autorization service after add the project
         methodAuthorizationService.refreshAuthorities();
