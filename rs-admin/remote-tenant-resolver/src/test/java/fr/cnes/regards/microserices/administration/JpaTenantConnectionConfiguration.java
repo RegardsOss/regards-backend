@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.microserices.administration;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +43,7 @@ public class JpaTenantConnectionConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
+    @Qualifier("initProjectConnectionsClient")
     @Primary
     public IProjectConnectionClient projectConnectionClient() {
         return new ProjectConnectionClientStub();
@@ -55,6 +57,7 @@ public class JpaTenantConnectionConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
+    @Qualifier("initProjectsClient")
     @Primary
     public IProjectsClient projectClient() {
         return new ProjectClientStub();
@@ -68,6 +71,7 @@ public class JpaTenantConnectionConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
+    @Qualifier("initRolesClient")
     @Primary
     public IRolesClient roleClient() {
         return new RolesFallback();
@@ -81,6 +85,7 @@ public class JpaTenantConnectionConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
+    @Qualifier("initResourcesClient")
     @Primary
     public IResourcesClient resourceClient() {
         return new ResourcesFallback();

@@ -20,6 +20,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import fr.cnes.regards.framework.hateoas.DefaultResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -96,7 +97,7 @@ public class ProjectsControllerTest {
         final MethodAuthorizationService methodMocked = Mockito.mock(MethodAuthorizationService.class);
         Mockito.when(methodMocked.hasAccess(Mockito.any(), Mockito.any())).thenReturn(true);
 
-        projectsController = new ProjectsController(new ProjectService(projectRepo),
+        projectsController = new ProjectsController(new ProjectService(projectRepo, new MultitenantDaoProperties()),
                 new DefaultResourceService(methodMocked));
 
         // Initialization of in-lines entities

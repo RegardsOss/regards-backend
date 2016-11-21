@@ -8,10 +8,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -35,7 +40,7 @@ public class ProjectService implements IProjectService {
     /**
      * Class logger
      */
-    private final static Logger LOG = LoggerFactory.getLogger(ProjectService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectService.class);
 
     /**
      * JPA Repository to query projects from database
@@ -43,14 +48,42 @@ public class ProjectService implements IProjectService {
     private final IProjectRepository projectRepository;
 
     /**
+     * JPA Multitenants default configuration from properties file.
+     */
+    private final MultitenantDaoProperties defaultProperties;
+
+    /**
      * The constructor.
      *
      * @param pProjectRepository
      *            The JPA repository.
      */
-    public ProjectService(final IProjectRepository pProjectRepository) {
+    public ProjectService(final IProjectRepository pProjectRepository,
+            final MultitenantDaoProperties pDefaultProperties) {
         super();
         projectRepository = pProjectRepository;
+        defaultProperties = pDefaultProperties;
+    }
+
+    /**
+     *
+     * Initialize projects.
+     *
+     * @throws RabbitMQVhostException
+     *
+     * @since 1.0-SNAPHOT
+     */
+    @PostConstruct
+    public void projectsInitialization() throws RabbitMQVhostException {
+
+        // Create project from properties files it does not exists yet
+        for (final TenantConnection tenant : defaultProperties.getTenants()) {
+            if (projectRepository.findOneByName(tenant.getName()) == null) {
+                LOG.info(String.format("Creating new project %s from static properties configuration",
+                                       tenant.getName()));
+                projectRepository.save(new Project("", "", true, tenant.getName()));
+            }
+        }
     }
 
     @Override

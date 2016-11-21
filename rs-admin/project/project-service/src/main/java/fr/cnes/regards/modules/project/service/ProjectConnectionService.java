@@ -3,11 +3,8 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -15,7 +12,6 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.jpa.multitenant.event.NewTenantEvent;
-import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
@@ -44,11 +40,6 @@ public class ProjectConnectionService implements IProjectConnectionService {
     private static final Logger LOG = LoggerFactory.getLogger(ProjectConnectionService.class);
 
     /**
-     * Name of the current microservice
-     */
-    private final String microserviceName;
-
-    /**
      * JPA Repository to query projects from database
      */
     private final IProjectRepository projectRepository;
@@ -57,11 +48,6 @@ public class ProjectConnectionService implements IProjectConnectionService {
      * JPA Repository to query projectConnection from database
      */
     private final IProjectConnectionRepository projectConnectionRepository;
-
-    /**
-     * JPA Multitenants default configuration from properties file.
-     */
-    private final MultitenantDaoProperties defaultProperties;
 
     /**
      * AMQP message publisher
@@ -83,39 +69,11 @@ public class ProjectConnectionService implements IProjectConnectionService {
      *            Amqp publisher
      */
     public ProjectConnectionService(final IProjectRepository pProjectRepository,
-            final IProjectConnectionRepository pProjectConnectionRepository,
-            final MultitenantDaoProperties pDefaultProperties,
-            @Value("${spring.application.name}") final String pMicroserviceName, final IPublisher pPublisher) {
+            final IProjectConnectionRepository pProjectConnectionRepository, final IPublisher pPublisher) {
         super();
         projectRepository = pProjectRepository;
         projectConnectionRepository = pProjectConnectionRepository;
-        defaultProperties = pDefaultProperties;
-        microserviceName = pMicroserviceName;
         publisher = pPublisher;
-    }
-
-    /**
-     *
-     * Initialize projects.
-     *
-     * @throws RabbitMQVhostException
-     *
-     * @since 1.0-SNAPHOT
-     */
-    @PostConstruct
-    public void projectsInitialization() throws RabbitMQVhostException {
-
-        // Create project from properties files it does not exists yet
-        for (final TenantConnection tenant : defaultProperties.getTenants()) {
-            if (projectRepository.findOneByName(tenant.getName()) == null) {
-                LOG.info(String.format("Creating new project %s from static properties configuration",
-                                       tenant.getName()));
-                final Project project = projectRepository.save(new Project("", "", true, tenant.getName()));
-                // Then create connection for current microservice
-                projectConnectionRepository.save(new ProjectConnection(project, microserviceName, tenant.getUserName(),
-                        tenant.getPassword(), tenant.getDriverClassName(), tenant.getUrl()));
-            }
-        }
     }
 
     @Override

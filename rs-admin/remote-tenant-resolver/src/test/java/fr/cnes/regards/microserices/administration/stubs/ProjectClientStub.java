@@ -49,7 +49,7 @@ public class ProjectClientStub implements IProjectsClient {
 
     @Override
     public ResponseEntity<Resource<Project>> retrieveProject(final String pProjectName) throws EntityException {
-        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        return new ResponseEntity<>(new Resource<Project>(PROJECT), HttpStatus.OK);
     }
 
     @Override

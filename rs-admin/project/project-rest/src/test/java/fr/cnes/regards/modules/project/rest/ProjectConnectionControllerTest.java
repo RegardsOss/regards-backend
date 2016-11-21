@@ -110,7 +110,7 @@ public class ProjectConnectionControllerTest {
         final IPublisher mockPublisher = Mockito.mock(IPublisher.class);
 
         projectConnectionController = new ProjectConnectionController(
-                new ProjectConnectionService(projectRepo, projectConnRepo, null, "rs-admin", mockPublisher),
+                new ProjectConnectionService(projectRepo, projectConnRepo, mockPublisher),
                 new DefaultResourceService(methodMocked));
 
         // Initialization of in-lines entities

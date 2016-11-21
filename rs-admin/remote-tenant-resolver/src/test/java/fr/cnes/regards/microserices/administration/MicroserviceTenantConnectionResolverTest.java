@@ -35,8 +35,8 @@ public class MicroserviceTenantConnectionResolverTest {
     public void init() {
         final JWTService jwtService = new JWTService();
         jwtService.setSecret("123456789");
-        resovler = new MicroserviceTenantConnectionResolver(new ProjectConnectionClientStub(), new ProjectClientStub(),
-                "test-microservice", jwtService);
+        resovler = new MicroserviceTenantConnectionResolver("test-microservice", jwtService, new ProjectClientStub(),
+                new ProjectConnectionClientStub());
     }
 
     /**

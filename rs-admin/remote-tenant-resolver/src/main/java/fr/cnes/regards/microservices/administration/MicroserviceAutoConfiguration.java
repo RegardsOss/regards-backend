@@ -3,16 +3,27 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
+import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import feign.Feign;
+import feign.gson.GsonDecoder;
+import feign.gson.GsonEncoder;
+import fr.cnes.regards.client.core.TokenClientProvider;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
@@ -46,6 +57,12 @@ public class MicroserviceAutoConfiguration {
     private JWTService jwtService;
 
     /**
+     * Eureka discovery client
+     */
+    @Autowired
+    private DiscoveryClient discoveryClient;
+
+    /**
      *
      * multintenantResolver
      *
@@ -57,12 +74,12 @@ public class MicroserviceAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    @ConditionalOnMissingBean(ITenantConnectionResolver.class)
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    ITenantConnectionResolver multintenantResolver(final IProjectConnectionClient pAdminProjectConnectionClient,
-            final IProjectsClient pAdminProjectsClient) {
-        return new MicroserviceTenantConnectionResolver(pAdminProjectConnectionClient, pAdminProjectsClient,
-                microserviceName, jwtService);
+    ITenantConnectionResolver multintenantResolver(
+            @Qualifier("initProjectsClient") final IProjectsClient pProjectsClient,
+            @Qualifier("initProjectConnectionsClient") final IProjectConnectionClient pProjectConnectionClient) {
+        return new MicroserviceTenantConnectionResolver(microserviceName, jwtService, pProjectsClient,
+                pProjectConnectionClient);
     }
 
     /**
@@ -77,10 +94,75 @@ public class MicroserviceAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    @ConditionalOnMissingBean(IAuthoritiesProvider.class)
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    IAuthoritiesProvider authoritiesProvider(final IRolesClient pRoleClient, final IResourcesClient pResourcesClient) {
-        return new MicroserviceAuthoritiesProvider(pRoleClient, pResourcesClient);
+    IAuthoritiesProvider authoritiesProvider(@Qualifier("initResourcesClient") final IResourcesClient pResourcesClient,
+            @Qualifier("initRolesClient") final IRolesClient pRolesClient) {
+        return new MicroserviceAuthoritiesProvider(pResourcesClient, pRolesClient);
+    }
+
+    /**
+     *
+     * Remote tenant resolver. Retrieve tenants from the administration service.
+     *
+     * @return RemoteTenantResolver
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
+    ITenantResolver tenantResolver(@Qualifier("initProjectsClient") final IProjectsClient pProjectsClient) {
+        return new RemoteTenantResolver(pProjectsClient);
+    }
+
+    @Bean
+    @Qualifier("initProjectsClient")
+    IProjectsClient getProjectsClient() {
+        final List<ServiceInstance> instances = discoveryClient.getInstances("rs-admin");
+        if (!instances.isEmpty()) {
+            return Feign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
+                    .decoder(new ResponseEntityDecoder(new GsonDecoder()))
+                    .target(new TokenClientProvider<>(IProjectsClient.class, instances.get(0).getUri().toString()));
+        } else {
+            return null;
+        }
+    }
+
+    @Bean
+    @Qualifier("initProjectConnectionsClient")
+    IProjectConnectionClient getProjectConnectionsClient() {
+        final List<ServiceInstance> instances = discoveryClient.getInstances("rs-admin");
+        if (!instances.isEmpty()) {
+            return Feign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
+                    .decoder(new ResponseEntityDecoder(new GsonDecoder())).target(new TokenClientProvider<>(
+                            IProjectConnectionClient.class, instances.get(0).getUri().toString()));
+        } else {
+            return null;
+        }
+    }
+
+    @Bean
+    @Qualifier("initResourcesClient")
+    public IResourcesClient getResourcesClient() {
+        final List<ServiceInstance> instances = discoveryClient.getInstances("rs-admin");
+        if (!instances.isEmpty()) {
+            return Feign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
+                    .decoder(new ResponseEntityDecoder(new GsonDecoder()))
+                    .target(new TokenClientProvider<>(IResourcesClient.class, instances.get(0).getUri().toString()));
+        } else {
+            return null;
+        }
+    }
+
+    @Bean
+    @Qualifier("initRolesClient")
+    public IRolesClient getRolesClient() {
+        final List<ServiceInstance> instances = discoveryClient.getInstances("rs-admin");
+        if (!instances.isEmpty()) {
+            return Feign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
+                    .decoder(new ResponseEntityDecoder(new GsonDecoder()))
+                    .target(new TokenClientProvider<>(IRolesClient.class, instances.get(0).getUri().toString()));
+        } else {
+            return null;
+        }
     }
 
 }

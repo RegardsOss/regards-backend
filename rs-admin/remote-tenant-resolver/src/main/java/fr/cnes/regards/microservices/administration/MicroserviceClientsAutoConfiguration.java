@@ -3,7 +3,11 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
+import org.springframework.cloud.netflix.hystrix.EnableHystrix;
+import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -18,7 +22,9 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT.
  */
+@Configuration
+@AutoConfigureBefore(MicroserviceAutoConfiguration.class)
+@EnableDiscoveryClient
 @EnableFeignClients(clients = { IProjectsClient.class, IProjectConnectionClient.class })
 public class MicroserviceClientsAutoConfiguration {
-
 }

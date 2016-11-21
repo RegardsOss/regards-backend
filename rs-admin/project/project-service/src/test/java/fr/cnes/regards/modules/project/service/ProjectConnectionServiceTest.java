@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
@@ -108,13 +109,13 @@ public class ProjectConnectionServiceTest {
     public void init() {
         // use a stub repository, to be able to only test the service
         final IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub);
+        projectService = new ProjectService(projectRepoStub, new MultitenantDaoProperties());
 
         final IPublisher mockPublisher = Mockito.mock(IPublisher.class);
 
         final IProjectConnectionRepository projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
-        projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub, null,
-                "rs-admin", mockPublisher);
+        projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub,
+                mockPublisher);
 
         final Project project1 = projectRepoStub
                 .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
