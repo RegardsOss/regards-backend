@@ -6,7 +6,9 @@ package fr.cnes.regards.modules.project.service;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
@@ -26,7 +28,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  *
  * Project business service tests
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public class ProjectConnectionServiceTest {
@@ -108,9 +110,11 @@ public class ProjectConnectionServiceTest {
         final IProjectRepository projectRepoStub = new ProjectRepositoryStub();
         projectService = new ProjectService(projectRepoStub);
 
+        final IPublisher mockPublisher = Mockito.mock(IPublisher.class);
+
         final IProjectConnectionRepository projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
         projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub, null,
-                "rs-admin");
+                "rs-admin", mockPublisher);
 
         final Project project1 = projectRepoStub
                 .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));

@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 /**
  * Define the common interface of REST clients for {@link ProjectUser}s.
  *
- * @author CS SI
+ * @author Sébastien Binda
  */
 @RequestMapping("/users")
 public interface IProjectUsersSignature {
@@ -52,7 +52,7 @@ public interface IProjectUsersSignature {
      * @throws ModuleEntityNotFoundException
      */
     @ResponseBody
-    @RequestMapping(value = "/{user_email:.+}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{user_email}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") String pUserEmail)
             throws ModuleEntityNotFoundException;
 
@@ -147,7 +147,8 @@ public interface IProjectUsersSignature {
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @ResponseBody
-    @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.GET)
+    @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(
             @PathVariable("user_login") String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) String pBorrowedRoleName)

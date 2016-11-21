@@ -15,6 +15,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundExcep
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -26,7 +27,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  *
  * IAuthoritiesProvider implementation for all microservices exception administration.
  *
- * @author sbinda
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
@@ -94,14 +95,15 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     public boolean hasCorsRequestsAccess(final String pRole) throws SecurityException {
         try {
             boolean access = false;
-            final ResponseEntity<Resource<Role>> result = roleClient.retrieveRole(pRole);
-            if (result.getStatusCode().equals(HttpStatus.OK)) {
-                final Resource<Role> body = result.getBody();
-                if (body != null) {
-                    access = body.getContent().isCorsRequestsAuthorized();
+            if (!RoleAuthority.isSysRole(pRole)) {
+                final ResponseEntity<Resource<Role>> result = roleClient.retrieveRole(RoleAuthority.getRoleName(pRole));
+                if (result.getStatusCode().equals(HttpStatus.OK)) {
+                    access = result.getBody().getContent().isCorsRequestsAuthorized();
                 }
+                return access;
+            } else {
+                return true;
             }
-            return access;
         } catch (final ModuleEntityNotFoundException e) {
             throw new SecurityException("Could not get cors requests access", e);
         }

@@ -130,7 +130,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}", RequestMethod.GET, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}", RequestMethod.PUT, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}", RequestMethod.DELETE, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/account/{account_email:.+}", RequestMethod.GET,
+        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/account/{account_email}", RequestMethod.GET,
                                    ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/code", RequestMethod.GET, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}/password/{reset_code}", RequestMethod.PUT,

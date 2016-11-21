@@ -20,6 +20,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
@@ -35,7 +39,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
+import fr.cnes.regards.modules.accessrights.service.role.event.handler.NewProjectConnectionEventHandler;
 import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
+import fr.cnes.regards.modules.project.domain.event.NewProjectConnectionEvent;
 
 /**
  * {@link IRoleService} implementation
@@ -83,6 +89,11 @@ public class RoleService implements IRoleService {
     private final JWTService jwtService;
 
     /**
+     * AMQP Message subscriber
+     */
+    private final ISubscriber subscriber;
+
+    /**
      * The default roles. Autowired by Spring.
      */
     @Resource
@@ -90,22 +101,30 @@ public class RoleService implements IRoleService {
 
     public RoleService(@Value("${spring.application.name}") final String pMicroserviceName,
             final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
-            final ITenantResolver pTenantResolver, final JWTService pJwtService) {
+            final ITenantResolver pTenantResolver, final JWTService pJwtService, final ISubscriber pSubscriber) {
         super();
         roleRepository = pRoleRepository;
         projectUserRepository = pProjectUserRepository;
         tenantResolver = pTenantResolver;
         jwtService = pJwtService;
         microserviceName = pMicroserviceName;
+        subscriber = pSubscriber;
     }
 
     /**
      * Init medthod
+     *
+     * @throws RabbitMQVhostException
+     *             initialization error
      */
     @PostConstruct
-    public void init() {
-        // Ensure the existence of default roles
-        // If not, add them from their bean definition in defaultRoles.xml
+    public void init() throws RabbitMQVhostException {
+
+        subscriber.subscribeTo(NewProjectConnectionEvent.class, new NewProjectConnectionEventHandler(jwtService, this),
+                               AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.INTERNAL);
+
+        // Ensure the final existence of default final roles
+        // If not, add them final from their bean final definition in final defaultRoles.xml
 
         // Define a consumer injecting the passed tenant in the context
         final Consumer<? super String> injectTenant = tenant -> {
