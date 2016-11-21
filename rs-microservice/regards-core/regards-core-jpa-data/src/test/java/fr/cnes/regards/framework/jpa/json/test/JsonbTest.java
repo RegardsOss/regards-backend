@@ -4,6 +4,7 @@
 package fr.cnes.regards.framework.jpa.json.test;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { JsonbTestConfiguration.class })
+@Ignore
 public class JsonbTest {
 
     /**
