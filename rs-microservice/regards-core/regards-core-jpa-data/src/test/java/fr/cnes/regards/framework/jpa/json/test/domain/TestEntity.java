@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity(name = "T_TEST_ENTITY")
-@SequenceGenerator(name = "testEntitySequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_PARAMETER")
+@SequenceGenerator(name = "testEntitySequence", initialValue = 1, sequenceName = "SEQ_TEST_ENTITY")
 public class TestEntity {
 
     /**
