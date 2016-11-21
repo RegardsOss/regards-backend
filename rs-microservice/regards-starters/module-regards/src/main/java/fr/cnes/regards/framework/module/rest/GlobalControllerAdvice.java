@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
@@ -129,6 +131,24 @@ public class GlobalControllerAdvice {
      */
     @ExceptionHandler(OperationForbiddenException.class)
     public ResponseEntity<ServerErrorResponse> operationForbidden(final OperationForbiddenException pException) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    /**
+     * Exception handler returning the code 403 when an operation on an entity is forbidden.<br>
+     */
+    @ExceptionHandler(EntityOperationForbiddenException.class)
+    public ResponseEntity<ServerErrorResponse> entityOperationForbidden(
+            final EntityOperationForbiddenException pException) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    /**
+     * Exception handler returning the code 403 when a transition on a state-managed entity is forbidden.<br>
+     */
+    @ExceptionHandler(EntityTransitionForbiddenException.class)
+    public ResponseEntity<ServerErrorResponse> entityTransitionForbidden(
+            final EntityTransitionForbiddenException pException) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
     }
 }

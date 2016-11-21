@@ -121,8 +121,7 @@ public class CorsFilter extends OncePerRequestFilter {
             if (!roles.isEmpty()) {
                 boolean access = false;
                 for (final RoleAuthority role : roles) {
-                    access = access || authoritiesProvider
-                            .hasCorsRequestsAccess(RoleAuthority.getRoleName(role.getAuthority()));
+                    access = access || authoritiesProvider.hasCorsRequestsAccess(role.getAuthority());
                 }
                 if (!access) {
                     if (OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
@@ -143,7 +142,7 @@ public class CorsFilter extends OncePerRequestFilter {
             }
         } catch (final SecurityException e) {
             final String message = "[REGARDS CORS FILTER] Error on access resolution: " + e.getMessage();
-            LOG.debug(message, e);
+            LOG.error(message, e);
             pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
         }
     }

@@ -1,5 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesConfiguration,\
-fr.cnes.regards.framework.jpa.multitenant.autoconfigure.hibernate.DataSourceBasedMultiTenantConnectionProviderImpl,\
-fr.cnes.regards.framework.jpa.multitenant.autoconfigure.hibernate.CurrentTenantIdentifierResolverImpl,\
-fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAutoConfiguration

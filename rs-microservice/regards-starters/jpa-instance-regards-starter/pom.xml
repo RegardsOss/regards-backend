@@ -15,19 +15,31 @@
 	</parent>
 
 	<dependencies>
+		<!-- Spring -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<!-- Regards -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-instance-regards-autoconfigure</artifactId>
-			<version>${project.version}</version>
+			<artifactId>jpa-instance-regards</artifactId>
+		</dependency>
+		<!-- Tests -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-common</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<groupId>hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.el</groupId>
 			<artifactId>javax.el-api</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

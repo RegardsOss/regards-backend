@@ -1,9 +1,8 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.hibernate;
+package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,12 +16,15 @@ import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.amqp.Subscriber;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.multitenant.event.NewTenantEvent;
+import fr.cnes.regards.framework.jpa.multitenant.event.handler.NewTenantHandler;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
@@ -35,25 +37,48 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@Component
-@ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class DataSourceBasedMultiTenantConnectionProviderImpl
         extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl {
 
+    /**
+     * Serial UID
+     */
     private static final long serialVersionUID = 8168907057647334460L;
+
+    /**
+     * Current microservice name
+     */
+    private String microserviceName;
+
+    /**
+     * AMQP Message subscriber
+     */
+    private transient Subscriber amqpSubscriber;
 
     /**
      * Microservice global configuration
      */
-    @Autowired
     private transient MultitenantDaoProperties daoProperties;
 
     /**
      * Pool of datasources available for this connection provider
      */
-    @Autowired
-    @Qualifier("multitenantsDataSources")
-    private final transient Map<String, DataSource> dataSources = new HashMap<>();
+    private transient Map<String, DataSource> dataSources;
+
+    public DataSourceBasedMultiTenantConnectionProviderImpl(final MultitenantDaoProperties pDaoProperties,
+            final Map<String, DataSource> pDataSources, final Subscriber pAmqpSubscriber,
+            final String pMicroserviceName) {
+        super();
+        daoProperties = pDaoProperties;
+        dataSources = pDataSources;
+        amqpSubscriber = pAmqpSubscriber;
+        microserviceName = pMicroserviceName;
+    }
+
+    public DataSourceBasedMultiTenantConnectionProviderImpl(final MultitenantDaoProperties pDaoProperties) {
+        super();
+        daoProperties = pDaoProperties;
+    }
 
     @Override
     protected DataSource selectAnyDataSource() {
@@ -69,14 +94,38 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      *
      * Initialize configured datasources
      *
+     * @throws RabbitMQVhostException
+     *             Unrecoverable error during AMQP initialization
+     *
      * @since 1.0-SNAPSHOT
      */
     @PostConstruct
-    public void initDataSources() {
+    public void initDataSources() throws RabbitMQVhostException {
         // Hibernate do not initialize schema for multitenants.
         // Here whe manually update schema for all configured datasources
         for (final String tenant : dataSources.keySet()) {
             updateDataSourceSchema(selectDataSource(tenant));
+        }
+
+        listenForNewTenant();
+    }
+
+    /**
+     *
+     * Add a listener to all tenant creation event. If a new tenant is created, we have to dynamically add the
+     * dataSource to the connection pool
+     *
+     * @throws RabbitMQVhostException
+     *             Unrecoverable error during AMQP initialization
+     * @since 1.0-SNAPSHOT
+     */
+    private void listenForNewTenant() throws RabbitMQVhostException {
+        if (amqpSubscriber != null) {
+            final IHandler<NewTenantEvent> tenantHandler = new NewTenantHandler(this, microserviceName);
+            amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler, AmqpCommunicationMode.ONE_TO_MANY,
+                                       AmqpCommunicationTarget.EXTERNAL);
+            amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler, AmqpCommunicationMode.ONE_TO_ONE,
+                                       AmqpCommunicationTarget.INTERNAL);
         }
     }
 
