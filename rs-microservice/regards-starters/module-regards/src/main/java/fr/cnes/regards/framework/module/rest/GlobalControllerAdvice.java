@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotEmptyException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -68,12 +69,12 @@ public class GlobalControllerAdvice {
     }
 
     @ExceptionHandler(ModuleEntityNotFoundException.class)
-    public ResponseEntity<ServerErrorResponse> dataNotFound(ModuleEntityNotFoundException pException) {
+    public ResponseEntity<ServerErrorResponse> dataNotFound(final ModuleEntityNotFoundException pException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ServerErrorResponse> dataNotFound(EntityNotFoundException pException) {
+    public ResponseEntity<ServerErrorResponse> dataNotFound(final EntityNotFoundException pException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
@@ -83,7 +84,7 @@ public class GlobalControllerAdvice {
     }
 
     @ExceptionHandler(EntityNotEmptyException.class)
-    public ResponseEntity<ServerErrorResponse> entityNotEmpty(EntityNotEmptyException pException) {
+    public ResponseEntity<ServerErrorResponse> entityNotEmpty(final EntityNotEmptyException pException) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pException.getMessage()));
     }
 
@@ -94,7 +95,7 @@ public class GlobalControllerAdvice {
     }
 
     @ExceptionHandler(EntityNotIdentifiableException.class)
-    public ResponseEntity<ServerErrorResponse> entityNotIdentifiable(EntityNotIdentifiableException pException) {
+    public ResponseEntity<ServerErrorResponse> entityNotIdentifiable(final EntityNotIdentifiableException pException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
@@ -135,7 +136,7 @@ public class GlobalControllerAdvice {
      * Exception handler returning the code 422 when an entity in request violates its validation constraints.
      */
     @ExceptionHandler(EntityInvalidException.class)
-    public ResponseEntity<ServerErrorResponse> manualValidation(EntityInvalidException pException) {
+    public ResponseEntity<ServerErrorResponse> manualValidation(final EntityInvalidException pException) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(new ServerErrorResponse(pException.getMessage()));
     }
@@ -145,7 +146,7 @@ public class GlobalControllerAdvice {
      * Thrown by Hibernate.
      */
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ServerErrorResponse> hibernateValidation(ValidationException pException) {
+    public ResponseEntity<ServerErrorResponse> hibernateValidation(final ValidationException pException) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(new ServerErrorResponse(pException.getMessage()));
     }
@@ -174,5 +175,15 @@ public class GlobalControllerAdvice {
     public ResponseEntity<ServerErrorResponse> entityTransitionForbidden(
             final EntityTransitionForbiddenException pException) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    /**
+     * Exception handler returning the code 400 when the identifier in url path doesn't match identifier in request
+     * body.<br>
+     */
+    @ExceptionHandler(EntityInconsistentIdentifierException.class)
+    public ResponseEntity<ServerErrorResponse> entityInconsistentIdentifier(
+            final EntityInconsistentIdentifierException pException) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(pException.getMessage()));
     }
 }
