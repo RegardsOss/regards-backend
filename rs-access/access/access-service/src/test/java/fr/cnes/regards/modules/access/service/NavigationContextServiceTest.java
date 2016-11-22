@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.access.dao.INavigationContextRepository;
 import fr.cnes.regards.modules.access.domain.ConfigParameter;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
@@ -77,7 +77,7 @@ public class NavigationContextServiceTest extends NavigationContextUtility {
             navCtx2.setTinyUrl("hello/NewYork");
 
             updateNvgCtx = nvgCtxServiceMocked.update(navCtx2);
-        } catch (ModuleEntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             Assert.fail();
         }
 
@@ -89,8 +89,8 @@ public class NavigationContextServiceTest extends NavigationContextUtility {
         Assert.assertEquals(navCtx2.getQueryParameters().isEmpty(), updateNvgCtx.getQueryParameters().isEmpty());
     }
 
-    @Test(expected = ModuleEntityNotFoundException.class)
-    public void updateUnknownContext() throws ModuleEntityNotFoundException {
+    @Test(expected = EntityNotFoundException.class)
+    public void updateUnknownContext() throws EntityNotFoundException {
         Mockito.when(nvgCtxRepositoryMocked.exists(navCtx2.getId())).thenReturn(false);
 
         navCtx2.setRoute("modified route");
@@ -110,7 +110,7 @@ public class NavigationContextServiceTest extends NavigationContextUtility {
         NavigationContext context = null;
         try {
             context = nvgCtxServiceMocked.load(ctxId);
-        } catch (ModuleEntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             Assert.fail();
         }
         Assert.assertEquals(navCtx2.getTinyUrl(), context.getTinyUrl());
@@ -121,8 +121,8 @@ public class NavigationContextServiceTest extends NavigationContextUtility {
         Assert.assertNotNull(context);
     }
 
-    @Test(expected = ModuleEntityNotFoundException.class)
-    public void loadUnknownContex() throws ModuleEntityNotFoundException {
+    @Test(expected = EntityNotFoundException.class)
+    public void loadUnknownContex() throws EntityNotFoundException {
         Mockito.when(nvgCtxRepositoryMocked.findOne(ctxId)).thenReturn(null);
         nvgCtxServiceMocked.load(ctxId);
         Assert.fail();
@@ -133,14 +133,14 @@ public class NavigationContextServiceTest extends NavigationContextUtility {
         Mockito.when(nvgCtxRepositoryMocked.findOne(ctxId)).thenReturn(navCtx2);
         try {
             nvgCtxServiceMocked.delete(ctxId);
-        } catch (ModuleEntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             Assert.fail();
         }
         Assert.assertTrue(true);
     }
 
-    @Test(expected = ModuleEntityNotFoundException.class)
-    public void deleteUnknwon() throws ModuleEntityNotFoundException {
+    @Test(expected = EntityNotFoundException.class)
+    public void deleteUnknwon() throws EntityNotFoundException {
         Mockito.when(nvgCtxRepositoryMocked.findOne(ctxId)).thenReturn(null);
         nvgCtxServiceMocked.delete(ctxId);
         Assert.fail();

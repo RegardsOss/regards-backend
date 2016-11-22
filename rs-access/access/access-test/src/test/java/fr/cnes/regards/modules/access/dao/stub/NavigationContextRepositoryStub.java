@@ -28,9 +28,9 @@ import fr.cnes.regards.modules.access.domain.ThemeType;
  *
  */
 @Repository
-@Profile("test")
 @Primary
-public class NavigationContextServiceStub extends RepositoryStub<NavigationContext>
+@Profile("test")
+public class NavigationContextRepositoryStub extends RepositoryStub<NavigationContext>
         implements INavigationContextRepository {
 
     private static List<NavigationContext> navigationContexts = new ArrayList<>();
@@ -46,17 +46,14 @@ public class NavigationContextServiceStub extends RepositoryStub<NavigationConte
         navigationContexts.add(new NavigationContext("dMLKMLK5454",
                 new Project("project1", new Theme(themeParameters, true, ThemeType.ALL)), navCtxtParameters,
                 "http:/localhost:port/webapps/url", 95));
-//        navigationContexts.get(navigationContexts.size() - 1).setId(50L);
         navigationContexts.add(new NavigationContext("AbcD12345",
                 new Project("project2", new Theme(themeParameters, true, ThemeType.PORTAL)), navCtxtParameters,
                 "http:/localhost:port/webapps/url2", 133));
-//        navigationContexts.get(navigationContexts.size() - 1).setId(51L);
         navigationContexts.add(new NavigationContext("dj45Kjkdjskjd",
                 new Project("project3", new Theme(themeParameters, true, ThemeType.ADMIN)), navCtxtParameters,
                 "http:/localhost:port/webapps/url3", 65));
-//        navigationContexts.get(navigationContexts.size() - 1).setId(52L);
 
-        Long n = 50L;
+        final Long n = 50L;
         navigationContexts.stream().forEach(nvCtx -> nvCtx.setId(n + 1));
 
         getEntities().addAll(navigationContexts);

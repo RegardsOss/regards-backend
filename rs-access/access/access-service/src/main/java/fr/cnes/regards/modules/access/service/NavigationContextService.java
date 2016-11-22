@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.utils.IterableUtils;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.access.dao.INavigationContextRepository;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
@@ -59,25 +59,25 @@ public class NavigationContextService implements INavigationContextService {
     }
 
     @Override
-    public NavigationContext update(NavigationContext pNavigationContext) throws ModuleEntityNotFoundException {
+    public NavigationContext update(NavigationContext pNavigationContext) throws EntityNotFoundException {
         if (!navigationContextReposiory.exists(pNavigationContext.getId())) {
-            throw new ModuleEntityNotFoundException(pNavigationContext.getId(), NavigationContext.class);
+            throw new EntityNotFoundException(pNavigationContext.getId(), NavigationContext.class);
         }
         return navigationContextReposiory.save(pNavigationContext);
     }
 
     @Override
-    public void delete(Long pNavCtxId) throws ModuleEntityNotFoundException {
+    public void delete(Long pNavCtxId) throws EntityNotFoundException {
         final NavigationContext aNavigationContext = this.load(pNavCtxId);
         navigationContextReposiory.delete(aNavigationContext.getId());
     }
 
     @Override
-    public NavigationContext load(Long pNavCtxId) throws ModuleEntityNotFoundException {
+    public NavigationContext load(Long pNavCtxId) throws EntityNotFoundException {
         final NavigationContext navContexts = navigationContextReposiory.findOne(pNavCtxId);
 
         if (navContexts == null) {
-            throw new ModuleEntityNotFoundException(pNavCtxId, NavigationContext.class);
+            throw new EntityNotFoundException(pNavCtxId, NavigationContext.class);
         }
 
         return navContexts;

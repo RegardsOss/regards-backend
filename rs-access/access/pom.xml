@@ -21,7 +21,7 @@
 		<module>access-domain</module>
 		<module>access-rest</module>
 		<module>access-service</module>
-		<module>access-signature</module>
+		
 		<module>access-test</module>
 	</modules>
 

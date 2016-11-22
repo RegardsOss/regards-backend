@@ -1,28 +1,29 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.access.service;
+package fr.cnes.regards.modules.access.dao;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 import fr.cnes.regards.modules.access.domain.Project;
 import fr.cnes.regards.modules.access.domain.Theme;
 import fr.cnes.regards.modules.access.domain.ThemeType;
 
 /***
- * Constants and datas for unit testing of NavigationContext's Service.
+ * Constants and datas for unit testing of DAO NavigationContext.
  * 
  * @author Christophe Mertz
  *
  */
-public class NavigationContextUtility {
+public class NavigationContextUtility extends AbstractDaoTransactionalTest  {
 
-    List<NavigationContext> contexts = new ArrayList<>();
+    protected List<NavigationContext> contexts = new ArrayList<>();
 
-    protected NavigationContext navCtx1 = new NavigationContext("/hello/toulouse",
+    protected NavigationContext navCtx1 = new NavigationContext("/hello/toulous",
             new Project("p1", new Theme(null, false, ThemeType.USER)), null, "route1", 330);
 
     protected NavigationContext navCtx2 = new NavigationContext("/hello/paris",

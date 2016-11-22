@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.access.service;
 
 import java.util.List;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
 
@@ -34,20 +34,20 @@ public interface INavigationContextService {
      * @param pNavigationContext
      *            the {@link NavigationContext} to update
      * @return The {@link NavigationContext} updated
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             throw if an error occurs
      */
-    NavigationContext update(NavigationContext pNavigationContext) throws ModuleEntityNotFoundException;
+    NavigationContext update(NavigationContext pNavigationContext) throws EntityNotFoundException;
 
     /**
      * Delete a {@link NavigationContext}.
      * 
      * @param pNavCtxId
      *            the id of the {@link NavigationContext} to load
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             throw if an error occurs
      */
-    void delete(Long pNavCtxId) throws ModuleEntityNotFoundException;
+    void delete(Long pNavCtxId) throws EntityNotFoundException;
 
     /**
      * Load a {@link NavigationContext}
@@ -55,10 +55,10 @@ public interface INavigationContextService {
      * @param pNavCtxId
      *            the id of the {@link NavigationContext} to load
      * @return the loaded {@link NavigationContext}
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             throw if an error occurs
      */
-    NavigationContext load(Long pNavCtxId) throws ModuleEntityNotFoundException;
+    NavigationContext load(Long pNavCtxId) throws EntityNotFoundException;
 
     /**
      * Lists all the {@link} {@link NavigationContext}.

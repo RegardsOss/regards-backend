@@ -127,8 +127,8 @@ public class NavigationContext implements IIdentifiable<Long> {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setId(Long pId) {
+        this.id = pId;
     }
 
     public String getTinyUrl() {
