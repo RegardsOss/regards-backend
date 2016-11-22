@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
@@ -50,8 +49,7 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<Void> updateProjectUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
-            throws EntityException {
+    public ResponseEntity<Void> updateProjectUser(final Long pUserId, final ProjectUser pUpdatedProjectUser) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -83,20 +81,20 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
 
     @Override
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(final String pUserLogin,
-            final String pBorrowedRoleName) throws EntityException {
+            final String pBorrowedRoleName) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<Void> updateProjectUserAccessRights(final String pLogin,
-            final List<ResourcesAccess> pUpdatedUserAccessRights) throws EntityNotFoundException {
+            final List<ResourcesAccess> pUpdatedUserAccessRights) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<Void> removeProjectUserAccessRights(final String pUserLogin) throws EntityNotFoundException {
+    public ResponseEntity<Void> removeProjectUserAccessRights(final String pUserLogin) {
         // TODO Auto-generated method stub
         return null;
     }

@@ -32,7 +32,6 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.Authenticatio
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
@@ -311,7 +310,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         final UserDetails userDetails;
         try {
             userDetails = retrieveUserDetails(pUserName, pScope);
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             LOG.debug(e.getMessage(), e);
             throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
         }
@@ -332,12 +331,11 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @param pScope
      *            project to authenticate to
      * @return UserDetails
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             user not found in internal REGARDS database
      * @since 1.0-SNAPSHOT
      */
-    public UserDetails retrieveUserDetails(final String pEmail, final String pScope)
-            throws ModuleEntityNotFoundException {
+    public UserDetails retrieveUserDetails(final String pEmail, final String pScope) throws EntityNotFoundException {
         final UserDetails user = new UserDetails();
         try {
 
@@ -360,7 +358,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 final String message = String.format("Remote administration request error. Returned code %s",
                                                      response.getStatusCode());
                 LOG.error(message);
-                throw new ModuleEntityNotFoundException(pEmail, ProjectUser.class);
+                throw new EntityNotFoundException(pEmail, ProjectUser.class);
             }
         } catch (final JwtException | EntityNotFoundException e) {
             LOG.error(e.getMessage(), e);
