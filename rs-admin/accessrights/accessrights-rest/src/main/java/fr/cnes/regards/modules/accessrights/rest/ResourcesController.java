@@ -13,6 +13,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -71,7 +72,7 @@ public class ResourcesController implements IResourcesSignature, IResourceContro
     @Override
     public ResponseEntity<List<Resource<ResourcesAccess>>> registerMicroserviceEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,
-            final List<ResourceMapping> pResourcesToRegister) {
+            @RequestBody final List<ResourceMapping> pResourcesToRegister) {
         // TODO Auto-generated method stub
         return new ResponseEntity<>(toResources(new ArrayList<>()), HttpStatus.OK);
     }

@@ -9,6 +9,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,7 +23,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@RequestMapping("/resources")
+@RequestMapping(value = "/resources", consumes = MediaType.APPLICATION_JSON_VALUE)
 public interface IResourcesSignature {
 
     /**
@@ -32,7 +33,7 @@ public interface IResourcesSignature {
      * @return List<ResourceAccess>
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<List<Resource<ResourcesAccess>>> retrieveResourcesAccesses();
 
@@ -47,7 +48,7 @@ public interface IResourcesSignature {
      * @return updated ResourcesAccess
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(value = "/{resource_id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{resource_id}", method = RequestMethod.PUT)
     @ResponseBody
     ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(@PathVariable("resource_id") final Long pResourceId,
             final ResourcesAccess pResourceAccessToUpdate);
@@ -59,11 +60,10 @@ public interface IResourcesSignature {
      * @return List<ResourceAccess>
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(value = "/register/{microservicename}", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/register/{microservicename}", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<List<Resource<ResourcesAccess>>> registerMicroserviceEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,
-            List<ResourceMapping> pResourcesToRegister);
+            @RequestBody List<ResourceMapping> pResourcesToRegister);
 
 }

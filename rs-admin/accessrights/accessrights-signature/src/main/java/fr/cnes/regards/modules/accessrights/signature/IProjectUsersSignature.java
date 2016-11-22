@@ -33,7 +33,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  *
  * @author Sébastien Binda
  */
-@RequestMapping("/users")
+@RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectUsersSignature {
 
     /**
@@ -54,6 +55,7 @@ public interface IProjectUsersSignature {
      */
     @ResponseBody
     @RequestMapping(value = "/{user_email}", method = RequestMethod.GET)
+
     ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") String pUserEmail)
             throws EntityNotFoundException;
 
