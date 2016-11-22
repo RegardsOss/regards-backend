@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
  *
  * @author Marc Sordi
  * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
  *
  */
 public class RoleAuthority implements GrantedAuthority {
@@ -47,11 +48,11 @@ public class RoleAuthority implements GrantedAuthority {
      * @param pAuthority
      * @since 1.0-SNAPSHOT
      */
-    public RoleAuthority(final String pAuthority) {
-        if (!pAuthority.startsWith(ROLE_PREFIX)) {
-            this.autority = ROLE_PREFIX + pAuthority;
+    public RoleAuthority(final String pRoleName) {
+        if (!pRoleName.startsWith(ROLE_PREFIX)) {
+            this.autority = getRoleAuthority(pRoleName);
         } else {
-            this.autority = pAuthority;
+            this.autority = pRoleName;
         }
     }
 
@@ -70,6 +71,19 @@ public class RoleAuthority implements GrantedAuthority {
             roleName = roleName.substring(ROLE_PREFIX.length());
         }
         return roleName;
+    }
+
+    /**
+     *
+     * Add Authority PREFIX to given Role name
+     *
+     * @param pRoleName
+     *            role name
+     * @return RoleAuthority
+     * @since 1.0-SNAPSHOT
+     */
+    public static String getRoleAuthority(final String pRoleName) {
+        return ROLE_PREFIX + pRoleName;
     }
 
     /**
@@ -111,7 +125,7 @@ public class RoleAuthority implements GrantedAuthority {
      */
     public static boolean isInstanceAdminRole(final String pRoleName) {
         boolean isInstanceAdminRole = false;
-        if (pRoleName.equals(ROLE_PREFIX + INSTANCE_ADMIN_VIRTUAL_ROLE)) {
+        if (pRoleName.equals(getRoleAuthority(INSTANCE_ADMIN_VIRTUAL_ROLE))) {
             isInstanceAdminRole = true;
         }
         return isInstanceAdminRole;

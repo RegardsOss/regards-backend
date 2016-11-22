@@ -18,12 +18,12 @@ public interface IAuthoritiesProvider {
 
     /**
      *
-     * Retrieve all the resourcesAccesses configuration for the current microservice
+     * Register microservice given local endpoints to the administration service and retrieve configured endpoints.
      *
      * @return List<ResourceMapping>
      * @since 1.0-SNAPSHOT
      */
-    List<ResourceMapping> getResourcesAccessConfiguration();
+    List<ResourceMapping> registerEndpoints(List<ResourceMapping> pLocalEndpoints);
 
     /**
      *

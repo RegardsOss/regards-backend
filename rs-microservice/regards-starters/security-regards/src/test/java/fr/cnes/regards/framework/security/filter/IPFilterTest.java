@@ -22,7 +22,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -63,12 +63,15 @@ public class IPFilterTest {
      *
      * Check security filter with ip adress for endpoints accesses
      *
+     * @throws SecurityException
+     *             test error
+     *
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Check security filter with ip adress for endpoints accesses")
     @Test
-    public void ipFilterTest() {
+    public void ipFilterTest() throws SecurityException {
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
@@ -77,25 +80,12 @@ public class IPFilterTest {
         token.setRole(ROLE_NAME);
         SecurityContextHolder.getContext().setAuthentication(token);
 
-        final IpFilter filter = new IpFilter(new IAuthoritiesProvider() {
+        final List<String> results = new ArrayList<>();
+        results.add(AUTHORIZED_ADRESS);
 
-            @Override
-            public List<String> getRoleAuthorizedAddress(final String pRole) {
-                final List<String> results = new ArrayList<>();
-                results.add(AUTHORIZED_ADRESS);
-                return results;
-            }
-
-            @Override
-            public List<ResourceMapping> getResourcesAccessConfiguration() {
-                return null;
-            }
-
-            @Override
-            public boolean hasCorsRequestsAccess(final String pAuthority) {
-                return false;
-            }
-        });
+        final IAuthoritiesProvider provider = Mockito.mock(IAuthoritiesProvider.class);
+        Mockito.when(provider.getRoleAuthorizedAddress(Mockito.anyString())).thenReturn(results);
+        final IpFilter filter = new IpFilter(provider);
 
         Mockito.when(mockedRequest.getRemoteAddr()).thenReturn(AUTHORIZED_ADRESS);
 
@@ -127,13 +117,16 @@ public class IPFilterTest {
     /**
      *
      * Check security filter with ip adress for endpoints accesses
+     * 
+     * @throws SecurityException
+     *             test error
      *
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Check security filter with subdomain ip adress for endpoints accesses")
     @Test
-    public void subdomainIpFilterTest() {
+    public void subdomainIpFilterTest() throws SecurityException {
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
@@ -142,25 +135,12 @@ public class IPFilterTest {
         token.setRole(ROLE_NAME);
         SecurityContextHolder.getContext().setAuthentication(token);
 
-        final IpFilter filter = new IpFilter(new IAuthoritiesProvider() {
+        final List<String> results = new ArrayList<>();
+        results.add(AUTHORIZED_ADRESS);
 
-            @Override
-            public List<String> getRoleAuthorizedAddress(final String pRole) {
-                final List<String> results = new ArrayList<>();
-                results.add(AUTHORIZED_ADRESS_PATTERN);
-                return results;
-            }
-
-            @Override
-            public List<ResourceMapping> getResourcesAccessConfiguration() {
-                return null;
-            }
-
-            @Override
-            public boolean hasCorsRequestsAccess(final String pAuthority) {
-                return false;
-            }
-        });
+        final IAuthoritiesProvider provider = Mockito.mock(IAuthoritiesProvider.class);
+        Mockito.when(provider.getRoleAuthorizedAddress(Mockito.anyString())).thenReturn(results);
+        final IpFilter filter = new IpFilter(provider);
 
         Mockito.when(mockedRequest.getRemoteAddr()).thenReturn(AUTHORIZED_ADRESS);
 
