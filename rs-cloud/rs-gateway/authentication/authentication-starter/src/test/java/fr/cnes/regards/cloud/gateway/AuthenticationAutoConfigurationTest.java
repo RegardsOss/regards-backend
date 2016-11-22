@@ -68,6 +68,7 @@ public class AuthenticationAutoConfigurationTest {
     public void testMethodConfiguration() {
         this.context = new AnnotationConfigWebApplicationContext();
         this.context.setServletContext(new MockServletContext());
+        this.context.getEnvironment().setActiveProfiles("test");
         this.context.refresh();
         this.context.register(ServerPropertiesAutoConfiguration.class, SecurityAutoConfiguration.class,
                               FeignAutoConfiguration.class, FeignRibbonClientAutoConfiguration.class,
@@ -75,8 +76,8 @@ public class AuthenticationAutoConfigurationTest {
                               Oauth2WebAutoConfiguration.class, Oauth2AutoConfiguration.class,
                               MethodSecurityAutoConfiguration.class, MethodAuthorizationServiceAutoConfiguration.class,
                               HateoasAutoConfiguration.class, JWTService.class, AccountsFallback.class,
-                              ProjectsFallback.class, ProjectUsersFallback.class, PluginService.class,
-                              PluginConfigurationRepositoryStub.class);
+                              ProjectsFallback.class, ProjectUsersFallback.class,
+                              PluginConfigurationRepositoryStub.class, PluginService.class);
         this.context.refresh();
         Assertions.assertThat(this.context.getBean(IProjectsClient.class)).isNotNull();
         Assertions.assertThat(this.context.getBean(IProjectUsersClient.class)).isNotNull();
