@@ -29,7 +29,7 @@ import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolve
 @RunWith(RegardsSpringRunner.class)
 @SpringBootTest
 @EnableAutoConfiguration
-@ContextConfiguration(classes = { TestConfiguration.class, LocalTenantConnectionResolverAutoConfigure.class })
+@ContextConfiguration(classes = { TenantTestConfiguration.class, LocalTenantConnectionResolverAutoConfigure.class })
 public class LocalTenantConnectionTest {
 
     /**
@@ -44,7 +44,7 @@ public class LocalTenantConnectionTest {
     @Test
     public void checkJpaTenants() {
 
-        final File resourcesDirectory = new File("target/" + TestConfiguration.PROJECT_NAME);
+        final File resourcesDirectory = new File("target/" + AuthoritiesTestConfiguration.PROJECT_NAME);
         Assert.assertTrue(resourcesDirectory.exists());
 
     }

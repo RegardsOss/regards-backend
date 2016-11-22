@@ -3,11 +3,8 @@
  */
 package fr.cnes.regards.microserices.administration;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -20,18 +17,11 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.microservices.administration.LocalAuthoritiesProvider;
 import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolver;
 import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolverAutoConfigure;
-import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
+import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -53,7 +43,7 @@ import fr.cnes.regards.modules.project.service.IProjectService;
 @PropertySource("classpath:dao.properties")
 @EnableAutoConfiguration(exclude = LocalTenantConnectionResolverAutoConfigure.class)
 @ImportResource({ "classpath*:defaultRoles.xml" })
-public class TestConfiguration {
+public class AuthoritiesTestConfiguration {
 
     /**
      * Test project name
@@ -80,6 +70,15 @@ public class TestConfiguration {
      */
     @Value("${spring.application.name}")
     private String microserviceName;
+
+    /**
+     * Role service
+     */
+    @Autowired
+    private IRoleService roleService;
+
+    @Autowired
+    private IResourcesService resourcesService;
 
     /**
      *
@@ -135,44 +134,8 @@ public class TestConfiguration {
     }
 
     @Bean
-    public IAuthoritiesProvider authoritiesProvider(final JWTService pJwtService, final IRoleRepository pRoleRpo,
-            final IResourcesAccessRepository pResourceAccessRepo) throws JwtException {
-
-        pJwtService.injectToken(PROJECT_NAME, CORS_ROLE_NAME_GRANTED);
-        final List<String> addresses = new ArrayList<>();
-        addresses.add("127.0.0.1");
-        addresses.add("127.0.0.2");
-        addresses.add("127.0.0.3");
-        final RoleFactory roleFactory = new RoleFactory();
-
-        roleFactory.withId(0L).withAuthorizedAddresses(addresses).withCorsRequestsAuthorized(true).withDefault(false)
-                .withNative(true);
-
-        final Role publicRole = pRoleRpo.findOneByName(DefaultRole.PUBLIC.toString())
-                .orElseGet(() -> pRoleRpo.save(roleFactory.createPublic()));
-
-        roleFactory.withParentRole(publicRole);
-
-        pRoleRpo.findOneByName(CORS_ROLE_NAME_GRANTED).ifPresent(role -> pRoleRpo.delete(role.getId()));
-        pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_GRANTED)
-                .withCorsRequestsAuthorizationEndDate(LocalDateTime.now().plusDays(5L)).create());
-
-        pRoleRpo.findOneByName(CORS_ROLE_NAME_INVALID_1).ifPresent(role -> pRoleRpo.delete(role.getId()));
-        pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_INVALID_1)
-                .withCorsRequestsAuthorizationEndDate(LocalDateTime.now().minusDays(5L)).create());
-
-        pRoleRpo.findOneByName(CORS_ROLE_NAME_INVALID_2).ifPresent(role -> pRoleRpo.delete(role.getId()));
-        pRoleRpo.save(roleFactory.withName(CORS_ROLE_NAME_INVALID_2).withCorsRequestsAuthorized(false)
-                .withCorsRequestsAuthorizationEndDate(null).create());
-
-        pResourceAccessRepo.deleteAll();
-        pResourceAccessRepo.save(new ResourcesAccess(0L, "description", microserviceName, "/resource", HttpVerb.GET));
-        pResourceAccessRepo.save(new ResourcesAccess(0L, "description", microserviceName, "/resource", HttpVerb.PUT));
-        pResourceAccessRepo.save(new ResourcesAccess(0L, "description", microserviceName, "/resource", HttpVerb.POST));
-        pResourceAccessRepo
-                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", HttpVerb.DELETE));
-
-        return new LocalAuthoritiesProvider();
+    public IAuthoritiesProvider provider() {
+        return new LocalAuthoritiesProvider(microserviceName, roleService, resourcesService);
     }
 
 }

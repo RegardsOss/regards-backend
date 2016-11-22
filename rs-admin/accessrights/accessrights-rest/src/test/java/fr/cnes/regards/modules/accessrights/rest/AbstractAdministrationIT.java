@@ -97,7 +97,7 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
         projectConnectionRepository.deleteAll();
 
         // Refresh method autorization service after add the project
-        methodAuthorizationService.refreshAuthorities();
+        // methodAuthorizationService.refreshAuthorities();
 
         // Init roles
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();

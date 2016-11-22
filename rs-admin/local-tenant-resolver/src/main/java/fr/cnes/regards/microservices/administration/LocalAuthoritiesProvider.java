@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -34,20 +33,25 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     /**
      * Current microservice name
      */
-    @Value("${spring.application.name")
-    private String microserviceName;
+    private final String microserviceName;
 
     /**
      * Role service
      */
-    @Autowired
-    private IRoleService roleService;
+    private final IRoleService roleService;
 
     /**
      * Resources service
      */
-    @Autowired
-    private IResourcesService resourcesService;
+    private final IResourcesService resourcesService;
+
+    public LocalAuthoritiesProvider(@Value("${spring.application.name") final String pMicroserviceName,
+            final IRoleService pRoleService, final IResourcesService pResourcesService) {
+        super();
+        microserviceName = pMicroserviceName;
+        roleService = pRoleService;
+        resourcesService = pResourcesService;
+    }
 
     /**
      *
