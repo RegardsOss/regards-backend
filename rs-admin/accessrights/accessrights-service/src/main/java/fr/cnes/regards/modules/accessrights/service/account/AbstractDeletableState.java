@@ -4,7 +4,7 @@
 package fr.cnes.regards.modules.accessrights.service.account;
 
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -15,9 +15,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.framework.security.utils.jwt.TenantUtils;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -104,20 +103,14 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         // Get all tenants
         final Set<String> tenants = tenantResolver.getAllTenants();
 
-        // Define a consumer injecting the passed tenant in the context
-        final Consumer<? super String> injectTenant = tenant -> {
-            try {
-                jwtService.injectToken(tenant, RoleAuthority.getSysRole("rs-admin"));
-            } catch (final JwtException e) {
-                LOG.error(e.getMessage(), e);
-            }
-        };
+        // Is there a project user associated to the account on the current tenant?
+        final BooleanSupplier hasProjectUser = () -> projectUserService.existUser(pAccount.getEmail());
 
-        // Predicate: is there a project user associated to the account on this tenant?
-        final Predicate<? super String> hasProjectUser = tenant -> projectUserService.existUser(pAccount.getEmail());
+        // Is there a project user associated to the account on the passed tenant?
+        final Predicate<String> hasProjectUserOnTenant = TenantUtils.asSafeCallableOnTenant(hasProjectUser);
 
         try (Stream<String> stream = tenants.stream()) {
-            if (stream.peek(injectTenant).anyMatch(hasProjectUser)) {
+            if (stream.anyMatch(hasProjectUserOnTenant)) {
                 throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class,
                         "Cannot remove account because it is linked to at least on project user.");
             } else {
