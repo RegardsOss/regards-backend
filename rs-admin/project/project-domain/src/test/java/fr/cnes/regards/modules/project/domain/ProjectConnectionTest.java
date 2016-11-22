@@ -79,25 +79,6 @@ public class ProjectConnectionTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.project.domain.ProjectConnection#ProjectConnection()}.
-     */
-    @Test
-    public void testProjectConnection() {
-        final ProjectConnection projectConn = new ProjectConnection();
-
-        Assert.assertEquals(null, projectConn.getId());
-        Assert.assertEquals(null, projectConn.getProject());
-        Assert.assertEquals(null, projectConn.getMicroservice());
-        Assert.assertEquals(null, projectConn.getUserName());
-        Assert.assertEquals(null, projectConn.getPassword());
-        Assert.assertEquals(null, projectConn.getDriverClassName());
-        Assert.assertEquals(null, projectConn.getUrl());
-
-        final Set<ConstraintViolation<ProjectConnection>> constraintViolations = validator.validate(projectConn);
-        Assert.assertEquals(2, constraintViolations.size());
-    }
-
-    /**
      * Test method for
      * {@link ProjectConnection#ProjectConnection(Long, Project, String, String, String, String, String)}.
      */

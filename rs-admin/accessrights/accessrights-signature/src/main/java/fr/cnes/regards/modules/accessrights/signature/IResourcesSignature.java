@@ -59,7 +59,11 @@ public interface IResourcesSignature {
      * @return List<ResourceAccess>
      * @since 1.0-SNAPSHOT
      */
-    ResponseEntity<List<Resource<ResourcesAccess>>> registerMicroserviceEndpoints(final String pMicroserviceName,
+    @RequestMapping(value = "/register/{microservicename}", method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    ResponseEntity<List<Resource<ResourcesAccess>>> registerMicroserviceEndpoints(
+            @PathVariable("microservicename") final String pMicroserviceName,
             List<ResourceMapping> pResourcesToRegister);
 
 }

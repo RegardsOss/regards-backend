@@ -90,6 +90,8 @@ public class ProjectConnection implements IIdentifiable<Long> {
      */
     public ProjectConnection() {
         super();
+        microservice = "undefined";
+        project = new Project();
     }
 
     /**
