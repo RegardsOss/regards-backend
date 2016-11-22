@@ -11,6 +11,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -18,7 +19,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
@@ -138,6 +141,13 @@ public class AccountWorkflowManagerTest {
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
         accountSettingsService = Mockito.mock(IAccountSettingsService.class);
 
+        // Mock authentication
+        final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
+        final UserDetails details = new UserDetails();
+        details.setName(EMAIL);
+        jwtAuth.setUser(details);
+        SecurityContextHolder.getContext().setAuthentication(jwtAuth);
+
         // Construct the tested service with mock deps
         accountWorkflowManager = new AccountWorkflowManager(accountStateProvider, accountRepository,
                 accountSettingsService);
@@ -182,7 +192,6 @@ public class AccountWorkflowManagerTest {
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUserService, accountRepository, jwtService, tenantResolver));
-
         // Prepare the case
         account.setId(ID);
         account.setStatus(AccountStatus.ACCEPTED);
