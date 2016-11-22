@@ -4,6 +4,7 @@
 package fr.cnes.regards.framework.authentication.internal;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -29,8 +30,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -42,6 +43,8 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
@@ -154,6 +157,41 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
         Authentication token = null;
 
+        // If the given is a valid project, then check for project authentication plugins
+        if (checkScopeValidity(pScope)) {
+            token = doScopePluginsAuthentication(pLogin, pPassword, pScope);
+        }
+
+        // If authentication is not valid, try with the default plugin
+        if ((token == null) || !token.isAuthenticated()) {
+            // Use default REGARDS internal plugin
+            token = doPluginAuthentication(defaultAuthenticationPlugin, pLogin, pPassword, pScope);
+        }
+
+        // If authentication is valid, create account if it does not exists yet
+        if ((token != null) && token.isAuthenticated()) {
+            createMissingAccount(token);
+        }
+
+        return token;
+    }
+
+    /**
+     *
+     * Authenticate thought authentication plugins for the given scope
+     *
+     * @param pLogin
+     *            User login
+     * @param pPassword
+     *            User password
+     * @param pScope
+     *            Project
+     * @return Authentication
+     * @since 1.0-SNAPSHOT
+     */
+    private Authentication doScopePluginsAuthentication(final String pLogin, final String pPassword,
+            final String pScope) {
+        Authentication token = null;
         final IPluginService pluginService = beanFactory.getBean(IPluginService.class);
         if (pluginService == null) {
             final String message = "Context not initialized, Authentication plugins cannot be retreive";
@@ -162,30 +200,45 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         }
 
         // Get all available authentication plugins
-        // FIXME : connection for instance does not work if the scope does not exists.
         final List<PluginConfiguration> pluginConfigurations = pluginService
                 .getPluginConfigurationsByType(IAuthenticationPlugin.class);
-        for (final PluginConfiguration config : pluginConfigurations) {
+        final Iterator<PluginConfiguration> it = pluginConfigurations.iterator();
+        while (it.hasNext() && ((token == null) || !token.isAuthenticated())) {
             try {
-                token = doPluginAuthentication(pluginService.getPlugin(config.getId()), pLogin, pPassword, pScope);
-                if (token.isAuthenticated()) {
-                    break;
-                }
+                token = doPluginAuthentication(pluginService.getPlugin(it.next().getId()), pLogin, pPassword, pScope);
             } catch (final PluginUtilsException e) {
                 LOG.error(e.getMessage(), e);
             }
         }
-
-        if ((token == null) || !token.isAuthenticated()) {
-            // Use default REGARDS internal plugin
-            token = doPluginAuthentication(defaultAuthenticationPlugin, pLogin, pPassword, pScope);
-        }
-
-        if ((token != null) && token.isAuthenticated()) {
-            createMissingAccount(token);
-        }
-
         return token;
+    }
+
+    /**
+     *
+     * Check with administration service, the existance of the given project
+     *
+     * @param pScope
+     *            Project to check
+     * @return [true|false]
+     * @since 1.0-SNAPSHOT
+     */
+    private boolean checkScopeValidity(final String pScope) {
+        // Check for scope validity
+        final IProjectsClient projectsClient = beanFactory.getBean(IProjectsClient.class);
+        if (projectsClient == null) {
+            final String message = "Context not initialized, Projects client not available";
+            LOG.error(message);
+            throw new BadCredentialsException(message);
+        }
+
+        try {
+            final ResponseEntity<Resource<Project>> response = projectsClient.retrieveProject(pScope);
+            return response.getStatusCode().equals(HttpStatus.OK);
+        } catch (final EntityException e) {
+            LOG.error(e.getMessage(), e);
+            return false;
+        }
+
     }
 
     /**
@@ -212,7 +265,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
             try {
                 accountClient.createAccount(new Account(details.getEmail(), "", "", null));
-            } catch (EntityTransitionForbiddenException | ModuleAlreadyExistsException e) {
+            } catch (final EntityException e) {
                 LOG.error(e.getMessage(), e);
             }
         }
@@ -309,7 +362,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 LOG.error(message);
                 throw new ModuleEntityNotFoundException(pEmail, ProjectUser.class);
             }
-        } catch (final JwtException e) {
+        } catch (final JwtException | EntityNotFoundException e) {
             LOG.error(e.getMessage(), e);
         }
 

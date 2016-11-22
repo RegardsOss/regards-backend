@@ -13,8 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -35,7 +35,7 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
 
     @Override
     public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(final String pUserEmail)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         ProjectUser result = null;
         for (final ProjectUser user : users) {
             if (user.getEmail().equals(pUserEmail)) {
@@ -44,14 +44,14 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
             }
         }
         if (result == null) {
-            throw new ModuleEntityNotFoundException(pUserEmail, ProjectUser.class);
+            throw new EntityNotFoundException(pUserEmail, ProjectUser.class);
         }
         return new ResponseEntity<Resource<ProjectUser>>(HateoasUtils.wrap(result), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Void> updateProjectUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
-            throws InvalidValueException, ModuleEntityNotFoundException {
+            throws EntityException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -83,21 +83,20 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
 
     @Override
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(final String pUserLogin,
-            final String pBorrowedRoleName) throws InvalidValueException {
+            final String pBorrowedRoleName) throws EntityException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<Void> updateProjectUserAccessRights(final String pLogin,
-            final List<ResourcesAccess> pUpdatedUserAccessRights) throws ModuleEntityNotFoundException {
+            final List<ResourcesAccess> pUpdatedUserAccessRights) throws EntityNotFoundException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<Void> removeProjectUserAccessRights(final String pUserLogin)
-            throws ModuleEntityNotFoundException {
+    public ResponseEntity<Void> removeProjectUserAccessRights(final String pUserLogin) throws EntityNotFoundException {
         // TODO Auto-generated method stub
         return null;
     }
