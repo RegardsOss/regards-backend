@@ -5,6 +5,7 @@ package fr.cnes.regards.cloud.gateway;
 
 import org.assertj.core.api.Assertions;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ServerPropertiesAutoConfiguration;
@@ -65,6 +66,7 @@ public class AuthenticationAutoConfigurationTest {
      * @since 1.0-SNAPSHOT
      */
     @Test
+    @Ignore
     public void testMethodConfiguration() {
         this.context = new AnnotationConfigWebApplicationContext();
         this.context.setServletContext(new MockServletContext());
