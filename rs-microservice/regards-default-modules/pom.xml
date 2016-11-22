@@ -20,6 +20,7 @@
 	<modules>
 		<module>regards-job-module</module>
 		<module>regards-plugin-module</module>
+		<module>templates</module>
 	</modules>
 	
 </project>

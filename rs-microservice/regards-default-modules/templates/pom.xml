@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- LICENSE_PLACEHOLDER -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>fr.cnes.regards.modules</groupId>
+	<artifactId>templates</artifactId>
+	<description>Module providing template features for mailing</description> 
+	<version>1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+
+	<parent>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-parent</artifactId>
+		<version>0.0.6-SNAPSHOT</version>
+		<relativePath />
+	</parent>
+
+	<modules>
+		<module>templates-domain</module>
+		<module>templates-dao</module>
+		<module>templates-rest</module>
+		<module>templates-service</module>
+		<module>templates-client</module>
+		<module>templates-signature</module>
+		<module>templates-test</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Module layers -->
+			<dependency>
+				<groupId>fr.cnes.regards.modules.templates</groupId>
+				<artifactId>templates-dao</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.templates</groupId>
+				<artifactId>templates-domain</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.jobtemplatess</groupId>
+				<artifactId>templates-rest</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.templates</groupId>
+				<artifactId>templates-service</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.templates</groupId>
+				<artifactId>templates-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.templates</groupId>
+				<artifactId>templates-signature</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.templates</groupId>
+				<artifactId>templates-test</artifactId>
+				<version>${project.version}</version>
+				<type>test-jar</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>module-core</artifactId>
+		</dependency>
+	</dependencies>
+
+</project>
