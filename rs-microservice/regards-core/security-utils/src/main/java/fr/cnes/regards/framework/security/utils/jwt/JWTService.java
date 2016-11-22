@@ -101,17 +101,6 @@ public class JWTService {
     }
 
     /**
-     * TODO : Probelme de securité ?
-     *
-     * @param pTenant
-     */
-    public void changeTenant(final String pTenant) {
-        final JWTAuthentication auth = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        auth.getUser().setTenant(pTenant);
-        SecurityContextHolder.getContext().setAuthentication(auth);
-    }
-
-    /**
      * Parse JWT to retrieve full user information
      *
      * @param pAuthentication
@@ -215,4 +204,5 @@ public class JWTService {
     public void setSecret(final String pSecret) {
         secret = pSecret;
     }
+
 }
