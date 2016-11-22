@@ -94,7 +94,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     }
 
     public ResourcesAccess(final Long pResourcesAccessId) {
-        this();
+        super();
         id = pResourcesAccessId;
         verb = HttpVerb.GET;
     }

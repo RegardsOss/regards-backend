@@ -16,9 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
@@ -41,18 +42,18 @@ public interface IAccessesSignature {
      *
      * @param pAccessRequest
      *            A Dto containing all information for creating a the new project user
-     * @throws ModuleAlreadyExistsException
-     *             When a project user with passed <code>email</code> already exists
-     * @throws EntityTransitionForbiddenException
-     *             TODO
-     * @throws ModuleEntityNotFoundException
-     *             When no role with passed name could be found
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityAlreadyExistsException} When a project user with passed <code>email</code> already
+     *             exists<br>
+     *             {@link EntityNotFoundException} When no role with passed name could be found<br>
+     *             {@link EntityTransitionForbiddenException} TODO<br>
      * @return the passed Dto
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     ResponseEntity<Resource<AccessRequestDTO>> requestAccess(@Valid @RequestBody AccessRequestDTO pAccessRequest)
-            throws EntityTransitionForbiddenException, ModuleAlreadyExistsException, ModuleEntityNotFoundException;
+            throws EntityException;
 
     /**
      * Grants access to the project user
@@ -76,32 +77,32 @@ public interface IAccessesSignature {
      *
      * @param pAccessId
      *            the project user id
-     * @throws EntityNotFoundException
-     *             when no project user of passed <code>id</code> could be found
-     * @throws EntityTransitionForbiddenException
-     *             when the project user has a <code>status</code> not allowing access denial
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} when no project user of passed <code>id</code> could be found<br>
+     *             {@link EntityTransitionForbiddenException} when the project user has a <code>status</code> not
+     *             allowing access denial<br>
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
     @ResponseBody
     @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT)
-    ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId)
-            throws EntityTransitionForbiddenException, EntityNotFoundException;
+    ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId) throws EntityException;
 
     /**
      * Rejects the access request
      *
      * @param pAccessId
      *            the project user id
-     * @throws EntityNotFoundException
-     *             when no project user of passed <code>id</code> could be found
-     * @throws EntityTransitionForbiddenException
-     *             when the project user has a <code>status</code> not allowing access rejection
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} when no project user of passed <code>id</code> could be found<br>
+     *             {@link EntityTransitionForbiddenException} when the project user has a <code>status</code> not
+     *             allowing access rejection<br>
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
     @ResponseBody
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE)
-    ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId)
-            throws EntityTransitionForbiddenException, EntityNotFoundException;
+    ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId) throws EntityException;
 
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
@@ -110,5 +111,5 @@ public interface IAccessesSignature {
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.PUT)
     ResponseEntity<Void> updateAccessSettings(@Valid @RequestBody AccessSettings pAccessSettings)
-            throws ModuleEntityNotFoundException;
+            throws EntityNotFoundException;
 }

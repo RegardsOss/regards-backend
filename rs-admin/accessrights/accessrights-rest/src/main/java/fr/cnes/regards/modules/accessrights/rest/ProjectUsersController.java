@@ -20,10 +20,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -68,7 +67,7 @@ public class ProjectUsersController implements IProjectUsersSignature {
     @Override
     @ResourceAccess(description = "retrieve the project user and only display  metadata")
     public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") final String userEmail)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         final ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
         final Resource<ProjectUser> resource = new Resource<>(user);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -77,8 +76,7 @@ public class ProjectUsersController implements IProjectUsersSignature {
     @Override
     @ResourceAccess(description = "update the project user")
     public ResponseEntity<Void> updateProjectUser(@PathVariable("user_id") final Long userId,
-            @RequestBody final ProjectUser pUpdatedProjectUser)
-            throws InvalidValueException, ModuleEntityNotFoundException {
+            @RequestBody final ProjectUser pUpdatedProjectUser) throws EntityException {
         projectUserService.updateUser(userId, pUpdatedProjectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -123,7 +121,7 @@ public class ProjectUsersController implements IProjectUsersSignature {
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(
             @PathVariable("user_login") final String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) final String pBorrowedRoleName)
-            throws InvalidValueException, ModuleEntityNotFoundException {
+            throws EntityException {
         final List<ResourcesAccess> permissions = projectUserService.retrieveProjectUserAccessRights(pUserLogin,
                                                                                                      pBorrowedRoleName);
 
@@ -137,8 +135,7 @@ public class ProjectUsersController implements IProjectUsersSignature {
     @Override
     @ResourceAccess(description = "update the list of specific user access rights")
     public ResponseEntity<Void> updateProjectUserAccessRights(@PathVariable("user_login") final String pLogin,
-            @Valid @RequestBody final List<ResourcesAccess> pUpdatedUserAccessRights)
-            throws ModuleEntityNotFoundException {
+            @Valid @RequestBody final List<ResourcesAccess> pUpdatedUserAccessRights) throws EntityNotFoundException {
         projectUserService.updateUserAccessRights(pLogin, pUpdatedUserAccessRights);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -147,7 +144,7 @@ public class ProjectUsersController implements IProjectUsersSignature {
     @ResponseBody
     @ResourceAccess(description = "remove all the specific access rights")
     public ResponseEntity<Void> removeProjectUserAccessRights(@PathVariable("user_login") final String pUserLogin)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         projectUserService.removeUserAccessRights(pUserLogin);
         return new ResponseEntity<>(HttpStatus.OK);
     }

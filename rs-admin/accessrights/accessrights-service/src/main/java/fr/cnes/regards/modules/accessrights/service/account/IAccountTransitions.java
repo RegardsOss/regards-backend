@@ -3,9 +3,10 @@
  */
 package fr.cnes.regards.modules.accessrights.service.account;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -25,14 +26,14 @@ public interface IAccountTransitions {
      *
      * @param pAccessRequestDTO
      *            The DTO containing all information to create the new {@link Account}
-     * @throws ModuleAlreadyExistsException
-     *             Thrown when an account with same <code>email</code> already exists
-     * @throws EntityTransitionForbiddenException
-     *             Thrown when the account is not in status PENDING
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityAlreadyExistsException} Thrown when an account with same <code>email</code> already
+     *             exists<br>
+     *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
      * @return the created account
      */
-    default Account requestAccount(final AccessRequestDTO pAccessRequestDTO)
-            throws ModuleAlreadyExistsException, EntityTransitionForbiddenException {
+    default Account requestAccount(final AccessRequestDTO pAccessRequestDTO) throws EntityException {
         throw new EntityTransitionForbiddenException(pAccessRequestDTO.getEmail(), Account.class, null,
                 Thread.currentThread().getStackTrace()[1].getMethodName());
     };
@@ -42,10 +43,13 @@ public interface IAccountTransitions {
      *
      * @param pAccount
      *            The {@link Account}
+     * @param pAccepted
+     *            Does the admin accept this registration or not?
      * @throws EntityTransitionForbiddenException
      *             Thrown when the account is not in status PENDING
      */
-    default void makeAdminDecision(final Account pAccount) throws EntityTransitionForbiddenException {
+    default void makeAdminDecision(final Account pAccount, final boolean pAccepted)
+            throws EntityTransitionForbiddenException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };
@@ -83,13 +87,13 @@ public interface IAccountTransitions {
      *            The {@link Account}
      * @param pUnlockCode
      *            The unlock code. Must match to account's <code>code</code> field
-     * @throws EntityTransitionForbiddenException
-     *             Thrown when the account is not in status LOCKED
-     * @throws InvalidValueException
-     *             Thrown when the code does not match the account's <code>code</code> field
+     * @throws EntityOperationForbiddenException
+     *             Thrown when the code does not match the account's <code>code</code> field<br>
+     *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status LOCKED<br>
+     *
      */
     default void unlockAccount(final Account pAccount, final String pUnlockCode)
-            throws EntityTransitionForbiddenException, InvalidValueException {
+            throws EntityOperationForbiddenException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };

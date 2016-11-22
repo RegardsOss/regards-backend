@@ -12,8 +12,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -107,14 +108,15 @@ public class AccountServiceTest {
     /**
      * Check that the system fails when trying to update a not existing account
      *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when no {@link Account} with passed if could be found
-     * @throws InvalidValueException
-     *             Thrown when passed id is different from the id of passed account
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of
+     *             passed account<br>
      */
-    @Test(expected = ModuleEntityNotFoundException.class)
+    @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system allows to create a new account.")
-    public void updateAccount_notFound() throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateAccountNotFound() throws EntityException {
         // Prepare account
         account.setId(ID);
 
@@ -128,14 +130,15 @@ public class AccountServiceTest {
     /**
      * Check that the system fails when trying to update a account with different id thant the passed one.
      *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when no {@link Account} with passed if could be found
-     * @throws InvalidValueException
-     *             Thrown when passed id is different from the id of passed account
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of
+     *             passed account<br>
      */
-    @Test(expected = InvalidValueException.class)
+    @Test(expected = EntityInconsistentIdentifierException.class)
     @Purpose("Check that the system fails when trying to update a account with different id thant the passed one.")
-    public void updateAccount_differentId() throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateAccountDifferentId() throws EntityException {
         // Prepare the account
         account.setId(ID);
 
@@ -153,14 +156,15 @@ public class AccountServiceTest {
     /**
      * Check that the system allows to update an account.
      *
-     * @throws ModuleEntityNotFoundException
-     *             Thrown when no {@link Account} with passed if could be found
-     * @throws InvalidValueException
-     *             Thrown when passed id is different from the id of passed account
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of
+     *             passed account<br>
      */
     @Test
     @Purpose("Check that the system allows to update an account.")
-    public void updateAccount() throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateAccount() throws EntityException {
         // Prepare the case
         account.setId(ID);
         account.setFirstName("Newfirstname");

@@ -59,6 +59,10 @@ public class Account implements IIdentifiable<Long> {
     @Column(name = "code")
     private String code;
 
+    /**
+     * Default empty constructor used by serializers
+     */
+    @SuppressWarnings("unused")
     private Account() {
         super();
         status = AccountStatus.PENDING;
@@ -78,7 +82,9 @@ public class Account implements IIdentifiable<Long> {
      *            the password
      */
     public Account(final String pEmail, final String pFirstName, final String pLastName, final String pPassword) {
-        this();
+        super();
+        status = AccountStatus.PENDING;
+        code = RandomStringUtils.randomAlphanumeric(10);
         email = pEmail;
         firstName = pFirstName;
         lastName = pLastName;

@@ -13,9 +13,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -115,14 +116,14 @@ public class ProjectUserService implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.role.IProjectUserService#retrieveOneByEmail(java.lang.String)
      */
     @Override
-    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws ModuleEntityNotFoundException {
+    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
         final ProjectUser user;
         if (instanceAdminUserEmail.equals(pUserEmail)) {
             user = new ProjectUser(pUserEmail, new Role(RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null),
                     new ArrayList<>(), new ArrayList<>());
         } else {
             user = projectUserRepository.findOneByEmail(pUserEmail)
-                    .orElseThrow(() -> new ModuleEntityNotFoundException(pUserEmail, ProjectUser.class));
+                    .orElseThrow(() -> new EntityNotFoundException(pUserEmail, ProjectUser.class));
             // Filter out hidden meta data
             try (final Stream<MetaData> stream = user.getMetaData().stream()) {
                 stream.filter(keepVisibleMetaData);
@@ -137,10 +138,10 @@ public class ProjectUserService implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.role.IProjectUserService#retrieveCurrentUser()
      */
     @Override
-    public ProjectUser retrieveCurrentUser() throws ModuleEntityNotFoundException {
+    public ProjectUser retrieveCurrentUser() throws EntityNotFoundException {
         final String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return projectUserRepository.findOneByEmail(email)
-                .orElseThrow(() -> new ModuleEntityNotFoundException("Current user", ProjectUser.class));
+                .orElseThrow(() -> new EntityNotFoundException("Current user", ProjectUser.class));
     }
 
     /*
@@ -160,13 +161,12 @@ public class ProjectUserService implements IProjectUserService {
      * fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser)
-            throws InvalidValueException, ModuleEntityNotFoundException {
+    public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser) throws EntityException {
         if (!pUpdatedProjectUser.getId().equals(pUserId)) {
-            throw new InvalidValueException("Account id specified differs from updated account id");
+            throw new EntityInconsistentIdentifierException(pUserId, pUpdatedProjectUser.getId(), ProjectUser.class);
         }
         if (!existUser(pUserId)) {
-            throw new ModuleEntityNotFoundException(pUserId.toString(), ProjectUser.class);
+            throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
         }
         save(pUpdatedProjectUser);
     }
@@ -180,9 +180,9 @@ public class ProjectUserService implements IProjectUserService {
      */
     @Override
     public void updateUserAccessRights(final String pLogin, final List<ResourcesAccess> pUpdatedUserAccessRights)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         final ProjectUser user = projectUserRepository.findOneByEmail(pLogin)
-                .orElseThrow(() -> new ModuleEntityNotFoundException(pLogin, ProjectUser.class));
+                .orElseThrow(() -> new EntityNotFoundException(pLogin, ProjectUser.class));
 
         try (final Stream<ResourcesAccess> previous = user.getPermissions().stream();
                 final Stream<ResourcesAccess> updated = pUpdatedUserAccessRights.stream();
@@ -202,9 +202,9 @@ public class ProjectUserService implements IProjectUserService {
      * String)
      */
     @Override
-    public void removeUserAccessRights(final String pLogin) throws ModuleEntityNotFoundException {
+    public void removeUserAccessRights(final String pLogin) throws EntityNotFoundException {
         final ProjectUser user = projectUserRepository.findOneByEmail(pLogin)
-                .orElseThrow(() -> new ModuleEntityNotFoundException(pLogin, ProjectUser.class));
+                .orElseThrow(() -> new EntityNotFoundException(pLogin, ProjectUser.class));
         user.setPermissions(new ArrayList<>());
         save(user);
     }
@@ -258,7 +258,7 @@ public class ProjectUserService implements IProjectUserService {
      */
     @Override
     public List<ResourcesAccess> retrieveProjectUserAccessRights(final String pEmail, final String pBorrowedRoleName)
-            throws InvalidValueException, ModuleEntityNotFoundException {
+            throws EntityException {
         final ProjectUser projectUser = retrieveOneByEmail(pEmail);
         final Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
@@ -268,7 +268,7 @@ public class ProjectUserService implements IProjectUserService {
             if (roleService.isHierarchicallyInferior(borrowedRole, returnedRole)) {
                 returnedRole = borrowedRole;
             } else {
-                throw new InvalidValueException(
+                throw new EntityOperationForbiddenException(pBorrowedRoleName, Role.class,
                         "Borrowed role must be hierachically inferior to the project user's role");
             }
         }
@@ -280,7 +280,7 @@ public class ProjectUserService implements IProjectUserService {
         try {
             final List<ResourcesAccess> fromRole = roleService.retrieveRoleResourcesAccessList(returnedRole.getId());
             merged.addAll(fromRole);
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             LOG.debug("Could not retrieve permissions from role", e);
         }
         return merged;

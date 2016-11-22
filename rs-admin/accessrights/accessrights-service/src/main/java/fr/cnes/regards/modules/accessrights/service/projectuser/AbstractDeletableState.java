@@ -53,7 +53,7 @@ abstract class AbstractDeletableState implements IProjectUserTransitions {
      * @param pProjectUser
      *            the project user
      */
-    private void doDelete(final ProjectUser pProjectUser) {
+    protected void doDelete(final ProjectUser pProjectUser) {
         projectUserRepository.delete(pProjectUser.getId());
     }
 

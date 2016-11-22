@@ -5,9 +5,9 @@ package fr.cnes.regards.modules.accessrights.service.role;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -24,10 +24,11 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -123,8 +124,14 @@ public class RoleService implements IRoleService {
         subscriber.subscribeTo(NewProjectConnectionEvent.class, new NewProjectConnectionEventHandler(jwtService, this),
                                AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.INTERNAL);
 
-        // Ensure the final existence of default final roles
-        // If not, add them final from their bean final definition in final defaultRoles.xml
+        initDefaultRoles();
+    }
+
+    /**
+     * Ensure the existence of default roles. If not, add them from their bean definition in defaultRoles.xml
+     */
+    @Override
+    public void initDefaultRoles() {
 
         // Define a consumer injecting the passed tenant in the context
         final Consumer<? super String> injectTenant = tenant -> {
@@ -135,23 +142,39 @@ public class RoleService implements IRoleService {
             }
         };
 
-        // Define a consumer creating (if needed) all default roles on current tenant
-        final Consumer<? super String> createDefaultRolesOnTenant = t -> {
-            try (Stream<Role> rolesStream = defaultRoles.stream()) {
-                // Check if public role already exists
-                final Optional<Role> publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString());
-                rolesStream.filter(r -> !existByName(r.getName())).forEach(role -> {
-                    publicRole.ifPresent(role::setParentRole);
-                    roleRepository.save(role);
-                });
+        // Return the role with same name in db if exists
+        final UnaryOperator<Role> replaceWithRoleFromDb = r -> {
+            try {
+                return retrieveRole(r.getName());
+            } catch (final EntityNotFoundException e) {
+                LOG.info("Could not find a role in DB, fallback to xml definition.", e);
+                return r;
             }
+        };
+
+        // For passed role, replace parent with its equivalent from the defaultRoles list
+        final Consumer<Role> setParentFromDefaultRoles = r -> {
+            if (r.getParentRole() != null) {
+                final Role parent = defaultRoles.stream().filter(el -> el.getName().equals(r.getParentRole().getName()))
+                        .findFirst().orElse(null);
+                r.setParentRole(parent);
+            }
+        };
+
+        // Define a consumer creating if needed all default roles on current tenant
+        final Consumer<? super String> createDefaultRolesOnTenantNew = t -> {
+            // Replace all default roles with their db version if exists
+            defaultRoles.replaceAll(replaceWithRoleFromDb);
+            // Re-plug the parent roles
+            defaultRoles.forEach(setParentFromDefaultRoles);
+            // Save everything
+            defaultRoles.forEach(roleRepository::save);
         };
 
         // For each tenant, inject tenant in context and create (if needed) default roles
         try (Stream<String> tenantsStream = tenantResolver.getAllTenants().stream()) {
-            tenantsStream.peek(injectTenant).forEach(createDefaultRolesOnTenant);
+            tenantsStream.peek(injectTenant).forEach(createDefaultRolesOnTenantNew);
         }
-
     }
 
     @Override
@@ -162,36 +185,35 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Role createRole(final Role pNewRole) throws AlreadyExistingException {
+    public Role createRole(final Role pNewRole) throws EntityAlreadyExistsException {
         if (existByName(pNewRole.getName())) {
-            throw new AlreadyExistingException(pNewRole.getName());
+            throw new EntityAlreadyExistsException(pNewRole.getName());
         }
         return roleRepository.save(pNewRole);
     }
 
     @Override
-    public Role retrieveRole(final String pRoleName) throws ModuleEntityNotFoundException {
+    public Role retrieveRole(final String pRoleName) throws EntityNotFoundException {
         return roleRepository.findOneByName(pRoleName)
-                .orElseThrow(() -> new ModuleEntityNotFoundException(pRoleName, Role.class));
+                .orElseThrow(() -> new EntityNotFoundException(pRoleName, Role.class));
     }
 
     @Override
-    public void updateRole(final Long pRoleId, final Role pUpdatedRole)
-            throws ModuleEntityNotFoundException, InvalidValueException {
+    public void updateRole(final Long pRoleId, final Role pUpdatedRole) throws EntityException {
         if (!pRoleId.equals(pUpdatedRole.getId())) {
-            throw new InvalidValueException();
+            throw new EntityInconsistentIdentifierException(pRoleId, pUpdatedRole.getId(), Role.class);
         }
         if (!existRole(pRoleId)) {
-            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
         roleRepository.save(pUpdatedRole);
     }
 
     @Override
-    public void removeRole(final Long pRoleId) throws OperationForbiddenException {
+    public void removeRole(final Long pRoleId) throws EntityOperationForbiddenException {
         final Role previous = roleRepository.findOne(pRoleId);
         if ((previous != null) && previous.isNative()) {
-            throw new OperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
+            throw new EntityOperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
         }
         roleRepository.delete(pRoleId);
     }
@@ -204,10 +226,9 @@ public class RoleService implements IRoleService {
      * @see REGARDS_DSL_ADM_ADM_260
      */
     @Override
-    public List<ResourcesAccess> retrieveRoleResourcesAccessList(final Long pRoleId)
-            throws ModuleEntityNotFoundException {
+    public List<ResourcesAccess> retrieveRoleResourcesAccessList(final Long pRoleId) throws EntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
 
         final List<Role> roleAndHisAncestors = new ArrayList<>();
@@ -224,9 +245,9 @@ public class RoleService implements IRoleService {
 
     @Override
     public Role updateRoleResourcesAccess(final Long pRoleId, final List<ResourcesAccess> pResourcesAccessList)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
         final Role role = roleRepository.findOne(pRoleId);
         final List<ResourcesAccess> permissions = role.getPermissions();
@@ -243,9 +264,9 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void clearRoleResourcesAccess(final Long pRoleId) throws ModuleEntityNotFoundException {
+    public void clearRoleResourcesAccess(final Long pRoleId) throws EntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
         final Role role = roleRepository.findOne(pRoleId);
         role.setPermissions(new ArrayList<>());
@@ -253,9 +274,9 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public List<ProjectUser> retrieveRoleProjectUserList(final Long pRoleId) throws ModuleEntityNotFoundException {
+    public List<ProjectUser> retrieveRoleProjectUserList(final Long pRoleId) throws EntityNotFoundException {
         if (!existRole(pRoleId)) {
-            throw new ModuleEntityNotFoundException(pRoleId.toString(), Role.class);
+            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
         final List<Role> roleAndHisAncestors = new ArrayList<>();
 
@@ -303,17 +324,6 @@ public class RoleService implements IRoleService {
         }
     }
 
-    @Override
-    public void initDefaultRoles() {
-        final RoleFactory factory = new RoleFactory();
-        factory.doNotAutoCreateParents();
-        final Role rolePublic = roleRepository.save(factory.createPublic());
-        final Role roleRegisteredUser = roleRepository.save(factory.withParentRole(rolePublic).createRegisteredUser());
-        final Role roleAdmin = roleRepository.save(factory.withParentRole(roleRegisteredUser).createAdmin());
-        final Role roleProjectAdmin = roleRepository.save(factory.withParentRole(roleAdmin).createProjectAdmin());
-        roleRepository.save(factory.withParentRole(roleProjectAdmin).createInstanceAdmin());
-    }
-
     /**
      * @return the role public. Create it if not found
      */
@@ -321,17 +331,6 @@ public class RoleService implements IRoleService {
         final RoleFactory factory = new RoleFactory();
         return roleRepository.findOneByName(DefaultRole.PUBLIC.toString())
                 .orElseGet(() -> roleRepository.save(factory.createPublic()));
-    }
-
-    /**
-     * Return a predicate allowing to filter a roles stream on name
-     *
-     * @param pName
-     *            the role name
-     * @return the predicate
-     */
-    private Predicate<? super Role> createFilterOnName(final String pName) {
-        return r -> pName.equals(r.getName());
     }
 
 }

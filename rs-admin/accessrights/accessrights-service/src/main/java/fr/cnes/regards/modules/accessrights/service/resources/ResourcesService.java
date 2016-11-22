@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import feign.FeignException;
 import fr.cnes.regards.client.core.TokenClientProvider;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -142,7 +142,7 @@ public class ResourcesService implements IResourcesService {
     public List<ResourcesAccess> retrieveRessources() {
         final Iterable<ResourcesAccess> results = resourceAccessRepo.findAll();
         final List<ResourcesAccess> result = new ArrayList<>();
-        results.forEach(t -> result.add(t));
+        results.forEach(result::add);
         return result;
     }
 
@@ -209,6 +209,7 @@ public class ResourcesService implements IResourcesService {
      * @param pMicroservice
      *            microservice owner of the resource
      * @since 1.0-SNAPSHOT
+     * @return the resources acesses
      */
     private List<ResourcesAccess> saveResources(final List<ResourceMapping> pResourceMappings,
             final String pMicroservice) {
@@ -227,12 +228,12 @@ public class ResourcesService implements IResourcesService {
             // Add default role if exists
             if ((collectedResource.getResourceAccess().role() != null)
                     && !collectedResource.getResourceAccess().role().equals(DefaultRole.NONE)) {
-                Role role;
+                final Role role;
                 try {
                     role = roleService.retrieveRole(collectedResource.getResourceAccess().role().toString());
                     defaultRoles.add(role);
                     resource.setRoles(defaultRoles);
-                } catch (final ModuleEntityNotFoundException e) {
+                } catch (final EntityNotFoundException e) {
                     LOG.debug("Role not found", e);
                 }
             }
@@ -250,7 +251,7 @@ public class ResourcesService implements IResourcesService {
 
         // Save resources
         final List<ResourcesAccess> savedResources = new ArrayList<>();
-        resourceAccessRepo.save(collectedResources).forEach(r -> savedResources.add(r));
+        resourceAccessRepo.save(collectedResources).forEach(savedResources::add);
         return savedResources;
     }
 

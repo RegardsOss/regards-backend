@@ -45,13 +45,11 @@ public class PendingState implements IAccountTransitions {
     }
 
     @Override
-    public void makeAdminDecision(final Account pAccount) {
+    public void makeAdminDecision(final Account pAccount, final boolean pAccepted) {
         final AccountSettings settings = accountSettingsService.retrieve();
 
-        final boolean accepted = true;
-
-        if (accepted) {
-            pAccount.setStatus(AccountStatus.ACTIVE);
+        if (pAccepted || "auto-accept".equals(settings.getMode())) {
+            pAccount.setStatus(AccountStatus.ACCEPTED);
             accountRepository.save(pAccount);
         } else {
             accountRepository.delete(pAccount);

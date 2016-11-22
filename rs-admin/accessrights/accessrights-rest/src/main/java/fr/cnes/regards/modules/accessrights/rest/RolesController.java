@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -55,7 +55,7 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Create a role")
     public ResponseEntity<Resource<Role>> createRole(@Valid @RequestBody final Role pNewRole)
-            throws AlreadyExistingException {
+            throws EntityAlreadyExistsException {
         final Role created = roleService.createRole(pNewRole);
         final Resource<Role> resource = new Resource<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
@@ -64,7 +64,7 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Retrieve a role by id")
     public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         final Role role = roleService.retrieveRole(pRoleName);
         final Resource<Role> resource = new Resource<>(role);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -73,7 +73,7 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Update the role of role_id with passed body")
     public ResponseEntity<Void> updateRole(@PathVariable("role_id") final Long pRoleId,
-            @Valid @RequestBody final Role pUpdatedRole) throws ModuleEntityNotFoundException, InvalidValueException {
+            @Valid @RequestBody final Role pUpdatedRole) throws EntityException {
         roleService.updateRole(pRoleId, pUpdatedRole);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -81,7 +81,7 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Remove the role of role_id")
     public ResponseEntity<Void> removeRole(@PathVariable("role_id") final Long pRoleId)
-            throws OperationForbiddenException {
+            throws EntityOperationForbiddenException {
         roleService.removeRole(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -89,7 +89,7 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Retrieve the list of permissions of the role with role_id")
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(
-            @PathVariable("role_id") final Long pRoleId) throws ModuleEntityNotFoundException {
+            @PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
         final List<ResourcesAccess> resourcesAccesses = roleService.retrieveRoleResourcesAccessList(pRoleId);
         final List<Resource<ResourcesAccess>> resources = resourcesAccesses.stream().map(ra -> new Resource<>(ra))
                 .collect(Collectors.toList());
@@ -99,7 +99,7 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Incrementally update the list of permissions of the role with role_id")
     public ResponseEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId,
-            @Valid @RequestBody final List<ResourcesAccess> pResourcesAccessList) throws ModuleEntityNotFoundException {
+            @Valid @RequestBody final List<ResourcesAccess> pResourcesAccessList) throws EntityNotFoundException {
         roleService.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -107,7 +107,7 @@ public class RolesController implements IRolesSignature {
     @Override
     @ResourceAccess(description = "Clear the list of permissions of the")
     public ResponseEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         roleService.clearRoleResourcesAccess(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -120,7 +120,7 @@ public class RolesController implements IRolesSignature {
         List<ProjectUser> projectUserList = new ArrayList<>();
         try {
             projectUserList = roleService.retrieveRoleProjectUserList(pRoleId);
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             LOG.error("Unable to retrieve the project user list", e);
         }
         final List<Resource<ProjectUser>> resources = projectUserList.stream().map(pu -> new Resource<>(pu))

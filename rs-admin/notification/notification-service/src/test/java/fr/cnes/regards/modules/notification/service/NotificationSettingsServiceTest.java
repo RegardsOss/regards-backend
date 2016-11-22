@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -58,13 +58,13 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system allows to retrieve the notification settings of currently logged user.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to retrieve the notification settings of currently logged user.")
-    public void retrieveNotificationsAlreadyExists() throws ModuleEntityNotFoundException {
+    public void retrieveNotificationsAlreadyExists() throws EntityNotFoundException {
         // Define expected
         final NotificationSettings expected = new NotificationSettings();
 
@@ -88,13 +88,13 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system creates empty settings when trying to retrieve not existing settings.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system creates empty settings when trying to retrieve not existing settings.")
-    public void retrieveNotificationsNotExists() throws ModuleEntityNotFoundException {
+    public void retrieveNotificationsNotExists() throws EntityNotFoundException {
         // Defined expected
         final NotificationSettings expected = new NotificationSettings();
 
@@ -119,13 +119,13 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system allows to update notification settings.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
-    public void updateNotificationSettings() throws ModuleEntityNotFoundException {
+    public void updateNotificationSettings() throws EntityNotFoundException {
         // Define logged user
         final ProjectUser loggedUser = new ProjectUser();
 
@@ -164,13 +164,13 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system allows to update notification settings.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
-    public void updateNotificationSettingsNullDays() throws ModuleEntityNotFoundException {
+    public void updateNotificationSettingsNullDays() throws EntityNotFoundException {
         // Define logged user
         final ProjectUser loggedUser = new ProjectUser();
 
@@ -209,13 +209,13 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system allows to update notification settings.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
-    public void updateNotificationSettingsNullHours() throws ModuleEntityNotFoundException {
+    public void updateNotificationSettingsNullHours() throws EntityNotFoundException {
         // Define logged user
         final ProjectUser loggedUser = new ProjectUser();
 
@@ -254,13 +254,13 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system allows to update notification settings.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
-    public void updateNotificationSettingsNullFrequency() throws ModuleEntityNotFoundException {
+    public void updateNotificationSettingsNullFrequency() throws EntityNotFoundException {
         // Define logged user
         final ProjectUser loggedUser = new ProjectUser();
 

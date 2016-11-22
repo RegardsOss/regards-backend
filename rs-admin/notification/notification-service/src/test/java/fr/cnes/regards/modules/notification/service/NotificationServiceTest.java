@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
@@ -214,13 +213,15 @@ public class NotificationServiceTest {
 
     /**
      * Check that the system allows to retrieve all notifications.
-     * 
-     * @throws ModuleEntityNotFoundException
+     *
+     * @throws EntityNotFoundException
      */
     @Test
-    @Requirement("?")
+    @Requirement("REGARDS_DSL_DAM_SET_520")
+    @Requirement("REGARDS_DSL_DAM_SET_530")
+    @Requirement("REGARDS_DSL_DAM_SET_540")
     @Purpose("Check that the system allows to retrieve all notifications.")
-    public void retrieveNotifications() throws ModuleEntityNotFoundException {
+    public void retrieveNotifications() throws EntityNotFoundException {
         // Define expected
         final List<Notification> expected = new ArrayList<>();
         expected.add(new Notification());
@@ -304,7 +305,6 @@ public class NotificationServiceTest {
      *             Thrown if no entity with expected id could be found
      */
     @Test(expected = EntityNotFoundException.class)
-    @Requirement("?")
     @Purpose("Check that the system fails when trying to retrieve a non existing notification.")
     public void retrieveNotificationNotFound() throws EntityNotFoundException {
         // Define expected
@@ -324,7 +324,9 @@ public class NotificationServiceTest {
      *             Thrown if no entity with expected id could be found
      */
     @Test
-    @Requirement("?")
+    @Requirement("REGARDS_DSL_DAM_SET_520")
+    @Requirement("REGARDS_DSL_DAM_SET_530")
+    @Requirement("REGARDS_DSL_DAM_SET_540")
     @Purpose("Check that the system allows to retrieve a notification.")
     public void retrieveNotification() throws EntityNotFoundException {
         // Define expected
@@ -404,7 +406,6 @@ public class NotificationServiceTest {
      *             Thrown when no {@link Notification} with passed id could not be found
      */
     @Test(expected = EntityNotFoundException.class)
-    @Requirement("?")
     @Purpose("Check that the system fails when trying to delete a non existing notification.")
     public void deleteNotificationNotFound() throws EntityNotFoundException {
         final Long id = 0L;
@@ -423,7 +424,6 @@ public class NotificationServiceTest {
      *             Thrown when no {@link Notification} with passed id could not be found
      */
     @Test
-    @Requirement("?")
     @Purpose("Check that the system allows to delete a notification.")
     public void deleteNotification() throws EntityNotFoundException {
         // Define a notif
@@ -443,8 +443,8 @@ public class NotificationServiceTest {
      * Check that the system allorws to retrieve only notifications which should be sent.
      */
     @Test
-    @Requirement("?")
-    @Purpose("Check that the system allorws to retrieve only notifications which should be sent.")
+    @Requirement("REGARDS_DSL_CMP_ARC_150")
+    @Purpose("Check that the system allows to retrieve only notifications which should be sent.")
     public void retrieveNotificationsToSend() {
         // Define expected
         final List<Notification> expected = new ArrayList<>();
@@ -471,9 +471,8 @@ public class NotificationServiceTest {
      *             Thrown when no role with passed id could be found
      */
     @Test
-    @Requirement("?")
     @Purpose("Check that the system properly aggregates the list of notification recipients.")
-    public void findRecipients() throws ModuleEntityNotFoundException {
+    public void findRecipients() throws EntityNotFoundException {
         // Define expected
         final List<ProjectUser> expected = new ArrayList<>();
         expected.add(projectUser0); // Expected from the notif roleRecipients attribute

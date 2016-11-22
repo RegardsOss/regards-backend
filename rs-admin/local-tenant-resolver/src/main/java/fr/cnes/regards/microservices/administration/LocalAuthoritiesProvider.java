@@ -10,7 +10,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
@@ -92,7 +92,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
             final Role role = roleService.retrieveRole(pRole);
             results.addAll(role.getAuthorizedAddresses());
             return results;
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             throw new SecurityException("Could not get role authorized addresses", e);
         }
     }
@@ -110,7 +110,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
             } else {
                 return true;
             }
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             throw new SecurityException("Could not get CORS requests access", e);
         }
     }

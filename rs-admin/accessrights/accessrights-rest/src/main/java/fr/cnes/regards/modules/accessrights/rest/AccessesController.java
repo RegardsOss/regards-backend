@@ -17,10 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
@@ -82,8 +81,7 @@ public class AccessesController implements IAccessesSignature {
     @Override
     @ResourceAccess(description = "Creates a new access request")
     public ResponseEntity<Resource<AccessRequestDTO>> requestAccess(
-            @Valid @RequestBody final AccessRequestDTO pAccessRequest)
-            throws EntityTransitionForbiddenException, ModuleAlreadyExistsException, ModuleEntityNotFoundException {
+            @Valid @RequestBody final AccessRequestDTO pAccessRequest) throws EntityException {
         accountWorkflowManager.requestAccount(pAccessRequest);
         projectUserWorkflowManager.requestProjectAccess(pAccessRequest);
         final Resource<AccessRequestDTO> resource = new Resource<>(pAccessRequest);
@@ -126,7 +124,7 @@ public class AccessesController implements IAccessesSignature {
     @Override
     @ResourceAccess(description = "Rejects the access request")
     public ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") final Long pAccessId)
-            throws EntityNotFoundException, EntityTransitionForbiddenException {
+            throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
         projectUserWorkflowManager.removeAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -155,7 +153,7 @@ public class AccessesController implements IAccessesSignature {
     @Override
     @ResourceAccess(description = "Updates the setting managing the access requests")
     public ResponseEntity<Void> updateAccessSettings(@Valid @RequestBody final AccessSettings pAccessSettings)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         accessSettingsService.update(pAccessSettings);
         return new ResponseEntity<>(HttpStatus.OK);
     }

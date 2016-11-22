@@ -89,10 +89,9 @@ public class ProjectUser implements IIdentifiable<Long> {
     private List<MetaData> metaData;
 
     /**
-     * The user's role. Can be null according to /accesses@POST (role value can be unspecified and so it's PUBLIC)
+     * The user's role.
      */
     @Valid
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "FK_USER_ROLE"))
     @JsonBackReference
@@ -130,7 +129,6 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     public ProjectUser(final String pEmail, final Role pRole, final List<ResourcesAccess> pPermissions,
             final List<MetaData> pMetaData) {
-        this();
         email = pEmail;
         role = pRole;
         permissions = pPermissions;

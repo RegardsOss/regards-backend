@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.notification.service;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
@@ -56,7 +56,7 @@ public class NotificationSettingsService implements INotificationSettingsService
      * @see fr.cnes.regards.modules.notification.service.INotificationService#retrieveNotificationSettings()
      */
     @Override
-    public NotificationSettings retrieveNotificationSettings() throws ModuleEntityNotFoundException {
+    public NotificationSettings retrieveNotificationSettings() throws EntityNotFoundException {
         final ProjectUser projectUser = projectUserService.retrieveCurrentUser();
         NotificationSettings result = notificationSettingsRepository.findOneByProjectUser(projectUser);
         if (result == null) {
@@ -73,7 +73,7 @@ public class NotificationSettingsService implements INotificationSettingsService
      * modules.notification.domain.NotificationSettings)
      */
     @Override
-    public void updateNotificationSettings(final NotificationSettingsDTO pDto) throws ModuleEntityNotFoundException {
+    public void updateNotificationSettings(final NotificationSettingsDTO pDto) throws EntityNotFoundException {
         final NotificationSettings notificationSettings = retrieveNotificationSettings();
 
         if (pDto.getDays() != null) {

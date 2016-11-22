@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -169,14 +169,15 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     }
 
     /**
-     * Check that the system prevents a user to connect using a hierarchically superior role.
+     * Check that the system allows a user to connect using a hierarchically inferior role.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
+     *             not found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_270")
-    @Purpose("Check that the system prevents a user to connect using a hierarchically superior role.")
-    public void getUserPermissionsWithBorrowedRoleInferior() throws ModuleEntityNotFoundException {
+    @Purpose("Check that the system allows a user to connect using a hierarchically inferior role.")
+    public void getUserPermissions_withBorrowedRoleInferior() throws EntityNotFoundException {
         // Prepare a project user with role admin
         final Role roleAdmin = roleService.retrieveRole(DefaultRole.ADMIN.toString());
         projectUser.setRole(roleAdmin);
@@ -195,14 +196,15 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     }
 
     /**
-     * Check that the system allows a user to connect using a hierarchically inferior role.
+     * Check that the system prevents a user to connect using a hierarchically superior role.
      *
      * @throws EntityNotFoundException
+     *             not found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_270")
-    @Purpose("Check that the system allows a user to connect using a hierarchically inferior role.")
-    public void getUserPermissionsWithBorrowedRoleSuperior() throws ModuleEntityNotFoundException {
+    @Purpose("Check that the system prevents a user to connect using a hierarchically superior role.")
+    public void getUserPermissions_withBorrowedRoleSuperior() throws EntityNotFoundException {
         // Prepare a project user with role admin
         final Role roleAdmin = roleService.retrieveRole(DefaultRole.ADMIN.toString());
         projectUser.setRole(roleAdmin);
@@ -216,7 +218,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         Assert.assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
         expectations.clear();
-        expectations.add(MockMvcResultMatchers.status().isBadRequest());
+        expectations.add(MockMvcResultMatchers.status().isForbidden());
         performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, token, expectations, errorMessage,
                    projectUser.getEmail());
     }
