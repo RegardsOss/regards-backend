@@ -118,29 +118,28 @@ public class PluginParameterIT extends PluginDaoUtility {
 
             pluginParameterRepository.delete(paramJpa);
             Assert.assertEquals(PARAMETERS2.size(), pluginParameterRepository.count());
-            
+
             int count = 0;
             for (PluginParameter plgParam : PARAMETERS2) {
                 if (plgParam.isDynamic()) {
                     count += plgParam.getDynamicsValues().size();
                 }
             }
-            
-            Assert.assertEquals(count, pluginDynamicValueRepository.count());
-            
-            pluginParameterRepository.delete(PARAMETERS2.get(0));
-            Assert.assertEquals(PARAMETERS2.size()-1, pluginParameterRepository.count());
-            
-            Assert.assertEquals(count-PARAMETERS2.get(0).getDynamicsValues().size(), pluginDynamicValueRepository.count());
 
-            pluginDynamicValueRepository.deleteAll();
-            
+            Assert.assertEquals(count, pluginDynamicValueRepository.count());
+
+            pluginParameterRepository.delete(PARAMETERS2.get(0));
+            Assert.assertEquals(PARAMETERS2.size() - 1, pluginParameterRepository.count());
+
+            Assert.assertEquals(count - PARAMETERS2.get(0).getDynamicsValues().size(),
+                                pluginDynamicValueRepository.count());
+
         } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
     }
-    
-    @Test(expected=DataIntegrityViolationException.class)
+
+    @Test(expected = DataIntegrityViolationException.class)
     public void deletePluginDynamicVaueError() {
         try {
             jwtService.injectToken(PROJECT, USERROLE);
@@ -148,9 +147,9 @@ public class PluginParameterIT extends PluginDaoUtility {
 
             pluginParameterRepository.save(PARAMETERS2);
             pluginDynamicValueRepository.deleteAll();
-            
+
             Assert.fail();
-            
+
         } catch (JwtException e) {
             Assert.fail(INVALID_JWT);
         }
@@ -190,8 +189,9 @@ public class PluginParameterIT extends PluginDaoUtility {
                                 paramFound.getDynamicsValuesAsString().size());
             paramJpa.getDynamicsValuesAsString().stream()
                     .forEach(s -> paramFound.getDynamicsValuesAsString().contains(s));
-            
-            PluginDynamicValue aDynamicValue= pluginDynamicValueRepository.findOne(paramJpa.getDynamicsValues().get(0).getId());
+
+            PluginDynamicValue aDynamicValue = pluginDynamicValueRepository
+                    .findOne(paramJpa.getDynamicsValues().get(0).getId());
             Assert.assertEquals(paramJpa.getDynamicsValues().get(0).getValue(), aDynamicValue.getValue());
 
         } catch (JwtException e) {
