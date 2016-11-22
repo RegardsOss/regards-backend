@@ -14,7 +14,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  *
  * Business service to handle Resources
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public interface IResourcesService {
@@ -37,5 +37,16 @@ public interface IResourcesService {
      * @since 1.0-SNAPSHOT
      */
     List<ResourcesAccess> retrieveRessources();
+
+    /**
+     *
+     * Create or update given resources.
+     *
+     * @param pResourcesToSave
+     *            resources to save
+     * @return saved resources
+     * @since 1.0-SNAPSHOT
+     */
+    List<ResourcesAccess> saveResources(List<ResourcesAccess> pResourcesToSave);
 
 }

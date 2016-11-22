@@ -174,9 +174,17 @@ public class ResourcesService implements IResourcesService {
         final List<ResourceMapping> serviceResources = getRemoteResources(pMicroservice);
         saveResources(serviceResources, pMicroservice);
         return serviceResources;
-
     }
 
+    /**
+     *
+     * Return the resources list of the given microservice.
+     *
+     * @param pMicroservice
+     *            microservice name
+     * @return List of {@link ResourceMapping} of the given microservice
+     * @since 1.0-SNAPSHOT
+     */
     public List<ResourceMapping> getRemoteResources(final String pMicroservice) {
         List<ResourceMapping> remoteResources = new ArrayList<>();
         try {
@@ -244,6 +252,16 @@ public class ResourcesService implements IResourcesService {
         final List<ResourcesAccess> savedResources = new ArrayList<>();
         resourceAccessRepo.save(collectedResources).forEach(r -> savedResources.add(r));
         return savedResources;
+    }
+
+    @Override
+    public List<ResourcesAccess> saveResources(final List<ResourcesAccess> pResourcesToSave) {
+        final List<ResourcesAccess> results = new ArrayList<>();
+        final Iterable<ResourcesAccess> savedResources = resourceAccessRepo.save(pResourcesToSave);
+        if (savedResources != null) {
+            savedResources.forEach(r -> results.add(r));
+        }
+        return results;
     }
 
 }

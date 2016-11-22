@@ -39,13 +39,21 @@ public class ResourcesFallback implements IResourcesClient {
     private static final String FALLBACK_ERROR_MESSAGE = "RS-ADMIN /users request error. Fallback.";
 
     @Override
-    public ResponseEntity<List<ResourceMapping>> collectResources() {
+    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveResourcesAccesses() {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public ResponseEntity<List<Resource<ResourcesAccess>>> getResourceAccessList() {
+    public ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(final Long pResourceId,
+            final ResourcesAccess pResourceAccessToUpdate) {
+        LOG.error(FALLBACK_ERROR_MESSAGE);
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @Override
+    public ResponseEntity<List<Resource<ResourcesAccess>>> registerMicroserviceEndpoints(final String pMicroserviceName,
+            final List<ResourceMapping> pResourcesToRegister) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.beans.factory.annotation.Value;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -32,6 +32,12 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
 
     /**
+     * Current microservice name
+     */
+    @Value("${spring.application.name")
+    private String microserviceName;
+
+    /**
      * Role service
      */
     @Autowired
@@ -43,15 +49,39 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     @Autowired
     private IResourcesService resourcesService;
 
+    /**
+     *
+     * Save new endpoints with default configuration if they doesn't exists and return configured endpoints of the
+     * administration microservice
+     *
+     * @param pLocalEndpoints
+     *            Collected endpoints with default configuration
+     * @return All configured endpoints of the administration microservice
+     * @since 1.0-SNAPSHOT
+     */
     @Override
-    public List<ResourceMapping> getResourcesAccessConfiguration() {
+    public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
         final List<ResourceMapping> results = new ArrayList<>();
         final List<ResourcesAccess> resources = resourcesService.retrieveRessources();
-        for (final ResourcesAccess resource : resources) {
-            final ResourceMapping mapping = new ResourceMapping(resource.getResource(),
-                    RequestMethod.valueOf(resource.getVerb().toString()));
-            results.add(mapping);
+
+        List<ResourcesAccess> newResources = new ArrayList<>();
+        // Create missing resources from local endpoints
+        for (final ResourceMapping resource : pLocalEndpoints) {
+            boolean isConfigured = false;
+            for (final ResourcesAccess configuredResource : resources) {
+                if (resource.getFullPath().equals(configuredResource.getResource())
+                        && resource.getMethod().toString().equals(configuredResource.getVerb().toString())) {
+                    isConfigured = true;
+                    break;
+                }
+            }
+            if (!isConfigured) {
+                newResources.add(new ResourcesAccess(resource, microserviceName));
+            }
         }
+        newResources = resourcesService.saveResources(newResources);
+        newResources.forEach(r -> results.add(r.toResourceMapping()));
+
         return results;
     }
 

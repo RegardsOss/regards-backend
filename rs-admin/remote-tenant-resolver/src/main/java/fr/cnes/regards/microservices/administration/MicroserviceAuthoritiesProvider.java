@@ -10,6 +10,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
@@ -17,6 +18,7 @@ import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
@@ -29,6 +31,11 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @since 1.0-SNAPSHOT
  */
 public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
+
+    /**
+     * Current microservice name
+     */
+    private final String microserviceName;
 
     /**
      * Administration microservice REST client
@@ -50,26 +57,24 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
      *            Feign client to query administration service for resources
      * @since 1.0-SNAPSHOT
      */
-    public MicroserviceAuthoritiesProvider(final IResourcesClient pResourcesclient, final IRolesClient pRolesClient) {
+    public MicroserviceAuthoritiesProvider(final String pMicroserviceName, final IResourcesClient pResourcesclient,
+            final IRolesClient pRolesClient) {
         super();
+        microserviceName = pMicroserviceName;
         resourcesClient = pResourcesclient;
         roleClient = pRolesClient;
     }
 
     @Override
-    public List<ResourceMapping> getResourcesAccessConfiguration() {
+    public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
         final List<ResourceMapping> resourcesMapping = new ArrayList<>();
-        // final ResponseEntity<List<Resource<ResourcesAccess>>> results = resourcesClient.getResourceAccessList();
-        // if (results.getStatusCode().equals(HttpStatus.OK)) {
-        // final List<ResourcesAccess> resources = new ArrayList<>();
-        // results.getBody().forEach(resource -> resources.add(resource.getContent()));
-        // for (final ResourcesAccess resource : resources) {
-        // final ResourceMapping mapping = new ResourceMapping(resource.getResource(),
-        // RequestMethod.valueOf(resource.getVerb().toString()));
-        // resourcesMapping.add(mapping);
-        // }
-        // }
-        // FIXME : Register to the admin microservice current endpoints and return configured ones.
+        // Register endpoints to administration service and retrieve configured ones
+        final ResponseEntity<List<Resource<ResourcesAccess>>> response = resourcesClient
+                .registerMicroserviceEndpoints(microserviceName, pLocalEndpoints);
+        if (response.getStatusCode().equals(HttpStatus.OK) && (response.getBody() != null)) {
+            final List<ResourcesAccess> configuredResources = HateoasUtils.unwrapList(response.getBody());
+            configuredResources.forEach(r -> resourcesMapping.add(r.toResourceMapping()));
+        }
         return resourcesMapping;
     }
 

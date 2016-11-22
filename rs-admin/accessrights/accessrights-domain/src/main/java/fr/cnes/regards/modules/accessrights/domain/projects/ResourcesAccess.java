@@ -19,35 +19,67 @@ import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 
+/**
+ *
+ * Class ResourcesAccess
+ *
+ * JPA Entity to manage resource accesses. ResourcesAccess POJO define the access and authorizations to a microservice
+ * endpoint resource.
+ *
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
+ */
 @Entity(name = "T_RESOURCES_ACCESS")
 @SequenceGenerator(name = "resourcesAccessSequence", initialValue = 1, sequenceName = "SEQ_RESOURCES_ACCESS")
 public class ResourcesAccess implements IIdentifiable<Long> {
 
+    /**
+     * Resource identifier
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resourcesAccessSequence")
     @Column(name = "id")
     private Long id;
 
+    /**
+     * Resource description
+     */
     @Column(name = "description")
     private String description;
 
+    /**
+     * Microservice of the current resource
+     */
     @NotBlank
     @Column(name = "microservice")
     private String microservice;
 
+    /**
+     * Path of the endpoint
+     */
     @NotBlank
     @Column(name = "resource")
     private String resource;
 
+    /**
+     * Http Verb of the endpoint
+     */
     @NotNull
     @Column(name = "verb")
     @Enumerated(EnumType.STRING)
     private HttpVerb verb;
 
+    /**
+     * List of authroized roles to access the resource
+     */
     @ManyToMany
     @JoinTable(name = "TA_RESOURCES_ROLES",
             joinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID",
@@ -64,6 +96,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     public ResourcesAccess(final Long pResourcesAccessId) {
         this();
         id = pResourcesAccessId;
+        verb = HttpVerb.GET;
     }
 
     public ResourcesAccess(final Long pResourcesAccessId, final String pDescription, final String pMicroservice,
@@ -83,6 +116,31 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         microservice = pMicroservice;
         resource = pResource;
         verb = pVerb;
+    }
+
+    public ResourcesAccess(final ResourceMapping pMapping, final String pMicroservicename) {
+        description = pMapping.getResourceAccess().description();
+        microservice = pMicroservicename;
+        resource = pMapping.getFullPath();
+        verb = HttpVerb.valueOf(pMapping.getMethod().toString());
+    }
+
+    /**
+     *
+     * Convert a {@link ResourcesAccess} object to a {@link ResourceMapping} Object
+     *
+     * @param pResourcesAccess
+     *            Object to convert
+     * @return {@link ResourceMapping}
+     * @since 1.0-SNAPSHOT
+     */
+    public ResourceMapping toResourceMapping() {
+        final ResourceMapping mapping = new ResourceMapping(
+                ResourceAccessAdapter.createResourceAccess(this.getDescription(), null), this.getResource(),
+                RequestMethod.valueOf(this.getVerb().toString()));
+
+        this.getRoles().forEach(role -> mapping.addAuthorizedRole(new RoleAuthority(role.getName())));
+        return mapping;
     }
 
     @Override

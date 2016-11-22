@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -18,31 +19,47 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 /**
  * Define the common interface of REST clients for resources.
  *
- * @author CS SI
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
  */
 @RequestMapping("/resources")
 public interface IResourcesSignature {
 
     /**
      *
-     * Collect all the resources from each microservice connected.
-     *
-     * @return List<ResourceMapping>
-     * @since 1.0-SNAPSHOT
-     */
-    @RequestMapping(value = "collect", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    ResponseEntity<List<ResourceMapping>> collectResources();
-
-    /**
-     *
-     * Retrieve the ResourceAccess list
+     * Retrieve the ResourceAccess list of all microservices
      *
      * @return List<ResourceAccess>
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<List<Resource<ResourcesAccess>>> getResourceAccessList();
+    ResponseEntity<List<Resource<ResourcesAccess>>> retrieveResourcesAccesses();
+
+    /**
+     *
+     * Update given resource access informations
+     *
+     * @param pResourceId
+     *            Resource access identifier
+     * @param pResourceAccessToUpdate
+     *            Resource access to update
+     * @return updated ResourcesAccess
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(value = "/{resource_id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(@PathVariable("resource_id") final Long pResourceId,
+            final ResourcesAccess pResourceAccessToUpdate);
+
+    /**
+     *
+     * Register given resources for the given microservice.
+     *
+     * @return List<ResourceAccess>
+     * @since 1.0-SNAPSHOT
+     */
+    ResponseEntity<List<Resource<ResourcesAccess>>> registerMicroserviceEndpoints(final String pMicroserviceName,
+            List<ResourceMapping> pResourcesToRegister);
 
 }
