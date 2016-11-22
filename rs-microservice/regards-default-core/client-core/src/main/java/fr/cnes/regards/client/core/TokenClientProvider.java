@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.security.utils.client;
+package fr.cnes.regards.client.core;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
