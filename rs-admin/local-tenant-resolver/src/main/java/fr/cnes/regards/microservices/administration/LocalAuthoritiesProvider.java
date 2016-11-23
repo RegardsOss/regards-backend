@@ -104,7 +104,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     @Override
     public boolean hasCorsRequestsAccess(final String pRole) throws SecurityException {
         try {
-            if (!RoleAuthority.isSysRole(pRole)) {
+            if (!RoleAuthority.isSysRole(pRole) && !RoleAuthority.isInstanceAdminRole(pRole)) {
                 final Role role = roleService.retrieveRole(RoleAuthority.getRoleName(pRole));
                 boolean access = role.isCorsRequestsAuthorized();
                 if (access && (role.getCorsRequestsAuthorizationEndDate() != null)) {
