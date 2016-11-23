@@ -24,10 +24,6 @@
 			<artifactId>emails-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-signature</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
 		</dependency>

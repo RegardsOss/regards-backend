@@ -24,7 +24,6 @@
 		<module>emails-rest</module>
 		<module>emails-service</module>
 		<module>emails-client</module>
-		<module>emails-signature</module>
 		<module>emails-test</module>
 	</modules>
 
@@ -54,11 +53,6 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.emails</groupId>
 				<artifactId>emails-client</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.emails</groupId>
-				<artifactId>emails-signature</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
