@@ -3,9 +3,13 @@
  */
 package fr.cnes.regards.microserices.administration;
 
+import java.util.ArrayList;
+
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -13,13 +17,13 @@ import org.springframework.context.annotation.PropertySource;
 
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
 import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
+import fr.cnes.regards.microservices.administration.FeignInitialAdminClients;
 import fr.cnes.regards.microservices.administration.MicroserviceClientsAutoConfiguration;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.fallback.ResourcesFallback;
 import fr.cnes.regards.modules.accessrights.fallback.RolesFallback;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  *
@@ -49,18 +53,14 @@ public class JpaTenantConnectionConfiguration {
         return new ProjectConnectionClientStub();
     }
 
-    /**
-     *
-     * Stub administration client
-     *
-     * @return IProjectsClient
-     * @since 1.0-SNAPSHOT
-     */
     @Bean
-    @Qualifier("initProjectsClient")
     @Primary
-    public IProjectsClient projectClient() {
-        return new ProjectClientStub();
+    public FeignInitialAdminClients initialClients() {
+        final DiscoveryClient client = Mockito.mock(DiscoveryClient.class);
+        Mockito.when(client.getInstances(Mockito.anyString())).thenReturn(new ArrayList<>());
+        final FeignInitialAdminClients adminMocks = new FeignInitialAdminClients(client);
+        adminMocks.setProjectsClient(new ProjectClientStub());
+        return adminMocks;
     }
 
     /**
@@ -71,7 +71,6 @@ public class JpaTenantConnectionConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    @Qualifier("initRolesClient")
     @Primary
     public IRolesClient roleClient() {
         return new RolesFallback();
@@ -85,7 +84,6 @@ public class JpaTenantConnectionConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    @Qualifier("initResourcesClient")
     @Primary
     public IResourcesClient resourceClient() {
         return new ResourcesFallback();

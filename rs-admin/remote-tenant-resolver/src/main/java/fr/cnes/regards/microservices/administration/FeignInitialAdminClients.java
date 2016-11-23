@@ -64,4 +64,8 @@ public class FeignInitialAdminClients {
         return projectsClient;
     }
 
+    public void setProjectsClient(final IProjectsClient pProjectsClient) {
+        projectsClient = pProjectsClient;
+    }
+
 }
