@@ -206,9 +206,6 @@ public class NotificationService implements INotificationService {
                 try (Stream<Resource<ProjectUser>> stream = rolesClient.retrieveRoleProjectUserList(r.getId()).getBody()
                         .stream()) {
                     result = rolesClient.retrieveRoleProjectUserList(r.getId()).getBody().stream();
-                } catch (final EntityNotFoundException e) {
-                    LOG.warn(e.getMessage(), e);
-                    result = Stream.empty();
                 }
                 return result;
             };
