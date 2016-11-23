@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.IAccessesClient;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
@@ -40,30 +39,55 @@ public class AccessesFallback implements IAccessesClient {
      */
     private static final String FALLBACK_ERROR_MESSAGE = "RS-ADMIN /accesses request error. Fallback.";
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.client.IAccessesClient#retrieveAccessRequestList()
+     */
     @Override
     public ResponseEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.client.IAccessesClient#requestAccess()
+     */
     @Override
     public ResponseEntity<Resource<AccessRequestDTO>> requestAccess(final AccessRequestDTO pAccessRequest) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.client.IAccessesClient#acceptAccessRequest()
+     */
     @Override
     public ResponseEntity<Void> acceptAccessRequest(final Long pAccessId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.client.IAccessesClient#denyAccessRequest()
+     */
     @Override
     public ResponseEntity<Void> denyAccessRequest(final Long pAccessId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.client.IAccessesClient#removeAccessRequest()
+     */
     @Override
     public ResponseEntity<Void> removeAccessRequest(final Long pAccessId) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
@@ -73,13 +97,11 @@ public class AccessesFallback implements IAccessesClient {
     /*
      * (non-Javadoc)
      *
-     * @see
-     * fr.cnes.regards.modules.accessrights.signature.IAccessesSignature#updateAccessSetting(fr.cnes.regards.modules.
+     * @see fr.cnes.regards.modules.accessrights.client.IAccessesClient#updateAccessSettings(fr.cnes.regards.modules.
      * accessrights.domain.projects.AccessSettings)
      */
     @Override
-    public ResponseEntity<Void> updateAccessSettings(final AccessSettings pAccessSettings)
-            throws EntityNotFoundException {
+    public ResponseEntity<Void> updateAccessSettings(final AccessSettings pAccessSettings) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
 
@@ -88,7 +110,7 @@ public class AccessesFallback implements IAccessesClient {
     /*
      * (non-Javadoc)
      *
-     * @see fr.cnes.regards.modules.accessrights.signature.IAccessesSignature#getAccessSettings()
+     * @see fr.cnes.regards.modules.accessrights.client.IAccessesClient#getAccessSettings()
      */
     @Override
     public ResponseEntity<Resource<AccessSettings>> getAccessSettings() {
