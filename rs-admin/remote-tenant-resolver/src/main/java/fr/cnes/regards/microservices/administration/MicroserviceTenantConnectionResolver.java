@@ -144,11 +144,17 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
         ResponseEntity<Resource<Project>> response;
         try {
             response = projectsClient.retrieveProject(pTenantConnection.getName());
-            final Project project = HateoasUtils.unwrap(response.getBody());
-            final ProjectConnection projectConnection = new ProjectConnection(project, microserviceName,
-                    pTenantConnection.getUserName(), pTenantConnection.getPassword(),
-                    pTenantConnection.getDriverClassName(), pTenantConnection.getUrl());
-            projectConnectionsClient.createProjectConnection(projectConnection);
+            if (response.getStatusCode().equals(HttpStatus.OK) && (response.getBody() != null)
+                    && (response.getBody().getClass() != null)) {
+                final Project project = HateoasUtils.unwrap(response.getBody());
+                final ProjectConnection projectConnection = new ProjectConnection(project, microserviceName,
+                        pTenantConnection.getUserName(), pTenantConnection.getPassword(),
+                        pTenantConnection.getDriverClassName(), pTenantConnection.getUrl());
+                projectConnectionsClient.createProjectConnection(projectConnection);
+            } else {
+                LOG.error("Error getting {} project informations from administration microservice",
+                          pTenantConnection.getName());
+            }
         } catch (final FeignException e) {
             LOG.error("Error during initialization of new tenant connection for microservice {} and tenant {}",
                       microserviceName, pTenantConnection.getName());
