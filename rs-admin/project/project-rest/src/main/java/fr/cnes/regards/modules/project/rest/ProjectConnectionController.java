@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -24,7 +27,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectConnectionService;
-import fr.cnes.regards.modules.project.signature.IProjectConnectionSignature;
 
 /**
  *
@@ -36,9 +38,10 @@ import fr.cnes.regards.modules.project.signature.IProjectConnectionSignature;
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
-public class ProjectConnectionController
-        implements IResourceController<ProjectConnection>, IProjectConnectionSignature {
+@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
+@RequestMapping("/projects")
+public class ProjectConnectionController implements IResourceController<ProjectConnection> {
 
     /**
      * Class logger
@@ -62,8 +65,21 @@ public class ProjectConnectionController
         resourceService = pResourceService;
     }
 
-    @Override
-    @ResourceAccess(description = "retrieve a project connection associated to a given project and a given microservice")
+    /**
+     *
+     * Retrieve a project connection from instance database for a given project and a given microservice.
+     *
+     * @param pProjectName
+     *            Project name
+     * @param pMicroService
+     *            Microservice name
+     * @return HttpEntity<Resource<ProjectConnection>>
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/{project_name}/connection/{microservice}")
+    @ResponseBody
+    @ResourceAccess(
+            description = "retrieve a project connection associated to a given project and a given microservice")
     public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
             @PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroService) {
@@ -85,7 +101,18 @@ public class ProjectConnectionController
         return response;
     }
 
-    @Override
+    /**
+     *
+     * Create a new project connection in instance database. The associated Project must exists and have a valid
+     * identifier.
+     *
+     * @param pProjectConnection
+     *            ProjectConnection to create.
+     * @return ProjectConnection created
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.POST, value = "/connections")
+    @ResponseBody
     @ResourceAccess(description = "create a new project connection")
     public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
             @Valid @RequestBody final ProjectConnection pProjectConnection) {
@@ -100,7 +127,17 @@ public class ProjectConnectionController
         return response;
     }
 
-    @Override
+    /**
+     *
+     * Update an existing Project connection
+     *
+     * @param pProjectConnection
+     *            ProjectConnection to update
+     * @return updated pProjectConnection
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.PUT, value = "/connections")
+    @ResponseBody
     @ResourceAccess(description = "update a project connection")
     public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
             @Valid @RequestBody final ProjectConnection pProjectConnection) {
@@ -115,7 +152,19 @@ public class ProjectConnectionController
         return response;
     }
 
-    @Override
+    /**
+     *
+     * Delete an existing Project connection
+     *
+     * @param pProjectName
+     *            project name
+     * @param pMicroservice
+     *            microservice name
+     * @return void
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}/connection/{microservice}")
+    @ResponseBody
     @ResourceAccess(description = "delete a project connection")
     public ResponseEntity<Void> deleteProjectConnection(@PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroservice) {
@@ -139,7 +188,7 @@ public class ProjectConnectionController
     }
 
     @Override
-    public Resource<ProjectConnection> toResource(final ProjectConnection pElement, Object... pExtras) {
+    public Resource<ProjectConnection> toResource(final ProjectConnection pElement, final Object... pExtras) {
 
         final Resource<ProjectConnection> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveProjectConnection", LinkRels.SELF,
