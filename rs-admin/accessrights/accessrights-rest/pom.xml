@@ -25,10 +25,6 @@
 			<artifactId>accessrights-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-signature</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
 		</dependency>
