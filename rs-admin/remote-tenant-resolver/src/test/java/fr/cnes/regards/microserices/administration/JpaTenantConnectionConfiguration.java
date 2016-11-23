@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.fallback.ResourcesFallback;
 import fr.cnes.regards.modules.accessrights.fallback.RolesFallback;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  *
@@ -55,12 +56,31 @@ public class JpaTenantConnectionConfiguration {
 
     @Bean
     @Primary
-    public FeignInitialAdminClients initialClients() {
+    public DiscoveryClient discoveryClient() {
         final DiscoveryClient client = Mockito.mock(DiscoveryClient.class);
         Mockito.when(client.getInstances(Mockito.anyString())).thenReturn(new ArrayList<>());
-        final FeignInitialAdminClients adminMocks = new FeignInitialAdminClients(client);
+        return client;
+    }
+
+    @Bean
+    @Primary
+    public FeignInitialAdminClients initialClients() {
+        final FeignInitialAdminClients adminMocks = new FeignInitialAdminClients(discoveryClient());
         adminMocks.setProjectsClient(new ProjectClientStub());
         return adminMocks;
+    }
+
+    /**
+     *
+     * Stub administration client
+     *
+     * @return IProjectsClient
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    @Primary
+    public IProjectsClient projectClient() {
+        return new ProjectClientStub();
     }
 
     /**
