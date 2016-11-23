@@ -18,7 +18,7 @@
 		<!-- Microservice internal dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
-			<artifactId>project-signature</artifactId>
+			<artifactId>project-domain</artifactId>
 		</dependency>
 		<!-- Regards client core -->
 		<dependency>

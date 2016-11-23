@@ -24,7 +24,6 @@
 		<module>project-domain</module>
 		<module>project-rest</module>
 		<module>project-service</module>
-		<module>project-signature</module>
 		<module>project-test</module>
 	</modules>
 
@@ -54,11 +53,6 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-client</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.project</groupId>
-				<artifactId>project-signature</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
