@@ -33,7 +33,7 @@ public class RequestLogFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
-        LOG.info("Request receive : " + pRequest.getRequestURI());
+        LOG.info("Request received : {} from {}.", pRequest.getRequestURI(), pRequest.getRemoteAddr());
         pFilterChain.doFilter(pRequest, pResponse);
     }
 
