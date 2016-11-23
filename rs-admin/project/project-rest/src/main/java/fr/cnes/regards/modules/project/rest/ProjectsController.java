@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
 import fr.cnes.regards.modules.project.signature.IProjectsSignature;
@@ -37,7 +38,8 @@ import fr.cnes.regards.modules.project.signature.IProjectsSignature;
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 public class ProjectsController implements IResourceController<Project>, IProjectsSignature {
 
     /**
@@ -62,7 +64,7 @@ public class ProjectsController implements IResourceController<Project>, IProjec
     }
 
     @Override
-    @ResourceAccess(description = "retrieve the list of project of instance")
+    @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.ADMIN)
     public ResponseEntity<List<Resource<Project>>> retrieveProjectList() {
 
         final List<Project> projects = projectService.retrieveProjectList();
@@ -106,7 +108,7 @@ public class ProjectsController implements IResourceController<Project>, IProjec
     }
 
     @Override
-    public Resource<Project> toResource(final Project pElement, Object... pExtras) {
+    public Resource<Project> toResource(final Project pElement, final Object... pExtras) {
 
         Resource<Project> resource = null;
         if ((pElement != null) && (pElement.getName() != null)) {
