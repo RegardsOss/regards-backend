@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
@@ -227,8 +226,8 @@ public class RegardsInternalAuthenticationPluginTest {
             privateField.set(plugin, "test");
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
-            Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString()))
-                    .thenThrow(new EntityNotFoundException("test", Account.class));
+            final ResponseEntity<AccountStatus> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
             privateField.setAccessible(true);
