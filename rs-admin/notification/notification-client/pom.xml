@@ -16,7 +16,7 @@
 		<!-- Microservice internal dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.notification</groupId>
-			<artifactId>notification-signature</artifactId>
+			<artifactId>notification-domain</artifactId>
 		</dependency>
 		<!-- Regards client core -->
 		<dependency>
