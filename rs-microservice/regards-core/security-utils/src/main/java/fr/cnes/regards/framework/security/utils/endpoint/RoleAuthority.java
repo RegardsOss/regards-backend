@@ -18,7 +18,7 @@ public class RoleAuthority implements GrantedAuthority {
     /**
      * Virtual Instance administrator ROLE name
      */
-    public static final String INSTANCE_ADMIN_VIRTUAL_ROLE = "INTSANCE_ADMIN";
+    public static final String INSTANCE_ADMIN_VIRTUAL_ROLE = "INSTANCE_ADMIN";
 
     /**
      * Role prefix
