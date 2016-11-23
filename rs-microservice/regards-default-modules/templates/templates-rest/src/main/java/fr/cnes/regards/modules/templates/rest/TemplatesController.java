@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -29,6 +31,19 @@ import fr.cnes.regards.modules.templates.domain.Template;
         documentation = "http://test")
 @RequestMapping("/templates")
 public class TemplatesController implements IResourceController<Template> {
+
+    /**
+     * Resource service to manage visible hateoas links
+     */
+    private final IResourceService resourceService;
+
+    /**
+     * @param pResourceService
+     */
+    public TemplatesController(final IResourceService pResourceService) {
+        super();
+        resourceService = pResourceService;
+    }
 
     /**
      * @return the list of templates
@@ -108,8 +123,17 @@ public class TemplatesController implements IResourceController<Template> {
      */
     @Override
     public Resource<Template> toResource(final Template pElement, final Object... pExtras) {
-        // TODO
-        return HateoasUtils.wrap(pElement);
+        final Resource<Template> resource = resourceService.toResource(pElement);
+        resourceService.addLink(resource, getClass(), "findById", LinkRels.SELF,
+                                MethodParamFactory.build(Long.class, pElement.getId()));
+        resourceService.addLink(resource, getClass(), "delete", LinkRels.DELETE,
+                                MethodParamFactory.build(Long.class, pElement.getId()));
+        resourceService.addLink(resource, getClass(), "update", LinkRels.UPDATE,
+                                MethodParamFactory.build(Long.class, pElement.getId()),
+                                MethodParamFactory.build(Template.class, pElement));
+        resourceService.addLink(resource, getClass(), "create", LinkRels.CREATE,
+                                MethodParamFactory.build(Template.class, pElement));
+        return resource;
     }
 
 }
