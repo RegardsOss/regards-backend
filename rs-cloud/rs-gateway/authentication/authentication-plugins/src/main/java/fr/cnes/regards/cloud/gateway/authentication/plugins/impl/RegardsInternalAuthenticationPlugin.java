@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -74,19 +73,18 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
                     status = AuthenticationStatus.ACCESS_DENIED;
                     errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Authentication failed.";
                 }
-            } else {
-                status = AuthenticationStatus.ACCESS_DENIED;
-                errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Request error code : "
-                        + validateResponse.getStatusCode().toString();
-            }
+            } else
+                if (validateResponse.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                    status = AuthenticationStatus.ACCOUNT_NOT_FOUD;
+                    errorMessage = String
+                            .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
+                } else {
+                    status = AuthenticationStatus.ACCESS_DENIED;
+                    errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Request error code : "
+                            + validateResponse.getStatusCode().toString();
+                }
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);
-        } catch (final EntityNotFoundException e) {
-            LOG.error(e.getMessage(), e);
-            errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
-                                         pEmail);
-            LOG.error(errorMessage);
-            status = AuthenticationStatus.ACCOUNT_NOT_FOUD;
         }
 
         return new AuthenticationPluginResponse(status, pEmail, errorMessage);

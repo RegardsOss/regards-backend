@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -33,17 +32,13 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(final String pUserEmail)
-            throws EntityNotFoundException {
+    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(final String pUserEmail) {
         ProjectUser result = null;
         for (final ProjectUser user : users) {
             if (user.getEmail().equals(pUserEmail)) {
                 result = user;
                 break;
             }
-        }
-        if (result == null) {
-            throw new EntityNotFoundException(pUserEmail, ProjectUser.class);
         }
         return new ResponseEntity<Resource<ProjectUser>>(HateoasUtils.wrap(result), HttpStatus.OK);
     }

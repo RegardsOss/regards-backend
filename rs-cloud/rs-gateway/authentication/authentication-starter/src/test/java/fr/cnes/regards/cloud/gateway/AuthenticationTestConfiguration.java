@@ -5,7 +5,6 @@ package fr.cnes.regards.cloud.gateway;
 
 import java.util.ArrayList;
 
-import org.junit.Assert;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -21,8 +20,6 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.cloud.gateway.authentication.configuration.RemoteFeignClientAutoConfiguration;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.stub.AuthenticationPluginStub;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -71,11 +68,7 @@ public class AuthenticationTestConfiguration {
 
         final ResponseEntity<Resource<ProjectUser>> response = new ResponseEntity<Resource<ProjectUser>>(
                 new Resource<ProjectUser>(testUser, new ArrayList<>()), HttpStatus.OK);
-        try {
-            Mockito.when(client.retrieveProjectUser(Mockito.anyString())).thenReturn(response);
-        } catch (final EntityNotFoundException e) {
-            Assert.fail(e.getMessage());
-        }
+        Mockito.when(client.retrieveProjectUser(Mockito.anyString())).thenReturn(response);
         return client;
     }
 
@@ -86,11 +79,7 @@ public class AuthenticationTestConfiguration {
 
         final ResponseEntity<Resource<Project>> response = new ResponseEntity<Resource<Project>>(
                 new Resource<Project>(new Project("", "", true, PROJECT_TEST_NAME)), HttpStatus.OK);
-        try {
-            Mockito.when(client.retrieveProject(Mockito.anyString())).thenReturn(response);
-        } catch (final EntityException e) {
-            Assert.fail(e.getMessage());
-        }
+        Mockito.when(client.retrieveProject(Mockito.anyString())).thenReturn(response);
         return client;
     }
 

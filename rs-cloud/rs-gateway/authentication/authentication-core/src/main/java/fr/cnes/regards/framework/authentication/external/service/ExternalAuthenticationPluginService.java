@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IServiceProviderPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.ExternalAuthenticationInformations;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -163,7 +162,7 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
                 }
             }
 
-        } catch (final EntityException | PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             throw new BadCredentialsException(e.getMessage(), e);
         }
 

@@ -30,7 +30,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -230,14 +229,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             throw new BadCredentialsException(message);
         }
 
-        try {
-            final ResponseEntity<Resource<Project>> response = projectsClient.retrieveProject(pScope);
-            return response.getStatusCode().equals(HttpStatus.OK);
-        } catch (final EntityException e) {
-            LOG.error(e.getMessage(), e);
-            return false;
-        }
-
+        final ResponseEntity<Resource<Project>> response = projectsClient.retrieveProject(pScope);
+        return response.getStatusCode().equals(HttpStatus.OK);
     }
 
     /**
@@ -261,12 +254,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
         final ResponseEntity<Resource<Account>> response = accountClient.retrieveAccounByEmail(details.getEmail());
         if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-
-            try {
-                accountClient.createAccount(new Account(details.getEmail(), "", "", null));
-            } catch (final EntityException e) {
-                LOG.error(e.getMessage(), e);
-            }
+            accountClient.createAccount(new Account(details.getEmail(), "", "", null));
         }
 
     }
