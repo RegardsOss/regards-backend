@@ -11,6 +11,8 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
@@ -205,9 +207,15 @@ public class NotificationService implements INotificationService {
                 Stream<Resource<ProjectUser>> result;
                 try (Stream<Resource<ProjectUser>> stream = rolesClient.retrieveRoleProjectUserList(r.getId()).getBody()
                         .stream()) {
-                    result = rolesClient.retrieveRoleProjectUserList(r.getId()).getBody().stream();
-                } catch (final EntityNotFoundException e) {
-                    LOG.warn(e.getMessage(), e);
+                    final ResponseEntity<List<Resource<ProjectUser>>> response = rolesClient
+                            .retrieveRoleProjectUserList(r.getId());
+                    if (response.getStatusCode().equals(HttpStatus.OK) && (response.getBody() != null)
+                            && (response.getBody() != null)) {
+                        result = response.getBody().stream();
+                    } else {
+                        LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}",
+                                 r.getName(), response.getStatusCode());
+                    }
                     result = Stream.empty();
                 }
                 return result;
