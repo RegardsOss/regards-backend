@@ -124,21 +124,17 @@ public class CorsFilter extends OncePerRequestFilter {
                     access = access || authoritiesProvider.hasCorsRequestsAccess(role.getAuthority());
                 }
                 if (!access) {
-                    if (OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
-                        pResponse.sendError(HttpStatus.UNAUTHORIZED.value(),
-                                            String.format("[REGARDS CORS FILTER] Access denied for user %s",
-                                                          authentication.getUser().getName()));
-                    }
+                    final String message = String.format("[REGARDS CORS FILTER] Access denied for user %s",
+                                                         authentication.getUser().getName());
+                    LOG.error(message);
+                    pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
                 } else {
-                    LOG.info(String.format("[REGARDS CORS FILTER] Access granted for user %s",
-                                           authentication.getUser().getName()));
+                    LOG.debug(String.format("[REGARDS CORS FILTER] Access granted for user %s",
+                                            authentication.getUser().getName()));
                     allowCorsRequest(pRequest, pResponse, pFilterChain);
                 }
             } else {
-                if (OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
-                    pResponse.sendError(HttpStatus.UNAUTHORIZED.value(),
-                                        "[REGARDS CORS FILTER] No Authority Role defined");
-                }
+                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS CORS FILTER] No Authority Role defined");
             }
         } catch (final SecurityException e) {
             final String message = "[REGARDS CORS FILTER] Error on access resolution: " + e.getMessage();
