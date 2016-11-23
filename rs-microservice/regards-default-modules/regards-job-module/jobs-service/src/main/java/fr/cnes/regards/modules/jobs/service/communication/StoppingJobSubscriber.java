@@ -13,7 +13,7 @@ import fr.cnes.regards.modules.jobs.domain.StatusInfo;
 import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  */
 public class StoppingJobSubscriber implements IHandler<StoppingJobEvent> {
 

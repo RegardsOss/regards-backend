@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -24,7 +25,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { PluginDaoTestConfig.class })
 @DirtiesContext
-public class PluginConfigurationTest extends PluginDaoUtility {
+public class PluginConfigurationIT extends PluginDaoUtility {
 
     /**
      * Unit test of creation {@link PluginConfiguration}
@@ -113,7 +114,7 @@ public class PluginConfigurationTest extends PluginDaoUtility {
                 .save(getPluginConfigurationWithParameters());
 
         // set two new parameters to the plugin configuration
-        aPluginConf.setParameters(Arrays.asList(PARAMETER2));
+        aPluginConf.setParameters(PARAMETERS2);
 
         // update the plugin configuration
         final PluginConfiguration jpaConf = pluginConfigurationRepository.save(aPluginConf);
@@ -132,6 +133,48 @@ public class PluginConfigurationTest extends PluginDaoUtility {
 
         INTERFACEPARAMETERS.forEach(p -> pluginParameterRepository.delete(p));
         Assert.assertEquals(aPluginConf.getParameters().size(), pluginParameterRepository.count());
+    }
+
+    @Test
+    public void deletePluginConfigurationWithParameters() {
+        injectToken(PROJECT);
+        cleanDb();
+
+        // save a plugin configuration
+        final PluginConfiguration aPluginConf = pluginConfigurationRepository
+                .save(getPluginConfigurationWithParameters());
+        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
+                            pluginParameterRepository.count());
+        Assert.assertEquals(1, pluginConfigurationRepository.count());
+
+        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
+                            pluginParameterRepository.count());
+
+        // delete it
+        pluginConfigurationRepository.delete(aPluginConf.getId());
+
+        Assert.assertEquals(0, pluginConfigurationRepository.count());
+        Assert.assertEquals(0, pluginParameterRepository.count());
+    }
+
+    @Test(expected = DataIntegrityViolationException.class)
+    public void deletePluginConfigurationWithParametersError() {
+        injectToken(PROJECT);
+        cleanDb();
+
+        // save a plugin configuration
+        pluginConfigurationRepository.save(getPluginConfigurationWithParameters());
+        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
+                            pluginParameterRepository.count());
+        Assert.assertEquals(1, pluginConfigurationRepository.count());
+
+        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
+                            pluginParameterRepository.count());
+
+        // delete it
+        pluginParameterRepository.delete(getPluginConfigurationWithParameters().getParameters().get(0));
+
+        Assert.fail();
     }
 
 }

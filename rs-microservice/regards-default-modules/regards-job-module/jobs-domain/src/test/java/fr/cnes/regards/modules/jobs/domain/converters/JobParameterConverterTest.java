@@ -9,7 +9,7 @@ import org.junit.Test;
 import fr.cnes.regards.modules.jobs.domain.JobParameters;
 
 /**
- *
+ * @author Léo Mieulet
  */
 public class JobParameterConverterTest {
 

@@ -14,7 +14,7 @@ import fr.cnes.regards.modules.jobs.domain.IEvent;
 /**
  * A thread between JobHandler and Jobs that receives events and send them back to JobHandler
  * 
- * @author lmieulet
+ * @author Léo Mieulet
  */
 public class JobMonitor implements Runnable {
 
@@ -40,6 +40,7 @@ public class JobMonitor implements Runnable {
 
     /**
      * @param pJobHandler
+     *            a {link {@link JobHandler}}
      *
      */
     public JobMonitor(final JobHandler pJobHandler) {

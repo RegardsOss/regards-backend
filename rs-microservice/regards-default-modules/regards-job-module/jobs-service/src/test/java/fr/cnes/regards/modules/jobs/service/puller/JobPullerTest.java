@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobAl
 import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  *
  */
 @RunWith(SpringRunner.class)

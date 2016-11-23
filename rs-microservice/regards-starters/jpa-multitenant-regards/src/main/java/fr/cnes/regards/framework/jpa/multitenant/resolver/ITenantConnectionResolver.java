@@ -17,15 +17,23 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@FunctionalInterface
 public interface ITenantConnectionResolver {
 
     /**
      *
      * Retrieve the connection configuration for each tenant.
      *
-     * @return
+     * @return List of existing {@link TenantConnection}
      * @since 1.0-SNAPSHOT
      */
-    public List<TenantConnection> getTenantConnections();
+    List<TenantConnection> getTenantConnections();
+
+    /**
+     *
+     * Add a new tenant connection
+     *
+     * @param pTenantConnection
+     * @since 1.0-SNAPSHOT
+     */
+    void addTenantConnection(TenantConnection pTenantConnection);
 }

@@ -37,23 +37,31 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
     private String[] authorities;
 
     @Override
-    public List<ResourceMapping> getResourcesAccessConfiguration() {
-        final List<ResourceMapping> resources = new ArrayList<>();
+    public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
+        LOG.warn("No Authority provider defined. Default one used."
+                + " The local endpoints are not register to administration service. Only the default configuration is available");
         if (authorities != null) {
             LOG.debug("Initializing granted authorities from property file");
             for (final String auth : authorities) {
                 final ResourceMapping resource = createResourceMapping(auth);
                 if (resource != null) {
-                    resources.add(resource);
+                    pLocalEndpoints.add(resource);
                 }
             }
         }
-        return resources;
+        return pLocalEndpoints;
     }
 
     @Override
     public List<String> getRoleAuthorizedAddress(final String pRole) {
+        LOG.warn("No Authority provider defined. Default one used. Management of Role IP filter is skipped.");
         return new ArrayList<>();
+    }
+
+    @Override
+    public boolean hasCorsRequestsAccess(final String pAuthority) {
+        LOG.warn("No Authority provider defined. Default one used. Management of configured CORS access is skipped.");
+        return true;
     }
 
     /**
@@ -86,11 +94,6 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
             }
         }
         return result;
-    }
-
-    @Override
-    public boolean hasCorsRequestsAccess(final String pAuthority) {
-        return true;
     }
 
 }

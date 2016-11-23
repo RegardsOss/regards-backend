@@ -21,7 +21,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  *
  * GSON adapter for annotation ResorucesAccess
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public class ResourceAccessAdapter extends TypeAdapter<ResourceAccess> {
@@ -64,6 +64,28 @@ public class ResourceAccessAdapter extends TypeAdapter<ResourceAccess> {
         }
         pIn.endObject();
 
+        return AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
+    }
+
+    /**
+     *
+     * Instanciate a new ResourceAccess annotation
+     *
+     * @param pDescription
+     *            description
+     * @param pDefaultRole
+     *            default role
+     * @return {@link ResourceAccess}
+     * @since 1.0-SNAPSHOT
+     */
+    public static ResourceAccess createResourceAccess(final String pDescription, final String pDefaultRole) {
+        final Map<String, Object> attributs = new HashMap<>();
+        if (pDescription != null) {
+            attributs.put(DESCRIPTION_LABEL, pDescription);
+        }
+        if (pDefaultRole != null) {
+            attributs.put(ROLE_LABEL, pDefaultRole);
+        }
         return AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
     }
 

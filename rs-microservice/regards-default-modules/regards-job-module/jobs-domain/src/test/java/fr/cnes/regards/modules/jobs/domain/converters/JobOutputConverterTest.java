@@ -10,11 +10,12 @@ import java.util.List;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.springframework.http.MediaType;
 
 import fr.cnes.regards.modules.jobs.domain.Output;
 
 /**
- *
+ * @author Léo Mieulet
  */
 public class JobOutputConverterTest {
 
@@ -24,7 +25,7 @@ public class JobOutputConverterTest {
         final List<Output> outputList = new ArrayList<>();
         final Output output = new Output();
         output.setData(new URI("index.html"));
-        output.setMimeType("data/json");
+        output.setMimeType(MediaType.APPLICATION_JSON_VALUE);
         outputList.add(output);
         final String outputAsString = jobOutputConverter.convertToDatabaseColumn(outputList);
         final List<Output> outputAfterConvertion = jobOutputConverter.convertToEntityAttribute(outputAsString);

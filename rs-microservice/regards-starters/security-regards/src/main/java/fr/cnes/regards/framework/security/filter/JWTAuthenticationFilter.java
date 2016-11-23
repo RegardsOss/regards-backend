@@ -63,9 +63,14 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         // Retrieve authentication header
         String jwt = request.getHeader(HttpConstants.AUTHORIZATION);
         if (jwt == null) {
-            final String message = "[REGARDS JWT FILTER] Authentication token missing";
-            LOG.error(message);
-            response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+            // Authorize OPTIONS request
+            if (CorsFilter.OPTIONS_REQUEST_TYPE.equals(request.getMethod())) {
+                CorsFilter.allowCorsRequest(pRequest, pResponse, pFilterChain);
+            } else {
+                final String message = "[REGARDS JWT FILTER] Authentication token missing";
+                LOG.error(message);
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+            }
         } else {
 
             // Extract JWT from retrieved header

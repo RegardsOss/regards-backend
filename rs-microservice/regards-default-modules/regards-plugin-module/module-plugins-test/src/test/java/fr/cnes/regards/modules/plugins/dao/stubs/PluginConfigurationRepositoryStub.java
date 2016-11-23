@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.framework.test.repository.RepositoryStub;
@@ -25,13 +26,9 @@ import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
  */
 @Repository
 @Primary
+@Profile("test")
 public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConfiguration>
         implements IPluginConfigurationRepository {
-
-    public PluginConfigurationRepositoryStub() {
-        getEntities().add(getPluginConfigurationWithDynamicParameter());
-        getEntities().add(getPluginConfigurationWithParameters());
-    }
 
     /**
      * Version
@@ -88,6 +85,11 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
      */
     private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
             "second configuration", Arrays.asList(PARAMETER1, PARAMETER2), 0);
+
+    public PluginConfigurationRepositoryStub() {
+        getEntities().add(getPluginConfigurationWithDynamicParameter());
+        getEntities().add(getPluginConfigurationWithParameters());
+    }
 
     public PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();

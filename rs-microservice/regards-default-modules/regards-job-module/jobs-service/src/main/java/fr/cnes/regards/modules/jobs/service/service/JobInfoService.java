@@ -7,8 +7,10 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.jpa.utils.IterableUtils;
 import fr.cnes.regards.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
@@ -16,8 +18,9 @@ import fr.cnes.regards.modules.jobs.service.communication.INewJobPublisher;
 import fr.cnes.regards.modules.jobs.service.communication.IStoppingJobPublisher;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  */
+@Service
 public class JobInfoService implements IJobInfoService {
 
     /**
@@ -26,7 +29,7 @@ public class JobInfoService implements IJobInfoService {
     private static final Logger LOG = LoggerFactory.getLogger(JobInfoService.class);
 
     /**
-     * DAO autowired by Spring
+     * {@link JobInfo} JPA Repository
      */
     private final IJobInfoRepository jobInfoRepository;
 
@@ -87,7 +90,7 @@ public class JobInfoService implements IJobInfoService {
 
     @Override
     public List<JobInfo> retrieveJobInfoList() {
-        return jobInfoRepository.findAll();
+        return IterableUtils.toList(jobInfoRepository.findAll());
     }
 
     @Override

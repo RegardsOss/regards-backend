@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy;
 /**
  * Store tenant/number of active jobs/max number of jobs
  * 
- * @author lmieulet
+ * @author Léo Mieulet
  */
 public class JobQueue implements IJobQueue {
 

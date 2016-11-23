@@ -16,10 +16,12 @@ import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.jobs.domain.Output;
 import fr.cnes.regards.modules.jobs.service.service.IJobInfoService;
+import fr.cnes.regards.modules.jobs.service.service.JobInfoService;
 import fr.cnes.regards.modules.jobs.signature.IJobInfoSignature;
 
 /**
- *
+ * @author Léo Mieulet
+ * @author Christophe Mertz
  */
 @RestController
 @ModuleInfo(name = "jobs", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
@@ -27,11 +29,18 @@ import fr.cnes.regards.modules.jobs.signature.IJobInfoSignature;
 public class JobController implements IJobInfoSignature {
 
     /**
-     * JobInfo Service
+     * Business service for {@link JobInfo}.
      */
     private final IJobInfoService jobInfoService;
 
+    /**
+     * Constructor to specify a particular {@link IJobInfoService}.
+     * 
+     * @param pJobInfoService
+     *            The {@link JobInfoService} used
+     */
     public JobController(final IJobInfoService pJobInfoService) {
+        super();
         jobInfoService = pJobInfoService;
     }
 

@@ -39,7 +39,8 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
  * Allow to set/get the REST resource method access authorizations.<br/>
  * An authorization is defined by a endpoint, a HTTP Verb and a list of authorized user ROLES
  *
- * @author CS SI
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
  *
  */
 public class MethodAuthorizationService {
@@ -111,17 +112,23 @@ public class MethodAuthorizationService {
      */
     public void refreshAuthorities() {
         grantedAuthoritiesByTenant.clear();
-        for (final String tenant : tenantResolver.getAllTenants()) {
-            try {
-                jwtService.injectToken(tenant, RoleAuthority.getSysRole(microserviceName));
-                final List<ResourceMapping> resources = authoritiesProvider.getResourcesAccessConfiguration();
-                for (final ResourceMapping resource : resources) {
-                    setAuthorities(tenant, resource);
+        try {
+            jwtService.injectToken("instance", RoleAuthority.getSysRole(microserviceName));
+
+            for (final String tenant : tenantResolver.getAllTenants()) {
+                try {
+                    jwtService.injectToken(tenant, RoleAuthority.getSysRole(microserviceName));
+                    final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(getResources());
+                    for (final ResourceMapping resource : resources) {
+                        setAuthorities(tenant, resource);
+                    }
+                } catch (final JwtException e) {
+                    LOG.error(String.format("Error during resources access initialization for tenant %s", tenant));
+                    LOG.error(e.getMessage(), e);
                 }
-            } catch (final JwtException e) {
-                LOG.error(String.format("Error during resources access initialization for tenant %s", tenant));
-                LOG.error(e.getMessage(), e);
             }
+        } catch (final JwtException e1) {
+            LOG.error(e1.getMessage(), e1);
         }
     }
 

@@ -3,14 +3,17 @@
  */
 package fr.cnes.regards.modules.jobs.service.communication;
 
+import org.springframework.stereotype.Service;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 
 /**
- * @author lmieulet
+ * @author Léo Mieulet
  */
+@Service
 public class NewJobPublisher implements INewJobPublisher {
 
     /**
@@ -20,7 +23,7 @@ public class NewJobPublisher implements INewJobPublisher {
 
     /**
      * @param pPublisher
-     *            Rabit queue publisher
+     *            Rabbit queue publisher
      */
     public NewJobPublisher(final IPublisher pPublisher) {
         super();

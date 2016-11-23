@@ -17,26 +17,29 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Transient;
 
-import org.springframework.hateoas.Identifiable;
-
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.jobs.domain.converters.JobOuputConverter;
 import fr.cnes.regards.modules.jobs.domain.converters.JobParameterConverter;
 import fr.cnes.regards.modules.jobs.domain.converters.PathConverter;
 
 /**
  * Store Job Information
+ * 
+ * @author Léo Mieulet
+ * @author Christophe Mertz
  */
 @Entity(name = "T_JOB_INFO")
-public class JobInfo implements Identifiable<Long> {
+@SequenceGenerator(name = "jobInfoSequence", initialValue = 1, sequenceName = "SEQ_JOB_INFO")
+public class JobInfo implements IIdentifiable<Long> {
 
     /**
      * JobInfo id
      */
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator = "job_sequence", strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(name = "job_sequence", allocationSize = 10)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "jobInfoSequence")
     private Long id;
 
     /**
@@ -50,6 +53,7 @@ public class JobInfo implements Identifiable<Long> {
      */
     @Column(name = "workspace", columnDefinition = "LONGVARCHAR")
     @Convert(converter = PathConverter.class)
+    @Transient
     private Path workspace;
 
     /**
@@ -79,10 +83,10 @@ public class JobInfo implements Identifiable<Long> {
     private String className;
 
     /**
-     * Hield caracteristics of this job. Saved on cascade
+     * Field characteristics of this job. Saved on cascade
      */
-    @OneToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "status_id", foreignKey = @ForeignKey(name = "FK_JOB_STATUS_INFO"))
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "status_info", foreignKey = @ForeignKey(name = "FK_JOB_STATUS_INFO"))
     private StatusInfo status;
 
     /**
@@ -91,10 +95,18 @@ public class JobInfo implements Identifiable<Long> {
     @Column(name = "archived")
     private boolean archived;
 
+    /**
+     * Default constructor
+     */
     public JobInfo() {
         super();
     }
 
+    /**
+     * 
+     * @param pJobConfiguration
+     *            the {@link JobConfiguration} to used
+     */
     public JobInfo(final JobConfiguration pJobConfiguration) {
         this();
         className = pJobConfiguration.getClassName();
@@ -220,6 +232,10 @@ public class JobInfo implements Identifiable<Long> {
         return status;
     }
 
+    /**
+     * Is the job need a workspace ?
+     * @return true/false
+     */
     public boolean needWorkspace() {
         return workspace != null;
     }

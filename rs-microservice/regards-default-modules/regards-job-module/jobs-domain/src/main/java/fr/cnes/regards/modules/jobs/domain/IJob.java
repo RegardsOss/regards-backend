@@ -9,17 +9,40 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  * Interface for all regards jobs
+ * 
+ * @author Léo Mieulet
  */
 public interface IJob extends Runnable {
 
+    
+    /**
+     * 
+     * @return The job's priority
+     */
     int getPriority();
 
+    /**
+     * 
+     * @return The Job's results
+     */
     List<Output> getResults();
 
+    /**
+     * 
+     * @return The job's {@link StatusInfo}
+     */
     StatusInfo getStatus();
 
+    /**
+     * 
+     * @return the job has a result ?
+     */
     boolean hasResult();
 
+    /**
+     * 
+     * @return the job need a workspace ?
+     */
     boolean needWorkspace();
 
     /**
