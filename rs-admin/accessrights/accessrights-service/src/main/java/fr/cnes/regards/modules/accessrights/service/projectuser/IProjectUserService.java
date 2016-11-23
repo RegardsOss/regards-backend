@@ -17,6 +17,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
+ * Strategy interface to handle Read an Update operations on access settings.
+ *
  * @author CS SI
  *
  */
