@@ -90,7 +90,7 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
         final ResponseEntity<Resource<Role>> result = roleClient.retrieveRole(pRole);
         if (result.getStatusCode().equals(HttpStatus.OK)) {
             final Resource<Role> body = result.getBody();
-            if (body != null && body.getContent() != null) {
+            if ((body != null) && (body.getContent() != null)) {
                 addresses.addAll(body.getContent().getAuthorizedAddresses());
             }
         }
@@ -100,9 +100,10 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     @Override
     public boolean hasCorsRequestsAccess(final String pRole) throws SecurityException {
         boolean access = false;
-        if (!RoleAuthority.isSysRole(pRole)) {
+        if (!RoleAuthority.isSysRole(pRole) && !(RoleAuthority.isInstanceAdminRole(pRole))) {
             final ResponseEntity<Resource<Role>> result = roleClient.retrieveRole(RoleAuthority.getRoleName(pRole));
-            if (result.getStatusCode().equals(HttpStatus.OK) && result.getBody() != null && result.getBody().getContent() != null) {
+            if (result.getStatusCode().equals(HttpStatus.OK) && (result.getBody() != null)
+                    && (result.getBody().getContent() != null)) {
                 access = result.getBody().getContent().isCorsRequestsAuthorized();
             }
             return access;
