@@ -18,12 +18,27 @@ import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 
+/**
+ *
+ * Class ProjectUsersClientStub
+ *
+ * Stub to simulate the responses from the administration services for the ProjectUsers entities.
+ *
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
+ */
 @Component
 @Primary
 public class ProjectUsersClientStub implements IProjectUsersClient {
 
+    /**
+     * Locale list of users
+     */
     private static List<ProjectUser> users = new ArrayList<>();
 
+    /**
+     * Id generator count
+     */
     private static long idCount = 0;
 
     @Override
@@ -40,57 +55,52 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
                 break;
             }
         }
+        if (result == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         return new ResponseEntity<Resource<ProjectUser>>(HateoasUtils.wrap(result), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Void> updateProjectUser(final Long pUserId, final ProjectUser pUpdatedProjectUser) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<Void> removeProjectUser(final Long pUserId) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(final Long pUserId) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<Void> updateProjectUserMetaData(final Long pUserId,
             final List<MetaData> pUpdatedUserMetaData) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<Void> removeProjectUserMetaData(final Long pUserId) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(final String pUserLogin,
             final String pBorrowedRoleName) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<Void> updateProjectUserAccessRights(final String pLogin,
             final List<ResourcesAccess> pUpdatedUserAccessRights) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<Void> removeProjectUserAccessRights(final String pUserLogin) {
-        // TODO Auto-generated method stub
         return null;
     }
 

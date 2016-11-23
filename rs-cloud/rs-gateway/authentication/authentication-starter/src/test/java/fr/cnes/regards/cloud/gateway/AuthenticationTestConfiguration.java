@@ -69,6 +69,7 @@ public class AuthenticationTestConfiguration {
         final ResponseEntity<Resource<ProjectUser>> response = new ResponseEntity<Resource<ProjectUser>>(
                 new Resource<ProjectUser>(testUser, new ArrayList<>()), HttpStatus.OK);
         Mockito.when(client.retrieveProjectUser(Mockito.anyString())).thenReturn(response);
+
         return client;
     }
 
