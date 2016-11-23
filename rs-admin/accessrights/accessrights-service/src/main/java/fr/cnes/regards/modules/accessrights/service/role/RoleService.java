@@ -147,7 +147,7 @@ public class RoleService implements IRoleService {
             try {
                 return retrieveRole(r.getName());
             } catch (final EntityNotFoundException e) {
-                LOG.info("Could not find a role in DB, fallback to xml definition.", e);
+                LOG.debug("Could not find a role in DB, falling back to xml definition.", e);
                 return r;
             }
         };
