@@ -10,7 +10,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -43,23 +42,22 @@ public class ProjectClientStub implements IProjectsClient {
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) throws EntityException {
+    public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) {
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> retrieveProject(final String pProjectName) throws EntityException {
+    public ResponseEntity<Resource<Project>> retrieveProject(final String pProjectName) {
         return new ResponseEntity<>(new Resource<Project>(PROJECT), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> updateProject(final String pProjectName, final Project pProjectToUpdate)
-            throws EntityException {
+    public ResponseEntity<Resource<Project>> updateProject(final String pProjectName, final Project pProjectToUpdate) {
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public ResponseEntity<Void> deleteProject(final String pProjectName) throws EntityException {
+    public ResponseEntity<Void> deleteProject(final String pProjectName) {
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 

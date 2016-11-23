@@ -16,7 +16,6 @@ import feign.FeignException;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -150,7 +149,7 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
                     pTenantConnection.getUserName(), pTenantConnection.getPassword(),
                     pTenantConnection.getDriverClassName(), pTenantConnection.getUrl());
             projectConnectionsClient.createProjectConnection(projectConnection);
-        } catch (final EntityException | FeignException e) {
+        } catch (final FeignException e) {
             LOG.error("Error during initialization of new tenant connection for microservice {} and tenant {}",
                       microserviceName, pTenantConnection.getName());
             LOG.error(e.getMessage(), e);

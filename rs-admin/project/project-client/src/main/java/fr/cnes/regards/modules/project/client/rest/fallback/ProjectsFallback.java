@@ -12,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -46,7 +44,7 @@ public class ProjectsFallback implements IProjectsClient {
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) throws AlreadyExistingException {
+    public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -58,8 +56,7 @@ public class ProjectsFallback implements IProjectsClient {
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> updateProject(final String pProjectId, final Project pProjectUpdated)
-            throws EntityException {
+    public ResponseEntity<Resource<Project>> updateProject(final String pProjectId, final Project pProjectUpdated) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }

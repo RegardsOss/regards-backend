@@ -14,6 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -21,12 +24,13 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
-import fr.cnes.regards.modules.project.signature.IProjectsSignature;
 
 /**
  *
@@ -40,7 +44,8 @@ import fr.cnes.regards.modules.project.signature.IProjectsSignature;
 @RestController
 @ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class ProjectsController implements IResourceController<Project>, IProjectsSignature {
+@RequestMapping("/projects")
+public class ProjectsController implements IResourceController<Project> {
 
     /**
      * Class logger
@@ -63,7 +68,15 @@ public class ProjectsController implements IResourceController<Project>, IProjec
         resourceService = pResourceService;
     }
 
-    @Override
+    /**
+     *
+     * Retrieve projects list
+     *
+     * @return List of projects
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.GET, produces = "application/json")
+    @ResponseBody
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.ADMIN)
     public ResponseEntity<List<Resource<Project>>> retrieveProjectList() {
 
@@ -71,7 +84,20 @@ public class ProjectsController implements IResourceController<Project>, IProjec
         return ResponseEntity.ok(toResources(projects));
     }
 
-    @Override
+    /**
+     *
+     * Create a new project
+     *
+     * @param pNewProject
+     *            new Project to create
+     * @return Created project
+     * @throws EntityException
+     *             <br/>
+     *             {@link AlreadyExistingException} If Project already exists for the given name
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @ResponseBody
     @ResourceAccess(description = "create a new project")
     public ResponseEntity<Resource<Project>> createProject(@Valid @RequestBody final Project pNewProject)
             throws EntityException {
@@ -80,7 +106,19 @@ public class ProjectsController implements IResourceController<Project>, IProjec
         return new ResponseEntity<>(toResource(project), HttpStatus.CREATED);
     }
 
-    @Override
+    /**
+     *
+     * Retrieve a project by name
+     *
+     * @param pProjectName
+     *            Project name
+     * @return Project
+     * @throws EntityException
+     *             {@link EntityNotFoundException} project does not exists
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/{project_name}", produces = "application/json")
+    @ResponseBody
     @ResourceAccess(description = "retrieve the project project_name")
     public ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName)
             throws EntityException {
@@ -89,7 +127,19 @@ public class ProjectsController implements IResourceController<Project>, IProjec
         return ResponseEntity.ok(toResource(project));
     }
 
-    @Override
+    /**
+     *
+     * Update given project.
+     *
+     * @param pProjectName
+     *            project name
+     * @param pProjectToUpdate
+     *            project to update
+     * @return Updated Project
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}")
+    @ResponseBody
     @ResourceAccess(description = "update the project project_name")
     public ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") final String pProjectName,
             @RequestBody final Project pProjectToUpdate) throws EntityException {
@@ -98,7 +148,17 @@ public class ProjectsController implements IResourceController<Project>, IProjec
         return ResponseEntity.ok(toResource(project));
     }
 
-    @Override
+    /**
+     *
+     * Delete given project
+     *
+     * @param pProjectName
+     *            Project name to delete
+     * @return Void
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.DELETE)
+    @ResponseBody
     @ResourceAccess(description = "remove the project project_name")
     public ResponseEntity<Void> deleteProject(@PathVariable("project_name") final String pProjectName)
             throws EntityException {
