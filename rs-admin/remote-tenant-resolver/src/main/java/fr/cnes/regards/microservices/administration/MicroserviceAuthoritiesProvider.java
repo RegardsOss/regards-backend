@@ -33,6 +33,11 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(MicroserviceAuthoritiesProvider.class);
+    
+    /**
      * Current microservice name
      */
     private final String microserviceName;
@@ -86,6 +91,7 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
             if (result.getStatusCode().equals(HttpStatus.OK)) {
                 final Resource<Role> body = result.getBody();
                 if (body != null) {
+                    LOG.info(body.getContent().toString());
                     addresses.addAll(body.getContent().getAuthorizedAddresses());
                 }
             }
