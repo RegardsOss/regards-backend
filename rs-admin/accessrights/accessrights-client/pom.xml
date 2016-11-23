@@ -18,7 +18,7 @@
 		<!-- Microservice internal dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-signature</artifactId>
+			<artifactId>accessrights-domain</artifactId>
 		</dependency>
 		<!-- Regards client core -->
 		<dependency>

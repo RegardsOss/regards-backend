@@ -115,7 +115,7 @@ public class Role implements IIdentifiable<Long> {
         super();
         isDefault = false;
         isNative = false;
-        isCorsRequestsAuthorized = false;
+        isCorsRequestsAuthorized = true;
         permissions = new ArrayList<>();
         authorizedAddresses = new ArrayList<>();
     }

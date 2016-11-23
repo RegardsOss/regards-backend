@@ -16,7 +16,7 @@
 		<!-- Microservice internal dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-signature</artifactId>
+			<artifactId>emails-domain</artifactId>
 		</dependency>
 		<!-- Hateoas -->
 		<dependency>

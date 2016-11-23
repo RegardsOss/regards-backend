@@ -25,7 +25,6 @@ import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
 /**
  *
@@ -94,12 +93,6 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
      * The error message TODO: Remove this? We should not shadow the error message thrown by the caught exception.
      */
     private String errorMessage;
-
-    /**
-     * The autowired {@link IProjectUserService} implementation.
-     */
-    @Autowired
-    private IProjectUserService projectUserService;
 
     /**
      * Do some setup before each test
@@ -225,7 +218,7 @@ public class AccessesControllerIT extends AbstractAdministrationIT {
         // Case not found
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDelete(apiAccessId, token, expectations, errorMessage, Long.MAX_VALUE);
+        performDelete(apiAccessId, token, expectations, errorMessage, 1L);
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());

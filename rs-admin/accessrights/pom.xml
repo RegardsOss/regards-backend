@@ -24,7 +24,6 @@
 		<module>accessrights-rest</module>
 		<module>accessrights-service</module>
 		<module>accessrights-client</module>
-		<module>accessrights-signature</module>
 		<module>accessrights-test</module>
 	</modules>
 
@@ -54,11 +53,6 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessrights</groupId>
 				<artifactId>accessrights-client</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.accessrights</groupId>
-				<artifactId>accessrights-signature</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>

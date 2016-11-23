@@ -103,7 +103,7 @@ public class RoleTest {
         Assert.assertEquals(null, testRole.getParentRole());
         Assert.assertEquals(new ArrayList<>(), testRole.getPermissions());
         Assert.assertEquals(new ArrayList<>(), testRole.getAuthorizedAddresses());
-        Assert.assertEquals(false, testRole.isCorsRequestsAuthorized());
+        Assert.assertEquals(true, testRole.isCorsRequestsAuthorized());
         Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
     }
 
@@ -120,7 +120,7 @@ public class RoleTest {
         Assert.assertEquals(parentRole, testRole.getParentRole());
         Assert.assertEquals(new ArrayList<>(), testRole.getPermissions());
         Assert.assertEquals(new ArrayList<>(), testRole.getAuthorizedAddresses());
-        Assert.assertEquals(false, testRole.isCorsRequestsAuthorized());
+        Assert.assertEquals(true, testRole.isCorsRequestsAuthorized());
         Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
     }
 

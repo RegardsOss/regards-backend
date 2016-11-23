@@ -22,23 +22,21 @@ import fr.cnes.regards.modules.emails.domain.Email;
 @Component
 public class EmailFallback implements IEmailClient {
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see fr.cnes.regards.modules.emails.client.IEmailClient#retrieveEmails()
+     */
     @Override
     public ResponseEntity<List<Email>> retrieveEmails() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    // @Override
-    // public ResponseEntity<Email> sendEmail(final EmailWithRecipientsDTO pEmail) {
-    // // TODO Auto-generated method stub
-    // return null;
-    // }
-
     /*
      * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.emails.signature.IEmailSignature#sendEmail(org.springframework.mail.SimpleMailMessage)
+     * 
+     * @see fr.cnes.regards.modules.emails.client.IEmailClient#sendEmail(org.springframework.mail.SimpleMailMessage)
      */
     @Override
     public ResponseEntity<SimpleMailMessage> sendEmail(final SimpleMailMessage pMessage) {
@@ -46,18 +44,33 @@ public class EmailFallback implements IEmailClient {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see fr.cnes.regards.modules.emails.client.IEmailClient#retrieveEmail(java.lang.Long)
+     */
     @Override
     public ResponseEntity<Email> retrieveEmail(final Long pId) {
         // TODO Auto-generated method stub
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see fr.cnes.regards.modules.emails.client.IEmailClient#resendEmail(java.lang.Long)
+     */
     @Override
     public void resendEmail(final Long pId) {
         // TODO Auto-generated method stub
 
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see fr.cnes.regards.modules.emails.client.IEmailClient#deleteEmail(java.lang.Long)
+     */
     @Override
     public void deleteEmail(final Long pId) {
         // TODO Auto-generated method stub

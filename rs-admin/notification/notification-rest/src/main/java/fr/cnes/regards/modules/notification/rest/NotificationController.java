@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -24,18 +27,18 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
 import fr.cnes.regards.modules.notification.service.INotificationService;
 import fr.cnes.regards.modules.notification.service.INotificationSettingsService;
-import fr.cnes.regards.modules.notification.signature.INotificationSignature;
 
 /**
  * Controller defining the REST entry points of the module
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  *
  */
 @RestController
 @ModuleInfo(name = "notification", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class NotificationController implements INotificationSignature {
+@RequestMapping("/notifications")
+public class NotificationController {
 
     /**
      * The service responsible for managing notifications
@@ -49,38 +52,45 @@ public class NotificationController implements INotificationSignature {
     @Autowired
     private INotificationSettingsService notificationSettingsService;
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Define the endpoint for retrieving the list of notifications for the logged user
      *
-     * @see fr.cnes.regards.modules.notification.signature.INotificationSignature#retrieveNotifications()
+     * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
+     * @throws EntityNotFoundException
+     *             thrown when no current user could be found
      */
-    @Override
+    @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of notifications for the logged user")
     public ResponseEntity<List<Notification>> retrieveNotifications() throws EntityNotFoundException {
         final List<Notification> notifications = notificationService.retrieveNotifications();
         return new ResponseEntity<>(notifications, HttpStatus.OK);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Define the endpoint for creating a new notification in db for later sending by a scheluder.
      *
-     * @see
-     * fr.cnes.regards.modules.notification.signature.INotificationSignature#sendNotification(fr.cnes.regards.modules.
-     * notification.domain.NotificationDTO)
+     * @param pDto
+     *            A DTO for easy parsing of the response body. Mapping to true {@link Notification} is done in service.
+     * @return The sent notification as {@link Notification} wrapped in a {@link ResponseEntity}
      */
-    @Override
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Define the endpoint for sending an notification to recipients")
     public ResponseEntity<Notification> createNotification(@Valid @RequestBody final NotificationDTO pDto) {
         final Notification notification = notificationService.createNotification(pDto);
         return new ResponseEntity<>(notification, HttpStatus.CREATED);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Define the endpoint for retrieving a notification
      *
-     * @see fr.cnes.regards.modules.notification.signature.INotificationSignature#retrieveNotification(java.lang.Long)
+     * @param pId
+     *            The notification <code>id</code>
+     * @throws EntityNotFoundException
+     *             Thrown when no notification with passed <code>id</code> could be found
+     * @return The {@link Notification} wrapped in a {@link ResponseEntity}
      */
-    @Override
+    @RequestMapping(value = "/{notification_id}", method = RequestMethod.GET)
     @ResourceAccess(description = "Define the endpoint for retrieving a notification")
     public ResponseEntity<Notification> retrieveNotification(@PathVariable("notification_id") final Long pId)
             throws EntityNotFoundException {
@@ -88,50 +98,63 @@ public class NotificationController implements INotificationSignature {
         return new ResponseEntity<>(notification, HttpStatus.OK);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Define the endpoint for updating the {@link Notification#status}
      *
-     * @see
-     * fr.cnes.regards.modules.notification.signature.INotificationSignature#updateNotificationStatus(java.lang.Long)
+     * @param pId
+     *            The notification <code>id</code>
+     * @param pStatus
+     *            The new <code>status</code>
+     * @throws EntityNotFoundException
+     *             Thrown when no notification with passed <code>id</code> could be found
+     *
      */
-    @Override
+    @ResponseBody
+    @RequestMapping(value = "/{notification_id}", method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status")
     public void updateNotificationStatus(@PathVariable("notification_id") final Long pId,
             @Valid @RequestBody final NotificationStatus pStatus) throws EntityNotFoundException {
         notificationService.updateNotificationStatus(pId, pStatus);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Define the endpoint for deleting a notification
      *
-     * @see fr.cnes.regards.modules.notification.signature.INotificationSignature#deleteNotification(java.lang.Long)
+     * @param pId
+     *            The notification <code>id</code>
+     * @throws EntityNotFoundException
+     *             Thrown when no notification with passed <code>id</code> could be found
+     * @return
      */
-    @Override
+    @RequestMapping(value = "/{notification_id}", method = RequestMethod.DELETE)
     @ResourceAccess(description = "Define the endpoint for deleting a notification")
     public void deleteNotification(@PathVariable("notification_id") final Long pId) throws EntityNotFoundException {
         notificationService.deleteNotification(pId);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Define the endpoint for retrieving the notification configuration parameters for the logged user
      *
-     * @see fr.cnes.regards.modules.notification.signature.INotificationSignature#retrieveNotificationSettings()
+     * @return The {@link NotificationSettings} wrapped in a {@link ResponseEntity}
+     * @throws EntityNotFoundException
+     *             thrown when no current user could be found
      */
-    @Override
+    @RequestMapping(value = "/settings", method = RequestMethod.GET)
     @ResourceAccess(description = "Define the endpoint for retrieving the notification settings for the logged user")
     public ResponseEntity<NotificationSettings> retrieveNotificationSettings() throws EntityNotFoundException {
         final NotificationSettings settings = notificationSettingsService.retrieveNotificationSettings();
         return new ResponseEntity<>(settings, HttpStatus.OK);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Define the endpoint for updating the {@link Notification#status}
      *
-     * @see
-     * fr.cnes.regards.modules.notification.signature.INotificationSignature#updateNotificationSettings(fr.cnes.regards.
-     * modules.notification.domain.NotificationSettings)
+     * @param pNotificationSettings
+     *            The facade exposing user updatable fields of notification settings
+     * @throws EntityNotFoundException
+     *             Thrown when no notification settings with passed <code>id</code> could be found
      */
-    @Override
+    @RequestMapping(value = "/settings", method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status")
     public void updateNotificationSettings(final NotificationSettingsDTO pNotificationSettings)
             throws EntityNotFoundException {

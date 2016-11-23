@@ -29,7 +29,6 @@ import fr.cnes.regards.modules.project.dao.stub.ProjectRepositoryStub;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.ProjectConnectionService;
-import fr.cnes.regards.modules.project.signature.IProjectConnectionSignature;
 
 /**
  *
@@ -75,7 +74,7 @@ public class ProjectConnectionControllerTest {
     /**
      * ProjectConnection controller to test
      */
-    private IProjectConnectionSignature projectConnectionController;
+    private ProjectConnectionController projectConnectionController;
 
     /**
      * Stub for JPA Repository

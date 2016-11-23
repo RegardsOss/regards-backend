@@ -29,7 +29,6 @@ import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.dao.stub.ProjectRepositoryStub;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.ProjectService;
-import fr.cnes.regards.modules.project.signature.IProjectsSignature;
 
 /**
  *
@@ -70,7 +69,7 @@ public class ProjectsControllerTest {
     /**
      * Project controller to test
      */
-    private IProjectsSignature projectsController;
+    private ProjectsController projectsController;
 
     /**
      * Stub for JPA Repository

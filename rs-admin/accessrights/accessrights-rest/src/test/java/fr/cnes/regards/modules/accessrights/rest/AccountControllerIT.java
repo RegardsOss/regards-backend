@@ -140,7 +140,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
                                    ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/settings", RequestMethod.GET, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/settings", RequestMethod.PUT, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_login}/validate", RequestMethod.GET,
+        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_email}/validate", RequestMethod.GET,
                                    ROLE_TEST);
         errorMessage = "Cannot reach model attributes";
         apiAccounts = "/accounts";

@@ -24,7 +24,6 @@
 		<module>notification-rest</module>
 		<module>notification-service</module>
 		<module>notification-client</module>
-		<module>notification-signature</module>
 		<module>notification-test</module>
 	</modules>
 
@@ -54,11 +53,6 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notification</groupId>
 				<artifactId>notification-client</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notification</groupId>
-				<artifactId>notification-signature</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
