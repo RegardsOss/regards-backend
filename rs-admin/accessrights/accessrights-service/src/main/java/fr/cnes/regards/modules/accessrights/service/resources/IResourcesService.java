@@ -40,6 +40,15 @@ public interface IResourcesService {
 
     /**
      *
+     * Retrieve all resources in database for the given microservice
+     *
+     * @return List<ResourceAccess>
+     * @since 1.0-SNAPSHOT
+     */
+    List<ResourcesAccess> retrieveMicroserviceRessources(String pMicroserviceName);
+
+    /**
+     *
      * Create or update given resources.
      *
      * @param pResourcesToSave

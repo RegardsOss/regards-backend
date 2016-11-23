@@ -14,6 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -24,7 +27,6 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
-import fr.cnes.regards.modules.accessrights.signature.IResourcesSignature;
 
 /**
  *
@@ -38,7 +40,8 @@ import fr.cnes.regards.modules.accessrights.signature.IResourcesSignature;
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class ResourcesController implements IResourcesSignature, IResourceController<ResourcesAccess> {
+@RequestMapping(value = "/resources")
+public class ResourcesController implements IResourceController<ResourcesAccess> {
 
     /**
      * Class logger
@@ -61,7 +64,15 @@ public class ResourcesController implements IResourcesSignature, IResourceContro
         hateoasService = pHateoasService;
     }
 
-    @Override
+    /**
+     *
+     * Retrieve the ResourceAccess list of all microservices
+     *
+     * @return List<ResourceAccess>
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.GET)
+    @ResponseBody
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveResourcesAccesses() {
         final List<ResourcesAccess> resourcesAccess = service.retrieveRessources();
         final List<Resource<ResourcesAccess>> resources = resourcesAccess.stream().map(p -> new Resource<>(p))
@@ -69,19 +80,50 @@ public class ResourcesController implements IResourcesSignature, IResourceContro
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
-    @Override
+    /**
+     *
+     * Update given resource access informations
+     *
+     * @param pResourceId
+     *            Resource access identifier
+     * @param pResourceAccessToUpdate
+     *            Resource access to update
+     * @return updated ResourcesAccess
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(value = "/{resource_id}", method = RequestMethod.PUT)
+    @ResponseBody
+    public ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(final Long pResourceId,
+            final ResourcesAccess pResourceAccessToUpdate) {
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    /**
+     *
+     * Register given resources for the given microservice.
+     *
+     * @return List<ResourceAccess>
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(value = "/register/{microservicename}", method = RequestMethod.POST)
+    @ResponseBody
     public ResponseEntity<List<Resource<ResourcesAccess>>> registerMicroserviceEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,
             @RequestBody final List<ResourceMapping> pResourcesToRegister) {
-        // TODO Auto-generated method stub
-        return new ResponseEntity<>(toResources(new ArrayList<>()), HttpStatus.OK);
-    }
 
-    @Override
-    public ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(final Long pResourceId,
-            final ResourcesAccess pResourceAccessToUpdate) {
-        // TODO Auto-generated method stub
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+        List<ResourcesAccess> configuredResources = service.retrieveMicroserviceRessources(pMicroserviceName);
+        final List<ResourcesAccess> newResources = new ArrayList<>();
+        for (final ResourceMapping mapping : pResourcesToRegister) {
+            final ResourcesAccess newResource = new ResourcesAccess(mapping, pMicroserviceName);
+            if (!configuredResources.contains(newResource)) {
+                newResources.add(newResource);
+            }
+        }
+        service.saveResources(newResources);
+
+        // Get all configured resources
+        configuredResources = service.retrieveMicroserviceRessources(pMicroserviceName);
+        return new ResponseEntity<>(toResources(configuredResources), HttpStatus.OK);
     }
 
     @Override

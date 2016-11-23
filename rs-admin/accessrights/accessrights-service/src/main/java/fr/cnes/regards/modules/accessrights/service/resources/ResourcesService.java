@@ -146,6 +146,14 @@ public class ResourcesService implements IResourcesService {
         return result;
     }
 
+    @Override
+    public List<ResourcesAccess> retrieveMicroserviceRessources(final String pMicroserviceName) {
+        final Iterable<ResourcesAccess> results = resourceAccessRepo.findByMicroservice(pMicroserviceName);
+        final List<ResourcesAccess> result = new ArrayList<>();
+        results.forEach(result::add);
+        return result;
+    }
+
     /**
      *
      * Collect resources from the current microservice

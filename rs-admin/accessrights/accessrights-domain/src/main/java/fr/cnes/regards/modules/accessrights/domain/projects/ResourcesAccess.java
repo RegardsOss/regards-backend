@@ -9,6 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -80,7 +81,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     /**
      * List of authroized roles to access the resource
      */
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "TA_RESOURCES_ROLES",
             joinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID",
                     foreignKey = @javax.persistence.ForeignKey(name = "FK_RESOURCES_ROLES")),
