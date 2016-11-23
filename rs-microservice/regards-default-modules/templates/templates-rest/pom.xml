@@ -25,10 +25,6 @@
 			<artifactId>templates-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.templates</groupId>
-			<artifactId>templates-signature</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>

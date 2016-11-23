@@ -25,7 +25,7 @@
 		<module>templates-rest</module>
 		<module>templates-service</module>
 		<module>templates-client</module>
-		<module>templates-signature</module>
+		
 		<module>templates-test</module>
 	</modules>
 

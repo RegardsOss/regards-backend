@@ -24,10 +24,6 @@
 			<artifactId>client-core</artifactId>
 		</dependency>
 		<!-- Microservice internal dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.modules.templates</groupId>
-			<artifactId>templates-signature</artifactId>
-		</dependency>
 	</dependencies>
 
 </project>
