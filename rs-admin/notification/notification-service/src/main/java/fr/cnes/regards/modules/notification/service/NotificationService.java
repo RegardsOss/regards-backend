@@ -209,8 +209,7 @@ public class NotificationService implements INotificationService {
                         .stream()) {
                     final ResponseEntity<List<Resource<ProjectUser>>> response = rolesClient
                             .retrieveRoleProjectUserList(r.getId());
-                    if (response.getStatusCode().equals(HttpStatus.OK) && (response.getBody() != null)
-                            && (response.getBody() != null)) {
+                    if (response.getStatusCode().equals(HttpStatus.OK) && (response.getBody() != null)) {
                         result = response.getBody().stream();
                     } else {
                         LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}",
