@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.notification.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -202,22 +203,20 @@ public class NotificationService implements INotificationService {
         try (final Stream<Role> rolesStream = pNotification.getRoleRecipients().stream();
                 final Stream<ProjectUser> usersStream = pNotification.getProjectUserRecipients().stream()) {
 
-            // final Map each role final to its project final users by calling final the roles client
+            // Define a function mapping each role to its project users by calling the roles client
             final Function<Role, Stream<Resource<ProjectUser>>> toProjectUsers = r -> {
-                Stream<Resource<ProjectUser>> result;
-                try (Stream<Resource<ProjectUser>> stream = rolesClient.retrieveRoleProjectUserList(r.getId()).getBody()
-                        .stream()) {
-                    final ResponseEntity<List<Resource<ProjectUser>>> response = rolesClient
-                            .retrieveRoleProjectUserList(r.getId());
-                    if (response.getStatusCode().equals(HttpStatus.OK) && (response.getBody() != null)) {
-                        result = response.getBody().stream();
-                    } else {
-                        LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}",
-                                 r.getName(), response.getStatusCode());
-                    }
-                    result = Stream.empty();
+                List<Resource<ProjectUser>> result = new ArrayList<>();
+                final ResponseEntity<List<Resource<ProjectUser>>> response = rolesClient
+                        .retrieveRoleProjectUserList(r.getId());
+
+                if (response.getStatusCode().equals(HttpStatus.OK) && (response.getBody() != null)) {
+                    result = response.getBody();
+                } else {
+                    LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}",
+                             r.getName(), response.getStatusCode());
                 }
-                return result;
+
+                return result.stream();
             };
 
             // Merge the two streams
