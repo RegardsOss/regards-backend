@@ -124,8 +124,10 @@ public class CorsFilter extends OncePerRequestFilter {
                     access = access || authoritiesProvider.hasCorsRequestsAccess(role.getAuthority());
                 }
                 if (!access) {
-                    LOG.error(String.format("[REGARDS CORS FILTER] Access denied for user %s",
-                                            authentication.getUser().getName()));
+                    final String message = String.format("[REGARDS CORS FILTER] Access denied for user %s",
+                                                         authentication.getUser().getName());
+                    LOG.error(message);
+                    pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
                 } else {
                     LOG.debug(String.format("[REGARDS CORS FILTER] Access granted for user %s",
                                             authentication.getUser().getName()));
