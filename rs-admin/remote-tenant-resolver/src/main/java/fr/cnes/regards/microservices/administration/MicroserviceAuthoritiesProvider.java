@@ -6,6 +6,8 @@ package fr.cnes.regards.microservices.administration;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,11 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @since 1.0-SNAPSHOT
  */
 public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(MicroserviceAuthoritiesProvider.class);
 
     /**
      * Current microservice name
