@@ -11,6 +11,8 @@ import javax.persistence.Entity;
 import javax.sql.DataSource;
 
 import org.hibernate.MultiTenancyStrategy;
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.cfg.Environment;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
@@ -27,6 +29,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -49,6 +52,7 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * Configuration class to define hibernate/jpa multitenancy databases strategy
  *
  * @author Sébastien Binda
+ * @author Sylvain Vissiere-Guerinet
  * @since 1.0-SNAPSHOT
  */
 @Configuration
@@ -57,8 +61,9 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
         basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
         transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
-@EnableConfigurationProperties(JpaProperties.class)
+@EnableConfigurationProperties({ JpaProperties.class })
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
+@PropertySource("classpath:application.properties")
 public class MultitenantJpaAutoConfiguration {
 
     /**
@@ -71,6 +76,18 @@ public class MultitenantJpaAutoConfiguration {
      */
     @Value("${spring.application.name}")
     private String microserviceName;
+
+    // /**
+    // * property giving us the fully qualified name of the implicit naming strategy to use
+    // */
+    // @Value("${spring.jpa.hibernate.naming.implicit-strategy}")
+    // private String hibernateImplicitNamingStrategyName;
+    //
+    // /**
+    // * property giving us the fully qualified name of the physical naming strategy to use
+    // */
+    // @Value("${spring.jpa.hibernate.naming.physical-strategy}")
+    // private String hibernatePhysicalNamingStrategyName;
 
     /**
      * Data sources pool
@@ -153,10 +170,14 @@ public class MultitenantJpaAutoConfiguration {
      * @param pBuilder
      *            EntityManagerFactoryBuilder
      * @return PlatformTransactionManager
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
-    public PlatformTransactionManager multitenantsJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
+    public PlatformTransactionManager multitenantsJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         final JpaTransactionManager jtm = new JpaTransactionManager();
         jtm.setEntityManagerFactory(multitenantsEntityManagerFactory(pBuilder).getObject());
         return jtm;
@@ -169,11 +190,15 @@ public class MultitenantJpaAutoConfiguration {
      * @param pBuilder
      *            EntityManagerFactoryBuilder
      * @return LocalContainerEntityManagerFactoryBean
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = "multitenantsEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory(
-            final EntityManagerFactoryBuilder pBuilder) {
+            final EntityManagerFactoryBuilder pBuilder)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         // Use the first dataSource configuration to init the entityManagerFactory
         final DataSource defaultDataSource = dataSources.values().iterator().next();
 
@@ -181,6 +206,13 @@ public class MultitenantJpaAutoConfiguration {
         hibernateProps.putAll(jpaProperties.getHibernateProperties(defaultDataSource));
 
         hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
+
+        final PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class
+                .forName(jpaProperties.getHibernate().getNaming().getPhysicalStrategy()).newInstance();
+        hibernateProps.put(Environment.PHYSICAL_NAMING_STRATEGY, hibernatePhysicalNamingStrategy);
+        final ImplicitNamingStrategy hibernateImplicitNamingStrategy = (ImplicitNamingStrategy) Class
+                .forName(jpaProperties.getHibernate().getNaming().getImplicitStrategy()).newInstance();
+        hibernateProps.put(Environment.IMPLICIT_NAMING_STRATEGY, hibernateImplicitNamingStrategy);
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver);
         hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
