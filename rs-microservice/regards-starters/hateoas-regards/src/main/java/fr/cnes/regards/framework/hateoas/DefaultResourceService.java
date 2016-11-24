@@ -89,7 +89,7 @@ public class DefaultResourceService implements IResourceService {
         }
     }
 
-    protected Link buildLink(Method pMethod, String pRel, Object... pParameterValues) {
+    protected Link buildLink(final Method pMethod, final String pRel, final Object... pParameterValues) {
         return ControllerLinkBuilder.linkTo(pMethod, pParameterValues).withRel(pRel);
     }
 
@@ -137,7 +137,7 @@ public class DefaultResourceService implements IResourceService {
         final JWTAuthentication auth = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
         if (!authorisationService.hasAccess(auth, pMethod)) {
             final String message = MessageFormat.format("Unauthorized method {0}", pMethod.getName());
-            LOG.error(message);
+            LOG.debug(message);
             throw new MethodException(message);
         }
     }

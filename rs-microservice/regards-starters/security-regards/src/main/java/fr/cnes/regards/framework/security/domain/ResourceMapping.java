@@ -54,6 +54,26 @@ public class ResourceMapping {
      *            the URL path to access resource
      * @param pMethod
      *            the called HTTP method
+     * @param pDefaultRole
+     *            default role for resource access
+     */
+    public ResourceMapping(final ResourceAccess pResourceAccess, final String pFullPath, final RequestMethod pMethod,
+            final RoleAuthority pDefaultRole) {
+        resourceAccess = pResourceAccess;
+        fullPath = pFullPath;
+        method = pMethod;
+        authorizedRoles.add(pDefaultRole);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param pResourceAccess
+     *            the resource access annotation
+     * @param pFullPath
+     *            the URL path to access resource
+     * @param pMethod
+     *            the called HTTP method
      */
     public ResourceMapping(final ResourceAccess pResourceAccess, final String pFullPath, final RequestMethod pMethod) {
         resourceAccess = pResourceAccess;
