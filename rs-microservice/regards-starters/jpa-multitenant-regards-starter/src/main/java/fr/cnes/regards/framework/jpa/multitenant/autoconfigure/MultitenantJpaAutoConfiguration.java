@@ -77,18 +77,6 @@ public class MultitenantJpaAutoConfiguration {
     @Value("${spring.application.name}")
     private String microserviceName;
 
-    // /**
-    // * property giving us the fully qualified name of the implicit naming strategy to use
-    // */
-    // @Value("${spring.jpa.hibernate.naming.implicit-strategy}")
-    // private String hibernateImplicitNamingStrategyName;
-    //
-    // /**
-    // * property giving us the fully qualified name of the physical naming strategy to use
-    // */
-    // @Value("${spring.jpa.hibernate.naming.physical-strategy}")
-    // private String hibernatePhysicalNamingStrategyName;
-
     /**
      * Data sources pool
      */
@@ -101,6 +89,12 @@ public class MultitenantJpaAutoConfiguration {
      */
     @Autowired
     private MultitenantDaoProperties configuration;
+
+    @Value("${spring.jpa.hibernate.naming.implicit-strategy:org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl}")
+    private String implicitNamingStrategyName;
+
+    @Value("${spring.jpa.hibernate.naming.physical-strategy:org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl}")
+    private String physicalNamingStrategyName;
 
     /**
      * JPA Configuration
@@ -208,10 +202,10 @@ public class MultitenantJpaAutoConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
 
         final PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class
-                .forName(jpaProperties.getHibernate().getNaming().getPhysicalStrategy()).newInstance();
+                .forName(physicalNamingStrategyName).newInstance();
         hibernateProps.put(Environment.PHYSICAL_NAMING_STRATEGY, hibernatePhysicalNamingStrategy);
         final ImplicitNamingStrategy hibernateImplicitNamingStrategy = (ImplicitNamingStrategy) Class
-                .forName(jpaProperties.getHibernate().getNaming().getImplicitStrategy()).newInstance();
+                .forName(implicitNamingStrategyName).newInstance();
         hibernateProps.put(Environment.IMPLICIT_NAMING_STRATEGY, hibernateImplicitNamingStrategy);
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver);
