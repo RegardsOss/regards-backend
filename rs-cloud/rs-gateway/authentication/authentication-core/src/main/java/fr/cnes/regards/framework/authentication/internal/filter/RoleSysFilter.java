@@ -49,15 +49,13 @@ public class RoleSysFilter extends OncePerRequestFilter {
         final Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication.getAuthorities();
 
         boolean isSysRole = false;
-        if (!roles.isEmpty()) {
-            for (final RoleAuthority role : roles) {
-                if (RoleAuthority.isSysRole(role.getAuthority())) {
-                    isSysRole = true;
-                    final String message = "[REGARDS FILTER] - Authorization denied for SYS Roles";
-                    LOG.error(message);
-                    pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
-                    break;
-                }
+        for (final RoleAuthority role : roles) {
+            if (RoleAuthority.isSysRole(role.getAuthority())) {
+                isSysRole = true;
+                final String message = "[REGARDS FILTER] - Authorization denied for SYS Roles";
+                LOG.error(message);
+                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+                break;
             }
         }
 
