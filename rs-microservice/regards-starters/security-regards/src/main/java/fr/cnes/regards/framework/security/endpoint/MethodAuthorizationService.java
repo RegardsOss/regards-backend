@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.ResourceMappingException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -178,16 +180,22 @@ public class MethodAuthorizationService {
         final List<ResourceMapping> mappings = new ArrayList<>();
 
         try {
-            final ResourceMapping mapping = MethodAuthorizationUtils.buildResourceMapping(pMethod);
+            if (AnnotationUtils.findAnnotation(pMethod, ResourceAccess.class) != null) {
+                final ResourceMapping mapping = MethodAuthorizationUtils.buildResourceMapping(pMethod);
 
-            if (!mapping.getResourceAccess().plugin().equals(Void.class) && (pluginResourceManager != null)) {
-                // Manage specific plugin endpoints
-                mappings.addAll(pluginResourceManager.manageMethodResource(mapping));
+                if (!mapping.getResourceAccess().plugin().equals(Void.class) && (pluginResourceManager != null)) {
+                    // Manage specific plugin endpoints
+                    mappings.addAll(pluginResourceManager.manageMethodResource(mapping));
+                } else {
+                    mappings.add(mapping);
+                }
             } else {
-                mappings.add(mapping);
+                LOG.debug("Skipping resource management for  method {} as there is no @ResourceAccess annotation on it",
+                          pMethod.getName());
             }
         } catch (final ResourceMappingException e) {
             // Skip inconsistent resource management
+            LOG.warn(e.getMessage(), e);
             LOG.warn("Skipping resource management for method \"{}\" on class \"{}\".", pMethod.getName(),
                      pMethod.getDeclaringClass().getCanonicalName());
         }

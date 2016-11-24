@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -42,6 +43,9 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  * @author Marc Sordi
  * @author Sébastien Binda
  * @since 1.1-SNAPSHOT
+ *
+ *        TODO : See {@link ResponseEntityExceptionHandler} to manage user responses. See
+ *        http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#mvc-ann-rest-spring-mvc-exceptions
  */
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE)

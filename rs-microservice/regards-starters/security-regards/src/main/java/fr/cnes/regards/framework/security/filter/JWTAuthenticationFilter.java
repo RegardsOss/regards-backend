@@ -88,7 +88,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 // Set security context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                LOG.info("[REGARDS JWT FILTER] Access granted");
+                LOG.debug("[REGARDS JWT FILTER] Access granted");
 
                 // Continue the filtering chain
                 pFilterChain.doFilter(request, response);
