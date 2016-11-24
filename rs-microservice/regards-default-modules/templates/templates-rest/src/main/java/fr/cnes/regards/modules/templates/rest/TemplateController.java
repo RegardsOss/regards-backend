@@ -8,6 +8,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,12 +26,18 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.templates.domain.Template;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 @RestController
 @ModuleInfo(name = "templates", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
 @RequestMapping("/templates")
-public class TemplatesController implements IResourceController<Template> {
+public class TemplateController implements IResourceController<Template> {
+
+    /**
+     * Template service
+     */
+    private final ITemplateService templateService;
 
     /**
      * Resource service to manage visible hateoas links
@@ -40,8 +47,9 @@ public class TemplatesController implements IResourceController<Template> {
     /**
      * @param pResourceService
      */
-    public TemplatesController(final IResourceService pResourceService) {
+    public TemplateController(final ITemplateService pTemplateService, final IResourceService pResourceService) {
         super();
+        templateService = pTemplateService;
         resourceService = pResourceService;
     }
 
@@ -50,8 +58,9 @@ public class TemplatesController implements IResourceController<Template> {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<Template>>> findAll() {
-        return null;
+    public ResponseEntity<List<Resource<Template>>> findAll() {
+        final List<Template> templates = templateService.findAll();
+        return new ResponseEntity<>(toResources(templates), HttpStatus.OK);
     }
 
     /**
@@ -63,8 +72,9 @@ public class TemplatesController implements IResourceController<Template> {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
-    ResponseEntity<Resource<Template>> create(@Valid @RequestBody final Template pTemplate) {
-        return null;
+    public ResponseEntity<Resource<Template>> create(@Valid @RequestBody final Template pTemplate) {
+        final Template template = templateService.create(pTemplate);
+        return new ResponseEntity<>(toResource(template), HttpStatus.CREATED);
     }
 
     /**
@@ -76,9 +86,10 @@ public class TemplatesController implements IResourceController<Template> {
      */
     @ResponseBody
     @RequestMapping(value = "/{template_id}", method = RequestMethod.GET)
-    ResponseEntity<Resource<Template>> findById(@PathVariable("template_id") final Long pId)
+    public ResponseEntity<Resource<Template>> findById(@PathVariable("template_id") final Long pId)
             throws EntityNotFoundException {
-        return null;
+        final Template template = templateService.findById(pId);
+        return new ResponseEntity<>(toResource(template), HttpStatus.OK);
     }
 
     /**
@@ -96,9 +107,10 @@ public class TemplatesController implements IResourceController<Template> {
      */
     @ResponseBody
     @RequestMapping(value = "/{template_id}", method = RequestMethod.PUT)
-    ResponseEntity<Void> update(@PathVariable("template_id") final Long pId,
+    public ResponseEntity<Void> update(@PathVariable("template_id") final Long pId,
             @Valid @RequestBody final Template pTemplate) throws EntityException {
-        return null;
+        templateService.update(pId, pTemplate);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
@@ -112,8 +124,9 @@ public class TemplatesController implements IResourceController<Template> {
      */
     @ResponseBody
     @RequestMapping(value = "/{template_id}", method = RequestMethod.DELETE)
-    ResponseEntity<Void> delete(@PathVariable("template_id") final Long pId) throws EntityNotFoundException {
-        return null;
+    public ResponseEntity<Void> delete(@PathVariable("template_id") final Long pId) throws EntityNotFoundException {
+        templateService.delete(pId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /*
