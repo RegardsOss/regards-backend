@@ -79,8 +79,8 @@ public class IpFilter extends OncePerRequestFilter {
                     LOG.error(message);
                     pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
                 } else {
-                    LOG.info(String.format("[REGARDS IP FILTER] - %s - Authorization granted",
-                                           pRequest.getRemoteAddr()));
+                    LOG.debug(String.format("[REGARDS IP FILTER] - %s - Authorization granted",
+                                            pRequest.getRemoteAddr()));
 
                     // Continue the filtering chain
                     pFilterChain.doFilter(pRequest, pResponse);
