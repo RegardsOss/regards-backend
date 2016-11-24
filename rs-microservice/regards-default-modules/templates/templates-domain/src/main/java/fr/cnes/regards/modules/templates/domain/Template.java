@@ -6,7 +6,9 @@ package fr.cnes.regards.modules.templates.domain;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -32,34 +34,33 @@ public class Template implements IIdentifiable<Long> {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "templateSequence")
-    @Column(name = "id")
     private Long id;
 
     /**
      * A human readable code identifying the template
      */
     @NotBlank
-    @Column(name = "code", unique = true)
+    @Column(unique = true)
     private final String code;
 
     /**
      * The template as a string for db persistence
      */
     @NotBlank
-    @Column(name = "content")
     private String content;
 
     /**
-     * The data to inject
+     * For a specific template, this attribute is intendend to store the skeleton of values to be injected in the
+     * template.
      */
     @NotNull
-    @Column(name = "data")
+    @ElementCollection
+    @CollectionTable(name = "TEMPLATE_DATA")
     private Map<String, String> data;
 
     /**
      * A description for the template
      */
-    @Column(name = "description")
     private String description;
 
     /**
