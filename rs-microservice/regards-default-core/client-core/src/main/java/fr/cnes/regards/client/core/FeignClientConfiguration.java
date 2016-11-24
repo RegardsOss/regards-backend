@@ -13,11 +13,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import feign.Contract;
+import feign.Feign;
 import feign.RequestInterceptor;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
+import feign.hystrix.HystrixFeign;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
@@ -31,7 +33,6 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  * @since 1.0-SNPASHOT
  */
 @Configuration
-// @RibbonClient(configuration = RibbonClientConfiguration.class)
 public class FeignClientConfiguration {
 
     /**
@@ -108,6 +109,20 @@ public class FeignClientConfiguration {
     @Bean
     public Contract feignContractg() {
         return new SpringMvcContract();
+    }
+
+    /**
+     *
+     * Allow 404 response to be process not like errors.
+     *
+     * @return Feign Builder
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    public Feign.Builder builder() {
+        final Feign.Builder builder = new HystrixFeign.Builder();
+        builder.decode404();
+        return builder;
     }
 
 }

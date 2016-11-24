@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.vote.AffirmativeBased;
@@ -29,6 +30,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.IRoleSysAccessVoter;
  * @author CS SI
  *
  */
+@Configuration
 @ConditionalOnWebApplication
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfiguration {
@@ -65,8 +67,6 @@ public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfigu
         decisionVoters.add(new ResourceAccessVoter(methodAuthService));
 
         // Access granted if one of the two voter return access granted
-        final AffirmativeBased decision = new AffirmativeBased(decisionVoters);
-        // decision.setAllowIfEqualGrantedDeniedDecisions(true);
-        return decision;
+        return new AffirmativeBased(decisionVoters);
     }
 }

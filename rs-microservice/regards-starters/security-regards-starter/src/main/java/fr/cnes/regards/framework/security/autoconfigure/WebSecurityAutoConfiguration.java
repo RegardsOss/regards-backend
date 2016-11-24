@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.security.filter.CorsFilter;
 import fr.cnes.regards.framework.security.filter.IpFilter;
 import fr.cnes.regards.framework.security.filter.JWTAuthenticationFilter;
 import fr.cnes.regards.framework.security.filter.JWTAuthenticationProvider;
+import fr.cnes.regards.framework.security.filter.RequestLogFilter;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
@@ -72,9 +73,10 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         // Force authentication for all requests
         pHttp.csrf().disable().authorizeRequests().anyRequest().authenticated();
 
+        pHttp.addFilterBefore(new RequestLogFilter(), UsernamePasswordAuthenticationFilter.class);
+
         // Add JWT Authentication filter
-        pHttp.addFilterBefore(new JWTAuthenticationFilter(authenticationManager()),
-                              UsernamePasswordAuthenticationFilter.class);
+        pHttp.addFilterAfter(new JWTAuthenticationFilter(authenticationManager()), RequestLogFilter.class);
 
         // Add Ip filter after Authentication filter
         pHttp.addFilterAfter(new IpFilter(authoritiesProvider), JWTAuthenticationFilter.class);
@@ -84,7 +86,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
         // Add custom configurations if any
         if (customConfigurers != null) {
-            for (ICustomWebSecurityConfiguration customConfigurer : customConfigurers) {
+            for (final ICustomWebSecurityConfiguration customConfigurer : customConfigurers) {
                 customConfigurer.configure(pHttp);
             }
         }
