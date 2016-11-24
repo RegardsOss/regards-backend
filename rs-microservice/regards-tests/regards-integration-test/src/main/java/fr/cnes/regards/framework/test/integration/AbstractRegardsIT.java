@@ -17,6 +17,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.DefaultTestConfiguration;
 import fr.cnes.regards.framework.security.domain.HttpConstants;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -43,6 +45,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.MOCK)
+@ContextConfiguration(classes = { DefaultTestConfiguration.class })
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public abstract class AbstractRegardsIT {
