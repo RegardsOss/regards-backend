@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 
 /**
@@ -35,7 +36,8 @@ public interface IInternalAuthenticationSignature {
      * @since 1.0-SNAPSHOT
      */
     @ResourceAccess(
-            description = "Retrieve all configured Identity Provider plugins to handle REGARDS internal authentication")
+            description = "Retrieve all configured Identity Provider plugins to handle REGARDS internal authentication",
+            role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     ResponseEntity<List<Resource<PluginConfiguration>>> retrieveIdentityProviderPlugins();
 
@@ -48,7 +50,7 @@ public interface IInternalAuthenticationSignature {
      * @return Created PluginConfiguration (hateoas formated)
      * @since 1.0-SNAPSHOT
      */
-    @ResourceAccess(description = "Create a new Identity Provider plugin")
+    @ResourceAccess(description = "Create a new Identity Provider plugin", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.POST, produces = "application/json")
     ResponseEntity<Resource<PluginConfiguration>> createIdentityProviderPlugin(
             @RequestBody PluginConfiguration pPluginConfigurationToCreate);
@@ -62,7 +64,7 @@ public interface IInternalAuthenticationSignature {
      * @return PluginConfiguration (hateoas formated)
      * @since 1.0-SNAPSHOT
      */
-    @ResourceAccess(description = "Retrieve a configured Identity Provider plugin")
+    @ResourceAccess(description = "Retrieve a configured Identity Provider plugin", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = "/{idp_id}", method = RequestMethod.GET, produces = "application/json")
     ResponseEntity<Resource<PluginConfiguration>> retrieveIdentityProviderPlugin(
             @PathVariable("idp_id") Long pPluginConfigurationId);
@@ -78,7 +80,7 @@ public interface IInternalAuthenticationSignature {
      * @return updated PluginConfiguration (hateoas formated)
      * @since 1.0-SNAPSHOT
      */
-    @ResourceAccess(description = "Update an Identity Provider plugin")
+    @ResourceAccess(description = "Update an Identity Provider plugin", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = "/{idp_id}", method = RequestMethod.PUT, produces = "application/json")
     ResponseEntity<Resource<PluginConfiguration>> updateIdentityProviderPlugin(
             @PathVariable("idp_id") Long pPluginConfigurationId,
@@ -93,7 +95,7 @@ public interface IInternalAuthenticationSignature {
      * @return Void
      * @since 1.0-SNAPSHOT
      */
-    @ResourceAccess(description = "Delete an Identity Provider plugin")
+    @ResourceAccess(description = "Delete an Identity Provider plugin", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = "/{idp_id}", method = RequestMethod.DELETE)
     ResponseEntity<Void> deleteIdentityProviderPlugin(@PathVariable("idp_id") Long pPluginConfigurationId);
 
