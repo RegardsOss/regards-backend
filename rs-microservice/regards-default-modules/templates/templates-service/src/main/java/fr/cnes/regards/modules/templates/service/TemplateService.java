@@ -81,7 +81,7 @@ public class TemplateService implements ITemplateService {
      */
     @Override
     public void update(final Long pId, final Template pTemplate) throws EntityException {
-        if (pId != pTemplate.getId()) {
+        if (!pId.equals(pTemplate.getId())) {
             throw new EntityInconsistentIdentifierException(pId, pTemplate.getId(), Template.class);
         }
         final Template template = findById(pId);
