@@ -346,7 +346,7 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
     public void authenticateKerberosServiceProvider() {
 
         final ExternalAuthenticationInformations infos = new ExternalAuthenticationInformations("usernma",
-                DEFAULT_TENANT, "ticket", "key");
+                DEFAULT_TENANT, "ticket".getBytes(), "key");
 
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
