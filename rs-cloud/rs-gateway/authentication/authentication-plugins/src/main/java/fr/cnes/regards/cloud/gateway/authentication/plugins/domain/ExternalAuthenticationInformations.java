@@ -27,7 +27,7 @@ public class ExternalAuthenticationInformations {
     /**
      * External authentication ticket from the service provider
      */
-    private String ticket;
+    private byte[] ticket;
 
     /**
      * API Key to authenticate REGARDS to the service provider
@@ -38,7 +38,7 @@ public class ExternalAuthenticationInformations {
         super();
     }
 
-    public ExternalAuthenticationInformations(final String pUserName, final String pProject, final String pTicket,
+    public ExternalAuthenticationInformations(final String pUserName, final String pProject, final byte[] pTicket,
             final String pProviderKey) {
         super();
         userName = pUserName;
@@ -63,11 +63,11 @@ public class ExternalAuthenticationInformations {
         project = pProject;
     }
 
-    public String getTicket() {
+    public byte[] getTicket() {
         return ticket;
     }
 
-    public void setTicket(final String pTicket) {
+    public void setTicket(final byte[] pTicket) {
         ticket = pTicket;
     }
 
