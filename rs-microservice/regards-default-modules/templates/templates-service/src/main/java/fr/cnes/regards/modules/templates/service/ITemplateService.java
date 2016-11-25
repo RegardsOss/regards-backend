@@ -51,7 +51,6 @@ public interface ITemplateService {
      *             <br>
      *             {@link EntityNotFoundException} if no template with passed id could be found<br>
      *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
-     * @return void
      */
     void update(final Long pId, final Template pTemplate) throws EntityException;
 
@@ -62,7 +61,6 @@ public interface ITemplateService {
      *            the updated template id
      * @throws EntityNotFoundException
      *             if no template with passed id could be found
-     * @return void
      */
     void delete(final Long pId) throws EntityNotFoundException;
 }

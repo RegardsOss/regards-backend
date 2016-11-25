@@ -6,10 +6,9 @@ package fr.cnes.regards.modules.templates.service;
 import java.util.List;
 import java.util.Optional;
 
-import javax.transaction.Transactional;
-
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -22,7 +21,7 @@ import fr.cnes.regards.modules.templates.domain.Template;
  * @author Xavier-Alexandre Brochard
  */
 @Service
-@Transactional
+@MultitenantTransactional
 public class TemplateService implements ITemplateService {
 
     /**
@@ -82,7 +81,7 @@ public class TemplateService implements ITemplateService {
      */
     @Override
     public void update(final Long pId, final Template pTemplate) throws EntityException {
-        if (pId != pTemplate.getId()) {
+        if (!pId.equals(pTemplate.getId())) {
             throw new EntityInconsistentIdentifierException(pId, pTemplate.getId(), Template.class);
         }
         final Template template = findById(pId);

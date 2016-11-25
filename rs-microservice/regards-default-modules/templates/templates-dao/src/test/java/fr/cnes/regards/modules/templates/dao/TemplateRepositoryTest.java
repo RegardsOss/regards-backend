@@ -11,6 +11,7 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTe
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.templates.domain.Template;
+import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
 
 /**
  * Test class for {@link Template} DAO module
@@ -22,8 +23,8 @@ public class TemplateRepositoryTest extends AbstractDaoTransactionalTest {
     /**
      * A template with some values
      */
-    private static final Template template = new Template(TemplateRepositoryTestUtils.CODE,
-            TemplateRepositoryTestUtils.CONTENT, TemplateRepositoryTestUtils.DATA);
+    private final Template template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT,
+            TemplateTestConstants.DATA);
 
     /**
      * The template repository
@@ -50,12 +51,12 @@ public class TemplateRepositoryTest extends AbstractDaoTransactionalTest {
         templateRepository.save(template);
 
         // Check
-        Assert.assertEquals(template.getData().get(TemplateRepositoryTestUtils.DATA_KEY_0),
-                            TemplateRepositoryTestUtils.DATA_VALUE_0);
-        Assert.assertEquals(template.getData().get(TemplateRepositoryTestUtils.DATA_KEY_1),
-                            TemplateRepositoryTestUtils.DATA_VALUE_1);
-        Assert.assertEquals(template.getData().get(TemplateRepositoryTestUtils.DATA_KEY_2),
-                            TemplateRepositoryTestUtils.DATA_VALUE_2);
+        Assert.assertEquals(template.getData().get(TemplateTestConstants.DATA_KEY_0),
+                            TemplateTestConstants.DATA_VALUE_0);
+        Assert.assertEquals(template.getData().get(TemplateTestConstants.DATA_KEY_1),
+                            TemplateTestConstants.DATA_VALUE_1);
+        Assert.assertEquals(template.getData().get(TemplateTestConstants.DATA_KEY_2),
+                            TemplateTestConstants.DATA_VALUE_2);
     }
 
 }
