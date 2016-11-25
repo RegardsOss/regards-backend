@@ -49,6 +49,14 @@
 			<artifactId>local-tenant-resolver</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.emails</groupId>
+			<artifactId>emails-rest</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.notification</groupId>
+			<artifactId>notification-rest</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-rest</artifactId>
 		</dependency>
@@ -56,15 +64,12 @@
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
 			<artifactId>accessrights-rest</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-rest</artifactId>
-		</dependency>
 		<!-- Embedded database -->
 		<dependency>
 			<groupId>hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
 		</dependency>
+		
 	</dependencies>
 
 </project>
