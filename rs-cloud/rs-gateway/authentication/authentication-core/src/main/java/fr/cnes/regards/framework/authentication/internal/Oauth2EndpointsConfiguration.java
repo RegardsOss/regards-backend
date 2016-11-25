@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerEndpointsConfiguration;
 
 import fr.cnes.regards.framework.authentication.internal.filter.RoleSysFilter;
+import fr.cnes.regards.framework.security.configurer.CustomWebSecurityConfigurationException;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.filter.IpFilter;
 
@@ -40,11 +41,16 @@ public class Oauth2EndpointsConfiguration implements ICustomWebSecurityConfigura
     }
 
     @Override
-    public void configure(final HttpSecurity pHttp) throws Exception {
+    public void configure(final HttpSecurity pHttp) throws CustomWebSecurityConfigurationException {
         if (endpoints != null) {
             LOG.info("[REGARDS AUTHENTICATION MODULE] Adding  specific web security to allow oauth2 endpoint access");
             // Assume we are in an Authorization Server
-            pHttp.requestMatcher(new NotOAuthRequestMatcher(endpoints.oauth2EndpointHandlerMapping()));
+            try {
+                pHttp.requestMatcher(new NotOAuthRequestMatcher(endpoints.oauth2EndpointHandlerMapping()));
+            } catch (final Exception e) {
+                LOG.warn("An error occured during the configuration of custom web security", e);
+                throw new CustomWebSecurityConfigurationException(e.getCause());
+            }
         }
 
         // Deny access to all SYS roles
