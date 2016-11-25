@@ -19,6 +19,11 @@ public class TemplateTestConstants {
     public static final Long ID = 0L;
 
     /**
+     * Use this field to represent an inexistent id in db
+     */
+    public static final Long WRONG_ID = 99L;
+
+    /**
      * Code
      */
     public static final String CODE = "DEFAULT";
@@ -70,5 +75,15 @@ public class TemplateTestConstants {
      * Description
      */
     public static final String DESCRIPTON = "I'm describing what this template is good for";
+
+    /**
+     * The templates endpoint
+     */
+    public static final String API_TEMPLATES = "/templates";
+
+    /**
+     * The specific template endpoint
+     */
+    public static final String API_TEMPLATES_TEMPLATE_ID = "/templates/{template_id}";
 
 }

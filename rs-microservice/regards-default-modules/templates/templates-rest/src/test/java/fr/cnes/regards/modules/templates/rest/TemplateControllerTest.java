@@ -20,8 +20,11 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.templates.domain.Template;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import fr.cnes.regards.modules.templates.test.MockDefaultResourceService;
 import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
 
 /**
@@ -74,6 +77,10 @@ public class TemplateControllerTest {
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findAll()}.
      */
     @Test
+    @Purpose("Check that the system allows to retrieve the list of all templates.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testFindAll() {
         // Mock service
         final List<Template> templates = Arrays.asList(template);
@@ -95,6 +102,10 @@ public class TemplateControllerTest {
      * {@link fr.cnes.regards.modules.templates.rest.TemplateController#create(fr.cnes.regards.modules.templates.domain.Template)}.
      */
     @Test
+    @Purpose("Check that the system allows to create templates.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testCreate() {
         // Mock service
         Mockito.when(templateService.create(Mockito.any())).thenReturn(template);
@@ -112,8 +123,15 @@ public class TemplateControllerTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findById(java.lang.Long)}.
+     *
+     * @throws EntityNotFoundException
+     *             if no template with passed id could be found
      */
     @Test
+    @Purpose("Check that the system allows to retrieve a single template.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testFindById() throws EntityNotFoundException {
         // Mock service
         Mockito.when(templateService.findById(TemplateTestConstants.ID)).thenReturn(template);
@@ -129,9 +147,16 @@ public class TemplateControllerTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findById(java.lang.Long)}.
+     * 
+     * @throws EntityNotFoundException
+     *             if no template with passed id could be found
      */
     @SuppressWarnings("unchecked")
     @Test(expected = EntityNotFoundException.class)
+    @Purpose("Check that the system handles the case where trying to retrieve a template of unknown id.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testFindByIdNotFound() throws EntityNotFoundException {
         // Mock service
         Mockito.when(templateService.findById(TemplateTestConstants.ID)).thenThrow(EntityNotFoundException.class);
@@ -150,6 +175,10 @@ public class TemplateControllerTest {
      *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test
+    @Purpose("Check that the system allows to update a template.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testUpdate() throws EntityException {
         // Call tested method
         templateController.update(TemplateTestConstants.ID, template);
@@ -169,6 +198,10 @@ public class TemplateControllerTest {
      *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test(expected = EntityNotFoundException.class)
+    @Purpose("Check that the system handles the case of updating an not existing template.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testUpdateNotFound() throws EntityException {
         // Mock
         Mockito.doThrow(EntityNotFoundException.class).when(templateService).update(TemplateTestConstants.ID, template);
@@ -187,6 +220,10 @@ public class TemplateControllerTest {
      *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test(expected = EntityInconsistentIdentifierException.class)
+    @Purpose("Check that the system allows the case of inconsistency of ids in the request.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testUpdateInconsistentIdentifier() throws EntityException {
         // Mock
         Mockito.doThrow(EntityInconsistentIdentifierException.class).when(templateService)
@@ -203,6 +240,10 @@ public class TemplateControllerTest {
      *             if no template with passed id could be found
      */
     @Test
+    @Purpose("Check that the system allows to delete a single template.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testDelete() throws EntityNotFoundException {
         // Call tested method
         templateController.delete(TemplateTestConstants.ID);
@@ -218,6 +259,10 @@ public class TemplateControllerTest {
      *             if no template with passed id could be found
      */
     @Test(expected = EntityNotFoundException.class)
+    @Purpose("Check that the system handles the case of deleting an inexistent template.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testDeleteNotFound() throws EntityNotFoundException {
         // Mock
         Mockito.doThrow(EntityNotFoundException.class).when(templateService).delete(TemplateTestConstants.ID);

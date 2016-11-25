@@ -15,41 +15,42 @@
 	</parent>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>fr.cnes.regards.modules.templates</groupId>
 			<artifactId>templates-domain</artifactId>
 		</dependency>
-		<!-- REGARDS starter -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-data</artifactId>
-		</dependency>
-		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards</artifactId>
 		</dependency>
-		<!-- Tests -->
+		<!-- Tests dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.modules.templates</groupId>
+			<artifactId>templates-test</artifactId>
+			<type>test-jar</type>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.templates</groupId>
-			<artifactId>templates-test</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-multitenant-regards-starter</artifactId>
 			<scope>test</scope>
-			<type>test-jar</type>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-multitenant-regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-test</artifactId>
-		</dependency>
+
 	</dependencies>
 
 </project>

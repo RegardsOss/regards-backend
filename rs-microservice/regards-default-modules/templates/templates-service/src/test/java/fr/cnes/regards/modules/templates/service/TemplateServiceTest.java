@@ -98,26 +98,6 @@ public class TemplateServiceTest {
     }
 
     /**
-     * Test method for {@link TemplateService#findById(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
-     */
-    @Test(expected = EntityNotFoundException.class)
-    @Purpose("Check that the system handles the case where trying to retrieve a template of unknown id.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testFindByIdNotFound() throws EntityNotFoundException {
-        // Mock
-        Mockito.when(templateRepository.findOne(ID)).thenReturn(null);
-        Mockito.when(templateRepository.exists(ID)).thenReturn(false);
-
-        // Trigger expected exception
-        templateService.findById(ID);
-    }
-
-    /**
      * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#findById(Long)}.
      *
      * @throws EntityNotFoundException
@@ -139,6 +119,55 @@ public class TemplateServiceTest {
         // Check
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(template)));
         Mockito.verify(templateRepository).findOne(ID);
+    }
+
+    /**
+     * Test method for {@link TemplateService#findById(java.lang.Long)}.
+     *
+     * @throws EntityNotFoundException
+     *             if no template with passed id could be found
+     */
+    @Test(expected = EntityNotFoundException.class)
+    @Purpose("Check that the system handles the case where trying to retrieve a template of unknown id.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
+    public final void testFindByIdNotFound() throws EntityNotFoundException {
+        // Mock
+        Mockito.when(templateRepository.findOne(ID)).thenReturn(null);
+        Mockito.when(templateRepository.exists(ID)).thenReturn(false);
+
+        // Trigger expected exception
+        templateService.findById(ID);
+    }
+
+    /**
+     * Test method for {@link TemplateService#update(Long, Template)}.
+     *
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
+     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     */
+    @Test
+    @Purpose("Check that the system allows to update a template.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
+    public final void testUpdate() throws EntityException {
+        // Prepare the case
+        template.setId(ID);
+        template.setDescription("Updated description");
+
+        // Mock
+        Mockito.when(templateRepository.findOne(ID)).thenReturn(template);
+        Mockito.when(templateRepository.exists(ID)).thenReturn(true);
+
+        // Call tested method
+        templateService.update(ID, template);
+
+        // Check
+        Mockito.verify(templateRepository).save(Mockito.refEq(template));
     }
 
     /**
@@ -192,54 +221,6 @@ public class TemplateServiceTest {
     }
 
     /**
-     * Test method for {@link TemplateService#update(Long, Template)}.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
-     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
-     */
-    @Test
-    @Purpose("Check that the system allows to update a template.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testUpdate() throws EntityException {
-        // Prepare the case
-        template.setId(ID);
-        template.setDescription("Updated description");
-
-        // Mock
-        Mockito.when(templateRepository.findOne(ID)).thenReturn(template);
-        Mockito.when(templateRepository.exists(ID)).thenReturn(true);
-
-        // Call tested method
-        templateService.update(ID, template);
-
-        // Check
-        Mockito.verify(templateRepository).save(Mockito.refEq(template));
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#delete(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
-     */
-    @Test(expected = EntityNotFoundException.class)
-    @Purpose("Check that the system handles the case of deleting an inexistent template.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testDeleteNotFound() throws EntityNotFoundException {
-        // Mock
-        Mockito.when(templateRepository.exists(ID)).thenReturn(false);
-
-        // Trigger expected exception
-        templateService.delete(ID);
-    }
-
-    /**
      * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#delete(java.lang.Long)}.
      *
      * @throws EntityNotFoundException
@@ -259,6 +240,25 @@ public class TemplateServiceTest {
 
         // Check
         Mockito.verify(templateRepository).delete(ID);
+    }
+
+    /**
+     * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#delete(java.lang.Long)}.
+     *
+     * @throws EntityNotFoundException
+     *             if no template with passed id could be found
+     */
+    @Test(expected = EntityNotFoundException.class)
+    @Purpose("Check that the system handles the case of deleting an inexistent template.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
+    public final void testDeleteNotFound() throws EntityNotFoundException {
+        // Mock
+        Mockito.when(templateRepository.exists(ID)).thenReturn(false);
+
+        // Trigger expected exception
+        templateService.delete(ID);
     }
 
 }
