@@ -11,17 +11,17 @@ import java.util.Map;
  *
  * @author Xavier-Alexandre Brochard
  */
-public class TemplateTestConstants {
+public final class TemplateTestConstants {
 
     /**
-     * Id
+     * The templates endpoint
      */
-    public static final Long ID = 0L;
+    public static final String API_TEMPLATES = "/templates";
 
     /**
-     * Use this field to represent an inexistent id in db
+     * The specific template endpoint
      */
-    public static final Long WRONG_ID = 99L;
+    public static final String API_TEMPLATES_TEMPLATE_ID = "/templates/{template_id}";
 
     /**
      * Code
@@ -38,7 +38,7 @@ public class TemplateTestConstants {
      */
     // @formatter:off
     @SuppressWarnings("serial")
-    public static final Map<String, String> DATA = new HashMap<String, String>() {{ put("name", "Defaultname");put("age", "26");put("height", "170"); }};
+    public static final Map<String, String> DATA = new HashMap<String, String>() {{ put("name", "Defaultname");put("age", DATA_VALUE_1);put("height", DATA_VALUE_2); }};
     // @formatter:on
 
     /**
@@ -47,24 +47,24 @@ public class TemplateTestConstants {
     public static final String DATA_KEY_0 = "name";
 
     /**
-     * A value stored in the data map
-     */
-    public static final String DATA_VALUE_0 = "Defaultname";
-
-    /**
      * Key for a value to store in the data map
      */
     public static final String DATA_KEY_1 = "age";
 
     /**
-     * A value stored in the data map
-     */
-    public static final String DATA_VALUE_1 = "26";
-
-    /**
      * Key for a value to store in the data map
      */
     public static final String DATA_KEY_2 = "height";
+
+    /**
+     * A value stored in the data map
+     */
+    public static final String DATA_VALUE_0 = "Defaultname";
+
+    /**
+     * A value stored in the data map
+     */
+    public static final String DATA_VALUE_1 = "26";
 
     /**
      * A value stored in the data map
@@ -77,13 +77,17 @@ public class TemplateTestConstants {
     public static final String DESCRIPTON = "I'm describing what this template is good for";
 
     /**
-     * The templates endpoint
+     * Id
      */
-    public static final String API_TEMPLATES = "/templates";
+    public static final Long ID = 0L;
 
     /**
-     * The specific template endpoint
+     * Use this field to represent an inexistent id in db
      */
-    public static final String API_TEMPLATES_TEMPLATE_ID = "/templates/{template_id}";
+    public static final Long WRONG_ID = 99L;
+
+    private TemplateTestConstants() {
+
+    }
 
 }

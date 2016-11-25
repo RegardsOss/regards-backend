@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -43,11 +44,8 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private ITemplateRepository templateRepository;
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA);
     }
 
@@ -76,7 +74,7 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testCreate() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isCreated());
+        expectations.add(MockMvcResultMatchers.status().isCreated());
         performDefaultPost(TemplateTestConstants.API_TEMPLATES, template, expectations,
                            "Unable to create a new template.");
     }
@@ -94,7 +92,7 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         templateRepository.save(template);
 
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.status().isOk());
         performDefaultGet(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, expectations,
                           "Unable to retrieve the template.", template.getId());
     }
@@ -111,7 +109,7 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertFalse(templateRepository.exists(TemplateTestConstants.WRONG_ID));
 
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isNotFound());
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDefaultGet(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, expectations,
                           "Unable to retrieve the template.", TemplateTestConstants.WRONG_ID);
     }

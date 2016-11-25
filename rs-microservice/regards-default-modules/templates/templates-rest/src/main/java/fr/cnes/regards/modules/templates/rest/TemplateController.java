@@ -28,6 +28,11 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.templates.domain.Template;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 
+/**
+ * Rest controller defining endpoint for managing {@link Template}s.
+ *
+ * @author Xavier-Alexandre Brochard
+ */
 @RestController
 @ModuleInfo(name = "templates", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
@@ -45,7 +50,12 @@ public class TemplateController implements IResourceController<Template> {
     private final IResourceService resourceService;
 
     /**
+     * Constructor
+     * 
+     * @param pTemplateService
+     *            the template service
      * @param pResourceService
+     *            the resource service
      */
     public TemplateController(final ITemplateService pTemplateService, final IResourceService pResourceService) {
         super();

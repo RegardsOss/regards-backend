@@ -23,7 +23,7 @@ public class TemplateRepositoryTest extends AbstractDaoTransactionalTest {
     /**
      * A template with some values
      */
-    private static final Template template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT,
+    private final Template template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT,
             TemplateTestConstants.DATA);
 
     /**

@@ -76,8 +76,11 @@ public class Template implements IIdentifiable<Long> {
 
     /**
      * @param pCode
+     *            the code
      * @param pContent
+     *            the content
      * @param pData
+     *            the data
      */
     public Template(final String pCode, final String pContent, final Map<String, String> pData) {
         super();

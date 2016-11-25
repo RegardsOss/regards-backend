@@ -54,11 +54,8 @@ public class TemplateControllerTest {
      */
     private IResourceService resourceService;
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Init a template
         template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA);
         template.setId(TemplateTestConstants.ID);
@@ -147,7 +144,7 @@ public class TemplateControllerTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findById(java.lang.Long)}.
-     * 
+     *
      * @throws EntityNotFoundException
      *             if no template with passed id could be found
      */
