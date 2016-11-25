@@ -97,7 +97,7 @@ public interface IProjectsClient {
      * @return Void
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.DELETE)
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}")
     @ResponseBody
     ResponseEntity<Void> deleteProject(@PathVariable("project_name") String pProjectName);
 }

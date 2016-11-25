@@ -155,7 +155,7 @@ public class ProjectsController implements IResourceController<Project> {
      * @return Void
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.DELETE)
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}")
     @ResponseBody
     @ResourceAccess(description = "remove the project project_name", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> deleteProject(@PathVariable("project_name") final String pProjectName)
