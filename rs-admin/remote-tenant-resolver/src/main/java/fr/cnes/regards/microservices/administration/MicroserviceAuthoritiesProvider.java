@@ -8,18 +8,17 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
@@ -73,15 +72,14 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
 
     @Override
     public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
-        final List<ResourceMapping> resourcesMapping = new ArrayList<>();
         // Register endpoints to administration service and retrieve configured ones
-        final ResponseEntity<List<Resource<ResourcesAccess>>> response = resourcesClient
+        final ResponseEntity<List<ResourceMapping>> response = resourcesClient
                 .registerMicroserviceEndpoints(microserviceName, pLocalEndpoints);
-        if (response.getStatusCode().equals(HttpStatus.OK) && (response.getBody() != null)) {
-            final List<ResourcesAccess> configuredResources = HateoasUtils.unwrapList(response.getBody());
-            configuredResources.forEach(r -> resourcesMapping.add(r.toResourceMapping()));
+        if (response.getStatusCode().equals(HttpStatus.OK)) {
+            return response.getBody();
+        } else {
+            throw new ApplicationContextException("Error registring endpoints to administration service");
         }
-        return resourcesMapping;
     }
 
     @Override

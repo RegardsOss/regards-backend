@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -61,11 +60,6 @@ public class ResourcesServiceTest {
     private IRoleService roleServiceMock;
 
     /**
-     * Mock to manage method security
-     */
-    private MethodAuthorizationService methodAuthServiceMock;
-
-    /**
      * Mock to manage projects resolver
      */
     private ITenantResolver tenantResolverMock;
@@ -88,8 +82,6 @@ public class ResourcesServiceTest {
 
         roleServiceMock = Mockito.mock(IRoleService.class);
 
-        methodAuthServiceMock = Mockito.mock(MethodAuthorizationService.class);
-
         tenantResolverMock = Mockito.mock(ITenantResolver.class);
         final Set<String> tenants = new HashSet<>();
         tenants.add("tenant1");
@@ -99,7 +91,7 @@ public class ResourcesServiceTest {
         jwtService.setSecret("123456789");
 
         resourcesService = Mockito.spy(new ResourcesService("rs-test", discoveryClientMock, resourcesRepo,
-                roleServiceMock, methodAuthServiceMock, jwtService, tenantResolverMock));
+                roleServiceMock, jwtService, tenantResolverMock));
 
     }
 
@@ -108,55 +100,9 @@ public class ResourcesServiceTest {
     @Test
     public void testEmptyResourcesToCollect() {
         resourcesRepo.deleteAll();
-        Mockito.when(methodAuthServiceMock.getResources()).thenReturn(new ArrayList<>());
         Mockito.when(discoveryClientMock.getServices()).thenReturn(new ArrayList<>());
         resourcesService.init();
         Assert.assertTrue(resourcesService.retrieveRessources().isEmpty());
-    }
-
-    /**
-     * Check that the collect resources functionnality is well done for local administration service resources.
-     *
-     * @throws EntityNotFoundException
-     *             when no role with passed name could be found
-     */
-    @Purpose("Check that the collect resources functionnality is well done for local administration service resources.")
-    @Requirement("REGARDS_DSL_ADM_ADM_240")
-    @Test
-    public void testLocalResourcesToCollect() throws EntityNotFoundException {
-
-        resourcesRepo.deleteAll();
-
-        final List<ResourceMapping> resources = new ArrayList<>();
-        final Map<String, Object> attributs = new HashMap<>();
-        attributs.put("name", "/test/premier");
-        attributs.put("description", "premier test");
-        attributs.put("role", DefaultRole.ADMIN);
-        ResourceAccess resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
-        resources.add(new ResourceMapping(resourceAccess, "/test/premier", RequestMethod.GET));
-        attributs.put("name", "/test/second");
-        attributs.put("description", "second test");
-        resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
-        resources.add(new ResourceMapping(resourceAccess, "/test/second", RequestMethod.POST));
-        attributs.put("name", "/test/third");
-        attributs.put("description", "third test");
-        resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
-        resources.add(new ResourceMapping(resourceAccess, "/test/third", RequestMethod.DELETE));
-        Mockito.when(methodAuthServiceMock.getResources()).thenReturn(resources);
-        Mockito.when(discoveryClientMock.getServices()).thenReturn(new ArrayList<>());
-
-        final RoleFactory factory = new RoleFactory();
-        Mockito.when(roleServiceMock.retrieveRole(DefaultRole.ADMIN.toString()))
-                .thenReturn(factory.withId(1L).createAdmin());
-
-        Assert.assertTrue(resourcesService.collectResources().size() == 3);
-        Assert.assertTrue(resourcesRepo.count() == 3);
-
-        for (final ResourcesAccess resource : resourcesService.retrieveRessources()) {
-            Assert.assertTrue(!resource.getRoles().isEmpty());
-            Assert.assertTrue(resource.getRoles().get(0).getName().equals(DefaultRole.ADMIN.toString()));
-        }
-
     }
 
     /**
@@ -188,7 +134,6 @@ public class ResourcesServiceTest {
         resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
         resources.add(new ResourceMapping(resourceAccess, "/test/third", RequestMethod.DELETE));
 
-        Mockito.when(methodAuthServiceMock.getResources()).thenReturn(new ArrayList<>());
         final List<String> services = new ArrayList<>();
         services.add("test-service");
 
@@ -200,7 +145,7 @@ public class ResourcesServiceTest {
 
         Mockito.doReturn(resources).when(resourcesService).getRemoteResources(Mockito.anyString());
 
-        Assert.assertTrue(resourcesService.collectResources().size() == 3);
+        resourcesService.init();
         Assert.assertTrue(resourcesRepo.count() == 3);
 
         for (final ResourcesAccess resource : resourcesService.retrieveRessources()) {

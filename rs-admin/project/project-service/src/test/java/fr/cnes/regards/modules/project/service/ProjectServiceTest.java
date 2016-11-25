@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -25,7 +25,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * Project business service tests
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public class ProjectServiceTest {
@@ -87,14 +87,14 @@ public class ProjectServiceTest {
         try {
             projectService.createProject(projectToCreate);
             Assert.fail("Project already exists there must be an exception thrown here");
-        } catch (final AlreadyExistingException e) {
+        } catch (final EntityAlreadyExistsException e) {
             /// Nothing to do
         }
         projectToCreate = new Project(newProjectId, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
                 "new-project-test");
         try {
             projectService.createProject(projectToCreate);
-        } catch (final AlreadyExistingException e) {
+        } catch (final EntityAlreadyExistsException e) {
             Assert.fail(e.getMessage());
         }
     }

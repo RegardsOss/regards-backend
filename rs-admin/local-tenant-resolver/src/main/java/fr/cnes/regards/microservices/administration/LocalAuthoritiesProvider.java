@@ -66,26 +66,8 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     @Override
     public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
         final List<ResourceMapping> results = new ArrayList<>();
-        final List<ResourcesAccess> resources = resourcesService.retrieveRessources();
-
-        List<ResourcesAccess> newResources = new ArrayList<>();
-        // Create missing resources from local endpoints
-        for (final ResourceMapping resource : pLocalEndpoints) {
-            boolean isConfigured = false;
-            for (final ResourcesAccess configuredResource : resources) {
-                if (resource.getFullPath().equals(configuredResource.getResource())
-                        && resource.getMethod().toString().equals(configuredResource.getVerb().toString())) {
-                    isConfigured = true;
-                    break;
-                }
-            }
-            if (!isConfigured) {
-                newResources.add(new ResourcesAccess(resource, microserviceName));
-            }
-        }
-        newResources = resourcesService.saveResources(newResources);
-        newResources.forEach(r -> results.add(r.toResourceMapping()));
-
+        final List<ResourcesAccess> resources = resourcesService.registerResources(pLocalEndpoints, microserviceName);
+        resources.forEach(r -> results.add(r.toResourceMapping()));
         return results;
     }
 

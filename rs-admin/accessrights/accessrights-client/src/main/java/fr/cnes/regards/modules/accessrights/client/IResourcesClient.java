@@ -59,7 +59,7 @@ public interface IResourcesClient {
      */
     @RequestMapping(value = "/register/{microservicename}", method = RequestMethod.POST)
     @ResponseBody
-    ResponseEntity<List<Resource<ResourcesAccess>>> registerMicroserviceEndpoints(
+    ResponseEntity<List<ResourceMapping>> registerMicroserviceEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,
             @RequestBody List<ResourceMapping> pResourcesToRegister);
 

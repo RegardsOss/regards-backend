@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -21,6 +22,8 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.google.gson.annotations.Expose;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
@@ -87,7 +90,8 @@ public class ResourcesAccess implements IIdentifiable<Long> {
                     foreignKey = @javax.persistence.ForeignKey(name = "FK_RESOURCES_ROLES")),
             inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID",
                     foreignKey = @javax.persistence.ForeignKey(name = "FK_ROLES_RESOURCES")))
-    private List<Role> roles;
+    @Expose(serialize = false, deserialize = false)
+    private List<Role> roles = new ArrayList<>();
 
     public ResourcesAccess() {
         super();
@@ -140,7 +144,9 @@ public class ResourcesAccess implements IIdentifiable<Long> {
                 ResourceAccessAdapter.createResourceAccess(this.getDescription(), null), this.getResource(),
                 RequestMethod.valueOf(this.getVerb().toString()));
 
-        this.getRoles().forEach(role -> mapping.addAuthorizedRole(new RoleAuthority(role.getName())));
+        this.getRoles().forEach(role -> {
+            mapping.addAuthorizedRole(new RoleAuthority(role.getName()));
+        });
         return mapping;
     }
 

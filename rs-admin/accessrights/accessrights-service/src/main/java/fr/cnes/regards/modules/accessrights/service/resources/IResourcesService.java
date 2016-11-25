@@ -21,16 +21,6 @@ public interface IResourcesService {
 
     /**
      *
-     * Collect all the resources from all the cloud connected microservices. The results is persisted in database and
-     * returned.
-     *
-     * @return List<ResourceMapping>
-     * @since 1.0-SNAPSHOT
-     */
-    List<ResourceMapping> collectResources();
-
-    /**
-     *
      * Retrieve all resources in database
      *
      * @return List<ResourceAccess>
@@ -49,13 +39,17 @@ public interface IResourcesService {
 
     /**
      *
-     * Create or update given resources.
+     * Merge the given resources for the given microservice to the already configured ones. If the resource does not
+     * exists, the default role given is configured for resources access.
      *
-     * @param pResourcesToSave
-     *            resources to save
-     * @return saved resources
+     * @param pResourcesToRegister
+     *            list of {@link ResourceMapping} to register
+     * @param pMicroserviceName
+     *            microservice owner of the resources to register
+     * @return Configured Resources
      * @since 1.0-SNAPSHOT
      */
-    List<ResourcesAccess> saveResources(List<ResourcesAccess> pResourcesToSave);
+    List<ResourcesAccess> registerResources(final List<ResourceMapping> pResourcesToRegister,
+            final String pMicroserviceName);
 
 }

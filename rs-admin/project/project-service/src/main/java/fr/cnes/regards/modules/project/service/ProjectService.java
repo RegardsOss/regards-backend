@@ -17,10 +17,10 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -113,7 +113,7 @@ public class ProjectService implements IProjectService {
             throw new IllegalStateException("This project is deleted.");
         }
         if (!pProject.getName().equals(pProjectName)) {
-            throw new InvalidEntityException("projectId and updated project does not match.");
+            throw new EntityInvalidException("projectId and updated project does not match.");
         }
         return projectRepository.save(pProject);
     }
@@ -126,10 +126,10 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public Project createProject(final Project pNewProject) throws AlreadyExistingException {
+    public Project createProject(final Project pNewProject) throws EntityAlreadyExistsException {
         final Project theProject = projectRepository.findOneByName(pNewProject.getName());
         if (theProject != null) {
-            throw new AlreadyExistingException(pNewProject.getName());
+            throw new EntityAlreadyExistsException(pNewProject.getName());
         }
 
         return projectRepository.save(pNewProject);

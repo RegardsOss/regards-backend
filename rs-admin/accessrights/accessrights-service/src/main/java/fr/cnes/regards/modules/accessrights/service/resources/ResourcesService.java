@@ -17,18 +17,15 @@ import org.springframework.stereotype.Service;
 
 import feign.FeignException;
 import fr.cnes.regards.client.core.TokenClientProvider;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
@@ -72,11 +69,6 @@ public class ResourcesService implements IResourcesService {
     private final IRoleService roleService;
 
     /**
-     * Authorization service
-     */
-    private final MethodAuthorizationService securityService;
-
-    /**
      * JWT Security service
      */
     private final JWTService jwtService;
@@ -88,14 +80,12 @@ public class ResourcesService implements IResourcesService {
 
     public ResourcesService(@Value("${spring.application.name}") final String pMicroserviceName,
             final DiscoveryClient pDiscoveryClient, final IResourcesAccessRepository pResourceAccessRepo,
-            final IRoleService pRoleService, final MethodAuthorizationService pSecurityService,
-            final JWTService pJwtService, final ITenantResolver pTenantResolver) {
+            final IRoleService pRoleService, final JWTService pJwtService, final ITenantResolver pTenantResolver) {
         super();
         microserviceName = pMicroserviceName;
         discoveryClient = pDiscoveryClient;
         resourceAccessRepo = pResourceAccessRepo;
         roleService = pRoleService;
-        securityService = pSecurityService;
         jwtService = pJwtService;
         tenantResolver = pTenantResolver;
     }
@@ -112,30 +102,13 @@ public class ResourcesService implements IResourcesService {
             for (final String tenant : tenantResolver.getAllTenants()) {
                 jwtService.injectToken(tenant, RoleAuthority.getSysRole("rs-admin"));
                 // Collect resources for each tenant configured
-                this.collectResources();
+                for (final String service : discoveryClient.getServices()) {
+                    registerResources(getRemoteResources(service), service);
+                }
             }
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);
         }
-    }
-
-    @Override
-    @MultitenantTransactional
-    public List<ResourceMapping> collectResources() {
-
-        final List<ResourceMapping> allResources = new ArrayList<>();
-
-        // Get local resources
-        allResources.addAll(collectLocalResources());
-
-        // For each microservice collect and save resources
-        for (final String service : discoveryClient.getServices()) {
-            // Avoid local microservice resources.
-            if (!service.equals(microserviceName)) {
-                allResources.addAll(collectRemoteResources(service));
-            }
-        }
-        return allResources;
     }
 
     @Override
@@ -148,40 +121,61 @@ public class ResourcesService implements IResourcesService {
 
     @Override
     public List<ResourcesAccess> retrieveMicroserviceRessources(final String pMicroserviceName) {
-        final Iterable<ResourcesAccess> results = resourceAccessRepo.findByMicroservice(pMicroserviceName);
-        final List<ResourcesAccess> result = new ArrayList<>();
-        results.forEach(result::add);
-        return result;
+        return resourceAccessRepo.findByMicroservice(pMicroserviceName);
+    }
+
+    @Override
+    public List<ResourcesAccess> registerResources(final List<ResourceMapping> pResourcesToRegister,
+            final String pMicroserviceName) {
+        final List<ResourcesAccess> resources = new ArrayList<>();
+        pResourcesToRegister.forEach(r -> resources.add(createDefaultResourceConfiguration(r, pMicroserviceName)));
+
+        // Retrieve aleady configured resources for the given microservice
+        final List<ResourcesAccess> existingResources = retrieveMicroserviceRessources(pMicroserviceName);
+
+        final List<ResourcesAccess> newResources = new ArrayList<>();
+        // Create missing resources
+        for (final ResourcesAccess resource : resources) {
+            if (!existingResources.contains(resource)) {
+                newResources.add(resource);
+            }
+        }
+
+        // Save missing resources
+        saveResources(newResources);
+
+        // Return all microservice configured resources
+        return retrieveMicroserviceRessources(pMicroserviceName);
+
     }
 
     /**
      *
-     * Collect resources from the current microservice
+     * Create a {@link ResourcesAccess} with default configuration from a {@link ResourceMapping} object.
      *
-     * @return List<ResourceMapping>
-     * @since 1.0+SNAPSHOT
-     */
-    private List<ResourceMapping> collectLocalResources() {
-        // Get local resources
-        final List<ResourceMapping> localResources = securityService.getResources();
-        // Save resources
-        saveResources(localResources, microserviceName);
-        return localResources;
-    }
-
-    /**
-     *
-     * Collect resources from a remote microservice and save results.
-     *
-     * @param pMicroservice
-     *            microservice to collect.
-     * @return List<ResourceMapping>
+     * @param pResource
+     *            New resource to configure
+     * @return {@link ResourcesAccess}
      * @since 1.0-SNAPSHOT
      */
-    private List<ResourceMapping> collectRemoteResources(final String pMicroservice) {
-        final List<ResourceMapping> serviceResources = getRemoteResources(pMicroservice);
-        saveResources(serviceResources, pMicroservice);
-        return serviceResources;
+    private ResourcesAccess createDefaultResourceConfiguration(final ResourceMapping pResource,
+            final String pMicroserviceName) {
+        final ResourcesAccess defaultResource = new ResourcesAccess(pResource, pMicroserviceName);
+        final List<Role> roles = new ArrayList<>();
+
+        if ((pResource.getResourceAccess() != null) && !pResource.getResourceAccess().role().equals(DefaultRole.NONE)) {
+            final String roleName = pResource.getResourceAccess().role().name();
+            try {
+                roles.add(roleService.retrieveRole(roleName));
+            } catch (final EntityNotFoundException e) {
+                LOG.debug(e.getMessage(), e);
+                LOG.warn("Default role {} for resource {} does not exists.", roleName, defaultResource.getResource());
+            }
+
+        }
+
+        defaultResource.setRoles(roles);
+        return defaultResource;
     }
 
     /**
@@ -194,7 +188,11 @@ public class ResourcesService implements IResourcesService {
      * @since 1.0-SNAPSHOT
      */
     public List<ResourceMapping> getRemoteResources(final String pMicroservice) {
+        // Do not manage local resources
         List<ResourceMapping> remoteResources = new ArrayList<>();
+        if (pMicroservice.equals(microserviceName)) {
+            return remoteResources;
+        }
         try {
             final List<ServiceInstance> instances = discoveryClient.getInstances(pMicroservice);
             if (!instances.isEmpty()) {
@@ -210,61 +208,14 @@ public class ResourcesService implements IResourcesService {
 
     /**
      *
-     * Saves resourceMapping into ResourcesAccess repository
+     * Save given ResourcesAccess to repository
      *
-     * @param pResourceMappings
-     *            resource
-     * @param pMicroservice
-     *            microservice owner of the resource
+     * @param pResourcesToSave
+     *            entities to save
+     * @return saved entities.
      * @since 1.0-SNAPSHOT
-     * @return the resources acesses
      */
-    private List<ResourcesAccess> saveResources(final List<ResourceMapping> pResourceMappings,
-            final String pMicroservice) {
-
-        // Retrieve all already existing resources for the given microservice
-        final List<ResourcesAccess> existingResources = resourceAccessRepo.findByMicroservice(pMicroservice);
-        final List<ResourcesAccess> collectedResources = new ArrayList<>();
-
-        // Create ResourcesAccess from RequestMappings for all collected resource
-        for (final ResourceMapping collectedResource : pResourceMappings) {
-            final List<Role> defaultRoles = new ArrayList<>();
-            final ResourcesAccess resource = new ResourcesAccess(collectedResource.getResourceAccess().description(),
-                    pMicroservice, collectedResource.getFullPath(),
-                    HttpVerb.valueOf(collectedResource.getMethod().name()));
-
-            // Add default role if exists
-            if ((collectedResource.getResourceAccess().role() != null)
-                    && !collectedResource.getResourceAccess().role().equals(DefaultRole.NONE)) {
-                final Role role;
-                try {
-                    role = roleService.retrieveRole(collectedResource.getResourceAccess().role().toString());
-                    defaultRoles.add(role);
-                    resource.setRoles(defaultRoles);
-                } catch (final EntityNotFoundException e) {
-                    LOG.debug("Role not found", e);
-                }
-            }
-            collectedResources.add(resource);
-        }
-
-        // Merge Existing resources and collected to resource to save new ones and update existing ones.
-        for (final ResourcesAccess collectedResource : collectedResources) {
-            final int index = existingResources.indexOf(collectedResource);
-            if (index >= 0) {
-                collectedResource.setId(existingResources.get(index).getId());
-                collectedResource.setRoles(existingResources.get(index).getRoles());
-            }
-        }
-
-        // Save resources
-        final List<ResourcesAccess> savedResources = new ArrayList<>();
-        resourceAccessRepo.save(collectedResources).forEach(savedResources::add);
-        return savedResources;
-    }
-
-    @Override
-    public List<ResourcesAccess> saveResources(final List<ResourcesAccess> pResourcesToSave) {
+    private List<ResourcesAccess> saveResources(final List<ResourcesAccess> pResourcesToSave) {
         final List<ResourcesAccess> results = new ArrayList<>();
         final Iterable<ResourcesAccess> savedResources = resourceAccessRepo.save(pResourcesToSave);
         if (savedResources != null) {

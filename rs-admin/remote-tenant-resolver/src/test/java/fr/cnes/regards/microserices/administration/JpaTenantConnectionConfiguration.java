@@ -4,6 +4,7 @@
 package fr.cnes.regards.microserices.administration;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,14 +15,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
 import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
 import fr.cnes.regards.microservices.administration.FeignInitialAdminClients;
 import fr.cnes.regards.microservices.administration.MicroserviceClientsAutoConfiguration;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
-import fr.cnes.regards.modules.accessrights.fallback.ResourcesFallback;
 import fr.cnes.regards.modules.accessrights.fallback.RolesFallback;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -106,7 +109,10 @@ public class JpaTenantConnectionConfiguration {
     @Bean
     @Primary
     public IResourcesClient resourceClient() {
-        return new ResourcesFallback();
+        final ResponseEntity<List<ResourceMapping>> response = new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
+        final IResourcesClient mock = Mockito.mock(IResourcesClient.class);
+        Mockito.when(mock.registerMicroserviceEndpoints(Mockito.any(), Mockito.any())).thenReturn(response);
+        return mock;
     }
 
 }

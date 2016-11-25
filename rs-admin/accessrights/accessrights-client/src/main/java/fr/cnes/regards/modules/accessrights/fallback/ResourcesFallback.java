@@ -52,7 +52,7 @@ public class ResourcesFallback implements IResourcesClient {
     }
 
     @Override
-    public ResponseEntity<List<Resource<ResourcesAccess>>> registerMicroserviceEndpoints(final String pMicroserviceName,
+    public ResponseEntity<List<ResourceMapping>> registerMicroserviceEndpoints(final String pMicroserviceName,
             final List<ResourceMapping> pResourcesToRegister) {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);

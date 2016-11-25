@@ -24,7 +24,9 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
 
@@ -72,6 +74,7 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET)
+    @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.ADMIN)
     @ResponseBody
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveResourcesAccesses() {
         final List<ResourcesAccess> resourcesAccess = service.retrieveRessources();
@@ -92,6 +95,7 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(value = "/{resource_id}", method = RequestMethod.PUT)
+    @ResourceAccess(description = "Update access to a given resource", role = DefaultRole.ADMIN)
     @ResponseBody
     public ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(final Long pResourceId,
             final ResourcesAccess pResourceAccessToUpdate) {
@@ -106,24 +110,16 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(value = "/register/{microservicename}", method = RequestMethod.POST)
+    @ResourceAccess(description = "Endpoint to register all endpoints of a microservice to the administration service.",
+            role = DefaultRole.ADMIN)
     @ResponseBody
-    public ResponseEntity<List<Resource<ResourcesAccess>>> registerMicroserviceEndpoints(
+    public ResponseEntity<List<ResourceMapping>> registerMicroserviceEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,
             @RequestBody final List<ResourceMapping> pResourcesToRegister) {
-
-        List<ResourcesAccess> configuredResources = service.retrieveMicroserviceRessources(pMicroserviceName);
-        final List<ResourcesAccess> newResources = new ArrayList<>();
-        for (final ResourceMapping mapping : pResourcesToRegister) {
-            final ResourcesAccess newResource = new ResourcesAccess(mapping, pMicroserviceName);
-            if (!configuredResources.contains(newResource)) {
-                newResources.add(newResource);
-            }
-        }
-        service.saveResources(newResources);
-
-        // Get all configured resources
-        configuredResources = service.retrieveMicroserviceRessources(pMicroserviceName);
-        return new ResponseEntity<>(toResources(configuredResources), HttpStatus.OK);
+        final List<ResourcesAccess> resources = service.registerResources(pResourcesToRegister, pMicroserviceName);
+        final List<ResourceMapping> results = new ArrayList<>();
+        resources.forEach(r -> results.add(r.toResourceMapping()));
+        return new ResponseEntity<>(results, HttpStatus.OK);
     }
 
     @Override
