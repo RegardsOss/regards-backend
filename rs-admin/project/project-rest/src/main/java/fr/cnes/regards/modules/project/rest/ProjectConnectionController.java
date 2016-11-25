@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -93,8 +93,8 @@ public class ProjectConnectionController implements IResourceController<ProjectC
             } else {
                 response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-        } catch (final ModuleEntityNotFoundException e) {
-            LOG.error(e.getMessage(), e);
+        } catch (final EntityNotFoundException e) {
+            LOG.debug(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
@@ -145,8 +145,8 @@ public class ProjectConnectionController implements IResourceController<ProjectC
         try {
             final ProjectConnection pConn = projectConnectionService.updateProjectConnection(pProjectConnection);
             response = ResponseEntity.ok(toResource(pConn));
-        } catch (final ModuleEntityNotFoundException e) {
-            LOG.error(e.getMessage(), e);
+        } catch (final EntityNotFoundException e) {
+            LOG.debug(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return response;
@@ -179,8 +179,8 @@ public class ProjectConnectionController implements IResourceController<ProjectC
             } else {
                 response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-        } catch (final ModuleEntityNotFoundException e) {
-            LOG.error(e.getMessage(), e);
+        } catch (final EntityNotFoundException e) {
+            LOG.debug(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 

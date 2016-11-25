@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import feign.FeignException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -85,8 +85,8 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
                             projectConnection.getUrl(), projectConnection.getUserName(),
                             projectConnection.getPassword(), projectConnection.getDriverClassName()));
                 }
-            } catch (final ModuleEntityNotFoundException e) {
-                LOG.error(e.getMessage(), e);
+            } catch (final EntityNotFoundException e) {
+                LOG.debug(e.getMessage(), e);
                 LOG.error(String.format("No database connection found for project %s", project.getName()));
             }
         }

@@ -13,8 +13,8 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.jpa.multitenant.event.NewTenantEvent;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
@@ -78,11 +78,11 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     @Override
     public ProjectConnection retrieveProjectConnection(final String pProjectName, final String pMicroService)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         final ProjectConnection connection = projectConnectionRepository
                 .findOneByProjectNameAndMicroservice(pProjectName, pMicroService);
         if (connection == null) {
-            throw new ModuleEntityNotFoundException(String.format("%s:%s", pProjectName, pMicroService),
+            throw new EntityNotFoundException(String.format("%s:%s", pProjectName, pMicroService),
                     ProjectConnection.class);
         }
         return connection;
@@ -101,10 +101,10 @@ public class ProjectConnectionService implements IProjectConnectionService {
                                                          pProjectConnection.getMicroservice()) == null) {
                 connection = projectConnectionRepository.save(pProjectConnection);
             } else {
-                throw new ModuleAlreadyExistsException(project.getName());
+                throw new EntityAlreadyExistsException(project.getName());
             }
         } else {
-            throw new ModuleEntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
+            throw new EntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
         }
 
         // Send event to all microservices that a new connection is available for a new project
@@ -121,19 +121,19 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public void deleteProjectConnection(final Long pProjectConnectionId) throws ModuleEntityNotFoundException {
+    public void deleteProjectConnection(final Long pProjectConnectionId) throws EntityNotFoundException {
         if (projectConnectionRepository.exists(pProjectConnectionId)) {
             projectConnectionRepository.delete(pProjectConnectionId);
         } else {
             final String message = "Invalid entity <ProjectConnection> for deletion. Entity (id=%d) does not exists";
             LOG.error(String.format(message, pProjectConnectionId));
-            throw new ModuleEntityNotFoundException(pProjectConnectionId.toString(), ProjectConnection.class);
+            throw new EntityNotFoundException(pProjectConnectionId.toString(), ProjectConnection.class);
         }
     }
 
     @Override
     public ProjectConnection updateProjectConnection(final ProjectConnection pProjectConnection)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         final ProjectConnection connection;
         // Check that entity to update exists
         if ((pProjectConnection.getId() != null) && projectConnectionRepository.exists(pProjectConnection.getId())) {
@@ -143,10 +143,10 @@ public class ProjectConnectionService implements IProjectConnectionService {
                 // Update entity
                 connection = projectConnectionRepository.save(pProjectConnection);
             } else {
-                throw new ModuleEntityNotFoundException(project.getName(), Project.class);
+                throw new EntityNotFoundException(project.getName(), Project.class);
             }
         } else {
-            throw new ModuleEntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
+            throw new EntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
         }
         return connection;
     }

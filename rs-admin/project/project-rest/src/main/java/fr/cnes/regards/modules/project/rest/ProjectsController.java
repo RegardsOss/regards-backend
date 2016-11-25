@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -92,8 +91,7 @@ public class ProjectsController implements IResourceController<Project> {
      *            new Project to create
      * @return Created project
      * @throws EntityException
-     *             <br/>
-     *             {@link AlreadyExistingException} If Project already exists for the given name
+     *             If Project already exists for the given name
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

@@ -10,9 +10,9 @@ import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -156,7 +156,7 @@ public class ProjectConnectionServiceTest {
         try {
             projectConnectionService.createProjectConnection(connection);
             Assert.fail("Impossible to add two project connection for same project and microservice");
-        } catch (final ModuleAlreadyExistsException e) {
+        } catch (final EntityAlreadyExistsException e) {
             // Noting to do
         } catch (final ModuleException e) {
             Assert.fail(e.getMessage());
@@ -176,19 +176,19 @@ public class ProjectConnectionServiceTest {
         ProjectConnection connection = null;
         try {
             connection = projectConnectionService.retrieveProjectConnection(PROJECT_TEST_2, MS_TEST_2);
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             Assert.fail(e.getMessage());
         }
         try {
             projectConnectionService.deleteProjectConnection(connection.getId());
-        } catch (final ModuleEntityNotFoundException e1) {
+        } catch (final EntityNotFoundException e1) {
             Assert.fail(e1.getMessage());
         }
 
         try {
             connection = projectConnectionService.retrieveProjectConnection(PROJECT_TEST_2, MS_TEST_1);
             Assert.fail("Deletion error. Project connection always exists.");
-        } catch (final ModuleEntityNotFoundException e1) {
+        } catch (final EntityNotFoundException e1) {
             // Nothing to do
         }
 
@@ -196,7 +196,7 @@ public class ProjectConnectionServiceTest {
             final long id = 5556L;
             projectConnectionService.deleteProjectConnection(id);
             Assert.fail("Error the deletion should be in error. The entity doest not exists.");
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             // Nothing to do
         }
 
@@ -218,14 +218,14 @@ public class ProjectConnectionServiceTest {
         ProjectConnection connection = null;
         try {
             connection = projectConnectionService.retrieveProjectConnection(PROJECT_TEST_1, MS_TEST_1);
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             Assert.fail(e.getMessage());
         }
         connection.setUserName(updateUserName);
         try {
             connection = projectConnectionService.updateProjectConnection(connection);
             Assert.assertTrue("Error updating project connection.", connection.getUserName().equals(updateUserName));
-        } catch (final ModuleEntityNotFoundException e1) {
+        } catch (final EntityNotFoundException e1) {
             Assert.fail(e1.getMessage());
         }
 
@@ -236,7 +236,7 @@ public class ProjectConnectionServiceTest {
         try {
             connection = projectConnectionService.updateProjectConnection(connection);
             Assert.fail(errorUpdate);
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             // Nothing to do
         }
 
@@ -248,7 +248,7 @@ public class ProjectConnectionServiceTest {
         try {
             connection = projectConnectionService.updateProjectConnection(connection);
             Assert.fail(errorUpdate);
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             // Nothing to do
         }
 
