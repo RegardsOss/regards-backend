@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -43,7 +44,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserWorkf
  *
  * @author svissier
  * @author Sébastien Binda
- * 
+ *
  * @since 1.0-SNAPSHOT
  *
  */
@@ -72,7 +73,7 @@ public class ProjectUsersController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the list of users of the project")
+    @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<Resource<ProjectUser>>> retrieveProjectUserList() {
         final List<ProjectUser> users = projectUserService.retrieveUserList();
         final List<Resource<ProjectUser>> resources = users.stream().map(u -> new Resource<>(u))
@@ -89,7 +90,8 @@ public class ProjectUsersController {
      */
     @ResponseBody
     @RequestMapping(value = "/{user_email}", method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the project user and only display  metadata")
+    @ResourceAccess(description = "retrieve the project user and only display  metadata",
+            role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") final String userEmail)
             throws EntityNotFoundException {
         final ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
@@ -113,7 +115,7 @@ public class ProjectUsersController {
      */
     @ResponseBody
     @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT)
-    @ResourceAccess(description = "update the project user")
+    @ResourceAccess(description = "update the project user", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> updateProjectUser(@PathVariable("user_id") final Long userId,
             @RequestBody final ProjectUser pUpdatedProjectUser) throws EntityException {
         projectUserService.updateUser(userId, pUpdatedProjectUser);
@@ -133,7 +135,7 @@ public class ProjectUsersController {
      */
     @ResponseBody
     @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "remove the project user from the instance")
+    @ResourceAccess(description = "remove the project user", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") final Long pUserId)
             throws EntityTransitionForbiddenException, EntityNotFoundException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pUserId);
@@ -153,7 +155,7 @@ public class ProjectUsersController {
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "retrieve the list of all metadata of the user")
+    @ResourceAccess(description = "retrieve the list of all metadata of the user", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(
             @PathVariable("user_id") final Long pUserId) throws EntityNotFoundException {
         final List<MetaData> metaDatas = projectUserService.retrieveUserMetaData(pUserId);
@@ -174,7 +176,7 @@ public class ProjectUsersController {
      */
     @ResponseBody
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.PUT)
-    @ResourceAccess(description = "update the list of all metadata of the user")
+    @ResourceAccess(description = "update the list of all metadata of the user", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") final Long userId,
             @Valid @RequestBody final List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException {
         projectUserService.updateUserMetaData(userId, pUpdatedUserMetaData);
@@ -191,7 +193,7 @@ public class ProjectUsersController {
      */
     @ResponseBody
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "remove all the metadata of the user")
+    @ResourceAccess(description = "remove all the metadata of the user", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") final Long userId)
             throws EntityNotFoundException {
         projectUserService.removeUserMetaData(userId);
@@ -215,7 +217,8 @@ public class ProjectUsersController {
      */
     @ResponseBody
     @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the list of specific access rights and the role of the project user")
+    @ResourceAccess(description = "retrieve the list of specific access rights and the role of the project user",
+            role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(
             @PathVariable("user_login") final String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) final String pBorrowedRoleName)
@@ -242,7 +245,7 @@ public class ProjectUsersController {
      */
     @ResponseBody
     @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.PUT)
-    @ResourceAccess(description = "update the list of specific user access rights")
+    @ResourceAccess(description = "update the list of specific user access rights", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> updateProjectUserAccessRights(@PathVariable("user_login") final String pLogin,
             @Valid @RequestBody final List<ResourcesAccess> pUpdatedUserAccessRights) throws EntityNotFoundException {
         projectUserService.updateUserAccessRights(pLogin, pUpdatedUserAccessRights);
@@ -259,7 +262,7 @@ public class ProjectUsersController {
      */
     @ResponseBody
     @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "remove all the specific access rights")
+    @ResourceAccess(description = "remove all the specific access rights", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> removeProjectUserAccessRights(@PathVariable("user_login") final String pUserLogin)
             throws EntityNotFoundException {
         projectUserService.removeUserAccessRights(pUserLogin);

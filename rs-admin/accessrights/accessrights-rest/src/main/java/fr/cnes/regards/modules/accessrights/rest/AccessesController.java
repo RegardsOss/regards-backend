@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
@@ -34,6 +35,15 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsS
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserWorkflowManager;
 
+/**
+ *
+ * Class AccessesController
+ *
+ * Endpoints to handle Users registration for a project.
+ *
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
+ */
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
@@ -71,7 +81,7 @@ public class AccessesController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieves the list of access request")
+    @ResourceAccess(description = "Retrieves the list of access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
         final List<ProjectUser> projectUsers = projectUserService.retrieveAccessRequestList();
         return new ResponseEntity<>(HateoasUtils.wrapList(projectUsers), HttpStatus.OK);
@@ -86,7 +96,7 @@ public class AccessesController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Creates a new access request")
+    @ResourceAccess(description = "Creates a new access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<AccessRequestDTO>> requestAccess(
             @Valid @RequestBody final AccessRequestDTO pAccessRequest) throws EntityException {
         accountWorkflowManager.requestAccount(pAccessRequest);
@@ -107,7 +117,7 @@ public class AccessesController {
      *             {@link EntityNotFoundException} if project user is in illegal status for denial<br>
      */
     @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT)
-    @ResourceAccess(description = "Accepts the access request")
+    @ResourceAccess(description = "Accepts the access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
@@ -128,7 +138,7 @@ public class AccessesController {
      */
     @ResponseBody
     @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT)
-    @ResourceAccess(description = "Denies the access request")
+    @ResourceAccess(description = "Denies the access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
@@ -145,7 +155,7 @@ public class AccessesController {
      */
     @ResponseBody
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Rejects the access request")
+    @ResourceAccess(description = "Rejects the access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
@@ -160,7 +170,8 @@ public class AccessesController {
      */
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieves the settings managing the access requests")
+    @ResourceAccess(description = "Retrieves the settings managing the access requests",
+            role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<AccessSettings>> getAccessSettings() {
         final AccessSettings accessSettings = accessSettingsService.retrieve();
         final Resource<AccessSettings> resource = new Resource<>(accessSettings);
@@ -176,7 +187,7 @@ public class AccessesController {
      */
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.PUT)
-    @ResourceAccess(description = "Updates the setting managing the access requests")
+    @ResourceAccess(description = "Updates the setting managing the access requests", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> updateAccessSettings(@Valid @RequestBody final AccessSettings pAccessSettings)
             throws EntityNotFoundException {
         accessSettingsService.update(pAccessSettings);

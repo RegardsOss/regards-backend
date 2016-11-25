@@ -76,7 +76,7 @@ public class ProjectsController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<List<Resource<Project>>> retrieveProjectList() {
 
         final List<Project> projects = projectService.retrieveProjectList();
@@ -96,7 +96,7 @@ public class ProjectsController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
-    @ResourceAccess(description = "create a new project")
+    @ResourceAccess(description = "create a new project", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Project>> createProject(@Valid @RequestBody final Project pNewProject)
             throws EntityException {
 
@@ -117,7 +117,7 @@ public class ProjectsController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}", produces = "application/json")
     @ResponseBody
-    @ResourceAccess(description = "retrieve the project project_name")
+    @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName)
             throws EntityException {
 
@@ -138,7 +138,7 @@ public class ProjectsController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}")
     @ResponseBody
-    @ResourceAccess(description = "update the project project_name")
+    @ResourceAccess(description = "update the project project_name", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") final String pProjectName,
             @RequestBody final Project pProjectToUpdate) throws EntityException {
 
@@ -157,7 +157,7 @@ public class ProjectsController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.DELETE)
     @ResponseBody
-    @ResourceAccess(description = "remove the project project_name")
+    @ResourceAccess(description = "remove the project project_name", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> deleteProject(@PathVariable("project_name") final String pProjectName)
             throws EntityException {
 

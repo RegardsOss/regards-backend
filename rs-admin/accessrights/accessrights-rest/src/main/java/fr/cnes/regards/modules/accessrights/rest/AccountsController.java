@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
@@ -36,6 +37,16 @@ import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions;
 
+/**
+ *
+ * Class AccountsController
+ *
+ * Endpoints to manage REGARDS Accounts. Accounts are transverse to all projects and so are persisted in an instance
+ * database
+ *
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
+ */
 @RestController
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
@@ -63,7 +74,7 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the list of account in the instance")
+    @ResourceAccess(description = "retrieve the list of account in the instance", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<List<Resource<Account>>> retrieveAccountList() {
         final List<Account> accounts = accountService.retrieveAccountList();
         final List<Resource<Account>> resources = accounts.stream().map(a -> new Resource<>(a))
@@ -80,7 +91,7 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "create an new account")
+    @ResourceAccess(description = "create an new account", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount)
             throws EntityException {
         final AccessRequestDTO dto = new AccessRequestDTO(pNewAccount);
@@ -98,7 +109,7 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the account account_id")
+    @ResourceAccess(description = "retrieve the account account_id", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") final Long accountId)
             throws EntityNotFoundException {
         final Account account = accountService.retrieveAccount(accountId);
@@ -116,7 +127,7 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(value = "/account/{account_email}", method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the account with his unique email")
+    @ResourceAccess(description = "retrieve the account with his unique email", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Account>> retrieveAccounByEmail(
             @PathVariable("account_email") final String pAccountEmail) {
         ResponseEntity<Resource<Account>> response;
@@ -142,7 +153,8 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT)
-    @ResourceAccess(description = "update the account account_id according to the body specified")
+    @ResourceAccess(description = "update the account account_id according to the body specified",
+            role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> updateAccount(@PathVariable("account_id") final Long accountId,
             @Valid @RequestBody final Account pUpdatedAccount) throws EntityException {
         accountService.updateAccount(accountId, pUpdatedAccount);
@@ -158,7 +170,7 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "remove the account account_id")
+    @ResourceAccess(description = "remove the account account_id", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> removeAccount(@PathVariable("account_id") final Long pAccountId)
             throws ModuleException {
         final Account account = accountService.retrieveAccount(pAccountId);
@@ -177,7 +189,8 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET)
-    @ResourceAccess(description = "unlock the account account_id according to the code unlock_code")
+    @ResourceAccess(description = "unlock the account account_id according to the code unlock_code",
+            role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> unlockAccount(@PathVariable("account_id") final Long pAccountId,
             @PathVariable("unlock_code") final String pUnlockCode) throws ModuleException {
         final Account account = accountService.retrieveAccount(pAccountId);
@@ -197,7 +210,8 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT)
-    @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code")
+    @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code",
+            role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") final Long accountId,
             @PathVariable("reset_code") final String resetCode, @Valid @RequestBody final String pNewPassword)
             throws EntityException {
@@ -217,7 +231,7 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(value = "/code", method = RequestMethod.GET)
-    @ResourceAccess(description = "send a code of type type to the email specified")
+    @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> sendAccountCode(@RequestParam("email") final String email,
             @RequestParam("type") final CodeType type) throws EntityNotFoundException {
         accountService.sendAccountCode(email, type);
@@ -231,7 +245,8 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the list of setting managing the accounts")
+    @ResourceAccess(description = "retrieve the list of setting managing the accounts",
+            role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<AccountSettings>> retrieveAccountSettings() {
         final AccountSettings settings = accountSettingsService.retrieve();
         return new ResponseEntity<>(new Resource<>(settings), HttpStatus.OK);
@@ -246,7 +261,7 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.PUT)
-    @ResourceAccess(description = "update the setting managing the account")
+    @ResourceAccess(description = "update the setting managing the account", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody final AccountSettings pUpdatedAccountSetting) {
         accountSettingsService.update(pUpdatedAccountSetting);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -264,7 +279,7 @@ public class AccountsController {
      */
     @ResponseBody
     @RequestMapping(value = "/{account_email}/validate", method = RequestMethod.GET)
-    @ResourceAccess(description = "Validate the account password")
+    @ResourceAccess(description = "Validate the account password", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<AccountStatus> validatePassword(@PathVariable("account_email") final String pEmail,
             @RequestParam("password") final String pPassword) throws EntityNotFoundException {
         if (accountService.validatePassword(pEmail, pPassword)) {

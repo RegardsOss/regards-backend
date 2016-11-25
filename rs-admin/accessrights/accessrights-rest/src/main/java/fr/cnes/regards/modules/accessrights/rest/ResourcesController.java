@@ -34,7 +34,8 @@ import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
  *
  * Class ResourcesController
  *
- * Rest controller to access ResourcesAccess entities
+ * Rest controller to access ResourcesAccess entities. ResourceAccess are the security configuration to allow access for
+ * given roles to microservices endpoints. This configuration is made for each project of the regards instance.
  *
  * @author Sébastien Binda
  * @since 1.0-SNASHOT
@@ -74,7 +75,8 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system",
+            role = DefaultRole.INSTANCE_ADMIN)
     @ResponseBody
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveResourcesAccesses() {
         final List<ResourcesAccess> resourcesAccess = service.retrieveRessources();
@@ -111,7 +113,7 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      */
     @RequestMapping(value = "/register/{microservicename}", method = RequestMethod.POST)
     @ResourceAccess(description = "Endpoint to register all endpoints of a microservice to the administration service.",
-            role = DefaultRole.ADMIN)
+            role = DefaultRole.INSTANCE_ADMIN)
     @ResponseBody
     public ResponseEntity<List<ResourceMapping>> registerMicroserviceEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,

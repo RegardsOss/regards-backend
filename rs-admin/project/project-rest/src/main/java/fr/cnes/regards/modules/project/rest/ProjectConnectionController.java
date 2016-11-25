@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 
@@ -32,7 +33,7 @@ import fr.cnes.regards.modules.project.service.IProjectConnectionService;
  *
  * Class ProjectsController
  *
- * Controller for REST Access to Project entities
+ * Endpoints to manage the projects databases name ProjectConnection
  *
  * @author CS
  * @since 1.0-SNAPSHOT
@@ -79,7 +80,8 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}/connection/{microservice}")
     @ResponseBody
     @ResourceAccess(
-            description = "retrieve a project connection associated to a given project and a given microservice")
+            description = "retrieve a project connection associated to a given project and a given microservice",
+            role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
             @PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroService) {
@@ -113,7 +115,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      */
     @RequestMapping(method = RequestMethod.POST, value = "/connections")
     @ResponseBody
-    @ResourceAccess(description = "create a new project connection")
+    @ResourceAccess(description = "create a new project connection", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
             @Valid @RequestBody final ProjectConnection pProjectConnection) {
         ResponseEntity<Resource<ProjectConnection>> response;
@@ -138,7 +140,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      */
     @RequestMapping(method = RequestMethod.PUT, value = "/connections")
     @ResponseBody
-    @ResourceAccess(description = "update a project connection")
+    @ResourceAccess(description = "update a project connection", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
             @Valid @RequestBody final ProjectConnection pProjectConnection) {
         ResponseEntity<Resource<ProjectConnection>> response;
@@ -165,7 +167,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      */
     @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}/connection/{microservice}")
     @ResponseBody
-    @ResourceAccess(description = "delete a project connection")
+    @ResourceAccess(description = "delete a project connection", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> deleteProjectConnection(@PathVariable("project_name") final String pProjectName,
             @PathVariable("microservice") final String pMicroservice) {
 
