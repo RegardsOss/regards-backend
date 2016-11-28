@@ -116,6 +116,12 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
             description = "LDAP parameter for user email (default=mail)")
     private String ldapEmailAttribute;
 
+    /**
+     *
+     * Initialize default values
+     *
+     * @since 1.0-SNAPSHOT
+     */
     @PluginInit
     public void setDefaultValues() {
         if (ldapSearchUserFilter == null) {
@@ -210,20 +216,25 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
      *
      * Retrieve user name from ldap server
      *
-     * @param ctx
+     * @param pLdapContext
      *            ldap connection
      * @param pDn
      *            ldap dn
+     * @param pLogin
+     *            User login
      * @return user email
      * @throws LdapException
+     *             error during LDAP transation
      * @since 1.0-SNAPSHOT
      */
-    private String getEmail(final LdapConnection ctx, final String pDn, final String pLogin) throws LdapException {
-        EntryCursor cursor;
+    private String getEmail(final LdapConnection pLdapContext, final String pDn, final String pLogin)
+            throws LdapException {
+
+        final EntryCursor cursor;
         String userMail = null;
         final String searchFilter = "(&" + ldapSearchUserFilter + "(" + ldapUserLoginAttribute + "=" + pLogin + "))";
         try {
-            cursor = ctx.search(pDn, searchFilter, SearchScope.SUBTREE, ldapEmailAttribute);
+            cursor = pLdapContext.search(pDn, searchFilter, SearchScope.SUBTREE, ldapEmailAttribute);
 
             while (cursor.next() && (userMail == null)) {
                 final Entry entry = cursor.get();

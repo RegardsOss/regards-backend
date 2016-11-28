@@ -26,14 +26,14 @@ import org.slf4j.LoggerFactory;
 public class Krb5TicketValidateAction implements PrivilegedExceptionAction<String> {
 
     /**
+     * OID Kerberos V5
+     */
+    public static final String KERB_V5_OID = "1.2.840.113554.1.2.2";
+
+    /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(Krb5TicketValidateAction.class);
-
-    /**
-     * OID Kerberos V5
-     */
-    public static final String KERB_V5_OID = "1.2.840.113554.1.2.2"; //$NON-NLS-1$
 
     /**
      * Kerberos ticket to validate
@@ -50,8 +50,8 @@ public class Krb5TicketValidateAction implements PrivilegedExceptionAction<Strin
      */
     private GSSContext gssContext = null;
 
-    public Krb5TicketValidateAction(final byte[] ticket, final String pPrincipal) {
-        this.ticket = ticket;
+    public Krb5TicketValidateAction(final byte[] pTicket, final String pPrincipal) {
+        this.ticket = pTicket;
         this.principal = pPrincipal;
     }
 
@@ -78,10 +78,7 @@ public class Krb5TicketValidateAction implements PrivilegedExceptionAction<Strin
 
         // get the client name from the decrypted service ticket
         // note that Active Directory created the service ticket, so we can trust it
-        final String clientName = gssContext.getSrcName().toString();
-
-        // return the authenticated client name
-        return clientName;
+        return gssContext.getSrcName().toString();
     }
 
     /**

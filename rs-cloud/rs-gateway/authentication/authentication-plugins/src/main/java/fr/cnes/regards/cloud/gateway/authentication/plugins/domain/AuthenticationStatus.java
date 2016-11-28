@@ -12,7 +12,28 @@ package fr.cnes.regards.cloud.gateway.authentication.plugins.domain;
  */
 public enum AuthenticationStatus {
 
-    ACCESS_GRANTED, ACCESS_DENIED, INVALID_PASSWORD, PASSWORD_EXPIRED, ACCOUNT_NOT_FOUD;
+    /**
+     * Authentication is successful, access is granted
+     */
+    ACCESS_GRANTED,
+    /**
+     * Authentication error, access denied
+     */
+    ACCESS_DENIED,
+
+    /**
+     * Authentication error, invalid password
+     */
+    INVALID_PASSWORD,
+    /**
+     * Authentication error, password expired
+     */
+    PASSWORD_EXPIRED,
+
+    /**
+     * Authentication error, account does not exists
+     */
+    ACCOUNT_NOT_FOUND;
 
     @Override
     public String toString() {

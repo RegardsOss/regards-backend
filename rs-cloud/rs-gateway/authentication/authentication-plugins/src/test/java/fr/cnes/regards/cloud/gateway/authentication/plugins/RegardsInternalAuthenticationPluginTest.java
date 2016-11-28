@@ -240,7 +240,7 @@ public class RegardsInternalAuthenticationPluginTest {
         final AuthenticationPluginResponse response = plugin.authenticate("test@regards.fr", "password", "test1");
         Assert.assertNotNull(response);
         Assert.assertNotNull(response.getErrorMessage());
-        Assert.assertTrue(response.getStatus().equals(AuthenticationStatus.ACCOUNT_NOT_FOUD));
+        Assert.assertTrue(response.getStatus().equals(AuthenticationStatus.ACCOUNT_NOT_FOUND));
 
     }
 }

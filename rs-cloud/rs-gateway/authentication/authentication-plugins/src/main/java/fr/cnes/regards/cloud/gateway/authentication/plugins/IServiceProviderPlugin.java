@@ -21,8 +21,8 @@ public interface IServiceProviderPlugin {
      *
      * Verify authentication ticket with the current service provider
      *
-     * @param pTicket
-     *            ticket to check
+     * @param pAuthInformations
+     *            Authentication informations
      * @return [true|false]
      * @since 1.0-SNAPSHOT
      */
@@ -32,8 +32,8 @@ public interface IServiceProviderPlugin {
      *
      * Retrieve user informations with the current service provider
      *
-     * @param pTicket
-     *            authentication ticket
+     * @param pAuthInformations
+     *            Authentication informations
      * @return {@link UserDetails}
      * @since 1.0-SNAPSHOT
      */

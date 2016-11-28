@@ -148,7 +148,7 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
 
         // Initialize system property for kerberos management
         System.setProperty("java.security.krb5.conf", krb5FilePath);
-        System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
+        System.setProperty("javax.security.auth.useSubjectCredsOnly", Boolean.FALSE.toString());
         final URL url = ClassLoader.getSystemResource("jaas2.conf");
         System.setProperty("java.security.auth.login.config", url.toString());
     }
@@ -171,7 +171,7 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
                 final GSSCredential credentialDeleg = validateAction.getGssContext().getDelegCred();
                 @SuppressWarnings("restriction")
                 final Subject subject = com.sun.security.jgss.GSSUtil.createSubject(credentialDeleg.getName(),
-                                                                                    credentialDeleg);
+                                                                                    credentialDeleg); // NOSONAR
                 // LDAP : connection.
                 final KerberosLdapAction ldapAction = new KerberosLdapAction(ldapAdress, Integer.valueOf(ldapPort),
                         pAuthInformations.getUserName());
@@ -200,7 +200,7 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
      *            Realm of the kerberos server
      * @param pKeyTab
      *            Kerberos keytab file. Supplied by the Kerberos server administrator
-     * @return
+     * @return {@link Configuration}
      * @since 1.0-SNAPSHOT
      */
     public static Configuration getJaasConf(final String pPrincipal, final String pRealm, final File pKeyTab) {
@@ -208,17 +208,17 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
         return new Configuration() {
 
             @Override
-            public AppConfigurationEntry[] getAppConfigurationEntry(final String name) {
+            public AppConfigurationEntry[] getAppConfigurationEntry(final String pName) {
                 final Map<String, String> options = new HashMap<>();
                 options.put("principal", pPrincipal);
                 options.put("realm", pRealm);
                 options.put("keyTab", pKeyTab.getAbsolutePath());
-                options.put("refreshKrb5Config", "true");
-                options.put("doNotPrompt", "true");
-                options.put("useKeyTab", "true");
-                options.put("storeKey", "true");
-                options.put("isInitiator", "false");
-                options.put("debug", "false");
+                options.put("refreshKrb5Config", Boolean.TRUE.toString());
+                options.put("doNotPrompt", Boolean.TRUE.toString());
+                options.put("useKeyTab", Boolean.TRUE.toString());
+                options.put("storeKey", Boolean.TRUE.toString());
+                options.put("isInitiator", Boolean.FALSE.toString());
+                options.put("debug", Boolean.FALSE.toString());
                 return new AppConfigurationEntry[] { new AppConfigurationEntry(
                         "com.sun.security.auth.module.Krb5LoginModule", LoginModuleControlFlag.REQUIRED, options) };
             }
@@ -231,14 +231,14 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
      *
      * @param pPrincipal
      *            Kerberos principal
-     * @param ticket
+     * @param pTicket
      *            Kerberos ticket to decode
-     * @param config
+     * @param pConfig
      *            Jaas Configuraion
      * @return [true|false]
      * @since 1.0-SNAPSHOT
      */
-    public boolean decode(final String pPrincipal, final byte[] ticket, final Configuration config) {
+    public boolean decode(final String pPrincipal, final byte[] pTicket, final Configuration pConfig) {
 
         LoginContext ctx = null;
         try {
@@ -251,11 +251,11 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
             final Subject subject = new Subject(false, principals, new HashSet<Object>(), new HashSet<Object>());
 
             // login the subject
-            ctx = new LoginContext("", subject, null, config);
+            ctx = new LoginContext("", subject, null, pConfig);
             ctx.login();
 
             // create a validator for the ticket and execute it
-            validateAction = new Krb5TicketValidateAction(ticket, pPrincipal);
+            validateAction = new Krb5TicketValidateAction(pTicket, pPrincipal);
             Subject.doAs(subject, validateAction);
             return true;
         } catch (final PrivilegedActionException e) {

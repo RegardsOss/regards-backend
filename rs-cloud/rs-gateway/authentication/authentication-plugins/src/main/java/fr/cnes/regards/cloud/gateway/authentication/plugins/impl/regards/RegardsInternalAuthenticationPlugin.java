@@ -74,7 +74,7 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
                 }
             } else
                 if (validateResponse.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                    status = AuthenticationStatus.ACCOUNT_NOT_FOUD;
+                    status = AuthenticationStatus.ACCOUNT_NOT_FOUND;
                     errorMessage = String
                             .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
                 } else {
