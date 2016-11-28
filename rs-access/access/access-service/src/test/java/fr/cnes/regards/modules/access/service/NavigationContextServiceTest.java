@@ -106,6 +106,7 @@ public class NavigationContextServiceTest extends NavigationContextUtility {
 
     @Test
     public void load() {
+        Mockito.when(nvgCtxRepositoryMocked.exists(ctxId)).thenReturn(true);
         Mockito.when(nvgCtxRepositoryMocked.findOne(ctxId)).thenReturn(navCtx2);
         NavigationContext context = null;
         try {
@@ -130,6 +131,7 @@ public class NavigationContextServiceTest extends NavigationContextUtility {
 
     @Test
     public void delete() {
+        Mockito.when(nvgCtxRepositoryMocked.exists(ctxId)).thenReturn(true);
         Mockito.when(nvgCtxRepositoryMocked.findOne(ctxId)).thenReturn(navCtx2);
         try {
             nvgCtxServiceMocked.delete(ctxId);

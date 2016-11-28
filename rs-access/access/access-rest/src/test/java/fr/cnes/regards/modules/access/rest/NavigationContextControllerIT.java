@@ -3,11 +3,13 @@
  */
 package fr.cnes.regards.modules.access.rest;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +17,12 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.modules.access.domain.ConfigParameter;
+import fr.cnes.regards.modules.access.domain.NavigationContext;
+import fr.cnes.regards.modules.access.domain.Project;
 import fr.cnes.regards.modules.access.service.INavigationContextService;
 
 /**
@@ -41,6 +47,8 @@ public class NavigationContextControllerIT extends AbstractRegardsIT {
     public final void getAllUrls() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$", hasSize(service.list().size())));
+
         performDefaultGet(apiTinyUrls, expectations, "unable to load all the context navigation");
     }
 
@@ -53,118 +61,154 @@ public class NavigationContextControllerIT extends AbstractRegardsIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
+
         performDefaultGet(apiATinyUrl, expectations, "unable to load a specific context navigation", tinyUrlId);
     }
-    
+
     /**
      * Get an unknown URL
      */
     @Test
     public final void getAnUnknownUrl() {
-        final Long tinyUrlId = 0157L;
+        final Long tinyUrlId = 3456L;
 
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().is4xxClientError());
+        expectations.add(status().isNotFound());
+
         performDefaultGet(apiATinyUrl, expectations, "unable to load a specific context navigation", tinyUrlId);
     }
 
-    // /**
-    // * Update an existing URL
-    // */
-    // @Test
-    // public final void dPutAnExistingUrl() {
-    // NavigationContext aNavigationContext = getNavigationContext();
-    //
-    // try {
-    // List<ConfigParameter> themeParameters = Arrays.asList(new ConfigParameter("param 1 ", "value 1"),
-    // new ConfigParameter("param 2 ", "value 2"));
-    // List<ConfigParameter> navCtxtParameters = Arrays
-    // .asList(new ConfigParameter("param 1 ", "value 1"), new ConfigParameter("param 2 ", "value 2"),
-    // new ConfigParameter("param 3 ", "value 3"), new ConfigParameter("param 4 ", "value 4"));
-    // NavigationContext navigationContext = new NavigationContext(aNavigationContext.getTinyUrl(),
-    // new Project("project1", new Theme(themeParameters, true, ThemeType.ALL)), navCtxtParameters,
-    // "http:/localhost:port/webapps/url", 95);
-    //
-    // mvc_.perform(put("/tiny/url/" + aNavigationContext.getTinyUrl()).with(csrf())
-    // .content(json(navigationContext)).header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)
-    // .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk());
-    // }
-    // catch (Exception e) {
-    // String message = "Cannot put an existing url:" + aNavigationContext.getTinyUrl();
-    // LOG.error(message, e);
-    // Assert.fail(message);
-    // }
-    // }
-    //
-    // /**
-    // * Create a new URL
-    // */
-    // @Test
-    // public final void ePostUrl() {
-    //
-    // List<ConfigParameter> themeParameters = Arrays.asList(new ConfigParameter("param 11 ", "value 11"),
-    // new ConfigParameter("param 12 ", "value 12"));
-    // List<ConfigParameter> navCtxtParameters = Arrays
-    // .asList(new ConfigParameter("param 100 ", "value 100"), new ConfigParameter("param 101", "value 101"),
-    // new ConfigParameter("param 103 ", "value 103"), new ConfigParameter("param 104 ", "value 104"));
-    // NavigationContext aNavigationContext = new NavigationContext(
-    // new Project("project2", new Theme(themeParameters, true, ThemeType.ALL)), navCtxtParameters,
-    // "http:/localhost:port/webapps/newUrl", 133);
-    // try {
-    // mvc_.perform(post("/tiny/urls").with(csrf()).content(json(aNavigationContext))
-    // .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)
-    // .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk());
-    // }
-    // catch (Exception e) {
-    // String message = "Cannot post an existing url:" + aNavigationContext.getTinyUrl();
-    // LOG.error(message, e);
-    // Assert.fail(message);
-    // }
-    // }
-    //
-    // /**
-    // * Delete an existing URL
-    // */
-    // @Test
-    // public final void fDeleteAnUrl() {
-    // NavigationContext aNavigationContext = getNavigationContext();
-    //
-    // try {
-    // mvc_.perform(delete("/tiny/url/" + aNavigationContext.getTinyUrl()).with(csrf())
-    // .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)).andExpect(status().isOk());
-    // }
-    // catch (Exception e) {
-    // String message = "Cannot delete the url:" + aNavigationContext;
-    // LOG.error(message, e);
-    // Assert.fail(message);
-    // }
-    // }
-    //
-    // /**
-    // * Delete an unknown URL
-    // */
-    // @Test
-    // public final void gDeleteAnUnknownUrl() {
-    //
-    // try {
-    // mvc_.perform(delete("/tiny/url/" + "totutiti").with(csrf())
-    // .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt_)).andExpect(status().is4xxClientError());
-    // }
-    // catch (Exception e) {
-    // String message = "Cannot delete the url:" + AN_UNKNOWN_TINY_URL;
-    // LOG.error(message, e);
-    // Assert.fail(message);
-    // }
-    // }
-    //
-    // /**
-    // * Get an existing NavigationContext
-    // *
-    // * @return a Navigation context element
-    // */
-    // private final NavigationContext getNavigationContext() {
-    // return navigationContextService_.list().get(navigationContextService_.list().size() - 1);
-    // }
+    /**
+     * Update an URL
+     */
+    @Test
+    public final void updateAnExistingUrl() {
+        final NavigationContext navContext = service.list().get(0);
+        final Long tinyUrlId = navContext.getId();
+
+        navContext.setRoute("http:/localhost:port/webapps/newRoute");
+        navContext.setStore(2468);
+        navContext.setTinyUrl("sdjksjdklqsjdkljsdkljqskldjklqsjkjqdkljqdkljldjq/skljdklsjdkljs");
+        navContext.addQueryParameters(new ConfigParameter("a new param", "a value"));
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.id",
+                                                        Matchers.hasToString(navContext.getId().toString())));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.tinyUrl",
+                                                        Matchers.hasToString(navContext.getTinyUrl())));
+        expectations
+                .add(MockMvcResultMatchers.jsonPath("$.content.route", Matchers.hasToString(navContext.getRoute())));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.store",
+                                                        Matchers.hasToString(navContext.getStore().toString())));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.project.name",
+                                                        Matchers.hasToString(navContext.getProject().getName())));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath("$.content.project.theme.isDefault",
+                          Matchers.hasToString(navContext.getProject().getTheme().isDefault().toString())));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath("$.content.project.theme.themeType",
+                          Matchers.hasToString(navContext.getProject().getTheme().getThemeType().toString())));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath("$.content.queryParameters[4].name",
+                          Matchers.hasToString(navContext.getQueryParameters().get(4).getName())));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath("$.content.queryParameters[4].value",
+                          Matchers.hasToString(navContext.getQueryParameters().get(4).getValue())));
+
+        performDefaultPut(apiATinyUrl, navContext, expectations, "unable to update an existing context navigation",
+                          tinyUrlId);
+    }
+
+    /**
+     * Update an unknown URL
+     */
+    @Test
+    public final void updateAnUnknownUrl() {
+        final NavigationContext navContext = new NavigationContext(new Project(), null, "hello", 9876);
+        final Long tinyUrlId = 0157L;
+        navContext.setId(tinyUrlId);
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNotFound());
+
+        performDefaultPut(apiATinyUrl, navContext, expectations, "unable to update an existing context navigation",
+                          tinyUrlId);
+    }
+
+    /**
+     * Update an unknown URL
+     */
+    @Test
+    public final void updateAnIncorrectUrl() {
+        final NavigationContext navContext = service.list().get(0);
+        final Long tinyUrlId = 333333L;
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNotFound());
+
+        performDefaultPut(apiATinyUrl, navContext, expectations, "unable to update an existing context navigation",
+                          tinyUrlId);
+    }
+
+    /**
+     * Delete an existing URL
+     */
+    @Test
+    public final void deleteAnExistingUrl() {
+        final Long tinyUrlId = service.list().get(2).getId();
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+
+        performDefaultDelete(apiATinyUrl, expectations, "unable to delete a specific context navigation", tinyUrlId);
+    }
+
+    /**
+     * Delete an existing URL
+     */
+    @Test
+    public final void deleteAnUnknownUrl() {
+        final Long tinyUrlId = 876L;
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNotFound());
+
+        performDefaultDelete(apiATinyUrl, expectations, "unable to delete a specific context navigation", tinyUrlId);
+    }
+
+    /**
+     * Create a new URL
+     */
+    @Test
+    public final void saveANewUrl() {
+        final NavigationContext navContext = new NavigationContext(new Project(), null, "http://tinyRegardsStart",
+                9876);
+        navContext.setId(9090L);
+        navContext.setTinyUrl("http://AbGF1234");
+        navContext.addQueryParameters(new ConfigParameter("a param", "a value"));
+        navContext.addQueryParameters(new ConfigParameter("a second param", "a second value"));
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.tinyUrl",
+                                                        Matchers.hasToString(navContext.getTinyUrl())));
+        expectations
+                .add(MockMvcResultMatchers.jsonPath("$.content.route", Matchers.hasToString(navContext.getRoute())));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.store",
+                                                        Matchers.hasToString(navContext.getStore().toString())));
+        expectations.add(status().isCreated());
+
+        performDefaultPost(apiTinyUrls, navContext, expectations, "unable to create a new context navigation");
+    }
+
+    @Test
+    public final void saveANullUrl() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isServiceUnavailable());
+
+        performDefaultPost(apiTinyUrls, null, expectations, "unable to creta a new context navigation");
+    }
 
     /*
      * (non-Javadoc)

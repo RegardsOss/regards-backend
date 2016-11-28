@@ -74,13 +74,12 @@ public class NavigationContextService implements INavigationContextService {
 
     @Override
     public NavigationContext load(Long pNavCtxId) throws EntityNotFoundException {
-        final NavigationContext navContexts = navigationContextReposiory.findOne(pNavCtxId);
+        if (!navigationContextReposiory.exists(pNavCtxId)) {
 
-        if (navContexts == null) {
             throw new EntityNotFoundException(pNavCtxId, NavigationContext.class);
         }
 
-        return navContexts;
+        return navigationContextReposiory.findOne(pNavCtxId);
     }
 
     @Override

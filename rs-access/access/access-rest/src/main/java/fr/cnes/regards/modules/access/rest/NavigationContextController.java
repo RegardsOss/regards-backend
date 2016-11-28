@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.access.domain.NavigationContext;
@@ -98,8 +99,9 @@ public class NavigationContextController {
                          NavigationContext.class);
             throw new EntityNotFoundException(pNavCtxId, NavigationContext.class);
         }
-        service.update(pNavigationContext);
-        return new ResponseEntity<>(HttpStatus.OK);
+        NavigationContext navigationContext = service.update(pNavigationContext);
+        final Resource<NavigationContext> resource = new Resource<>(navigationContext);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     /**
@@ -140,19 +142,19 @@ public class NavigationContextController {
      * @param pNavigationContext
      *            the {@link NavigationContext} to create
      * @return the created {@link NavigationContext}
-     * @throws EntityAlreadyExistsException
-     *             the {@link NavigationContext} already exists
+     * @throws EntityException 
      */
     @RequestMapping(value = "/urls", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Resource<NavigationContext>> create(@Valid @RequestBody NavigationContext pNavigationContext)
-            throws EntityAlreadyExistsException {
+            throws EntityException {
         final NavigationContext navigationContext;
         try {
             navigationContext = service.create(pNavigationContext);
         } catch (ModuleException e) {
-            throw new EntityAlreadyExistsException(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
+            throw new EntityException(e.getMessage());
         }
         // addLinksToProjects(projects);
         final Resource<NavigationContext> resource = new Resource<>(navigationContext);

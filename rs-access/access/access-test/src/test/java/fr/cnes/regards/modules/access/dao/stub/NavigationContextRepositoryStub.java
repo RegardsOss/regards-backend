@@ -33,30 +33,42 @@ import fr.cnes.regards.modules.access.domain.ThemeType;
 public class NavigationContextRepositoryStub extends RepositoryStub<NavigationContext>
         implements INavigationContextRepository {
 
-    private static List<NavigationContext> navigationContexts = new ArrayList<>();
+    private static List<NavigationContext> navigationContexts = null;
 
     @PostConstruct
     public final void init() {
-        List<ConfigParameter> themeParameters = Arrays.asList(new ConfigParameter("param 1 ", "value 1"),
-                                                              new ConfigParameter("param 2 ", "value 2"));
-        List<ConfigParameter> navCtxtParameters = Arrays
-                .asList(new ConfigParameter("param 1 ", "value 1"), new ConfigParameter("param 2 ", "value 2"),
-                        new ConfigParameter("param 3 ", "value 3"), new ConfigParameter("param 4 ", "value 4"));
 
-        navigationContexts.add(new NavigationContext("dMLKMLK5454",
-                new Project("project1", new Theme(themeParameters, true, ThemeType.ALL)), navCtxtParameters,
-                "http:/localhost:port/webapps/url", 95));
-        navigationContexts.add(new NavigationContext("AbcD12345",
-                new Project("project2", new Theme(themeParameters, true, ThemeType.PORTAL)), navCtxtParameters,
-                "http:/localhost:port/webapps/url2", 133));
-        navigationContexts.add(new NavigationContext("dj45Kjkdjskjd",
-                new Project("project3", new Theme(themeParameters, true, ThemeType.ADMIN)), navCtxtParameters,
-                "http:/localhost:port/webapps/url3", 65));
+        if (navigationContexts == null) {
+            navigationContexts = new ArrayList<>();
+            final List<ConfigParameter> themeParameters = Arrays
+                    .asList(new ConfigParameter("theme param 1 ", "theme param value 1"),
+                            new ConfigParameter("theme param 2 ", "theme param value 2"));
+            List<ConfigParameter> navCtxtParameters = new ArrayList<>();
+            navCtxtParameters.add(new ConfigParameter("param 1 ", "value 1"));
+            navCtxtParameters.add(new ConfigParameter("param 2 ", "value 2"));
+            navCtxtParameters.add(new ConfigParameter("param 3 ", "value 3"));
+            navCtxtParameters.add(new ConfigParameter("param 4 ", "value 4"));
 
-        final Long n = 50L;
-        navigationContexts.stream().forEach(nvCtx -> nvCtx.setId(n + 1));
+            navigationContexts.add(new NavigationContext("dMLKMLK5454",
+                    new Project("project1", new Theme(themeParameters, true, ThemeType.ALL)), navCtxtParameters,
+                    "http:/localhost:port/webapps/url", 95));
+            final Long id = 50L;
+            navigationContexts.get(navigationContexts.size() - 1).setId(id + navigationContexts.size());
 
-        getEntities().addAll(navigationContexts);
+            navigationContexts.add(new NavigationContext("AbcD12345",
+                    new Project("project2", new Theme(themeParameters, true, ThemeType.PORTAL)), navCtxtParameters,
+                    "http:/localhost:port/webapps/url2", 133));
+            navigationContexts.get(navigationContexts.size() - 1).setId(id + navigationContexts.size());
+
+            navigationContexts.add(new NavigationContext("dj45Kjkdjskjd",
+                    new Project("project3", new Theme(themeParameters, true, ThemeType.ADMIN)), navCtxtParameters,
+                    "http:/localhost:port/webapps/url3", 65));
+            navigationContexts.get(navigationContexts.size() - 1).setId(id + navigationContexts.size());
+        }
+
+        if (getEntities().isEmpty()) {
+            getEntities().addAll(navigationContexts);
+        }
 
     }
 

@@ -51,7 +51,7 @@ public class ConfigParameter implements IIdentifiable<Long> {
      */
     public ConfigParameter() {
         super();
-        name= "undefined";
+        name = "undefined";
     }
 
     /**
@@ -71,6 +71,18 @@ public class ConfigParameter implements IIdentifiable<Long> {
     @Override
     public Long getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String pValue) {
+        this.value = pValue;
     }
 
 }
