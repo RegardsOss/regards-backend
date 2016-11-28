@@ -22,6 +22,27 @@ public class Output {
      */
     private URI data;
 
+    /**
+     * Default constructor
+     */
+    public Output() {
+        super();
+    }
+
+    /**
+     * Constructor with the attributes
+     * 
+     * @param pMimeType
+     *            the data's MimeType
+     * @param pData
+     *            the data's URI
+     */
+    public Output(String pMimeType, URI pData) {
+        super();
+        this.mimeType = pMimeType;
+        this.data = pData;
+    }
+
     public String getMimeType() {
         return mimeType;
     }

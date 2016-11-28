@@ -48,7 +48,7 @@ public class JobInfoFallback implements JobInfoClient {
     }
 
     @Override
-    public ResponseEntity<List<Output>> getJobResults(final Long pJobInfoId) {
+    public ResponseEntity<List<Resource<Output>>> getJobResults(final Long pJobInfoId) {
         // TODO Auto-generated method stub
         return null;
     }

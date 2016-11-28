@@ -3,22 +3,27 @@
  */
 package fr.cnes.regards.modules.emails.rest;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.jobs.service.service.IJobInfoService;
 
 /**
@@ -43,19 +48,70 @@ public class JobControllerIT extends AbstractRegardsIT {
 
     private final String apiJobs = "/jobs";
 
-    private final String apiAJob = apiJobs + "{jobId}";
+    private final String apiAJob = apiJobs + "/{jobId}";
 
-    private final String apiAJobResults = apiAJob+"/results";
+    private final String apiAJobResults = apiAJob + "/results";
 
     private final String apiJobsState = apiJobs + "/state/{state}";
-    
+
     @Test
-    @Ignore
     public void getAllJobs() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         LOGGER.debug("job count : " + jobInfoService.retrieveJobInfoList().size());
         expectations.add(status().isOk());
         performDefaultGet(apiJobs, expectations, "unable to load all jobs");
+    }
+
+    @Test
+    public void getOneJob() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.id", Matchers.hasToString(aJob.getId().toString())));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.owner", Matchers.hasToString(aJob.getOwner())));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.priority",
+                                                        Matchers.hasToString(String.format("%s", aJob.getPriority()))));
+        // TODO CMZ manque parameters
+        // expectations.add(MockMvcResultMatchers.jsonPath("$.content.parameters",
+        // Matchers.arrayWithSize(aJob.getParameters().getParameters().size())));
+        expectations
+                .add(MockMvcResultMatchers.jsonPath("$.content.className", Matchers.hasToString(aJob.getClassName())));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.archived",
+                                                        Matchers.hasToString(aJob.isArchived().toString())));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.status.status",
+                                                        Matchers.hasToString(aJob.getStatus().getJobStatus().name())));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.status.description",
+                                                        Matchers.hasToString(aJob.getStatus().getDescription())));
+
+        performDefaultGet(apiAJob, expectations, String.format("unable to load the job <%s>", aJob.getId()),
+                          aJob.getId());
+    }
+
+    @Test
+    public void getJobResults() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$", hasSize(aJob.getResult().size())));
+        performDefaultGet(apiAJobResults, expectations, String.format("unable to get job's result <%s>", aJob.getId()),
+                          aJob.getId());
+    }
+
+    @Test
+    public void getJobsState() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        performDefaultGet(apiJobsState, expectations,
+                          String.format("unable to get jobs with status  <%s>", JobStatus.RUNNING), JobStatus.RUNNING);
+    }
+
+    @Test
+    public void deleteAJob() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        Long jobId = jobInfoService.retrieveJobInfoList().get(0).getId();
+        expectations.add(status().isOk());
+        performDefaultDelete(apiAJob, expectations, String.format("unable to stop the job <%s>", jobId), jobId);
     }
 
     @Override
