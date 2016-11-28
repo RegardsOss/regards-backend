@@ -23,6 +23,16 @@
 			<groupId>fr.cnes.regards.modules.templates</groupId>
 			<artifactId>templates-dao</artifactId>
 		</dependency>
+		<!-- Mail -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<!-- COTS -->
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>

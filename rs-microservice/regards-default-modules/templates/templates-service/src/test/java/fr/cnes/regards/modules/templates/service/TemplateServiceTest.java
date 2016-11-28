@@ -3,14 +3,17 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.mail.SimpleMailMessage;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -19,6 +22,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
 import fr.cnes.regards.modules.templates.domain.Template;
+import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
 
 /**
  * Test suite for {@link TemplateService}.
@@ -48,8 +52,9 @@ public class TemplateServiceTest {
     private ITemplateRepository templateRepository;
 
     @Before
-    public void setUp() {
-        template = new Template();
+    public void setUp() throws IOException {
+        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA,
+                TemplateTestConstants.SUBJECT);
         templateRepository = Mockito.mock(ITemplateRepository.class);
 
         templateService = new TemplateService(templateRepository);
@@ -259,6 +264,36 @@ public class TemplateServiceTest {
 
         // Trigger expected exception
         templateService.delete(ID);
+    }
+
+    /**
+     * Test method for {@link SimpleMailMessageTemplateWriter#writeToEmail(Template, Map, String[])}.
+     *
+     * @throws TemplateWriterException
+     *             todo
+     */
+    @Test
+    @Purpose("Check that the system uses templates to send emails.")
+    @Requirement("REGARDS_DSL_SYS_ERG_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_440")
+    @Requirement("REGARDS_DSL_ADM_ADM_460")
+    public final void testWrite() throws TemplateWriterException {
+        // Mock
+        Mockito.when(templateRepository.findOneByCode(TemplateTestConstants.CODE))
+                .thenReturn(Optional.ofNullable(template));
+
+        // Define expected
+        final String expectedSubject = TemplateTestConstants.SUBJECT;
+        final String expectedText = "Hello Defaultname. You are 26 years old and 1.79 m tall.";
+
+        // Define actual
+        final SimpleMailMessage message = templateService
+                .writeToEmail(TemplateTestConstants.CODE, TemplateTestConstants.DATA, TemplateTestConstants.RECIPIENTS);
+
+        // Check
+        Assert.assertEquals(expectedSubject, message.getSubject());
+        Assert.assertEquals(expectedText, message.getText());
+        Assert.assertArrayEquals(TemplateTestConstants.RECIPIENTS, message.getTo());
     }
 
 }

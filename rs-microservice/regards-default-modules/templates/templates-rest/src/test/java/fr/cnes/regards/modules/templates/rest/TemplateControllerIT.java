@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.templates.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +44,8 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void setUp() {
-        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA);
+        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA,
+                TemplateTestConstants.SUBJECT);
     }
 
     /**
@@ -59,7 +58,7 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testFindAll() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.status().isOk());
         performDefaultGet(TemplateTestConstants.API_TEMPLATES, expectations, "Unable to retrieve the template.");
     }
 
@@ -131,7 +130,7 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         template.setDescription(TemplateTestConstants.DESCRIPTON);
 
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.status().isOk());
         performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template, expectations,
                           "Unable to update the template.", template.getId());
     }
@@ -150,7 +149,7 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         template.setId(TemplateTestConstants.WRONG_ID);
 
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isNotFound());
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template, expectations,
                           "Unable to update the template.", template.getId());
     }
@@ -169,7 +168,7 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         template.setId(TemplateTestConstants.ID);
 
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
+        expectations.add(MockMvcResultMatchers.status().isBadRequest());
         performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template, expectations,
                           "Unable to update the template.", TemplateTestConstants.WRONG_ID);
     }
@@ -187,7 +186,7 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         templateRepository.save(template);
 
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.status().isOk());
         performDefaultDelete(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, expectations,
                              "Unable to delete the template", template.getId());
     }
@@ -205,7 +204,7 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         template.setId(TemplateTestConstants.WRONG_ID);
 
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isNotFound());
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDefaultDelete(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, expectations,
                              "Unable to update the template.", template.getId());
     }

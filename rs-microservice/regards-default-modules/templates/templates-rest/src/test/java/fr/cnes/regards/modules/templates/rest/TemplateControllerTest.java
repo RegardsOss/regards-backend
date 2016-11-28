@@ -57,7 +57,7 @@ public class TemplateControllerTest {
     @Before
     public void setUp() {
         // Init a template
-        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA);
+        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA, null);
         template.setId(TemplateTestConstants.ID);
 
         // Mock stuff
@@ -89,7 +89,7 @@ public class TemplateControllerTest {
         // Check
         Assert.assertEquals(template.getCode(), actual.getBody().get(0).getContent().getCode());
         Assert.assertEquals(template.getContent(), actual.getBody().get(0).getContent().getContent());
-        Assert.assertEquals(template.getData(), actual.getBody().get(0).getContent().getData());
+        Assert.assertEquals(template.getDataStructure(), actual.getBody().get(0).getContent().getDataStructure());
         Assert.assertEquals(template.getDescription(), actual.getBody().get(0).getContent().getDescription());
         Mockito.verify(templateService).findAll();
     }
@@ -114,7 +114,7 @@ public class TemplateControllerTest {
         Mockito.verify(templateService).create(Mockito.refEq(template, "id"));
         Assert.assertEquals(template.getCode(), actual.getBody().getContent().getCode());
         Assert.assertEquals(template.getContent(), actual.getBody().getContent().getContent());
-        Assert.assertEquals(template.getData(), actual.getBody().getContent().getData());
+        Assert.assertEquals(template.getDataStructure(), actual.getBody().getContent().getDataStructure());
         Assert.assertEquals(template.getDescription(), actual.getBody().getContent().getDescription());
     }
 
@@ -139,7 +139,7 @@ public class TemplateControllerTest {
         // Check
         Assert.assertEquals(template.getCode(), actual.getBody().getContent().getCode());
         Assert.assertEquals(template.getDescription(), actual.getBody().getContent().getDescription());
-        Assert.assertEquals(template.getData(), actual.getBody().getContent().getData());
+        Assert.assertEquals(template.getDataStructure(), actual.getBody().getContent().getDataStructure());
     }
 
     /**
@@ -290,7 +290,7 @@ public class TemplateControllerTest {
         Assert.assertEquals(expected.getContent().getId(), actual.getContent().getId());
         Assert.assertEquals(expected.getContent().getCode(), actual.getContent().getCode());
         Assert.assertEquals(expected.getContent().getContent(), actual.getContent().getContent());
-        Assert.assertEquals(expected.getContent().getData(), actual.getContent().getData());
+        Assert.assertEquals(expected.getContent().getDataStructure(), actual.getContent().getDataStructure());
         Assert.assertEquals(expected.getContent().getDescription(), actual.getContent().getDescription());
         Assert.assertEquals(expected.getLinks(), actual.getLinks());
     }

@@ -3,9 +3,14 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -14,6 +19,11 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentif
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
 import fr.cnes.regards.modules.templates.domain.Template;
+import freemarker.cache.StringTemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.Version;
 
 /**
  * {@link ITemplateService} implementation.
@@ -25,19 +35,53 @@ import fr.cnes.regards.modules.templates.domain.Template;
 public class TemplateService implements ITemplateService {
 
     /**
+     * Freemarker version-major number. Needed for configuring the Freemarker library.
+     *
+     * @see {@link Configuration#Configuration(Version)}
+     */
+    private static final int INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR = 2;
+
+    /**
+     * Freemarker version-minor number. Needed for configuring the Freemarker library.
+     *
+     * @see {@link Configuration#Configuration(Version)}
+     */
+    private static final int INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR = 3;
+
+    /**
+     * Freemarker version-micro number. Needed for configuring the Freemarker library.
+     *
+     * @see {@link Configuration#Configuration(Version)}
+     */
+    private static final int INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO = 25;
+
+    /**
      * The JPA repository managing CRUD operation on templates. Autowired by Spring.
      */
     private final ITemplateRepository templateRepository;
+
+    /**
+     * The string template loader
+     */
+    private StringTemplateLoader loader;
+
+    /**
+     * The freemarker configuration
+     */
+    private Configuration configuration;
 
     /**
      * Constructor
      *
      * @param pTemplateRepository
      *            the template repository
+     * @throws IOException
+     *             when an error occurs while configuring the template loader
      */
-    public TemplateService(final ITemplateRepository pTemplateRepository) {
+    public TemplateService(final ITemplateRepository pTemplateRepository) throws IOException {
         super();
         templateRepository = pTemplateRepository;
+        configureTemplateLoader();
     }
 
     /*
@@ -58,7 +102,8 @@ public class TemplateService implements ITemplateService {
      */
     @Override
     public Template create(final Template pTemplate) {
-        final Template toCreate = new Template(pTemplate.getCode(), pTemplate.getContent(), pTemplate.getData());
+        final Template toCreate = new Template(pTemplate.getCode(), pTemplate.getContent(), pTemplate.getDataStructure(),
+                pTemplate.getSubject());
         return templateRepository.save(toCreate);
     }
 
@@ -86,7 +131,7 @@ public class TemplateService implements ITemplateService {
         }
         final Template template = findById(pId);
         template.setContent(pTemplate.getContent());
-        template.setData(pTemplate.getData());
+        template.setDataStructure(pTemplate.getDataStructure());
         template.setDescription(pTemplate.getDescription());
 
         templateRepository.save(template);
@@ -103,6 +148,55 @@ public class TemplateService implements ITemplateService {
             throw new EntityNotFoundException(pId, Template.class);
         }
         templateRepository.delete(pId);
+    }
+
+    /**
+     * Configure the template loader
+     *
+     * @throws IOException
+     *             when error occurs during template loading
+     */
+    private void configureTemplateLoader() throws IOException {
+        configuration = new Configuration(new Version(INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR,
+                INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR, INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO));
+        loader = new StringTemplateLoader();
+        configuration.setTemplateLoader(loader);
+        configuration.setDefaultEncoding("UTF-8");
+        configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.templates.service.ITemplateService#write(java.lang.String, java.util.Map,
+     * java.lang.String[])
+     */
+    @Override
+    public SimpleMailMessage writeToEmail(final String pTemplateCode, final Map<String, String> pDataModel,
+            final String[] pRecipients) throws TemplateWriterException {
+        // Retrieve the template of passed code
+        final Template template = templateRepository.findOneByCode(pTemplateCode)
+                .orElseThrow(() -> new TemplateWriterException(
+                        new EntityNotFoundException(pTemplateCode, Template.class)));
+
+        // Add the template (regards template POJO) to the loader
+        loader.putTemplate(template.getCode(), template.getContent());
+
+        // Define the output writer for the mail content
+        final Writer out = new StringWriter();
+        try {
+            // Retrieve the template (freemarker Template) and process it with the data model
+            configuration.getTemplate(template.getCode()).process(pDataModel, out);
+        } catch (TemplateException | IOException e) {
+            throw new TemplateWriterException(e);
+        }
+
+        final SimpleMailMessage message = new SimpleMailMessage();
+        message.setSubject(template.getSubject());
+        message.setText(out.toString());
+        message.setTo(pRecipients);
+
+        return message;
     }
 
 }

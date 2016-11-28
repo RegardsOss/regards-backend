@@ -24,7 +24,7 @@ public class TemplateRepositoryTest extends AbstractDaoTransactionalTest {
      * A template with some values
      */
     private final Template template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT,
-            TemplateTestConstants.DATA);
+            TemplateTestConstants.DATA, TemplateTestConstants.SUBJECT);
 
     /**
      * The template repository
@@ -51,11 +51,11 @@ public class TemplateRepositoryTest extends AbstractDaoTransactionalTest {
         templateRepository.save(template);
 
         // Check
-        Assert.assertEquals(template.getData().get(TemplateTestConstants.DATA_KEY_0),
+        Assert.assertEquals(template.getDataStructure().get(TemplateTestConstants.DATA_KEY_0),
                             TemplateTestConstants.DATA_VALUE_0);
-        Assert.assertEquals(template.getData().get(TemplateTestConstants.DATA_KEY_1),
+        Assert.assertEquals(template.getDataStructure().get(TemplateTestConstants.DATA_KEY_1),
                             TemplateTestConstants.DATA_VALUE_1);
-        Assert.assertEquals(template.getData().get(TemplateTestConstants.DATA_KEY_2),
+        Assert.assertEquals(template.getDataStructure().get(TemplateTestConstants.DATA_KEY_2),
                             TemplateTestConstants.DATA_VALUE_2);
     }
 

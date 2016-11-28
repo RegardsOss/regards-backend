@@ -31,7 +31,12 @@ public final class TemplateTestConstants {
     /**
      * Content
      */
-    public static final String CONTENT = "Hello $name.";
+    public static final String CONTENT = "Hello ${name}. You are ${age} years old and ${height} m tall.";
+
+    /**
+     * Subject
+     */
+    public static final String SUBJECT = "Subject of a templated mail";
 
     /**
      * Data
@@ -69,12 +74,27 @@ public final class TemplateTestConstants {
     /**
      * A value stored in the data map
      */
-    public static final String DATA_VALUE_2 = "170";
+    public static final String DATA_VALUE_2 = "1.79";
 
     /**
      * Description
      */
     public static final String DESCRIPTON = "I'm describing what this template is good for";
+
+    /**
+     * A recipient for the mail
+     */
+    public static final String RECIPIENT_0 = "email@test.com";
+
+    /**
+     * A recipient for the mail
+     */
+    public static final String RECIPIENT_1 = "otheremail@test.com";
+
+    /**
+     * The recipients as an array
+     */
+    public static final String[] RECIPIENTS = { RECIPIENT_0, RECIPIENT_1 };
 
     /**
      * Id
