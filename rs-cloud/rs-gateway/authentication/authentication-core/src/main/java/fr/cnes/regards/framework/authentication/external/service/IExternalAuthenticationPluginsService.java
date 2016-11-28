@@ -8,7 +8,7 @@ import java.util.List;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.ExternalAuthenticationInformations;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 
@@ -39,11 +39,11 @@ public interface IExternalAuthenticationPluginsService {
      * @param pPluginConfigurationId
      *            PluginConfiguration identifier to retrieve
      * @return PluginConfiguration
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Plugin does not exists
      * @since 1.0-SNAPSHOT
      */
-    PluginConfiguration retrieveServiceProviderPlugin(Long pPluginConfigurationId) throws ModuleEntityNotFoundException;
+    PluginConfiguration retrieveServiceProviderPlugin(Long pPluginConfigurationId) throws EntityNotFoundException;
 
     /**
      *
@@ -52,7 +52,7 @@ public interface IExternalAuthenticationPluginsService {
      * @param pPluginConfigurationToCreate
      *            PluginConfiguration to create
      * @return Created PluginConfiguration
-     * @throws InvalServiceException
+     * @throws ModuleException
      *             Plugin to create is not valid
      * @since 1.0-SNAPSHOT
      */
@@ -66,10 +66,8 @@ public interface IExternalAuthenticationPluginsService {
      * @param pPluginConfigurationToUpdate
      *            PluginConfiguration to update
      * @return updated PluginConfiguration (hateoas formated)
-     * @throws InvalServiceException
+     * @throws ModuleException
      *             Plugin to update is not valid
-     * @throws ModuleEntityNotFoundException
-     *             Plugin to update does not exists
      * @since 1.0-SNAPSHOT
      */
     PluginConfiguration updateServiceProviderPlugin(final PluginConfiguration pPluginConfigurationToUpdate)
@@ -81,11 +79,11 @@ public interface IExternalAuthenticationPluginsService {
      *
      * @param pPluginConfigurationId
      *            PluginConfiguration identifier to delete
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Plugin to delete does not exists
      * @since 1.0-SNAPSHOT
      */
-    void deleteServiceProviderPlugin(Long pPluginConfigurationId) throws ModuleEntityNotFoundException;
+    void deleteServiceProviderPlugin(Long pPluginConfigurationId) throws EntityNotFoundException;
 
     /**
      *
@@ -96,10 +94,10 @@ public interface IExternalAuthenticationPluginsService {
      * @param pAuthInformations
      *            External SSO informations to validate
      * @return OAuth2AccessToken
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
     OAuth2AccessToken authenticate(Long pPluginConfigurationId, ExternalAuthenticationInformations pAuthInformations)
-            throws ModuleEntityNotFoundException;
+            throws EntityNotFoundException;
 
 }

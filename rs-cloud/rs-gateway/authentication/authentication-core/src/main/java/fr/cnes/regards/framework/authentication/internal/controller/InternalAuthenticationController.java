@@ -19,7 +19,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 
@@ -89,7 +89,7 @@ public class InternalAuthenticationController
             } else {
                 response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             LOG.error(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -110,7 +110,7 @@ public class InternalAuthenticationController
                 } else {
                     response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
                 }
-            } catch (final ModuleEntityNotFoundException e) {
+            } catch (final EntityNotFoundException e) {
                 LOG.error(e.getMessage(), e);
                 response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } catch (final ModuleException e) {
@@ -133,7 +133,7 @@ public class InternalAuthenticationController
         try {
             service.deleteIdentityProviderPlugin(pPluginConfigurationId);
             response = new ResponseEntity<>(HttpStatus.OK);
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             LOG.error(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (final ModuleException e) {
@@ -145,7 +145,7 @@ public class InternalAuthenticationController
     }
 
     @Override
-    public Resource<PluginConfiguration> toResource(final PluginConfiguration pElement, Object... pExtras) {
+    public Resource<PluginConfiguration> toResource(final PluginConfiguration pElement, final Object... pExtras) {
         final Resource<PluginConfiguration> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveIdentityProviderPlugin", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, pElement.getId()));

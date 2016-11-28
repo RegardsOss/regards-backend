@@ -5,11 +5,9 @@ package fr.cnes.regards.framework.authentication.internal.service;
 
 import java.util.List;
 
-import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
@@ -38,12 +36,11 @@ public interface IInternalAuthenticationPluginsService {
      * @param pPluginConfigurationId
      *            PluginConfiguration identifier to retrieve
      * @return PluginConfiguration
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Plugin does not exists
      * @since 1.0-SNAPSHOT
      */
-    PluginConfiguration retrieveIdentityProviderPlugin(Long pPluginConfigurationId)
-            throws ModuleEntityNotFoundException;
+    PluginConfiguration retrieveIdentityProviderPlugin(Long pPluginConfigurationId) throws EntityNotFoundException;
 
     /**
      *
@@ -52,7 +49,7 @@ public interface IInternalAuthenticationPluginsService {
      * @param pPluginConfigurationToCreate
      *            PluginConfiguration to create
      * @return Created PluginConfiguration
-     * @throws InvalidEntityException
+     * @throws ModuleException
      *             Plugin to create is not valid
      * @since 1.0-SNAPSHOT
      */
@@ -66,9 +63,7 @@ public interface IInternalAuthenticationPluginsService {
      * @param pPluginConfigurationToUpdate
      *            PluginConfiguration to update
      * @return updated PluginConfiguration (hateoas formated)
-     * @throws InvalidEntityException
-     *             Plugin to update is not valid
-     * @throws ModuleEntityNotFoundException
+     * @throws ModuleException
      *             Plugin to update does not exists
      * @since 1.0-SNAPSHOT
      */
@@ -81,12 +76,10 @@ public interface IInternalAuthenticationPluginsService {
      *
      * @param pPluginConfigurationId
      *            PluginConfiguration identifier to delete
-     * @throws PluginUtilsException
-     *             Error deleting plugin
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Plugin to delete does not exists
      * @since 1.0-SNAPSHOT
      */
-    void deleteIdentityProviderPlugin(Long pPluginConfigurationId) throws ModuleException;
+    void deleteIdentityProviderPlugin(Long pPluginConfigurationId) throws EntityNotFoundException;
 
 }

@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IServiceProviderPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.ExternalAuthenticationInformations;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
@@ -88,12 +88,12 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
 
     @Override
     public PluginConfiguration retrieveServiceProviderPlugin(final Long pPluginConfigurationId)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         try {
             return pluginService.getPluginConfiguration(pPluginConfigurationId);
         } catch (final PluginUtilsException e) {
             LOG.error(e.getMessage(), e);
-            throw new ModuleEntityNotFoundException(pPluginConfigurationId.toString(), PluginConfiguration.class);
+            throw new EntityNotFoundException(pPluginConfigurationId.toString(), PluginConfiguration.class);
         }
     }
 
@@ -121,13 +121,13 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
     }
 
     @Override
-    public void deleteServiceProviderPlugin(final Long pPluginConfigurationId) throws ModuleEntityNotFoundException {
+    public void deleteServiceProviderPlugin(final Long pPluginConfigurationId) throws EntityNotFoundException {
         pluginService.deletePluginConfiguration(pPluginConfigurationId);
     }
 
     @Override
     public OAuth2AccessToken authenticate(final Long pPluginConfigurationId,
-            final ExternalAuthenticationInformations pAuthInformations) throws ModuleEntityNotFoundException {
+            final ExternalAuthenticationInformations pAuthInformations) throws EntityNotFoundException {
         try {
             // First check project existence
             final ResponseEntity<Resource<Project>> response = projectsClient

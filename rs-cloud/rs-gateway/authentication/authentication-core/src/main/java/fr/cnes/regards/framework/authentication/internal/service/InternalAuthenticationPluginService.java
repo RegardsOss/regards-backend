@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.service.IPluginService;
@@ -57,12 +57,12 @@ public class InternalAuthenticationPluginService implements IInternalAuthenticat
 
     @Override
     public PluginConfiguration retrieveIdentityProviderPlugin(final Long pPluginConfigurationId)
-            throws ModuleEntityNotFoundException {
+            throws EntityNotFoundException {
         try {
             return pluginService.getPluginConfiguration(pPluginConfigurationId);
         } catch (final PluginUtilsException e) {
             LOG.error(e.getMessage(), e);
-            throw new ModuleEntityNotFoundException(pPluginConfigurationId.toString(), PluginConfiguration.class);
+            throw new EntityNotFoundException(pPluginConfigurationId.toString(), PluginConfiguration.class);
         }
     }
 
@@ -90,7 +90,7 @@ public class InternalAuthenticationPluginService implements IInternalAuthenticat
     }
 
     @Override
-    public void deleteIdentityProviderPlugin(final Long pPluginConfigurationId) throws ModuleEntityNotFoundException {
+    public void deleteIdentityProviderPlugin(final Long pPluginConfigurationId) throws EntityNotFoundException {
         pluginService.deletePluginConfiguration(pPluginConfigurationId);
     }
 
