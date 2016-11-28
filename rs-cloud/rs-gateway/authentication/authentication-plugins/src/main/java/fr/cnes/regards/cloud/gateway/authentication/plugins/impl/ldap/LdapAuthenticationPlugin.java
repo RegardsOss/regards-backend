@@ -7,7 +7,7 @@
  * END-VERSION-HISTORY
  */
 
-package fr.cnes.regards.cloud.gateway.authentication.plugins.impl;
+package fr.cnes.regards.cloud.gateway.authentication.plugins.impl.ldap;
 
 import java.io.IOException;
 
@@ -27,6 +27,7 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugi
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
 import fr.cnes.regards.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
 
 /**
@@ -57,9 +58,19 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     public static final String PARAM_LDAP_CN = "ldapCN";
 
     /**
+     * LDAP Search filter parameter label
+     */
+    public static final String PARAM_LDAP_USER_FILTER_ATTTRIBUTE = "ldapSearchUserFilter";
+
+    /**
      * LDAP Email attribute to retrieve
      */
-    public static final String PARAM_LDAP_EMAIL_ATTTRIBUTE = "ldapEmail";
+    public static final String PARAM_LDAP_USER_LOGIN_ATTTRIBUTE = "ldapUserLoginAttribute";
+
+    /**
+     * LDAP Email attribute to retrieve
+     */
+    public static final String PARAM_LDAP_USER_EMAIL_ATTTRIBUTE = "ldapEmailAttribute";
 
     /**
      * Class logger
@@ -69,26 +80,57 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     /**
      * LDAP Host access
      */
-    @PluginParameter(name = PARAM_LDAP_HOST)
+    @PluginParameter(name = PARAM_LDAP_HOST, description = "LDAP Server address")
     private String ldapHost;
 
     /**
      * LDAP Port
      */
-    @PluginParameter(name = PARAM_LDAP_PORT)
+    @PluginParameter(name = PARAM_LDAP_PORT, description = "LDAP Server port (default 389)")
     private String ldapPort;
 
     /**
      * LDAP DN
      */
-    @PluginParameter(name = PARAM_LDAP_CN)
+    @PluginParameter(name = PARAM_LDAP_CN, description = "LDAP Root CN")
     private String ldapDN;
 
     /**
-     * LDAP email attribute name
+     * LDAP User login attribute.
      */
-    @PluginParameter(name = PARAM_LDAP_EMAIL_ATTTRIBUTE)
+    @PluginParameter(name = PARAM_LDAP_USER_LOGIN_ATTTRIBUTE,
+            description = "LDAP User parameter containing user login (default=sAMAccountLogin)")
+    private String ldapUserLoginAttribute;
+
+    /**
+     * LDAP Filter to find the User object
+     */
+    @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE,
+            description = "LDAP Filter to find the user object (default = (ObjectClass=user)")
+    private String ldapSearchUserFilter;
+
+    /**
+     * LDAP email attribute label
+     */
+    @PluginParameter(name = PARAM_LDAP_USER_EMAIL_ATTTRIBUTE,
+            description = "LDAP parameter for user email (default=mail)")
     private String ldapEmailAttribute;
+
+    @PluginInit
+    public void setDefaultValues() {
+        if (ldapSearchUserFilter == null) {
+            ldapSearchUserFilter = "(ObjectClass=user)";
+        }
+
+        if (ldapPort == null) {
+            ldapPort = "389";
+        }
+
+        if (ldapEmailAttribute == null) {
+            ldapEmailAttribute = "mail";
+        }
+
+    }
 
     /**
      * Overridden method
@@ -179,8 +221,9 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     private String getEmail(final LdapConnection ctx, final String pDn, final String pLogin) throws LdapException {
         EntryCursor cursor;
         String userMail = null;
+        final String searchFilter = "(&" + ldapSearchUserFilter + "(" + ldapUserLoginAttribute + "=" + pLogin + "))";
         try {
-            cursor = ctx.search(pDn, "(objectclass=*)", SearchScope.SUBTREE, ldapEmailAttribute);
+            cursor = ctx.search(pDn, searchFilter, SearchScope.SUBTREE, ldapEmailAttribute);
 
             while (cursor.next() && (userMail == null)) {
                 final Entry entry = cursor.get();

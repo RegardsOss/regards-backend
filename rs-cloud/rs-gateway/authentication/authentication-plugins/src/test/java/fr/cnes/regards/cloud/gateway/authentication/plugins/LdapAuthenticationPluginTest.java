@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
-import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.LdapAuthenticationPlugin;
+import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.ldap.LdapAuthenticationPlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
@@ -65,7 +65,7 @@ public class LdapAuthenticationPluginTest {
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_HOST, "test")
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_PORT, "8080")
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun")
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_EMAIL_ATTTRIBUTE, "email").getParameters();
+                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, "email").getParameters();
         try {
             // instantiate plugin
             plugin = PluginUtils.getPlugin(parameters, LdapAuthenticationPlugin.class);

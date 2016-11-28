@@ -16,7 +16,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
-import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.RegardsInternalAuthenticationPlugin;
+import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.regards.RegardsInternalAuthenticationPlugin;
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthenticationManager;
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthorizationServerConfigurer;
 import fr.cnes.regards.framework.authentication.internal.Oauth2EndpointsConfiguration;

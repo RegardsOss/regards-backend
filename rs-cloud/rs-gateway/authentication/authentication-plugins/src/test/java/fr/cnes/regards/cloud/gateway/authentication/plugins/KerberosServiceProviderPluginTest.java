@@ -20,8 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.ExternalAuthenticationInformations;
-import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.KerberosServiceProviderPlugin;
-import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.Krb5TicketValidateAction;
+import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos.KerberosServiceProviderPlugin;
+import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos.Krb5TicketValidateAction;
+import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.plugins.utils.PluginUtils;
@@ -51,7 +52,12 @@ public class KerberosServiceProviderPluginTest {
     /**
      * REGARDS Principal to use for test
      */
-    private final static String principal = "HTTP/po14173LX@REGARDS.CLOUD-ESPACE.SI.C-S.FR";
+    private final static String applicatioPrincipal = "HTTP/po14173LX@REGARDS.CLOUD-ESPACE.SI.C-S.FR";
+
+    /**
+     * User login to connect for test
+     */
+    private final static String userPrincipal = "sbinda";
 
     /**
      *
@@ -69,8 +75,13 @@ public class KerberosServiceProviderPluginTest {
          * Set all parameters
          */
         final List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(KerberosServiceProviderPlugin.PRINCIPAL_PARAMETER, principal)
+                .addParameter(KerberosServiceProviderPlugin.PRINCIPAL_PARAMETER, applicatioPrincipal)
                 .addParameter(KerberosServiceProviderPlugin.REALM_PARAMETER, "REGARDS.CLOUD-ESPACE.SI.C-S.FR")
+                .addParameter(KerberosServiceProviderPlugin.LDAP_ADRESS_PARAMETER, "REGARDS-AD.CLOUD-ESPACE.SI.C-S.FR")
+                .addParameter(KerberosServiceProviderPlugin.LDAP_PORT_PARAMETER, "389")
+                .addParameter(KerberosServiceProviderPlugin.PARAM_LDAP_CN,
+                              "dc=REGARDS,dc=CLOUD-ESPACE,dc=SI,dc=C-S,dc=FR")
+                .addParameter(KerberosServiceProviderPlugin.PARAM_LDAP_EMAIL_ATTTRIBUTE, "mail")
                 .addParameter(KerberosServiceProviderPlugin.KRB5_FILEPATH_PARAMETER, urlkrb5.getPath())
                 .addParameter(KerberosServiceProviderPlugin.KEYTAB_FILEPATH_PARAMETER, url.getPath()).getParameters();
         try {
@@ -90,22 +101,24 @@ public class KerberosServiceProviderPluginTest {
     @Test
     @Ignore
     public void checkKerberosTicketValidation() {
-        final byte[] ticket = generateKerberosTicket(principal);
-        final ExternalAuthenticationInformations authInformations = new ExternalAuthenticationInformations("test",
+        final byte[] ticket = generateKerberosTicket(applicatioPrincipal, userPrincipal);
+        final ExternalAuthenticationInformations authInformations = new ExternalAuthenticationInformations("sbinda",
                 "test", ticket, "");
         Assert.assertTrue(plugin.checkTicketValidity(authInformations));
+        final UserDetails details = plugin.getUserInformations(authInformations);
+        Assert.assertTrue(details.getEmail().equals("sebastien.binda@c-s.fr"));
     }
 
     /**
      *
      * Authenticate to Kerberos server to generate a valid ticket
      *
-     * @param principal
+     * @param pApplicationPrincipal
      *            Kerberos princiapl
      * @return valid ticket
      * @since 1.0-SNAPSHOT
      */
-    public byte[] generateKerberosTicket(final String principal) {
+    public byte[] generateKerberosTicket(final String pApplicationPrincipal, final String pUserPrincipal) {
         try {
 
             final Oid krb5Oid = new Oid(Krb5TicketValidateAction.KERB_V5_OID);
@@ -113,12 +126,12 @@ public class KerberosServiceProviderPluginTest {
             final GSSManager manager = GSSManager.getInstance();
 
             // Authenticate test user
-            final GSSName clientName = manager.createName("sbinda", GSSName.NT_USER_NAME);
+            final GSSName clientName = manager.createName(pUserPrincipal, GSSName.NT_USER_NAME);
             final GSSCredential clientCred = manager.createCredential(clientName, 8 * 3600, krb5Oid,
                                                                       GSSCredential.INITIATE_ONLY);
 
             // Authenticate Regards application
-            final GSSName serverName = manager.createName(principal, GSSName.NT_USER_NAME);
+            final GSSName serverName = manager.createName(pApplicationPrincipal, GSSName.NT_USER_NAME);
             final GSSContext context = manager.createContext(serverName, krb5Oid, clientCred,
                                                              GSSContext.DEFAULT_LIFETIME);
             context.requestMutualAuth(false);

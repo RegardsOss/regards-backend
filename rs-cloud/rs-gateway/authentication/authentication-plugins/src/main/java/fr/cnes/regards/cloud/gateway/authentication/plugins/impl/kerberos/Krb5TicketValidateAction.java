@@ -1,15 +1,18 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.cloud.gateway.authentication.plugins.impl;
+package fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos;
 
 import java.security.PrivilegedExceptionAction;
 
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -23,6 +26,11 @@ import org.ietf.jgss.Oid;
 public class Krb5TicketValidateAction implements PrivilegedExceptionAction<String> {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(Krb5TicketValidateAction.class);
+
+    /**
      * OID Kerberos V5
      */
     public static final String KERB_V5_OID = "1.2.840.113554.1.2.2"; //$NON-NLS-1$
@@ -32,11 +40,19 @@ public class Krb5TicketValidateAction implements PrivilegedExceptionAction<Strin
      */
     private final byte[] ticket;
 
-    private final String spn;
+    /**
+     * REGARDS ticket service
+     */
+    private final String principal;
 
-    public Krb5TicketValidateAction(final byte[] ticket, final String spn) {
+    /**
+     * Context generated for the ticket validation
+     */
+    private GSSContext gssContext = null;
+
+    public Krb5TicketValidateAction(final byte[] ticket, final String pPrincipal) {
         this.ticket = ticket;
-        this.spn = spn;
+        this.principal = pPrincipal;
     }
 
     @Override
@@ -46,7 +62,7 @@ public class Krb5TicketValidateAction implements PrivilegedExceptionAction<Strin
         final GSSManager gssmgr = GSSManager.getInstance();
 
         // tell the GSSManager the Kerberos name of the service
-        final GSSName serviceName = gssmgr.createName(spn, null);
+        final GSSName serviceName = gssmgr.createName(principal, null);
 
         // get the service's credentials. note that this run() method was called by Subject.doAs(),
         // so the service's credentials (Service Principal Name and password) are already
@@ -55,7 +71,7 @@ public class Krb5TicketValidateAction implements PrivilegedExceptionAction<Strin
                                                                          krbOid, GSSCredential.ACCEPT_ONLY);
 
         // create a security context for decrypting the service ticket
-        final GSSContext gssContext = gssmgr.createContext(serviceCredentials);
+        gssContext = gssmgr.createContext(serviceCredentials);
 
         // decrypt the service ticket
         gssContext.acceptSecContext(ticket, 0, ticket.length);
@@ -64,11 +80,35 @@ public class Krb5TicketValidateAction implements PrivilegedExceptionAction<Strin
         // note that Active Directory created the service ticket, so we can trust it
         final String clientName = gssContext.getSrcName().toString();
 
-        // clean up the context
-        gssContext.dispose();
-
         // return the authenticated client name
         return clientName;
+    }
+
+    /**
+     *
+     * Retrieve authenticated kerberos context
+     *
+     * @return {@link GSSContext}
+     * @since 1.0-SNAPSHOT
+     */
+    public GSSContext getGssContext() {
+        return gssContext;
+    }
+
+    /**
+     *
+     * Close Kerberos context
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    public void closeContext() {
+        if (gssContext != null) {
+            try {
+                gssContext.dispose();
+            } catch (final GSSException e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
     }
 
 }

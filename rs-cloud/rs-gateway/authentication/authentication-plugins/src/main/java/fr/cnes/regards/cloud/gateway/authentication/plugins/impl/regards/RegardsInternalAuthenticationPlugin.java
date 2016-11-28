@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.cloud.gateway.authentication.plugins.impl;
+package fr.cnes.regards.cloud.gateway.authentication.plugins.impl.regards;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +58,6 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
 
     @Override
     public AuthenticationPluginResponse authenticate(final String pEmail, final String pPassword, final String pScope) {
-        LOG.info("Trying to authenticate user " + pEmail + " with password=" + pPassword + " for project " + pScope);
 
         AuthenticationStatus status = AuthenticationStatus.ACCESS_DENIED;
         String errorMessage = null;
