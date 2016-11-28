@@ -145,8 +145,16 @@ public class Project implements IIdentifiable<Long> {
 
     @Override
     public boolean equals(final Object pObject) {
+        if (pObject == null) {
+            return false;
+        }
+
+        if (this.getClass() != pObject.getClass()) {
+            return false;
+        }
+
         final Project projectToCompare = (Project) pObject;
-        if ((id != null) && (projectToCompare != null) && (projectToCompare.getId() != null)) {
+        if ((id != null) && (projectToCompare.getId() != null)) {
             return (pObject instanceof Project) && (id.equals(((Project) pObject).getId()));
         } else {
             return false;
