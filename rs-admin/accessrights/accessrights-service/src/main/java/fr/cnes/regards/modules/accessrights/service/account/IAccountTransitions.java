@@ -59,10 +59,13 @@ public interface IAccountTransitions {
      *
      * @param pAccount
      *            The {@link Account}
-     * @throws EntityTransitionForbiddenException
-     *             Thrown when the account is not in status ACCEPTED
+     * @param pCode
+     *            The unlock code. Must match the account's <code>code</code> field
+     * @throws EntityOperationForbiddenException
+     *             Thrown when the code does not match the account's <code>code</code> field<br>
+     *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status ACCEPOTED<br>
      */
-    default void emailValidation(final Account pAccount) throws EntityTransitionForbiddenException {
+    default void emailValidation(final Account pAccount, final String pCode) throws EntityOperationForbiddenException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };

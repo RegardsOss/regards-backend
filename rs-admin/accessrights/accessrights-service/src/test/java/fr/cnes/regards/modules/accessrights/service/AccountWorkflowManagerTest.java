@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.service.account.AcceptedState;
 import fr.cnes.regards.modules.accessrights.service.account.AccountStateProvider;
 import fr.cnes.regards.modules.accessrights.service.account.AccountWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.account.ActiveState;
@@ -382,5 +383,55 @@ public class AccountWorkflowManagerTest {
         // Check
         account.setStatus(AccountStatus.ACTIVE);
         Mockito.verify(accountRepository).save(Mockito.refEq(account));
+    }
+
+    /**
+     * Check that the system requires the user to validate via email its recently created account.
+     *
+     * @throws EntityOperationForbiddenException
+     *             Thrown when passed id is different from the id of passed account<br>
+     *             {@link EntityTransitionForbiddenException} Thrown when the account is not of status ACCEPTED<br>
+     */
+    @Test
+    @Purpose("Check that the system requires the user to validate via email its recently created account.")
+    public void emailValidation() throws EntityOperationForbiddenException {
+        // Mock
+        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
+        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new AcceptedState(accountRepository));
+
+        // Prepare the case
+        account.setStatus(AccountStatus.ACCEPTED);
+        account.setCode(CODE);
+
+        // Call tested method
+        accountWorkflowManager.emailValidation(account, CODE);
+
+        // Check
+        account.setStatus(AccountStatus.ACTIVE);
+        Mockito.verify(accountRepository).save(Mockito.refEq(account));
+    }
+
+    /**
+     * Check that the system does not validate an account if the code passed is incorrect.
+     *
+     * @throws EntityOperationForbiddenException
+     *             Thrown when passed id is different from the id of passed account<br>
+     *             {@link EntityTransitionForbiddenException} Thrown when the account is not of status LOCKED<br>
+     */
+    @Test(expected = EntityOperationForbiddenException.class)
+    @Purpose("Check that the system does not validate an account if the code passed is incorrect.")
+    public void emailValidationWrongCode() throws EntityOperationForbiddenException {
+        // Prepare the case
+        account.setId(ID);
+        account.setStatus(AccountStatus.ACCEPTED);
+
+        // Mock
+        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
+        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new AcceptedState(accountRepository));
+
+        // Trigger exception
+        accountWorkflowManager.unlockAccount(account, "wrongCode");
     }
 }

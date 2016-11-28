@@ -5,7 +5,9 @@ package fr.cnes.regards.modules.accessrights.service.account;
 
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
@@ -16,9 +18,28 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 @Component
 public class AcceptedState implements IAccountTransitions {
 
+    /**
+     * Account repository
+     */
+    private final IAccountRepository accountRepository;
+
+    /**
+     * @param pAccountRepository
+     *            the account repository
+     */
+    public AcceptedState(final IAccountRepository pAccountRepository) {
+        super();
+        accountRepository = pAccountRepository;
+    }
+
     @Override
-    public void emailValidation(final Account pAccount) throws EntityTransitionForbiddenException {
-        // TODO Auto-generated method stub
+    public void emailValidation(final Account pAccount, final String pCode) throws EntityOperationForbiddenException {
+        if (!pAccount.getCode().equals(pCode)) {
+            throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class,
+                    "The validation code is incorrect");
+        }
+        pAccount.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(pAccount);
     }
 
 }

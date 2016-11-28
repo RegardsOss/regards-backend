@@ -123,8 +123,8 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * accessrights.domain.instance.Account)
      */
     @Override
-    public void emailValidation(final Account pAccount) throws EntityTransitionForbiddenException {
-        accountStateProvider.getState(pAccount).emailValidation(pAccount);
+    public void emailValidation(final Account pAccount, final String pCode) throws EntityOperationForbiddenException {
+        accountStateProvider.getState(pAccount).emailValidation(pAccount, pCode);
     }
 
     /*

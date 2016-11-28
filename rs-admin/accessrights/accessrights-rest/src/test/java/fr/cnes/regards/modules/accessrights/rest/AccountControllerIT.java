@@ -97,6 +97,8 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
     private final String apiValidatePassword = "/accounts/{account_login}/validate?password={account_password}";
 
+    private final String apiEmailValidation = "/accounts/{account_email}/emailValidation/{validation_code}";
+
     private String errorMessage;
 
     @Autowired
@@ -143,6 +145,8 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/settings", RequestMethod.PUT, ROLE_TEST);
         authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_email}/validate", RequestMethod.GET,
                                    ROLE_TEST);
+        authService.setAuthorities(PROJECT_TEST_NAME, apiEmailValidation, RequestMethod.PUT, ROLE_TEST);
+
         errorMessage = "Cannot reach model attributes";
         apiAccounts = "/accounts";
         apiAccountId = apiAccounts + "/{account_id}";
@@ -365,6 +369,18 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         expectations.clear();
         expectations.add(status().isNotFound());
         performGet(apiValidatePassword, token, expectations, errorMessage, wrongEmail, PASSWORD);
+    }
+
+    @Test
+    @Purpose("Check that the system requires the user to validate via email its recently created account.")
+    public void emailValidation() {
+        // Prepare the account
+        account.setStatus(AccountStatus.ACCEPTED);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performPut(apiEmailValidation, token, null, expectations, errorMessage, account.getEmail(), account.getCode());
     }
 
     @Override
