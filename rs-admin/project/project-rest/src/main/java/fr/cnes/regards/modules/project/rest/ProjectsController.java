@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.project.service.IProjectService;
  *
  * Controller for REST Access to Project entities
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @RestController
@@ -140,7 +140,7 @@ public class ProjectsController implements IResourceController<Project> {
     @ResponseBody
     @ResourceAccess(description = "update the project project_name", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") final String pProjectName,
-            @RequestBody final Project pProjectToUpdate) throws EntityException {
+            @Valid @RequestBody final Project pProjectToUpdate) throws EntityException {
 
         final Project project = projectService.updateProject(pProjectName, pProjectToUpdate);
         return ResponseEntity.ok(toResource(project));

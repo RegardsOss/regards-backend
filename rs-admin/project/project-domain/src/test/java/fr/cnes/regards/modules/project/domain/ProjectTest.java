@@ -84,6 +84,65 @@ public class ProjectTest {
         Assert.assertEquals(0, constraintViolations.size());
     }
 
+    @Test
+    public void testProjectName() {
+        Project project = new Project(id, description, icon, ispublic, "invalid project");
+        Set<ConstraintViolation<Project>> constraintViolations = validator.validate(project);
+        Assert.assertNotEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "invalid,project");
+        constraintViolations = validator.validate(project);
+        Assert.assertNotEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "invalid;project");
+        constraintViolations = validator.validate(project);
+        Assert.assertNotEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "invalid (project)");
+        constraintViolations = validator.validate(project);
+        Assert.assertNotEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "invalid [project]");
+        constraintViolations = validator.validate(project);
+        Assert.assertNotEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "invalid [project]");
+        constraintViolations = validator.validate(project);
+        Assert.assertNotEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "invalid=project");
+        constraintViolations = validator.validate(project);
+        Assert.assertNotEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "invalid&project");
+        constraintViolations = validator.validate(project);
+        Assert.assertNotEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "invalid\"project");
+        constraintViolations = validator.validate(project);
+        Assert.assertNotEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "invalid/project");
+        constraintViolations = validator.validate(project);
+        Assert.assertNotEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "valid-project");
+        constraintViolations = validator.validate(project);
+        Assert.assertEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "valid_project");
+        constraintViolations = validator.validate(project);
+        Assert.assertEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "validproject0");
+        constraintViolations = validator.validate(project);
+        Assert.assertEquals(0, constraintViolations.size());
+
+        project = new Project(id, description, icon, ispublic, "validProject");
+        constraintViolations = validator.validate(project);
+        Assert.assertEquals(0, constraintViolations.size());
+    }
+
     /**
      * Test method for {@link Project#Project(Long, String, String, boolean, String)}.
      */

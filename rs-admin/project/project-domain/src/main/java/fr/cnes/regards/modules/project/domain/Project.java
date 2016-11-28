@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.executable.ValidateOnExecution;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -21,7 +22,7 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
  *
  * Project Entity
  *
- * @author CS
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @ValidateOnExecution
@@ -42,6 +43,7 @@ public class Project implements IIdentifiable<Long> {
      * Project name
      */
     @NotNull
+    @Pattern(regexp = "[a-zA-Z0-9-_]*", message = "Valid caracters for project name are 'a-z','A-Z','0-9','-' and '_'")
     @Column(name = "name", unique = true)
     private String name;
 
