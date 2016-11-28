@@ -52,115 +52,69 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
     private static final Logger LOG = LoggerFactory.getLogger(KerberosServiceProviderPlugin.class);
 
     /**
-     * Principal parameter label
-     */
-    public static final String PRINCIPAL_PARAMETER = "principal";
-
-    /**
-     * Realm parameter label
-     */
-    public static final String REALM_PARAMETER = "realm";
-
-    /**
-     * LDAP Address label
-     */
-    public static final String LDAP_ADRESS_PARAMETER = "ldapAdress";
-
-    /**
-     * LDAP Port parameter label
-     */
-    public static final String LDAP_PORT_PARAMETER = "ldapPort";
-
-    /**
-     * Krb5.conf file parameter label
-     */
-    public static final String KRB5_FILEPATH_PARAMETER = "krb5FilePath";
-
-    /**
-     * keytab file parameter label
-     */
-    public static final String KEYTAB_FILEPATH_PARAMETER = "keytabFilePath";
-
-    /**
-     * LDAP DN label
-     */
-    public static final String PARAM_LDAP_CN = "ldapCN";
-
-    /**
-     * LDAP Search filter parameter label
-     */
-    public static final String PARAM_LDAP_USER_FILTER_ATTTRIBUTE = "ldapSearchUserFilter";
-
-    /**
-     * LDAP Email attribute to retrieve
-     */
-    public static final String PARAM_LDAP_USER_LOGIN_ATTTRIBUTE = "ldapUserLoginAttribute";
-
-    /**
-     * LDAP Email attribute to retrieve
-     */
-    public static final String PARAM_LDAP_EMAIL_ATTTRIBUTE = "ldapEmail";
-
-    /**
      * REGARDS ticket service
      */
-    @PluginParameter(name = PRINCIPAL_PARAMETER, description = "REGARDS ticket service")
+    @PluginParameter(name = KerberosSPParameters.PRINCIPAL_PARAMETER, description = "REGARDS ticket service")
     private String principal;
 
     /**
      * Kerberos domain name
      */
-    @PluginParameter(name = REALM_PARAMETER, description = "Kerberos domain name")
+    @PluginParameter(name = KerberosSPParameters.REALM_PARAMETER, description = "Kerberos domain name")
     private String realm;
 
     /**
      * Adress to connect to Active Directory LDAP
      */
-    @PluginParameter(name = LDAP_ADRESS_PARAMETER, description = "Adress to connect to Active Directory LDAP")
+    @PluginParameter(name = KerberosSPParameters.LDAP_ADRESS_PARAMETER,
+            description = "Adress to connect to Active Directory LDAP")
     private String ldapAdress;
 
     /**
      * Port to connect to Active Directory LDAP
      */
-    @PluginParameter(name = LDAP_PORT_PARAMETER, description = "Port to connect to Active Directory LDAP (default=389)")
+    @PluginParameter(name = KerberosSPParameters.LDAP_PORT_PARAMETER,
+            description = "Port to connect to Active Directory LDAP (default=389)")
     private String ldapPort;
 
     /**
      * LDAP Root CN
      */
-    @PluginParameter(name = PARAM_LDAP_CN, description = "LDAP Root CN")
+    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_CN, description = "LDAP Root CN")
     private String ldapCN;
 
     /**
      * LDAP Filter to find the User object
      */
-    @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE,
+    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_USER_FILTER_ATTTRIBUTE,
             description = "LDAP Filter to find the user object (default = (ObjectClass=user))")
     private String ldapSearchUserFilter;
 
     /**
      * LDAP User login attribute.
      */
-    @PluginParameter(name = PARAM_LDAP_USER_LOGIN_ATTTRIBUTE,
+    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_USER_LOGIN_ATTTRIBUTE,
             description = "LDAP User parameter containing user login (default=sAMAccountName)")
     private String ldapUserLoginAttribute;
 
     /**
      * LDAP parameter for user email (default=mail)
      */
-    @PluginParameter(name = PARAM_LDAP_EMAIL_ATTTRIBUTE, description = "LDAP parameter for user email (default=mail)")
+    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_EMAIL_ATTTRIBUTE,
+            description = "LDAP parameter for user email (default=mail)")
     private String ldapEmailAttribute;
 
     /**
      * Kerberos configuration file (krb5.conf)
      */
-    @PluginParameter(name = KRB5_FILEPATH_PARAMETER, description = "Kerberos configuration file (krb5.conf)")
+    @PluginParameter(name = KerberosSPParameters.KRB5_FILEPATH_PARAMETER,
+            description = "Kerberos configuration file (krb5.conf)")
     private String krb5FilePath;
 
     /**
      * Kerberos Keytab file
      */
-    @PluginParameter(name = KEYTAB_FILEPATH_PARAMETER, description = "Kerberos Keytab file")
+    @PluginParameter(name = KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, description = "Kerberos Keytab file")
     private String keytabFilePath;
 
     /**

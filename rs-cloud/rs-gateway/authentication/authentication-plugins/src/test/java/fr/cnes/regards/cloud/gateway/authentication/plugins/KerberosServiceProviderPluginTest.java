@@ -14,12 +14,12 @@ import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.ExternalAuthenticationInformations;
+import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos.KerberosSPParameters;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos.KerberosServiceProviderPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos.Krb5TicketValidateAction;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
@@ -68,30 +68,31 @@ public class KerberosServiceProviderPluginTest {
     @BeforeClass
     public static void init() {
 
-        final URL url = ClassLoader.getSystemResource("regards.keytab");
         final URL urlkrb5 = ClassLoader.getSystemResource("krb5.conf");
 
-        /*
-         * Set all parameters
-         */
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(KerberosServiceProviderPlugin.PRINCIPAL_PARAMETER, applicatioPrincipal)
-                .addParameter(KerberosServiceProviderPlugin.REALM_PARAMETER, "REGARDS.CLOUD-ESPACE.SI.C-S.FR")
-                .addParameter(KerberosServiceProviderPlugin.LDAP_ADRESS_PARAMETER, "REGARDS-AD.CLOUD-ESPACE.SI.C-S.FR")
-                .addParameter(KerberosServiceProviderPlugin.LDAP_PORT_PARAMETER, "389")
-                .addParameter(KerberosServiceProviderPlugin.PARAM_LDAP_CN,
-                              "dc=REGARDS,dc=CLOUD-ESPACE,dc=SI,dc=C-S,dc=FR")
-                .addParameter(KerberosServiceProviderPlugin.PARAM_LDAP_EMAIL_ATTTRIBUTE, "mail")
-                .addParameter(KerberosServiceProviderPlugin.KRB5_FILEPATH_PARAMETER, urlkrb5.getPath())
-                .addParameter(KerberosServiceProviderPlugin.KEYTAB_FILEPATH_PARAMETER, url.getPath()).getParameters();
-        try {
-            // instantiate plugin
-            plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class);
-            Assert.assertNotNull(plugin);
-        } catch (final PluginUtilsException e) {
-            Assert.fail();
+        final String keytabFilePath = System.getenv().get("REGARDS_KEYTAB");
+        if (keytabFilePath == null) {
+            LOG.warn("No Kerberos keytab file found. Skipping Test");
+        } else {
+            /*
+             * Set all parameters
+             */
+            final List<PluginParameter> parameters = PluginParametersFactory.build()
+                    .addParameter(KerberosSPParameters.PRINCIPAL_PARAMETER, applicatioPrincipal)
+                    .addParameter(KerberosSPParameters.REALM_PARAMETER, "REGARDS.CLOUD-ESPACE.SI.C-S.FR")
+                    .addParameter(KerberosSPParameters.LDAP_ADRESS_PARAMETER, "REGARDS-AD.CLOUD-ESPACE.SI.C-S.FR")
+                    .addParameter(KerberosSPParameters.LDAP_PORT_PARAMETER, "389")
+                    .addParameter(KerberosSPParameters.PARAM_LDAP_CN, "dc=REGARDS,dc=CLOUD-ESPACE,dc=SI,dc=C-S,dc=FR")
+                    .addParameter(KerberosSPParameters.KRB5_FILEPATH_PARAMETER, urlkrb5.getPath())
+                    .addParameter(KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, keytabFilePath).getParameters();
+            try {
+                // instantiate plugin
+                plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class);
+                Assert.assertNotNull(plugin);
+            } catch (final PluginUtilsException e) {
+                Assert.fail();
+            }
         }
-
     }
 
     public void testContext() {
@@ -99,14 +100,17 @@ public class KerberosServiceProviderPluginTest {
     }
 
     @Test
-    @Ignore
     public void checkKerberosTicketValidation() {
-        final byte[] ticket = generateKerberosTicket(applicatioPrincipal, userPrincipal);
-        final ExternalAuthenticationInformations authInformations = new ExternalAuthenticationInformations("sbinda",
-                "test", ticket, "");
-        Assert.assertTrue(plugin.checkTicketValidity(authInformations));
-        final UserDetails details = plugin.getUserInformations(authInformations);
-        Assert.assertTrue(details.getEmail().equals("sebastien.binda@c-s.fr"));
+        if (plugin != null) {
+            final byte[] ticket = generateKerberosTicket(applicatioPrincipal, userPrincipal);
+            final ExternalAuthenticationInformations authInformations = new ExternalAuthenticationInformations("sbinda",
+                    "test", ticket, "");
+            Assert.assertTrue(plugin.checkTicketValidity(authInformations));
+            final UserDetails details = plugin.getUserInformations(authInformations);
+            Assert.assertTrue(details.getEmail().equals("sebastien.binda@c-s.fr"));
+        } else {
+            LOG.warn("Skip Test");
+        }
     }
 
     /**
