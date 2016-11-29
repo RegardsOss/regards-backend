@@ -34,6 +34,11 @@ public final class TemplateTestConstants {
     public static final String CONTENT = "Hello ${name}. You are ${age} years old and ${height} m tall.";
 
     /**
+     * Content with values replaced
+     */
+    public static String CONTENT_TEMPLATED = "Hello Defaultname. You are 26 years old and 1.79 m tall.";
+
+    /**
      * Subject
      */
     public static final String SUBJECT = "Subject of a templated mail";

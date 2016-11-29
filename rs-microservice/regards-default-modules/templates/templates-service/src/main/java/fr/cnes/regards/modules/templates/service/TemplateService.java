@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +35,11 @@ import freemarker.template.Version;
 @Service
 @MultitenantTransactional
 public class TemplateService implements ITemplateService {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(TemplateService.class);
 
     /**
      * Freemarker version-major number. Needed for configuring the Freemarker library.
@@ -102,8 +109,8 @@ public class TemplateService implements ITemplateService {
      */
     @Override
     public Template create(final Template pTemplate) {
-        final Template toCreate = new Template(pTemplate.getCode(), pTemplate.getContent(), pTemplate.getDataStructure(),
-                pTemplate.getSubject());
+        final Template toCreate = new Template(pTemplate.getCode(), pTemplate.getContent(),
+                pTemplate.getDataStructure(), pTemplate.getSubject());
         return templateRepository.save(toCreate);
     }
 
@@ -173,28 +180,33 @@ public class TemplateService implements ITemplateService {
      */
     @Override
     public SimpleMailMessage writeToEmail(final String pTemplateCode, final Map<String, String> pDataModel,
-            final String[] pRecipients) throws TemplateWriterException {
+            final String[] pRecipients) throws EntityNotFoundException {
         // Retrieve the template of passed code
         final Template template = templateRepository.findOneByCode(pTemplateCode)
-                .orElseThrow(() -> new TemplateWriterException(
-                        new EntityNotFoundException(pTemplateCode, Template.class)));
+                .orElseThrow(() -> new EntityNotFoundException(pTemplateCode, Template.class));
 
         // Add the template (regards template POJO) to the loader
         loader.putTemplate(template.getCode(), template.getContent());
 
-        // Define the output writer for the mail content
-        final Writer out = new StringWriter();
+        // Define the email message
+        String text;
         try {
+            final Writer out = new StringWriter();
             // Retrieve the template (freemarker Template) and process it with the data model
             configuration.getTemplate(template.getCode()).process(pDataModel, out);
+            text = out.toString();
         } catch (TemplateException | IOException e) {
-            throw new TemplateWriterException(e);
+            LOG.warn("Unable to process the data into the template of code " + template.getCode()
+                    + ". Falling back to the not templated content.", e);
+            text = template.getContent();
         }
 
         final SimpleMailMessage message = new SimpleMailMessage();
         message.setSubject(template.getSubject());
-        message.setText(out.toString());
+        message.setText(text);
         message.setTo(pRecipients);
+        // TODO
+        message.setFrom("system@regards.com");
 
         return message;
     }

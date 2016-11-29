@@ -269,15 +269,15 @@ public class TemplateServiceTest {
     /**
      * Test method for {@link SimpleMailMessageTemplateWriter#writeToEmail(Template, Map, String[])}.
      *
-     * @throws TemplateWriterException
-     *             todo
+     * @throws EntityNotFoundException
+     *             no template of passed code could be found
      */
     @Test
     @Purpose("Check that the system uses templates to send emails.")
     @Requirement("REGARDS_DSL_SYS_ERG_310")
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testWrite() throws TemplateWriterException {
+    public final void testWrite() throws EntityNotFoundException {
         // Mock
         Mockito.when(templateRepository.findOneByCode(TemplateTestConstants.CODE))
                 .thenReturn(Optional.ofNullable(template));
