@@ -180,7 +180,7 @@ public class AccountsController implements IResourceController<Account> {
     public ResponseEntity<Void> removeAccount(@PathVariable("account_id") final Long pAccountId)
             throws ModuleException {
         final Account account = accountService.retrieveAccount(pAccountId);
-        accountWorkflowManager.delete(account);
+        accountWorkflowManager.deleteAccount(account);
         return ResponseEntity.noContent().build();
     }
 
@@ -302,9 +302,9 @@ public class AccountsController implements IResourceController<Account> {
     }
 
     @Override
-    public Resource<Account> toResource(Account pElement, Object... pExtras) {
+    public Resource<Account> toResource(final Account pElement, final Object... pExtras) {
         Resource<Account> resource = null;
-        if (pElement != null && pElement.getId() != null) {
+        if ((pElement != null) && (pElement.getId() != null)) {
             resource = resourceService.toResource(pElement);
             resourceService.addLink(resource, this.getClass(), "retrieveAccount", LinkRels.SELF,
                                     MethodParamFactory.build(Long.class, pElement.getId()));
