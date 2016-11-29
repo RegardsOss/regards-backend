@@ -1,9 +1,7 @@
-package fr.cnes.regards.modules.accessrights.service.role;
+package fr.cnes.regards.modules.accessrights.domain.projects;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * Specific implementation of an {@link Iterator} in order to iterate through the {@link Role#getParentRole()}
@@ -12,6 +10,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * reached.
  *
  * @author xbrochard
+ * @author Sébastien Binda
  *
  */
 public class RoleLineageIterator implements Iterator<Role> {

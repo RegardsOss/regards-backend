@@ -1,16 +1,15 @@
-package fr.cnes.regards.modules.accessrights.service.role;
+package fr.cnes.regards.modules.accessrights.domain.projects;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * Crawls through a role's {@link Role#getParentRole()} streak and builds the list of all visited roles like so,
  * establishing the passed role's lineage.
  *
  * @author xbrochard
+ * @author Sébastien Binda
  *
  */
 public class RoleLineageAssembler {

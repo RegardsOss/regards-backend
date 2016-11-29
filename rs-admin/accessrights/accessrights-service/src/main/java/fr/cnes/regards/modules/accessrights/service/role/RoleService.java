@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleLineageAssembler;
 import fr.cnes.regards.modules.accessrights.service.role.event.handler.NewProjectConnectionEventHandler;
 import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 import fr.cnes.regards.modules.project.domain.event.NewProjectConnectionEvent;
