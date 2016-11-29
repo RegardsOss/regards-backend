@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
+ * @author Christophe Mertz
  */
 @Service
 @InstanceTransactional

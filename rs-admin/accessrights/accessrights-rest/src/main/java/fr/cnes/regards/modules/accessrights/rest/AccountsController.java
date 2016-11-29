@@ -303,8 +303,6 @@ public class AccountsController implements IResourceController<Account> {
             resource = resourceService.toResource(pElement);
             resourceService.addLink(resource, this.getClass(), "retrieveAccount", LinkRels.SELF,
                                     MethodParamFactory.build(Long.class, pElement.getId()));
-            resourceService.addLink(resource, this.getClass(), "retrieveAccounByEmail", LinkRels.SELF,
-                                    MethodParamFactory.build(String.class, pElement.getEmail()));
             resourceService.addLink(resource, this.getClass(), "updateAccount", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
                                     MethodParamFactory.build(Account.class));

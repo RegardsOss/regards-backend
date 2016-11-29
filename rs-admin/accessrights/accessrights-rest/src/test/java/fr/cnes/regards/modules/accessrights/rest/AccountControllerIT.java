@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * @author svissier
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
