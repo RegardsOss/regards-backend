@@ -5,6 +5,7 @@ package fr.cnes.regards.microservices.administration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,8 @@ import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.JwtTokenUtils;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -43,6 +46,11 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     private final String microserviceName;
 
     /**
+     * Security service
+     */
+    private final JWTService jwtService;
+
+    /**
      * Administration microservice REST client
      */
     private final IResourcesClient resourcesClient;
@@ -63,11 +71,12 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
      * @since 1.0-SNAPSHOT
      */
     public MicroserviceAuthoritiesProvider(final String pMicroserviceName, final IResourcesClient pResourcesclient,
-            final IRolesClient pRolesClient) {
+            final IRolesClient pRolesClient, final JWTService pJwtService) {
         super();
         microserviceName = pMicroserviceName;
         resourcesClient = pResourcesclient;
         roleClient = pRolesClient;
+        jwtService = pJwtService;
     }
 
     @Override
@@ -85,7 +94,13 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     @Override
     public List<String> getRoleAuthorizedAddress(final String pRole) throws SecurityException {
         final List<String> addresses = new ArrayList<>();
-        final ResponseEntity<Resource<Role>> result = roleClient.retrieveRole(pRole);
+
+        // Execute role request with Sys role
+        final Function<String, ResponseEntity<Resource<Role>>> retreiveRole = JwtTokenUtils
+                .asSafeCallableOnRole(() -> roleClient.retrieveRole(pRole), jwtService);
+
+        final ResponseEntity<Resource<Role>> result = retreiveRole.apply(RoleAuthority.getSysRole(microserviceName));
+
         if (result.getStatusCode().equals(HttpStatus.OK)) {
             final Resource<Role> body = result.getBody();
             if ((body != null) && (body.getContent() != null)) {
@@ -99,7 +114,14 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     public boolean hasCorsRequestsAccess(final String pRole) throws SecurityException {
         boolean access = false;
         if (!RoleAuthority.isSysRole(pRole) && !(RoleAuthority.isInstanceAdminRole(pRole))) {
-            final ResponseEntity<Resource<Role>> result = roleClient.retrieveRole(RoleAuthority.getRoleName(pRole));
+
+            // Execute role request with Sys role
+            final Function<String, ResponseEntity<Resource<Role>>> retreiveRole = JwtTokenUtils
+                    .asSafeCallableOnRole(() -> roleClient.retrieveRole(RoleAuthority.getRoleName(pRole)), jwtService);
+
+            final ResponseEntity<Resource<Role>> result = retreiveRole
+                    .apply(RoleAuthority.getSysRole(microserviceName));
+
             if (result.getStatusCode().equals(HttpStatus.OK) && (result.getBody() != null)
                     && (result.getBody().getContent() != null)) {
                 access = result.getBody().getContent().isCorsRequestsAuthorized();

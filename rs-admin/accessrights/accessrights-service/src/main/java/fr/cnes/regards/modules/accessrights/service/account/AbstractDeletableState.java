@@ -4,8 +4,8 @@
 package fr.cnes.regards.modules.accessrights.service.account;
 
 import java.util.Set;
-import java.util.function.BooleanSupplier;
-import java.util.function.Predicate;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -16,7 +16,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbidden
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.TenantUtils;
+import fr.cnes.regards.framework.security.utils.jwt.JwtTokenUtils;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
  * Various states share this common implementation.
  *
  * @author Xavier-Alexandre Brochard
+ * @author Sébastien Binda
  */
 abstract class AbstractDeletableState implements IAccountTransitions {
 
@@ -104,13 +105,13 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         final Set<String> tenants = tenantResolver.getAllTenants();
 
         // Is there a project user associated to the account on the current tenant?
-        final BooleanSupplier hasProjectUser = () -> projectUserService.existUser(pAccount.getEmail());
+        final Supplier<Boolean> hasProjectUser = () -> projectUserService.existUser(pAccount.getEmail());
 
         // Is there a project user associated to the account on the passed tenant?
-        final Predicate<String> hasProjectUserOnTenant = TenantUtils.asSafeCallableOnTenant(hasProjectUser);
+        final Function<String, Boolean> hasProjectUserOnTenant = JwtTokenUtils.asSafeCallableOnTenant(hasProjectUser);
 
         try (Stream<String> stream = tenants.stream()) {
-            if (stream.anyMatch(hasProjectUserOnTenant)) {
+            if (stream.anyMatch(hasProjectUserOnTenant::apply)) {
                 throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class,
                         "Cannot remove account because it is linked to at least on project user.");
             } else {

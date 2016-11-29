@@ -8,10 +8,9 @@ package fr.cnes.regards.modules.project.service;
 
 import java.util.List;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
@@ -22,6 +21,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
+ * @author SébastienBinda
  *
  * @since 1.0-SNAPSHOT
  */
@@ -65,7 +65,7 @@ public interface IProjectService {
      * @throws EntityException
      *             <br/>
      *             {@link EntityNotFoundException}</b> if the request project does not exists.<br/>
-     *             {@link InvalidEntityException} if pProjectName doesn't match the given project
+     *             {@link EntityInvalidException} if pProjectName doesn't match the given project
      *
      * @since 1.0-SNAPSHOT
      */
@@ -82,6 +82,15 @@ public interface IProjectService {
 
     /**
      *
+     * Retrieve all public projects
+     *
+     * @return List of public projects
+     * @since 1.0-SNAPSHOT
+     */
+    List<Project> retrievePublicProjectList();
+
+    /**
+     *
      * Create a new project
      *
      * @param pNewProject
@@ -89,7 +98,7 @@ public interface IProjectService {
      * @return Created project
      * @throws EntityException
      *             <br/>
-     *             {@link AlreadyExistingException} If Project already exists for the given name
+     *             {@link EntityException} If Project already exists for the given name
      * @since 1.0-SNAPSHOT
      */
     Project createProject(Project pNewProject) throws EntityException;
