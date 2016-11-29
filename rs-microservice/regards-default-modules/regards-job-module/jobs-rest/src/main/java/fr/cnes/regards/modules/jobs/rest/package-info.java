@@ -5,4 +5,4 @@
  * 
  * @author Xavier-Alexandre Brochard
  */
-package fr.cnes.regards.modules.emails.rest;
+package fr.cnes.regards.modules.jobs.rest;

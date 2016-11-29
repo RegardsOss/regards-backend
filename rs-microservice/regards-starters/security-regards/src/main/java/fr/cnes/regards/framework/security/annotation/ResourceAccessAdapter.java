@@ -19,7 +19,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  *
  * Class ResourceAccessAdapter
  *
- * GSON adapter for annotation ResorucesAccess
+ * GSON adapter for annotation {@link ResourceAccess}
  *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
