@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.registration;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
 
@@ -18,8 +19,10 @@ public interface IRegistrationService {
      * @param pVerificationToken
      *            the token
      * @return the account
+     * @throws EntityNotFoundException
+     *             if the token could not be found
      */
-    Account getAccountByVerificationToken(String pVerificationToken);
+    Account getAccountByVerificationToken(String pVerificationToken) throws EntityNotFoundException;
 
     /**
      * Create a {@link VerificationToken} for the passed {@link Account}
@@ -37,6 +40,8 @@ public interface IRegistrationService {
      * @param pVerificationToken
      *            the token
      * @return the token
+     * @throws EntityNotFoundException
+     *             if the token could not be foud
      */
-    VerificationToken getVerificationToken(String pVerificationToken);
+    VerificationToken getVerificationToken(String pVerificationToken) throws EntityNotFoundException;
 }

@@ -3,7 +3,13 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.registration;
 
+import java.util.Date;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -17,7 +23,15 @@ import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToke
 @InstanceEntity
 public interface IVerificationTokenRepository extends JpaRepository<VerificationToken, Long> {
 
-    VerificationToken findByToken(String pToken);
+    Optional<VerificationToken> findByToken(String pToken);
 
     VerificationToken findByAccount(Account pAccount);
+
+    Stream<VerificationToken> findAllByExpiryDateLessThan(Date pNow);
+
+    void deleteByExpiryDateLessThan(Date pNow);
+
+    @Modifying
+    @Query("delete from T_VERIFICATION_TOKEN t where t.expiryDate <= ?1")
+    void deleteAllExpiredSince(Date pNow);
 }

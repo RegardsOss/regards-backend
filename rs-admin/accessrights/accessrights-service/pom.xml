@@ -45,16 +45,14 @@
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-client</artifactId>
 		</dependency>
-		<!-- 
 		<dependency>
 			<groupId>fr.cnes.regards.modules.templates</groupId>
 			<artifactId>templates-service</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-service</artifactId>
+			<artifactId>emails-client</artifactId>
 		</dependency>
-		 -->
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>

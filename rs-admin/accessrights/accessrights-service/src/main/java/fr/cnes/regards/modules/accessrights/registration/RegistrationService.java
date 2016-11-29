@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
@@ -45,8 +46,10 @@ public class RegistrationService implements IRegistrationService {
      * String)
      */
     @Override
-    public Account getAccountByVerificationToken(final String pVerificationToken) {
-        return tokenRepository.findByToken(pVerificationToken).getAccount();
+    public Account getAccountByVerificationToken(final String pVerificationToken) throws EntityNotFoundException {
+        return tokenRepository.findByToken(pVerificationToken)
+                .orElseThrow(() -> new EntityNotFoundException(pVerificationToken, VerificationToken.class))
+                .getAccount();
     }
 
     /*
@@ -68,7 +71,8 @@ public class RegistrationService implements IRegistrationService {
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#getVerificationToken(java.lang.String)
      */
     @Override
-    public VerificationToken getVerificationToken(final String pVerificationToken) {
-        return tokenRepository.findByToken(pVerificationToken);
+    public VerificationToken getVerificationToken(final String pVerificationToken) throws EntityNotFoundException {
+        return tokenRepository.findByToken(pVerificationToken)
+                .orElseThrow(() -> new EntityNotFoundException(pVerificationToken, VerificationToken.class));
     }
 }

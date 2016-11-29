@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.rest;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -36,14 +37,12 @@ import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.registration.ValidationUrlBuilder;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions;
 
 /**
- *
- * Class AccountsController
- *
  * Endpoints to manage REGARDS Accounts. Accounts are transverse to all projects and so are persisted in an instance
  * database
  *
@@ -101,10 +100,16 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "create an new account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount)
-            throws EntityException {
-        final AccessRequestDTO dto = new AccessRequestDTO(pNewAccount);
-        return new ResponseEntity<>(toResource(accountWorkflowManager.requestAccount(dto)), HttpStatus.CREATED);
+    public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount,
+            final HttpServletRequest pRequest) throws EntityException {
+        // Manually create the expected DTO in order to use the same common interface of account creation
+        final AccessRequestDto dto = new AccessRequestDto(pNewAccount);
+
+        // Build the email validation link
+        final String validationUrl = ValidationUrlBuilder.buildFrom(pRequest);
+        final Account created = accountWorkflowManager.requestAccount(dto, validationUrl);
+        final Resource<Account> resource = new Resource<>(created);
+        return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
     /**

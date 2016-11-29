@@ -371,17 +371,17 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         performGet(apiValidatePassword, token, expectations, errorMessage, wrongEmail, PASSWORD);
     }
 
-    @Test
-    @Purpose("Check that the system requires the user to validate via email its recently created account.")
-    public void emailValidation() {
-        // Prepare the account
-        account.setStatus(AccountStatus.ACCEPTED);
-        accountRepository.save(account);
-
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performPut(apiEmailValidation, token, null, expectations, errorMessage, account.getEmail(), account.getCode());
-    }
+    // @Test
+    // @Purpose("Check that the system requires the user to validate via email its recently created account.")
+    // public void emailValidation() {
+    // // Prepare the account
+    // account.setStatus(AccountStatus.ACCEPTED);
+    // accountRepository.save(account);
+    //
+    // final List<ResultMatcher> expectations = new ArrayList<>(1);
+    // expectations.add(status().isOk());
+    // performPut(apiEmailValidation, token, null, expectations, errorMessage, account.getEmail(), account.getCode());
+    // }
 
     @Override
     protected Logger getLogger() {

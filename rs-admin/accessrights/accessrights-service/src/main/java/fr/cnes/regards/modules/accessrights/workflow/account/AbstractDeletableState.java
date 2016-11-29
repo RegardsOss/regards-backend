@@ -70,7 +70,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     }
 
     @Override
-    public void delete(final Account pAccount) throws ModuleException {
+    public void deleteAccount(final Account pAccount) throws ModuleException {
         switch (pAccount.getStatus()) {
             case ACTIVE:
             case LOCKED:
@@ -106,6 +106,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
                 throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class,
                         "Cannot remove account because it is linked to at least on project user.");
             } else {
+
                 accountRepository.delete(pAccount.getId());
             }
         }

@@ -3,13 +3,12 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.Calendar;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,19 +24,17 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
 import fr.cnes.regards.modules.accessrights.registration.IRegistrationService;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
+import fr.cnes.regards.modules.accessrights.registration.ValidationUrlBuilder;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
@@ -55,18 +52,6 @@ import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWork
         documentation = "http://test")
 @RequestMapping(value = "/accesses")
 public class RegistrationController {
-
-    /**
-     * Use this to publish the event triggering the verification email on registration
-     */
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
-
-    /**
-     * Service handling CRUD operation on account. Autowired by Spring. Must no be <code>null</code>.
-     */
-    @Autowired
-    private IAccountService accountService;
 
     /**
      * Service handling CRUD operation on access requests. Autowired by Spring. Must no be <code>null</code>.
@@ -87,7 +72,7 @@ public class RegistrationController {
     private AccountWorkflowManager accountWorkflowManager;
 
     /**
-     * Service handling CRUD operation on {@link AccountSettings}. Autowired by Spring. Must no be <code>null</code>.
+     * Service handling CRUD operation on {@link AccessSettings}. Autowired by Spring. Must no be <code>null</code>.
      */
     @Autowired
     private IAccessSettingsService accessSettingsService;
@@ -116,17 +101,41 @@ public class RegistrationController {
      *
      * @param pAccessRequest
      *            A Dto containing all information for creating a the new project user
+     * @param pRequest
+     *            the request
      * @return the passed Dto
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Creates a new access request", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Resource<AccessRequestDto>> requestAccess(
-            @Valid @RequestBody final AccessRequestDto pAccessRequest) throws EntityException {
-        accountWorkflowManager.requestAccount(pAccessRequest);
+            @Valid @RequestBody final AccessRequestDto pAccessRequest, final HttpServletRequest pRequest)
+            throws EntityException {
+        // Build the email validation link
+        final String validationUrl = ValidationUrlBuilder.buildFrom(pRequest);
+        // Create an account if needed
+        accountWorkflowManager.requestAccount(pAccessRequest, validationUrl);
+        // Create a project user
         projectUserWorkflowManager.requestProjectAccess(pAccessRequest);
         final Resource<AccessRequestDto> resource = new Resource<>(pAccessRequest);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
+    }
+
+    /**
+     * Confirm the registration by email.
+     *
+     * @param pToken
+     *            the token
+     * @return void
+     * @throws EntityException
+     *             when no verification token associated to this account could be found
+     */
+    @RequestMapping(value = "/validateAccount", method = RequestMethod.GET)
+    @ResourceAccess(description = "Confirm the registration by email", role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<Void> validateAccount(@RequestParam("token") final String pToken) throws EntityException {
+        final VerificationToken verificationToken = registrationService.getVerificationToken(pToken);
+        accountWorkflowManager.validateAccount(verificationToken);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
@@ -215,37 +224,6 @@ public class RegistrationController {
     public ResponseEntity<Void> updateAccessSettings(@Valid @RequestBody final AccessSettings pAccessSettings)
             throws EntityNotFoundException {
         accessSettingsService.update(pAccessSettings);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * Confirm the registration by email.
-     *
-     * @param pToken
-     *            the token
-     * @return void
-     * @throws EntityException
-     *             todo
-     */
-    @RequestMapping(value = "/registrationConfirm", method = RequestMethod.GET)
-    @ResourceAccess(description = "Confirm the registration by email", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Void> confirmRegistration(@RequestParam("token") final String pToken) throws EntityException {
-
-        final VerificationToken verificationToken = registrationService.getVerificationToken(pToken);
-        if (verificationToken == null) {
-            throw new EntityNotFoundException(pToken, VerificationToken.class);
-        }
-
-        final Account account = verificationToken.getAccount();
-        final Calendar cal = Calendar.getInstance();
-        if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
-            throw new EntityOperationForbiddenException(account.getEmail(), Account.class,
-                    "Verification token has expired");
-        }
-
-        accountWorkflowManager.emailValidation(account, null);
-        accountService.updateAccount(account.getId(), account);
-
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

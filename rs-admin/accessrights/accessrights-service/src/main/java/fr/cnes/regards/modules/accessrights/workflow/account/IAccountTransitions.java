@@ -11,6 +11,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbidden
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
 
 /**
  * State pattern implementation for defining the actions managing the state of an account.<br>
@@ -27,6 +28,8 @@ public interface IAccountTransitions {
      *
      * @param pAccessRequestDto
      *            The DTO containing all information to create the new {@link Account}
+     * @param pValidationUrl
+     *            The validation url for the account confirmation email
      * @throws EntityException
      *             <br>
      *             {@link EntityAlreadyExistsException} Thrown when an account with same <code>email</code> already
@@ -34,24 +37,25 @@ public interface IAccountTransitions {
      *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
      * @return the created account
      */
-    default Account requestAccount(final AccessRequestDto pAccessRequestDto) throws EntityException {
+    default Account requestAccount(final AccessRequestDto pAccessRequestDto, final String pValidationUrl)
+            throws EntityException {
         throw new EntityTransitionForbiddenException(pAccessRequestDto.getEmail(), Account.class, null,
                 Thread.currentThread().getStackTrace()[1].getMethodName());
     };
 
     /**
-     * Passes the account from status PENDING to ACCEPTED or REFUSED according to the account's acceptance policy.
+     * Passes the account from status PENDING to ACCEPTED.
      *
      * @param pAccount
      *            The {@link Account}
-     * @param pAccepted
-     *            Does the admin accept this registration or not?
+     * @param pValidationUrl
+     *            The validation url for the account confirmation email
      * @throws EntityException
      *             <br>
      *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
      *             {@link EntityNotFoundException} Thrown when the email validation template could not be found
      */
-    default void makeAdminDecision(final Account pAccount, final boolean pAccepted) throws EntityException {
+    default void acceptAccount(final Account pAccount, final String pValidationUrl) throws EntityException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };
@@ -59,17 +63,16 @@ public interface IAccountTransitions {
     /**
      * Validate an ACCEPTED account via email and passes it to ACTIVE status.
      *
-     * @param pAccount
-     *            The {@link Account}
-     * @param pCode
-     *            The unlock code. Must match the account's <code>code</code> field
+     * @param pVerificationToken
+     *            The {@link VerificationToken}, embedding the account
      * @throws EntityOperationForbiddenException
      *             Thrown when the code does not match the account's <code>code</code> field<br>
      *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status ACCEPOTED<br>
      */
-    default void emailValidation(final Account pAccount, final String pCode) throws EntityOperationForbiddenException {
-        throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
-                pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
+    default void validateAccount(final VerificationToken pVerificationToken) throws EntityOperationForbiddenException {
+        throw new EntityTransitionForbiddenException(pVerificationToken.getAccount().getId().toString(), Account.class,
+                pVerificationToken.getAccount().getStatus().toString(),
+                Thread.currentThread().getStackTrace()[1].getMethodName());
     };
 
     /**
@@ -139,7 +142,7 @@ public interface IAccountTransitions {
      *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.<br>
      *             {@link EntityTransitionForbiddenException} Thrown if the {@link Account} is not in state ACTIVE.
      */
-    default void delete(final Account pAccount) throws ModuleException {
+    default void deleteAccount(final Account pAccount) throws ModuleException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };

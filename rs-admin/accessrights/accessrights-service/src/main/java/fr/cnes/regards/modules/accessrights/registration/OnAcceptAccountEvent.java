@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.registration;
 
-import java.util.Locale;
-
 import org.springframework.context.ApplicationEvent;
 
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -14,7 +12,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  *
  * @author Xavier-Alexandre Brochard
  */
-public class OnRegistrationCompleteEvent extends ApplicationEvent {
+public class OnAcceptAccountEvent extends ApplicationEvent {
 
     /**
      * Generated serial
@@ -27,20 +25,13 @@ public class OnRegistrationCompleteEvent extends ApplicationEvent {
     private final String appUrl;
 
     /**
-     * The locale
-     */
-    private final Locale locale;
-
-    /**
      * The registered account
      */
     private final Account account;
 
-    public OnRegistrationCompleteEvent(final Account pUser, final Locale pLocale, final String pAppUrl) {
-        super(pUser);
-
-        this.account = pUser;
-        this.locale = pLocale;
+    public OnAcceptAccountEvent(final Account pAccount, final String pAppUrl) {
+        super(pAccount);
+        this.account = pAccount;
         this.appUrl = pAppUrl;
     }
 
@@ -49,13 +40,6 @@ public class OnRegistrationCompleteEvent extends ApplicationEvent {
      */
     public String getAppUrl() {
         return appUrl;
-    }
-
-    /**
-     * @return the locale
-     */
-    public Locale getLocale() {
-        return locale;
     }
 
     /**
