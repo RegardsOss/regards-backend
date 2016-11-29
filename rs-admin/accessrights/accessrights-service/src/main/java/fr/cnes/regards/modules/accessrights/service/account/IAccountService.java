@@ -11,7 +11,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.VerificationToken;
 
 /**
  * Define the base interface for any implementation of an Account Service.
@@ -128,33 +127,5 @@ public interface IAccountService {
      * @return <code>true</code> if the password is valid, else <code>false</code>
      */
     boolean validatePassword(String pEmail, String pPassword) throws EntityNotFoundException;
-
-    /**
-     * Return the account linked to the passed verification token
-     *
-     * @param pVerificationToken
-     *            the token
-     * @return the account
-     */
-    Account getAccountByVerificationToken(String pVerificationToken);
-
-    /**
-     * Create a {@link VerificationToken} for the passed {@link Account}
-     *
-     * @param pAccount
-     *            the account
-     * @param pToken
-     *            the token
-     */
-    void createVerificationToken(Account pAccount, String pToken);
-
-    /**
-     * Retrieve the verification token
-     *
-     * @param pVerificationToken
-     *            the token
-     * @return the token
-     */
-    VerificationToken getVerificationToken(String pVerificationToken);
 
 }

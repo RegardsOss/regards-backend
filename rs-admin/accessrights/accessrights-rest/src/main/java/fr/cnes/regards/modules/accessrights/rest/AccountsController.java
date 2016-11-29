@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.Calendar;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -29,19 +28,17 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
-import fr.cnes.regards.modules.accessrights.domain.instance.VerificationToken;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions;
+import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions;
 
 /**
  *
@@ -318,36 +315,6 @@ public class AccountsController implements IResourceController<Account> {
                                     MethodParamFactory.build(AccountSettings.class));
         }
         return resource;
-    }
-
-    /**
-     * Confirm the registration by email.
-     *
-     * @param pToken
-     *            the token
-     * @return
-     * @throws EntityException
-     */
-    @RequestMapping(value = "/registrationConfirm", method = RequestMethod.GET)
-    @ResourceAccess(description = "Confirm the registration by email", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Void> confirmRegistration(@RequestParam("token") final String pToken) throws EntityException {
-
-        final VerificationToken verificationToken = accountService.getVerificationToken(pToken);
-        if (verificationToken == null) {
-            throw new EntityNotFoundException(pToken, VerificationToken.class);
-        }
-
-        final Account account = verificationToken.getAccount();
-        final Calendar cal = Calendar.getInstance();
-        if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
-            throw new EntityOperationForbiddenException(account.getEmail(), Account.class,
-                    "Verification token has expired");
-        }
-
-        accountWorkflowManager.emailValidation(account, null);
-        accountService.updateAccount(account.getId(), account);
-
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }
