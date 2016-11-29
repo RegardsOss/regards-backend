@@ -11,6 +11,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
@@ -190,4 +191,13 @@ public class GlobalControllerAdvice {
             final EntityInconsistentIdentifierException pException) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(pException.getMessage()));
     }
+
+    /**
+     * Spring framework Access denied exception. Throw by security methodAccessVoter
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ServerErrorResponse> accessDeniedException(final AccessDeniedException pException) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
+    }
+
 }

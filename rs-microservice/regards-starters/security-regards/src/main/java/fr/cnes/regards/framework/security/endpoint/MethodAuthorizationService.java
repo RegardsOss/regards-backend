@@ -318,8 +318,13 @@ public class MethodAuthorizationService {
                 // CHECKSTYLE:OFF
                 final String decision = access ? "granted" : "denied";
                 // CHECKSTYLE:ON
-                LOG.debug("Access {} to resource {} for user {}.", decision, mapping.getResourceMappingId(),
-                          pJWTAuthentication.getName());
+                final String logMessage = String.format("Access %s to resource %s for user %s.", decision,
+                                                        mapping.getResourceMappingId(), pJWTAuthentication.getName());
+                if (access) {
+                    LOG.debug(logMessage);
+                } else {
+                    LOG.info(logMessage);
+                }
 
             } catch (final ResourceMappingException e) {
                 LOG.debug(e.getMessage(), e);

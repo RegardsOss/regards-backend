@@ -6,7 +6,8 @@ package fr.cnes.regards.framework.security.domain;
 /**
  * Security constants
  *
- * @author msordi
+ * @author Marc Sordi
+ * @author Sébastien Binda
  *
  */
 public final class HttpConstants {
@@ -20,4 +21,9 @@ public final class HttpConstants {
      * Authorization header scheme
      */
     public static final String BEARER = "Bearer";
+
+    /**
+     * Scope parameter to read in Header or request query parameters
+     */
+    public static final String SCOPE = "scope";
 }
