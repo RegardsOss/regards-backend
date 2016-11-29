@@ -8,6 +8,7 @@ import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
@@ -23,6 +24,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
  */
 @Configuration
 @AutoConfigureBefore(MicroserviceAutoConfiguration.class)
-@EnableFeignClients(clients = { IProjectsClient.class, IProjectConnectionClient.class, IResourcesClient.class })
+@EnableFeignClients(
+        clients = { IProjectsClient.class, IProjectConnectionClient.class, IResourcesClient.class, IRolesClient.class })
 public class MicroserviceClientsAutoConfiguration {
 }

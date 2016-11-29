@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -133,6 +134,17 @@ public class ProjectService implements IProjectService {
         }
 
         return projectRepository.save(pNewProject);
+    }
+
+    @Override
+    public List<Project> retrievePublicProjectList() {
+        final List<Project> results = new ArrayList<>();
+        retrieveProjectList().forEach(p -> {
+            if (p.isPublic()) {
+                results.add(p);
+            }
+        });
+        return results;
     }
 
 }

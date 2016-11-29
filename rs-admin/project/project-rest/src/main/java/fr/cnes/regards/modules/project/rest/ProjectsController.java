@@ -85,6 +85,22 @@ public class ProjectsController implements IResourceController<Project> {
 
     /**
      *
+     * Retrieve projects list
+     *
+     * @return List of projects
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
+    @ResponseBody
+    @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.PUBLIC)
+    public ResponseEntity<List<Resource<Project>>> retrievePublicProjectList() {
+
+        final List<Project> projects = projectService.retrievePublicProjectList();
+        return ResponseEntity.ok(toResources(projects));
+    }
+
+    /**
+     *
      * Create a new project
      *
      * @param pNewProject
@@ -117,7 +133,7 @@ public class ProjectsController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}", produces = "application/json")
     @ResponseBody
-    @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName)
             throws EntityException {
 
