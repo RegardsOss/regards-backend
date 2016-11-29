@@ -110,8 +110,8 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Autowired
     private IProjectUserRepository projectUserRepository;
 
-    @Autowired
-    private RoleService roleService;
+//    @Autowired
+//    private RoleService roleService;
 
     @Value("${root.admin.login:admin}")
     private String rootAdminLogin;
@@ -250,7 +250,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Purpose("Check that the system allows to provide a reset/unlock code associated to an instance user.")
     public void getCode() throws EntityAlreadyExistsException {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
+        expectations.add(status().isNoContent());
         performGet(apiAccountCode + "?email=" + account.getEmail() + "&type=UNLOCK", token, expectations, errorMessage);
     }
 
@@ -288,7 +288,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         accountRepository.save(account);
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
+        expectations.add(status().isNoContent());
         performGet(apiUnlockAccount, token, expectations, errorMessage, account.getId(), account.getCode());
     }
 
@@ -296,8 +296,8 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_470")
     @Purpose("Check that the system allows to reset an instance user's password.")
     public void changeAccountPassword() throws EntityAlreadyExistsException {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNoContent());
         performPut(apiChangePassword, token, "newPassword", expectations, errorMessage, account.getId(),
                    account.getCode());
 
@@ -338,7 +338,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         accountRepository.save(account);
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
+        expectations.add(status().isNoContent());
         performDelete(apiAccountId, token, expectations, errorMessage, account.getId());
     }
 

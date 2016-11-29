@@ -4,7 +4,6 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -22,6 +21,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -45,13 +48,14 @@ import fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions;
  * database
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
 @RestController
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
 @RequestMapping(path = "/accounts")
-public class AccountsController {
+public class AccountsController implements IResourceController<Account> {
 
     /**
      * Class logger
@@ -60,6 +64,12 @@ public class AccountsController {
 
     @Autowired
     private IAccountService accountService;
+
+    /**
+     * Resource service to manage visibles hateoas links
+     */
+    @Autowired
+    private IResourceService resourceService;
 
     @Autowired
     private IAccountTransitions accountWorkflowManager;
@@ -76,18 +86,17 @@ public class AccountsController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the list of account in the instance", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<List<Resource<Account>>> retrieveAccountList() {
-        final List<Account> accounts = accountService.retrieveAccountList();
-        final List<Resource<Account>> resources = accounts.stream().map(a -> new Resource<>(a))
-                .collect(Collectors.toList());
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+        return ResponseEntity.ok(toResources(accountService.retrieveAccountList()));
+
     }
 
     /**
-     * Create a new account in state PENDING from the passed values
+     * Create a new {@link Account} in state PENDING from the passed values
      *
      * @param pNewAccount
      *            The data transfer object containing values to create the account from
-     * @return the created account
+     * @return the {@link Account} created
+     * @throws EntityException
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
@@ -95,9 +104,7 @@ public class AccountsController {
     public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount)
             throws EntityException {
         final AccessRequestDTO dto = new AccessRequestDTO(pNewAccount);
-        final Account created = accountWorkflowManager.requestAccount(dto);
-        final Resource<Account> resource = new Resource<>(created);
-        return new ResponseEntity<>(resource, HttpStatus.CREATED);
+        return new ResponseEntity<>(toResource(accountWorkflowManager.requestAccount(dto)), HttpStatus.CREATED);
     }
 
     /**
@@ -105,16 +112,15 @@ public class AccountsController {
      *
      * @param pAccountId
      *            The {@link Account}'s <code>id</code>
-     * @return The account
+     * @return The {@link Account}
+     * @throws EntityNotFoundException
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the account account_id", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") final Long accountId)
+    public ResponseEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") final Long pAccountId)
             throws EntityNotFoundException {
-        final Account account = accountService.retrieveAccount(accountId);
-        final Resource<Account> resource = new Resource<>(account);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        return ResponseEntity.ok(toResource(accountService.retrieveAccount(pAccountId)));
     }
 
     /**
@@ -124,22 +130,14 @@ public class AccountsController {
      * @param pAccountEmail
      *            email of the account to retrieve
      * @return Account
+     * @throws EntityNotFoundException
      */
     @ResponseBody
     @RequestMapping(value = "/account/{account_email}", method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the account with his unique email", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Account>> retrieveAccounByEmail(
-            @PathVariable("account_email") final String pAccountEmail) {
-        ResponseEntity<Resource<Account>> response;
-        try {
-            final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
-            final Resource<Account> resource = new Resource<>(account);
-            response = new ResponseEntity<>(resource, HttpStatus.OK);
-        } catch (final EntityNotFoundException e) {
-            LOG.info("Not found", e);
-            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return response;
+            @PathVariable("account_email") final String pAccountEmail) throws EntityNotFoundException {
+        return ResponseEntity.ok(toResource(accountService.retrieveAccountByEmail(pAccountEmail)));
 
     }
 
@@ -150,15 +148,16 @@ public class AccountsController {
      *            The <code>id</code> of the {@link Account} to update
      * @param pUpdatedAccount
      *            The new values to set
+     * @return the {@link Account} updated
+     * @throws EntityException
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT)
     @ResourceAccess(description = "update the account account_id according to the body specified",
             role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> updateAccount(@PathVariable("account_id") final Long accountId,
+    public ResponseEntity<Resource<Account>> updateAccount(@PathVariable("account_id") final Long pAccountId,
             @Valid @RequestBody final Account pUpdatedAccount) throws EntityException {
-        accountService.updateAccount(accountId, pUpdatedAccount);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok(toResource(accountService.updateAccount(pAccountId, pUpdatedAccount)));
     }
 
     /**
@@ -167,6 +166,8 @@ public class AccountsController {
      *
      * @param pAccountId
      *            The account <code>id</code>
+     * @return void
+     * @throws ModuleException
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE)
@@ -175,7 +176,7 @@ public class AccountsController {
             throws ModuleException {
         final Account account = accountService.retrieveAccount(pAccountId);
         accountWorkflowManager.delete(account);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -186,6 +187,7 @@ public class AccountsController {
      * @param pUnlockCode
      *            the unlock code
      * @return void
+     * @throws ModuleException
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET)
@@ -195,7 +197,7 @@ public class AccountsController {
             @PathVariable("unlock_code") final String pUnlockCode) throws ModuleException {
         final Account account = accountService.retrieveAccount(pAccountId);
         accountWorkflowManager.unlockAccount(account, pUnlockCode);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -207,16 +209,18 @@ public class AccountsController {
      *            The reset code. Required to allow a password change
      * @param pNewPassword
      *            The new <code>password</code>
+     * @return void
+     * @throws EntityException
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT)
     @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code",
             role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") final Long accountId,
-            @PathVariable("reset_code") final String resetCode, @Valid @RequestBody final String pNewPassword)
+    public ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") final Long pAccountId,
+            @PathVariable("reset_code") final String pResetCode, @Valid @RequestBody final String pNewPassword)
             throws EntityException {
-        accountService.changeAccountPassword(accountId, resetCode, pNewPassword);
-        return new ResponseEntity<>(HttpStatus.OK);
+        accountService.changeAccountPassword(pAccountId, pResetCode, pNewPassword);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -227,15 +231,17 @@ public class AccountsController {
      * @param pEmail
      *            The {@link Account}'s <code>email</code>
      * @param pType
-     *            The type of code
+     *            The {@link CodeType} to send
+     * @return void
+     * @throws EntityNotFoundException
      */
     @ResponseBody
     @RequestMapping(value = "/code", method = RequestMethod.GET)
     @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> sendAccountCode(@RequestParam("email") final String email,
-            @RequestParam("type") final CodeType type) throws EntityNotFoundException {
-        accountService.sendAccountCode(email, type);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Void> sendAccountCode(@RequestParam("email") final String pEmail,
+            @RequestParam("type") final CodeType pType) throws EntityNotFoundException {
+        accountService.sendAccountCode(pEmail, pType);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -255,9 +261,9 @@ public class AccountsController {
     /**
      * Update the {@link AccountSettings} for the instance.
      *
-     * @param pSettings
+     * @param pUpdatedAccountSetting
      *            The {@link AccountSettings}
-     * @return The updated account settings
+     * @return The updated {@link AccountSettings}
      */
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.PUT)
@@ -276,6 +282,7 @@ public class AccountsController {
      * @param pPassword
      *            The password to check
      * @return <code>true</code> if the password is valid, else <code>false</code>
+     * @throws EntityNotFoundException
      */
     @ResponseBody
     @RequestMapping(value = "/{account_email}/validate", method = RequestMethod.GET)
@@ -287,6 +294,29 @@ public class AccountsController {
         } else {
             return new ResponseEntity<>(AccountStatus.INACTIVE, HttpStatus.OK);
         }
+    }
+
+    @Override
+    public Resource<Account> toResource(Account pElement, Object... pExtras) {
+        Resource<Account> resource = null;
+        if (pElement != null && pElement.getId() != null) {
+            resource = resourceService.toResource(pElement);
+            resourceService.addLink(resource, this.getClass(), "retrieveAccount", LinkRels.SELF,
+                                    MethodParamFactory.build(Long.class, pElement.getId()));
+            resourceService.addLink(resource, this.getClass(), "retrieveAccounByEmail", LinkRels.SELF,
+                                    MethodParamFactory.build(String.class, pElement.getEmail()));
+            resourceService.addLink(resource, this.getClass(), "updateAccount", LinkRels.UPDATE,
+                                    MethodParamFactory.build(Long.class, pElement.getId()),
+                                    MethodParamFactory.build(Account.class));
+            resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
+                                    MethodParamFactory.build(Long.class, pElement.getId()));
+            resourceService.addLink(resource, this.getClass(), "retrieveAccountList", LinkRels.LIST,
+                                    MethodParamFactory.build(Account.class));
+            resourceService.addLink(resource, this.getClass(), "retrieveAccountSettings", "getAccountSettings");
+            resourceService.addLink(resource, this.getClass(), "updateAccountSetting", "setAccountSetting",
+                                    MethodParamFactory.build(AccountSettings.class));
+        }
+        return resource;
     }
 
 }

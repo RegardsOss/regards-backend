@@ -73,6 +73,7 @@ public interface IAccountService {
      *            The <code>id</code> of the {@link Account} to update
      * @param pUpdatedAccount
      *            The new values to set
+     * @return the {@link Account} created
      * @throws EntityException
      *             <br>
      *             {@link EntityInconsistentIdentifierException} Thrown when <code>pAccountId</code> is different from
@@ -81,7 +82,7 @@ public interface IAccountService {
      *             <code>pAccountId</code><br>
      *
      */
-    void updateAccount(Long pAccountId, Account pUpdatedAccount) throws EntityException;
+    Account updateAccount(Long pAccountId, Account pUpdatedAccount) throws EntityException;
 
     /**
      * Send a code of type <code>pType</code> to the specified recipient.

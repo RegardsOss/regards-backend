@@ -104,14 +104,14 @@ public class AccountService implements IAccountService {
      * fr.cnes.regards.modules.accessrights.domain.instance.Account)
      */
     @Override
-    public void updateAccount(final Long pAccountId, final Account pUpdatedAccount) throws EntityException {
+    public Account updateAccount(final Long pAccountId, final Account pUpdatedAccount) throws EntityException {
         if (!pUpdatedAccount.getId().equals(pAccountId)) {
             throw new EntityInconsistentIdentifierException(pAccountId, pUpdatedAccount.getId(), Account.class);
         }
         if (!existAccount(pAccountId)) {
             throw new EntityNotFoundException(pAccountId.toString(), Account.class);
         }
-        accountRepository.save(pUpdatedAccount);
+        return accountRepository.save(pUpdatedAccount);
     }
 
     /*
