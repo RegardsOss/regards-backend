@@ -25,10 +25,6 @@
 			<artifactId>jobs-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.jobs</groupId>
-			<artifactId>jobs-signature</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>

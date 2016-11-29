@@ -5,4 +5,4 @@
  * @author Christophe Mertz
  *
  */
-package fr.cnes.regards.modules.plugins.client;
+package fr.cnes.regards.framework.jpa.converters;
