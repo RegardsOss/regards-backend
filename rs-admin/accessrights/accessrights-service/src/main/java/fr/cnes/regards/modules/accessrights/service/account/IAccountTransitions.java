@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.account;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -45,11 +46,12 @@ public interface IAccountTransitions {
      *            The {@link Account}
      * @param pAccepted
      *            Does the admin accept this registration or not?
-     * @throws EntityTransitionForbiddenException
-     *             Thrown when the account is not in status PENDING
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
+     *             {@link EntityNotFoundException} Thrown when the email validation template could not be found
      */
-    default void makeAdminDecision(final Account pAccount, final boolean pAccepted)
-            throws EntityTransitionForbiddenException {
+    default void makeAdminDecision(final Account pAccount, final boolean pAccepted) throws EntityException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };

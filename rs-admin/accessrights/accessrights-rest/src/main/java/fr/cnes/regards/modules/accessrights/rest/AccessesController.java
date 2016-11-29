@@ -8,6 +8,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -27,6 +29,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -34,6 +37,7 @@ import fr.cnes.regards.modules.accessrights.service.account.AccountWorkflowManag
 import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserWorkflowManager;
+import fr.cnes.regards.modules.accessrights.service.registration.OnRegistrationCompleteEvent;
 
 /**
  *
@@ -49,6 +53,12 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserWorkf
         documentation = "http://test")
 @RequestMapping(value = "/accesses")
 public class AccessesController {
+
+    /**
+     * Use this to publish the event triggering the verification email on registration
+     */
+    @Autowired
+    ApplicationEventPublisher eventPublisher;
 
     /**
      * Service handling CRUD operation on access requests. Autowired by Spring. Must no be <code>null</code>.
@@ -92,16 +102,28 @@ public class AccessesController {
      *
      * @param pAccessRequest
      *            A Dto containing all information for creating a the new project user
+     * @param pRequest
+     *            the web request
      * @return the passed Dto
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Creates a new access request", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Creates a new access request", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Resource<AccessRequestDTO>> requestAccess(
-            @Valid @RequestBody final AccessRequestDTO pAccessRequest) throws EntityException {
-        accountWorkflowManager.requestAccount(pAccessRequest);
+            @Valid @RequestBody final AccessRequestDTO pAccessRequest, final WebRequest pRequest)
+            throws EntityException {
+        final Account account = accountWorkflowManager.requestAccount(pAccessRequest);
         projectUserWorkflowManager.requestProjectAccess(pAccessRequest);
         final Resource<AccessRequestDTO> resource = new Resource<>(pAccessRequest);
+
+        try {
+            final String appUrl = pRequest.getContextPath();
+            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(account, pRequest.getLocale(), appUrl));
+        } catch (final Exception me) {
+            // return new ModelAndView("emailError", "user", accountDto);
+            // TODO
+        }
+
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 

@@ -8,9 +8,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -30,11 +27,6 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
  * @author Sébastien Binda
  */
 abstract class AbstractDeletableState implements IAccountTransitions {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractDeletableState.class);
 
     /**
      * Service managing {@link ProjectUser}s. Autowired by Spring.

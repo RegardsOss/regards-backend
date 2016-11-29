@@ -11,10 +11,12 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -39,6 +41,9 @@ import fr.cnes.regards.modules.accessrights.service.account.LockedState;
 import fr.cnes.regards.modules.accessrights.service.account.PendingState;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
+import fr.cnes.regards.modules.emails.service.IEmailService;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
 
 /**
  * Test class for {@link ProjectUserService}.
@@ -123,9 +128,19 @@ public class AccountWorkflowManagerTest {
     private AccountStateProvider accountStateProvider;
 
     /**
-     * Mock Account Settings Repository
+     * Mock Account Settings Service
      */
     private IAccountSettingsService accountSettingsService;
+
+    /**
+     * Mock Template Service
+     */
+    private ITemplateService templateService;
+
+    /**
+     * Mock Template Service
+     */
+    private IEmailService emailService;
 
     /**
      * Do some setup before each test
@@ -141,6 +156,8 @@ public class AccountWorkflowManagerTest {
         jwtService = Mockito.mock(JWTService.class);
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
         accountSettingsService = Mockito.mock(IAccountSettingsService.class);
+        templateService = Mockito.mock(ITemplateService.class);
+        emailService = Mockito.mock(IEmailService.class);
 
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
@@ -253,12 +270,15 @@ public class AccountWorkflowManagerTest {
     /**
      * Check that the system allows to create a new account.
      *
-     * @throws EntityAlreadyExistsException
-     *             Thrown when an account with same email already exists
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when no template could be found to send the validation
+     *             email<br>
+     *             {@link EntityAlreadyExistsException} Thrown when an account with same email already exists<br>
      */
     @Test
     @Purpose("Check that the system allows to create a new account.")
-    public void requestAccountManual() throws EntityAlreadyExistsException {
+    public void requestAccountManual() throws EntityException {
         // Mock
         Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
         Mockito.when(accountSettingsService.retrieve()).thenReturn(accountSettings);
@@ -279,18 +299,29 @@ public class AccountWorkflowManagerTest {
     /**
      * Check that the system allows to create a new account and auto-accept it if configured so.
      *
-     * @throws EntityAlreadyExistsException
-     *             Thrown when an account with same email already exists
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when no template could be found to send the validation
+     *             email<br>
+     *             {@link EntityAlreadyExistsException} Thrown when an account with same email already exists<br>
      */
     @Test
     @Purpose("Check that the system allows to create a new account and auto-accept it if configured so.")
-    public void requestAccountAutoAccept() throws EntityAlreadyExistsException {
+    public void requestAccountAutoAccept() throws EntityException {
         // Mock
         Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
         Mockito.when(accountSettingsService.retrieve()).thenReturn(accountSettings);
         accountSettings.setMode("auto-accept");
         Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new PendingState(accountRepository, accountSettingsService));
+                .thenReturn(new PendingState(accountRepository, accountSettingsService, templateService, emailService));
+
+        final SimpleMailMessage validationEmail = new SimpleMailMessage();
+        validationEmail.setFrom("system@regards.fr");
+        validationEmail.setTo(EMAIL);
+        validationEmail.setText(TemplateTestConstants.CONTENT_TEMPLATED);
+        validationEmail.setSubject(TemplateTestConstants.SUBJECT);
+        Mockito.when(templateService.writeToEmail(Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(validationEmail);
 
         // Call tested method
         final AccessRequestDTO dto = new AccessRequestDTO();
@@ -304,6 +335,7 @@ public class AccountWorkflowManagerTest {
         account.setStatus(AccountStatus.ACCEPTED);
         // Verify the repository was correctly called
         Mockito.verify(accountRepository, Mockito.times(2)).save(Mockito.refEq(account, "id", CODE));
+        Mockito.verify(emailService).sendEmail(validationEmail);
     }
 
     /**

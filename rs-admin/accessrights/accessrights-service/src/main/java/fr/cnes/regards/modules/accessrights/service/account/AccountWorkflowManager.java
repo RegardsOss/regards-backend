@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -75,7 +76,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * accessrights.domain.AccessRequestDTO)
      */
     @Override
-    public Account requestAccount(final AccessRequestDTO pDto) throws EntityAlreadyExistsException {
+    public Account requestAccount(final AccessRequestDTO pDto) throws EntityException {
         // Check existence
         if (accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
             throw new EntityAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
@@ -93,11 +94,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
         // Auto-accept if configured so
         final AccountSettings settings = accountSettingsService.retrieve();
         if ("auto-accept".equals(settings.getMode())) {
-            try {
-                makeAdminDecision(account, true);
-            } catch (final EntityTransitionForbiddenException e) {
-                LOG.error("Error on auto-acceptance: ", e);
-            }
+            makeAdminDecision(account, true);
         }
 
         return account;
@@ -110,8 +107,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * modules. accessrights.domain.instance.Account)
      */
     @Override
-    public void makeAdminDecision(final Account pAccount, final boolean pAccepted)
-            throws EntityTransitionForbiddenException {
+    public void makeAdminDecision(final Account pAccount, final boolean pAccepted) throws EntityException {
         accountStateProvider.getState(pAccount).makeAdminDecision(pAccount, pAccepted);
     }
 

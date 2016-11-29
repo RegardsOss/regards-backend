@@ -17,6 +17,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentif
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
+import fr.cnes.regards.modules.accessrights.dao.instance.IVerificationTokenRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.service.account.AccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
@@ -70,6 +71,11 @@ public class AccountServiceTest {
     private IAccountRepository accountRepository;
 
     /**
+     * Mock repository
+     */
+    private IVerificationTokenRepository tokenRepository;
+
+    /**
      * Do some setup before each test
      */
     @Before
@@ -77,9 +83,10 @@ public class AccountServiceTest {
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
         // Mock dependencies
         accountRepository = Mockito.mock(IAccountRepository.class);
+        tokenRepository = Mockito.mock(IVerificationTokenRepository.class);
 
         // Construct serivice with mock deps
-        accountService = new AccountService(accountRepository);
+        accountService = new AccountService(accountRepository, tokenRepository);
     }
 
     /**
