@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.emails.rest;
+package fr.cnes.regards.modules.jobs.rest;
 
 import java.util.List;
 import java.util.stream.Collectors;

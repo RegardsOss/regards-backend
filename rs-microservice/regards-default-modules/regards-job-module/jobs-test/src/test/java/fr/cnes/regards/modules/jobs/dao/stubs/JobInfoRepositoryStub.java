@@ -86,7 +86,7 @@ public class JobInfoRepositoryStub extends RepositoryStub<JobInfo> implements IJ
 
     private static JobConfiguration jobConfiguration1 = new JobConfiguration("", jobParameters1,
             "fr.cnes.regards.modules.MyCustomJob", LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(15),
-            33, null, "owner@unix.org");
+            33, workspace, "owner@unix.org");
 
     private static final JobInfo jobInfo1 = new JobInfo(jobConfiguration1);
 

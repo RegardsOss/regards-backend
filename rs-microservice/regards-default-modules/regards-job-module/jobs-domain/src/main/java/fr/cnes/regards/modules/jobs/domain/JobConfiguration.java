@@ -12,6 +12,7 @@ import fr.cnes.regards.modules.jobs.domain.converters.PathConverter;
 
 /**
  * @author Léo Mieulet
+ * @author Christophe Mertz
  *
  */
 public class JobConfiguration {

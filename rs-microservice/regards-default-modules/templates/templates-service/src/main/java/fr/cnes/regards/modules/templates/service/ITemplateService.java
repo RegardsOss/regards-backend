@@ -69,11 +69,15 @@ public interface ITemplateService {
 
     /**
      * @param pTemplateCode
+     *            the code of the template
      * @param pDataModel
+     *            the data to bind into to template
      * @param pRecipients
-     * @return
-     * @throws TemplateWriterException
+     *            the array of recipients
+     * @return the mail
+     * @throws EntityNotFoundException
+     *             when a {@link Template} of passed <code>code</code> could not be found
      */
     SimpleMailMessage writeToEmail(String pTemplateCode, Map<String, String> pDataModel, String[] pRecipients)
-            throws TemplateWriterException;
+            throws EntityNotFoundException;
 }

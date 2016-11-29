@@ -7,6 +7,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -133,20 +134,25 @@ public class JobRepositoryIT extends AbstractDaoTest {
         final JobConfiguration jobConfiguration = new JobConfiguration("some description", parameters,
                 "fr.cnes.regards.modules.MyCustomJob", LocalDateTime.now().plusDays(2),
                 LocalDateTime.now().plusDays(15), 1, workspace, owner);
+        jobConfiguration.getStatusInfo().setJobStatus(JobStatus.RUNNING);
         final JobInfo jobBeforeSave = new JobInfo(jobConfiguration);
 
         // save the job and the corresponding jobStatusInfo
         final JobInfo jobSaved = jobRepository.save(jobBeforeSave);
 
-        // final Map<String, Object> parameterAfterSave = jobSaved.getParameters().getParameters();
-        // final JobInfo jobAsParameterToRunAfter = (JobInfo) parameterAfterSave.get(keyParam);
-        //
-        // Assert.assertEquals(jobConfigurationToRunAfter.getClassName(), jobAsParameterToRunAfter.getClassName());
-        // Assert.assertEquals(jobConfigurationToRunAfter.getOwner(), jobAsParameterToRunAfter.getOwner());
-        // Assert.assertEquals(jobConfigurationToRunAfter.getStatusInfo().getDescription(),
-        // jobAsParameterToRunAfter.getStatus().getDescription());
-        // Assert.assertEquals(jobConfigurationToRunAfter.getStatusInfo().getStartDate(),
-        // jobAsParameterToRunAfter.getStatus().getStartDate());
+        final Map<String, Object> parameterAfterSave = jobSaved.getParameters().getParameters();
+        final JobInfo jobAsParameterToRunAfter = (JobInfo) parameterAfterSave.get(keyParam);
+
+        Assert.assertEquals(jobConfigurationToRunAfter.getClassName(), jobAsParameterToRunAfter.getClassName());
+        Assert.assertEquals(jobConfigurationToRunAfter.getOwner(), jobAsParameterToRunAfter.getOwner());
+        Assert.assertEquals(jobConfigurationToRunAfter.getStatusInfo().getDescription(),
+                            jobAsParameterToRunAfter.getStatus().getDescription());
+        Assert.assertEquals(jobConfigurationToRunAfter.getStatusInfo().getStartDate(),
+                            jobAsParameterToRunAfter.getStatus().getStartDate());
+        Assert.assertEquals(jobConfigurationToRunAfter.getStatusInfo().getStopDate(),
+                            jobAsParameterToRunAfter.getStatus().getStopDate());
+        Assert.assertEquals(jobConfigurationToRunAfter.getStatusInfo().getJobStatus(),
+                            jobAsParameterToRunAfter.getStatus().getJobStatus());
     }
 
     /**

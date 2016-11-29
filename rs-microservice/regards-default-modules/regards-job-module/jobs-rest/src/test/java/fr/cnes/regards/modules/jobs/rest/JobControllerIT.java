@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.emails.rest;
+package fr.cnes.regards.modules.jobs.rest;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -57,8 +57,9 @@ public class JobControllerIT extends AbstractRegardsIT {
     @Test
     public void getAllJobs() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        LOGGER.debug("job count : " + jobInfoService.retrieveJobInfoList().size());
         expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.*",
+                                                        Matchers.hasSize(jobInfoService.retrieveJobInfoList().size())));
         performDefaultGet(apiJobs, expectations, "unable to load all jobs");
     }
 
