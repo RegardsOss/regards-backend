@@ -23,6 +23,8 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos.Kerber
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos.KerberosServiceProviderPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos.Krb5TicketValidateAction;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.plugins.utils.PluginUtils;
@@ -95,11 +97,15 @@ public class KerberosServiceProviderPluginTest {
         }
     }
 
-    public void testContext() {
-        // Nothing to do. Only check plugin initialization
-    }
-
+    /**
+     *
+     * Check authentication to REGARDS system with a kerberos ticket
+     *
+     * @since 1.0-SNAPSHOT
+     */
     @Test
+    @Requirement("REGARDS_DSL_SYS_SEC_120")
+    @Purpose("Check authentication to REGARDS system with a kerberos ticket")
     public void checkKerberosTicketValidation() {
         if (plugin != null) {
             final byte[] ticket = generateKerberosTicket(applicatioPrincipal, userPrincipal);
@@ -119,6 +125,8 @@ public class KerberosServiceProviderPluginTest {
      *
      * @param pApplicationPrincipal
      *            Kerberos princiapl
+     * @param pUserPrincipal
+     *            user to connect
      * @return valid ticket
      * @since 1.0-SNAPSHOT
      */
@@ -156,8 +164,6 @@ public class KerberosServiceProviderPluginTest {
             return token;
 
         } catch (final GSSException e) {
-            LOG.error(e.getMessage(), e);
-        } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
         }
         return null;
