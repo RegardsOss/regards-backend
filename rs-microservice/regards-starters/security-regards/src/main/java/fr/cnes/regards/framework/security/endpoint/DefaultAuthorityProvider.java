@@ -49,6 +49,11 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
                 }
             }
         }
+
+        // Add default roles to returned endpoints
+        pLocalEndpoints.forEach(endpoint -> {
+            endpoint.addAuthorizedRole(new RoleAuthority(endpoint.getResourceAccess().role().name()));
+        });
         return pLocalEndpoints;
     }
 
