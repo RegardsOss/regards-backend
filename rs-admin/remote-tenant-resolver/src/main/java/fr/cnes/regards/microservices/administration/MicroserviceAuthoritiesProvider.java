@@ -14,6 +14,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
@@ -92,22 +93,29 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<String> getRoleAuthorizedAddress(final String pRole) throws SecurityException {
-        final List<String> addresses = new ArrayList<>();
+    public List<RoleAuthority> getRoleAuthorities() {
+        final List<RoleAuthority> roleAuths = new ArrayList<>();
 
         // Execute role request with Sys role
-        final Function<String, ResponseEntity<Resource<Role>>> retreiveRole = JwtTokenUtils
-                .asSafeCallableOnRole(() -> roleClient.retrieveRole(pRole), jwtService);
+        final Function<String, ResponseEntity<List<Resource<Role>>>> retreiveRole = JwtTokenUtils
+                .asSafeCallableOnRole(() -> roleClient.retrieveRoleList(), jwtService);
 
-        final ResponseEntity<Resource<Role>> result = retreiveRole.apply(RoleAuthority.getSysRole(microserviceName));
+        final ResponseEntity<List<Resource<Role>>> result = retreiveRole
+                .apply(RoleAuthority.getSysRole(microserviceName));
 
         if (result.getStatusCode().equals(HttpStatus.OK)) {
-            final Resource<Role> body = result.getBody();
-            if ((body != null) && (body.getContent() != null)) {
-                addresses.addAll(body.getContent().getAuthorizedAddresses());
+            final List<Resource<Role>> body = result.getBody();
+            if (body != null) {
+                final List<Role> roles = HateoasUtils.unwrapList(body);
+                for (final Role role : roles) {
+                    final RoleAuthority roleAuth = new RoleAuthority(role.getName());
+                    roleAuth.setAuthorizedIpAdresses(role.getAuthorizedAddresses());
+                    roleAuth.setCorsAccess(role.isCorsRequestsAuthorized());
+                    roleAuths.add(roleAuth);
+                }
             }
         }
-        return addresses;
+        return roleAuths;
     }
 
     @Override

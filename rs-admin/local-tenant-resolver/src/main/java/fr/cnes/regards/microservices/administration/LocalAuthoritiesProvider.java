@@ -72,15 +72,16 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<String> getRoleAuthorizedAddress(final String pRole) throws SecurityException {
-        try {
-            final List<String> results = new ArrayList<>();
-            final Role role = roleService.retrieveRole(pRole);
-            results.addAll(role.getAuthorizedAddresses());
-            return results;
-        } catch (final EntityNotFoundException e) {
-            throw new SecurityException("Could not get role authorized addresses", e);
+    public List<RoleAuthority> getRoleAuthorities() {
+        final List<RoleAuthority> results = new ArrayList<>();
+        final List<Role> roles = roleService.retrieveRoleList();
+        for (final Role role : roles) {
+            final RoleAuthority roleAuth = new RoleAuthority(role.getName());
+            roleAuth.setAuthorizedIpAdresses(role.getAuthorizedAddresses());
+            roleAuth.setCorsAccess(role.isCorsRequestsAuthorized());
+            results.add(roleAuth);
         }
+        return results;
     }
 
     @Override
