@@ -52,7 +52,7 @@ public class PastOrNowValidatorTest {
 
         final Set<ConstraintViolation<PastOrNowDate>> futureConstraintViolations = validator.validate(future);
         Assert.assertEquals(1, futureConstraintViolations.size());
-        Assert.assertEquals("{fr.cnes.modules.core.validation.PastOrNow.message}",
+        Assert.assertEquals("{" + PastOrNow.CLASS_NAME + "message}",
                             futureConstraintViolations.iterator().next().getMessage());
     }
 
