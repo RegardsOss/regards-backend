@@ -19,7 +19,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.filter.CorsFilter;
 import fr.cnes.regards.framework.security.filter.IpFilter;
@@ -49,12 +48,6 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     private JWTService jwtService;
 
     /**
-     * Authorities provider
-     */
-    @Autowired
-    private IAuthoritiesProvider authoritiesProvider;
-
-    /**
      * Authorization service
      */
     @Autowired
@@ -79,10 +72,10 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         pHttp.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(), jwtService), RequestLogFilter.class);
 
         // Add Ip filter after Authentication filter
-        pHttp.addFilterAfter(new IpFilter(authoritiesProvider), JWTAuthenticationFilter.class);
+        pHttp.addFilterAfter(new IpFilter(authorizationService), JWTAuthenticationFilter.class);
 
         // Add CORS filter
-        pHttp.addFilterAfter(new CorsFilter(authoritiesProvider), IpFilter.class);
+        pHttp.addFilterAfter(new CorsFilter(authorizationService), IpFilter.class);
 
         // Add custom configurations if any
         if (customConfigurers != null) {

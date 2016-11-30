@@ -12,16 +12,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 
 /**
  *
  * Class DefaultAuthorityProvider
  *
- * TODO description.
+ * Default Authorities provider. Provide default values for endpoints configuration and Roles.
  *
- * @author CS
- * @since TODO
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
  */
 public class DefaultAuthorityProvider implements IAuthoritiesProvider {
 
@@ -61,9 +62,13 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<String> getRoleAuthorizedAddress(final String pRole) {
-        LOG.warn("No Authority provider defined. Default one used. Management of Role IP filter is skipped.");
-        return new ArrayList<>();
+    public List<RoleAuthority> getRoleAuthorities() {
+        LOG.warn("No Authority provider defined. Only default roles are initialied.");
+        final List<RoleAuthority> defaultRoleAuthorities = new ArrayList<>();
+        for (final DefaultRole role : DefaultRole.values()) {
+            defaultRoleAuthorities.add(new RoleAuthority(role.name()));
+        }
+        return defaultRoleAuthorities;
     }
 
     @Override

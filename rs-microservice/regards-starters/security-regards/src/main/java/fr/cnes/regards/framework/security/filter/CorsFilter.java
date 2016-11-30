@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.security.filter;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -17,8 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import fr.cnes.regards.framework.security.domain.SecurityException;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
@@ -62,17 +62,17 @@ public class CorsFilter extends OncePerRequestFilter {
     private static final Logger LOG = LoggerFactory.getLogger(CorsFilter.class);
 
     /**
-     * Provider of authorities entities
+     * Method authorization service
      */
-    private IAuthoritiesProvider authoritiesProvider = null;
+    private MethodAuthorizationService methodAuthService = null;
 
     public CorsFilter() {
         super();
     }
 
-    public CorsFilter(final IAuthoritiesProvider pAuthoritiesProvider) {
+    public CorsFilter(final MethodAuthorizationService pMethodAuthService) {
         super();
-        authoritiesProvider = pAuthoritiesProvider;
+        methodAuthService = pMethodAuthService;
     }
 
     @Override
@@ -80,7 +80,7 @@ public class CorsFilter extends OncePerRequestFilter {
             final FilterChain pFilterChain) throws ServletException, IOException {
 
         boolean corsAccess;
-        if ((SecurityContextHolder.getContext().getAuthentication() != null) && (authoritiesProvider != null)) {
+        if ((SecurityContextHolder.getContext().getAuthentication() != null)) {
             corsAccess = doSecurizedFilter(pRequest, pResponse, pFilterChain);
         } else {
             allowCorsRequest(pRequest, pResponse, pFilterChain);
@@ -121,29 +121,27 @@ public class CorsFilter extends OncePerRequestFilter {
         @SuppressWarnings("unchecked")
         final Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication.getAuthorities();
 
-        try {
-            if (!roles.isEmpty()) {
+        if (!roles.isEmpty()) {
 
-                for (final RoleAuthority role : roles) {
-                    access = access || authoritiesProvider.hasCorsRequestsAccess(role.getAuthority());
+            for (final RoleAuthority role : roles) {
+                final Optional<RoleAuthority> roleAuth = methodAuthService.getRoleAuthority(role.getAuthority(),
+                                                                                            authentication.getTenant());
+                if (roleAuth.isPresent()) {
+                    access = access || roleAuth.get().getCorsAccess();
                 }
-                if (!access) {
-                    final String message = String.format("[REGARDS CORS FILTER] Access denied for user %s",
-                                                         authentication.getUser().getName());
-                    LOG.error(message);
-                    pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
-                } else {
-                    LOG.debug(String.format("[REGARDS CORS FILTER] Access granted for user %s",
-                                            authentication.getUser().getName()));
-                    allowCorsRequest(pRequest, pResponse, pFilterChain);
-                }
-            } else {
-                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS CORS FILTER] No Authority Role defined");
             }
-        } catch (final SecurityException e) {
-            final String message = "[REGARDS CORS FILTER] Error on access resolution: " + e.getMessage();
-            LOG.error(message, e);
-            pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+            if (!access) {
+                final String message = String.format("[REGARDS CORS FILTER] Access denied for user %s",
+                                                     authentication.getUser().getName());
+                LOG.error(message);
+                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+            } else {
+                LOG.debug(String.format("[REGARDS CORS FILTER] Access granted for user %s",
+                                        authentication.getUser().getName()));
+                allowCorsRequest(pRequest, pResponse, pFilterChain);
+            }
+        } else {
+            pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS CORS FILTER] No Authority Role defined");
         }
         return access;
     }

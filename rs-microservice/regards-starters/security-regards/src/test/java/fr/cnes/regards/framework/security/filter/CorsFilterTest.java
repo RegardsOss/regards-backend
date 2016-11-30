@@ -4,6 +4,7 @@
 package fr.cnes.regards.framework.security.filter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +21,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.security.domain.SecurityException;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -48,6 +50,11 @@ public class CorsFilterTest {
     private static final String ROLE_NAME = "USER";
 
     /**
+     * Tenant test
+     */
+    private static final String TENANT_NAME = "tenant";
+
+    /**
      *
      * Check security filter with cors requests
      *
@@ -68,12 +75,16 @@ public class CorsFilterTest {
         token.setRole(ROLE_NAME);
         final UserDetails user = new UserDetails();
         user.setName("test-user");
+        user.setTenant(TENANT_NAME);
         token.setUser(user);
         SecurityContextHolder.getContext().setAuthentication(token);
 
-        final IAuthoritiesProvider provider = Mockito.mock(IAuthoritiesProvider.class);
-        Mockito.when(provider.hasCorsRequestsAccess(Mockito.anyString())).thenReturn(true);
-        final CorsFilter filter = new CorsFilter(provider);
+        final RoleAuthority role = new RoleAuthority(ROLE_NAME);
+        role.setCorsAccess(true);
+        final MethodAuthorizationService service = Mockito.mock(MethodAuthorizationService.class);
+        Mockito.when(service.getRoleAuthority(RoleAuthority.getRoleAuthority(ROLE_NAME), TENANT_NAME))
+                .thenReturn(Optional.of(role));
+        final CorsFilter filter = new CorsFilter(service);
 
         final String errorMessage = "Error creating response cors header";
 
@@ -118,6 +129,7 @@ public class CorsFilterTest {
         token.setRole(ROLE_NAME);
         final UserDetails user = new UserDetails();
         user.setName("test-user");
+        user.setTenant(TENANT_NAME);
         token.setUser(user);
         SecurityContextHolder.getContext().setAuthentication(token);
 
@@ -125,9 +137,12 @@ public class CorsFilterTest {
         Mockito.when(mockedRequest.getMethod()).thenReturn("OPTIONS");
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
 
-        final IAuthoritiesProvider provider = Mockito.mock(IAuthoritiesProvider.class);
-        Mockito.when(provider.hasCorsRequestsAccess(Mockito.anyString())).thenReturn(false);
-        final CorsFilter filter = new CorsFilter(provider);
+        final RoleAuthority role = new RoleAuthority(ROLE_NAME);
+        role.setCorsAccess(false);
+        final MethodAuthorizationService service = Mockito.mock(MethodAuthorizationService.class);
+        Mockito.when(service.getRoleAuthority(RoleAuthority.getRoleAuthority(ROLE_NAME), TENANT_NAME))
+                .thenReturn(Optional.of(role));
+        final CorsFilter filter = new CorsFilter(service);
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
         } catch (ServletException | IOException e) {

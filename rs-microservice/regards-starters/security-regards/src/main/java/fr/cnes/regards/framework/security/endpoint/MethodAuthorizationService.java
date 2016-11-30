@@ -86,17 +86,12 @@ public class MethodAuthorizationService {
      * Authorities cache that provide granted authorities per tenant and per resource.<br/>
      * Map<Tenant, Map<Resource, List<GrantedAuthority>>>
      */
-    private final Map<String, Map<String, ArrayList<GrantedAuthority>>> grantedAuthoritiesByTenant;
+    private final Map<String, Map<String, ArrayList<GrantedAuthority>>> grantedAuthoritiesByTenant = new HashMap<>();
 
     /**
-     *
-     * Constructor
-     *
-     * @since 1.0-SNAPSHOT
+     * Roles allowed ip addresses cache
      */
-    public MethodAuthorizationService() {
-        grantedAuthoritiesByTenant = new HashMap<>();
-    }
+    private final Map<String, List<RoleAuthority>> grantedRolesIpAddressesByTenant = new HashMap<>();
 
     /**
      * After bean contruction
@@ -120,10 +115,8 @@ public class MethodAuthorizationService {
             for (final String tenant : tenantResolver.getAllTenants()) {
                 try {
                     jwtService.injectToken(tenant, RoleAuthority.getSysRole(microserviceName));
-                    final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(getResources());
-                    for (final ResourceMapping resource : resources) {
-                        setAuthorities(tenant, resource);
-                    }
+                    registerMethodResourcesAccessByTenant(tenant);
+                    collectRolesByTenant(tenant);
                 } catch (final JwtException e) {
                     LOG.error(String.format("Error during resources access initialization for tenant %s", tenant));
                     LOG.error(e.getMessage(), e);
@@ -132,6 +125,34 @@ public class MethodAuthorizationService {
         } catch (final JwtException e1) {
             LOG.error(e1.getMessage(), e1);
         }
+    }
+
+    /**
+     *
+     * Register all the current microservice endpoints to the administration service.
+     *
+     * @param pTenant
+     *            tenant
+     * @since 1.0-SNAPSHOT
+     */
+    private void registerMethodResourcesAccessByTenant(final String pTenant) {
+        final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(getResources());
+        for (final ResourceMapping resource : resources) {
+            setAuthorities(pTenant, resource);
+        }
+    }
+
+    /**
+     *
+     * Retrieve all Role authorities of the given tenant from the administration service
+     *
+     * @param pTenant
+     *            tenant
+     * @since 1.0-SNAPSHOT
+     */
+    private void collectRolesByTenant(final String pTenant) {
+        final List<RoleAuthority> roleAuthorities = authoritiesProvider.getRoleAuthorities();
+        grantedRolesIpAddressesByTenant.put(pTenant, roleAuthorities);
     }
 
     /**
@@ -345,5 +366,28 @@ public class MethodAuthorizationService {
      */
     public Map<String, ArrayList<GrantedAuthority>> getTenantAuthorities(final String pTenant) {
         return grantedAuthoritiesByTenant.get(pTenant);
+    }
+
+    /**
+     *
+     * Return the role authority configuration for the given tenant
+     *
+     * @param pRoleAuthorityName
+     *            Role name
+     * @param pTenant
+     *            tenant
+     * @return authorized addresses
+     * @since 1.0-SNAPSHOT
+     */
+    public Optional<RoleAuthority> getRoleAuthority(final String pRoleAuthorityName, final String pTenant) {
+        final List<RoleAuthority> roles = grantedRolesIpAddressesByTenant.get(pTenant);
+        if (roles != null) {
+            for (final RoleAuthority role : roles) {
+                if (role.getAuthority().equals(RoleAuthority.getRoleAuthority(pRoleAuthorityName))) {
+                    return Optional.of(role);
+                }
+            }
+        }
+        return Optional.empty();
     }
 }

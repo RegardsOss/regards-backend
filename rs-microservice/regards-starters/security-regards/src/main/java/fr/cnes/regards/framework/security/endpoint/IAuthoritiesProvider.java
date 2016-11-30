@@ -4,6 +4,7 @@ import java.util.List;
 
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 
 /**
  *
@@ -27,19 +28,6 @@ public interface IAuthoritiesProvider {
 
     /**
      *
-     * Retrieve all the authorized address (IP) for the given Role
-     *
-     * @param pRole
-     *            role
-     * @return List<String>
-     * @throws SecurityException
-     *             when no Role of name <code>pRole</code> could be found
-     * @since 1.0-SNAPSHOT
-     */
-    List<String> getRoleAuthorizedAddress(String pRole) throws SecurityException;
-
-    /**
-     *
      * Dertermine if the given role authority can use CORS requests
      *
      * @param pAuthority
@@ -50,4 +38,13 @@ public interface IAuthoritiesProvider {
      * @since 1.0-SNAPSHOT
      */
     boolean hasCorsRequestsAccess(String pAuthority) throws SecurityException;
+
+    /**
+     *
+     * Retrieve all roles authorities
+     *
+     * @return all {@link RoleAuthority}
+     * @since 1.0-SNAPSHOT
+     */
+    List<RoleAuthority> getRoleAuthorities();
 }

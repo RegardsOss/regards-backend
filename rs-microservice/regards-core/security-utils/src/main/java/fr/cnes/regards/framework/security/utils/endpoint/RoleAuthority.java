@@ -3,6 +3,9 @@
  */
 package fr.cnes.regards.framework.security.utils.endpoint;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.security.core.GrantedAuthority;
 
 /**
@@ -40,6 +43,16 @@ public class RoleAuthority implements GrantedAuthority {
      * Role name prefixed with {@link #ROLE_PREFIX}
      */
     private String autority;
+
+    /**
+     * List of authorized id addresses for the current rrole
+     */
+    private List<String> authorizedIpAdresses = new ArrayList<>();
+
+    /**
+     * Role does accept CORS Requests ?
+     */
+    private Boolean corsAccess = Boolean.TRUE;
 
     /**
      *
@@ -134,6 +147,22 @@ public class RoleAuthority implements GrantedAuthority {
     @Override
     public String getAuthority() {
         return autority;
+    }
+
+    public List<String> getAuthorizedIpAdresses() {
+        return authorizedIpAdresses;
+    }
+
+    public Boolean getCorsAccess() {
+        return corsAccess;
+    }
+
+    public void setAuthorizedIpAdresses(final List<String> pAuthorizedIpAdresses) {
+        authorizedIpAdresses = pAuthorizedIpAdresses;
+    }
+
+    public void setCorsAccess(final Boolean pCorsAccess) {
+        corsAccess = pCorsAccess;
     }
 
     @Override
