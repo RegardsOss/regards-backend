@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,9 +23,9 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -36,7 +37,6 @@ import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
-import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
  * Integration tests for accounts.
@@ -59,6 +59,8 @@ public class AccountControllerIT extends AbstractAdministrationIT {
      * A dummy account
      */
     private static Account account;
+
+    private static Account accountInstance;
 
     /**
      * Dummy email
@@ -111,14 +113,14 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Autowired
     private IProjectUserRepository projectUserRepository;
 
-//    @Autowired
-//    private RoleService roleService;
-
     @Value("${root.admin.login:admin}")
     private String rootAdminLogin;
 
     @Value("${root.admin.password:admin}")
     private String rootAdminPassword;
+
+    @Value("${regards.accounts.root.user.login}")
+    private String rootAdminInstanceLogin;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -154,6 +156,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
         // And start with a single account for convenience
         account = accountRepository.save(new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD));
+        accountInstance = accountRepository.save(new Account(rootAdminInstanceLogin, FIRST_NAME, LAST_NAME, PASSWORD));
     }
 
     @Test
@@ -273,11 +276,11 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         performPut(apiAccountId, token, account, expectations, errorMessage, 99L);
 
         // If entity not found
-        final Long inexistentId = 99L;
-        account.setId(inexistentId);
+        final Long unknownId = 99L;
+        account.setId(unknownId);
         expectations.clear();
         expectations.add(status().isNotFound());
-        performPut(apiAccountId, token, account, expectations, errorMessage, inexistentId);
+        performPut(apiAccountId, token, account, expectations, errorMessage, unknownId);
     }
 
     @Test
@@ -307,7 +310,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     /**
      * Check that the system prevents from deleting an account linked to any project users.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             when no role with name 'PUBLIC' could be found
      */
     @Test
@@ -365,6 +368,36 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         expectations.clear();
         expectations.add(status().isNotFound());
         performGet(apiValidatePassword, token, expectations, errorMessage, wrongEmail, PASSWORD);
+    }
+
+    @Test
+    public void getAccountUser() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links.delete", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links.self", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links.update", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links.delete.href", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links.self.href", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links.update.href", Matchers.notNullValue()));
+
+        performGet(apiAccountId, token, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    public void getAccountInstance() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links.self", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links.update", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links.self.href", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links.update.href", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links",
+                                                        Matchers.not(Matchers.containsString(LinkRels.DELETE))));
+
+        performGet(apiAccountId, token, expectations, errorMessage, accountInstance.getId());
     }
 
     @Override

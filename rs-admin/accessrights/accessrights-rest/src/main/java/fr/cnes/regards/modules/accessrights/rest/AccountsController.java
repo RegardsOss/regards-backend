@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,6 +77,12 @@ public class AccountsController implements IResourceController<Account> {
 
     @Autowired
     private IAccountSettingsService accountSettingsService;
+
+    /**
+     * Root admin user login
+     */
+    @Value("${regards.accounts.root.user.login}")
+    private String rootAdminUserLogin;
 
     /**
      * Retrieve the list of all {@link Account}s.
@@ -306,10 +313,11 @@ public class AccountsController implements IResourceController<Account> {
             resourceService.addLink(resource, this.getClass(), "updateAccount", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
                                     MethodParamFactory.build(Account.class));
-            resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
-                                    MethodParamFactory.build(Long.class, pElement.getId()));
-            resourceService.addLink(resource, this.getClass(), "retrieveAccountList", LinkRels.LIST,
-                                    MethodParamFactory.build(Account.class));
+            if (!pElement.getEmail().equals(rootAdminUserLogin)) {
+                resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
+                                        MethodParamFactory.build(Long.class, pElement.getId()));
+            }
+            resourceService.addLink(resource, this.getClass(), "retrieveAccountList", LinkRels.LIST);
             resourceService.addLink(resource, this.getClass(), "retrieveAccountSettings", "getAccountSettings");
             resourceService.addLink(resource, this.getClass(), "updateAccountSetting", "setAccountSetting",
                                     MethodParamFactory.build(AccountSettings.class));
