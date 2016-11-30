@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.jobs.domain;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -15,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.converters.LocalDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 
 /**
@@ -36,6 +38,13 @@ public class StatusInfo implements IIdentifiable<Long> {
     private Long id;
 
     /**
+     * the job status
+     */
+    @Column(name = "status")
+    @Enumerated(value = EnumType.ORDINAL)
+    private JobStatus status;
+
+    /**
      * Job StatusInfo description
      */
     @Column(name = "description")
@@ -45,12 +54,14 @@ public class StatusInfo implements IIdentifiable<Long> {
      * Job StatusInfo estimated date to job completion
      */
     @Column(name = "estimatedCompletion")
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime estimatedCompletion;
 
     /**
      * Job StatusInfo specify the date when the job should be expired
      */
     @Column(name = "expirationDate")
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime expirationDate;
 
     /**
@@ -64,19 +75,14 @@ public class StatusInfo implements IIdentifiable<Long> {
      */
     @PastOrNow
     @Column(name = "startDate")
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime startDate;
-
-    /**
-     * the job status
-     */
-    @Column(name = "status")
-    @Enumerated(value=EnumType.ORDINAL)
-    private JobStatus status;
 
     /**
      * the job end date
      */
     @Column(name = "stopDate")
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime stopDate;
 
     public String getDescription() {

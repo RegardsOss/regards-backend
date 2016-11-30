@@ -21,8 +21,6 @@
 		<module>module-plugins-domain</module>
 		<module>module-plugins-rest</module>
 		<module>module-plugins-service</module>
-		<module>module-plugins-client</module>
-		<module>module-plugins-signature</module>
 		<module>module-plugins-test</module>
 	</modules>
 

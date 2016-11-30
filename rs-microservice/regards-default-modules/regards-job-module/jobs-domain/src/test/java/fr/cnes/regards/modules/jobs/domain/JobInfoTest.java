@@ -21,12 +21,12 @@ public class JobInfoTest {
     public void testDomain() {
         final JobInfo jobInfo = new JobInfo();
         final String pClassName = "fr.cnes.someClass";
-        final boolean isArchived = true;
-        final long id = 17L;
+        final Boolean isArchived = Boolean.TRUE;
+        final Long id = 17L;
         final JobParameters parameters = new JobParameters();
         final String owner = "system";
         final List<Output> result = new ArrayList<>();
-        final int priority = 454;
+        final Integer priority = 454;
         final Path workspace = FileSystems.getDefault().getPath("logs", "access.log");
 
         final StatusInfo status = new StatusInfo();

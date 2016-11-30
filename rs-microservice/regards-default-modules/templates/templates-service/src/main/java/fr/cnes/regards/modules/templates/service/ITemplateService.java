@@ -4,6 +4,9 @@
 package fr.cnes.regards.modules.templates.service;
 
 import java.util.List;
+import java.util.Map;
+
+import org.springframework.mail.SimpleMailMessage;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -51,7 +54,6 @@ public interface ITemplateService {
      *             <br>
      *             {@link EntityNotFoundException} if no template with passed id could be found<br>
      *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
-     * @return void
      */
     void update(final Long pId, final Template pTemplate) throws EntityException;
 
@@ -62,7 +64,20 @@ public interface ITemplateService {
      *            the updated template id
      * @throws EntityNotFoundException
      *             if no template with passed id could be found
-     * @return void
      */
     void delete(final Long pId) throws EntityNotFoundException;
+
+    /**
+     * @param pTemplateCode
+     *            the code of the template
+     * @param pDataModel
+     *            the data to bind into to template
+     * @param pRecipients
+     *            the array of recipients
+     * @return the mail
+     * @throws EntityNotFoundException
+     *             when a {@link Template} of passed <code>code</code> could not be found
+     */
+    SimpleMailMessage writeToEmail(String pTemplateCode, Map<String, String> pDataModel, String[] pRecipients)
+            throws EntityNotFoundException;
 }

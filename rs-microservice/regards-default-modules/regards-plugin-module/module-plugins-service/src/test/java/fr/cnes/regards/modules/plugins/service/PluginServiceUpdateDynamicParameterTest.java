@@ -11,10 +11,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
@@ -32,17 +30,12 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
 public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtility {
 
     /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(PluginServiceUpdateDynamicParameterTest.class);
-
-    /**
-     * 
+     *
      */
     private IPluginConfigurationRepository pluginConfRepositoryMocked;
 
     /**
-     * 
+     *
      */
     private IPluginService pluginServiceMocked;
 
@@ -80,7 +73,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
 
             aPluginConfiguration.logParams();
             final List<PluginParameter> parameters = aPluginConfiguration.getParameters();
-            for (PluginParameter p : updatedConf.getParameters()) {
+            for (final PluginParameter p : updatedConf.getParameters()) {
                 if (p.isDynamic()) {
                     if (!p.getDynamicsValuesAsString().isEmpty()) {
                         parameters.remove(p);
@@ -101,7 +94,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
             aPluginConfiguration.logParams();
 
-        } catch (PluginUtilsException | ModuleEntityNotFoundException e) {
+        } catch (PluginUtilsException | EntityNotFoundException e) {
             Assert.fail();
         }
     }
@@ -152,7 +145,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
             aPluginConfiguration.logParams();
 
-        } catch (PluginUtilsException | ModuleEntityNotFoundException e) {
+        } catch (PluginUtilsException | EntityNotFoundException e) {
             Assert.fail();
         }
     }

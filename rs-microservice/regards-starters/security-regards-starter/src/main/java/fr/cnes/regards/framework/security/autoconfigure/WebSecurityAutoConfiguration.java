@@ -76,7 +76,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         pHttp.addFilterBefore(new RequestLogFilter(), UsernamePasswordAuthenticationFilter.class);
 
         // Add JWT Authentication filter
-        pHttp.addFilterAfter(new JWTAuthenticationFilter(authenticationManager()), RequestLogFilter.class);
+        pHttp.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(), jwtService), RequestLogFilter.class);
 
         // Add Ip filter after Authentication filter
         pHttp.addFilterAfter(new IpFilter(authoritiesProvider), JWTAuthenticationFilter.class);

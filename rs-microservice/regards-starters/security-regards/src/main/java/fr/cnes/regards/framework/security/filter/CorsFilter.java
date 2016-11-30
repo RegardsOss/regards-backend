@@ -79,13 +79,15 @@ public class CorsFilter extends OncePerRequestFilter {
     protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
 
+        boolean corsAccess;
         if ((SecurityContextHolder.getContext().getAuthentication() != null) && (authoritiesProvider != null)) {
-            doSecurizedFilter(pRequest, pResponse, pFilterChain);
+            corsAccess = doSecurizedFilter(pRequest, pResponse, pFilterChain);
         } else {
             allowCorsRequest(pRequest, pResponse, pFilterChain);
+            corsAccess = true;
         }
 
-        if (!OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
+        if (!OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod()) && corsAccess) {
             pFilterChain.doFilter(pRequest, pResponse);
         }
 
@@ -105,11 +107,13 @@ public class CorsFilter extends OncePerRequestFilter {
      *             Servlet error
      * @throws IOException
      *             Internal error
+     * @return true if the cors requests are accepted
      * @since 1.0-SNAPSHOT
      */
-    private void doSecurizedFilter(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
+    private boolean doSecurizedFilter(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
 
+        boolean access = false;
         // Get authorized ip associated to given role
         final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
                 .getAuthentication();
@@ -119,7 +123,7 @@ public class CorsFilter extends OncePerRequestFilter {
 
         try {
             if (!roles.isEmpty()) {
-                boolean access = false;
+
                 for (final RoleAuthority role : roles) {
                     access = access || authoritiesProvider.hasCorsRequestsAccess(role.getAuthority());
                 }
@@ -141,6 +145,7 @@ public class CorsFilter extends OncePerRequestFilter {
             LOG.error(message, e);
             pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
         }
+        return access;
     }
 
     /**

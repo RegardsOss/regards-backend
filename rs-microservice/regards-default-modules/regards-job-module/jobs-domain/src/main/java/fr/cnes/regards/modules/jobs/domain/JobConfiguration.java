@@ -6,8 +6,13 @@ package fr.cnes.regards.modules.jobs.domain;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 
+import javax.persistence.Convert;
+
+import fr.cnes.regards.modules.jobs.domain.converters.PathConverter;
+
 /**
  * @author Léo Mieulet
+ * @author Christophe Mertz
  *
  */
 public class JobConfiguration {
@@ -25,6 +30,7 @@ public class JobConfiguration {
     /**
      * Job workspace (nullable)
      */
+    @Convert(converter = PathConverter.class)
     private Path workspace;
 
     /**

@@ -1,4 +1,6 @@
-/**LICENSE_PLACEHOLDER*/
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.plugins.dao;
 
 import org.junit.Assert;

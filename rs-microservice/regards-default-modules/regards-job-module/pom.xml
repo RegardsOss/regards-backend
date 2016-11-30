@@ -25,7 +25,6 @@
 		<module>jobs-rest</module>
 		<module>jobs-service</module>
 		<module>jobs-client</module>
-		<module>jobs-signature</module>
 		<module>jobs-test</module>
 	</modules>
 

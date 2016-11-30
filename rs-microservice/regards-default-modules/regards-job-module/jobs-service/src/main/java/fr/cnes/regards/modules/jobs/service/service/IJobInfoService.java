@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.jobs.service.service;
 
 import java.util.List;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
 
@@ -39,8 +40,10 @@ public interface IJobInfoService {
      * @param pJobInfoId
      *            the jobInfo id
      * @return the corresponding jobInfo
+     * @throws EntityNotFoundException
+     *             The job does not exist
      */
-    JobInfo retrieveJobInfoById(Long pJobInfoId);
+    JobInfo retrieveJobInfoById(Long pJobInfoId) throws EntityNotFoundException;
 
     /**
      * @param pJobInfo
@@ -53,6 +56,8 @@ public interface IJobInfoService {
      * @param pJobInfoId
      *            the jobInfo id
      * @return the updated jobInfo
+     * @throws EntityNotFoundException
+     *             The job does not exist
      */
-    JobInfo stopJob(Long pJobInfoId);
+    JobInfo stopJob(Long pJobInfoId) throws EntityNotFoundException;
 }

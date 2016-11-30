@@ -6,11 +6,13 @@ package fr.cnes.regards.modules.jobs.service.service;
 import java.time.LocalDateTime;
 
 import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.modules.jobs.domain.JobConfiguration;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
@@ -83,14 +85,20 @@ public class JobInfoServiceTest {
 
     @Test
     public void testRetrieveJobInfoById() {
-        final long jobInfoId = 14L;
-        jobInfoService.retrieveJobInfoById(jobInfoId);
-        Mockito.verify(jobInfoRepository).findOne(jobInfoId);
+        final Long jobInfoId = 14L;
+        final JobInfo jobInfo = new JobInfo();
+        jobInfo.setId(jobInfoId);
+        Mockito.when(jobInfoRepository.findOne(jobInfoId)).thenReturn(jobInfo);
+        try {
+            JobInfo job = jobInfoService.retrieveJobInfoById(jobInfoId);
+            Assert.assertNotNull(job);
+        } catch (EntityNotFoundException e) {
+            Assert.fail();
+        }
     }
 
     @Test
     public void testRetrieveJobInfoListByState() {
-        final long jobInfoId = 14L;
         final JobStatus pStatus = JobStatus.QUEUED;
         jobInfoService.retrieveJobInfoListByState(pStatus);
         Mockito.verify(jobInfoRepository).findAllByStatusStatus(pStatus);

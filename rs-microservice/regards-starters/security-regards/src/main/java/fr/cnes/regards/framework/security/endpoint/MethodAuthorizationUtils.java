@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.ResourceMappingException;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 
 /**
  * Authorization utilities
@@ -90,8 +92,11 @@ public final class MethodAuthorizationUtils {
 
         // Join path mapping
         final String path = join(classMapping, methodMapping);
-
-        return new ResourceMapping(access, path, getSingleMethod(pMethod));
+        if (access.role().equals(DefaultRole.NONE)) {
+            return new ResourceMapping(access, path, getSingleMethod(pMethod));
+        } else {
+            return new ResourceMapping(access, path, getSingleMethod(pMethod), new RoleAuthority(access.role().name()));
+        }
     }
 
     /**

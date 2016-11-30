@@ -63,11 +63,6 @@ public class JWTService {
     private static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
 
     /**
-     * TODO
-     */
-    private static Map<String, String> scopesTokensMap_ = new HashMap<>();
-
-    /**
      * JWT Secret
      */
     @Value("${jwt.secret}")
@@ -77,17 +72,55 @@ public class JWTService {
         return ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication()).getTenant();
     }
 
-    public void injectToken(final String pTenant, final String pRole) throws JwtException {
-        String token = null;
-        if (scopesTokensMap_.get(pTenant) != null) {
-            token = scopesTokensMap_.get(pTenant);
-        } else {
-            token = generateToken(pTenant, "", "", pRole);
-        }
+    /**
+     *
+     * Inject a generated token in the {@link SecurityContextHolder}
+     *
+     * @param pTenant
+     *            Project
+     * @param pRole
+     *            Role name
+     * @param pUserEmail
+     *            User email
+     * @param pUserName
+     *            User name
+     * @throws JwtException
+     *             Error during token generation
+     * @since 1.0-SNAPSHOT
+     */
+    public void injectToken(final String pTenant, final String pRole, final String pUserEmail, final String pUserName)
+            throws JwtException {
+        final String token = generateToken(pTenant, pUserEmail, pUserName, pRole);
         final JWTAuthentication auth = parseToken(new JWTAuthentication(token));
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
+    /**
+     *
+     * Inject a generated token in the {@link SecurityContextHolder}
+     *
+     * @param pTenant
+     *            Project
+     * @param pRole
+     *            Role name
+     * @throws JwtException
+     *             Error during token generation
+     * @since 1.0-SNAPSHOT
+     */
+    public void injectToken(final String pTenant, final String pRole) throws JwtException {
+        injectToken(pTenant, pRole, "", "");
+    }
+
+    /**
+     *
+     * Mock to simulate a token in the {@link SecurityContextHolder}.
+     *
+     * @param pTenant
+     *            project
+     * @param pRole
+     *            Role name
+     * @since 1.0-SNAPSHOT
+     */
     public void injectMockToken(final String pTenant, final String pRole) {
         final JWTAuthentication jwt = new JWTAuthentication("mockJWT"); // Unparseable token
         final UserDetails details = new UserDetails();
