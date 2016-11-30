@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 
 /**
  *
@@ -22,17 +23,17 @@ import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 public class AuthoritiesProviderStub implements IAuthoritiesProvider {
 
     @Override
-    public List<String> getRoleAuthorizedAddress(final String pRole) {
-        return new ArrayList<>();
-    }
-
-    @Override
     public boolean hasCorsRequestsAccess(final String pAuthority) {
         return false;
     }
 
     @Override
     public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<RoleAuthority> getRoleAuthorities() {
         return new ArrayList<>();
     }
 
