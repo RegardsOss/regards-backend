@@ -18,6 +18,7 @@ import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions;
 
 /**
  * Abstract state implementation to implement the delete action on an account.<br>
@@ -71,7 +72,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     }
 
     @Override
-    public void delete(final Account pAccount) throws ModuleException {
+    public void deleteAccount(final Account pAccount) throws ModuleException {
         switch (pAccount.getStatus()) {
             case ACTIVE:
             case LOCKED:
