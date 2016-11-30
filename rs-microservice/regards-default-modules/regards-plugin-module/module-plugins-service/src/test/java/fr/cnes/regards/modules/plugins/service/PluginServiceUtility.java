@@ -1,4 +1,6 @@
-/**LICENSE_PLACEHOLDER*/
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.plugins.service;
 
 import java.util.Arrays;
