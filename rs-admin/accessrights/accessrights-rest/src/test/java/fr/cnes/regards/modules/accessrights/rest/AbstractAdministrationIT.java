@@ -7,16 +7,12 @@ import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ImportResource;
 
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.role.RoleService;
-import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
-import fr.cnes.regards.modules.project.dao.IProjectRepository;
 
 /**
  *
@@ -45,40 +41,16 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
     protected Role publicRole;
 
     /**
-     * Project Repository STUB
-     */
-    @Autowired
-    private IProjectRepository projectRepository;
-
-    /**
      * Role repository
      */
     @Autowired
     private IRoleRepository roleRepository;
 
     /**
-     * Role service
-     */
-    @Autowired
-    private RoleService roleService;
-
-    /**
      * Project Repository STUB
      */
     @Autowired
     private IProjectUserRepository projectUserRepository;
-
-    /**
-     * Project Connection Repository STUB
-     */
-    @Autowired
-    private IProjectConnectionRepository projectConnectionRepository;
-
-    /**
-     * Method authorization service.
-     */
-    @Autowired
-    private MethodAuthorizationService methodAuthorizationService;
 
     /**
      * Project Connection Repository STUB
@@ -94,7 +66,6 @@ public abstract class AbstractAdministrationIT extends AbstractRegardsIT {
         // Clear the repos
         projectUserRepository.deleteAll();
         accountRepository.deleteAll();
-        projectConnectionRepository.deleteAll();
 
         // Refresh method autorization service after add the project
         // methodAuthorizationService.refreshAuthorities();

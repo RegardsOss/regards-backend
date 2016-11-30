@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -16,16 +17,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
@@ -33,10 +33,8 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
-import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
  * Integration tests for accounts.
@@ -47,8 +45,8 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
-@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
-public class AccountControllerIT extends AbstractAdministrationIT {
+@InstanceTransactional
+public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
@@ -113,8 +111,8 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Autowired
     private IProjectUserRepository projectUserRepository;
 
-//    @Autowired
-//    private RoleService roleService;
+    // @Autowired
+    // private RoleService roleService;
 
     @Value("${root.admin.login:admin}")
     private String rootAdminLogin;
@@ -127,26 +125,8 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
     private String apiAccountCode;
 
-    @Override
-    public void init() {
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts", RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts", RequestMethod.POST, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}", RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}", RequestMethod.PUT, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}", RequestMethod.DELETE, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/account/{account_email}", RequestMethod.GET,
-                                   ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/code", RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}/password/{reset_code}", RequestMethod.PUT,
-                                   ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_id}/unlock/{unlock_code}", RequestMethod.GET,
-                                   ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/settings", RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/settings", RequestMethod.PUT, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/accounts/{account_email}/validate", RequestMethod.GET,
-                                   ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, apiEmailValidation, RequestMethod.PUT, ROLE_TEST);
-
+    @Before
+    public void setUp() {
         errorMessage = "Cannot reach model attributes";
         apiAccounts = "/accounts";
         apiAccountId = apiAccounts + "/{account_id}";
@@ -166,7 +146,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     public void getAllAccounts() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiAccounts, token, expectations, errorMessage);
+        performDefaultGet(apiAccounts, expectations, errorMessage);
     }
 
     @Test
@@ -175,7 +155,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     public void getSettings() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiAccountSetting, token, expectations, errorMessage);
+        performDefaultGet(apiAccountSetting, expectations, errorMessage);
     }
 
     @Test
@@ -187,18 +167,18 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         // Regular success case
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
-        performPost(apiAccounts, token, account, expectations, errorMessage);
+        performDefaultPost(apiAccounts, account, expectations, errorMessage);
 
         // Conflict case
         expectations.clear();
         expectations.add(status().isConflict());
-        performPost(apiAccounts, token, account, expectations, errorMessage);
+        performDefaultPost(apiAccounts, account, expectations, errorMessage);
 
         // Malformed case
         final Account containNulls = new Account("notanemail", "", null, null);
         expectations.clear();
         expectations.add(status().isBadRequest());
-        performPost(apiAccounts, token, containNulls, expectations, errorMessage);
+        performDefaultPost(apiAccounts, containNulls, expectations, errorMessage);
     }
 
     @Test
@@ -207,11 +187,11 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     public void getAccount() throws EntityAlreadyExistsException {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiAccountId, token, expectations, errorMessage, account.getId());
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
 
         expectations.clear();
         expectations.add(status().isNotFound());
-        performGet(apiAccountId, token, expectations, errorMessage, Integer.MAX_VALUE);
+        performDefaultGet(apiAccountId, expectations, errorMessage, Integer.MAX_VALUE);
     }
 
     @Test
@@ -220,11 +200,11 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     public void getAccountByEmail() throws EntityAlreadyExistsException {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiAccountEmail, token, expectations, errorMessage, account.getEmail());
+        performDefaultGet(apiAccountEmail, expectations, errorMessage, account.getEmail());
 
         expectations.clear();
         expectations.add(status().isNotFound());
-        performGet(apiAccountEmail, token, expectations, errorMessage, "error@regards.fr");
+        performDefaultGet(apiAccountEmail, expectations, errorMessage, "error@regards.fr");
     }
 
     @Test
@@ -234,17 +214,17 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         expectations.add(status().isOk());
         final AccountSettings toUpdate = settingsService.retrieve();
         toUpdate.setMode("manual");
-        performPut(apiAccountSetting, token, toUpdate, expectations, errorMessage);
+        performDefaultPut(apiAccountSetting, toUpdate, expectations, errorMessage);
 
         expectations.clear();
         expectations.add(status().isOk());
         toUpdate.setMode("auto-accept");
-        performPut(apiAccountSetting, token, toUpdate, expectations, errorMessage);
+        performDefaultPut(apiAccountSetting, toUpdate, expectations, errorMessage);
 
         expectations.clear();
         expectations.add(status().isBadRequest());
         toUpdate.setMode("sdfqjkmfsdq");
-        performPut(apiAccountSetting, token, toUpdate, expectations, errorMessage);
+        performDefaultPut(apiAccountSetting, toUpdate, expectations, errorMessage);
     }
 
     @Test
@@ -256,7 +236,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     public void getCode() throws EntityAlreadyExistsException {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());
-        performGet(apiAccountCode + "?email=" + account.getEmail() + "&type=UNLOCK", token, expectations, errorMessage);
+        performDefaultGet(apiAccountCode + "?email=" + account.getEmail() + "&type=UNLOCK", expectations, errorMessage);
     }
 
     @Test
@@ -269,19 +249,19 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         // if that's the same functional ID and the parameter is valid:
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiAccountId, token, account, expectations, errorMessage, account.getId());
+        performDefaultPut(apiAccountId, account, expectations, errorMessage, account.getId());
 
         // if that's not the same functional ID and the parameter is valid:
         expectations.clear();
         expectations.add(status().isBadRequest());
-        performPut(apiAccountId, token, account, expectations, errorMessage, 99L);
+        performDefaultPut(apiAccountId, account, expectations, errorMessage, 99L);
 
         // If entity not found
         final Long inexistentId = 99L;
         account.setId(inexistentId);
         expectations.clear();
         expectations.add(status().isNotFound());
-        performPut(apiAccountId, token, account, expectations, errorMessage, inexistentId);
+        performDefaultPut(apiAccountId, account, expectations, errorMessage, inexistentId);
     }
 
     @Test
@@ -294,7 +274,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());
-        performGet(apiUnlockAccount, token, expectations, errorMessage, account.getId(), account.getCode());
+        performDefaultGet(apiUnlockAccount, expectations, errorMessage, account.getId(), account.getCode());
     }
 
     @Test
@@ -303,8 +283,8 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     public void changeAccountPassword() throws EntityAlreadyExistsException {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isNoContent());
-        performPut(apiChangePassword, token, "newPassword", expectations, errorMessage, account.getId(),
-                   account.getCode());
+        performDefaultPut(apiChangePassword, "newPassword", expectations, errorMessage, account.getId(),
+                          account.getCode());
 
     }
 
@@ -318,8 +298,8 @@ public class AccountControllerIT extends AbstractAdministrationIT {
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system prevents from deleting an account linked to any project users.")
     public void deleteAccount_notAllowedBecauseOfLinkedProjectUser() throws EntityNotFoundException {
-        jwtService.injectMockToken(AbstractAdministrationIT.PROJECT_TEST_NAME, ROLE_TEST);
-        projectUserRepository.save(new ProjectUser(EMAIL, roleTest, roleTest.getPermissions(), new ArrayList<>()));
+        // jwtService.injectMockToken(AbstractAdministrationIT.PROJECT_TEST_NAME, ROLE_TEST);
+        // projectUserRepository.save(new ProjectUser(EMAIL, roleTest, roleTest.getPermissions(), new ArrayList<>()));
 
         // Prepare the account. Must have a status allowing deletion
         account.setStatus(AccountStatus.INACTIVE);
@@ -327,7 +307,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
-        performDelete(apiAccountId, token, expectations, errorMessage, account.getId());
+        performDefaultDelete(apiAccountId, expectations, errorMessage, account.getId());
     }
 
     /**
@@ -344,7 +324,7 @@ public class AccountControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());
-        performDelete(apiAccountId, token, expectations, errorMessage, account.getId());
+        performDefaultDelete(apiAccountId, expectations, errorMessage, account.getId());
     }
 
     @Test
@@ -357,31 +337,19 @@ public class AccountControllerIT extends AbstractAdministrationIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().string("\"" + AccountStatus.ACTIVE.toString() + "\""));
-        performGet(apiValidatePassword, token, expectations, errorMessage, EMAIL, PASSWORD);
+        performDefaultGet(apiValidatePassword, expectations, errorMessage, EMAIL, PASSWORD);
 
         expectations.clear();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().string("\"" + AccountStatus.INACTIVE.toString() + "\""));
-        performGet(apiValidatePassword, token, expectations, errorMessage, EMAIL, wrongPassword);
+        performDefaultGet(apiValidatePassword, expectations, errorMessage, EMAIL, wrongPassword);
 
         final String wrongEmail = "wrongEmail";
         Assert.assertFalse(accountService.existAccount(wrongEmail));
         expectations.clear();
         expectations.add(status().isNotFound());
-        performGet(apiValidatePassword, token, expectations, errorMessage, wrongEmail, PASSWORD);
+        performDefaultGet(apiValidatePassword, expectations, errorMessage, wrongEmail, PASSWORD);
     }
-
-    // @Test
-    // @Purpose("Check that the system requires the user to validate via email its recently created account.")
-    // public void emailValidation() {
-    // // Prepare the account
-    // account.setStatus(AccountStatus.ACCEPTED);
-    // accountRepository.save(account);
-    //
-    // final List<ResultMatcher> expectations = new ArrayList<>(1);
-    // expectations.add(status().isOk());
-    // performPut(apiEmailValidation, token, null, expectations, errorMessage, account.getEmail(), account.getCode());
-    // }
 
     @Override
     protected Logger getLogger() {

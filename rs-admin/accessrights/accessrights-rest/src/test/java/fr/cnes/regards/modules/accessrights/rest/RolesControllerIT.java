@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -16,19 +17,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -41,16 +41,13 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
-@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
-public class RolesControllerIT extends AbstractAdministrationIT {
+@MultitenantTransactional
+public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(RolesControllerIT.class);
-
-    @Autowired
-    private MethodAuthorizationService authService;
 
     private String apiRoles;
 
@@ -68,6 +65,12 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Autowired
     private IResourcesAccessRepository resourcesAccessRepository;
 
+    /**
+     * Role repository
+     */
+    @Autowired
+    private IRoleRepository roleRepository;
+
     @Rule
     public ExpectedException thrown_ = ExpectedException.none();
 
@@ -77,22 +80,24 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     @Value("${root.admin.password:admin}")
     private String rootAdminPassword;
 
-    @Override
+    private static final String ROLE_TEST = "TEST_ROLE";
+
+    private Role roleTest;
+
+    private Role publicRole;
+
+    @Before
     public void init() {
-        authService.setAuthorities(PROJECT_TEST_NAME, "/roles", RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/roles", RequestMethod.POST, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/roles/{role_name}", RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/roles/{role_id}", RequestMethod.PUT, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/roles/{role_id}", RequestMethod.DELETE, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/roles/{role_id}/permissions", RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/roles/{role_id}/permissions", RequestMethod.PUT, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/roles/{role_id}/permissions", RequestMethod.DELETE, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/roles/{role_id}/users", RequestMethod.GET, ROLE_TEST);
         apiRoles = "/roles";
         apiRolesId = apiRoles + "/{role_id}";
         apiRolesName = apiRoles + "/{role_name}";
         apiRolesPermissions = apiRolesId + "/permissions";
         apiRolesUsers = apiRolesId + "/users";
+
+        // Init roles
+        publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
+        roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
+        roleTest = roleRepository.save(new Role(ROLE_TEST, publicRole));
     }
 
     @Test
@@ -101,7 +106,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     public void retrieveRoleList() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRoles, token, expectations, "TODO Error message");
+        performDefaultGet(apiRoles, expectations, "TODO Error message");
     }
 
     @Test
@@ -117,11 +122,11 @@ public class RolesControllerIT extends AbstractAdministrationIT {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
-        performPost(apiRoles, token, newRole, expectations, "TODO Error message");
+        performDefaultPost(apiRoles, newRole, expectations, "TODO Error message");
 
         expectations = new ArrayList<>(1);
         expectations.add(status().isConflict());
-        performPost(apiRoles, token, newRole, expectations, "TODO Error message");
+        performDefaultPost(apiRoles, newRole, expectations, "TODO Error message");
     }
 
     @Test
@@ -130,12 +135,12 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     public void retrieveRole() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRolesName, token, expectations, "TODO Error message", DefaultRole.REGISTERED_USER);
+        performDefaultGet(apiRolesName, expectations, "TODO Error message", DefaultRole.REGISTERED_USER);
 
         final String wrongRoleName = "WRONG_ROLE";
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
-        performGet(apiRolesName, token, expectations, "TODO Error message", wrongRoleName);
+        performDefaultGet(apiRolesName, expectations, "TODO Error message", wrongRoleName);
     }
 
     @Test
@@ -148,12 +153,12 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         // Regular case
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiRolesId, token, roleTest, expectations, "TODO Error message", roleTest.getId());
+        performDefaultPut(apiRolesId, roleTest, expectations, "TODO Error message", roleTest.getId());
 
         // Fail case: ids differ
         expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isBadRequest());
-        performPut(apiRolesId, token, roleTest, expectations, "TODO Error message", 99L);
+        performDefaultPut(apiRolesId, roleTest, expectations, "TODO Error message", 99L);
     }
 
     /**
@@ -167,7 +172,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
-        performDelete(apiRolesId, token, expectations, "TODO Error message", publicRole.getId());
+        performDefaultDelete(apiRolesId, expectations, "TODO Error message", publicRole.getId());
     }
 
     /**
@@ -181,7 +186,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
         // Create a non-native role
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiRolesId, token, expectations, "TODO Error message", roleTest.getId());
+        performDefaultDelete(apiRolesId, expectations, "TODO Error message", roleTest.getId());
     }
 
     @Test
@@ -190,7 +195,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     public void retrieveRoleResourcesAccessList() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRolesPermissions, token, expectations, "TODO Error message", roleTest.getId());
+        performDefaultGet(apiRolesPermissions, expectations, "TODO Error message", roleTest.getId());
     }
 
     @Test
@@ -207,7 +212,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut(apiRolesPermissions, token, newPermissionList, expectations, "TODO Error message", roleTest.getId());
+        performDefaultPut(apiRolesPermissions, newPermissionList, expectations, "TODO Error message", roleTest.getId());
     }
 
     @Test
@@ -216,7 +221,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     public void clearRoleResourcesAccess() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete(apiRolesPermissions, token, expectations, "TODO Error message", roleTest.getId());
+        performDefaultDelete(apiRolesPermissions, expectations, "TODO Error message", roleTest.getId());
     }
 
     @Test
@@ -225,7 +230,7 @@ public class RolesControllerIT extends AbstractAdministrationIT {
     public void retrieveRoleProjectUserList() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet(apiRolesUsers, token, expectations, "TODO Error message", roleTest.getId());
+        performDefaultGet(apiRolesUsers, expectations, "TODO Error message", roleTest.getId());
     }
 
     @Override
