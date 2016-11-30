@@ -13,7 +13,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
 
 /**
- * {@link IRegistrationService} implementation.
+ * {@link IPasswordResetService} implementation.
  *
  * @author Xavier-Alexandre Brochard
  */
