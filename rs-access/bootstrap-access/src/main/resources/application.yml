@@ -9,9 +9,6 @@ spring:
   application:
     name : rs-access
     
-  profiles :
-    active : test
-    
 swagger:
   api:
     name: access-api
