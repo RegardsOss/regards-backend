@@ -52,11 +52,6 @@ public class TemplateService implements ITemplateService {
     private static final Logger LOG = LoggerFactory.getLogger(TemplateService.class);
 
     /**
-     * The email validation template code
-     */
-    private static final String EMAIL_VALIDATION_TEMPLATE_CODE = "emailValidationTemplate";
-
-    /**
      * Freemarker version-major number. Needed for configuring the Freemarker library.
      *
      * @see {@link Configuration#Configuration(Version)}
