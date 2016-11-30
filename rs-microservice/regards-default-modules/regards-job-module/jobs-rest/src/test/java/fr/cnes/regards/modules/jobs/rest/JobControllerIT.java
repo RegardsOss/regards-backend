@@ -60,22 +60,20 @@ public class JobControllerIT extends AbstractRegardsIT {
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.*",
                                                         Matchers.hasSize(jobInfoService.retrieveJobInfoList().size())));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.*.links", Matchers.notNullValue()));
         performDefaultGet(apiJobs, expectations, "unable to load all jobs");
     }
 
     @Test
     public void getOneJob() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
+        final JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.id", Matchers.hasToString(aJob.getId().toString())));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.owner", Matchers.hasToString(aJob.getOwner())));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.priority",
                                                         Matchers.hasToString(String.format("%s", aJob.getPriority()))));
-        // TODO CMZ manque parameters
-        // expectations.add(MockMvcResultMatchers.jsonPath("$.content.parameters",
-        // Matchers.arrayWithSize(aJob.getParameters().getParameters().size())));
         expectations
                 .add(MockMvcResultMatchers.jsonPath("$.content.className", Matchers.hasToString(aJob.getClassName())));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.archived",
@@ -84,6 +82,7 @@ public class JobControllerIT extends AbstractRegardsIT {
                                                         Matchers.hasToString(aJob.getStatus().getJobStatus().name())));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.status.description",
                                                         Matchers.hasToString(aJob.getStatus().getDescription())));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.notNullValue()));
 
         performDefaultGet(apiAJob, expectations, String.format("unable to load the job <%s>", aJob.getId()),
                           aJob.getId());
@@ -92,7 +91,7 @@ public class JobControllerIT extends AbstractRegardsIT {
     @Test
     public void getJobResults() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
+        final JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$", hasSize(aJob.getResult().size())));
         performDefaultGet(apiAJobResults, expectations, String.format("unable to get job's result <%s>", aJob.getId()),
@@ -103,6 +102,7 @@ public class JobControllerIT extends AbstractRegardsIT {
     public void getJobsState() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
+
         performDefaultGet(apiJobsState, expectations,
                           String.format("unable to get jobs with status  <%s>", JobStatus.RUNNING), JobStatus.RUNNING);
     }
@@ -110,8 +110,10 @@ public class JobControllerIT extends AbstractRegardsIT {
     @Test
     public void deleteAJob() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        Long jobId = jobInfoService.retrieveJobInfoList().get(0).getId();
+        final Long jobId = jobInfoService.retrieveJobInfoList().get(0).getId();
         expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.notNullValue()));
+        
         performDefaultDelete(apiAJob, expectations, String.format("unable to stop the job <%s>", jobId), jobId);
     }
 

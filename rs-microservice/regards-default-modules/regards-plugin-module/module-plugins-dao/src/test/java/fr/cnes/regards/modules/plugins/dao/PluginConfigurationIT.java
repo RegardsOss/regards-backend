@@ -1,7 +1,7 @@
-/**LICENSE_PLACEHOLDER*/
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.plugins.dao;
-
-import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Test;

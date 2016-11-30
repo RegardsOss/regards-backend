@@ -1,4 +1,6 @@
-/**LICENSE_PLACEHOLDER*/
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.plugins.dao.stubs;
 
 import java.util.ArrayList;
@@ -51,21 +53,17 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
     static final String BLUE = "blue";
 
     /**
-     * A {@link PluginParameter}
-     */
-    static final PluginParameter PARAMETER1 = PluginParametersFactory.build().addParameter("param11", "value11")
-            .getParameters().get(0);
-
-    /**
      * A {@link List} of values
      */
     static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
 
     /**
-     * A {@link PluginParameter}
+     * A {@link List} of {@link PluginParameter}
      */
-    static final PluginParameter PARAMETER2 = PluginParametersFactory.build()
-            .addParameterDynamic("param-dyn21", RED, DYNAMICVALUES).getParameters().get(0);
+    static final List<PluginParameter> PARAMETERS2 = PluginParametersFactory.build()
+            .addParameterDynamic("param-dyn21", RED, DYNAMICVALUES)
+            .addParameterDynamic("param-dyn31", GREEN, DYNAMICVALUES).addParameter("param41", "value41")
+            .addParameter("param51", "value51").addParameter("param61", "value61").getParameters();
 
     /**
      * A list of {@link PluginParameter}
@@ -84,7 +82,7 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
      */
     private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
-            "second configuration", Arrays.asList(PARAMETER1, PARAMETER2), 0);
+            "second configuration", PARAMETERS2, 0);
 
     public PluginConfigurationRepositoryStub() {
         getEntities().add(getPluginConfigurationWithDynamicParameter());
