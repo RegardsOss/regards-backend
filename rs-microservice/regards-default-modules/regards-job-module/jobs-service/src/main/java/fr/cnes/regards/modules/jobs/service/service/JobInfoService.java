@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.jobs.service.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.jpa.utils.IterableUtils;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.jobs.domain.JobStatus;
@@ -76,7 +78,10 @@ public class JobInfoService implements IJobInfoService {
     }
 
     @Override
-    public JobInfo stopJob(final Long pJobInfoId) {
+    public JobInfo stopJob(final Long pJobInfoId) throws EntityNotFoundException {
+        if (!jobInfoRepository.exists(pJobInfoId)) {
+            throw new EntityNotFoundException(pJobInfoId.toString(), JobInfo.class);
+        }
         final JobInfo jobInfo = jobInfoRepository.findOne(pJobInfoId);
         if (jobInfo != null) {
             try {
@@ -99,8 +104,9 @@ public class JobInfoService implements IJobInfoService {
     }
 
     @Override
-    public JobInfo retrieveJobInfoById(final Long pJobInfoId) {
-        return jobInfoRepository.findOne(pJobInfoId);
+    public JobInfo retrieveJobInfoById(final Long pJobInfoId) throws EntityNotFoundException {
+        final Optional<JobInfo> jobInfo = Optional.ofNullable(jobInfoRepository.findOne(pJobInfoId));
+        return jobInfo.orElseThrow(() -> new EntityNotFoundException(pJobInfoId.toString(), JobInfo.class));
     }
 
     @Override

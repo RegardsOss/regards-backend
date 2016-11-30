@@ -17,11 +17,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
-import javax.persistence.Transient;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.jobs.domain.converters.JobOuputConverter;
-import fr.cnes.regards.modules.jobs.domain.converters.JobParameterConverter;
 import fr.cnes.regards.modules.jobs.domain.converters.PathConverter;
 
 /**
