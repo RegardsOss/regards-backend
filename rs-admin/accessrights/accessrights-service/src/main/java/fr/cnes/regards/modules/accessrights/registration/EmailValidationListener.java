@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -36,6 +39,12 @@ public class EmailValidationListener implements ApplicationListener<OnAcceptAcco
      * The email validation template code
      */
     private static final String EMAIL_VALIDATION_TEMPLATE_CODE = "emailValidationTemplate";
+
+    /**
+     * The emailValidationTemplate
+     */
+    @Resource
+    private String emailValidationTemplate;
 
     /**
      * The account registrationService. Autowired by Spring.
@@ -68,6 +77,11 @@ public class EmailValidationListener implements ApplicationListener<OnAcceptAcco
         emailClient = pEmailClient;
     }
 
+    @PostConstruct
+    public void init() {
+
+    }
+
     @Override
     public void onApplicationEvent(final OnAcceptAccountEvent pEvent) {
         this.sendValidationEmail(pEvent);
@@ -92,7 +106,6 @@ public class EmailValidationListener implements ApplicationListener<OnAcceptAcco
         final Map<String, String> data = new HashMap<>();
 
         data.put("name", account.getFirstName());
-        data.put("email", account.getEmail());
         data.put("confirmationUrl", confirmationUrl);
         SimpleMailMessage email;
         try {

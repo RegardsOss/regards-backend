@@ -8,22 +8,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IMetaDataRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -32,9 +34,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
- *
- * Class ProjectUsersControllerIT
- *
  * Integration tests for ProjectUsers REST Controller.
  *
  * @author svissier
@@ -42,15 +41,13 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
-public class ProjectUsersControllerIT extends AbstractAdministrationIT {
+@MultitenantTransactional
+public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(ProjectUsersControllerIT.class);
-
-    @Autowired
-    private MethodAuthorizationService authService;
 
     /**
      * An email
@@ -83,6 +80,9 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     private IProjectUserRepository projectUserRepository;
 
     @Autowired
+    private IRoleRepository roleRepository;
+
+    @Autowired
     private RoleService roleService;
 
     @Autowired
@@ -97,20 +97,14 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
      */
     private ProjectUser projectUser;
 
-    @Override
-    public void init() {
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users", RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users", RequestMethod.POST, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_email}", RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}", RequestMethod.PUT, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}", RequestMethod.DELETE, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}/metadata", RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}/metadata", RequestMethod.PUT, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_id}/metadata", RequestMethod.DELETE, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_login}/permissions", RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_login}/permissions", RequestMethod.PUT, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, "/users/{user_login}/permissions", RequestMethod.DELETE,
-                                   ROLE_TEST);
+    private static final String ROLE_TEST = "TEST_ROLE";
+
+    private Role roleTest;
+
+    private Role publicRole;
+
+    @Before
+    public void setUp() {
         apiUsers = "/users";
         apiUserId = apiUsers + "/{user_id}";
         apiUserEmail = apiUsers + "/{user_email}";
@@ -119,6 +113,10 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         apiUserPermissionsBorrowedRole = apiUserPermissions + "?borrowedRoleName=";
         apiUserMetaData = apiUserId + "/metadata";
         errorMessage = "Cannot reach model attributes";
+
+        publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
+        roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
+        roleTest = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
         projectUser = projectUserRepository
                 .save(new ProjectUser(EMAIL, roleTest, roleTest.getPermissions(), new ArrayList<>()));
@@ -130,7 +128,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     public void getAllUsers() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performGet(apiUsers, token, expectations, errorMessage);
+        performDefaultGet(apiUsers, expectations, errorMessage);
     }
 
     @Test
@@ -139,11 +137,11 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     public void getUser() throws UnsupportedEncodingException {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performGet(apiUserEmail, token, expectations, errorMessage, EMAIL);
+        performDefaultGet(apiUserEmail, expectations, errorMessage, EMAIL);
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performGet(apiUserEmail, token, expectations, errorMessage, "user@invalid.fr");
+        performDefaultGet(apiUserEmail, expectations, errorMessage, "user@invalid.fr");
     }
 
     @Test
@@ -152,7 +150,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     public void getUserMetaData() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performGet(apiUserMetaData, token, expectations, errorMessage, projectUser.getId());
+        performDefaultGet(apiUserMetaData, expectations, errorMessage, projectUser.getId());
     }
 
     @Test
@@ -161,11 +159,11 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     public void getUserPermissions() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performGet(apiUserPermissions, token, expectations, errorMessage, projectUser.getEmail());
+        performDefaultGet(apiUserPermissions, expectations, errorMessage, projectUser.getEmail());
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performGet(apiUserPermissions, token, expectations, errorMessage, "wrongEmail");
+        performDefaultGet(apiUserPermissions, expectations, errorMessage, "wrongEmail");
     }
 
     /**
@@ -191,8 +189,8 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         Assert.assertTrue(roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, token, expectations, errorMessage,
-                   projectUser.getEmail());
+        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName, expectations, errorMessage,
+                          projectUser.getEmail());
     }
 
     /**
@@ -219,8 +217,8 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         Assert.assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isForbidden());
-        performGet(apiUserPermissionsBorrowedRole + borrowedRoleName, token, expectations, errorMessage,
-                   projectUser.getEmail());
+        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName, expectations, errorMessage,
+                          projectUser.getEmail());
     }
 
     @Test
@@ -233,7 +231,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performPut(apiUserMetaData, token, newPermissionList, expectations, errorMessage, projectUser.getId());
+        performDefaultPut(apiUserMetaData, newPermissionList, expectations, errorMessage, projectUser.getId());
     }
 
     @Test
@@ -248,7 +246,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performPut(apiUserPermissions, token, newPermissionList, expectations, errorMessage, EMAIL);
+        performDefaultPut(apiUserPermissions, newPermissionList, expectations, errorMessage, EMAIL);
     }
 
     @Test
@@ -257,7 +255,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     public void deleteUserMetaData() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDelete(apiUserMetaData, token, expectations, errorMessage, projectUser.getId());
+        performDefaultDelete(apiUserMetaData, expectations, errorMessage, projectUser.getId());
     }
 
     @Test
@@ -266,7 +264,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     public void deleteUserPermissions() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDelete(apiUserPermissions, token, expectations, errorMessage, projectUser.getEmail());
+        performDefaultDelete(apiUserPermissions, expectations, errorMessage, projectUser.getEmail());
     }
 
     @Test
@@ -278,12 +276,12 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
         // Same id
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performPut(apiUserId, token, projectUser, expectations, errorMessage, projectUser.getId());
+        performDefaultPut(apiUserId, projectUser, expectations, errorMessage, projectUser.getId());
 
         // Wrong id (99L)
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isBadRequest());
-        performPut(apiUserId, token, projectUser, expectations, errorMessage, 99L);
+        performDefaultPut(apiUserId, projectUser, expectations, errorMessage, 99L);
     }
 
     @Test
@@ -292,7 +290,7 @@ public class ProjectUsersControllerIT extends AbstractAdministrationIT {
     public void deleteUser() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDelete(apiUserId, token, expectations, errorMessage, projectUser.getId());
+        performDefaultDelete(apiUserId, expectations, errorMessage, projectUser.getId());
     }
 
     @Override
