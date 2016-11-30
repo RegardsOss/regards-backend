@@ -4,18 +4,22 @@
 package fr.cnes.regards.modules.templates.rest;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -42,8 +46,18 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private ITemplateRepository templateRepository;
 
+    /**
+     * Tenant resolver to access all configured tenant
+     */
+    private ITenantResolver tenantResolver;
+
     @Before
     public void setUp() {
+        final Set<String> tenants = new HashSet<>();
+        tenants.add("PROJECT");
+        tenantResolver = Mockito.mock(ITenantResolver.class);
+        Mockito.when(tenantResolver.getAllTenants()).thenReturn(tenants);
+
         template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA,
                 TemplateTestConstants.SUBJECT);
     }
