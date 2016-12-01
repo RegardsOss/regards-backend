@@ -20,10 +20,9 @@ import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.service.account.AccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserTransitions;
 
 /**
- * Test class for {@link IProjectUserTransitions}.
+ * Test class for {@link AccountService}.
  *
  * @author Xavier-Alexandre Brochard
  */

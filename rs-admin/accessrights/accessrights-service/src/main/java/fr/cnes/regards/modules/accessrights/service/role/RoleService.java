@@ -18,6 +18,7 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.ImportResource;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -40,6 +41,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleLineageAssembler;
 import fr.cnes.regards.modules.accessrights.service.role.event.handler.NewProjectConnectionEventHandler;
 import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 import fr.cnes.regards.modules.project.domain.event.NewProjectConnectionEvent;
@@ -52,6 +54,7 @@ import fr.cnes.regards.modules.project.domain.event.NewProjectConnectionEvent;
  *
  */
 @Service
+@ImportResource({ "classpath*:defaultRoles.xml" })
 public class RoleService implements IRoleService {
 
     /**
@@ -162,7 +165,7 @@ public class RoleService implements IRoleService {
         };
 
         // Define a consumer creating if needed all default roles on current tenant
-        final Consumer<? super String> createDefaultRolesOnTenantNew = t -> {
+        final Consumer<? super String> createDefaultRolesOnTenant = t -> {
             // Replace all default roles with their db version if exists
             defaultRoles.replaceAll(replaceWithRoleFromDb);
             // Re-plug the parent roles
@@ -173,7 +176,7 @@ public class RoleService implements IRoleService {
 
         // For each tenant, inject tenant in context and create (if needed) default roles
         try (Stream<String> tenantsStream = tenantResolver.getAllTenants().stream()) {
-            tenantsStream.peek(injectTenant).forEach(createDefaultRolesOnTenantNew);
+            tenantsStream.peek(injectTenant).forEach(createDefaultRolesOnTenant);
         }
     }
 

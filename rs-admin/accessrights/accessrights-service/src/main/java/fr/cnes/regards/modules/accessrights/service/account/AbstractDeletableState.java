@@ -8,9 +8,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -21,6 +18,7 @@ import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions;
 
 /**
  * Abstract state implementation to implement the delete action on an account.<br>
@@ -30,11 +28,6 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
  * @author Sébastien Binda
  */
 abstract class AbstractDeletableState implements IAccountTransitions {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractDeletableState.class);
 
     /**
      * Service managing {@link ProjectUser}s. Autowired by Spring.
@@ -79,7 +72,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     }
 
     @Override
-    public void delete(final Account pAccount) throws ModuleException {
+    public void deleteAccount(final Account pAccount) throws ModuleException {
         switch (pAccount.getStatus()) {
             case ACTIVE:
             case LOCKED:

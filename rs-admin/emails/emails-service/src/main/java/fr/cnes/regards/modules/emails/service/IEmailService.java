@@ -23,17 +23,6 @@ public interface IEmailService {
      */
     List<Email> retrieveEmails();
 
-    // /**
-    // * Sends the passed email to the passed recipients and save it in DB.
-    // *
-    // * @param pRecipients
-    // * The set of recipients. Must not be <code>null</code>.
-    // * @param pEmail
-    // * The ready-to-send email. Must not be <code>null</code>.
-    // * @return The sent email as {@link Email}
-    // */
-    // Email sendEmail(Set<Recipient> pRecipients, Email pEmail);
-
     /**
      * Sends the passed email to the passed recipients and save a representation in DB.
      *

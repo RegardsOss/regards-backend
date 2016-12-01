@@ -14,18 +14,19 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
- * Unit test for {@link AccessRequestDTO}
+ * Unit test for {@link AccessRequestDto}
  *
  * @author Maxime Bouveron
  */
 public class AccessRequestDTOTest {
 
     /**
-     * Test AccessRequestDTO
+     * Test AccessRequestDto
      */
-    private AccessRequestDTO access;
+    private AccessRequestDto access;
 
     /**
      * Test email
@@ -67,7 +68,7 @@ public class AccessRequestDTOTest {
      */
     @Before
     public void setUp() {
-        access = new AccessRequestDTO();
+        access = new AccessRequestDto();
         metaDatas = new ArrayList<MetaData>();
         metaDatas.add(new MetaData());
 
@@ -86,7 +87,7 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#getEmail()}.
+     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#getEmail()}.
      */
     @Test
     public void testGetEmail() {
@@ -94,7 +95,7 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#getFirstName()}.
+     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#getFirstName()}.
      */
     @Test
     public void testGetFirstName() {
@@ -102,7 +103,7 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#getLastName()}.
+     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#getLastName()}.
      */
     @Test
     public void testGetLastName() {
@@ -110,7 +111,7 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#getMetaData()}.
+     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#getMetaData()}.
      */
     @Test
     public void testGetMetaData() {
@@ -118,7 +119,7 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#getPassword()}.
+     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#getPassword()}.
      */
     @Test
     public void testGetPassword() {
@@ -126,7 +127,7 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#getPermissions()}.
+     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#getPermissions()}.
      */
     @Test
     public void testGetPermissions() {
@@ -134,7 +135,7 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#getRole()}.
+     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#getRole()}.
      */
     @Test
     public void testGetRoleName() {
@@ -142,7 +143,7 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#setEmail(java.lang.String)}.
+     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setEmail(java.lang.String)}.
      */
     @Test
     public void testSetEmail() {
@@ -153,7 +154,7 @@ public class AccessRequestDTOTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#setFirstName(java.lang.String)}.
+     * {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setFirstName(java.lang.String)}.
      */
     @Test
     public void testSetFirstName() {
@@ -164,7 +165,7 @@ public class AccessRequestDTOTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#setLastName(java.lang.String)}.
+     * {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setLastName(java.lang.String)}.
      */
     @Test
     public void testSetLastName() {
@@ -174,7 +175,7 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#setMetaData(java.util.List)}.
+     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setMetaData(java.util.List)}.
      */
     @Test
     public void testSetMetaData() {
@@ -186,7 +187,7 @@ public class AccessRequestDTOTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#setPassword(java.lang.String)}.
+     * {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setPassword(java.lang.String)}.
      */
     @Test
     public void testSetPassword() {
@@ -197,7 +198,7 @@ public class AccessRequestDTOTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.AccessRequestDTO#setPermissions(java.util.List)}.
+     * {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setPermissions(java.util.List)}.
      */
     @Test
     public void testSetPermissions() {
@@ -208,7 +209,7 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link AccessRequestDTO#setRole(Role)}.
+     * Test method for {@link AccessRequestDto#setRole(Role)}.
      */
     @Test
     public void testSetRoleName() {

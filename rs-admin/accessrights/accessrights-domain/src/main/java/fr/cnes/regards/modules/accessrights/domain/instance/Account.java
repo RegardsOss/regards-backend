@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.instance;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -26,7 +28,12 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 @InstanceEntity
 @Entity(name = "T_ACCOUNT")
 @SequenceGenerator(name = "accountSequence", initialValue = 1, sequenceName = "SEQ_ACCOUNT")
-public class Account implements IIdentifiable<Long> {
+public class Account implements IIdentifiable<Long>, Serializable {
+
+    /**
+     * Generated serial
+     */
+    private static final long serialVersionUID = 6641844290657477573L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accountSequence")

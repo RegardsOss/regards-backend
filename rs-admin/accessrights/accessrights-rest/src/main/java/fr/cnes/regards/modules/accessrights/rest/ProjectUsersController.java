@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserWorkflowManager;
+import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWorkflowManager;
 
 /**
  *
