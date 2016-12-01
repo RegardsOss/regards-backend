@@ -17,11 +17,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
-import javax.persistence.Transient;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.jobs.domain.converters.JobOuputConverter;
-import fr.cnes.regards.modules.jobs.domain.converters.JobParameterConverter;
 import fr.cnes.regards.modules.jobs.domain.converters.PathConverter;
 
 /**
@@ -46,14 +44,13 @@ public class JobInfo implements IIdentifiable<Long> {
      * Job priority
      */
     @Column(name = "priority")
-    private int priority;
+    private Integer priority;
 
     /**
      * Job workspace
      */
     @Column(name = "workspace", columnDefinition = "LONGVARCHAR")
     @Convert(converter = PathConverter.class)
-    @Transient
     private Path workspace;
 
     /**
@@ -67,7 +64,6 @@ public class JobInfo implements IIdentifiable<Long> {
      * Job parameters
      */
     @Column(name = "parameters", columnDefinition = "LONGVARCHAR")
-    @Convert(converter = JobParameterConverter.class)
     private JobParameters parameters;
 
     /**
@@ -93,7 +89,7 @@ public class JobInfo implements IIdentifiable<Long> {
      * When true, the job is done, results deleted, job metadata archived
      */
     @Column(name = "archived")
-    private boolean archived;
+    private Boolean archived;
 
     /**
      * Default constructor
@@ -115,6 +111,7 @@ public class JobInfo implements IIdentifiable<Long> {
         status = pJobConfiguration.getStatusInfo();
         workspace = pJobConfiguration.getWorkspace();
         priority = pJobConfiguration.getPriority();
+        archived=Boolean.FALSE;
     }
 
     /**
@@ -139,7 +136,7 @@ public class JobInfo implements IIdentifiable<Long> {
      *            the priority to set
      */
     public void setPriority(final int pPriority) {
-        priority = pPriority;
+        priority = new Integer(pPriority);
     }
 
     /**
@@ -220,7 +217,7 @@ public class JobInfo implements IIdentifiable<Long> {
         status = pStatus;
     }
 
-    public final int getPriority() {
+    public final Integer getPriority() {
         return this.priority;
     }
 
@@ -243,8 +240,8 @@ public class JobInfo implements IIdentifiable<Long> {
     /**
      * @return job is archived
      */
-    public boolean isArchived() {
-        return archived;
+    public Boolean isArchived() {
+        return archived.booleanValue();
     }
 
     /**
@@ -252,7 +249,7 @@ public class JobInfo implements IIdentifiable<Long> {
      *            set if job archived
      */
     public void setArchived(final boolean pArchived) {
-        archived = pArchived;
+        archived = new Boolean(pArchived);
     }
 
 }

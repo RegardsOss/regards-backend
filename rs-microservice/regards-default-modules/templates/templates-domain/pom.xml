@@ -14,11 +14,11 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
+
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
+			<artifactId>jpa-multitenant-regards</artifactId>
 		</dependency>
 	</dependencies>
-
 </project>

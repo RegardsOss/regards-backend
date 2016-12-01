@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
@@ -156,19 +156,19 @@ public class PluginService implements IPluginService {
 
     @Override
     public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPlugin)
-            throws ModuleEntityNotFoundException, PluginUtilsException {
+            throws EntityNotFoundException, PluginUtilsException {
         // Check if plugin configuration exists
         if (!pluginConfRepository.exists(pPlugin.getId())) {
-            throw new ModuleEntityNotFoundException(pPlugin.getId().toString(), PluginConfiguration.class);
+            throw new EntityNotFoundException(pPlugin.getId().toString(), PluginConfiguration.class);
         }
         return savePluginConfiguration(pPlugin);
     }
 
     @Override
-    public void deletePluginConfiguration(final Long pPluginId) throws ModuleEntityNotFoundException {
+    public void deletePluginConfiguration(final Long pPluginId) throws EntityNotFoundException {
         if (!pluginConfRepository.exists(pPluginId)) {
             LOGGER.error(String.format("Error while deleting the plugin configuration <%s>.", pPluginId));
-            throw new ModuleEntityNotFoundException(pPluginId.toString(), PluginConfiguration.class);
+            throw new EntityNotFoundException(pPluginId.toString(), PluginConfiguration.class);
         }
         pluginConfRepository.delete(pPluginId);
     }

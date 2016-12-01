@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.plugins.service;
 
 import java.util.List;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
@@ -17,6 +17,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * Plugin management service.
  *
  * @author Christophe Mertz
+ * @author Sébastien Binda
  */
 public interface IPluginService {
 
@@ -110,10 +111,10 @@ public interface IPluginService {
      * @param pPluginId
      *            a specific configuration
      * @return
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             Entity to delete does not exists
      */
-    void deletePluginConfiguration(Long pPluginId) throws ModuleEntityNotFoundException;
+    void deletePluginConfiguration(Long pPluginId) throws EntityNotFoundException;
 
     /**
      *
@@ -124,10 +125,11 @@ public interface IPluginService {
      * @return the updated {@link PluginConfiguration}
      * @throws PluginUtilsException
      *             throw if an error occurs
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
+     *             plugin to update does not exists
      */
     PluginConfiguration updatePluginConfiguration(PluginConfiguration pPlugin)
-            throws PluginUtilsException, ModuleEntityNotFoundException;
+            throws PluginUtilsException, EntityNotFoundException;
 
     /**
      *

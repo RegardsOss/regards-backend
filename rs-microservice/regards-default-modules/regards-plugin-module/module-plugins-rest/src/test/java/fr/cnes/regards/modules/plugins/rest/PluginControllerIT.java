@@ -31,9 +31,14 @@ import fr.cnes.regards.plugins.IComplexInterfacePlugin;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
- * 
- * @author Christophe Mertz
  *
+ * Class PluginControllerIT
+ *
+ * Test class for REST endpoints to manage plugin entities.
+ *
+ * @author Christophe Mertz
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
  */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class PluginControllerIT extends AbstractRegardsIT {
@@ -59,7 +64,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
             .getParameters();
 
     /**
-     * 
+     *
      */
     @Autowired
     private IPluginService pluginService;
@@ -95,7 +100,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
     @Test
     public void getPluginOneUnknownType() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
+        expectations.add(status().isUnprocessableEntity());
         final String pluginType = "hello";
         performDefaultGet(apiPluginsWithParamPluginType + pluginType, expectations,
                           String.format("unable to load plugins of unknown type", pluginType));
@@ -129,7 +134,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
 
@@ -157,7 +162,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
 
@@ -192,7 +197,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
 
@@ -221,7 +226,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
 
@@ -232,7 +237,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         performDefaultPut(apiPluginsOneConfigId, aPluginConfiguration, expectations,
                           "unable to update a plugin configuration", PLUGIN_ID, 9999L);
     }
-    
+
     @Test
     @DirtiesContext
     public void updatePluginConfigurationErrorPluginId() {
@@ -241,7 +246,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setPluginId("hello-toulouse");
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
 
@@ -290,14 +295,13 @@ public class PluginControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    @DirtiesContext
     public void savePluginConfigurationErrorPriorityOrderNull() {
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 PARAMETERS, 0);
 
         aPluginConfiguration.setPriorityOrder(null);
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
+        expectations.add(status().isUnprocessableEntity());
         performDefaultPost(apiPluginsAllConfig, aPluginConfiguration, expectations,
                            "unable to save a plugin configuration", PLUGIN_ID);
     }
@@ -310,18 +314,17 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
         aPluginConfiguration.setVersion(null);
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
+        expectations.add(status().isUnprocessableEntity());
         performDefaultPost(apiPluginsAllConfig, aPluginConfiguration, expectations,
                            "unable to save a plugin configuration", PLUGIN_ID);
     }
-    
+
     @Test
     @DirtiesContext
     public void savePluginConfigurationErrorConfNull() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isServiceUnavailable());
-        performDefaultPost(apiPluginsAllConfig, null, expectations,
-                           "unable to save a plugin configuration", PLUGIN_ID);
+        performDefaultPost(apiPluginsAllConfig, null, expectations, "unable to save a plugin configuration", PLUGIN_ID);
     }
 
     @Test
@@ -332,7 +335,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
         final List<ResultMatcher> expectations = new ArrayList<>();

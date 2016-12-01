@@ -111,7 +111,8 @@ public class IpFilter extends OncePerRequestFilter {
         final List<String> authorizedAddresses = new ArrayList<>();
         for (final RoleAuthority role : pRoles) {
             // Role is a sys role then there is no ip limitation
-            if (!RoleAuthority.isSysRole(role.getAuthority())) {
+            if (!RoleAuthority.isSysRole(role.getAuthority())
+                    && !RoleAuthority.isInstanceAdminRole(role.getAuthority())) {
                 authorizedAddresses.addAll(authoritiesProvider
                         .getRoleAuthorizedAddress(RoleAuthority.getRoleName(role.getAuthority())));
             }

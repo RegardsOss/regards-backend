@@ -26,7 +26,7 @@ public class MaintenanceConfiguration implements ICustomWebSecurityConfiguration
     private JWTService jwtService;
 
     @Override
-    public void configure(HttpSecurity pHttp) throws Exception {
+    public void configure(final HttpSecurity pHttp) {
         pHttp.addFilterAfter(new MaintenanceFilter(jwtService), CorsFilter.class);
     }
 

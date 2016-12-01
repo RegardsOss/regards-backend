@@ -51,12 +51,18 @@ public class Template implements IIdentifiable<Long> {
 
     /**
      * For a specific template, this attribute is intendend to store the skeleton of values to be injected in the
-     * template.
+     * template
      */
     @NotNull
     @ElementCollection
     @CollectionTable(name = "TEMPLATE_DATA")
-    private Map<String, String> data;
+    private Map<String, String> dataStructure;
+
+    /**
+     * A subject if the template should be written to something with a subject, title...
+     */
+    @NotBlank
+    private final String subject;
 
     /**
      * A description for the template
@@ -70,20 +76,27 @@ public class Template implements IIdentifiable<Long> {
         super();
         code = "DEFAULT";
         content = "Hello $name.";
-        data = new HashMap<>();
-        data.put("name", "Defaultname");
+        dataStructure = new HashMap<>();
+        dataStructure.put("name", "Defaultname");
+        subject = "Default subject";
     }
 
     /**
      * @param pCode
+     *            the code
      * @param pContent
+     *            the content
      * @param pData
+     *            the data
+     * @param pSubject
+     *            the subject if the template should be written to something with a subject or title (like an email)
      */
-    public Template(final String pCode, final String pContent, final Map<String, String> pData) {
+    public Template(final String pCode, final String pContent, final Map<String, String> pData, final String pSubject) {
         super();
         code = pCode;
         content = pContent;
-        data = pData;
+        dataStructure = pData;
+        subject = pSubject;
     }
 
     /**
@@ -118,18 +131,18 @@ public class Template implements IIdentifiable<Long> {
     }
 
     /**
-     * @return the data
+     * @return the dataStructure
      */
-    public Map<String, String> getData() {
-        return data;
+    public Map<String, String> getDataStructure() {
+        return dataStructure;
     }
 
     /**
-     * @param pData
-     *            the data to set
+     * @param pDataStructure
+     *            the data structure to set
      */
-    public void setData(final Map<String, String> pData) {
-        data = pData;
+    public void setDataStructure(final Map<String, String> pDataStructure) {
+        dataStructure = pDataStructure;
     }
 
     /**
@@ -152,6 +165,13 @@ public class Template implements IIdentifiable<Long> {
      */
     public String getCode() {
         return code;
+    }
+
+    /**
+     * @return the subject
+     */
+    public String getSubject() {
+        return subject;
     }
 
 }

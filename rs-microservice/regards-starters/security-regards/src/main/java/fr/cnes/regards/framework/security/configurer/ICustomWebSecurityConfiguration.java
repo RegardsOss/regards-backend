@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
  * @author Sébastien Binda
  *
  */
+@FunctionalInterface
 public interface ICustomWebSecurityConfiguration {
 
     /**
@@ -22,9 +23,9 @@ public interface ICustomWebSecurityConfiguration {
      *
      * @param pHttp
      *            HttpSecurity
-     * @throws Exception
+     * @throws CustomWebSecurityConfigurationException
      *             configuration exception
      */
-    void configure(final HttpSecurity pHttp) throws Exception;
+    void configure(final HttpSecurity pHttp) throws CustomWebSecurityConfigurationException;
 
 }

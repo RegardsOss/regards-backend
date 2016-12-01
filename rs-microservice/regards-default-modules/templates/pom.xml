@@ -24,8 +24,6 @@
 		<module>templates-dao</module>
 		<module>templates-rest</module>
 		<module>templates-service</module>
-		<module>templates-client</module>
-		
 		<module>templates-test</module>
 	</modules>
 

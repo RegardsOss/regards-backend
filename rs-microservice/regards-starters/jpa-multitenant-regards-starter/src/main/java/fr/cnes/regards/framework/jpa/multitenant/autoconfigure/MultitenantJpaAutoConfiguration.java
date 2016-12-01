@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -192,6 +193,10 @@ public class MultitenantJpaAutoConfiguration {
             final EntityManagerFactoryBuilder pBuilder)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         // Use the first dataSource configuration to init the entityManagerFactory
+        if (dataSources.isEmpty()) {
+            throw new ApplicationContextException("No datasource defined. JPA is not able to start."
+                    + " You should define a datasource in the application.properties of the current microservice");
+        }
         final DataSource defaultDataSource = dataSources.values().iterator().next();
 
         final Map<String, Object> hibernateProps = new LinkedHashMap<>();

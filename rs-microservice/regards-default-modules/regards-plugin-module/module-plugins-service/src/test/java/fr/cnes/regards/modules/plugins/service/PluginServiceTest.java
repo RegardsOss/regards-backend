@@ -14,7 +14,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
@@ -42,12 +42,12 @@ public class PluginServiceTest extends PluginServiceUtility {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginServiceTest.class);
 
     /**
-     * 
+     *
      */
     private IPluginConfigurationRepository pluginConfRepositoryMocked;
 
     /**
-     * 
+     *
      */
     private IPluginService pluginServiceMocked;
 
@@ -151,11 +151,11 @@ public class PluginServiceTest extends PluginServiceUtility {
             Mockito.when(pluginConfRepositoryMocked.exists(aPlugnId)).thenReturn(true);
             pluginServiceMocked.deletePluginConfiguration(aPlugnId);
             Mockito.verify(pluginConfRepositoryMocked).delete(aPlugnId);
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             Assert.fail();
         }
     }
-    
+
     /**
      * Delete a {@link PluginConfiguration}.
      */
@@ -168,7 +168,7 @@ public class PluginServiceTest extends PluginServiceUtility {
             Mockito.when(pluginConfRepositoryMocked.exists(aPlugnId)).thenReturn(true);
             pluginServiceMocked.deletePluginConfiguration(aPlugnId);
             Mockito.verify(pluginConfRepositoryMocked).delete(aPlugnId);
-        } catch (final ModuleEntityNotFoundException e) {
+        } catch (final EntityNotFoundException e) {
             Assert.fail();
         }
     }
@@ -200,13 +200,13 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Update a {@link PluginConfiguration}.
      *
-     * @throws ModuleEntityNotFoundException
+     * @throws EntityNotFoundException
      *             test error
      */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_SYS_ARC_100"), @Requirement("REGARDS_DSL_CMP_PLG_100") })
     @Purpose("Update a plugin configuration identified by an identifier")
-    public void updateAPluginConfiguration() throws ModuleEntityNotFoundException {
+    public void updateAPluginConfiguration() throws EntityNotFoundException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
         try {
@@ -218,7 +218,7 @@ public class PluginServiceTest extends PluginServiceUtility {
             final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
             Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
             Assert.assertEquals(updatedConf.getPluginId(), aPluginConfiguration.getPluginId());
-        } catch (PluginUtilsException e) {
+        } catch (final PluginUtilsException e) {
             Assert.fail();
         }
     }
@@ -261,7 +261,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * Get the first plugin of a specific type
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -292,7 +292,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * Get the first plugin of a specific type with a specific parameter
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -331,7 +331,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
      * parameter.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -358,7 +358,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * Get the first plugin of a specific type with a dynamic parameter. Set a value for the dynamic parameter.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -391,7 +391,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
      * parameter.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -417,7 +417,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * Get the first plugin with the configuration the most priority.
-     * 
+     *
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
