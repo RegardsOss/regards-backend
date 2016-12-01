@@ -115,11 +115,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         errorMessage = "Cannot reach model attributes";
 
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
-        roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
-        roleTest = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
         projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, roleTest, roleTest.getPermissions(), new ArrayList<>()));
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
     }
 
     @Test

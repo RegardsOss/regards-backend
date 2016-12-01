@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -40,8 +42,12 @@ public class AccessSettingsService implements IAccessSettingsService {
      * @see fr.cnes.regards.modules.accessrights.service.role.IAccessSettingsService#retrieve()
      */
     @Override
-    public AccessSettings retrieve() {
-        return accessSettingsRepository.findAll().get(0);
+    public AccessSettings retrieve() throws EntityNotFoundException {
+        final List<AccessSettings> list = accessSettingsRepository.findAll();
+        if (list.isEmpty()) {
+            throw new EntityNotFoundException(0L, AccessSettings.class);
+        }
+        return list.get(0);
     }
 
     /*
