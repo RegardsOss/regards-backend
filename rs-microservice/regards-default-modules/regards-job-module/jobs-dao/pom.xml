@@ -43,6 +43,7 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

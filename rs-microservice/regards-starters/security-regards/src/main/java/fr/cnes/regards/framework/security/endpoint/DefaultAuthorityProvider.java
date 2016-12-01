@@ -37,6 +37,12 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
     @Value("${regards.security.authorities:#{null}}")
     private String[] authorities;
 
+    /**
+     * List of configurated roles
+     */
+    @Value("${regards.security.roles:#{null}}")
+    private String[] roles;
+
     @Override
     public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
         LOG.warn("No Authority provider defined. Default one used."
@@ -68,13 +74,12 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
         for (final DefaultRole role : DefaultRole.values()) {
             defaultRoleAuthorities.add(new RoleAuthority(role.name()));
         }
+        if (roles != null) {
+            for (final String role : roles) {
+                defaultRoleAuthorities.add(new RoleAuthority(role));
+            }
+        }
         return defaultRoleAuthorities;
-    }
-
-    @Override
-    public boolean hasCorsRequestsAccess(final String pAuthority) {
-        LOG.warn("No Authority provider defined. Default one used. Management of configured CORS access is skipped.");
-        return true;
     }
 
     /**

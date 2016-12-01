@@ -11,6 +11,7 @@ import java.util.Set;
  * @author msordi
  *
  */
+@FunctionalInterface
 public interface ITenantResolver {
 
     Set<String> getAllTenants();

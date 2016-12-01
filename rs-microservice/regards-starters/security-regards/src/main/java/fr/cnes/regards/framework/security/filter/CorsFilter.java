@@ -80,7 +80,7 @@ public class CorsFilter extends OncePerRequestFilter {
             final FilterChain pFilterChain) throws ServletException, IOException {
 
         boolean corsAccess;
-        if ((SecurityContextHolder.getContext().getAuthentication() != null)) {
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
             corsAccess = doSecurizedFilter(pRequest, pResponse, pFilterChain);
         } else {
             allowCorsRequest(pRequest, pResponse, pFilterChain);
