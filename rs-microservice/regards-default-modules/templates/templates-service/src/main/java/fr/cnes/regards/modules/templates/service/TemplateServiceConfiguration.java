@@ -33,10 +33,21 @@ public class TemplateServiceConfiguration {
     private static final String EMAIL_VALIDATION_TEMPLATE_CODE = "emailValidationTemplate";
 
     /**
+     * The passwor reset template code
+     */
+    private static final String MDP_RESET_TEMPLATE = "passwordResetTemplate";
+
+    /**
      * The email validation template as html
      */
     @Value("classpath:email-validation-template.html")
     private Resource emailValidationTemplate;
+
+    /**
+     * The password reset template as html
+     */
+    @Value("classpath:password-reset-template.html")
+    private Resource passwordResetTemplate;
 
     @Bean
     public Template emailValidationTemplate() throws IOException {
@@ -47,6 +58,24 @@ public class TemplateServiceConfiguration {
         }
     }
 
+    @Bean
+    public Template passwordResetTemplate() throws IOException {
+        try (InputStream is = passwordResetTemplate.getInputStream()) {
+            final String text = inputStreamToString(is);
+            final Map<String, String> dataStructure = new HashMap<>();
+            return new Template(MDP_RESET_TEMPLATE, text, dataStructure, "Password Reset");
+        }
+    }
+
+    /**
+     * Writes an {@link InputStream} to a {@link String}.
+     *
+     * @param pInputStream
+     *            the input stream
+     * @return the string
+     * @throws IOException
+     *             when an error occurs while reading the stream
+     */
     private String inputStreamToString(final InputStream pInputStream) throws IOException {
         final StringBuilder textBuilder = new StringBuilder();
         try (Reader reader = new BufferedReader(

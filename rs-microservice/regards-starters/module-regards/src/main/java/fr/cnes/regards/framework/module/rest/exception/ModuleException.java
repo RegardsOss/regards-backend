@@ -16,4 +16,8 @@ public class ModuleException extends Exception {
     public ModuleException(String pErrorMessage) {
         super(pErrorMessage);
     }
+
+    public ModuleException(Throwable pCause) {
+        super(pCause);
+    }
 }
