@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -116,28 +115,6 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
             }
         }
         return roleAuths;
-    }
-
-    @Override
-    public boolean hasCorsRequestsAccess(final String pRole) throws SecurityException {
-        boolean access = false;
-        if (!RoleAuthority.isSysRole(pRole) && !(RoleAuthority.isInstanceAdminRole(pRole))) {
-
-            // Execute role request with Sys role
-            final Function<String, ResponseEntity<Resource<Role>>> retreiveRole = JwtTokenUtils
-                    .asSafeCallableOnRole(() -> roleClient.retrieveRole(RoleAuthority.getRoleName(pRole)), jwtService);
-
-            final ResponseEntity<Resource<Role>> result = retreiveRole
-                    .apply(RoleAuthority.getSysRole(microserviceName));
-
-            if (result.getStatusCode().equals(HttpStatus.OK) && (result.getBody() != null)
-                    && (result.getBody().getContent() != null)) {
-                access = result.getBody().getContent().isCorsRequestsAuthorized();
-            }
-            return access;
-        } else {
-            return true;
-        }
     }
 
 }

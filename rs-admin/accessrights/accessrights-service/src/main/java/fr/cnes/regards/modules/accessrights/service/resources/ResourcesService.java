@@ -17,10 +17,15 @@ import org.springframework.stereotype.Service;
 
 import feign.FeignException;
 import fr.cnes.regards.client.core.TokenClientProvider;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.event.UpdateAuthoritiesEvent;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -74,13 +79,19 @@ public class ResourcesService implements IResourcesService {
     private final JWTService jwtService;
 
     /**
+     * AMQP Event publisher.
+     */
+    private final IPublisher eventPublisher;
+
+    /**
      * Tenant resolver to identify configured tenants
      */
     private final ITenantResolver tenantResolver;
 
     public ResourcesService(@Value("${spring.application.name}") final String pMicroserviceName,
             final DiscoveryClient pDiscoveryClient, final IResourcesAccessRepository pResourceAccessRepo,
-            final IRoleService pRoleService, final JWTService pJwtService, final ITenantResolver pTenantResolver) {
+            final IRoleService pRoleService, final JWTService pJwtService, final ITenantResolver pTenantResolver,
+            final IPublisher pEventPublisher) {
         super();
         microserviceName = pMicroserviceName;
         discoveryClient = pDiscoveryClient;
@@ -88,6 +99,7 @@ public class ResourcesService implements IResourcesService {
         roleService = pRoleService;
         jwtService = pJwtService;
         tenantResolver = pTenantResolver;
+        eventPublisher = pEventPublisher;
     }
 
     /**
@@ -219,7 +231,14 @@ public class ResourcesService implements IResourcesService {
         final List<ResourcesAccess> results = new ArrayList<>();
         final Iterable<ResourcesAccess> savedResources = resourceAccessRepo.save(pResourcesToSave);
         if (savedResources != null) {
-            savedResources.forEach(r -> results.add(r));
+            savedResources.forEach(results::add);
+        }
+        try {
+            eventPublisher.publish(UpdateAuthoritiesEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
+                                   AmqpCommunicationTarget.EXTERNAL);
+        } catch (final RabbitMQVhostException e) {
+            LOG.error("Error publishing resources updates to all running microservices.");
+            LOG.error(e.getMessage(), e);
         }
         return results;
     }

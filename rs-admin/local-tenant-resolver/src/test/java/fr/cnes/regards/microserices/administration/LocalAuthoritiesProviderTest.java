@@ -19,6 +19,7 @@ import org.springframework.test.context.ContextConfiguration;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
@@ -127,11 +128,22 @@ public class LocalAuthoritiesProviderTest {
     @Purpose("Check cors requests access by role with date limitation")
     @Test
     public void checkCorsRequestsAccessByRole() throws SecurityException {
-
-        Assert.assertEquals(provider.getRoleAuthorities().size(), roleRepository.findAll().size());
-        Assert.assertTrue(provider.hasCorsRequestsAccess(AuthoritiesTestConfiguration.CORS_ROLE_NAME_GRANTED));
-        Assert.assertFalse(provider.hasCorsRequestsAccess(AuthoritiesTestConfiguration.CORS_ROLE_NAME_INVALID_1));
-        Assert.assertFalse(provider.hasCorsRequestsAccess(AuthoritiesTestConfiguration.CORS_ROLE_NAME_INVALID_2));
+        final List<RoleAuthority> roles = provider.getRoleAuthorities();
+        Assert.assertEquals(roles.size(), roleRepository.findAll().size());
+        for (final RoleAuthority role : roles) {
+            switch (RoleAuthority.getRoleName(role.getAuthority())) {
+                case AuthoritiesTestConfiguration.CORS_ROLE_NAME_GRANTED:
+                    Assert.assertTrue(role.getCorsAccess());
+                    break;
+                case AuthoritiesTestConfiguration.CORS_ROLE_NAME_INVALID_1:
+                case AuthoritiesTestConfiguration.CORS_ROLE_NAME_INVALID_2:
+                    Assert.assertFalse(role.getCorsAccess());
+                    break;
+                default:
+                    Assert.fail("Undefined role");
+                    break;
+            }
+        }
     }
 
 }

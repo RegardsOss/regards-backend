@@ -10,6 +10,7 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
@@ -27,6 +28,7 @@ import javax.validation.Valid;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublic;
 
 /**
@@ -36,6 +38,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParent
  * @author Sébastien Binda
  */
 @Entity
+@EntityListeners(UpdateAuthoritiesListener.class)
 @Table(name = "T_ROLE", indexes = { @Index(name = "IDX_ROLE_NAME", columnList = "name") })
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
 @HasParentOrPublic

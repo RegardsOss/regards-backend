@@ -18,6 +18,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -91,7 +92,7 @@ public class ResourcesServiceTest {
         jwtService.setSecret("123456789");
 
         resourcesService = Mockito.spy(new ResourcesService("rs-test", discoveryClientMock, resourcesRepo,
-                roleServiceMock, jwtService, tenantResolverMock));
+                roleServiceMock, jwtService, tenantResolverMock, Mockito.mock(IPublisher.class)));
 
     }
 

@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -28,6 +29,7 @@ import com.google.gson.annotations.Expose;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 
@@ -42,6 +44,7 @@ import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
  * @since 1.0-SNAPSHOT
  */
 @Entity(name = "T_RESOURCES_ACCESS")
+@EntityListeners(UpdateAuthoritiesListener.class)
 @SequenceGenerator(name = "resourcesAccessSequence", initialValue = 1, sequenceName = "SEQ_RESOURCES_ACCESS")
 public class ResourcesAccess implements IIdentifiable<Long> {
 

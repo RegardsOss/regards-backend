@@ -3,15 +3,12 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -82,24 +79,6 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
             results.add(roleAuth);
         }
         return results;
-    }
-
-    @Override
-    public boolean hasCorsRequestsAccess(final String pRole) throws SecurityException {
-        try {
-            if (!RoleAuthority.isSysRole(pRole) && !RoleAuthority.isInstanceAdminRole(pRole)) {
-                final Role role = roleService.retrieveRole(RoleAuthority.getRoleName(pRole));
-                boolean access = role.isCorsRequestsAuthorized();
-                if (access && (role.getCorsRequestsAuthorizationEndDate() != null)) {
-                    access = LocalDateTime.now().isBefore(role.getCorsRequestsAuthorizationEndDate());
-                }
-                return access;
-            } else {
-                return true;
-            }
-        } catch (final EntityNotFoundException e) {
-            throw new SecurityException("Could not get CORS requests access", e);
-        }
     }
 
 }

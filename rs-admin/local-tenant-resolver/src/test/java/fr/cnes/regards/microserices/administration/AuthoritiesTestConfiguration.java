@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.project.service.IProjectService;
  */
 @Configuration
 @ComponentScan("fr.cnes.regards.modules")
-@PropertySource("classpath:dao.properties")
+@PropertySource("classpath:application-test.properties")
 @EnableAutoConfiguration(exclude = LocalTenantConnectionResolverAutoConfigure.class)
 @ImportResource({ "classpath*:defaultRoles.xml" })
 public class AuthoritiesTestConfiguration {

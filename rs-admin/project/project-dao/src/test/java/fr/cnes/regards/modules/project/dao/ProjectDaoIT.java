@@ -8,12 +8,10 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -28,10 +26,8 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { ProjectDaoTestConfiguration.class })
-@DirtiesContext
-public class ProjectDaoTest {
+public class ProjectDaoIT extends AbstractDaoTest {
 
     /**
      * Common string value for project creation.
