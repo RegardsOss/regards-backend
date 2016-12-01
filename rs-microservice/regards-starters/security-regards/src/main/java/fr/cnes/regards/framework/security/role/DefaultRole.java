@@ -17,12 +17,6 @@ public enum DefaultRole {
     INSTANCE_ADMIN,
 
     /**
-     * No access
-     */
-    // FIXME do not accept a new role with this name
-    NONE,
-
-    /**
      * Tenant main administrator
      */
     PROJECT_ADMIN,
