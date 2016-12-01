@@ -9,16 +9,25 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JwtTokenUtils;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
 import fr.cnes.regards.modules.templates.domain.Template;
 import freemarker.cache.StringTemplateLoader;
@@ -34,6 +43,7 @@ import freemarker.template.Version;
  */
 @Service
 @MultitenantTransactional
+@ContextConfiguration(classes = { TemplateServiceConfiguration.class })
 public class TemplateService implements ITemplateService {
 
     /**
@@ -78,6 +88,17 @@ public class TemplateService implements ITemplateService {
     private Configuration configuration;
 
     /**
+     * Tenant resolver to access all configured tenant
+     */
+    private final ITenantResolver tenantResolver;
+
+    @Autowired
+    private Template emailValidationTemplate;
+
+    @Autowired
+    private Template passwordResetTemplate;
+
+    /**
      * Constructor
      *
      * @param pTemplateRepository
@@ -85,10 +106,44 @@ public class TemplateService implements ITemplateService {
      * @throws IOException
      *             when an error occurs while configuring the template loader
      */
-    public TemplateService(final ITemplateRepository pTemplateRepository) throws IOException {
+    public TemplateService(final ITemplateRepository pTemplateRepository, final ITenantResolver pTenantResolver)
+            throws IOException {
         super();
         templateRepository = pTemplateRepository;
+        tenantResolver = pTenantResolver;
         configureTemplateLoader();
+    }
+
+    /**
+     * Init medthod
+     */
+    @PostConstruct
+    public void init() {
+        initDefaultTemplates();
+    }
+
+    /**
+     * Populate the templates with default
+     */
+    private void initDefaultTemplates() {
+
+        final Supplier<Void> createDefaultTemplates = () -> {
+            if (!templateRepository.findOneByCode(emailValidationTemplate.getCode()).isPresent()) {
+                templateRepository.save(emailValidationTemplate);
+            }
+            if (!templateRepository.findOneByCode(passwordResetTemplate.getCode()).isPresent()) {
+                templateRepository.save(passwordResetTemplate);
+            }
+            return null;
+        };
+
+        final Function<String, Void> createDefaultTemplatesOnTenant = JwtTokenUtils
+                .asSafeCallableOnTenant(createDefaultTemplates);
+
+        // For each tenant, create default templates if needed
+        try (Stream<String> tenantsStream = tenantResolver.getAllTenants().stream()) {
+            tenantsStream.forEach(createDefaultTemplatesOnTenant::apply);
+        }
     }
 
     /*
