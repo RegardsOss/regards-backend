@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,8 @@ import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.registration.ValidationUrlBuilder;
+import fr.cnes.regards.modules.accessrights.passwordreset.OnPasswordResetEvent;
+import fr.cnes.regards.modules.accessrights.registration.AppUrlBuilder;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions;
@@ -77,6 +79,12 @@ public class AccountsController implements IResourceController<Account> {
     private IAccountSettingsService accountSettingsService;
 
     /**
+     * Use this to publish events
+     */
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    /**
      * Retrieve the list of all {@link Account}s.
      *
      * @return The accounts list
@@ -106,7 +114,7 @@ public class AccountsController implements IResourceController<Account> {
         final AccessRequestDto dto = new AccessRequestDto(pNewAccount);
 
         // Build the email validation link
-        final String validationUrl = ValidationUrlBuilder.buildFrom(pRequest);
+        final String validationUrl = AppUrlBuilder.buildFrom(pRequest);
         final Account created = accountWorkflowManager.requestAccount(dto, validationUrl);
         final Resource<Account> resource = new Resource<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
@@ -242,10 +250,13 @@ public class AccountsController implements IResourceController<Account> {
      */
     @ResponseBody
     @RequestMapping(value = "/code", method = RequestMethod.GET)
-    @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Void> sendAccountCode(@RequestParam("email") final String pEmail,
-            @RequestParam("type") final CodeType pType) throws EntityNotFoundException {
-        accountService.sendAccountCode(pEmail, pType);
+            @RequestParam("type") final CodeType pType, final HttpServletRequest pRequest)
+            throws EntityNotFoundException {
+        final Account account = accountService.retrieveAccountByEmail(pEmail);
+        final String appUrl = AppUrlBuilder.buildFrom(pRequest);
+        eventPublisher.publishEvent(new OnPasswordResetEvent(account, appUrl));
         return ResponseEntity.noContent().build();
     }
 

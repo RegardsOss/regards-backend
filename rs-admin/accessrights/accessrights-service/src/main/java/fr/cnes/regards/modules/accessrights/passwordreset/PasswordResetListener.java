@@ -1,13 +1,11 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessrights.registration;
+package fr.cnes.regards.modules.accessrights.passwordreset;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,28 +19,27 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
- * Listen to {@link OnAcceptAccountEvent} in order to send a validation email to the user when its account was passed to
- * status ACCEPTED.
+ * Listen to {@link OnPasswordResetEvent} in order to send a password reset to the user when required.
  *
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class EmailValidationListener implements ApplicationListener<OnAcceptAccountEvent> {
+public class PasswordResetListener implements ApplicationListener<OnPasswordResetEvent> {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(EmailValidationListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PasswordResetListener.class);
 
     /**
-     * The email validation template code
+     * The password reset email template code
      */
-    private static final String EMAIL_VALIDATION_TEMPLATE_CODE = "emailValidationTemplate";
+    private static final String MDP_RESET_TEMPLATE = "passwordResetTemplate";
 
     /**
-     * The account registrationService. Autowired by Spring.
+     * The password reset service. Autowired by Spring.
      */
-    private final IRegistrationService registrationService;
+    private final IPasswordResetService passwordResetService;
 
     /**
      * Template Service. Autowired by Spring.
@@ -55,60 +52,54 @@ public class EmailValidationListener implements ApplicationListener<OnAcceptAcco
     private final IEmailClient emailClient;
 
     /**
-     * @param pRegistrationService
-     *            the registration service
+     * @param pPasswordResetService
+     *            the password reset service
      * @param pTemplateService
      *            the template service
      * @param pEmailClient
      *            the email client
      */
-    public EmailValidationListener(final IRegistrationService pRegistrationService,
+    public PasswordResetListener(final IPasswordResetService pPasswordResetService,
             final ITemplateService pTemplateService, final IEmailClient pEmailClient) {
         super();
-        registrationService = pRegistrationService;
+        passwordResetService = pPasswordResetService;
         templateService = pTemplateService;
         emailClient = pEmailClient;
     }
 
-    @PostConstruct
-    public void init() {
-
-    }
-
     @Override
-    public void onApplicationEvent(final OnAcceptAccountEvent pEvent) {
-        this.sendValidationEmail(pEvent);
+    public void onApplicationEvent(final OnPasswordResetEvent pEvent) {
+        this.sendPasswordResetEmail(pEvent);
     }
 
     /**
+     * Send a password reset email based on information stored in the passed event
      *
      * @param pEvent
      *            the init event
-     * @throws EntityNotFoundException
      */
-    private void sendValidationEmail(final OnAcceptAccountEvent pEvent) {
+    private void sendPasswordResetEmail(final OnPasswordResetEvent pEvent) {
         final Account account = pEvent.getAccount();
         final String token = UUID.randomUUID().toString();
-        registrationService.createVerificationToken(account, token);
+        passwordResetService.createPasswordResetToken(account, token);
 
-        // Create the validation email from a template
+        // Create the password reset email from a template
         final String[] recipients = { account.getEmail() };
-
-        final String confirmationUrl = pEvent.getAppUrl() + "/validateAccount/" + token;
-
+        final String passwordResetUrl = pEvent.getAppUrl() + "/passwordReset/" + token;
         final Map<String, String> data = new HashMap<>();
 
         data.put("name", account.getFirstName());
-        data.put("confirmationUrl", confirmationUrl);
+        data.put("passwordResetUrl", passwordResetUrl);
         SimpleMailMessage email;
         try {
-            email = templateService.writeToEmail(EMAIL_VALIDATION_TEMPLATE_CODE, data, recipients);
+            email = templateService.writeToEmail(MDP_RESET_TEMPLATE, data, recipients);
         } catch (final EntityNotFoundException e) {
-            LOG.warn("Could not find the template for registration confirmation. Falling back to default template.", e);
+            LOG.warn("Could not find the template to generate a password reset email. Falling back to default.", e);
             email = new SimpleMailMessage();
             email.setTo(recipients);
-            email.setSubject("Registration Confirmation");
-            email.setText("Please click on the following link to confirm your registration: " + confirmationUrl);
+            email.setSubject("REGARDS - Password Reset");
+            email.setText("Please click on the following link to set a new password for your account: "
+                    + passwordResetUrl);
         }
 
         // Send it

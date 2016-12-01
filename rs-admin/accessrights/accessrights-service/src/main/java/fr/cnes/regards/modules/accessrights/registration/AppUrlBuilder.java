@@ -6,12 +6,13 @@ package fr.cnes.regards.modules.accessrights.registration;
 import javax.servlet.http.HttpServletRequest;
 
 /**
+ * Holds builder methods returning the current request url. TODO: Move
  *
  * @author Xavier-Alexandre Brochard
  */
-public final class ValidationUrlBuilder {
+public final class AppUrlBuilder {
 
-    private ValidationUrlBuilder() {
+    private AppUrlBuilder() {
 
     }
 
