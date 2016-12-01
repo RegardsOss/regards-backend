@@ -13,6 +13,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
 
@@ -47,6 +48,7 @@ public class Template implements IIdentifiable<Long> {
      * The template as a string for db persistence
      */
     @NotBlank
+    @Lob
     private String content;
 
     /**
