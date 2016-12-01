@@ -23,7 +23,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
-import fr.cnes.regards.modules.jobs.service.JobDaoTestConfiguration;
+import fr.cnes.regards.modules.jobs.service.JobServiceTestConfiguration;
 import fr.cnes.regards.modules.jobs.service.allocationstrategy.DefaultJobAllocationStrategy;
 import fr.cnes.regards.modules.jobs.service.communication.INewJobPuller;
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.IJobAllocationStrategy;
@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.jobs.service.manager.IJobHandler;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ContextConfiguration(classes = { JobDaoTestConfiguration.class })
+@ContextConfiguration(classes = { JobServiceTestConfiguration.class })
 public class JobPullerTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(JobPullerTest.class);

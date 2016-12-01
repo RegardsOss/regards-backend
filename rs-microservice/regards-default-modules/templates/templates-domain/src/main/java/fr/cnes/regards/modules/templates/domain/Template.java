@@ -48,7 +48,7 @@ public class Template implements IIdentifiable<Long> {
      * The template as a string for db persistence
      */
     @NotBlank
-    @Lob
+    @Column(name="content", length=10240)
     private String content;
 
     /**

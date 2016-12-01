@@ -43,7 +43,7 @@ public class JobPuller {
     private static final String MODULE_JOB_ROLE = "USER";
 
     /**
-     * Plugin that manages the allocation strategy. Returns the tenant name that is autorized to fetch a job
+     * Plugin that manages the allocation strategy. Returns the tenant name that is authorized to fetch a job
      */
     private final IJobAllocationStrategy jobAllocationStrategy;
 

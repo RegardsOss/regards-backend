@@ -90,7 +90,7 @@ public class JobInfoServiceTest {
         jobInfo.setId(jobInfoId);
         Mockito.when(jobInfoRepository.findOne(jobInfoId)).thenReturn(jobInfo);
         try {
-            JobInfo job = jobInfoService.retrieveJobInfoById(jobInfoId);
+            final JobInfo job = jobInfoService.retrieveJobInfoById(jobInfoId);
             Assert.assertNotNull(job);
         } catch (EntityNotFoundException e) {
             Assert.fail();

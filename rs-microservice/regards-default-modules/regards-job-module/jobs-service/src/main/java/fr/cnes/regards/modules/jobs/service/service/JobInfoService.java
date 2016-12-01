@@ -80,14 +80,14 @@ public class JobInfoService implements IJobInfoService {
     @Override
     public JobInfo stopJob(final Long pJobInfoId) throws EntityNotFoundException {
         if (!jobInfoRepository.exists(pJobInfoId)) {
-            throw new EntityNotFoundException(pJobInfoId.toString(), JobInfo.class);
+            throw new EntityNotFoundException(pJobInfoId, JobInfo.class);
         }
         final JobInfo jobInfo = jobInfoRepository.findOne(pJobInfoId);
         if (jobInfo != null) {
             try {
                 stoppingJobPublisher.send(pJobInfoId);
             } catch (final RabbitMQVhostException e) {
-                LOG.error("Failed to stop the job, Rabbit MQ error:", e);
+                LOG.error(String.format("Failed to stop the job <%d>, Rabbit MQ error: %s", jobInfo.getId()), e);
             }
         }
         return jobInfo;

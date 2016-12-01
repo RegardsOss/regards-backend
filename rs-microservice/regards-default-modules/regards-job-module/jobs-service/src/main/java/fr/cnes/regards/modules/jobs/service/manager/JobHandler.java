@@ -45,13 +45,13 @@ public class JobHandler implements IJobHandler {
     private final IJobInfoSystemService jobInfoSystemService;
 
     /**
-     * Store the small delay accepted to let jobs stop by themself while shuting down instantly
+     * Store the small delay accepted to let jobs stop by themselves while shutting down instantly
      */
     @Value("${regards.microservice.job.shutdownNowInSeconds}")
     private Integer timeoutShutdownNowInSeconds;
 
     /**
-     * Store the delay while jobs can stop by themself while shuting down the threadpool
+     * Store the delay while jobs can stop by themselves while shutting down the threadpool
      */
     @Value("${regards.microservice.job.shutdownInHours}")
     private Integer timeoutShutdownInHours;
