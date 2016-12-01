@@ -140,7 +140,7 @@ public class LocalAuthoritiesProviderTest {
                     Assert.assertFalse(role.getCorsAccess());
                     break;
                 default:
-                    Assert.fail("Undefined role");
+                    // Nothing to do
                     break;
             }
         }

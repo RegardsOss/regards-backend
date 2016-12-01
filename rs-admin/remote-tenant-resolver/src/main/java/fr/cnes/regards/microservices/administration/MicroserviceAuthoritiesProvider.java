@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -107,14 +108,31 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
             if (body != null) {
                 final List<Role> roles = HateoasUtils.unwrapList(body);
                 for (final Role role : roles) {
-                    final RoleAuthority roleAuth = new RoleAuthority(role.getName());
-                    roleAuth.setAuthorizedIpAdresses(role.getAuthorizedAddresses());
-                    roleAuth.setCorsAccess(role.isCorsRequestsAuthorized());
-                    roleAuths.add(roleAuth);
+                    roleAuths.add(createRoleAuthority(role));
                 }
             }
         }
         return roleAuths;
+    }
+
+    /**
+     *
+     * Create a {@link RoleAuthority} from a {@link Role}
+     *
+     * @param pRole
+     *            role to convert to RoleAuthority
+     * @return {@link RoleAuthority}
+     * @since 1.0-SNAPSHOT
+     */
+    private RoleAuthority createRoleAuthority(final Role pRole) {
+        final RoleAuthority roleAuth = new RoleAuthority(pRole.getName());
+        roleAuth.setAuthorizedIpAdresses(pRole.getAuthorizedAddresses());
+        boolean access = pRole.isCorsRequestsAuthorized();
+        if (access && (pRole.getCorsRequestsAuthorizationEndDate() != null)) {
+            access = LocalDateTime.now().isBefore(pRole.getCorsRequestsAuthorizationEndDate());
+        }
+        roleAuth.setCorsAccess(access);
+        return roleAuth;
     }
 
 }

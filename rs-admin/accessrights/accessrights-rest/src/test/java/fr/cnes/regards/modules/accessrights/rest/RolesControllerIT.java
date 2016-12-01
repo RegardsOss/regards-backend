@@ -80,8 +80,6 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Value("${root.admin.password:admin}")
     private String rootAdminPassword;
 
-    private static final String ROLE_TEST = "TEST_ROLE";
-
     private Role roleTest;
 
     private Role publicRole;
@@ -96,8 +94,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         // Init roles
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
-        roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
-        roleTest = roleRepository.save(new Role(ROLE_TEST, publicRole));
+        roleRepository.findOneByName(DEFAULT_ROLE).ifPresent(role -> roleRepository.delete(role));
+        roleTest = roleRepository.save(new Role(DEFAULT_ROLE, publicRole));
     }
 
     @Test

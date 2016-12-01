@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,8 +75,12 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
         final List<Role> roles = roleService.retrieveRoleList();
         for (final Role role : roles) {
             final RoleAuthority roleAuth = new RoleAuthority(role.getName());
+            boolean access = role.isCorsRequestsAuthorized();
+            if (access && (role.getCorsRequestsAuthorizationEndDate() != null)) {
+                access = LocalDateTime.now().isBefore(role.getCorsRequestsAuthorizationEndDate());
+            }
             roleAuth.setAuthorizedIpAdresses(role.getAuthorizedAddresses());
-            roleAuth.setCorsAccess(role.isCorsRequestsAuthorized());
+            roleAuth.setCorsAccess(access);
             results.add(roleAuth);
         }
         return results;
