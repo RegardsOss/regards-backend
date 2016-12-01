@@ -43,6 +43,7 @@ public class AccessSettings implements IIdentifiable<Long> {
      */
     public AccessSettings() {
         super();
+        mode = "auto-accept";
     }
 
     @Override

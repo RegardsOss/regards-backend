@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.workflow.projectuser;
 
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
@@ -48,7 +49,8 @@ public class WaitingAccessState extends AbstractDeletableState {
      * modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void qualifyAccess(final ProjectUser pProjectUser, final AccessQualification pQualification) {
+    public void qualifyAccess(final ProjectUser pProjectUser, final AccessQualification pQualification)
+            throws EntityNotFoundException {
         final AccessSettings settings = accessSettingsService.retrieve();
 
         if ("auto-accept".equals(settings.getMode())) {

@@ -199,12 +199,14 @@ public class RegistrationController {
      * Retrieve the {@link AccountSettings}.
      *
      * @return The {@link AccountSettings}
+     * @throws EntityNotFoundException
+     *             Thrown when an {@link AccountSettings} with passed id could not be found
      */
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the settings managing the access requests",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<AccessSettings>> getAccessSettings() {
+    public ResponseEntity<Resource<AccessSettings>> getAccessSettings() throws EntityNotFoundException {
         final AccessSettings accessSettings = accessSettingsService.retrieve();
         final Resource<AccessSettings> resource = new Resource<>(accessSettings);
         return new ResponseEntity<>(resource, HttpStatus.OK);

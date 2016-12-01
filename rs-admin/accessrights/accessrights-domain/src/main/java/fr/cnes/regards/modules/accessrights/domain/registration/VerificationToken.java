@@ -8,12 +8,12 @@ import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.validation.Valid;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -48,8 +48,9 @@ public class VerificationToken {
     /**
      * The link back to the accout
      */
-    @OneToOne(targetEntity = Account.class, fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false, name = "user_id")
+    // @OneToOne(targetEntity = Account.class, fetch = FetchType.EAGER)
+    @Valid
+    @JoinColumn(nullable = false, name = "user_id", foreignKey = @ForeignKey(name = "FK_VERIFICATION_TOKEN_ACCOUNT"))
     private Account account;
 
     /**

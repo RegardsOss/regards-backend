@@ -57,11 +57,14 @@ public class AccessSettingsServiceTest {
 
     /**
      * Check that the system allows to retrieve the access settings.
+     * 
+     * @throws EntityNotFoundException
+     *             Thrown when no access settings could be found
      */
     @Test
     @Requirement("?")
     @Purpose("Check that the system allows to retrieve the access settings.")
-    public void retrieve() {
+    public void retrieve() throws EntityNotFoundException {
         // Define expected
         final AccessSettings expected = new AccessSettings();
         expected.setId(0L);
