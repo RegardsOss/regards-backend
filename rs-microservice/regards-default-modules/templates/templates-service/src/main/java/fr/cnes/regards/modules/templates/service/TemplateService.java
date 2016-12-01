@@ -100,6 +100,8 @@ public class TemplateService implements ITemplateService {
      *
      * @param pTemplateRepository
      *            the template repository
+     * @param pTenantResolver
+     *            the tenant resolver
      * @throws IOException
      *             when an error occurs while configuring the template loader
      */
