@@ -47,8 +47,8 @@ public @interface ResourceAccess {
 
     /**
      * Allows to configure sensible default accesses
-     * 
+     *
      * @return default resource role
      */
-    DefaultRole role() default DefaultRole.NONE;
+    DefaultRole role() default DefaultRole.PROJECT_ADMIN;
 }
