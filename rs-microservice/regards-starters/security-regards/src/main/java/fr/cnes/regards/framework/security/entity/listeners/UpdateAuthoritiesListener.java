@@ -50,8 +50,12 @@ public class UpdateAuthoritiesListener {
     public void updateSystemAuhtorities(final Object pEntity) {
         try {
             final IPublisher eventPublisher = SpringBeanHelper.getBean(IPublisher.class);
-            eventPublisher.publish(UpdateAuthoritiesEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                   AmqpCommunicationTarget.EXTERNAL);
+            if (eventPublisher != null) {
+                eventPublisher.publish(UpdateAuthoritiesEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
+                                       AmqpCommunicationTarget.EXTERNAL);
+            } else {
+                LOG.error("Impossible to send update authorities event to cloud microservices. The authorities of microservices will not be updated");
+            }
         } catch (final RabbitMQVhostException e) {
             LOG.error(e.getMessage(), e);
         }
