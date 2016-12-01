@@ -95,6 +95,9 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private Template emailValidationTemplate;
 
+    @Autowired
+    private Template passwordResetTemplate;
+
     /**
      * Constructor
      *
@@ -126,19 +129,22 @@ public class TemplateService implements ITemplateService {
      */
     private void initDefaultTemplates() {
 
-        final Supplier<Void> createEmailValidationTemplate = () -> {
+        final Supplier<Void> createDefaultTemplates = () -> {
             if (!templateRepository.findOneByCode(emailValidationTemplate.getCode()).isPresent()) {
                 templateRepository.save(emailValidationTemplate);
+            }
+            if (!templateRepository.findOneByCode(passwordResetTemplate.getCode()).isPresent()) {
+                templateRepository.save(passwordResetTemplate);
             }
             return null;
         };
 
-        final Function<String, Void> createEmailValidationTemplateOnTenant = JwtTokenUtils
-                .asSafeCallableOnTenant(createEmailValidationTemplate);
+        final Function<String, Void> createDefaultTemplatesOnTenant = JwtTokenUtils
+                .asSafeCallableOnTenant(createDefaultTemplates);
 
         // For each tenant, create default templates if needed
         try (Stream<String> tenantsStream = tenantResolver.getAllTenants().stream()) {
-            tenantsStream.forEach(createEmailValidationTemplateOnTenant::apply);
+            tenantsStream.forEach(createDefaultTemplatesOnTenant::apply);
         }
     }
 
