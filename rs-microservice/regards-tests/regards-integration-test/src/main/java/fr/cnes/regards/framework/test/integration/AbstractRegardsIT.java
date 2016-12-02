@@ -343,8 +343,13 @@ public abstract class AbstractRegardsIT {
      * @return security token to authenticate user
      */
     protected String manageDefaultSecurity(final String pUrlPath, final RequestMethod pMethod) {
+        
+        String path = pUrlPath;
+        if (pUrlPath.contains("?")){
+            path = path.substring(0, pUrlPath.indexOf("?"));
+        }
         final String jwt = generateToken(DEFAULT_USER_EMAIL, DEFAULT_USER, DEFAULT_ROLE);
-        setAuthorities(pUrlPath, pMethod, DEFAULT_ROLE);
+        setAuthorities(path, pMethod, DEFAULT_ROLE);
         return jwt;
     }
 

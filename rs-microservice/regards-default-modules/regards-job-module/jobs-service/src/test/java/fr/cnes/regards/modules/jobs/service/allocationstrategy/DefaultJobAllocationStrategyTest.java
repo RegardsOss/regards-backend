@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.JobAll
 import fr.cnes.regards.modules.jobs.service.crossmoduleallocationstrategy.JobQueue;
 
 /**
- *
+ * @author Léo Mieulet
  */
 public class DefaultJobAllocationStrategyTest {
 
