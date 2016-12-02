@@ -87,7 +87,9 @@ public class JobInfoService implements IJobInfoService {
             try {
                 stoppingJobPublisher.send(pJobInfoId);
             } catch (final RabbitMQVhostException e) {
-                LOG.error(String.format("Failed to stop the job <%d>, Rabbit MQ error: %s", jobInfo.getId()), e);
+                LOG.error(String.format("Failed to stop the job <%d>, Rabbit MQ error :", jobInfo.getId(),
+                                        e.getMessage()),
+                          e);
             }
         }
         return jobInfo;
