@@ -7,40 +7,36 @@ jwt:
 
 spring:
   application:
-    name : rs-access
-    
-swagger:
-  api:
-    name: access-api
+    name: rs-access
+  cloud:
+    config:
+      uri: http://localhost:8888
+  hateoas:
+    use-hal-as-default-json-media-type: false
+  jackson:
+    deserialization: 
+      READ_ENUMS_USING_TO_STRING: true
+    serialization:
+      WRITE_ENUMS_USING_TO_STRING: true
 
-cloud:
-  config:
-    discovery:
-      enabled: false
-    server:
-      enabled: false
-      name: myconfigserver
-      
-eureka:
-  client:
+regards:
+  swagger:
     enabled: false
-
-microservice:
-  dao:
-    enabled : false
-    embedded : false
-    instance :
-      enabled : false
-      datasource :
-        url: jdbc:postgresql://localhost:5432/project1
-        username: user
-        password: mdp
-    dialect : org.hibernate.dialect.PostgreSQLDialect
-    driverClassName : org.postgresql.Driver
-#  projects:
-#    -
-#      name: project1
-#      datasource:
-#        url: jdbc:postgresql://localhost:5432/project1
-#        username: user
-#        password: mdp
+    api-name: Access management API
+    api-title: Access management API
+    api-description: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    api-license: GPLv3
+    api-version: V1
+  eureka:
+    client:
+      enabled: true
+  jpa:
+    instance:
+      embedded: true
+      embeddedPath: target/admin
+    multitenant: 
+      embedded: true
+      embeddedPath: target/admin/projects
+      tenants: 
+        -
+          name: test1
