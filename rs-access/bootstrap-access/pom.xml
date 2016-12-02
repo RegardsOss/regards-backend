@@ -20,6 +20,20 @@
 	</properties>
 
 	<dependencies>
+		<!-- Spring dependencies -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-eureka</artifactId>
+		</dependency>
+		<!-- Framework Starters dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-instance-regards-starter</artifactId>
+		</dependency>
 		<!-- Core dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.microservices</groupId>
@@ -29,16 +43,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.access</groupId>
 			<artifactId>access-rest</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
