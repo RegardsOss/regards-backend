@@ -29,6 +29,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.DefaultTestConfiguration;
 import fr.cnes.regards.framework.security.domain.HttpConstants;
@@ -103,6 +104,9 @@ public abstract class AbstractRegardsIT {
     @Autowired
     protected MethodAuthorizationService authService;
     // CHECKSTYLE:ON
+
+    @Autowired
+    protected GsonBuilder gsonBuilder;
 
     /**
      * Mock for MVC testing
@@ -293,7 +297,7 @@ public abstract class AbstractRegardsIT {
         if (pObject instanceof String) {
             return (String) pObject;
         }
-        final Gson gson = new Gson();
+        final Gson gson = gsonBuilder.create();
         return gson.toJson(pObject);
     }
     // CHECKSTYLE:ON
