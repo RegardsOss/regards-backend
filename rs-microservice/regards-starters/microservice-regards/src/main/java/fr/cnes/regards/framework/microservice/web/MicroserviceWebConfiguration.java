@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.framework.microservice.web;
 
-import java.nio.file.Path;
 import java.util.List;
 
 import org.springframework.http.converter.HttpMessageConverter;
@@ -27,10 +26,18 @@ import com.google.gson.GsonBuilder;
  */
 public class MicroserviceWebConfiguration extends WebMvcConfigurerAdapter {
 
+    /**
+     *
+     */
+    private static GsonBuilder builder;
+
+    public MicroserviceWebConfiguration(GsonBuilder pBuilder) {
+        builder = pBuilder;
+    }
+
     @Override
     public void configureMessageConverters(final List<HttpMessageConverter<?>> pConverters) {
-        final GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(Path.class, new PathAdapter().nullSafe());
+
         final Gson gson = builder.create();
         final GsonHttpMessageConverter gsonHttpMessageConverter = new GsonHttpMessageConverter();
         gsonHttpMessageConverter.setGson(gson);

@@ -15,7 +15,7 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 
 /**
- *
+ * @author Léo Mieulet
  */
 
 public class NewJobPublisherTest {
@@ -23,8 +23,6 @@ public class NewJobPublisherTest {
     private IPublisher publisherMock;
 
     private INewJobPublisher newJobPublisherMessageBroker;
-
-    private String projectName;
 
     private AmqpCommunicationTarget target;
 

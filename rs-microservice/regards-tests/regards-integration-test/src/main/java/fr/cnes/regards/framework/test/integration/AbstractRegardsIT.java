@@ -34,6 +34,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.DefaultTestConfiguration;
 import fr.cnes.regards.framework.security.domain.HttpConstants;
@@ -106,6 +107,9 @@ public abstract class AbstractRegardsIT {
      */
     @Autowired
     protected MethodAuthorizationService authService;
+
+    @Autowired
+    protected GsonBuilder gsonBuilder;
 
     /**
      * Mock for MVC testing
@@ -362,7 +366,7 @@ public abstract class AbstractRegardsIT {
         if (pObject instanceof String) {
             return (String) pObject;
         }
-        final Gson gson = new Gson();
+        final Gson gson = gsonBuilder.create();
         return gson.toJson(pObject);
     }
     // CHECKSTYLE:ON
@@ -412,8 +416,13 @@ public abstract class AbstractRegardsIT {
      * @return security token to authenticate user
      */
     protected String manageDefaultSecurity(final String pUrlPath, final RequestMethod pMethod) {
+        
+        String path = pUrlPath;
+        if (pUrlPath.contains("?")){
+            path = path.substring(0, pUrlPath.indexOf("?"));
+        }
         final String jwt = generateToken(DEFAULT_USER_EMAIL, DEFAULT_USER, DEFAULT_ROLE);
-        setAuthorities(pUrlPath, pMethod, DEFAULT_ROLE);
+        setAuthorities(path, pMethod, DEFAULT_ROLE);
         return jwt;
     }
 
