@@ -18,8 +18,10 @@ public interface IAccessSettingsService {
      * Retrieve the {@link AccountSettings}.
      *
      * @return The {@link AccountSettings}
+     * @throws EntityNotFoundException
+     *             hrown when an {@link AccountSettings} with passed id could not be found
      */
-    AccessSettings retrieve();
+    AccessSettings retrieve() throws EntityNotFoundException;
 
     /**
      * Update the {@link AccountSettings}.

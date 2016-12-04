@@ -9,7 +9,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
@@ -83,18 +82,6 @@ public interface IAccountService {
      *
      */
     Account updateAccount(Long pAccountId, Account pUpdatedAccount) throws EntityException;
-
-    /**
-     * Send a code of type <code>pType</code> to the specified recipient.
-     *
-     * @param pEmail
-     *            recipient's email address
-     * @param pType
-     *            The type of code
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Account} with passed <code>email</code> could be found
-     */
-    void sendAccountCode(String pEmail, CodeType pType) throws EntityNotFoundException;
 
     /**
      * Change the passord of an {@link Account}.

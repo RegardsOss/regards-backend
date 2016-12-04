@@ -17,7 +17,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentif
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
-import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
@@ -49,10 +48,10 @@ public class AccountService implements IAccountService {
     private final IAccountRepository accountRepository;
 
     /**
-     * Creates a new instance with passed deps
+     * Create new service with passed deps
      *
      * @param pAccountRepository
-     *            The account repository
+     *            the account repo
      */
     public AccountService(final IAccountRepository pAccountRepository) {
         super();
@@ -113,21 +112,6 @@ public class AccountService implements IAccountService {
             throw new EntityNotFoundException(pAccountId.toString(), Account.class);
         }
         return accountRepository.save(pUpdatedAccount);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#sendAccountCode(java.lang.String,
-     * fr.cnes.regards.modules.accessrights.domain.CodeType)
-     */
-    @Override
-    public void sendAccountCode(final String pEmail, final CodeType pType) throws EntityNotFoundException {
-        if (!existAccount(pEmail)) {
-            throw new EntityNotFoundException(pEmail, Account.class);
-        }
-        final Account account = retrieveAccountByEmail(pEmail);
-        // TODO: sendEmail(pEmail,account.getCode();
     }
 
     /*

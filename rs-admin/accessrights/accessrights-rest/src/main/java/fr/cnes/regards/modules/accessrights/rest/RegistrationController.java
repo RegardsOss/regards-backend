@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,8 +32,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
+import fr.cnes.regards.modules.accessrights.registration.AppUrlBuilder;
 import fr.cnes.regards.modules.accessrights.registration.IRegistrationService;
-import fr.cnes.regards.modules.accessrights.registration.ValidationUrlBuilder;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
@@ -112,7 +111,7 @@ public class RegistrationController {
             @Valid @RequestBody final AccessRequestDto pAccessRequest, final HttpServletRequest pRequest)
             throws EntityException {
         // Build the email validation link
-        final String validationUrl = ValidationUrlBuilder.buildFrom(pRequest);
+        final String validationUrl = AppUrlBuilder.buildFrom(pRequest);
         // Create an account if needed
         accountWorkflowManager.requestAccount(pAccessRequest, validationUrl);
         // Create a project user
@@ -130,9 +129,9 @@ public class RegistrationController {
      * @throws EntityException
      *             when no verification token associated to this account could be found
      */
-    @RequestMapping(value = "/validateAccount", method = RequestMethod.GET)
-    @ResourceAccess(description = "Confirm the registration by email", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Void> validateAccount(@RequestParam("token") final String pToken) throws EntityException {
+    @RequestMapping(value = "/validateAccount/{token}", method = RequestMethod.GET)
+    @ResourceAccess(description = "Confirm the registration by email", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> validateAccount(@PathVariable("token") final String pToken) throws EntityException {
         final VerificationToken verificationToken = registrationService.getVerificationToken(pToken);
         accountWorkflowManager.validateAccount(verificationToken);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -200,12 +199,14 @@ public class RegistrationController {
      * Retrieve the {@link AccountSettings}.
      *
      * @return The {@link AccountSettings}
+     * @throws EntityNotFoundException
+     *             Thrown when an {@link AccountSettings} with passed id could not be found
      */
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the settings managing the access requests",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<AccessSettings>> getAccessSettings() {
+    public ResponseEntity<Resource<AccessSettings>> getAccessSettings() throws EntityNotFoundException {
         final AccessSettings accessSettings = accessSettingsService.retrieve();
         final Resource<AccessSettings> resource = new Resource<>(accessSettings);
         return new ResponseEntity<>(resource, HttpStatus.OK);
