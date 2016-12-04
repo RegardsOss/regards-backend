@@ -80,14 +80,14 @@ public class AccountsController implements IResourceController<Account> {
     private IAccountSettingsService accountSettingsService;
 
     /**
-     * Root admin user login
+     * <<<<<<< HEAD Root admin user login
      */
     @Value("${regards.accounts.root.user.login}")
     private String rootAdminUserLogin;
 
     /*
      * 
-     * Use this to publish events
+     * ======= >>>>>>> 5a86b98d629f0fb8ce6e617a318d92274bc1f505 Use this to publish events
      */
     @Autowired
     private ApplicationEventPublisher eventPublisher;
@@ -330,7 +330,6 @@ public class AccountsController implements IResourceController<Account> {
             resourceService.addLink(resource, this.getClass(), "updateAccount", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
                                     MethodParamFactory.build(Account.class));
-
             if (!pElement.getEmail().equals(rootAdminUserLogin)) {
                 resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
                                         MethodParamFactory.build(Long.class, pElement.getId()));

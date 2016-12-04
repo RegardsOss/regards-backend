@@ -277,12 +277,12 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$._links", Matchers.notNullValue()));
-//        expectations.add(MockMvcResultMatchers.jsonPath("$._links.delete", Matchers.notNullValue()));
-//        expectations.add(MockMvcResultMatchers.jsonPath("$._links.self", Matchers.notNullValue()));
-//        expectations.add(MockMvcResultMatchers.jsonPath("$._links.update", Matchers.notNullValue()));
-//        expectations.add(MockMvcResultMatchers.jsonPath("$._links.delete.href", Matchers.notNullValue()));
-//        expectations.add(MockMvcResultMatchers.jsonPath("$._links.self.href", Matchers.notNullValue()));
-//        expectations.add(MockMvcResultMatchers.jsonPath("$._links.update.href", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.delete", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.self", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.update", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.delete.href", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.self.href", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.update.href", Matchers.notNullValue()));
 
         performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
     }
@@ -292,15 +292,16 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$._links", Matchers.notNullValue()));
-//        expectations.add(MockMvcResultMatchers.jsonPath("$._links.self", Matchers.notNullValue()));
-//        expectations.add(MockMvcResultMatchers.jsonPath("$._links.update", Matchers.notNullValue()));
-//        expectations.add(MockMvcResultMatchers.jsonPath("$._links.self.href", Matchers.notNullValue()));
-//        expectations.add(MockMvcResultMatchers.jsonPath("$._links.update.href", Matchers.notNullValue()));
-//        expectations.add(MockMvcResultMatchers.jsonPath("$._links",
-//                                                        Matchers.not(Matchers.containsString(LinkRels.DELETE))));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.self", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.update", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.self.href", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.update.href", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links",
+        // Matchers.not(Matchers.containsString(LinkRels.DELETE))));
 
         performDefaultGet(apiAccountId, expectations, errorMessage, accountInstance.getId());
     }
+
     @Override
     protected Logger getLogger() {
         return LOG;
