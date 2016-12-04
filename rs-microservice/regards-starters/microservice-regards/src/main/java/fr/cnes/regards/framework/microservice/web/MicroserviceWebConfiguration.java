@@ -38,7 +38,8 @@ public class MicroserviceWebConfiguration extends WebMvcConfigurerAdapter {
     @Override
     public void configureMessageConverters(final List<HttpMessageConverter<?>> pConverters) {
 
-        final Gson gson = builder.create();
+        final Gson gson = builder.setExclusionStrategies(new GSonIgnoreExclusionStrategy()).create();
+
         final GsonHttpMessageConverter gsonHttpMessageConverter = new GsonHttpMessageConverter();
         gsonHttpMessageConverter.setGson(gson);
 
