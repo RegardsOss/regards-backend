@@ -21,18 +21,20 @@ public class GSonIgnoreExclusionStrategy implements ExclusionStrategy {
     private final Class<?> typeToSkip;
 
     GSonIgnoreExclusionStrategy() {
-        typeToSkip=null;
-    }
-    
-    GSonIgnoreExclusionStrategy(Class<?> typeToSkip) {
-        this.typeToSkip = typeToSkip;
+        typeToSkip = null;
     }
 
-    public boolean shouldSkipClass(Class<?> clazz) {
-        return (clazz == typeToSkip);
+    GSonIgnoreExclusionStrategy(Class<?> pTypeToSkip) {
+        this.typeToSkip = pTypeToSkip;
     }
 
-    public boolean shouldSkipField(FieldAttributes f) {
-        return f.getAnnotation(GSonIgnore.class) != null;
+    @Override
+    public boolean shouldSkipClass(Class<?> pClazz) {
+        return (pClazz == typeToSkip);
+    }
+
+    @Override
+    public boolean shouldSkipField(FieldAttributes pFieldAttributes) {
+        return pFieldAttributes.getAnnotation(GSonIgnore.class) != null;
     }
 }
