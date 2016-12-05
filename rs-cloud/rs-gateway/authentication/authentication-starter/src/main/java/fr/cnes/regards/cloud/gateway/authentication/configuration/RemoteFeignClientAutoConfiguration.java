@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.cloud.gateway.authentication.configuration;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
@@ -18,6 +19,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
+@ConditionalOnProperty(name = "regards.cloud.enabled", matchIfMissing = true)
 @EnableFeignClients(clients = { IProjectsClient.class, IProjectUsersClient.class, IAccountsClient.class })
 public class RemoteFeignClientAutoConfiguration {
 

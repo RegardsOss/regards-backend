@@ -6,8 +6,6 @@ package fr.cnes.regards.cloud.gateway;
 import java.util.ArrayList;
 
 import org.mockito.Mockito;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +15,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.cloud.gateway.authentication.configuration.RemoteFeignClientAutoConfiguration;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.stub.AuthenticationPluginStub;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -40,7 +37,6 @@ import fr.cnes.regards.modules.project.domain.Project;
 @Configuration
 @ComponentScan(basePackages = { "fr.cnes.regards.cloud.gateway", "fr.cnes.regards.modules" })
 @PropertySource("classpath:test.properties")
-@EnableAutoConfiguration(exclude = { RemoteFeignClientAutoConfiguration.class, DataSourceAutoConfiguration.class })
 public class AuthenticationTestConfiguration {
 
     public final static String PROJECT_TEST_NAME = "PROJECT";

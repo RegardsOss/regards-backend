@@ -23,11 +23,6 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 public class AuthoritiesProviderStub implements IAuthoritiesProvider {
 
     @Override
-    public boolean hasCorsRequestsAccess(final String pAuthority) {
-        return false;
-    }
-
-    @Override
     public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
         return new ArrayList<>();
     }

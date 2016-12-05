@@ -7,9 +7,12 @@ import java.util.Base64;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
@@ -19,7 +22,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.cloud.gateway.authentication.stub.AuthenticationPluginStub;
-import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -32,10 +35,15 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@RunWith(RegardsSpringRunner.class)
 @SpringBootTest(classes = AuthenticationTestConfiguration.class)
 @AutoConfigureMockMvc
-public class AuthenticationTestIT {
+@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
+public class AuthenticationTestIT extends AbstractRegardsIT {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(AuthenticationTestIT.class);
 
     /**
      * Token endpoint
@@ -97,12 +105,20 @@ public class AuthenticationTestIT {
         // The application can start with spring configuration
     }
 
+    /**
+     *
+     * Check access to uniexisting endpoints. Response must be Unauthorized.
+     *
+     * @throws Exception
+     * @since 1.0-SNAPSHOT
+     */
     @Test
     public void test() throws Exception {
         String invalidBasicString = "invalid:invalid";
         invalidBasicString = Base64.getEncoder().encodeToString(invalidBasicString.getBytes());
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/plop")).andExpect(MockMvcResultMatchers.status().isUnauthorized());
+        mockMvc.perform(MockMvcRequestBuilders.get("/non/existing/endpoint"))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
     /**
@@ -190,6 +206,11 @@ public class AuthenticationTestIT {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOG;
     }
 
 }
