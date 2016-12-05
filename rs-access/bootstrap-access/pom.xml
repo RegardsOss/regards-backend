@@ -29,11 +29,6 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-eureka</artifactId>
 		</dependency>
-		<!-- Framework Starters dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-instance-regards-starter</artifactId>
-		</dependency>
 		<!-- Core dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.microservices</groupId>
@@ -43,6 +38,10 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.access</groupId>
 			<artifactId>access-rest</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.microservices.administration</groupId>
+			<artifactId>remote-tenant-resolver</artifactId>
 		</dependency>
 	</dependencies>
 
