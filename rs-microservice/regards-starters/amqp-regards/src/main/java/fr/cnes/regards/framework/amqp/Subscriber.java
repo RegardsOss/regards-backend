@@ -78,6 +78,7 @@ public class Subscriber implements ISubscriber {
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
+    @Override
     public final <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver,
             final AmqpCommunicationMode pAmqpCommunicationMode, final AmqpCommunicationTarget pAmqpCommunicationTarget)
             throws RabbitMQVhostException {
@@ -116,10 +117,10 @@ public class Subscriber implements ISubscriber {
      * @throws RabbitMQVhostException
      *             represent any error that could occur while handling RabbitMQ Vhosts
      */
-    public <T> SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(Class<T> pEvt, String pTenant,
-            Jackson2JsonMessageConverter pJackson2JsonMessageConverter, IHandler<T> pReceiver,
-            AmqpCommunicationMode pAmqpCommunicationMode, AmqpCommunicationTarget pAmqpCommunicationTarget)
-            throws RabbitMQVhostException {
+    public <T> SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(final Class<T> pEvt,
+            final String pTenant, final Jackson2JsonMessageConverter pJackson2JsonMessageConverter,
+            final IHandler<T> pReceiver, final AmqpCommunicationMode pAmqpCommunicationMode,
+            final AmqpCommunicationTarget pAmqpCommunicationTarget) throws RabbitMQVhostException {
         final CachingConnectionFactory connectionFactory = regardsAmqpAdmin.createConnectionFactory(pTenant);
         rabbitVirtualHostUtils.addVhost(pTenant, connectionFactory);
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();

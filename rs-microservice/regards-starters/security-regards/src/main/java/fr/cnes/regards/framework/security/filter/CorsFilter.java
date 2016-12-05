@@ -79,15 +79,13 @@ public class CorsFilter extends OncePerRequestFilter {
     protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
 
-        boolean corsAccess;
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            corsAccess = doSecurizedFilter(pRequest, pResponse, pFilterChain);
+            doSecurizedFilter(pRequest, pResponse, pFilterChain);
         } else {
             allowCorsRequest(pRequest, pResponse, pFilterChain);
-            corsAccess = true;
         }
 
-        if (!OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod()) && corsAccess) {
+        if (!OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
             pFilterChain.doFilter(pRequest, pResponse);
         }
 
@@ -110,10 +108,9 @@ public class CorsFilter extends OncePerRequestFilter {
      * @return true if the cors requests are accepted
      * @since 1.0-SNAPSHOT
      */
-    private boolean doSecurizedFilter(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
+    private void doSecurizedFilter(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
 
-        boolean access = false;
         // Get authorized ip associated to given role
         final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
                 .getAuthentication();
@@ -122,7 +119,7 @@ public class CorsFilter extends OncePerRequestFilter {
         final Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication.getAuthorities();
 
         if (!roles.isEmpty()) {
-
+            boolean access = false;
             for (final RoleAuthority role : roles) {
                 final Optional<RoleAuthority> roleAuth = methodAuthService.getRoleAuthority(role.getAuthority(),
                                                                                             authentication.getTenant());
@@ -130,12 +127,7 @@ public class CorsFilter extends OncePerRequestFilter {
                     access = access || roleAuth.get().getCorsAccess();
                 }
             }
-            if (!access) {
-                final String message = String.format("[REGARDS CORS FILTER] Access denied for user %s",
-                                                     authentication.getUser().getName());
-                LOG.error(message);
-                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
-            } else {
+            if (access) {
                 LOG.debug(String.format("[REGARDS CORS FILTER] Access granted for user %s",
                                         authentication.getUser().getName()));
                 allowCorsRequest(pRequest, pResponse, pFilterChain);
@@ -143,7 +135,6 @@ public class CorsFilter extends OncePerRequestFilter {
         } else {
             pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS CORS FILTER] No Authority Role defined");
         }
-        return access;
     }
 
     /**
