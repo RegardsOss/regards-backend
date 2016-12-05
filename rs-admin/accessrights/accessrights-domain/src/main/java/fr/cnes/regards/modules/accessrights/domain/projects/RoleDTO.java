@@ -31,7 +31,7 @@ public class RoleDTO {
      * <p/>
      * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasParentOrPublic} annotation.
      */
-    private Role parentRole;
+    private final Role parentRole;
 
     /**
      * Role permissions
@@ -85,6 +85,7 @@ public class RoleDTO {
         }
         corsRequestsAuthorizationEndDate = pRole.getCorsRequestsAuthorizationEndDate();
         authorizedAddresses = pRole.getAuthorizedAddresses();
+        parentRole = pRole.getParentRole();
     }
 
     public Long getId() {
