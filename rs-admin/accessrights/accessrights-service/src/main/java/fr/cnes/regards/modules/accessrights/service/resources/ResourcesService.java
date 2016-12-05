@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolve
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.event.UpdateAuthoritiesEvent;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -178,7 +177,8 @@ public class ResourcesService implements IResourcesService {
         if (pResource.getResourceAccess() != null) {
             final String roleName = pResource.getResourceAccess().role().name();
             try {
-                roles.add(roleService.retrieveRole(roleName));
+                final Role role = roleService.retrieveRole(roleName);
+                roles.add(role);
             } catch (final EntityNotFoundException e) {
                 LOG.debug(e.getMessage(), e);
                 LOG.warn("Default role {} for resource {} does not exists.", roleName, defaultResource.getResource());
@@ -229,6 +229,12 @@ public class ResourcesService implements IResourcesService {
      */
     private List<ResourcesAccess> saveResources(final List<ResourcesAccess> pResourcesToSave) {
         final List<ResourcesAccess> results = new ArrayList<>();
+
+        // First Step is to calculate new associated roles for each resource
+        for (final ResourcesAccess resource : pResourcesToSave) {
+            calculateResourceInheritedRoles(resource);
+        }
+
         final Iterable<ResourcesAccess> savedResources = resourceAccessRepo.save(pResourcesToSave);
         if (savedResources != null) {
             savedResources.forEach(results::add);
@@ -241,6 +247,26 @@ public class ResourcesService implements IResourcesService {
             LOG.error(e.getMessage(), e);
         }
         return results;
+    }
+
+    /**
+     *
+     * Method to update given resource roles with all inherited roles of each role.
+     *
+     * @param pResource
+     *            resource to update
+     * @since 1.0-SNAPSHOT
+     */
+    private void calculateResourceInheritedRoles(final ResourcesAccess pResource) {
+
+        final List<Role> inheritedRoles = new ArrayList<>();
+        for (final Role role : pResource.getRoles()) {
+            for (final Role inheritedRole : roleService.retrieveInheritedRoles(role)) {
+                inheritedRoles.add(inheritedRole);
+            }
+        }
+        pResource.addRoles(inheritedRoles);
+
     }
 
 }

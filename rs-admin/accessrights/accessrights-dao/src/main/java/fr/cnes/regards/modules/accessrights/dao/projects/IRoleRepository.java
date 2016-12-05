@@ -51,4 +51,15 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      * @return The {@link List} of found {@link Role}s
      */
     List<Role> findByNameIn(Collection<String> pNames);
+
+    /**
+     *
+     * Find all roles which parent role is the given name.
+     *
+     * @param pName
+     *            name of the parent role
+     * @return List of {@link Role}
+     * @since 1.0-SNAPSHOT
+     */
+    List<Role> findByParentRoleName(String pName);
 }

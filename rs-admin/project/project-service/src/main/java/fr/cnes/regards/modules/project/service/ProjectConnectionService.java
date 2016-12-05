@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.utils.jwt.JwtTokenUtils;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -108,14 +111,19 @@ public class ProjectConnectionService implements IProjectConnectionService {
         }
 
         // Send event to all microservices that a new connection is available for a new project
-        try {
-            final TenantConnection tenant = new TenantConnection(connection.getProject().getName(), connection.getUrl(),
-                    connection.getUserName(), connection.getPassword(), connection.getDriverClassName());
-            publisher.publish(new NewTenantEvent(tenant, connection.getMicroservice()),
-                              AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.EXTERNAL);
-        } catch (final RabbitMQVhostException e) {
-            LOG.error(e.getMessage(), e);
-        }
+        final TenantConnection tenant = new TenantConnection(connection.getProject().getName(), connection.getUrl(),
+                connection.getUserName(), connection.getPassword(), connection.getDriverClassName());
+        final Supplier<Boolean> publishNewtenantEvent = () -> {
+            try {
+                publisher.publish(new NewTenantEvent(tenant, connection.getMicroservice()),
+                                  AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.EXTERNAL);
+                return Boolean.TRUE;
+            } catch (final RabbitMQVhostException e) {
+                LOG.error(e.getMessage(), e);
+                return Boolean.FALSE;
+            }
+        };
+        JwtTokenUtils.asSafeCallableOnTenant(publishNewtenantEvent).apply(tenant.getName());
 
         return connection;
     }

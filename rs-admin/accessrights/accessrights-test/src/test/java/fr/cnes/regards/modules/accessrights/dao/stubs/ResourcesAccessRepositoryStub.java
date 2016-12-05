@@ -6,10 +6,6 @@ package fr.cnes.regards.modules.accessrights.dao.stubs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
-
 import fr.cnes.regards.framework.test.repository.RepositoryStub;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;

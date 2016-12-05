@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -229,6 +230,26 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultGet(apiRolesUsers, expectations, "TODO Error message", roleTest.getId());
+    }
+
+    /**
+     *
+     * Check hierachy of roles
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check hierachy of roles")
+    public void retrieveInheritedRoles() {
+        final List<Role> roles = roleService.retrieveInheritedRoles(publicRole);
+        // Number of roles should be all Default roles except PUBLIC plus the default ROLE Create for those tests.
+        Assert.assertTrue(roles.size() == ((DefaultRole.values().length - 1) + 1));
+        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));
+        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.PROJECT_ADMIN.toString())));
+        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.INSTANCE_ADMIN.toString())));
+        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.REGISTERED_USER.toString())));
+        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DEFAULT_ROLE.toString())));
     }
 
     @Override

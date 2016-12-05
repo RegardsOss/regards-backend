@@ -18,6 +18,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
 import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
@@ -90,13 +92,37 @@ public class JpaTenantConnectionConfiguration {
      *
      * Stub administration client
      *
-     * @return IProjectsClient
+     * @return {@link IProjectsClient}
      * @since 1.0-SNAPSHOT
      */
     @Bean
     @Primary
     public IRolesClient roleClient() {
         return new RolesFallback();
+    }
+
+    /**
+     *
+     * Mock AMQP Publisher
+     *
+     * @return {@link IPublisher}
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    IPublisher publisher() {
+        return Mockito.mock(IPublisher.class);
+    }
+
+    /**
+     *
+     * Mock AMQP Subscriber
+     *
+     * @return {@link ISubscriber}
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    ISubscriber subsriber() {
+        return Mockito.mock(ISubscriber.class);
     }
 
     /**

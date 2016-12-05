@@ -228,4 +228,37 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         roles = pRoles;
     }
 
+    /**
+     *
+     * Add the given role to the authorized roles to access the current resource
+     *
+     * @param pRole
+     *            {@link Role}
+     * @since 1.0-SNAPSHOT
+     */
+    public void addRole(final Role pRole) {
+        if (roles == null) {
+            roles = new ArrayList<>();
+        }
+        if (!roles.contains(pRole)) {
+            roles.add(pRole);
+        }
+    }
+
+    /**
+     *
+     * Add the given roles to the authorized roles to access the current resource
+     *
+     * @param pRole
+     *            Array of {@link Role}
+     * @since 1.0-SNAPSHOT
+     */
+    public void addRoles(final List<Role> pInheritedRoles) {
+        if (pInheritedRoles != null) {
+            for (final Role role : pInheritedRoles) {
+                this.addRole(role);
+            }
+        }
+    }
+
 }

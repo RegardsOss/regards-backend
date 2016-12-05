@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -65,9 +66,12 @@ public class RolesController {
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of roles", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<Role>>> retrieveRoleList() {
+    public ResponseEntity<List<Resource<RoleDTO>>> retrieveRoleList() {
         final List<Role> roles = roleService.retrieveRoleList();
-        final List<Resource<Role>> resources = roles.stream().map(r -> new Resource<>(r)).collect(Collectors.toList());
+        final List<RoleDTO> rolesDTO = new ArrayList<>();
+        roles.forEach(r -> rolesDTO.add(new RoleDTO(r)));
+        final List<Resource<RoleDTO>> resources = rolesDTO.stream().map(r -> new Resource<>(r))
+                .collect(Collectors.toList());
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 

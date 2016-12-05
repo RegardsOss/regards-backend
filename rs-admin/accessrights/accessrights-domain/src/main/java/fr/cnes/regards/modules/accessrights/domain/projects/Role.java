@@ -64,7 +64,7 @@ public class Role implements IIdentifiable<Long> {
      * <p/>
      * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasParentOrPublic} annotation.
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "parent_role_id", foreignKey = @ForeignKey(name = "FK_ROLE_PARENT_ROLE"))
     private Role parentRole;
 
@@ -256,6 +256,26 @@ public class Role implements IIdentifiable<Long> {
      */
     public void setId(final Long pId) {
         id = pId;
+    }
+
+    @Override
+    public int hashCode() {
+        if (this.id != null) {
+            return this.id.hashCode();
+        } else
+            if (this.name != null) {
+                return this.name.hashCode();
+            } else {
+                return 0;
+            }
+    }
+
+    @Override
+    public boolean equals(final Object pObj) {
+        if (pObj instanceof Role) {
+            return this.hashCode() == pObj.hashCode();
+        }
+        return false;
     }
 
 }

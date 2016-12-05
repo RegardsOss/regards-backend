@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -30,6 +31,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.stubs.ResourcesAccessRepositoryStub;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.accessrights.service.resources.ResourcesService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
@@ -82,6 +84,7 @@ public class ResourcesServiceTest {
         discoveryClientMock = Mockito.mock(DiscoveryClient.class);
 
         roleServiceMock = Mockito.mock(IRoleService.class);
+        Mockito.stub(roleServiceMock.retrieveInheritedRoles(Mockito.any(Role.class))).toReturn(new ArrayList<>());
 
         tenantResolverMock = Mockito.mock(ITenantResolver.class);
         final Set<String> tenants = new HashSet<>();
@@ -151,7 +154,9 @@ public class ResourcesServiceTest {
 
         for (final ResourcesAccess resource : resourcesService.retrieveRessources()) {
             Assert.assertTrue(!resource.getRoles().isEmpty());
-            Assert.assertTrue(resource.getRoles().get(0).getName().equals(DefaultRole.ADMIN.toString()));
+            final Optional<Role> found = resource.getRoles().stream()
+                    .filter(r -> r.getName().equals(DefaultRole.ADMIN.toString())).findFirst();
+            Assert.assertTrue(found.isPresent());
         }
 
     }

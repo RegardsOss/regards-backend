@@ -6,7 +6,6 @@ package fr.cnes.regards.microservices.administration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +19,10 @@ import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.JwtTokenUtils;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
 
 /**
  *
@@ -96,18 +95,13 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     public List<RoleAuthority> getRoleAuthorities() {
         final List<RoleAuthority> roleAuths = new ArrayList<>();
 
-        // Execute role request with Sys role
-        final Function<String, ResponseEntity<List<Resource<Role>>>> retreiveRole = JwtTokenUtils
-                .asSafeCallableOnRole(() -> roleClient.retrieveRoleList(), jwtService);
-
-        final ResponseEntity<List<Resource<Role>>> result = retreiveRole
-                .apply(RoleAuthority.getSysRole(microserviceName));
+        final ResponseEntity<List<Resource<RoleDTO>>> result = roleClient.retrieveRoleList();
 
         if (result.getStatusCode().equals(HttpStatus.OK)) {
-            final List<Resource<Role>> body = result.getBody();
+            final List<Resource<RoleDTO>> body = result.getBody();
             if (body != null) {
-                final List<Role> roles = HateoasUtils.unwrapList(body);
-                for (final Role role : roles) {
+                final List<RoleDTO> roles = HateoasUtils.unwrapList(body);
+                for (final RoleDTO role : roles) {
                     roleAuths.add(createRoleAuthority(role));
                 }
             }
@@ -124,7 +118,7 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
      * @return {@link RoleAuthority}
      * @since 1.0-SNAPSHOT
      */
-    private RoleAuthority createRoleAuthority(final Role pRole) {
+    private RoleAuthority createRoleAuthority(final RoleDTO pRole) {
         final RoleAuthority roleAuth = new RoleAuthority(pRole.getName());
         roleAuth.setAuthorizedIpAdresses(pRole.getAuthorizedAddresses());
         boolean access = pRole.isCorsRequestsAuthorized();
