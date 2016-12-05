@@ -24,8 +24,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.gson.annotations.Expose;
-
+import fr.cnes.regards.framework.gson.annotation.GSonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -41,6 +40,7 @@ import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
  * endpoint resource.
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
 @Entity(name = "T_RESOURCES_ACCESS")
@@ -85,15 +85,16 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     private HttpVerb verb;
 
     /**
-     * List of authroized roles to access the resource
+     * List of authorized roles to access the resource
      */
+    // @Expose(serialize = false, deserialize = false)
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "TA_RESOURCES_ROLES",
             joinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID",
                     foreignKey = @javax.persistence.ForeignKey(name = "FK_RESOURCES_ROLES")),
             inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID",
                     foreignKey = @javax.persistence.ForeignKey(name = "FK_ROLES_RESOURCES")))
-    @Expose(serialize = false, deserialize = false)
+    @GSonIgnore
     private List<Role> roles = new ArrayList<>();
 
     public ResourcesAccess() {
@@ -137,8 +138,6 @@ public class ResourcesAccess implements IIdentifiable<Long> {
      *
      * Convert a {@link ResourcesAccess} object to a {@link ResourceMapping} Object
      *
-     * @param pResourcesAccess
-     *            Object to convert
      * @return {@link ResourceMapping}
      * @since 1.0-SNAPSHOT
      */

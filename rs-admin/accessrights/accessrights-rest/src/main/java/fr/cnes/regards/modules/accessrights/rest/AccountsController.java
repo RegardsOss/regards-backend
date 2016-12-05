@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -79,7 +80,14 @@ public class AccountsController implements IResourceController<Account> {
     private IAccountSettingsService accountSettingsService;
 
     /**
-     * Use this to publish events
+     * <<<<<<< HEAD Root admin user login
+     */
+    @Value("${regards.accounts.root.user.login}")
+    private String rootAdminUserLogin;
+
+    /*
+     * 
+     * ======= >>>>>>> 5a86b98d629f0fb8ce6e617a318d92274bc1f505 Use this to publish events
      */
     @Autowired
     private ApplicationEventPublisher eventPublisher;
@@ -322,8 +330,10 @@ public class AccountsController implements IResourceController<Account> {
             resourceService.addLink(resource, this.getClass(), "updateAccount", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
                                     MethodParamFactory.build(Account.class));
-            resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
-                                    MethodParamFactory.build(Long.class, pElement.getId()));
+            if (!pElement.getEmail().equals(rootAdminUserLogin)) {
+                resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
+                                        MethodParamFactory.build(Long.class, pElement.getId()));
+            }
             resourceService.addLink(resource, this.getClass(), "retrieveAccountList", LinkRels.LIST);
             resourceService.addLink(resource, this.getClass(), "retrieveAccountSettings", "getAccountSettings");
             resourceService.addLink(resource, this.getClass(), "updateAccountSetting", "setAccountSetting",

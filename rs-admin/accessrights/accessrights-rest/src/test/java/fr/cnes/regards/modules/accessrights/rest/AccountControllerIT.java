@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -50,6 +52,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
      * A dummy account
      */
     private static Account account;
+
+    private static Account accountInstance;
 
     /**
      * Dummy email
@@ -101,6 +105,9 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Value("${root.admin.password:admin}")
     private String rootAdminPassword;
 
+    @Value("${regards.accounts.root.user.login}")
+    private String rootAdminInstanceLogin;
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -118,6 +125,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         // And start with a single account for convenience
         account = accountRepository.save(new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD));
+        accountInstance = accountRepository.save(new Account(rootAdminInstanceLogin, FIRST_NAME, LAST_NAME, PASSWORD));
     }
 
     @Test
@@ -130,8 +138,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    @Requirement("?")
-    @Purpose("Check that the system allows to retrieve account settings for an instance.")
     public void getSettings() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -264,6 +270,36 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());
         performDefaultDelete(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    public void getAccountUser() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.delete", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.self", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.update", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.delete.href", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.self.href", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.update.href", Matchers.notNullValue()));
+
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    public void getAccountInstance() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$._links", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.self", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.update", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.self.href", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links.update.href", Matchers.notNullValue()));
+        // expectations.add(MockMvcResultMatchers.jsonPath("$._links",
+        // Matchers.not(Matchers.containsString(LinkRels.DELETE))));
+
+        performDefaultGet(apiAccountId, expectations, errorMessage, accountInstance.getId());
     }
 
     @Override

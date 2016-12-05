@@ -54,7 +54,7 @@ public class VerificationToken {
     private Account account;
 
     /**
-     * The compouted expiry date based on EXPIRATION
+     * The computed expiry date based on EXPIRATION
      */
     private Date expiryDate;
 
