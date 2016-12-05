@@ -149,7 +149,7 @@ public class CorsFilterTest {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
         }
-        if (mockedResponse.getStatus() == HttpStatus.OK.value()) {
+        if ((mockedResponse.getHeader(CorsFilter.ALLOW_ORIGIN) != null)) {
             Assert.fail("Cors requests access is denied for the given role.");
         }
     }
