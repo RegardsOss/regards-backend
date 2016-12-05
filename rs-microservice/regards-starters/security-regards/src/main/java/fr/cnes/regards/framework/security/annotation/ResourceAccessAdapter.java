@@ -78,7 +78,7 @@ public class ResourceAccessAdapter extends TypeAdapter<ResourceAccess> {
      * @return {@link ResourceAccess}
      * @since 1.0-SNAPSHOT
      */
-    public static ResourceAccess createResourceAccess(final String pDescription, final String pDefaultRole) {
+    public static ResourceAccess createResourceAccess(final String pDescription, final DefaultRole pDefaultRole) {
         final Map<String, Object> attributs = new HashMap<>();
         if (pDescription != null) {
             attributs.put(DESCRIPTION_LABEL, pDescription);
