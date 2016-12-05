@@ -3,6 +3,9 @@
  */
 package fr.cnes.regards.framework.test.integration;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.Assert;
@@ -16,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -23,12 +27,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.DefaultTestConfiguration;
 import fr.cnes.regards.framework.security.domain.HttpConstants;
@@ -90,7 +96,6 @@ public abstract class AbstractRegardsIT {
      */
     protected static final String URL_PATH_SEPARATOR = "/";
 
-    // CHECKSTYLE:OFF
     /**
      * JWT service
      */
@@ -102,13 +107,15 @@ public abstract class AbstractRegardsIT {
      */
     @Autowired
     protected MethodAuthorizationService authService;
-    // CHECKSTYLE:ON
+
+    @Autowired
+    protected GsonBuilder gsonBuilder;
 
     /**
      * Mock for MVC testing
      */
     @Autowired
-    private MockMvc mvc;
+    protected MockMvc mvc;
 
     protected abstract Logger getLogger();
 
@@ -145,6 +152,16 @@ public abstract class AbstractRegardsIT {
                               pUrlVariables);
     }
 
+    // File upload
+
+    protected ResultActions performFileUpload(final String pUrlTemplate, final String pAuthenticationToken,
+            final Path pFilePath, final List<ResultMatcher> pMatchers, final String pErrorMessage,
+            final Object... pUrlVariables) {
+        final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(pAuthenticationToken, pFilePath,
+                                                                                        pUrlTemplate, pUrlVariables);
+        return performRequest(requestBuilder, pMatchers, pErrorMessage);
+    }
+
     // Automatic default security management methods
 
     protected ResultActions performDefaultGet(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
@@ -175,6 +192,14 @@ public abstract class AbstractRegardsIT {
             final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.DELETE);
         return performDelete(pUrlTemplate, jwt, pMatchers, pErrorMessage, pUrlVariables);
+    }
+
+    protected ResultActions performDefaultFileUpload(final String pUrlTemplate, final Path pFilePath,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
+        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
+        final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, pFilePath, pUrlTemplate,
+                                                                                        pUrlVariables);
+        return performRequest(requestBuilder, pMatchers, pErrorMessage);
     }
 
     /**
@@ -253,33 +278,65 @@ public abstract class AbstractRegardsIT {
         } catch (final Exception e) {
             // CHECKSTYLE:ON
             getLogger().error(pErrorMessage, e);
-            throw new AssertionError(pErrorMessage + ": " + e);
+            throw new AssertionError(pErrorMessage, e);
         }
     }
 
     protected MockHttpServletRequestBuilder getRequestBuilder(final String pAuthToken, final HttpMethod pHttpMethod,
             final String pUrlTemplate, final Object... pUrlVars) {
-        return MockMvcRequestBuilders.request(pHttpMethod, pUrlTemplate, pUrlVars)
-                .header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + pAuthToken);
+
+        final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(pHttpMethod, pUrlTemplate,
+                                                                                            pUrlVars);
+        addSecurityHeader(requestBuilder, pAuthToken);
+        return requestBuilder;
     }
 
     /**
-     * Extract payload data from response
+     * Build a multipart request builder based on file {@link Path}
+     *
+     * @param pAuthToken
+     *            authorization token
+     * @param pFilePath
+     *            {@link Path}
+     * @param pUrlTemplate
+     *            URL template
+     * @param pUrlVars
+     *            URL vars
+     * @return {@link MockMultipartHttpServletRequestBuilder}
+     */
+    protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(final String pAuthToken,
+            final Path pFilePath, final String pUrlTemplate, final Object... pUrlVars) {
+
+        try {
+            final MockMultipartFile file = new MockMultipartFile("file", Files.newInputStream(pFilePath));
+            final MockMultipartHttpServletRequestBuilder multipartRequestBuilder = MockMvcRequestBuilders
+                    .fileUpload(pUrlTemplate, pUrlVars).file(file);
+            addSecurityHeader(multipartRequestBuilder, pAuthToken);
+            return multipartRequestBuilder;
+        } catch (IOException e) {
+            final String message = String.format("Cannot create input stream for file %s", pFilePath.toString());
+            getLogger().error(message, e);
+            throw new AssertionError(message, e);
+        }
+    }
+
+    protected void addSecurityHeader(MockHttpServletRequestBuilder pRequestBuilder, final String pAuthToken) {
+        pRequestBuilder.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + pAuthToken);
+    }
+
+    /**
+     * Extract payload data from response optionally checking media type
      *
      * @param pResultActions
      *            results
      * @return payload data
      */
     protected String payload(final ResultActions pResultActions) {
+
         Assert.assertNotNull(pResultActions);
         final MockHttpServletResponse response = pResultActions.andReturn().getResponse();
         try {
-            final MediaType current = MediaType.parseMediaType(response.getContentType());
-            if (current.getSubtype().contains("json")) {
-                return response.getContentAsString();
-            } else {
-                throw new AssertionError("Invalid media type " + current);
-            }
+            return response.getContentAsString();
             // CHECKSTYLE:OFF
         } catch (final Exception e) {
             // CHECKSTYLE:ON
@@ -288,12 +345,28 @@ public abstract class AbstractRegardsIT {
         }
     }
 
+    /**
+     * Check response media type
+     *
+     * @param pResultActions
+     *            results
+     * @param pMediaType
+     *            {@link MediaType}
+     */
+    protected void assertMediaType(final ResultActions pResultActions, MediaType pMediaType) {
+        Assert.assertNotNull(pResultActions);
+        Assert.assertNotNull(pMediaType);
+        final MockHttpServletResponse response = pResultActions.andReturn().getResponse();
+        final MediaType current = MediaType.parseMediaType(response.getContentType());
+        Assert.assertEquals(pMediaType, current);
+    }
+
     // CHECKSTYLE:OFF
     protected String gson(final Object pObject) {
         if (pObject instanceof String) {
             return (String) pObject;
         }
-        final Gson gson = new Gson();
+        final Gson gson = gsonBuilder.create();
         return gson.toJson(pObject);
     }
     // CHECKSTYLE:ON
@@ -343,8 +416,13 @@ public abstract class AbstractRegardsIT {
      * @return security token to authenticate user
      */
     protected String manageDefaultSecurity(final String pUrlPath, final RequestMethod pMethod) {
+        
+        String path = pUrlPath;
+        if (pUrlPath.contains("?")){
+            path = path.substring(0, pUrlPath.indexOf("?"));
+        }
         final String jwt = generateToken(DEFAULT_USER_EMAIL, DEFAULT_USER, DEFAULT_ROLE);
-        setAuthorities(pUrlPath, pMethod, DEFAULT_ROLE);
+        setAuthorities(path, pMethod, DEFAULT_ROLE);
         return jwt;
     }
 

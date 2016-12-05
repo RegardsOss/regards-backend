@@ -21,12 +21,17 @@ import javax.validation.Payload;
 @Constraint(validatedBy = PastOrNowValidator.class)
 @Documented
 /**
- * @author svissier
+ * @author Sylvain Vissiere-Guerinet
  *
  */
 public @interface PastOrNow {
 
-    String message() default "{fr.cnes.modules.core.validation.PastOrNow." + "message}";
+    /**
+     * stored as a constant because could not use this.getClass().getName()
+     */
+    static final String CLASS_NAME = "fr.cnes.regards.framework.jpa.validator.PastOrNow.";
+
+    String message() default "{" + CLASS_NAME + "message}";
 
     Class<?>[] groups() default {};
 

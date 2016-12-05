@@ -20,7 +20,7 @@ import fr.cnes.regards.modules.jobs.service.stub.JobInfoSystemServiceStub;
 import fr.cnes.regards.modules.jobs.service.systemservice.IJobInfoSystemService;
 
 /**
- *
+ * @author Léo Mieulet
  */
 @Configuration
 @EnableAutoConfiguration

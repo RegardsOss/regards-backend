@@ -1,17 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * LICENSE_PLACEHOLDER
  */
 // CHECKSTYLE:OFF
 /**
@@ -30,7 +18,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.internal.Streams;
@@ -66,9 +56,22 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     private final String discriminatorFieldName;
 
     /**
+     * default discriminator field name, only used if discriminatorFieldName is empty
+     */
+    private static final String DEFAULT_DISCRIMINATOR_FIELD_NAME = "@type@";
+
+    /**
      * Map discriminator value to its corresponding explicit type
      */
     private final Map<String, Class<?>> discriminatorToSubtype = new LinkedHashMap<String, Class<?>>();
+
+    /**
+     * Creates a new runtime type adapter using for {@code baseType} using {@code
+     * typeFieldName} as the type field name. Type field names are case sensitive.
+     */
+    public static <T> PolymorphicTypeAdapterFactory<T> of(Class<T> baseType, String typeFieldName) {
+        return new PolymorphicTypeAdapterFactory<T>(baseType, typeFieldName);
+    }
 
     protected PolymorphicTypeAdapterFactory(Class<E> pBaseType, String pDiscriminatorFieldName) {
         this.baseType = pBaseType;
@@ -85,7 +88,7 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
      * @param pDiscriminatorFieldValue
      *            field value
      */
-    protected void registerSubtype(Class<? extends E> pType, String pDiscriminatorFieldValue) {
+    public void registerSubtype(Class<? extends E> pType, String pDiscriminatorFieldValue) {
         assertNotNull(pType, "Sub type is required.");
         assertNotNull(pDiscriminatorFieldValue, "Discriminator field value is required.");
 
@@ -104,8 +107,12 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
      * @param pEnum
      *            enum value
      */
-    protected void registerSubtype(Class<? extends E> pType, Enum<?> pEnum) {
+    public void registerSubtype(Class<? extends E> pType, Enum<?> pEnum) {
         registerSubtype(pType, pEnum.toString());
+    }
+
+    public void registerSubtype(Class<? extends E> pType) {
+        registerSubtype(pType, pType.getCanonicalName());
     }
 
     // CHECKSTYLE:OFF
@@ -143,7 +150,36 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
                     throw new JsonParseException(
                             "Cannot serialize " + srcType.getName() + "; did you forget to register a subtype?");
                 }
-                Streams.write(delegate.toJsonTree(pValue), pOut);
+                JsonElement cloneToWrite = cloneForWrite(delegate, pValue);
+
+                // Streams.write(delegate.toJsonTree(pValue), pOut);
+                Streams.write(cloneToWrite, pOut);
+            }
+
+            /**
+             * clone pValue and add a type field(@type@) only if needed
+             *
+             * @param delegate
+             * @param pValue
+             * @return JsonObject fully qualified for correct polymorphic deserialization from json
+             */
+            private JsonObject cloneForWrite(TypeAdapter<T> delegate, T pValue) {
+                JsonObject jsonObject = delegate.toJsonTree(pValue).getAsJsonObject();
+                if (discriminatorFieldName.isEmpty()) {
+                    final Class<?> srcType = pValue.getClass();
+                    final String label = pValue.getClass().getCanonicalName();
+                    if (jsonObject.has(DEFAULT_DISCRIMINATOR_FIELD_NAME)) {
+                        throw new JsonParseException("cannot serialize " + srcType.getName()
+                                + " because it already defines a field named " + DEFAULT_DISCRIMINATOR_FIELD_NAME);
+                    }
+                    JsonObject clone = new JsonObject();
+                    clone.add(DEFAULT_DISCRIMINATOR_FIELD_NAME, new JsonPrimitive(label));
+                    for (Map.Entry<String, JsonElement> e : jsonObject.entrySet()) {
+                        clone.add(e.getKey(), e.getValue());
+                    }
+                    return clone;
+                }
+                return jsonObject;
             }
 
             /**
@@ -152,10 +188,19 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
             @Override
             public T read(JsonReader pIn) throws IOException {
                 final JsonElement jsonElement = Streams.parse(pIn);
-                final JsonElement discriminatorEl = jsonElement.getAsJsonObject().get(discriminatorFieldName);
-                if (discriminatorEl == null) {
-                    throw new JsonParseException("Cannot deserialize " + baseType
-                            + " because it does not define a field named " + discriminatorFieldName);
+                JsonElement discriminatorEl;
+                if (discriminatorFieldName.isEmpty()) {
+                    discriminatorEl = jsonElement.getAsJsonObject().remove(DEFAULT_DISCRIMINATOR_FIELD_NAME);
+                    if (discriminatorEl == null) {
+                        throw new JsonParseException("Cannot deserialize " + baseType
+                                + " because it does not define a field named " + DEFAULT_DISCRIMINATOR_FIELD_NAME);
+                    }
+                } else {
+                    discriminatorEl = jsonElement.getAsJsonObject().get(discriminatorFieldName);
+                    if (discriminatorEl == null) {
+                        throw new JsonParseException("Cannot deserialize " + baseType
+                                + " because it does not define a field named " + discriminatorFieldName);
+                    }
                 }
                 final String discriminator = discriminatorEl.getAsString();
                 @SuppressWarnings("unchecked") // registration requires that subtype extends T
@@ -164,7 +209,16 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
                     throw new JsonParseException("Cannot deserialize " + baseType + " subtype named " + discriminator
                             + "; did you forget to register a subtype?");
                 }
-                return delegate.fromJsonTree(jsonElement);
+                JsonObject toBeRead = readFrom(jsonElement);
+                return delegate.fromJsonTree(toBeRead);
+            }
+
+            private JsonObject readFrom(JsonElement pJsonElement) {
+                final JsonObject jsonObject = pJsonElement.getAsJsonObject();
+                if (discriminatorFieldName.isEmpty()) {
+
+                }
+                return jsonObject;
             }
         }.nullSafe();
     }
