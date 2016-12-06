@@ -33,9 +33,14 @@ public class TemplateServiceConfiguration {
     private static final String EMAIL_VALIDATION_TEMPLATE_CODE = "emailValidationTemplate";
 
     /**
-     * The passwor reset template code
+     * The password reset template code
      */
     private static final String MDP_RESET_TEMPLATE = "passwordResetTemplate";
+
+    /**
+     * The account unlock template code
+     */
+    private static final String ACCOUNT_UNLOCK_TEMPLATE = "accountUnlockTemplate";
 
     /**
      * The email validation template as html
@@ -48,6 +53,12 @@ public class TemplateServiceConfiguration {
      */
     @Value("classpath:password-reset-template.html")
     private Resource passwordResetTemplate;
+
+    /**
+     * The password reset template as html
+     */
+    @Value("classpath:account-unlock-template.html")
+    private Resource accountUnlockTemplate;
 
     @Bean
     public Template emailValidationTemplate() throws IOException {
@@ -64,6 +75,15 @@ public class TemplateServiceConfiguration {
             final String text = inputStreamToString(is);
             final Map<String, String> dataStructure = new HashMap<>();
             return new Template(MDP_RESET_TEMPLATE, text, dataStructure, "Password Reset");
+        }
+    }
+
+    @Bean
+    public Template accountUnlockTemplate() throws IOException {
+        try (InputStream is = passwordResetTemplate.getInputStream()) {
+            final String text = inputStreamToString(is);
+            final Map<String, String> dataStructure = new HashMap<>();
+            return new Template(ACCOUNT_UNLOCK_TEMPLATE, text, dataStructure, "Account Unlock");
         }
     }
 
