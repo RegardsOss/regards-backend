@@ -38,7 +38,7 @@ public class AccountsFallback implements IAccountsClient {
     /**
      * Common error message to log
      */
-    private static final String fallBackErrorMessage = "RS-ADMIN /accounts request error. Fallback.";
+    private static final String FALLBACK_ERROR_MESSAGE = "RS-ADMIN /accounts request error. Fallback.";
 
     /*
      * (non-Javadoc)
@@ -47,7 +47,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<List<Resource<Account>>> retrieveAccountList() {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -59,7 +59,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<Resource<Account>> createAccount(final Account pNewAccount) {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -70,7 +70,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<Resource<Account>> retrieveAccount(final Long pAccountId) {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -82,7 +82,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<Void> updateAccount(final Long pAccountId, final Account pUpdatedAccount) {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -93,7 +93,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<Void> removeAccount(final Long pAccountId) {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -105,7 +105,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<Void> unlockAccount(final Long pAccountId, final String pUnlockCode) {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -118,7 +118,7 @@ public class AccountsFallback implements IAccountsClient {
     @Override
     public ResponseEntity<Void> changeAccountPassword(final Long pAccountId, final String pResetCode,
             final String pNewPassword) {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -130,7 +130,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<Void> sendAccountCode(final String pEmail, final CodeType pType) {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -141,7 +141,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<Resource<AccountSettings>> retrieveAccountSettings() {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -154,7 +154,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<Void> updateAccountSetting(final AccountSettings pUpdatedAccountSetting) {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -166,7 +166,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<AccountStatus> validatePassword(final String pLogin, final String pPassword) {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -177,7 +177,7 @@ public class AccountsFallback implements IAccountsClient {
      */
     @Override
     public ResponseEntity<Resource<Account>> retrieveAccounByEmail(final String pAccountEmail) {
-        LOG.error(fallBackErrorMessage);
+        LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 

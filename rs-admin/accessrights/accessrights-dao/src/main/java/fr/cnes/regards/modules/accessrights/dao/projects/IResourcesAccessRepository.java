@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.accessrights.dao.projects;
 import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.PagingAndSortingRepository;
 
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -28,14 +27,14 @@ public interface IResourcesAccessRepository extends CrudRepository<ResourcesAcce
      *
      * @param pMicroservice
      *            Microservice name who own the resource
-     * @param resourceFullPath
+     * @param pResourceFullPath
      *            resource full path
      * @param pVerb
      *            HttpVerb of the resource
      * @return ResourcesAccess
      * @since 1.0-SNAPSHOT
      */
-    ResourcesAccess findOneByMicroserviceAndResourceAndVerb(String pMicroservice, String resourceFullPath,
+    ResourcesAccess findOneByMicroserviceAndResourceAndVerb(String pMicroservice, String pResourceFullPath,
             HttpVerb pVerb);
 
     /**
@@ -43,6 +42,7 @@ public interface IResourcesAccessRepository extends CrudRepository<ResourcesAcce
      * Retrieve all resource for a given microservice
      *
      * @param pMicroservice
+     *            Microservice name who own the resource
      * @return List<ResourcesAccess>
      * @since 1.0-SNAPSHOT
      */
