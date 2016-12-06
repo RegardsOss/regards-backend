@@ -80,15 +80,11 @@ public class AccountsController implements IResourceController<Account> {
     private IAccountSettingsService accountSettingsService;
 
     /**
-     * <<<<<<< HEAD Root admin user login
+     * Root admin user login
      */
     @Value("${regards.accounts.root.user.login}")
     private String rootAdminUserLogin;
 
-    /*
-     * 
-     * ======= >>>>>>> 5a86b98d629f0fb8ce6e617a318d92274bc1f505 Use this to publish events
-     */
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 

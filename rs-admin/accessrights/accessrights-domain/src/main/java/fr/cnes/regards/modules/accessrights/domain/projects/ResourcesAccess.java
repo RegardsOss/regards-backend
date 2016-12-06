@@ -84,7 +84,6 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     /**
      * List of authorized roles to access the resource
      */
-    // @Expose(serialize = false, deserialize = false)
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "TA_RESOURCES_ROLES",
             joinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID",

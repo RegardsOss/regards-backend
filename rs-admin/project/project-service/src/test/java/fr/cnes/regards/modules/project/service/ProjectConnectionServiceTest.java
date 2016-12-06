@@ -142,7 +142,7 @@ public class ProjectConnectionServiceTest {
         Project project = null;
         try {
             project = projectService.retrieveProject(PROJECT_TEST_1);
-        } catch (final EntityException e) {
+        } catch (final ModuleException e) {
             Assert.fail(e.getMessage());
         }
         final ProjectConnection connection = new ProjectConnection(600L, project, "microservice-test",

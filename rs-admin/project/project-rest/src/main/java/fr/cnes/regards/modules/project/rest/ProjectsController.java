@@ -24,8 +24,8 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -106,7 +106,7 @@ public class ProjectsController implements IResourceController<Project> {
      * @param pNewProject
      *            new Project to create
      * @return Created project
-     * @throws EntityException
+     * @throws ModuleException
      *             If Project already exists for the given name
      * @since 1.0-SNAPSHOT
      */
@@ -114,7 +114,7 @@ public class ProjectsController implements IResourceController<Project> {
     @ResponseBody
     @ResourceAccess(description = "create a new project", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Project>> createProject(@Valid @RequestBody final Project pNewProject)
-            throws EntityException {
+            throws ModuleException {
 
         final Project project = projectService.createProject(pNewProject);
         return new ResponseEntity<>(toResource(project), HttpStatus.CREATED);
@@ -127,7 +127,7 @@ public class ProjectsController implements IResourceController<Project> {
      * @param pProjectName
      *            Project name
      * @return Project
-     * @throws EntityException
+     * @throws ModuleException
      *             {@link EntityNotFoundException} project does not exists
      * @since 1.0-SNAPSHOT
      */
@@ -135,7 +135,7 @@ public class ProjectsController implements IResourceController<Project> {
     @ResponseBody
     @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName)
-            throws EntityException {
+            throws ModuleException {
 
         final Project project = projectService.retrieveProject(pProjectName);
         return ResponseEntity.ok(toResource(project));
@@ -149,6 +149,8 @@ public class ProjectsController implements IResourceController<Project> {
      *            project name
      * @param pProjectToUpdate
      *            project to update
+     * @throws ModuleException
+     *             {@link EntityNotFoundException} project does not exists
      * @return Updated Project
      * @since 1.0-SNAPSHOT
      */
@@ -156,8 +158,7 @@ public class ProjectsController implements IResourceController<Project> {
     @ResponseBody
     @ResourceAccess(description = "update the project project_name", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") final String pProjectName,
-            @Valid @RequestBody final Project pProjectToUpdate) throws EntityException {
-
+            @Valid @RequestBody final Project pProjectToUpdate) throws ModuleException {
         final Project project = projectService.updateProject(pProjectName, pProjectToUpdate);
         return ResponseEntity.ok(toResource(project));
     }
@@ -168,6 +169,8 @@ public class ProjectsController implements IResourceController<Project> {
      *
      * @param pProjectName
      *            Project name to delete
+     * @throws ModuleException
+     *             {@link EntityNotFoundException} project does not exists
      * @return Void
      * @since 1.0-SNAPSHOT
      */
@@ -175,10 +178,9 @@ public class ProjectsController implements IResourceController<Project> {
     @ResponseBody
     @ResourceAccess(description = "remove the project project_name", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> deleteProject(@PathVariable("project_name") final String pProjectName)
-            throws EntityException {
-
+            throws ModuleException {
         projectService.deleteProject(pProjectName);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.noContent().build();
     }
 
     @Override
