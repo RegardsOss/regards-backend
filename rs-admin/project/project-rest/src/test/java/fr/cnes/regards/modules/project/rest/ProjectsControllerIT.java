@@ -32,12 +32,19 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
+@InstanceTransactional
 public class ProjectsControllerIT extends AbstractRegardsIT {
 
     private final static Logger LOG = LoggerFactory.getLogger(ProjectsControllerIT.class);
 
+    /**
+     * Instance admin token
+     */
     private String instanceAdmintoken;
 
+    /**
+     * Public Token
+     */
     private String publicToken;
 
     /**
@@ -70,7 +77,6 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_INST_130")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to project resources and returned Hateoas links")
-    @InstanceTransactional
     @Test
     public void retrievePublicProjectsTest() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -87,7 +93,6 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_INST_130")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to project resources and returned Hateoas links")
-    @InstanceTransactional
     @Test
     public void retrieveAllProjectsTest() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -104,7 +109,6 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to project resource and Hateoas returned links")
-    @InstanceTransactional
     @Test
     public void retrieveProjectTest() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -121,7 +125,6 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access for project creation and Hateoas returned links")
-    @InstanceTransactional
     @Test
     public void createProjectTest() {
 
@@ -140,7 +143,6 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access for project update and Hateoas returned links")
-    @InstanceTransactional
     @Test
     public void updateProjectTest() {
         final Project project = projectRepo.findOneByName("test1");

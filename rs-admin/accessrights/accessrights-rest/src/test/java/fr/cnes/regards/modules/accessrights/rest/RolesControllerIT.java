@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -98,8 +99,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         // Init roles
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
-        List<ResourcesAccess> resourcesAccessPublic = new ArrayList<>();
-        ResourcesAccess aResourcesAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource",
+        final List<ResourcesAccess> resourcesAccessPublic = new ArrayList<>();
+        final ResourcesAccess aResourcesAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource",
                 HttpVerb.GET);
         aResourcesAccessPublic.setRoles(Arrays.asList(publicRole));
         resourcesAccessPublic.add(aResourcesAccessPublic);
@@ -109,10 +110,11 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         // Create a new Role
         roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
-        Role aNewRole = new Role(ROLE_TEST, publicRole);
-        List<ResourcesAccess> resourcesAccess = new ArrayList<>();
-        ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", HttpVerb.GET);
-        ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", HttpVerb.DELETE);
+        final Role aNewRole = new Role(ROLE_TEST, publicRole);
+        final List<ResourcesAccess> resourcesAccess = new ArrayList<>();
+        final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", HttpVerb.GET);
+        final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource",
+                HttpVerb.DELETE);
         aResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(0)));
         aResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(1)));
         bResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(0)));
@@ -259,6 +261,26 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultGet(apiRolesUsers, expectations, "TODO Error message", roleTest.getId());
+    }
+
+    /**
+     *
+     * Check hierachy of roles
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check hierachy of roles")
+    public void retrieveInheritedRoles() {
+        final List<Role> roles = roleService.retrieveInheritedRoles(publicRole);
+        // Number of roles should be all Default roles except PUBLIC plus the default ROLE Create for those tests.
+        Assert.assertTrue(roles.size() == ((DefaultRole.values().length - 1) + 1));
+        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));
+        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.PROJECT_ADMIN.toString())));
+        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.INSTANCE_ADMIN.toString())));
+        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.REGISTERED_USER.toString())));
+        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(ROLE_TEST.toString())));
     }
 
     @Override

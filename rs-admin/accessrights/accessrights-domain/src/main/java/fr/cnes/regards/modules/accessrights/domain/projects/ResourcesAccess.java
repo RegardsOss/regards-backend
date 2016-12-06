@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -27,6 +28,7 @@ import fr.cnes.regards.framework.gson.annotation.GSonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 
@@ -42,6 +44,7 @@ import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
  * @since 1.0-SNAPSHOT
  */
 @Entity(name = "T_RESOURCES_ACCESS")
+@EntityListeners(UpdateAuthoritiesListener.class)
 @SequenceGenerator(name = "resourcesAccessSequence", initialValue = 1, sequenceName = "SEQ_RESOURCES_ACCESS")
 public class ResourcesAccess implements IIdentifiable<Long> {
 
@@ -142,10 +145,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
                 ResourceAccessAdapter.createResourceAccess(this.getDescription(), null), this.getResource(),
                 RequestMethod.valueOf(this.getVerb().toString()));
 
-        this.getRoles().forEach(role -> {
-            final RoleLineageAssembler assembler = new RoleLineageAssembler();
-            assembler.of(role).get().forEach(r -> mapping.addAuthorizedRole(new RoleAuthority(r.getName())));
-        });
+        this.getRoles().forEach(role -> mapping.addAuthorizedRole(new RoleAuthority(role.getName())));
         return mapping;
     }
 
@@ -221,6 +221,39 @@ public class ResourcesAccess implements IIdentifiable<Long> {
 
     public void setRoles(final List<Role> pRoles) {
         roles = pRoles;
+    }
+
+    /**
+     *
+     * Add the given role to the authorized roles to access the current resource
+     *
+     * @param pRole
+     *            {@link Role}
+     * @since 1.0-SNAPSHOT
+     */
+    public void addRole(final Role pRole) {
+        if (roles == null) {
+            roles = new ArrayList<>();
+        }
+        if (!roles.contains(pRole)) {
+            roles.add(pRole);
+        }
+    }
+
+    /**
+     *
+     * Add the given roles to the authorized roles to access the current resource
+     *
+     * @param pRole
+     *            Array of {@link Role}
+     * @since 1.0-SNAPSHOT
+     */
+    public void addRoles(final List<Role> pInheritedRoles) {
+        if (pInheritedRoles != null) {
+            for (final Role role : pInheritedRoles) {
+                this.addRole(role);
+            }
+        }
     }
 
 }

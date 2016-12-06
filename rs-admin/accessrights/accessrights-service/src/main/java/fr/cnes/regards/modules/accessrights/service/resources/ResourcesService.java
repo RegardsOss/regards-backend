@@ -17,10 +17,15 @@ import org.springframework.stereotype.Service;
 
 import feign.FeignException;
 import fr.cnes.regards.client.core.TokenClientProvider;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.event.UpdateAuthoritiesEvent;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -73,13 +78,19 @@ public class ResourcesService implements IResourcesService {
     private final JWTService jwtService;
 
     /**
+     * AMQP Event publisher.
+     */
+    private final IPublisher eventPublisher;
+
+    /**
      * Tenant resolver to identify configured tenants
      */
     private final ITenantResolver tenantResolver;
 
     public ResourcesService(@Value("${spring.application.name}") final String pMicroserviceName,
             final DiscoveryClient pDiscoveryClient, final IResourcesAccessRepository pResourceAccessRepo,
-            final IRoleService pRoleService, final JWTService pJwtService, final ITenantResolver pTenantResolver) {
+            final IRoleService pRoleService, final JWTService pJwtService, final ITenantResolver pTenantResolver,
+            final IPublisher pEventPublisher) {
         super();
         microserviceName = pMicroserviceName;
         discoveryClient = pDiscoveryClient;
@@ -87,6 +98,7 @@ public class ResourcesService implements IResourcesService {
         roleService = pRoleService;
         jwtService = pJwtService;
         tenantResolver = pTenantResolver;
+        eventPublisher = pEventPublisher;
     }
 
     /**
@@ -165,7 +177,8 @@ public class ResourcesService implements IResourcesService {
         if (pResource.getResourceAccess() != null) {
             final String roleName = pResource.getResourceAccess().role().name();
             try {
-                roles.add(roleService.retrieveRole(roleName));
+                final Role role = roleService.retrieveRole(roleName);
+                roles.add(role);
             } catch (final EntityNotFoundException e) {
                 LOG.debug(e.getMessage(), e);
                 LOG.warn("Default role {} for resource {} does not exists.", roleName, defaultResource.getResource());
@@ -216,11 +229,44 @@ public class ResourcesService implements IResourcesService {
      */
     private List<ResourcesAccess> saveResources(final List<ResourcesAccess> pResourcesToSave) {
         final List<ResourcesAccess> results = new ArrayList<>();
+
+        // First Step is to calculate new associated roles for each resource
+        for (final ResourcesAccess resource : pResourcesToSave) {
+            calculateResourceInheritedRoles(resource);
+        }
+
         final Iterable<ResourcesAccess> savedResources = resourceAccessRepo.save(pResourcesToSave);
         if (savedResources != null) {
-            savedResources.forEach(r -> results.add(r));
+            savedResources.forEach(results::add);
+        }
+        try {
+            eventPublisher.publish(UpdateAuthoritiesEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
+                                   AmqpCommunicationTarget.EXTERNAL);
+        } catch (final RabbitMQVhostException e) {
+            LOG.error("Error publishing resources updates to all running microservices.");
+            LOG.error(e.getMessage(), e);
         }
         return results;
+    }
+
+    /**
+     *
+     * Method to update given resource roles with all inherited roles of each role.
+     *
+     * @param pResource
+     *            resource to update
+     * @since 1.0-SNAPSHOT
+     */
+    private void calculateResourceInheritedRoles(final ResourcesAccess pResource) {
+
+        final List<Role> inheritedRoles = new ArrayList<>();
+        for (final Role role : pResource.getRoles()) {
+            for (final Role inheritedRole : roleService.retrieveInheritedRoles(role)) {
+                inheritedRoles.add(inheritedRole);
+            }
+        }
+        pResource.addRoles(inheritedRoles);
+
     }
 
 }

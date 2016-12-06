@@ -19,7 +19,11 @@ public class NewProjectConnectionEvent {
     /**
      * The new project to manage
      */
-    private final ProjectConnection newProjectConnection;
+    private ProjectConnection newProjectConnection;
+
+    public NewProjectConnectionEvent() {
+        super();
+    }
 
     /**
      *
@@ -36,6 +40,10 @@ public class NewProjectConnectionEvent {
 
     public ProjectConnection getNewProjectConnection() {
         return newProjectConnection;
+    }
+
+    public void setNewProjectConnection(final ProjectConnection pNewProjectConnection) {
+        newProjectConnection = pNewProjectConnection;
     }
 
 }

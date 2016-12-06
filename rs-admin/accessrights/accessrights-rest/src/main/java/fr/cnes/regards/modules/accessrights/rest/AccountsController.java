@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.accountunlock.IAccountUnlockService;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -78,6 +79,9 @@ public class AccountsController implements IResourceController<Account> {
 
     @Autowired
     private IAccountSettingsService accountSettingsService;
+
+    @Autowired
+    private IAccountUnlockService accountUnlockService;
 
     /**
      * Root admin user login
@@ -193,6 +197,25 @@ public class AccountsController implements IResourceController<Account> {
             throws ModuleException {
         final Account account = accountService.retrieveAccount(pAccountId);
         accountWorkflowManager.deleteAccount(account);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Send to the user an email containing a code to unlock the account
+     *
+     * @param pId
+     *            The {@link Account}'s <code>id</code>
+     * @return void
+     * @throws EntityNotFoundException
+     */
+    @ResponseBody
+    @RequestMapping(value = "/{account_id}/accountUnlock", method = RequestMethod.GET)
+    @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<Void> sendAccountUnlockCode(@RequestParam("email") final Long pId,
+            final HttpServletRequest pRequest) throws EntityNotFoundException {
+        final Account account = accountService.retrieveAccount(pId);
+        final String appUrl = AppUrlBuilder.buildFrom(pRequest);
+        accountUnlockService.sendAccountUnlockEmail(account, appUrl);
         return ResponseEntity.noContent().build();
     }
 

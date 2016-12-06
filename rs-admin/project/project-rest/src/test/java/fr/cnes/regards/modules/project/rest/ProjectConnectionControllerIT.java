@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
+@InstanceTransactional
 public class ProjectConnectionControllerIT extends AbstractRegardsIT {
 
     /**
@@ -98,7 +99,6 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to get a project connection and Hateoas returned links")
-    @InstanceTransactional
     @Test
     public void retrieveProjectConnection() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -116,7 +116,6 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to create a project connection and Hateoas returned links")
-    @InstanceTransactional
     @Test
     public void createProjectConnection() {
         final Project project = projectRepo.findOneByName(PROJECT_TEST);
@@ -137,7 +136,6 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
-    @InstanceTransactional
     @Test
     public void updateProjectConnection() {
         final ProjectConnection connection = projectConnRepo.findOneByProjectNameAndMicroservice(PROJECT_TEST,
@@ -157,7 +155,6 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
-    @InstanceTransactional
     @Test
     public void deleteProjectConnection() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);

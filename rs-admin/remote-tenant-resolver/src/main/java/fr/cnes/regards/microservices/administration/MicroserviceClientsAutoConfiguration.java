@@ -4,6 +4,7 @@
 package fr.cnes.regards.microservices.administration;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,6 +25,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
  */
 @Configuration
 @AutoConfigureBefore(MicroserviceAutoConfiguration.class)
+@ConditionalOnProperty(name = "regards.cloud.enabled", matchIfMissing = true)
 @EnableFeignClients(
         clients = { IProjectsClient.class, IProjectConnectionClient.class, IResourcesClient.class, IRolesClient.class })
 public class MicroserviceClientsAutoConfiguration {

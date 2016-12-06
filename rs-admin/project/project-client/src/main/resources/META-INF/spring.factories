@@ -1,4 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.modules.project.client.rest.fallback.ProjectsFallback,\
-fr.cnes.regards.modules.project.client.rest.fallback.ProjectConnectionFallback
-
