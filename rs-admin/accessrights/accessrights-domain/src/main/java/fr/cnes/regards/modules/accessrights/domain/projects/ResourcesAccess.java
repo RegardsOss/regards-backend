@@ -146,10 +146,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
                 ResourceAccessAdapter.createResourceAccess(this.getDescription(), null), this.getResource(),
                 RequestMethod.valueOf(this.getVerb().toString()));
 
-        this.getRoles().forEach(role -> {
-            final RoleLineageAssembler assembler = new RoleLineageAssembler();
-            assembler.of(role).get().forEach(r -> mapping.addAuthorizedRole(new RoleAuthority(r.getName())));
-        });
+        this.getRoles().forEach(role -> mapping.addAuthorizedRole(new RoleAuthority(role.getName())));
         return mapping;
     }
 
