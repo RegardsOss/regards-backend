@@ -18,19 +18,13 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.${artifactId}</groupId>
-			<artifactId>${artifactId}-domain</artifactId>
+			<artifactId>${artifactId}-dao</artifactId>
 		</dependency>
+		<!-- Test dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>module-jobs</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.feign</groupId>
-			<artifactId>feign-core</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
