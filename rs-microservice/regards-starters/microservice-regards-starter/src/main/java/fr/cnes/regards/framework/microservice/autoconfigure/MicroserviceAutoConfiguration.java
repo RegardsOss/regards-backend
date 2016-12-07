@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.Gsonable;
 import fr.cnes.regards.framework.microservice.manager.DefaultApplicationManager;
 import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
+import fr.cnes.regards.framework.microservice.web.GSonIgnoreExclusionStrategy;
 import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
 import fr.cnes.regards.framework.microservice.web.PathAdapter;
 
@@ -33,8 +34,9 @@ import fr.cnes.regards.framework.microservice.web.PathAdapter;
  *
  * Auto configuration for microservices web mvc
  *
- * @author CS
- * @author svissier
+ * @author Sylvain Vissiere-Guerinet
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 @Configuration
@@ -53,7 +55,9 @@ public class MicroserviceAutoConfiguration {
     public GsonBuilder gsonBuilder() {
         final GsonBuilder builder = new GsonBuilder();
 
+        builder.setExclusionStrategies(new GSonIgnoreExclusionStrategy());
         builder.registerTypeAdapter(Path.class, new PathAdapter().nullSafe());
+
         addGsonablePojos(builder);
         return builder;
     }

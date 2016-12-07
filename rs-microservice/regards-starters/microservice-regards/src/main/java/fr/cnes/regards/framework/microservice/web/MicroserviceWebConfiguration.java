@@ -21,7 +21,6 @@ import com.google.gson.GsonBuilder;
  * Configuration class for Spring Web Mvc.
  *
  * @author Sébastien Binda
- * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
 public class MicroserviceWebConfiguration extends WebMvcConfigurerAdapter {
@@ -38,7 +37,7 @@ public class MicroserviceWebConfiguration extends WebMvcConfigurerAdapter {
     @Override
     public void configureMessageConverters(final List<HttpMessageConverter<?>> pConverters) {
 
-        final Gson gson = builder.setExclusionStrategies(new GSonIgnoreExclusionStrategy()).create();
+        final Gson gson = builder.create();
 
         final GsonHttpMessageConverter gsonHttpMessageConverter = new GsonHttpMessageConverter();
         gsonHttpMessageConverter.setGson(gson);
