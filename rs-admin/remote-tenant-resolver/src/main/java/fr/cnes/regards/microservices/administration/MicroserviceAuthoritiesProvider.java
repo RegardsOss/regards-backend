@@ -7,8 +7,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -36,19 +34,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
 public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
 
     /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(MicroserviceAuthoritiesProvider.class);
-
-    /**
      * Current microservice name
      */
     private final String microserviceName;
-
-    /**
-     * Security service
-     */
-    private final JWTService jwtService;
 
     /**
      * Administration microservice REST client
@@ -59,6 +47,11 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
      * Administration microservice REST client
      */
     private final IRolesClient roleClient;
+
+    /**
+     * Security service
+     */
+    private final JWTService jwtService;
 
     /**
      *

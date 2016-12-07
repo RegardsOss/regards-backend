@@ -137,7 +137,7 @@ public class ProjectUsersController {
     @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE)
     @ResourceAccess(description = "remove the project user", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") final Long pUserId)
-            throws EntityTransitionForbiddenException, EntityNotFoundException {
+            throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pUserId);
         projectUserWorkflowManager.removeAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);

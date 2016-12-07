@@ -8,8 +8,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -60,11 +58,6 @@ import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions
 @RequestMapping(path = "/accounts")
 public class AccountsController implements IResourceController<Account> {
 
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(AccountsController.class);
-
     @Autowired
     private IAccountService accountService;
 
@@ -89,6 +82,9 @@ public class AccountsController implements IResourceController<Account> {
     @Value("${regards.accounts.root.user.login}")
     private String rootAdminUserLogin;
 
+    /**
+     * Use this to publish events
+     */
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 

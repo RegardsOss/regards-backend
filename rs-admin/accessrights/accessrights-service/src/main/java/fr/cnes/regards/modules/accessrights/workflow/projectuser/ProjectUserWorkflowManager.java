@@ -122,7 +122,7 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
      */
     @Override
     public void qualifyAccess(final ProjectUser pProjectUser, final AccessQualification pQualification)
-            throws EntityTransitionForbiddenException, EntityNotFoundException {
+            throws EntityException {
         projectUserStateProvider.createState(pProjectUser).qualifyAccess(pProjectUser, pQualification);
     }
 
