@@ -75,8 +75,7 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system",
-            role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
     @ResponseBody
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveResourcesAccesses() {
         final List<ResourcesAccess> resourcesAccess = service.retrieveRessources();

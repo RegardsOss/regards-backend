@@ -3,10 +3,9 @@
  */
 package fr.cnes.regards.modules.project.client.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
 
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.client.core.annotation.RestClient;
@@ -38,12 +38,18 @@ public interface IProjectsClient {
      *
      * Retrieve projects list
      *
+     * @param pPage
+     *            index of the requested page
+     * @param pSize
+     *            number of elements per page
+     *
      * @return List of projects
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<List<Resource<Project>>> retrieveProjectList();
+    ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(@RequestParam("page") int pPage,
+            @RequestParam("size") int pSize);
 
     /**
      *

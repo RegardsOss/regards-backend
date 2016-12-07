@@ -3,12 +3,14 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -77,10 +79,10 @@ public class ProjectsController implements IResourceController<Project> {
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<List<Resource<Project>>> retrieveProjectList() {
-
-        final List<Project> projects = projectService.retrieveProjectList();
-        return ResponseEntity.ok(toResources(projects));
+    public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(final Pageable pPageable,
+            final PagedResourcesAssembler<Project> pAssembler) {
+        final Page<Project> projects = projectService.retrieveProjectList(pPageable);
+        return ResponseEntity.ok(toPagedResources(projects, pAssembler));
     }
 
     /**
@@ -93,10 +95,10 @@ public class ProjectsController implements IResourceController<Project> {
     @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<Resource<Project>>> retrievePublicProjectList() {
-
-        final List<Project> projects = projectService.retrievePublicProjectList();
-        return ResponseEntity.ok(toResources(projects));
+    public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(final Pageable pPageable,
+            final PagedResourcesAssembler<Project> pAssembler) {
+        final Page<Project> projects = projectService.retrievePublicProjectList(pPageable);
+        return ResponseEntity.ok(toPagedResources(projects, pAssembler));
     }
 
     /**
@@ -115,7 +117,6 @@ public class ProjectsController implements IResourceController<Project> {
     @ResourceAccess(description = "create a new project", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Project>> createProject(@Valid @RequestBody final Project pNewProject)
             throws ModuleException {
-
         final Project project = projectService.createProject(pNewProject);
         return new ResponseEntity<>(toResource(project), HttpStatus.CREATED);
     }

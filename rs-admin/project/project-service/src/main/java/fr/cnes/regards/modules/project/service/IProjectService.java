@@ -8,6 +8,9 @@ package fr.cnes.regards.modules.project.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -82,12 +85,27 @@ public interface IProjectService {
 
     /**
      *
+     * Retrieve project List.
+     *
+     * @param pPageable
+     *            pagination informations
+     *
+     * @return List of projects
+     * @since 1.0-SNAPSHOT
+     */
+    Page<Project> retrieveProjectList(Pageable pPageable);
+
+    /**
+     *
      * Retrieve all public projects
+     *
+     * @param pPageable
+     *            pagination informations
      *
      * @return List of public projects
      * @since 1.0-SNAPSHOT
      */
-    List<Project> retrievePublicProjectList();
+    Page<Project> retrievePublicProjectList(Pageable pPageable);
 
     /**
      *

@@ -3,23 +3,20 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -120,10 +117,18 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
+    public Page<Project> retrieveProjectList(final Pageable pPageable) {
+        return projectRepository.findAll(pPageable);
+    }
+
+    @Override
     public List<Project> retrieveProjectList() {
-        try (Stream<Project> stream = StreamSupport.stream(projectRepository.findAll().spliterator(), false)) {
-            return stream.collect(Collectors.toList());
-        }
+        return projectRepository.findAll();
+    }
+
+    @Override
+    public Page<Project> retrievePublicProjectList(final Pageable pPageable) {
+        return projectRepository.findByIsPublicTrue(pPageable);
     }
 
     @Override
@@ -134,17 +139,6 @@ public class ProjectService implements IProjectService {
         }
 
         return projectRepository.save(pNewProject);
-    }
-
-    @Override
-    public List<Project> retrievePublicProjectList() {
-        final List<Project> results = new ArrayList<>();
-        retrieveProjectList().forEach(p -> {
-            if (p.isPublic()) {
-                results.add(p);
-            }
-        });
-        return results;
     }
 
 }

@@ -67,7 +67,7 @@ public class ProjectServiceTest {
         projectService = new ProjectService(projectRepoStub, new MultitenantDaoProperties());
 
         projectRepoStub.save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
-        projectRepoStub.save(new Project(1L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_2));
+        projectRepoStub.save(new Project(1L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false, PROJECT_TEST_2));
     }
 
     /**

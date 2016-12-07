@@ -52,6 +52,11 @@
 			<artifactId>jpa-multitenant-regards-starter</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.project</groupId>
+			<artifactId>project-client</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>

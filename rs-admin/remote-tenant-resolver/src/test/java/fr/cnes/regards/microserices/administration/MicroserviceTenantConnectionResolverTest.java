@@ -14,6 +14,8 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
 import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
 import fr.cnes.regards.microservices.administration.MicroserviceTenantConnectionResolver;
+import fr.cnes.regards.microservices.administration.RemoteTenantResolver;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  *
@@ -34,9 +36,11 @@ public class MicroserviceTenantConnectionResolverTest {
     @Before
     public void init() {
         final JWTService jwtService = new JWTService();
+        final IProjectsClient projectsClient = new ProjectClientStub();
         jwtService.setSecret("123456789");
-        resovler = new MicroserviceTenantConnectionResolver("test-microservice", jwtService, new ProjectClientStub(),
-                new ProjectConnectionClientStub());
+        resovler = new MicroserviceTenantConnectionResolver("test-microservice", jwtService, projectsClient,
+                new ProjectConnectionClientStub(),
+                new RemoteTenantResolver(projectsClient, jwtService, "test-microservice"));
     }
 
     /**

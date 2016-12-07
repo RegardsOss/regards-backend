@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.project.rest;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -79,8 +80,9 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to project resources and returned Hateoas links")
     @Test
     public void retrievePublicProjectsTest() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performGet("/projects/public", publicToken, expectations, "error");
     }
 
@@ -94,9 +96,34 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to project resources and returned Hateoas links")
     @Test
-    public void retrieveAllProjectsTest() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
+    public void retrieveAllProjectsByPage() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(1)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(3)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages", Matchers.is(3)));
+        performGet("/projects?page={page}&size={size}", instanceAdmintoken, expectations,
+                   "Error there must be project results", "0", "1");
+    }
+
+    /**
+     *
+     * Check REST Access to project resources and Hateoas returned links
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Requirement("REGARDS_DSL_ADM_INST_130")
+    @Requirement("REGARDS_DSL_SYS_ARC_020")
+    @Purpose("Check REST Access to project resources and returned Hateoas links")
+    @Test
+    public void retrieveAllProjects() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(20)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(3)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages", Matchers.is(1)));
         performGet("/projects", instanceAdmintoken, expectations, "Error there must be project results");
     }
 
@@ -111,8 +138,9 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to project resource and Hateoas returned links")
     @Test
     public void retrieveProjectTest() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performGet("/projects/test1", publicToken, expectations, "Error there must be project results");
     }
 
@@ -128,8 +156,9 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Test
     public void createProjectTest() {
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isCreated());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performPost("/projects", instanceAdmintoken, new Project("description", "icon", true, "create-project"),
                     expectations, "Error there must be project results");
     }
@@ -146,8 +175,9 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Test
     public void updateProjectTest() {
         final Project project = projectRepo.findOneByName("test1");
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performPut("/projects/" + project.getName(), instanceAdmintoken, project, expectations,
                    "Error there must be project results");
     }
