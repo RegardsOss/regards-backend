@@ -16,10 +16,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-jpa</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.${artifactId}</groupId>
 			<artifactId>${artifactId}-domain</artifactId>
 		</dependency>

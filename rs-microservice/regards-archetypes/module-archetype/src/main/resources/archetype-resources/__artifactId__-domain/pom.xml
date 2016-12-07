@@ -20,8 +20,8 @@
 			<artifactId>spring-context</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>regards-core-jpa-data</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
