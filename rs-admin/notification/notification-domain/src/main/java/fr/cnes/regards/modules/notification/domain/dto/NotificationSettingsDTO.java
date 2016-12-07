@@ -10,7 +10,7 @@ import fr.cnes.regards.modules.notification.domain.NotificationSettings;
  * DTO representing a {@link NotificationSettings} sent by a client.<br>
  * This way we only expose attributes which we allow to update.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public class NotificationSettingsDTO {
 

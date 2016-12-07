@@ -20,7 +20,7 @@ import fr.cnes.regards.modules.notification.domain.NotificationStatus;
  * Embeds paging/sorting abilities by entending {@link PagingAndSortingRepository}.<br>
  * Allows execution of Query by Example {@link Example} instances.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public interface INotificationRepository extends JpaRepository<Notification, Long> {
 

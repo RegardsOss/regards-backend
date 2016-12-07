@@ -16,7 +16,7 @@ import fr.cnes.regards.modules.notification.domain.NotificationSettings;
  * recipient's {@link NotificationSettings}.<br>
  * This allows a more simple of {@link Stream}s as we can apply filter on this class.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public class NotificationUserSetting {
 

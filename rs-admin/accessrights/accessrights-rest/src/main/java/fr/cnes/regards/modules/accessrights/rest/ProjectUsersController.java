@@ -69,7 +69,7 @@ public class ProjectUsersController {
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
      *
-     * @return
+     * @return a {@link List} of {@link ProjectUser}
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
@@ -84,17 +84,18 @@ public class ProjectUsersController {
     /**
      * Retrieve the {@link ProjectUser} of passed <code>email</code>.
      *
-     * @param pUserId
+     * @param pUserEmail
      *            The {@link ProjectUser}'s <code>email</code>
+     * @return a {@link ProjectUser}
      * @throws EntityNotFoundException
      */
     @ResponseBody
     @RequestMapping(value = "/{user_email}", method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the project user and only display  metadata",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") final String userEmail)
+    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") final String pUserEmail)
             throws EntityNotFoundException {
-        final ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
+        final ProjectUser user = projectUserService.retrieveOneByEmail(pUserEmail);
         final Resource<ProjectUser> resource = new Resource<>(user);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -106,6 +107,7 @@ public class ProjectUsersController {
      *            The {@link ProjectUser} <code>id</code>
      * @param pUpdatedProjectUser
      *            The new {@link ProjectUser}
+     * @return void
      * @throws EntityException
      *             <br>
      *             {@link EntityInconsistentIdentifierException} Thrown when <code>pUserId</code> is different from the
@@ -116,9 +118,9 @@ public class ProjectUsersController {
     @ResponseBody
     @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT)
     @ResourceAccess(description = "update the project user", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> updateProjectUser(@PathVariable("user_id") final Long userId,
+    public ResponseEntity<Void> updateProjectUser(@PathVariable("user_id") final Long pUserId,
             @RequestBody final ProjectUser pUpdatedProjectUser) throws EntityException {
-        projectUserService.updateUser(userId, pUpdatedProjectUser);
+        projectUserService.updateUser(pUserId, pUpdatedProjectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -127,6 +129,7 @@ public class ProjectUsersController {
      *
      * @param pUserId
      *            The {@link ProjectUser}'s <code>id</code>
+     * @return void
      * @throws EntityException
      *             <br>
      *             {@link EntityTransitionForbiddenException} when the project user has a <code>status</code> not
@@ -136,8 +139,7 @@ public class ProjectUsersController {
     @ResponseBody
     @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE)
     @ResourceAccess(description = "remove the project user", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") final Long pUserId)
-            throws EntityException {
+    public ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") final Long pUserId) throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pUserId);
         projectUserWorkflowManager.removeAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -148,9 +150,9 @@ public class ProjectUsersController {
      *
      * @param pUserId
      *            The {@link ProjectUser}'s <code>id</code>
+     * @return a{@link List} of {@link MetaData}
      * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
-     * @return
      */
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -171,15 +173,16 @@ public class ProjectUsersController {
      *            The {@link ProjectUser}'s <code>id</code>
      * @param pUpdatedUserMetaData
      *            The {@link List} of {@link MetaData} to set
+     * @return void
      * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @ResponseBody
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.PUT)
     @ResourceAccess(description = "update the list of all metadata of the user", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") final Long userId,
+    public ResponseEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") final Long pUserId,
             @Valid @RequestBody final List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException {
-        projectUserService.updateUserMetaData(userId, pUpdatedUserMetaData);
+        projectUserService.updateUserMetaData(pUserId, pUpdatedUserMetaData);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -188,26 +191,27 @@ public class ProjectUsersController {
      *
      * @param pUserId
      *            The {@link ProjectUser} <code>id</code>
+     * @return void
      * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @ResponseBody
     @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.DELETE)
     @ResourceAccess(description = "remove all the metadata of the user", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") final Long userId)
+    public ResponseEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") final Long pUserId)
             throws EntityNotFoundException {
-        projectUserService.removeUserMetaData(userId);
+        projectUserService.removeUserMetaData(pUserId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
      *
-     * @param pLogin
+     * @param pUserLogin
      *            The {@link Account}'s <code>id</code>
      * @param pBorrowedRoleName
      *            The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
-     * @return the list of resources access
+     * @return the {@link List} list of resources access
      * @throws EntityException
      *             <br>
      *             {@link EntityOperationForbiddenException} Thrown when the passed {@link Role} is not hierarchically
@@ -240,6 +244,7 @@ public class ProjectUsersController {
      *            The {@link ProjectUser}'s <code>login</code>
      * @param pUpdatedUserAccessRights
      *            The {@link List} of {@link ResourcesAccess} to set
+     * @return void
      * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
@@ -255,8 +260,9 @@ public class ProjectUsersController {
     /**
      * Clear the {@link List} of {@link ResourcesAccess} of the {@link ProjectUser} with passed <code>login</code>.
      *
-     * @param pLogin
+     * @param pUserLogin
      *            The {@link ProjectUser} <code>login</code>
+     * @return void
      * @throws EntityNotFoundException
      *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */

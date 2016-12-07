@@ -228,7 +228,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
      * Add the given role to the authorized roles to access the current resource
      *
      * @param pRole
-     *            {@link Role}
+     *            A {@link Role}
      * @since 1.0-SNAPSHOT
      */
     public void addRole(final Role pRole) {
@@ -244,8 +244,8 @@ public class ResourcesAccess implements IIdentifiable<Long> {
      *
      * Add the given roles to the authorized roles to access the current resource
      *
-     * @param pRole
-     *            Array of {@link Role}
+     * @param pInheritedRoles
+     *            a {@link List} of {@link Role}
      * @since 1.0-SNAPSHOT
      */
     public void addRoles(final List<Role> pInheritedRoles) {

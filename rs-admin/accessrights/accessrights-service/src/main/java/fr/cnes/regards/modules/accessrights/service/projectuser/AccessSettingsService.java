@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 /**
  * {@link IAccessSettingsService} implementation
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 @Service
 public class AccessSettingsService implements IAccessSettingsService {

@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 /**
  * Test class for {@link NotificationService}.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public class NotificationServiceTest {
 
@@ -233,7 +233,7 @@ public class NotificationServiceTest {
         // Call tested method
         final List<Notification> actual = notificationService.retrieveNotifications();
 
-        // Check that expected is equel to acutal
+        // Check that expected is equal to actual
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(expected)));
 
         // Check that the repository's method was called with right arguments
@@ -241,7 +241,7 @@ public class NotificationServiceTest {
     }
 
     /**
-     * Check that the system allorws to create notifications in order to send to users.
+     * Check that the system allows to create notifications in order to send to users.
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_SET_520")

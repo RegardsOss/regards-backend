@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.notification.domain.dto;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,14 +16,9 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 /**
  * Validate getter/setters on {@link NotificationDTO}.
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  */
 public class NotificationDTOTest {
-
-    /**
-     * Date
-     */
-    private static final LocalDateTime DATE = LocalDateTime.now().minusDays(1);
 
     /**
      * Message

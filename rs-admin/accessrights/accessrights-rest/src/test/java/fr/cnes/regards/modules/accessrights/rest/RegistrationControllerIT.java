@@ -26,11 +26,12 @@ import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
  * Integration tests for the accesses functionalities.
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
@@ -125,30 +126,30 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(apiAccesses, expectations, errorMessage);
     }
 
-    // /**
-    // * Check that the system allows the user to request a registration.
-    // */
-    // @MultitenantTransactional
-    // @Test
-    // @Requirement("REGARDS_DSL_ADM_ADM_510")
-    // @Purpose("Check that the system allows the user to request a registration.")
-    // public void requestAccess() {
-    // final AccessRequestDto newAccessRequest = new AccessRequestDto();
-    // newAccessRequest.setEmail("login@test.com");
-    // newAccessRequest.setFirstName("Firstname");
-    // newAccessRequest.setLastName("Lastname");
-    // newAccessRequest.setPassword("password");
-    // newAccessRequest.setRoleName(DefaultRole.PUBLIC.toString());
-    // newAccessRequest.setPermissions(new ArrayList<>());
-    //
-    // final List<ResultMatcher> expectations = new ArrayList<>(1);
-    // expectations.add(MockMvcResultMatchers.status().isCreated());
-    // performDefaultPost(apiAccesses, newAccessRequest, expectations, errorMessage);
-    //
-    // expectations.clear();
-    // expectations.add(MockMvcResultMatchers.status().isConflict());
-    // performDefaultPost(apiAccesses, newAccessRequest, expectations, errorMessage);
-    // }
+    /**
+     * Check that the system allows the user to request a registration.
+     */
+    @MultitenantTransactional
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_510")
+    @Purpose("Check that the system allows the user to request a registration.")
+    public void requestAccess() {
+        final AccessRequestDto newAccessRequest = new AccessRequestDto();
+        newAccessRequest.setEmail("login@test.com");
+        newAccessRequest.setFirstName("Firstname");
+        newAccessRequest.setLastName("Lastname");
+        newAccessRequest.setPassword("password");
+        newAccessRequest.setRoleName(DefaultRole.PUBLIC.toString());
+        newAccessRequest.setPermissions(new ArrayList<>());
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isCreated());
+        performDefaultPost(apiAccesses, newAccessRequest, expectations, errorMessage);
+
+        expectations.clear();
+        expectations.add(MockMvcResultMatchers.status().isConflict());
+        performDefaultPost(apiAccesses, newAccessRequest, expectations, errorMessage);
+    }
 
     /**
      * Check that the system allows to reactivate access to an access denied project user.

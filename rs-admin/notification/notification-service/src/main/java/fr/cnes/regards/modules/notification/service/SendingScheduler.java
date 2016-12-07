@@ -20,11 +20,11 @@ import fr.cnes.regards.modules.notification.service.utils.NotificationUserSettin
 
 /**
  * Service responsible for scheduling the sending of notifications to their recipients.<br>
- * It periodicly retrieves the notifications to send, and sends thems to their recipients.<br>
+ * It periodically retrieves the notifications to send, and sends thems to their recipients.<br>
  * Implements a strategy pattern on the sending method in order to easily add ways of sending notifications (mail, ihm,
  * owl...).
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 @Service
 public class SendingScheduler {

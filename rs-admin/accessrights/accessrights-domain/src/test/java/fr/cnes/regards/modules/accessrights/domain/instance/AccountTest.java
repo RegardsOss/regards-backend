@@ -42,11 +42,6 @@ public class AccountTest {
     private final String lastName = "lastname";
 
     /**
-     * Test login
-     */
-    private final String login = "login";
-
-    /**
      * Test password
      */
     private final String password = "password";

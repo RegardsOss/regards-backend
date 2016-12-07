@@ -8,7 +8,7 @@ import fr.cnes.regards.modules.notification.domain.Notification;
 /**
  * Strategy interface to define a method for sending notifications. It can be mail, ihm...
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 @FunctionalInterface
 public interface ISendingStrategy {

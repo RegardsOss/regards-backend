@@ -8,11 +8,12 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
 import javax.validation.Valid;
@@ -27,7 +28,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 /**
  * Models a notification.<br>
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
  */
 @Entity(name = "T_NOTIFICATION")
 @SequenceGenerator(name = "notificationSequence", initialValue = 1, sequenceName = "SEQ_NOTIFICATION")
@@ -58,8 +60,12 @@ public class Notification implements IIdentifiable<Long> {
      * The {@link ProjectUser} recipients
      */
     @NotNull
-    @ManyToMany
-    @JoinColumn(name = "notification_id", foreignKey = @ForeignKey(name = "FK_NOTIFICATION_PROJECT_USER_RECIPIENTS"))
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "TA_NOTIFICATION_PROJECTUSER",
+            joinColumns = @JoinColumn(name = "NOTIFICATION_ID", referencedColumnName = "ID",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_NOTIFICATION_PROJECTUSER")),
+            inverseJoinColumns = @JoinColumn(name = "PROJECTUSER_ID", referencedColumnName = "ID",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PROJECTUSER_NOTIFICATION")))
     private List<ProjectUser> projectUserRecipients;
 
     /**
@@ -67,8 +73,12 @@ public class Notification implements IIdentifiable<Long> {
      */
     @NotNull
     @Valid
-    @ManyToMany
-    @JoinColumn(name = "notification_id", foreignKey = @ForeignKey(name = "FK_NOTIFICATION_ROLE_RECIPIENTS"))
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "TA_NOTIFICATION_ROLE",
+            joinColumns = @JoinColumn(name = "NOTIFICATION_ID", referencedColumnName = "ID",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_NOTIFICATION_ROLE")),
+            inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID",
+                    foreignKey = @javax.persistence.ForeignKey(name = "FK_ROLE_NOTIFICATION")))
     private List<Role> roleRecipients;
 
     /**

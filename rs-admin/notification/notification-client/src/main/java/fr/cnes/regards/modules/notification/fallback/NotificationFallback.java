@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
  * open or there is an error.<br>
  * To enable this fallback, set the fallback attribute to this class name in {@link INotificationClient}.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 @Component
 public class NotificationFallback implements INotificationClient {

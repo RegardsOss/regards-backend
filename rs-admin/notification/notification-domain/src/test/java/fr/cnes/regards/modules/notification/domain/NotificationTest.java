@@ -24,9 +24,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
- * Validate getter/setters and hibernate constraints on {@link Notification}.
+ * Validate getter/setters and JPA constraints on {@link Notification}.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public class NotificationTest {
 

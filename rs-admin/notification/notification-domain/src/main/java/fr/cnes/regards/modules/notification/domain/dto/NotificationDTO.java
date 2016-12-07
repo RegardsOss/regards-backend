@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.notification.domain.Notification;
 /**
  * DTO representing a {@link Notification}.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public class NotificationDTO {
 
