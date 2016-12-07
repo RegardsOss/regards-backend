@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.context.annotation.Primary;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +27,10 @@ public class ProjectClientStub implements IProjectsClient {
     private static long idCount = 0;
 
     @Override
-    public ResponseEntity<List<Resource<Project>>> retrieveProjectList() {
-        return new ResponseEntity<List<Resource<Project>>>(HateoasUtils.wrapList(projects), HttpStatus.OK);
+    public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(final int pPage, final int pSize) {
+        final PagedResources<Resource<Project>> page = new PagedResources<>(HateoasUtils.wrapList(projects),
+                new PageMetadata(pSize, pPage, 1), new ArrayList<>());
+        return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
     @Override
