@@ -93,8 +93,8 @@ public class JWTService {
      * @since 1.0-SNAPSHOT
      */
     public String getActualRole() {
-        final JWTAuthentication authentication = ((JWTAuthentication) SecurityContextHolder.getContext()
-                .getAuthentication());
+        final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
+                .getAuthentication();
         if ((authentication != null) && (authentication.getUser() != null)) {
             return authentication.getUser().getRole();
         } else {
