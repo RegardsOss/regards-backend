@@ -287,7 +287,7 @@ public class ResourcesService implements IResourcesService {
         final String role = jwtService.getActualRole();
         // IF the current user final role is instance final admin role or final System role all final resources are
         // available
-        if (RoleAuthority.isInstanceAdminRole(role) || RoleAuthority.isSysRole(role)) {
+        if ((role == null) || RoleAuthority.isInstanceAdminRole(role) || RoleAuthority.isSysRole(role)) {
             pResources.forEach(results::add);
         } else {
             // Else only return available resources for the current user role.
