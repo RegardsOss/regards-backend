@@ -5,8 +5,10 @@ package fr.cnes.regards.modules.accessrights.service.resources;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +23,6 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -124,15 +125,18 @@ public class ResourcesService implements IResourcesService {
 
     @Override
     public List<ResourcesAccess> retrieveRessources() {
-        final Iterable<ResourcesAccess> results = resourceAccessRepo.findAll();
-        final List<ResourcesAccess> result = new ArrayList<>();
-        results.forEach(result::add);
-        return result;
+        final Iterable<ResourcesAccess> allResources = resourceAccessRepo.findAll();
+        final List<ResourcesAccess> resourcesList = new ArrayList<>();
+        allResources.forEach(resourcesList::add);
+        return filterResourcesForCurrentUser(resourcesList);
     }
 
     @Override
     public List<ResourcesAccess> retrieveMicroserviceRessources(final String pMicroserviceName) {
-        return resourceAccessRepo.findByMicroservice(pMicroserviceName);
+        final Iterable<ResourcesAccess> allResources = resourceAccessRepo.findByMicroservice(pMicroserviceName);
+        final List<ResourcesAccess> resourcesList = new ArrayList<>();
+        allResources.forEach(resourcesList::add);
+        return filterResourcesForCurrentUser(resourcesList);
     }
 
     @Override
@@ -267,6 +271,35 @@ public class ResourcesService implements IResourcesService {
         }
         pResource.addRoles(inheritedRoles);
 
+    }
+
+    /**
+     *
+     * Filter given resources to return only available resoources for the current connected user.
+     *
+     * @param pResources
+     *            List of {@link ResourcesAccess} to filter
+     * @return List of {@link ResourcesAccess} accessible by the current connected user.
+     * @since 1.0-SNAPSHOT
+     */
+    private List<ResourcesAccess> filterResourcesForCurrentUser(final List<ResourcesAccess> pResources) {
+        final List<ResourcesAccess> results = new ArrayList<>();
+        final String role = jwtService.getActualRole();
+        // IF the current user final role is instance final admin role or final System role all final resources are
+        // available
+        if (RoleAuthority.isInstanceAdminRole(role) || RoleAuthority.isSysRole(role)) {
+            pResources.forEach(results::add);
+        } else {
+            // Else only return available resources for the current user role.
+            pResources.forEach(resource -> {
+                final Optional<Role> authorizedRole = resource.getRoles().stream().filter(r -> r.getName().equals(role))
+                        .findFirst();
+                if (authorizedRole.isPresent()) {
+                    results.add(resource);
+                }
+            });
+        }
+        return results;
     }
 
 }
