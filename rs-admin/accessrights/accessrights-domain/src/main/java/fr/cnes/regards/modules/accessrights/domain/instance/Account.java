@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -33,6 +34,9 @@ public class Account implements IIdentifiable<Long>, Serializable {
      * Generated serial
      */
     private static final long serialVersionUID = 6641844290657477573L;
+
+    @Transient
+    private static final int RANDOM_STRING_LENGTH = 10;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accountSequence")
@@ -71,7 +75,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     private Account() {
         super();
         status = AccountStatus.PENDING;
-        code = RandomStringUtils.randomAlphanumeric(10);
+        code = RandomStringUtils.randomAlphanumeric(RANDOM_STRING_LENGTH);
     }
 
     /**
@@ -89,7 +93,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     public Account(final String pEmail, final String pFirstName, final String pLastName, final String pPassword) {
         super();
         status = AccountStatus.PENDING;
-        code = RandomStringUtils.randomAlphanumeric(10);
+        code = RandomStringUtils.randomAlphanumeric(RANDOM_STRING_LENGTH);
         email = pEmail;
         firstName = pFirstName;
         lastName = pLastName;

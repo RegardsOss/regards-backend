@@ -97,8 +97,8 @@ public class RolesController {
     /**
      * Define the endpoint for retrieving the {@link Role} of passed <code>id</code>.
      *
-     * @param pRoleId
-     *            The {@link Role}'s <code>id</code>
+     * @param pRoleName
+     *            The {@link Role}'s <code>name</code>
      * @return The {@link Role} wrapped in an {@link ResponseEntity}
      * @throws EntityNotFoundException
      *             when no role with passed name could be found

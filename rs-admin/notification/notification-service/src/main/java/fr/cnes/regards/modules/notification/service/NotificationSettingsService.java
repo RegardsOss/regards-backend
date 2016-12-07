@@ -17,8 +17,9 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
 /**
  * {@link INotificationSettingsService} implementation.
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
+ * @author Christophe Mertz
  *
  */
 @Service
@@ -73,7 +74,8 @@ public class NotificationSettingsService implements INotificationSettingsService
      * modules.notification.domain.NotificationSettings)
      */
     @Override
-    public void updateNotificationSettings(final NotificationSettingsDTO pDto) throws EntityNotFoundException {
+    public NotificationSettings updateNotificationSettings(final NotificationSettingsDTO pDto)
+            throws EntityNotFoundException {
         final NotificationSettings notificationSettings = retrieveNotificationSettings();
 
         if (pDto.getDays() != null) {
@@ -86,7 +88,7 @@ public class NotificationSettingsService implements INotificationSettingsService
             notificationSettings.setFrequency(pDto.getFrequency());
         }
 
-        notificationSettingsRepository.save(notificationSettings);
+        return notificationSettingsRepository.save(notificationSettings);
     }
 
     /**
@@ -94,7 +96,7 @@ public class NotificationSettingsService implements INotificationSettingsService
      *
      * @param pProjectUser
      *            The target project user
-     * @return The ceated notification settings
+     * @return The created notification settings
      */
     private NotificationSettings createNotificationSettings(final ProjectUser pProjectUser) {
         final NotificationSettings settings = new NotificationSettings();

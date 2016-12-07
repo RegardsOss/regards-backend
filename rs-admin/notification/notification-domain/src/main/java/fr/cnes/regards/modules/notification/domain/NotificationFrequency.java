@@ -6,12 +6,27 @@ package fr.cnes.regards.modules.notification.domain;
 /**
  * List all possible values for the notification frequency setting.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public enum NotificationFrequency {
     /**
-     * Possible frequencies
+     * Daily frequency
      */
-    DAILY, WEEKLY, MONTHLY, CUSTOM;
+    DAILY,
+    
+    /**
+     * Weekly frequency
+     */
+    WEEKLY,
+    
+    /**
+     * Monthly frequency
+     */
+    MONTHLY,
+    
+    /**
+     * Custom frequency
+     */
+    CUSTOM;
 
 }

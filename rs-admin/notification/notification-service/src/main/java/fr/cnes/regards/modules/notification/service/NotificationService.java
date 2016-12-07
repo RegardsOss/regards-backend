@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 /**
  * {@link INotificationService} implementation
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  *
  */
@@ -157,14 +157,14 @@ public class NotificationService implements INotificationService {
      * @see fr.cnes.regards.modules.notification.service.INotificationService#updateNotificationStatus(java.lang.Long)
      */
     @Override
-    public void updateNotificationStatus(final Long pId, final NotificationStatus pStatus)
+    public Notification updateNotificationStatus(final Long pId, final NotificationStatus pStatus)
             throws EntityNotFoundException {
         if (!notificationRepository.exists(pId)) {
             throw new EntityNotFoundException(pId.toString(), Notification.class);
         }
         final Notification notification = notificationRepository.findOne(pId);
         notification.setStatus(pStatus);
-        notificationRepository.save(notification);
+        return notificationRepository.save(notification);
     }
 
     /*

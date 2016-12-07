@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
 /**
  * Test class for {@link notificationSettingsService}.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public class NotificationSettingsServiceTest {
 

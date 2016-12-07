@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
 /**
  * Strategy interface to handle CRUD operations on {@link NotificationService} entities.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public interface INotificationSettingsService {
 
@@ -32,6 +32,7 @@ public interface INotificationSettingsService {
      * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
-    void updateNotificationSettings(NotificationSettingsDTO pNotificationSettings) throws EntityNotFoundException;
+    NotificationSettings updateNotificationSettings(NotificationSettingsDTO pNotificationSettings)
+            throws EntityNotFoundException;
 
 }

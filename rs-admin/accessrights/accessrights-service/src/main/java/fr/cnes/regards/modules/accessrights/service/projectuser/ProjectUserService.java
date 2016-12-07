@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 /**
  * {@link IProjectUserService} implementation
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */
 @Service

@@ -10,7 +10,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 /**
  * Strategy interface to handle Read an Update operations on access settings.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public interface IAccessSettingsService {
 

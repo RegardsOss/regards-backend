@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 /**
  * Wraps the different project projectUser's settings available for notifications configuration.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 @Entity(name = "T_NOTIFICATION_SETTINGS")
 @SequenceGenerator(name = "notificationSettingsSequence", initialValue = 1, sequenceName = "SEQ_NOTIFICATION_SETTINGS")

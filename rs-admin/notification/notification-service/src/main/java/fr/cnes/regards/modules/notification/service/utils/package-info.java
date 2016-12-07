@@ -3,6 +3,6 @@
  */
 /**
  * 
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 package fr.cnes.regards.modules.notification.service.utils;
