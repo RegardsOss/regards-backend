@@ -51,7 +51,7 @@ public class EmailService implements IEmailService {
         final List<Email> emails = new ArrayList<>();
         final Iterable<Email> results = emailRepository.findAll();
         if (results != null) {
-            results.forEach(r -> emails.add(r));
+            results.forEach(emails::add);
         }
         return emails;
     }

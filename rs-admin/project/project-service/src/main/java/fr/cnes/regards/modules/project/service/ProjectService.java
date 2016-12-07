@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsExcept
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -88,7 +89,7 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public Project retrieveProject(final String pProjectName) throws EntityNotFoundException {
+    public Project retrieveProject(final String pProjectName) throws ModuleException {
         final Project project = projectRepository.findOneByName(pProjectName);
         if (project == null) {
             throw new EntityNotFoundException(pProjectName, Project.class);
@@ -97,15 +98,14 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public List<Project> deleteProject(final String pProjectName) throws EntityNotFoundException {
+    public void deleteProject(final String pProjectName) throws ModuleException {
         final Project deleted = retrieveProject(pProjectName);
         deleted.setDeleted(true);
-        projectRepository.delete(deleted);
-        return this.retrieveProjectList();
+        projectRepository.save(deleted);
     }
 
     @Override
-    public Project updateProject(final String pProjectName, final Project pProject) throws EntityException {
+    public Project updateProject(final String pProjectName, final Project pProject) throws ModuleException {
         final Project theProject = projectRepository.findOneByName(pProjectName);
         if (theProject == null) {
             throw new EntityNotFoundException(pProjectName, Project.class);
@@ -127,7 +127,7 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public Project createProject(final Project pNewProject) throws EntityAlreadyExistsException {
+    public Project createProject(final Project pNewProject) throws ModuleException {
         final Project theProject = projectRepository.findOneByName(pNewProject.getName());
         if (theProject != null) {
             throw new EntityAlreadyExistsException(pNewProject.getName());

@@ -10,9 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
@@ -87,14 +86,14 @@ public class ProjectServiceTest {
         try {
             projectService.createProject(projectToCreate);
             Assert.fail("Project already exists there must be an exception thrown here");
-        } catch (final EntityAlreadyExistsException e) {
+        } catch (final ModuleException e) {
             /// Nothing to do
         }
         projectToCreate = new Project(newProjectId, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
                 "new-project-test");
         try {
             projectService.createProject(projectToCreate);
-        } catch (final EntityAlreadyExistsException e) {
+        } catch (final ModuleException e) {
             Assert.fail(e.getMessage());
         }
     }
@@ -125,13 +124,13 @@ public class ProjectServiceTest {
     public void getProjectTest() {
         try {
             projectService.retrieveProject("invalid_project_name");
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleException e) {
             // Nothing to do
         }
 
         try {
             projectService.retrieveProject(PROJECT_TEST_1);
-        } catch (final EntityException e) {
+        } catch (final ModuleException e) {
             Assert.fail(e.getMessage());
         }
     }
@@ -152,31 +151,28 @@ public class ProjectServiceTest {
                 invalidProjectName);
         try {
             projectService.updateProject(invalidProjectName, invalidProject);
-        } catch (final EntityNotFoundException e) {
-            // Nothing to do
-        } catch (final EntityException e) {
-            Assert.fail(e.getMessage());
+        } catch (final ModuleException e) {
+            Assert.assertTrue(true);
         }
-
         Project existingProject = null;
         try {
             existingProject = projectService.retrieveProject(PROJECT_TEST_1);
             existingProject.setIcon("new-icon-update");
-        } catch (final EntityException e1) {
+        } catch (final ModuleException e1) {
             Assert.fail(e1.getMessage());
         }
 
         try {
             projectService.updateProject(invalidProjectName, existingProject);
         } catch (final EntityNotFoundException e) {
-            // Nothing to do
-        } catch (final EntityException e) {
+            Assert.assertTrue(true);
+        } catch (final ModuleException e) {
             Assert.fail(e.getMessage());
         }
 
         try {
             projectService.updateProject(PROJECT_TEST_1, existingProject);
-        } catch (final EntityException e) {
+        } catch (final ModuleException e) {
             Assert.fail(e.getMessage());
         }
         Assert.assertNotNull("The project to update exists. The returned project shouldn't be null", existingProject);

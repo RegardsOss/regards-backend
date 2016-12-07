@@ -13,7 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -58,7 +58,7 @@ public class Notification implements IIdentifiable<Long> {
      * The {@link ProjectUser} recipients
      */
     @NotNull
-    @OneToMany
+    @ManyToMany
     @JoinColumn(name = "notification_id", foreignKey = @ForeignKey(name = "FK_NOTIFICATION_PROJECT_USER_RECIPIENTS"))
     private List<ProjectUser> projectUserRecipients;
 
@@ -67,7 +67,7 @@ public class Notification implements IIdentifiable<Long> {
      */
     @NotNull
     @Valid
-    @OneToMany
+    @ManyToMany
     @JoinColumn(name = "notification_id", foreignKey = @ForeignKey(name = "FK_NOTIFICATION_ROLE_RECIPIENTS"))
     private List<Role> roleRecipients;
 
