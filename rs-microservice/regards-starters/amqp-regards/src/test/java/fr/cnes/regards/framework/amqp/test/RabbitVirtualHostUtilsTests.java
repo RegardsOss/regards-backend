@@ -11,6 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.security.crypto.codec.Base64;
 
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 
@@ -55,6 +56,12 @@ public class RabbitVirtualHostUtilsTests {
      */
     private static final Integer AMQP_MANAGEMENT_PORT = 15672;
 
+    private static final String TYPE_IDENTIFIER = "TypeIdentifier";
+
+    private static final String INSTANCE_IDENTIFIER = "InstanceIdentifier";
+
+    private static final String ADDRESSES = "127.0.0.1:5762";
+
     /**
      * bean to be tested
      */
@@ -63,7 +70,8 @@ public class RabbitVirtualHostUtilsTests {
     @BeforeClass
     public static void init() {
         rabbitVirtualHostUtils = new RabbitVirtualHostUtils(RABBITMQ_USERNAME, RABBITMQ_PASSWORD, AMQP_MANAGEMENT_HOST,
-                AMQP_MANAGEMENT_PORT, null, null);
+                AMQP_MANAGEMENT_PORT, null, null,
+                new RegardsAmqpAdmin(TYPE_IDENTIFIER, INSTANCE_IDENTIFIER, ADDRESSES));
     }
 
     /**

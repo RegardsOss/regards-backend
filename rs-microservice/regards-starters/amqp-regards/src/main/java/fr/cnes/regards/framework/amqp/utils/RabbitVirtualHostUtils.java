@@ -17,6 +17,7 @@ import org.springframework.security.crypto.codec.Base64;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.connection.RegardsSimpleRoutingConnectionFactory;
 import fr.cnes.regards.framework.amqp.domain.RabbitMqVhostPermission;
 import fr.cnes.regards.framework.amqp.domain.RabbitVhost;
@@ -87,6 +88,8 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
      */
     private final Integer amqpManagementPort;
 
+    private final RegardsAmqpAdmin regardsAmqpAdmin;
+
     /**
      *
      * Constructor used to initialize properties from AmqpProperties
@@ -106,7 +109,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
      */
     public RabbitVirtualHostUtils(String pRabbitmqUserName, String pRabbitmqPassword, String pAmqpManagementHost,
             Integer pAmqpManagementPort, RestTemplate pRestTemplate,
-            RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory) {
+            RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory, RegardsAmqpAdmin pRegardsAmqpAdmin) {
         super();
         restTemplate = pRestTemplate;
         simpleRoutingConnectionFactory = pSimpleRoutingConnectionFactory;
@@ -114,6 +117,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
         rabbitmqPassword = pRabbitmqPassword;
         amqpManagementHost = pAmqpManagementHost;
         amqpManagementPort = pAmqpManagementPort;
+        regardsAmqpAdmin = pRegardsAmqpAdmin;
     }
 
     @Override
@@ -158,29 +162,43 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
 
     @Override
     public void addVhost(String pName, CachingConnectionFactory pConnectionFactory) throws RabbitMQVhostException {
-        simpleRoutingConnectionFactory.addTargetConnectionFactory(getVhostName(pName), pConnectionFactory);
+        registerConnectionFactory(pName, pConnectionFactory);
         addVhost(pName);
+    }
+
+    /**
+     * @param pName
+     * @param pConnectionFactory
+     */
+    private void registerConnectionFactory(String pName, CachingConnectionFactory pConnectionFactory) {
+        // if there is no registered connection factory for this vhost then register this one
+        String registrationKey = getVhostName(pName);
+        if (simpleRoutingConnectionFactory.getTargetConnectionFactory(registrationKey) == null) {
+            simpleRoutingConnectionFactory.addTargetConnectionFactory(registrationKey, pConnectionFactory);
+        }
     }
 
     @Override
     public void addVhost(String pName) throws RabbitMQVhostException {
         retrieveVhostList();
-        if (!existVhost(pName)) {
+        final String fullyQualifiedVhostName = getVhostName(pName);
+        if (!existVhost(fullyQualifiedVhostName)) {
             final HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.add(HttpHeaders.AUTHORIZATION, setBasic());
             final HttpEntity<Void> request = new HttpEntity<>(headers);
             // vhost on rabbitmq are defined by a PUT request on /vhosts/{name}
             final ResponseEntity<String> response = restTemplate
-                    .exchange(getRabbitApiVhostEndpoint() + SLASH + getVhostName(pName), HttpMethod.PUT, request,
+                    .exchange(getRabbitApiVhostEndpoint() + SLASH + fullyQualifiedVhostName, HttpMethod.PUT, request,
                               String.class);
             final int statusValue = response.getStatusCodeValue();
             if (!isSuccess(statusValue)) {
                 throw new AddingRabbitMQVhostException(response.getBody() + NEW_LINE_STATUS + statusValue);
             }
             addPermissionToAccessVhost(pName);
-            vhostList.add(pName);
+            vhostList.add(fullyQualifiedVhostName);
         }
+        registerConnectionFactory(pName, regardsAmqpAdmin.createConnectionFactory(pName));
     }
 
     @Override

@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.security.filter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -23,8 +24,10 @@ import org.springframework.security.authentication.InsufficientAuthenticationExc
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.security.domain.SecurityException;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -60,6 +63,11 @@ public class IPFilterTest {
     private static final String ROLE_NAME = "USER";
 
     /**
+     * Tenant test
+     */
+    private static final String TENANT_NAME = "tenant";
+
+    /**
      *
      * Check security filter with ip adress for endpoints accesses
      *
@@ -78,14 +86,22 @@ public class IPFilterTest {
 
         final JWTAuthentication token = new JWTAuthentication("token");
         token.setRole(ROLE_NAME);
+        final UserDetails user = new UserDetails();
+        user.setTenant(TENANT_NAME);
+        token.setUser(user);
+
         SecurityContextHolder.getContext().setAuthentication(token);
 
         final List<String> results = new ArrayList<>();
         results.add(AUTHORIZED_ADRESS);
 
-        final IAuthoritiesProvider provider = Mockito.mock(IAuthoritiesProvider.class);
-        Mockito.when(provider.getRoleAuthorizedAddress(Mockito.anyString())).thenReturn(results);
-        final IpFilter filter = new IpFilter(provider);
+        final RoleAuthority roleAuth = new RoleAuthority(ROLE_NAME);
+        roleAuth.setAuthorizedIpAdresses(results);
+
+        final MethodAuthorizationService service = Mockito.mock(MethodAuthorizationService.class);
+        Mockito.when(service.getRoleAuthority(ROLE_NAME, TENANT_NAME)).thenReturn(Optional.of(roleAuth));
+
+        final IpFilter filter = new IpFilter(service);
 
         Mockito.when(mockedRequest.getRemoteAddr()).thenReturn(AUTHORIZED_ADRESS);
 
@@ -117,7 +133,7 @@ public class IPFilterTest {
     /**
      *
      * Check security filter with ip adress for endpoints accesses
-     * 
+     *
      * @throws SecurityException
      *             test error
      *
@@ -133,14 +149,20 @@ public class IPFilterTest {
 
         final JWTAuthentication token = new JWTAuthentication("token");
         token.setRole(ROLE_NAME);
+        final UserDetails user = new UserDetails();
+        user.setTenant(TENANT_NAME);
+        token.setUser(user);
         SecurityContextHolder.getContext().setAuthentication(token);
 
         final List<String> results = new ArrayList<>();
-        results.add(AUTHORIZED_ADRESS);
+        results.add(AUTHORIZED_ADRESS_PATTERN);
 
-        final IAuthoritiesProvider provider = Mockito.mock(IAuthoritiesProvider.class);
-        Mockito.when(provider.getRoleAuthorizedAddress(Mockito.anyString())).thenReturn(results);
-        final IpFilter filter = new IpFilter(provider);
+        final RoleAuthority roleAuth = new RoleAuthority(ROLE_NAME);
+        roleAuth.setAuthorizedIpAdresses(results);
+
+        final MethodAuthorizationService service = Mockito.mock(MethodAuthorizationService.class);
+        Mockito.when(service.getRoleAuthority(ROLE_NAME, TENANT_NAME)).thenReturn(Optional.of(roleAuth));
+        final IpFilter filter = new IpFilter(service);
 
         Mockito.when(mockedRequest.getRemoteAddr()).thenReturn(AUTHORIZED_ADRESS);
 

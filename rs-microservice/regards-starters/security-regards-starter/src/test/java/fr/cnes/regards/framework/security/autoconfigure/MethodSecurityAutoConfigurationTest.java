@@ -46,7 +46,7 @@ public class MethodSecurityAutoConfigurationTest {
         this.context = new AnnotationConfigWebApplicationContext();
         this.context.setServletContext(new MockServletContext());
         this.context.register(MethodSecurityAutoConfiguration.class, MethodAuthorizationServiceAutoConfiguration.class,
-                              WebSecurityAutoConfiguration.class, JWTService.class);
+                              WebSecurityAutoConfiguration.class, JWTService.class, SubscriberMock.class);
         this.context.refresh();
         Assertions.assertThat(this.context.getBean(IAuthoritiesProvider.class)).isNotNull();
         Assertions.assertThat(this.context.getBean(ITenantResolver.class)).isNotNull();

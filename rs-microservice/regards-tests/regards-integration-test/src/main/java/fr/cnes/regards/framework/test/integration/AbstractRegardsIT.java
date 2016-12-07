@@ -51,7 +51,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.MOCK)
-@ContextConfiguration(classes = { DefaultTestConfiguration.class })
+@ContextConfiguration(classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class })
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public abstract class AbstractRegardsIT {

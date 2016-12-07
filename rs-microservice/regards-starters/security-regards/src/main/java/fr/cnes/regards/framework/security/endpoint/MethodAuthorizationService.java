@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -27,10 +28,16 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.ResourceMappingException;
+import fr.cnes.regards.framework.security.event.UpdateAuthoritiesEvent;
+import fr.cnes.regards.framework.security.event.handler.UpdateAuthoritiesEventHandler;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -77,6 +84,12 @@ public class MethodAuthorizationService {
     private JWTService jwtService;
 
     /**
+     * AMQP Object to send event on queue.
+     */
+    @Autowired
+    private ISubscriber eventListener;
+
+    /**
      * Curent microservice name
      */
     @Value("${spring.application.name}")
@@ -86,52 +99,97 @@ public class MethodAuthorizationService {
      * Authorities cache that provide granted authorities per tenant and per resource.<br/>
      * Map<Tenant, Map<Resource, List<GrantedAuthority>>>
      */
-    private final Map<String, Map<String, ArrayList<GrantedAuthority>>> grantedAuthoritiesByTenant;
+    private final Map<String, Map<String, ArrayList<GrantedAuthority>>> grantedAuthoritiesByTenant = new HashMap<>();
 
     /**
-     *
-     * Constructor
-     *
-     * @since 1.0-SNAPSHOT
+     * Roles allowed ip addresses cache
      */
-    public MethodAuthorizationService() {
-        grantedAuthoritiesByTenant = new HashMap<>();
-    }
+    private final Map<String, List<RoleAuthority>> grantedRolesIpAddressesByTenant = new HashMap<>();
 
     /**
-     * After bean contruction
+     * After bean construction
      */
     @PostConstruct
     public void init() {
         refreshAuthorities();
+        try {
+            // Listen for every update authorities message
+            // Update authorities event must be provided by administration service when the authorities configuration
+            // are updated like resourceAccess or Roles configurations.
+            eventListener.subscribeTo(UpdateAuthoritiesEvent.class, new UpdateAuthoritiesEventHandler(this),
+                                      AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.EXTERNAL);
+        } catch (final RabbitMQVhostException e) {
+            LOG.error("Error during security module initialization. {}", e.getMessage(), e);
+            throw new ApplicationContextException(e.getMessage());
+        }
     }
 
     /**
      *
-     * Refresh all resources access authortities for all tenants.
+     * Refresh all authorities configuration information for all tenants of the current microservice
      *
      * @since 1.0-SNAPSHOT
      */
     public void refreshAuthorities() {
-        grantedAuthoritiesByTenant.clear();
         try {
             jwtService.injectToken("instance", RoleAuthority.getSysRole(microserviceName));
-
-            for (final String tenant : tenantResolver.getAllTenants()) {
-                try {
-                    jwtService.injectToken(tenant, RoleAuthority.getSysRole(microserviceName));
-                    final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(getResources());
-                    for (final ResourceMapping resource : resources) {
-                        setAuthorities(tenant, resource);
-                    }
-                } catch (final JwtException e) {
-                    LOG.error(String.format("Error during resources access initialization for tenant %s", tenant));
-                    LOG.error(e.getMessage(), e);
-                }
-            }
-        } catch (final JwtException e1) {
-            LOG.error(e1.getMessage(), e1);
+            tenantResolver.getAllTenants().forEach(this::refreshTenantAuthorities);
+        } catch (final JwtException e) {
+            LOG.error(e.getMessage(), e);
         }
+    }
+
+    /**
+     *
+     * Refresh all authorities configuration information for given tenant of the current microservice
+     *
+     * @param pTenant
+     *            tenant to refresh
+     * @since 1.0-SNAPSHOT
+     */
+    private void refreshTenantAuthorities(final String pTenant) {
+        try {
+            jwtService.injectToken(pTenant, RoleAuthority.getSysRole(microserviceName));
+            registerMethodResourcesAccessByTenant(pTenant);
+            collectRolesByTenant(pTenant);
+        } catch (final JwtException e) {
+            LOG.error(String.format("Error during resources access initialization for tenant %s", pTenant));
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     *
+     * Register all the current microservice endpoints to the administration service.
+     *
+     * @param pTenant
+     *            tenant
+     * @since 1.0-SNAPSHOT
+     */
+    private void registerMethodResourcesAccessByTenant(final String pTenant) {
+        final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(getResources());
+        if (grantedAuthoritiesByTenant.get(pTenant) != null) {
+            grantedAuthoritiesByTenant.get(pTenant).clear();
+        }
+        for (final ResourceMapping resource : resources) {
+            setAuthorities(pTenant, resource);
+        }
+    }
+
+    /**
+     *
+     * Retrieve all Role authorities of the given tenant from the administration service
+     *
+     * @param pTenant
+     *            tenant
+     * @since 1.0-SNAPSHOT
+     */
+    private void collectRolesByTenant(final String pTenant) {
+        final List<RoleAuthority> roleAuthorities = authoritiesProvider.getRoleAuthorities();
+        if (grantedRolesIpAddressesByTenant.get(pTenant) != null) {
+            grantedRolesIpAddressesByTenant.get(pTenant).clear();
+        }
+        grantedRolesIpAddressesByTenant.put(pTenant, roleAuthorities);
     }
 
     /**
@@ -345,5 +403,28 @@ public class MethodAuthorizationService {
      */
     public Map<String, ArrayList<GrantedAuthority>> getTenantAuthorities(final String pTenant) {
         return grantedAuthoritiesByTenant.get(pTenant);
+    }
+
+    /**
+     *
+     * Return the role authority configuration for the given tenant
+     *
+     * @param pRoleAuthorityName
+     *            Role name
+     * @param pTenant
+     *            tenant
+     * @return authorized addresses
+     * @since 1.0-SNAPSHOT
+     */
+    public Optional<RoleAuthority> getRoleAuthority(final String pRoleAuthorityName, final String pTenant) {
+        final List<RoleAuthority> roles = grantedRolesIpAddressesByTenant.get(pTenant);
+        if (roles != null) {
+            for (final RoleAuthority role : roles) {
+                if (role.getAuthority().equals(pRoleAuthorityName)) {
+                    return Optional.of(role);
+                }
+            }
+        }
+        return Optional.empty();
     }
 }

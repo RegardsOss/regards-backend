@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.servlet.FilterChain;
@@ -22,6 +23,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
@@ -44,7 +46,7 @@ public class IpFilter extends OncePerRequestFilter {
     /**
      * Provider of authorities entities
      */
-    private final IAuthoritiesProvider authoritiesProvider;
+    private final MethodAuthorizationService methodAuthService;
 
     /**
      *
@@ -54,9 +56,9 @@ public class IpFilter extends OncePerRequestFilter {
      *            {@link IAuthoritiesProvider}
      * @since 1.0-SNAPSHOT
      */
-    public IpFilter(final IAuthoritiesProvider pAuthoritiesProvider) {
+    public IpFilter(final MethodAuthorizationService pMethodAuthService) {
         super();
-        authoritiesProvider = pAuthoritiesProvider;
+        methodAuthService = pMethodAuthService;
     }
 
     @Override
@@ -72,7 +74,7 @@ public class IpFilter extends OncePerRequestFilter {
 
         try {
             if (!roles.isEmpty()) {
-                final List<String> authorizedAddresses = retrieveRoleAuthorizedAddresses(roles);
+                final List<String> authorizedAddresses = retrieveRoleAuthorizedAddresses(roles, authentication.getTenant());
                 if (!checkAccessByAddress(authorizedAddresses, pRequest.getRemoteAddr())) {
                     final String message = String.format("[REGARDS IP FILTER] - %s - Authorization denied",
                                                          pRequest.getRemoteAddr());
@@ -106,15 +108,16 @@ public class IpFilter extends OncePerRequestFilter {
      *             Error retrieving role informations
      * @since 1.0-SNAPSHOT
      */
-    private List<String> retrieveRoleAuthorizedAddresses(final Collection<RoleAuthority> pRoles)
+    private List<String> retrieveRoleAuthorizedAddresses(final Collection<RoleAuthority> pRoles, final String pTenant)
             throws SecurityException {
         final List<String> authorizedAddresses = new ArrayList<>();
         for (final RoleAuthority role : pRoles) {
             // Role is a sys role then there is no ip limitation
             if (!RoleAuthority.isSysRole(role.getAuthority())
                     && !RoleAuthority.isInstanceAdminRole(role.getAuthority())) {
-                authorizedAddresses.addAll(authoritiesProvider
-                        .getRoleAuthorizedAddress(RoleAuthority.getRoleName(role.getAuthority())));
+                final Optional<RoleAuthority> roleAuth = methodAuthService
+                        .getRoleAuthority(RoleAuthority.getRoleName(role.getAuthority()), pTenant);
+                roleAuth.ifPresent(r -> authorizedAddresses.addAll(r.getAuthorizedIpAdresses()));
             }
         }
         return authorizedAddresses;
