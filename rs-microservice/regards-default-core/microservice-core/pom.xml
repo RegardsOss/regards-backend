@@ -34,6 +34,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>swagger-regards-starter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>cloud-regards-starter</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>
