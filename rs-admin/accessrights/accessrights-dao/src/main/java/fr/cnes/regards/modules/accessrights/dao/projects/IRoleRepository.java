@@ -48,6 +48,8 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      *
      * @param pNames
      *            The {@link Collection} of <code>name</code>
+     * @param Pagination
+     *            informations
      * @return The {@link List} of found {@link Role}s
      */
     List<Role> findByNameIn(Collection<String> pNames);
@@ -61,5 +63,5 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      * @return List of {@link Role}
      * @since 1.0-SNAPSHOT
      */
-    List<Role> findByParentRoleName(String pName);
+    List<Role> findByParentRoleName(final String pName);
 }

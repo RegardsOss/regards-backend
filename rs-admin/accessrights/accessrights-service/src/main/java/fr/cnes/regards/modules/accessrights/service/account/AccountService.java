@@ -3,12 +3,13 @@
  */
 package fr.cnes.regards.modules.accessrights.service.account;
 
-import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
@@ -72,8 +73,8 @@ public class AccountService implements IAccountService {
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#retrieveAccountList()
      */
     @Override
-    public List<Account> retrieveAccountList() {
-        return accountRepository.findAll();
+    public Page<Account> retrieveAccountList(final Pageable pPageable) {
+        return accountRepository.findAll(pPageable);
     }
 
     /*

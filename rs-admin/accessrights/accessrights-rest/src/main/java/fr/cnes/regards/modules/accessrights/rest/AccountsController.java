@@ -3,14 +3,15 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -96,9 +97,9 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the list of account in the instance", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<List<Resource<Account>>> retrieveAccountList() {
-        return ResponseEntity.ok(toResources(accountService.retrieveAccountList()));
-
+    public ResponseEntity<PagedResources<Resource<Account>>> retrieveAccountList(final Pageable pPageable,
+            final PagedResourcesAssembler<Account> pAssembler) {
+        return ResponseEntity.ok(toPagedResources(accountService.retrieveAccountList(pPageable), pAssembler));
     }
 
     /**
