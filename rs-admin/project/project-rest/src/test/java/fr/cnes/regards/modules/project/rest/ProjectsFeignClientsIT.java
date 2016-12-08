@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
 import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
@@ -42,6 +43,12 @@ public class ProjectsFeignClientsIT extends AbstractRegardsWebIT {
      */
     private static final Logger LOG = LoggerFactory.getLogger(ProjectsFeignClientsIT.class);
 
+    @Value("${server.address}")
+    private String serverAddress;
+
+    @Value("${server.port}")
+    private String serverPort;
+
     /**
      *
      * Check that the projects Feign Client handle the pagination parameters.
@@ -51,15 +58,13 @@ public class ProjectsFeignClientsIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveAllProjectsByPageFromFeignClient() {
         try {
-
             authService.setAuthorities(DEFAULT_TENANT, "/projects", RequestMethod.GET,
                                        DefaultRole.INSTANCE_ADMIN.toString());
             jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString());
-
             final IProjectsClient projectsClient = HystrixFeign.builder().contract(new SpringMvcContract())
                     .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
-                    .target(new TokenClientProvider<>(IProjectsClient.class, "http://localhost:8080"));
-
+                    .target(new TokenClientProvider<>(IProjectsClient.class,
+                            "http://" + serverAddress + ":" + serverPort));
             final ResponseEntity<PagedResources<Resource<Project>>> projects = projectsClient.retrieveProjectList(0,
                                                                                                                   10);
             Assert.assertTrue(projects.getStatusCode().equals(HttpStatus.OK));
@@ -67,7 +72,6 @@ public class ProjectsFeignClientsIT extends AbstractRegardsWebIT {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
         }
-
     }
 
     @Override

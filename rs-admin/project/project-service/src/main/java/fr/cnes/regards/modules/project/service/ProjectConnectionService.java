@@ -7,6 +7,8 @@ import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -77,6 +79,11 @@ public class ProjectConnectionService implements IProjectConnectionService {
         projectRepository = pProjectRepository;
         projectConnectionRepository = pProjectConnectionRepository;
         publisher = pPublisher;
+    }
+
+    @Override
+    public Page<ProjectConnection> retrieveProjectsConnections(final Pageable pPageable) {
+        return projectConnectionRepository.findAll(pPageable);
     }
 
     @Override

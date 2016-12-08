@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.project.dao.stub;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.test.repository.RepositoryStub;
+import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
@@ -21,7 +21,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  */
 @Repository
 @Primary
-public class ProjectConnectionRepositoryStub extends RepositoryStub<ProjectConnection>
+public class ProjectConnectionRepositoryStub extends JpaRepositoryStub<ProjectConnection>
         implements IProjectConnectionRepository {
 
     @Override
