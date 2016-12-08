@@ -54,7 +54,7 @@ public class KerberosServiceProviderPluginTest {
     /**
      * REGARDS Principal to use for test
      */
-    private final static String applicatioPrincipal = "HTTP/po14173LX@REGARDS.CLOUD-ESPACE.SI.C-S.FR";
+    private final static String applicationPrincipal = "HTTP/po14173LX@REGARDS.CLOUD-ESPACE.SI.C-S.FR";
 
     /**
      * User login to connect for test
@@ -80,7 +80,7 @@ public class KerberosServiceProviderPluginTest {
              * Set all parameters
              */
             final List<PluginParameter> parameters = PluginParametersFactory.build()
-                    .addParameter(KerberosSPParameters.PRINCIPAL_PARAMETER, applicatioPrincipal)
+                    .addParameter(KerberosSPParameters.PRINCIPAL_PARAMETER, applicationPrincipal)
                     .addParameter(KerberosSPParameters.REALM_PARAMETER, "REGARDS.CLOUD-ESPACE.SI.C-S.FR")
                     .addParameter(KerberosSPParameters.LDAP_ADRESS_PARAMETER, "REGARDS-AD.CLOUD-ESPACE.SI.C-S.FR")
                     .addParameter(KerberosSPParameters.LDAP_PORT_PARAMETER, "389")
@@ -108,12 +108,13 @@ public class KerberosServiceProviderPluginTest {
     @Purpose("Check authentication to REGARDS system with a kerberos ticket")
     public void checkKerberosTicketValidation() {
         if (plugin != null) {
-            final byte[] ticket = generateKerberosTicket(applicatioPrincipal, userPrincipal);
-            final ExternalAuthenticationInformations authInformations = new ExternalAuthenticationInformations("sbinda",
-                    "test", ticket, "");
+            final byte[] ticket = generateKerberosTicket(applicationPrincipal, userPrincipal);
+            final ExternalAuthenticationInformations authInformations = new ExternalAuthenticationInformations(
+                    userPrincipal, "test", ticket, "");
             Assert.assertTrue(plugin.checkTicketValidity(authInformations));
             final UserDetails details = plugin.getUserInformations(authInformations);
-            Assert.assertTrue(details.getEmail().equals("sebastien.binda@c-s.fr"));
+            Assert.assertTrue(details.getEmail() != null && !details.getEmail().isEmpty());
+            LOG.info("Email retrieved : {}",details.getEmail());
         } else {
             LOG.warn("Skip Test");
         }
