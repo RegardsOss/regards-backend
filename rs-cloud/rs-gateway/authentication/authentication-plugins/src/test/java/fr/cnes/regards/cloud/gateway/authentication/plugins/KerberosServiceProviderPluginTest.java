@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.cloud.gateway.authentication.plugins;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
@@ -70,30 +71,38 @@ public class KerberosServiceProviderPluginTest {
     @BeforeClass
     public static void init() {
 
-        final URL urlkrb5 = ClassLoader.getSystemResource("krb5.conf");
-
-        final String keytabFilePath = System.getenv().get("REGARDS_KEYTAB");
-        if (keytabFilePath == null) {
-            LOG.warn("No Kerberos keytab file found. Skipping Test");
-        } else {
-            /*
-             * Set all parameters
-             */
-            final List<PluginParameter> parameters = PluginParametersFactory.build()
-                    .addParameter(KerberosSPParameters.PRINCIPAL_PARAMETER, applicationPrincipal)
-                    .addParameter(KerberosSPParameters.REALM_PARAMETER, "REGARDS.CLOUD-ESPACE.SI.C-S.FR")
-                    .addParameter(KerberosSPParameters.LDAP_ADRESS_PARAMETER, "REGARDS-AD.CLOUD-ESPACE.SI.C-S.FR")
-                    .addParameter(KerberosSPParameters.LDAP_PORT_PARAMETER, "389")
-                    .addParameter(KerberosSPParameters.PARAM_LDAP_CN, "dc=REGARDS,dc=CLOUD-ESPACE,dc=SI,dc=C-S,dc=FR")
-                    .addParameter(KerberosSPParameters.KRB5_FILEPATH_PARAMETER, urlkrb5.getPath())
-                    .addParameter(KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, keytabFilePath).getParameters();
-            try {
-                // instantiate plugin
-                plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class);
-                Assert.assertNotNull(plugin);
-            } catch (final PluginUtilsException e) {
-                Assert.fail();
+        final String error = "The current system does not have kerberos command kinit to generate tgt. Test is skipped.";
+        try {
+            final String klistCommand = "klist";
+            final Process process = Runtime.getRuntime().exec(klistCommand);
+            if (process.waitFor() != 0) {
+                LOG.warn(error);
+                return;
             }
+        } catch (final IOException | InterruptedException e1) {
+            LOG.warn(error);
+            return;
+        }
+
+        final URL urlkrb5 = ClassLoader.getSystemResource("krb5.conf");
+        final URL keytabFilePath = ClassLoader.getSystemResource("regards.keytab");
+        /*
+         * Set all parameters
+         */
+        final List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(KerberosSPParameters.PRINCIPAL_PARAMETER, applicationPrincipal)
+                .addParameter(KerberosSPParameters.REALM_PARAMETER, "REGARDS.CLOUD-ESPACE.SI.C-S.FR")
+                .addParameter(KerberosSPParameters.LDAP_ADRESS_PARAMETER, "REGARDS-AD.CLOUD-ESPACE.SI.C-S.FR")
+                .addParameter(KerberosSPParameters.LDAP_PORT_PARAMETER, "389")
+                .addParameter(KerberosSPParameters.PARAM_LDAP_CN, "dc=REGARDS,dc=CLOUD-ESPACE,dc=SI,dc=C-S,dc=FR")
+                .addParameter(KerberosSPParameters.KRB5_FILEPATH_PARAMETER, urlkrb5.getPath())
+                .addParameter(KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, keytabFilePath.getPath()).getParameters();
+        try {
+            // instantiate plugin
+            plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class);
+            Assert.assertNotNull(plugin);
+        } catch (final PluginUtilsException e) {
+            Assert.fail();
         }
     }
 
@@ -113,8 +122,8 @@ public class KerberosServiceProviderPluginTest {
                     userPrincipal, "test", ticket, "");
             Assert.assertTrue(plugin.checkTicketValidity(authInformations));
             final UserDetails details = plugin.getUserInformations(authInformations);
-            Assert.assertTrue(details.getEmail() != null && !details.getEmail().isEmpty());
-            LOG.info("Email retrieved : {}",details.getEmail());
+            Assert.assertTrue((details.getEmail() != null) && !details.getEmail().isEmpty());
+            LOG.info("Email retrieved : {}", details.getEmail());
         } else {
             LOG.warn("Skip Test");
         }
