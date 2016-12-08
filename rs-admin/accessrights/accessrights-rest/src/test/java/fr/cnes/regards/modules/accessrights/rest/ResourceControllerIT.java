@@ -79,7 +79,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Security token to access ADMIN endpoints
      */
-    private String adminToken;
+    private String publicToken;
 
     /**
      * {@link ResourcesAccess} entity for test created in the @Before method
@@ -101,8 +101,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         service.setSecret("123456789");
         instanceToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DEFAULT_USER,
                                               DefaultRole.INSTANCE_ADMIN.toString());
-        adminToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DEFAULT_USER,
-                                           DefaultRole.ADMIN.toString());
+        publicToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DEFAULT_USER,
+                                            DefaultRole.PUBLIC.toString());
 
         final ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE,
                 CONFIGURED_ENDPOINT_URL, HttpVerb.GET);
@@ -199,7 +199,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performGet("/resources", instanceToken, expectations, "Error retrieving endpoints");
+        performGet("/resources", publicToken, expectations, "Error retrieving endpoints");
     }
 
     @Override
