@@ -14,7 +14,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * Configuration class for Spring Web Mvc.
  *
  * @author Sébastien Binda
- * @author Christophe Mertz
+ * @author Marc Sordi
  * @since 1.0-SNAPSHOT
  */
 public class MicroserviceWebConfiguration extends WebMvcConfigurerAdapter {

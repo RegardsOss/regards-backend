@@ -19,12 +19,16 @@ public class NewTenantEvent {
     /**
      * New tenant
      */
-    private final TenantConnection tenant;
+    private TenantConnection tenant;
 
     /**
      * Microservice target of this message
      */
-    private final String microserviceName;
+    private String microserviceName;
+
+    public NewTenantEvent() {
+        super();
+    }
 
     public NewTenantEvent(final TenantConnection pTenant, final String pMicroserviceName) {
         super();
@@ -38,6 +42,14 @@ public class NewTenantEvent {
 
     public TenantConnection getTenant() {
         return tenant;
+    }
+
+    public void setMicroserviceName(final String pMicroserviceName) {
+        microserviceName = pMicroserviceName;
+    }
+
+    public void setTenant(final TenantConnection pTenant) {
+        tenant = pTenant;
     }
 
 }

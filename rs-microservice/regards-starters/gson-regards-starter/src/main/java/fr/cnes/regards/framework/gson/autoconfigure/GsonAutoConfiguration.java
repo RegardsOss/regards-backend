@@ -19,6 +19,7 @@ import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
 import fr.cnes.regards.framework.gson.reflection.GsonableAnnotationProcessor;
+import fr.cnes.regards.framework.gson.strategy.GSonIgnoreExclusionStrategy;
 
 /**
  * GSON support auto configuration
@@ -55,5 +56,6 @@ public class GsonAutoConfiguration {
 
     private void customizeBuilder(GsonBuilder pBuilder) {
         pBuilder.registerTypeAdapter(Path.class, new PathAdapter().nullSafe());
+        pBuilder.setExclusionStrategies(new GSonIgnoreExclusionStrategy());
     }
 }

@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
@@ -26,6 +28,11 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  *
  */
 public class Publisher implements IPublisher {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(Publisher.class);
 
     /**
      * bean allowing us to send message to the broker
@@ -85,8 +92,16 @@ public class Publisher implements IPublisher {
     @Override
     public final <T> void publish(final T pEvt, final AmqpCommunicationMode pAmqpCommunicationMode,
             final AmqpCommunicationTarget pAmqpCommunicationTarget, final int pPriority) throws RabbitMQVhostException {
-        final String tenant = ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication()).getTenant();
-        this.publish(tenant, pEvt, pAmqpCommunicationMode, pAmqpCommunicationTarget, pPriority);
+
+        final JWTAuthentication auth = ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication());
+        if ((auth != null) && (auth.getTenant() != null)) {
+            final String tenant = ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication())
+                    .getTenant();
+            this.publish(tenant, pEvt, pAmqpCommunicationMode, pAmqpCommunicationTarget, pPriority);
+        } else {
+            LOG.error("[AMQP Publisher] Unable to publish event {}. Cause : Authentication context do not contains tenant information.",
+                      pEvt.getClass());
+        }
     }
 
     /**

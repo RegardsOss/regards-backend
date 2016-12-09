@@ -98,6 +98,9 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private Template passwordResetTemplate;
 
+    @Autowired
+    private Template accountUnlockTemplate;
+
     /**
      * Constructor
      *
@@ -135,6 +138,9 @@ public class TemplateService implements ITemplateService {
             }
             if (!templateRepository.findOneByCode(passwordResetTemplate.getCode()).isPresent()) {
                 templateRepository.save(passwordResetTemplate);
+            }
+            if (!templateRepository.findOneByCode(accountUnlockTemplate.getCode()).isPresent()) {
+                templateRepository.save(accountUnlockTemplate);
             }
             return null;
         };

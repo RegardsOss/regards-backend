@@ -6,10 +6,13 @@ package fr.cnes.regards.framework.security.endpoint;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
@@ -19,7 +22,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  *
  * Configuration for spring injections
  *
- * @author sbinda
+ * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Configuration
@@ -54,6 +57,16 @@ public class TestConfiguration {
     @Bean
     JWTService jwtService() {
         return new JWTService();
+    }
+
+    @Bean
+    IPublisher eventPublisher() {
+        return Mockito.mock(IPublisher.class);
+    }
+
+    @Bean
+    ISubscriber eventSubscriber() {
+        return Mockito.mock(ISubscriber.class);
     }
 
     @Bean

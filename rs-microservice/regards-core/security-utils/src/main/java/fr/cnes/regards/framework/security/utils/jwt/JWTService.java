@@ -68,8 +68,38 @@ public class JWTService {
     @Value("${jwt.secret}")
     private String secret;
 
+    /**
+     *
+     * Return the tenant for the current connected user.
+     *
+     * @return tenant
+     * @since 1.0-SNAPSHOT
+     */
     public String getActualTenant() {
-        return ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication()).getTenant();
+        final JWTAuthentication authentication = ((JWTAuthentication) SecurityContextHolder.getContext()
+                .getAuthentication());
+        if ((authentication != null) && (authentication.getTenant() != null)) {
+            return authentication.getTenant();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     *
+     * Return the role for the current connected user
+     *
+     * @return role
+     * @since 1.0-SNAPSHOT
+     */
+    public String getActualRole() {
+        final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
+                .getAuthentication();
+        if ((authentication != null) && (authentication.getUser() != null)) {
+            return authentication.getUser().getRole();
+        } else {
+            return null;
+        }
     }
 
     /**

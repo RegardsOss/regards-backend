@@ -51,7 +51,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.MOCK)
-@ContextConfiguration(classes = { DefaultTestConfiguration.class })
+@ContextConfiguration(classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class })
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public abstract class AbstractRegardsIT {
@@ -313,14 +313,14 @@ public abstract class AbstractRegardsIT {
                     .fileUpload(pUrlTemplate, pUrlVars).file(file);
             addSecurityHeader(multipartRequestBuilder, pAuthToken);
             return multipartRequestBuilder;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             final String message = String.format("Cannot create input stream for file %s", pFilePath.toString());
             getLogger().error(message, e);
             throw new AssertionError(message, e);
         }
     }
 
-    protected void addSecurityHeader(MockHttpServletRequestBuilder pRequestBuilder, final String pAuthToken) {
+    protected void addSecurityHeader(final MockHttpServletRequestBuilder pRequestBuilder, final String pAuthToken) {
         pRequestBuilder.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + pAuthToken);
     }
 
@@ -353,7 +353,7 @@ public abstract class AbstractRegardsIT {
      * @param pMediaType
      *            {@link MediaType}
      */
-    protected void assertMediaType(final ResultActions pResultActions, MediaType pMediaType) {
+    protected void assertMediaType(final ResultActions pResultActions, final MediaType pMediaType) {
         Assert.assertNotNull(pResultActions);
         Assert.assertNotNull(pMediaType);
         final MockHttpServletResponse response = pResultActions.andReturn().getResponse();
@@ -416,17 +416,21 @@ public abstract class AbstractRegardsIT {
      * @return security token to authenticate user
      */
     protected String manageDefaultSecurity(final String pUrlPath, final RequestMethod pMethod) {
-        
+
         String path = pUrlPath;
-        if (pUrlPath.contains("?")){
+        if (pUrlPath.contains("?")) {
             path = path.substring(0, pUrlPath.indexOf("?"));
         }
-        final String jwt = generateToken(DEFAULT_USER_EMAIL, DEFAULT_USER, DEFAULT_ROLE);
-        setAuthorities(path, pMethod, DEFAULT_ROLE);
+        final String jwt = generateToken(DEFAULT_USER_EMAIL, DEFAULT_USER, getDefaultRole());
+        setAuthorities(path, pMethod, getDefaultRole());
         return jwt;
     }
 
     protected static MultiValueMap<String, String> buildRequestParams() {
         return new LinkedMultiValueMap<String, String>();
+    }
+
+    protected String getDefaultRole() {
+        return DEFAULT_ROLE;
     }
 }

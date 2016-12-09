@@ -12,8 +12,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import fr.cnes.regards.framework.gson.strategy.GSonIgnoreExclusionStrategy;
-
 /**
  * Customize message converter when GSON starter is on the class path.
  *
@@ -34,7 +32,7 @@ public class GsonWebConfiguration extends WebMvcConfigurerAdapter {
     @Override
     public void configureMessageConverters(final List<HttpMessageConverter<?>> pConverters) {
 
-        final Gson gson = builder.setExclusionStrategies(new GSonIgnoreExclusionStrategy()).create();
+        final Gson gson = builder.create();
 
         final GsonHttpMessageConverter gsonHttpMessageConverter = new GsonHttpMessageConverter();
         gsonHttpMessageConverter.setGson(gson);

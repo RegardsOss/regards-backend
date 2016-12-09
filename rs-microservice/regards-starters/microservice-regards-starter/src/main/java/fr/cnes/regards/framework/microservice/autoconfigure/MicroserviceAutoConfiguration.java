@@ -24,9 +24,10 @@ import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
  *
  * Auto configuration for microservices web mvc
  *
- * @author CS
- * @author svissier
  * @author Marc Sordi
+ * @author Sylvain Vissiere-Guerinet
+ * @author Christophe Mertz
+ *
  * @since 1.0-SNAPSHOT
  */
 @Configuration

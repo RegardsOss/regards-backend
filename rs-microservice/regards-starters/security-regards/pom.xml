@@ -43,6 +43,14 @@
 			<groupId>fr.cnes.regards.client</groupId>
 			<artifactId>client-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>amqp-regards</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>regards-core-jpa-common</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>

@@ -5,7 +5,7 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>module-archetype</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.2-SNAPSHOT</version>
 	<description>Module creation archetype </description>
 	<!-- allow maven archetype plugin to recognize this archetype as an archetype 
 		and treat it as it -->

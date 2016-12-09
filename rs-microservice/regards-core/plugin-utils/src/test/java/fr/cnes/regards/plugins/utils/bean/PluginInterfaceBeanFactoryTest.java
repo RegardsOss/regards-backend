@@ -11,11 +11,8 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
@@ -23,18 +20,15 @@ import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 import fr.cnes.regards.plugins.utils.PluginUtilsTestConstants;
-import fr.cnes.regards.plugins.utils.SamplePlugin;
 
 /**
  * Unit testing of {@link PluginInterfaceUtils}.
- * 
+ *
  * @author Christophe Mertz
  *
  */
-@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
-@RunWith(SpringRunner.class)
-@PropertySource("application-test.properties")
-@ComponentScan
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = { TestConfiguration.class })
 public final class PluginInterfaceBeanFactoryTest extends PluginUtilsTestConstants {
 
     /**

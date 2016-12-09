@@ -70,10 +70,10 @@ public class AmqpAutoConfiguration {
     @ConditionalOnMissingBean(IRabbitVirtualHostUtils.class)
     public IRabbitVirtualHostUtils iRabbitVirtualHostUtils(
             final RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
-            final RestTemplate pRestTemplate) {
+            final RestTemplate pRestTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin) {
         return new RabbitVirtualHostUtils(amqpProperties.getRabbitmqUserName(), amqpProperties.getRabbitmqPassword(),
                 amqpProperties.getAmqpManagementHost(), amqpProperties.getAmqpManagementPort(), pRestTemplate,
-                pSimpleRoutingConnectionFactory);
+                pSimpleRoutingConnectionFactory, pRegardsAmqpAdmin);
     }
 
     @Bean

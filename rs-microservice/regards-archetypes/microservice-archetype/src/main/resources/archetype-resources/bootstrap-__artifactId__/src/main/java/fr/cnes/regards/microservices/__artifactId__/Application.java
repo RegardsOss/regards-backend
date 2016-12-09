@@ -5,9 +5,8 @@ package fr.cnes.regards.microservices.${artifactId};
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import fr.cnes.regards.microservices.core.annotation.MicroserviceInfo;
-import springfox.documentation.builders.ApiInfoBuilder;
+
+import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
  * 
@@ -15,18 +14,18 @@ import springfox.documentation.builders.ApiInfoBuilder;
  * @author TODO
  *
  */
-@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices.core" })
+@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 @MicroserviceInfo(name = "${artifactId}", version = "${version}")
 public class Application {
 
-    @Bean
-    public ApiInfoBuilder apiInfoBuilder() {
-        return new ApiInfoBuilder().title("${artifactId} API").description("API for ${artifactId} REGARDS Microservice")
-                .license("Apache License Version 2.0").version("${version}");
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args); // NOSONAR
+    /**
+     * Microservice bootstrap method
+     *
+     * @param pArgs
+     *            microservice bootstrap arguments
+     */
+    public static void main(final String[] pArgs) {
+        SpringApplication.run(Application.class, pArgs); // NOSONAR
     }
 
 }

@@ -12,6 +12,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -22,6 +23,9 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProper
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 
 /**
  *
@@ -41,6 +45,12 @@ public class DataSourcesAutoConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(DataSourcesAutoConfiguration.class);
 
     /**
+     * Current microservice name
+     */
+    @Value("${spring.application.name}")
+    private String microserviceName;
+
+    /**
      * Microservice globale configuration
      */
     @Autowired
@@ -51,6 +61,12 @@ public class DataSourcesAutoConfiguration {
      */
     @Autowired
     private ITenantConnectionResolver multitenantResolver;
+
+    /**
+     * JWT token management service
+     */
+    @Autowired
+    private JWTService jwtService;
 
     /**
      *
@@ -80,10 +96,16 @@ public class DataSourcesAutoConfiguration {
                                                                tenant.getUserName(), tenant.getPassword());
             }
             if (!datasources.containsKey(tenant.getName())) {
-                // Initialize connection in the administration service
-                multitenantResolver.addTenantConnection(tenant);
-                // Add datasource to managed datasources pool
-                datasources.put(tenant.getName(), datasource);
+                // Initialize connection in administration service
+                try {
+                    jwtService.injectToken(tenant.getName(), RoleAuthority.getSysRole(microserviceName));
+                    multitenantResolver.addTenantConnection(tenant);
+                    // Add datasource to managed datasources pool
+                    datasources.put(tenant.getName(), datasource);
+                } catch (final JwtException e) {
+                    LOG.error(e.getMessage(), e);
+                }
+
             } else {
                 LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getName()));
             }
