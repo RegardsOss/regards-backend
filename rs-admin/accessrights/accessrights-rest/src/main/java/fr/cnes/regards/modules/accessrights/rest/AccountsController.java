@@ -37,12 +37,10 @@ import fr.cnes.regards.modules.accessrights.accountunlock.IAccountUnlockService;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.passwordreset.OnPasswordResetEvent;
 import fr.cnes.regards.modules.accessrights.registration.AppUrlBuilder;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions;
 
 /**
@@ -70,9 +68,6 @@ public class AccountsController implements IResourceController<Account> {
 
     @Autowired
     private IAccountTransitions accountWorkflowManager;
-
-    @Autowired
-    private IAccountSettingsService accountSettingsService;
 
     @Autowired
     private IAccountUnlockService accountUnlockService;
@@ -285,35 +280,6 @@ public class AccountsController implements IResourceController<Account> {
     }
 
     /**
-     * Retrieve the {@link AccountSettings} for the instance.
-     *
-     * @return The {@link AccountSettings} wrapped in a {@link Resource} and a {@link ResponseEntity}
-     */
-    @ResponseBody
-    @RequestMapping(value = "/settings", method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the list of setting managing the accounts",
-            role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<AccountSettings>> retrieveAccountSettings() {
-        final AccountSettings settings = accountSettingsService.retrieve();
-        return new ResponseEntity<>(new Resource<>(settings), HttpStatus.OK);
-    }
-
-    /**
-     * Update the {@link AccountSettings} for the instance.
-     *
-     * @param pUpdatedAccountSetting
-     *            The {@link AccountSettings}
-     * @return The updated {@link AccountSettings}
-     */
-    @ResponseBody
-    @RequestMapping(value = "/settings", method = RequestMethod.PUT)
-    @ResourceAccess(description = "update the setting managing the account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody final AccountSettings pUpdatedAccountSetting) {
-        accountSettingsService.update(pUpdatedAccountSetting);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
      * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of
      * passed <code>email</code>
      *
@@ -351,9 +317,6 @@ public class AccountsController implements IResourceController<Account> {
                                         MethodParamFactory.build(Long.class, pElement.getId()));
             }
             resourceService.addLink(resource, this.getClass(), "retrieveAccountList", LinkRels.LIST);
-            resourceService.addLink(resource, this.getClass(), "retrieveAccountSettings", "getAccountSettings");
-            resourceService.addLink(resource, this.getClass(), "updateAccountSetting", "setAccountSetting",
-                                    MethodParamFactory.build(AccountSettings.class));
         }
         return resource;
     }

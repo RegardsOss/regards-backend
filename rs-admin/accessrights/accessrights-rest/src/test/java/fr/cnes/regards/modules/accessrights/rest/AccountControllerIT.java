@@ -10,9 +10,7 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,10 +85,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
     private String apiChangePassword;
 
-    private String apiValidatePassword;
-
-    private String apiEmailValidation;
-
     private String errorMessage;
 
     @Autowired
@@ -108,9 +102,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Value("${regards.accounts.root.user.login}")
     private String rootAdminInstanceLogin;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     @Before
     public void setUp() {
         errorMessage = "Cannot reach model attributes";
@@ -120,8 +111,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         apiAccountSetting = apiAccounts + "/settings";
         apiUnlockAccount = apiAccountId + "/unlock/{unlock_code}";
         apiChangePassword = apiAccountId + "/password/{reset_code}";
-        apiValidatePassword = "/accounts/{account_login}/validate?password={account_password}";
-        apiEmailValidation = "/accounts/{account_email}/emailValidation/{validation_code}";
 
         // And start with a single account for convenience
         account = accountRepository.save(new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD));
