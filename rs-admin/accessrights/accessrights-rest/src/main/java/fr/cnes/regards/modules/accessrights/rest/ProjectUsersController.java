@@ -31,7 +31,9 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWorkflowManager;
 
 /**
@@ -72,6 +74,12 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      */
     @Autowired
     private IResourceService resourceService;
+
+    /**
+     * Service handling roles.
+     */
+    @Autowired
+    private IRoleService roleService;
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
@@ -166,6 +174,27 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
         final ProjectUser projectUser = projectUserService.retrieveUser(pUserId);
         projectUserWorkflowManager.removeAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Define the endpoint for retrieving the {@link List} of {@link ProjectUser} for the {@link Role} of passed
+     * <code>id</code> by crawling through parents' hierarachy.
+     *
+     * @param pRoleId
+     *            The {@link Role}'s <code>id</code>
+     * @return The {@link List} of {@link ProjectUser} wrapped in an {@link ResponseEntity}
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     */
+    @ResponseBody
+    @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.GET)
+    @ResourceAccess(
+            description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id",
+            role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(
+            @PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
+        final List<ProjectUser> projectUserList = roleService.retrieveRoleProjectUserList(pRoleId);
+        return new ResponseEntity<>(toResources(projectUserList), HttpStatus.OK);
     }
 
     @Override

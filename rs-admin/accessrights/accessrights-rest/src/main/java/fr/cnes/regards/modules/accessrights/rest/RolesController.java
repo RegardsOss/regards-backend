@@ -5,12 +5,9 @@ package fr.cnes.regards.modules.accessrights.rest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -22,6 +19,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -29,8 +30,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
@@ -47,16 +47,22 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping(value = "/roles")
-public class RolesController {
+@RequestMapping(RolesController.REQUEST_MAPPING_ROOT)
+public class RolesController implements IResourceController<Role> {
 
     /**
-     * Class logger
+     * Root mapping for requests of this rest controller
      */
-    private static final Logger LOG = LoggerFactory.getLogger(RolesController.class);
+    public static final String REQUEST_MAPPING_ROOT = "/roles";
 
     @Autowired
     private IRoleService roleService;
+
+    /**
+     * Resource service to manage visibles hateoas links
+     */
+    @Autowired
+    private IResourceService resourceService;
 
     /**
      * Define the endpoint for retrieving the list of all roles.
@@ -66,13 +72,11 @@ public class RolesController {
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of roles", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<RoleDTO>>> retrieveRoleList() {
+    public ResponseEntity<List<Resource<Role>>> retrieveRoleList() {
         final List<Role> roles = roleService.retrieveRoleList();
-        final List<RoleDTO> rolesDTO = new ArrayList<>();
+        final List<Role> rolesDTO = new ArrayList<>();
         roles.forEach(r -> rolesDTO.add(new RoleDTO(r)));
-        final List<Resource<RoleDTO>> resources = rolesDTO.stream().map(r -> new Resource<>(r))
-                .collect(Collectors.toList());
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+        return new ResponseEntity<>(toResources(rolesDTO), HttpStatus.OK);
     }
 
     /**
@@ -90,8 +94,7 @@ public class RolesController {
     public ResponseEntity<Resource<Role>> createRole(@Valid @RequestBody final Role pNewRole)
             throws EntityAlreadyExistsException {
         final Role created = roleService.createRole(pNewRole);
-        final Resource<Role> resource = new Resource<>(created);
-        return new ResponseEntity<>(resource, HttpStatus.CREATED);
+        return new ResponseEntity<>(toResource(created), HttpStatus.CREATED);
     }
 
     /**
@@ -109,8 +112,7 @@ public class RolesController {
     public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName)
             throws EntityNotFoundException {
         final Role role = roleService.retrieveRole(pRoleName);
-        final Resource<Role> resource = new Resource<>(role);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        return new ResponseEntity<>(toResource(role), HttpStatus.OK);
     }
 
     /**
@@ -120,6 +122,7 @@ public class RolesController {
      *            The {@link Role} <code>id</code>
      * @param pUpdatedRole
      *            The new {@link Role}
+     * @return Updated {@link Role}
      * @throws EntityException
      *             <br>
      *             {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br>
@@ -130,10 +133,10 @@ public class RolesController {
     @ResponseBody
     @RequestMapping(value = "/{role_id}", method = RequestMethod.PUT)
     @ResourceAccess(description = "Update the role of role_id with passed body", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> updateRole(@PathVariable("role_id") final Long pRoleId,
+    public ResponseEntity<Resource<Role>> updateRole(@PathVariable("role_id") final Long pRoleId,
             @Valid @RequestBody final Role pUpdatedRole) throws EntityException {
-        roleService.updateRole(pRoleId, pUpdatedRole);
-        return new ResponseEntity<>(HttpStatus.OK);
+        final Role updatedRole = roleService.updateRole(pRoleId, pUpdatedRole);
+        return new ResponseEntity<>(toResource(updatedRole), HttpStatus.OK);
     }
 
     /**
@@ -154,95 +157,21 @@ public class RolesController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    /**
-     * Define the endpoint for returning the {@link List} of {@link ResourcesAccess} on the {@link Role} of passed
-     * <code>id</code>.
-     *
-     * @param pRoleId
-     *            The {@link Role}'s <code>id</code>
-     * @return The {@link List} of permissions as {@link ResourcesAccess} wrapped in an {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
-     */
-    @ResponseBody
-    @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve the list of permissions of the role with role_id",
-            role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(
-            @PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
-        final List<ResourcesAccess> resourcesAccesses = roleService.retrieveRoleResourcesAccessList(pRoleId);
-        final List<Resource<ResourcesAccess>> resources = resourcesAccesses.stream().map(ra -> new Resource<>(ra))
-                .collect(Collectors.toList());
-        return new ResponseEntity<>(resources, HttpStatus.OK);
-    }
-
-    /**
-     * Define the endpoint for setting the passed {@link List} of {@link ResourcesAccess} onto the {@link role} of
-     * passed <code>id</code>.
-     *
-     * @param pRoleId
-     *            The {@link Role}'s <code>id</code>
-     * @param pResourcesAccessList
-     *            The {@link List} of {@link ResourcesAccess} to set
-     * @return {@link Void} wrapped in an {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
-     */
-    @ResponseBody
-    @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.PUT)
-    @ResourceAccess(description = "Incrementally update the list of permissions of the role with role_id",
-            role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId,
-            @Valid @RequestBody final List<ResourcesAccess> pResourcesAccessList) throws EntityNotFoundException {
-        roleService.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * Define the endpoint for clearing the {@link List} of {@link ResourcesAccess} of the {@link Role} with passed
-     * <code>id</code>.
-     *
-     * @param pRoleId
-     *            The {@link Role} <code>id</code>
-     * @return {@link Void} wrapped in an {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
-     */
-    @ResponseBody
-    @RequestMapping(value = "/{role_id}/permissions", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Clear the list of permissions of the", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId)
-            throws EntityNotFoundException {
-        roleService.clearRoleResourcesAccess(pRoleId);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * Define the endpoint for retrieving the {@link List} of {@link ProjectUser} for the {@link Role} of passed
-     * <code>id</code> by crawling through parents' hierarachy.
-     *
-     * @param pRoleId
-     *            The {@link Role}'s <code>id</code>
-     * @return The {@link List} of {@link ProjectUser} wrapped in an {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
-     */
-    @ResponseBody
-    @RequestMapping(value = "/{role_id}/users", method = RequestMethod.GET)
-    @ResourceAccess(
-            description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id",
-            role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(
-            @PathVariable("role_id") final Long pRoleId) {
-        List<ProjectUser> projectUserList = new ArrayList<>();
-        try {
-            projectUserList = roleService.retrieveRoleProjectUserList(pRoleId);
-        } catch (final EntityNotFoundException e) {
-            LOG.error("Unable to retrieve the project user list", e);
+    @Override
+    public Resource<Role> toResource(final Role pElement, final Object... pExtras) {
+        Resource<Role> resource = null;
+        if ((pElement != null) && (pElement.getId() != null)) {
+            resource = resourceService.toResource(pElement);
+            resourceService.addLink(resource, this.getClass(), "retrieveRole", LinkRels.SELF,
+                                    MethodParamFactory.build(Long.class, pElement.getId()));
+            resourceService.addLink(resource, this.getClass(), "updateRole", LinkRels.UPDATE,
+                                    MethodParamFactory.build(Long.class, pElement.getId()),
+                                    MethodParamFactory.build(Account.class));
+            resourceService.addLink(resource, this.getClass(), "removeRole", LinkRels.DELETE,
+                                    MethodParamFactory.build(Long.class, pElement.getId()));
+            resourceService.addLink(resource, this.getClass(), "retrieveRoleList", LinkRels.LIST);
         }
-        final List<Resource<ProjectUser>> resources = projectUserList.stream().map(pu -> new Resource<>(pu))
-                .collect(Collectors.toList());
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+        return resource;
     }
 
 }

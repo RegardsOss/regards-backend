@@ -61,7 +61,7 @@ public interface IRoleService {
      *             {@link EntityInconsistentIdentifierException} Thrown when <code>pRoleId</code> is different from the
      *             id of <code>pUpdatedRole</code><br>
      */
-    void updateRole(Long pRoleId, Role pUpdatedRole) throws EntityException;
+    Role updateRole(Long pRoleId, Role pUpdatedRole) throws EntityException;
 
     /**
      * Create a new {@link Role}.

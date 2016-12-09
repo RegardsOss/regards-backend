@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  *
@@ -78,6 +79,12 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      */
     @Autowired
     private IProjectUserService projectUserService;
+
+    /**
+     * Service handling roles.
+     */
+    @Autowired
+    private IRoleService roleService;
 
     /**
      * Resource service to manage visibles hateoas links
@@ -213,6 +220,67 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
     public ResponseEntity<Void> removeProjectUserResources(@PathVariable("user_email") final String pUserLogin)
             throws EntityNotFoundException {
         projectUserService.removeUserAccessRights(pUserLogin);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Define the endpoint for returning the {@link List} of {@link ResourcesAccess} on the {@link Role} of passed
+     * <code>id</code>.
+     *
+     * @param pRoleId
+     *            The {@link Role}'s <code>id</code>
+     * @return The {@link List} of permissions as {@link ResourcesAccess} wrapped in an {@link ResponseEntity}
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     */
+    @ResponseBody
+    @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.GET)
+    @ResourceAccess(description = "Retrieve the list of permissions of the role with role_id",
+            role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(
+            @PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
+        final List<ResourcesAccess> resources = roleService.retrieveRoleResourcesAccessList(pRoleId);
+        return new ResponseEntity<>(toResources(resources), HttpStatus.OK);
+    }
+
+    /**
+     * Define the endpoint for setting the passed {@link List} of {@link ResourcesAccess} onto the {@link role} of
+     * passed <code>id</code>.
+     *
+     * @param pRoleId
+     *            The {@link Role}'s <code>id</code>
+     * @param pResourcesAccessList
+     *            The {@link List} of {@link ResourcesAccess} to set
+     * @return {@link Void} wrapped in an {@link ResponseEntity}
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     */
+    @ResponseBody
+    @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.PUT)
+    @ResourceAccess(description = "Incrementally update the list of permissions of the role with role_id",
+            role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId,
+            @Valid @RequestBody final List<ResourcesAccess> pResourcesAccessList) throws EntityNotFoundException {
+        roleService.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Define the endpoint for clearing the {@link List} of {@link ResourcesAccess} of the {@link Role} with passed
+     * <code>id</code>.
+     *
+     * @param pRoleId
+     *            The {@link Role} <code>id</code>
+     * @return {@link Void} wrapped in an {@link ResponseEntity}
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     */
+    @ResponseBody
+    @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.DELETE)
+    @ResourceAccess(description = "Clear the list of permissions of the", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId)
+            throws EntityNotFoundException {
+        roleService.clearRoleResourcesAccess(pRoleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

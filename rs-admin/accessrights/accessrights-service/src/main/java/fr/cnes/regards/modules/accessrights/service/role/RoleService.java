@@ -202,14 +202,14 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void updateRole(final Long pRoleId, final Role pUpdatedRole) throws EntityException {
+    public Role updateRole(final Long pRoleId, final Role pUpdatedRole) throws EntityException {
         if (!pRoleId.equals(pUpdatedRole.getId())) {
             throw new EntityInconsistentIdentifierException(pRoleId, pUpdatedRole.getId(), Role.class);
         }
         if (!existRole(pRoleId)) {
             throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
-        roleRepository.save(pUpdatedRole);
+        return roleRepository.save(pUpdatedRole);
     }
 
     @Override
