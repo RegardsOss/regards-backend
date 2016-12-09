@@ -88,7 +88,7 @@ public class ProjectUserService implements IProjectUserService {
      */
     @Override
     public List<ProjectUser> retrieveUserList() {
-        return projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED);
+        return projectUserRepository.findAll();
     }
 
     /*
@@ -151,7 +151,7 @@ public class ProjectUserService implements IProjectUserService {
      */
     @Override
     public List<ProjectUser> retrieveAccessRequestList() {
-        return projectUserRepository.findAll();
+        return projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS);
     }
 
     /*
