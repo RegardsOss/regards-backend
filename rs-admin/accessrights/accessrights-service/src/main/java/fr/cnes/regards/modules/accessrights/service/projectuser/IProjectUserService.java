@@ -32,6 +32,13 @@ public interface IProjectUserService {
     List<ProjectUser> retrieveUserList();
 
     /**
+     * Retrieve the {@link List} of all {@link ProjectUser}s with the given status.
+     *
+     * @return The list of project users
+     */
+    List<ProjectUser> retrieveUserList(UserStatus pStatus);
+
+    /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
      *
      * @param pUserId
@@ -77,7 +84,7 @@ public interface IProjectUserService {
      *             {@link EntityNotFoundException} Thrown when no {@link ProjectUser} with passed <code>id</code> could
      *             be found<br>
      */
-    void updateUser(Long pUserId, ProjectUser pUpdatedProjectUser) throws EntityException;
+    ProjectUser updateUser(Long pUserId, ProjectUser pUpdatedProjectUser) throws EntityException;
 
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
@@ -141,7 +148,7 @@ public interface IProjectUserService {
      * @throws EntityNotFoundException
      *             Thhrown when not project user of passed <code>id</code> could be found
      */
-    void updateUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException;
+    List<MetaData> updateUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException;
 
     /**
      * Clear the {@link List} of {@link MetaData} of the {@link ProjectUser} with passed <code>id</code>.

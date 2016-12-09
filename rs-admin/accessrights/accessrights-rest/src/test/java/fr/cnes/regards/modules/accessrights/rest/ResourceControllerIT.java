@@ -81,10 +81,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      */
     private String publicToken;
 
-    /**
-     * {@link ResourcesAccess} entity for test created in the @Before method
-     */
-    private ResourcesAccess resourceTest;
+    private ResourcesAccess testResource;
 
     /**
      *
@@ -107,7 +104,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         final ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE,
                 CONFIGURED_ENDPOINT_URL, HttpVerb.GET);
         resource.addRole(roleService.retrieveRole(DefaultRole.ADMIN.toString()));
-        resourceTest = repository.save(resource);
+        testResource = repository.save(resource);
     }
 
     /**
@@ -133,8 +130,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performPost("/resources/register/{microservice}", instanceToken, mapping, expectations,
-                    "Error during registring endpoints", DEFAULT_MICROSERVICE);
+        performPost(ResourcesController.REQUEST_MAPPING_ROOT + "/register/microservice/{microservice}", instanceToken,
+                    mapping, expectations, "Error during registring endpoints", DEFAULT_MICROSERVICE);
 
         final List<ResourcesAccess> resources = repository.findByMicroservice(DEFAULT_MICROSERVICE);
 
@@ -199,7 +196,23 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performGet("/resources", publicToken, expectations, "Error retrieving endpoints");
+        performGet(ResourcesController.REQUEST_MAPPING_ROOT, publicToken, expectations, "Error retrieving endpoints");
+    }
+
+    /**
+     *
+     * Check that the microservice allow to retrieve all resource endpoints configurations
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Test
+    @Purpose("Check that the microservice allow to retrieve one resource endpoint configurations")
+    public void retrieveResource() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        performGet(ResourcesController.REQUEST_MAPPING_ROOT + "/" + testResource.getId(), publicToken, expectations,
+                   "Error retrieving endpoints");
     }
 
     @Override

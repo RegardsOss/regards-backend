@@ -139,7 +139,7 @@ public class ProjectUserServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system allows to retrieve the users of a project.")
-    public void retrieveUserList() {
+    public void retrieveUserListByStatus() {
         // Define expected
         final List<ProjectUser> expected = new ArrayList<>();
         expected.add(projectUser);
@@ -149,13 +149,40 @@ public class ProjectUserServiceTest {
         Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED)).thenReturn(expected);
 
         // Retrieve actual value
-        final List<ProjectUser> actual = projectUserService.retrieveUserList();
+        final List<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED);
 
         // Check that the expected and actual role have same values
         Assert.assertEquals(expected, actual);
 
         // Check that the repository's method was called with right arguments
         Mockito.verify(projectUserRepository).findByStatus(UserStatus.ACCESS_GRANTED);
+    }
+
+    /**
+     * Check that the system allows to retrieve the users of a project.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_300")
+    @Requirement("REGARDS_DSL_ADM_ADM_310")
+    @Requirement("REGARDS_DSL_ADM_ADM_320")
+    @Purpose("Check that the system allows to retrieve the users of a project.")
+    public void retrieveAllUserList() {
+        // Define expected
+        final List<ProjectUser> expected = new ArrayList<>();
+        expected.add(projectUser);
+        projectUser.setStatus(UserStatus.ACCESS_GRANTED);
+
+        // Mock the repository returned value
+        Mockito.when(projectUserRepository.findAll()).thenReturn(expected);
+
+        // Retrieve actual value
+        final List<ProjectUser> actual = projectUserService.retrieveUserList();
+
+        // Check that the expected and actual role have same values
+        Assert.assertEquals(expected, actual);
+
+        // Check that the repository's method was called with right arguments
+        Mockito.verify(projectUserRepository).findAll();
     }
 
     /**

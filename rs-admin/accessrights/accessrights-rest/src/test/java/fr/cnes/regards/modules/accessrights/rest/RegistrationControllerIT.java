@@ -65,6 +65,11 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     private String apiAccesses;
 
     /**
+     * Endpoint to access list of users in status access pending
+     */
+    private String apiAccessesPending;
+
+    /**
      * Endpoint for a specific access request
      */
     private String apiAccessId;
@@ -100,11 +105,13 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Before
     public void setUp() {
 
-        apiAccesses = "/accesses";
+        apiAccesses = RegistrationController.REQUEST_MAPPING_ROOT;
         apiAccessId = apiAccesses + "/{access_id}";
         apiAccessAccept = apiAccessId + "/accept";
         apiAccessDeny = apiAccessId + "/deny";
         apiAccessSettings = apiAccesses + "/settings";
+
+        apiAccessesPending = ProjectUsersController.REQUEST_MAPPING_ROOT + "/pendingaccesses";
 
         errorMessage = "Cannot reach model attributes";
 
@@ -123,7 +130,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     public void getAllAccesses() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(apiAccesses, expectations, errorMessage);
+        performDefaultGet(apiAccessesPending, expectations, errorMessage);
     }
 
     /**

@@ -132,6 +132,23 @@ public class ResourcesService implements IResourcesService {
     }
 
     @Override
+    public ResourcesAccess retrieveRessource(final Long pResourceId) throws EntityNotFoundException {
+        final ResourcesAccess result = resourceAccessRepo.findOne(pResourceId);
+        if (result == null) {
+            throw new EntityNotFoundException(pResourceId, ResourcesAccess.class);
+        }
+        return result;
+    }
+
+    @Override
+    public ResourcesAccess updateResource(final ResourcesAccess pResourceToUpdate) throws EntityNotFoundException {
+        if (resourceAccessRepo.exists(pResourceToUpdate.getId())) {
+            throw new EntityNotFoundException(pResourceToUpdate.getId(), ResourcesAccess.class);
+        }
+        return resourceAccessRepo.save(pResourceToUpdate);
+    }
+
+    @Override
     public List<ResourcesAccess> retrieveMicroserviceRessources(final String pMicroserviceName) {
         final Iterable<ResourcesAccess> allResources = resourceAccessRepo.findByMicroservice(pMicroserviceName);
         final List<ResourcesAccess> resourcesList = new ArrayList<>();
