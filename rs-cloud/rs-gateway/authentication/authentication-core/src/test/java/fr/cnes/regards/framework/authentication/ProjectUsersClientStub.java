@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.context.annotation.Primary;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +16,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 
 /**
  *
@@ -42,8 +42,12 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     private static long idCount = 0;
 
     @Override
-    public ResponseEntity<List<Resource<ProjectUser>>> retrieveProjectUserList() {
-        return new ResponseEntity<List<Resource<ProjectUser>>>(HateoasUtils.wrapList(users), HttpStatus.OK);
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveProjectUserList(final int pPage,
+            final int pSize) {
+        final PageMetadata metadata = new PageMetadata(pSize, pPage, users.size());
+        final PagedResources<Resource<ProjectUser>> resource = new PagedResources<>(HateoasUtils.wrapList(users),
+                metadata, new ArrayList<>());
+        return new ResponseEntity<PagedResources<Resource<ProjectUser>>>(resource, HttpStatus.OK);
     }
 
     @Override
@@ -62,7 +66,8 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<Void> updateProjectUser(final Long pUserId, final ProjectUser pUpdatedProjectUser) {
+    public ResponseEntity<Resource<ProjectUser>> updateProjectUser(final Long pUserId,
+            final ProjectUser pUpdatedProjectUser) {
         return null;
     }
 
@@ -72,35 +77,14 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(final Long pUserId) {
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveAccessRequestList(final int pPage,
+            final int pSize) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Void> updateProjectUserMetaData(final Long pUserId,
-            final List<MetaData> pUpdatedUserMetaData) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Void> removeProjectUserMetaData(final Long pUserId) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(final String pUserLogin,
-            final String pBorrowedRoleName) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Void> updateProjectUserAccessRights(final String pLogin,
-            final List<ResourcesAccess> pUpdatedUserAccessRights) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Void> removeProjectUserAccessRights(final String pUserLogin) {
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId,
+            final int pPage, final int pSize) {
         return null;
     }
 
