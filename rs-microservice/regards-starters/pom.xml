@@ -37,6 +37,8 @@
 		<module>microservice-regards-test</module>
 		<module>jpa-multitenant-regards-test</module>
 		<module>plugins-regards-starter</module>
+		<module>gson-regards-starter</module>
+		<module>gson-regards</module>
 	</modules>
 
 	<dependencies>

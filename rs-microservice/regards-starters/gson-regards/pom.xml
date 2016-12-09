@@ -4,9 +4,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>microservice-regards</artifactId>
+	<artifactId>gson-regards</artifactId>
 	<version>0.0.0-SNAPSHOT</version>
-	<description>REGARDS microservice</description>
+	<description>GSON</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
@@ -16,20 +16,20 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc</artifactId>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
 		</dependency>
+		<!-- <dependency> <groupId>org.danilopianini</groupId> <artifactId>gson-extras</artifactId> 
+			<version>0.2.1</version> </dependency> -->
+		<!-- Tests -->
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>module-regards</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

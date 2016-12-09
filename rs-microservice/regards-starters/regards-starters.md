@@ -19,6 +19,10 @@ regards.amqp.management.port= 15672 # port of the managing plugin of the broker
 regards.cloud.enabled=false # Disable cloud support
 ```
 
+## GSON starter
+
+TODO
+
 ## HATEOAS starter
 
 WARNING : at the moment, this starter only accepts **@RequestMapping** annotation to work fine.

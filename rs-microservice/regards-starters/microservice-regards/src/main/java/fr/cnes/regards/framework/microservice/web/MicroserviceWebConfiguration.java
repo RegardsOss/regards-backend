@@ -3,16 +3,9 @@
  */
 package fr.cnes.regards.framework.microservice.web;
 
-import java.util.List;
-
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.GsonHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  *
@@ -25,27 +18,6 @@ import com.google.gson.GsonBuilder;
  * @since 1.0-SNAPSHOT
  */
 public class MicroserviceWebConfiguration extends WebMvcConfigurerAdapter {
-
-    /**
-     *
-     */
-    private static GsonBuilder builder;
-
-    public MicroserviceWebConfiguration(GsonBuilder pBuilder) {
-        builder = pBuilder;
-    }
-
-    @Override
-    public void configureMessageConverters(final List<HttpMessageConverter<?>> pConverters) {
-
-        final Gson gson = builder.setExclusionStrategies(new GSonIgnoreExclusionStrategy()).create();
-
-        final GsonHttpMessageConverter gsonHttpMessageConverter = new GsonHttpMessageConverter();
-        gsonHttpMessageConverter.setGson(gson);
-
-        pConverters.add(gsonHttpMessageConverter);
-        super.configureMessageConverters(pConverters);
-    }
 
     @Override
     public void configurePathMatch(final PathMatchConfigurer pConfigurer) {
