@@ -151,7 +151,7 @@ public class ProjectUserService implements IProjectUserService {
      */
     @Override
     public List<ProjectUser> retrieveAccessRequestList() {
-        return projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS);
+        return projectUserRepository.findAll();
     }
 
     /*
