@@ -146,7 +146,7 @@ public class ProjectUserServiceTest {
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findAll()).thenReturn(expected);
+        Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED)).thenReturn(expected);
 
         // Retrieve actual value
         final List<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED);
@@ -155,7 +155,7 @@ public class ProjectUserServiceTest {
         Assert.assertEquals(expected, actual);
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).findAll();
+        Mockito.verify(projectUserRepository).findByStatus(UserStatus.ACCESS_GRANTED);
     }
 
     /**
