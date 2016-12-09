@@ -12,8 +12,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
-import com.google.gson.GsonBuilder;
-
 import fr.cnes.regards.framework.microservice.manager.DefaultApplicationManager;
 import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
 import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
@@ -33,7 +31,7 @@ import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
 @Configuration
 @ConditionalOnWebApplication
 @AutoConfigureBefore(WebMvcAutoConfiguration.class)
-@Order(Ordered.HIGHEST_PRECEDENCE + 50)
+@Order(Ordered.HIGHEST_PRECEDENCE + 100)
 public class MicroserviceAutoConfiguration {
 
     @Bean
@@ -43,7 +41,7 @@ public class MicroserviceAutoConfiguration {
     }
 
     @Bean
-    public MicroserviceWebConfiguration webConfig(GsonBuilder pBuilder) {
+    public MicroserviceWebConfiguration webConfig() {
         return new MicroserviceWebConfiguration();
     }
 }

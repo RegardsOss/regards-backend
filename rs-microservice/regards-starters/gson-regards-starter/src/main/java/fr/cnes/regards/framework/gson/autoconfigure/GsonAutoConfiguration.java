@@ -6,15 +6,13 @@ package fr.cnes.regards.framework.gson.autoconfigure;
 import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
+import org.springframework.http.converter.json.GsonHttpMessageConverter;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
@@ -29,8 +27,6 @@ import fr.cnes.regards.framework.gson.strategy.GSonIgnoreExclusionStrategy;
  */
 @Configuration
 @ConditionalOnWebApplication
-@AutoConfigureBefore(WebMvcAutoConfiguration.class)
-@Order(Ordered.HIGHEST_PRECEDENCE + 100)
 @EnableConfigurationProperties(GsonProperties.class)
 public class GsonAutoConfiguration {
 
@@ -46,8 +42,13 @@ public class GsonAutoConfiguration {
     }
 
     @Bean
-    public GsonWebConfiguration webConfig(GsonBuilder pBuilder) {
-        return new GsonWebConfiguration(pBuilder);
+    public GsonHttpMessageConverter gsonConverter(GsonBuilder pBuilder) {
+        final Gson gson = pBuilder.create();
+
+        final GsonHttpMessageConverter gsonHttpMessageConverter = new GsonHttpMessageConverter();
+        gsonHttpMessageConverter.setGson(gson);
+
+        return gsonHttpMessageConverter;
     }
 
     private void addFactories(GsonBuilder pBuilder) {
