@@ -18,7 +18,7 @@ import org.springframework.core.annotation.Order;
 import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
-import fr.cnes.regards.framework.gson.reflection.GsonableAnnotationProcessor;
+import fr.cnes.regards.framework.gson.reflection.GsonAnnotationProcessor;
 import fr.cnes.regards.framework.gson.strategy.GSonIgnoreExclusionStrategy;
 
 /**
@@ -41,7 +41,7 @@ public class GsonAutoConfiguration {
     public GsonBuilder gsonBuilder() {
         final GsonBuilder builder = new GsonBuilder();
         customizeBuilder(builder);
-        addGsonableFactories(builder);
+        addFactories(builder);
         return builder;
     }
 
@@ -50,8 +50,8 @@ public class GsonAutoConfiguration {
         return new GsonWebConfiguration(pBuilder);
     }
 
-    private void addGsonableFactories(GsonBuilder pBuilder) {
-        GsonableAnnotationProcessor.process(pBuilder, properties.getScanPrefix());
+    private void addFactories(GsonBuilder pBuilder) {
+        GsonAnnotationProcessor.process(pBuilder, properties.getScanPrefix());
     }
 
     private void customizeBuilder(GsonBuilder pBuilder) {

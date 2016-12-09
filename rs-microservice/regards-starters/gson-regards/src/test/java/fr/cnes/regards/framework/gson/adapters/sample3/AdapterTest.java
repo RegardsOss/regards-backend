@@ -12,10 +12,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.gson.annotation.Gsonable;
-import fr.cnes.regards.framework.gson.reflection.GsonableAnnotationProcessor;
+import fr.cnes.regards.framework.gson.reflection.GsonAnnotationProcessor;
 
 /**
- * Test with {@link Gsonable} annotation with default behaviour and {@link GsonableAnnotationProcessor} processing.
+ * Test with {@link Gsonable} annotation with default behaviour and {@link GsonAnnotationProcessor} processing.
  *
  * @author Marc Sordi
  *
@@ -36,7 +36,7 @@ public class AdapterTest {
         // Init GSON
         final GsonBuilder gsonBuilder = new GsonBuilder();
         // Sample 3 : create factory dynamically via reflection
-        GsonableAnnotationProcessor.process(gsonBuilder, this.getClass().getPackage().getName());
+        GsonAnnotationProcessor.processGsonable(gsonBuilder, this.getClass().getPackage().getName());
         final Gson gson = gsonBuilder.create();
 
         final Hawk hawk = new Hawk();

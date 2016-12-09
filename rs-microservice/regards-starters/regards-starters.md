@@ -21,7 +21,32 @@ regards.cloud.enabled=false # Disable cloud support
 
 ## GSON starter
 
-TODO
+```properties
+# Scan package for Gsonable annotation
+regards.gson.scan-prefix=fr.cnes.regards
+```
+
+### Autoconfiguration
+
+GSON add GSON serialization to SPRING HttpMessageConverter.
+
+GSON is customize through **GsonBuilder** to :
+- dynamically create adapter factories for Gsonable element (polymorphic factories),
+- dynamically register **TypeAdapterFactory**, 
+- add an exclusion strategy based on **GSonIgnore** annotation,
+- add a **PathAdapter** for **Path** class.
+
+### How to use polymorphic element (de)serialization
+
+#### With **Gsonable** annotation on a base hierarchy type
+
+This annotation allows to register a dynamically created **PolymorphicTypeAdapterFactory**.
+
+You optionnaly can specify the discriminator name in **Gsonable** and the discriminator values on sub types through **GsonDiscriminator**.
+
+#### With **GsonAdapterFactory** whatever your want.
+
+This annotation allows to register automatically a **TypeAdapterFactory** with a no arg constructor.
 
 ## HATEOAS starter
 
