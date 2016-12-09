@@ -15,6 +15,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -145,17 +149,20 @@ public class ProjectUserServiceTest {
         expected.add(projectUser);
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
 
+        final Pageable pageable = new PageRequest(0, 100);
+        final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
+
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED)).thenReturn(expected);
+        Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED, pageable)).thenReturn(expectedPage);
 
         // Retrieve actual value
-        final List<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED);
+        final Page<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED, pageable);
 
         // Check that the expected and actual role have same values
-        Assert.assertEquals(expected, actual);
+        Assert.assertEquals(expectedPage, actual);
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).findByStatus(UserStatus.ACCESS_GRANTED);
+        Mockito.verify(projectUserRepository).findByStatus(UserStatus.ACCESS_GRANTED, pageable);
     }
 
     /**
@@ -172,17 +179,20 @@ public class ProjectUserServiceTest {
         expected.add(projectUser);
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
 
+        final Pageable pageable = new PageRequest(0, 100);
+        final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
+
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findAll()).thenReturn(expected);
+        Mockito.when(projectUserRepository.findAll(pageable)).thenReturn(expectedPage);
 
         // Retrieve actual value
-        final List<ProjectUser> actual = projectUserService.retrieveUserList();
+        final Page<ProjectUser> actual = projectUserService.retrieveUserList(pageable);
 
         // Check that the expected and actual role have same values
-        Assert.assertEquals(expected, actual);
+        Assert.assertEquals(expectedPage, actual);
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).findAll();
+        Mockito.verify(projectUserRepository).findAll(pageable);
     }
 
     /**
@@ -322,21 +332,27 @@ public class ProjectUserServiceTest {
         final List<ProjectUser> accessRequests = new ArrayList<>();
         accessRequests.add(new ProjectUser(null, null, null, null));
         accessRequests.add(new ProjectUser(null, null, null, null));
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(accessRequests);
+
+        final Pageable pageable = new PageRequest(0, 100);
 
         try (final Stream<ProjectUser> stream = accessRequests.stream()) {
             // Prepare the list of expect values
             final List<ProjectUser> expected = stream.filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS))
                     .collect(Collectors.toList());
 
+            final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 2);
+
+            Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS, pageable))
+                    .thenReturn(expectedPage);
+
             // Retrieve actual values
-            final List<ProjectUser> actual = projectUserService.retrieveAccessRequestList();
+            final Page<ProjectUser> actual = projectUserService.retrieveAccessRequestList(pageable);
 
             // Lists must be equal
-            Assert.assertEquals(expected, actual);
+            Assert.assertEquals(expectedPage, actual);
 
             // Check that the repository's method was called with right arguments
-            Mockito.verify(projectUserRepository).findByStatus(UserStatus.WAITING_ACCESS);
+            Mockito.verify(projectUserRepository).findByStatus(UserStatus.WAITING_ACCESS, pageable);
 
         }
     }

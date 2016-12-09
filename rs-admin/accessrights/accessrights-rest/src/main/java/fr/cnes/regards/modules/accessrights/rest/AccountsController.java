@@ -321,7 +321,6 @@ public class AccountsController implements IResourceController<Account> {
                 resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
                                         MethodParamFactory.build(Long.class, pElement.getId()));
             }
-            resourceService.addLink(resource, this.getClass(), "retrieveAccountList", LinkRels.LIST);
         }
         return resource;
     }

@@ -6,6 +6,10 @@ package fr.cnes.regards.modules.accessrights.rest;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -89,15 +93,16 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ProjectUser>>> retrieveProjectUserList(
-            @RequestParam(name = "status", required = false) final String pStatus) {
-        List<ProjectUser> users;
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveProjectUserList(
+            @RequestParam(name = "status", required = false) final String pStatus, final Pageable pPageable,
+            final PagedResourcesAssembler<ProjectUser> pPagedResourcesAssembler) {
+        Page<ProjectUser> users;
         if (pStatus == null) {
-            users = projectUserService.retrieveUserList();
+            users = projectUserService.retrieveUserList(pPageable);
         } else {
-            users = projectUserService.retrieveUserList(UserStatus.valueOf(pStatus));
+            users = projectUserService.retrieveUserList(UserStatus.valueOf(pStatus), pPageable);
         }
-        return new ResponseEntity<>(toResources(users), HttpStatus.OK);
+        return new ResponseEntity<>(toPagedResources(users, pPagedResourcesAssembler), HttpStatus.OK);
     }
 
     /**
@@ -108,9 +113,10 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResponseBody
     @RequestMapping(value = "/pendingaccesses", method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the list of access request", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
-        final List<ProjectUser> projectUsers = projectUserService.retrieveAccessRequestList();
-        return new ResponseEntity<>(toResources(projectUsers), HttpStatus.OK);
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveAccessRequestList(final Pageable pPageable,
+            final PagedResourcesAssembler<ProjectUser> pPagedResourcesAssembler) {
+        final Page<ProjectUser> projectUsers = projectUserService.retrieveAccessRequestList(pPageable);
+        return new ResponseEntity<>(toPagedResources(projectUsers, pPagedResourcesAssembler), HttpStatus.OK);
     }
 
     /**
@@ -191,10 +197,11 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResourceAccess(
             description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ProjectUser>>> retrieveRoleProjectUserList(
-            @PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
-        final List<ProjectUser> projectUserList = roleService.retrieveRoleProjectUserList(pRoleId);
-        return new ResponseEntity<>(toResources(projectUserList), HttpStatus.OK);
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(
+            @PathVariable("role_id") final Long pRoleId, final Pageable pPageable,
+            final PagedResourcesAssembler<ProjectUser> pPagedResourcesAssembler) throws EntityNotFoundException {
+        final Page<ProjectUser> projectUserList = roleService.retrieveRoleProjectUserList(pRoleId, pPageable);
+        return new ResponseEntity<>(toPagedResources(projectUserList, pPagedResourcesAssembler), HttpStatus.OK);
     }
 
     @Override

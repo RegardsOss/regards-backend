@@ -11,6 +11,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -276,8 +280,11 @@ public class ProjectUserWorkflowManagerTest {
         final List<ProjectUser> asList = new ArrayList<>();
         asList.add(projectUser);
 
+        final Pageable pageable = new PageRequest(0, 100);
+        final Page<ProjectUser> expectedPage = new PageImpl<>(asList, pageable, 1);
+
         // Mock repository's content
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS)).thenReturn(asList);
+        Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS, pageable)).thenReturn(expectedPage);
         Mockito.when(projectUserStateProvider.createState(projectUser))
                 .thenReturn(new WaitingAccessState(projectUserRepository, accessSettingsService));
 
@@ -301,8 +308,11 @@ public class ProjectUserWorkflowManagerTest {
         final List<ProjectUser> asList = new ArrayList<>();
         asList.add(projectUser);
 
+        final Pageable pageable = new PageRequest(0, 100);
+        final Page<ProjectUser> expectedPage = new PageImpl<>(asList, pageable, 1);
+
         // Mock repository's content by making sure the request exists
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_DENIED)).thenReturn(asList);
+        Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_DENIED, pageable)).thenReturn(expectedPage);
         Mockito.when(projectUserStateProvider.createState(projectUser))
                 .thenReturn(new AccessDeniedState(projectUserRepository));
 
@@ -330,8 +340,11 @@ public class ProjectUserWorkflowManagerTest {
         final List<ProjectUser> asList = new ArrayList<>();
         asList.add(projectUser);
 
+        final Pageable pageable = new PageRequest(0, 100);
+        final Page<ProjectUser> expectedPage = new PageImpl<>(asList, pageable, 1);
+
         // Mock repository's content by making sure the request exists
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED)).thenReturn(asList);
+        Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED, pageable)).thenReturn(expectedPage);
         Mockito.when(projectUserStateProvider.createState(projectUser))
                 .thenReturn(new AccessGrantedState(projectUserRepository));
 

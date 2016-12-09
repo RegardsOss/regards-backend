@@ -25,8 +25,11 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
@@ -65,6 +68,9 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IResourcesAccessRepository repository;
 
+    @Autowired
+    private IProjectUserRepository projectUserRepository;
+
     /**
      * Service to manage Role entities
      */
@@ -82,6 +88,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     private String publicToken;
 
     private ResourcesAccess testResource;
+
+    private ProjectUser testUser;
 
     /**
      *
@@ -103,7 +111,11 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
 
         final ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE,
                 CONFIGURED_ENDPOINT_URL, HttpVerb.GET);
-        resource.addRole(roleService.retrieveRole(DefaultRole.ADMIN.toString()));
+        final Role adminRole = roleService.retrieveRole(DefaultRole.ADMIN.toString());
+        resource.addRole(adminRole);
+
+        testUser = projectUserRepository
+                .save(new ProjectUser(DEFAULT_USER_EMAIL, adminRole, new ArrayList<>(), new ArrayList<>()));
         testResource = repository.save(resource);
     }
 
@@ -213,6 +225,21 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performGet(ResourcesController.REQUEST_MAPPING_ROOT + "/" + testResource.getId(), publicToken, expectations,
                    "Error retrieving endpoints");
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_230")
+    @Purpose("Check that the system allows to retrieve a user's permissions.")
+    public void getUserPermissions() {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(ResourcesController.REQUEST_MAPPING_ROOT + "/users/{user_email}", expectations,
+                          "Error retrieving resourcesAccess for user.", testUser.getEmail());
+
+        expectations.clear();
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
+        performDefaultGet(ResourcesController.REQUEST_MAPPING_ROOT + "/users/{user_email}", expectations,
+                          "The user does not exists. There should be an error 404", "wrongEmail");
     }
 
     @Override

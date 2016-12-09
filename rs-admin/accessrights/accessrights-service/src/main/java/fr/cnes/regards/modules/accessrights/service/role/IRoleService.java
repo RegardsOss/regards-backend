@@ -5,6 +5,9 @@ package fr.cnes.regards.modules.accessrights.service.role;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -128,7 +131,7 @@ public interface IRoleService {
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
-    List<ProjectUser> retrieveRoleProjectUserList(Long pRoleId) throws EntityNotFoundException;
+    Page<ProjectUser> retrieveRoleProjectUserList(Long pRoleId, Pageable pPageable) throws EntityNotFoundException;
 
     /**
      * Return true when {@link Role} of passed <code>id</code> exists in db.

@@ -27,7 +27,6 @@ import fr.cnes.regards.microservices.administration.FeignInitialAdminClients;
 import fr.cnes.regards.microservices.administration.MicroserviceClientsAutoConfiguration;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
-import fr.cnes.regards.modules.accessrights.fallback.RolesFallback;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
@@ -98,7 +97,7 @@ public class JpaTenantConnectionConfiguration {
     @Bean
     @Primary
     public IRolesClient roleClient() {
-        return new RolesFallback();
+        return Mockito.mock(IRolesClient.class);
     }
 
     /**

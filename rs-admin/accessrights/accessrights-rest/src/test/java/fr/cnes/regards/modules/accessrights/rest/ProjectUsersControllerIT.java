@@ -143,19 +143,6 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
                           projectUser.getId());
     }
 
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_230")
-    @Purpose("Check that the system allows to retrieve a user's permissions.")
-    public void getUserPermissions() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(apiUserPermissions, expectations, errorMessage, projectUser.getEmail());
-
-        expectations.clear();
-        expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultGet(apiUserPermissions, expectations, errorMessage, "wrongEmail");
-    }
-
     /**
      * Check that the system allows a user to connect using a hierarchically inferior role.
      *

@@ -5,8 +5,7 @@ package fr.cnes.regards.modules.accessrights.client;
 
 import java.util.List;
 
-import javax.validation.Valid;
-
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.client.core.annotation.RestClient;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  *
@@ -45,7 +41,18 @@ public interface IProjectUsersClient {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<ProjectUser>>> retrieveProjectUserList();
+    ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveProjectUserList(@RequestParam("page") int pPage,
+            @RequestParam("size") int pSize);
+
+    /**
+     * Retrieve all users with a pending access requests.
+     *
+     * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
+     */
+    @ResponseBody
+    @RequestMapping(value = "/pendingaccesses", method = RequestMethod.GET)
+    ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveAccessRequestList(@RequestParam("page") int pPage,
+            @RequestParam("size") int pSize);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>email</code>.
@@ -67,7 +74,7 @@ public interface IProjectUsersClient {
      */
     @ResponseBody
     @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT)
-    ResponseEntity<Void> updateProjectUser(@PathVariable("user_id") Long pUserId,
+    ResponseEntity<Resource<ProjectUser>> updateProjectUser(@PathVariable("user_id") Long pUserId,
             @RequestBody ProjectUser pUpdatedProjectUser);
 
     /**
@@ -81,76 +88,21 @@ public interface IProjectUsersClient {
     ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long pUserId);
 
     /**
-     * Return the {@link List} of {@link MetaData} on the {@link ProjectUser} of passed <code>id</code>.
+     * retrieveRoleProjectUserList
      *
-     * @param pUserId
-     *            The {@link ProjectUser}'s <code>id</code>
-     * @return
-     */
-    @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(@PathVariable("user_id") Long pUserId);
-
-    /**
-     * Set the passed {@link MetaData} onto the {@link ProjectUser} of passed <code>id</code>.
-     *
-     * @param pUserId
-     *            The {@link ProjectUser}'s <code>id</code>
-     * @param pUpdatedUserMetaData
-     *            The {@link List} of {@link MetaData} to set
+     * @param pRoleId
+     *            role identifier to retrieve users.
+     * @param pPage
+     *            page index
+     * @param pSize
+     *            page size
+     * @return {@link PagedResources} of {@link ProjectUser}
+     * @since 1.0-SNAPSHOT
      */
     @ResponseBody
-    @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.PUT)
-    ResponseEntity<Void> updateProjectUserMetaData(@PathVariable("user_id") Long pUserId,
-            @Valid @RequestBody List<MetaData> pUpdatedUserMetaData);
-
-    /**
-     * Clear the {@link List} of {@link MetaData} of the {@link ProjectUser} with passed <code>id</code>.
-     *
-     * @param pUserId
-     *            The {@link ProjectUser} <code>id</code>
-     */
-    @ResponseBody
-    @RequestMapping(value = "/{user_id}/metadata", method = RequestMethod.DELETE)
-    ResponseEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") Long pUserId);
-
-    /**
-     * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
-     *
-     * @param pLogin
-     *            The {@link Account}'s <code>id</code>
-     * @param pBorrowedRoleName
-     *            The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
-     * @return the list of resources access
-     */
-    @ResponseBody
-    @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.GET)
-    ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserAccessRights(
-            @PathVariable("user_login") String pUserLogin,
-            @RequestParam(value = "borrowedRoleName", required = false) String pBorrowedRoleName);
-
-    /**
-     * Update the the {@link List} of <code>permissions</code>.
-     *
-     * @param pLogin
-     *            The {@link ProjectUser}'s <code>login</code>
-     * @param pUpdatedUserAccessRights
-     *            The {@link List} of {@link ResourcesAccess} to set
-     */
-    @ResponseBody
-    @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.PUT)
-    ResponseEntity<Void> updateProjectUserAccessRights(@PathVariable("user_login") String pLogin,
-            @Valid @RequestBody List<ResourcesAccess> pUpdatedUserAccessRights);
-
-    /**
-     * Clear the {@link List} of {@link ResourcesAccess} of the {@link ProjectUser} with passed <code>login</code>.
-     *
-     * @param pLogin
-     *            The {@link ProjectUser} <code>login</code>
-     */
-    @ResponseBody
-    @RequestMapping(value = "/{user_login}/permissions", method = RequestMethod.DELETE)
-    ResponseEntity<Void> removeProjectUserAccessRights(@PathVariable("user_login") String pUserLogin);
+    @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.GET)
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(
+            @PathVariable("role_id") final Long pRoleId, @RequestParam("page") int pPage,
+            @RequestParam("size") int pSize);
 
 }

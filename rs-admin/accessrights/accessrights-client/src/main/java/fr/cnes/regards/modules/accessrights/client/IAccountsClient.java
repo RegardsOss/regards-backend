@@ -3,10 +3,9 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import java.util.List;
-
 import javax.validation.Valid;
 
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +20,6 @@ import fr.cnes.regards.client.core.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 
 /**
  * Feign client for rs-admin Accounts controller.
@@ -42,7 +40,8 @@ public interface IAccountsClient {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<Account>>> retrieveAccountList();
+    ResponseEntity<PagedResources<Resource<Account>>> retrieveAccountList(@RequestParam("page") int pPage,
+            @RequestParam("size") int pSize);
 
     /**
      * Create a new account in state PENDING from the passed values
@@ -88,7 +87,7 @@ public interface IAccountsClient {
      */
     @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT)
-    ResponseEntity<Void> updateAccount(@PathVariable("account_id") Long pAccountId,
+    ResponseEntity<Resource<Account>> updateAccount(@PathVariable("account_id") Long pAccountId,
             @Valid @RequestBody Account pUpdatedAccount);
 
     /**
@@ -144,26 +143,6 @@ public interface IAccountsClient {
     @ResponseBody
     @RequestMapping(value = "/code", method = RequestMethod.GET)
     ResponseEntity<Void> sendAccountCode(@RequestParam("email") String pEmail, @RequestParam("type") CodeType pType);
-
-    /**
-     * Retrieve the {@link AccountSettings} for the instance.
-     *
-     * @return The {@link AccountSettings} wrapped in a {@link Resource} and a {@link ResponseEntity}
-     */
-    @ResponseBody
-    @RequestMapping(value = "/settings", method = RequestMethod.GET)
-    ResponseEntity<Resource<AccountSettings>> retrieveAccountSettings();
-
-    /**
-     * Update the {@link AccountSettings} for the instance.
-     *
-     * @param pSettings
-     *            The {@link AccountSettings}
-     * @return The updated account settings
-     */
-    @ResponseBody
-    @RequestMapping(value = "/settings", method = RequestMethod.PUT)
-    ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody AccountSettings pUpdatedAccountSetting);
 
     /**
      * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of

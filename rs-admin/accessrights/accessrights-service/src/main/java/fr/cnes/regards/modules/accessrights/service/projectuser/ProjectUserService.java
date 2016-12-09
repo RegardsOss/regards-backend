@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -87,8 +89,8 @@ public class ProjectUserService implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserList()
      */
     @Override
-    public List<ProjectUser> retrieveUserList() {
-        return projectUserRepository.findAll();
+    public Page<ProjectUser> retrieveUserList(final Pageable pPageable) {
+        return projectUserRepository.findAll(pPageable);
     }
 
     /*
@@ -97,8 +99,8 @@ public class ProjectUserService implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserList(UserStatus)
      */
     @Override
-    public List<ProjectUser> retrieveUserList(final UserStatus pStatus) {
-        return projectUserRepository.findByStatus(pStatus);
+    public Page<ProjectUser> retrieveUserList(final UserStatus pStatus, final Pageable pPageable) {
+        return projectUserRepository.findByStatus(pStatus, pPageable);
     }
 
     /*
@@ -160,8 +162,8 @@ public class ProjectUserService implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveAccessRequestList()
      */
     @Override
-    public List<ProjectUser> retrieveAccessRequestList() {
-        return projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS);
+    public Page<ProjectUser> retrieveAccessRequestList(final Pageable pPageable) {
+        return projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS, pPageable);
     }
 
     /*

@@ -23,7 +23,6 @@ import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.fallback.RegistrationFallback;
 
 /**
  *
@@ -32,7 +31,7 @@ import fr.cnes.regards.modules.accessrights.fallback.RegistrationFallback;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@RestClient(name = "rs-admin", fallback = RegistrationFallback.class)
+@RestClient(name = "rs-admin")
 @RequestMapping(value = "/accesses", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IRegistrationClient {

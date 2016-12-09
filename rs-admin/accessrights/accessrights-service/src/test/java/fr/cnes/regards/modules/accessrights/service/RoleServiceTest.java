@@ -12,6 +12,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -465,11 +469,14 @@ public class RoleServiceTest {
         Mockito.when(projectUserRepository.findByRoleName(roleParentName)).thenReturn(parentUsers);
         Mockito.when(projectUserRepository.findByRoleName(roleChildName)).thenReturn(childUsers);
 
+        final Pageable pageable = new PageRequest(0, 100);
+        final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
+
         // Define actual result
-        final List<ProjectUser> actual = roleService.retrieveRoleProjectUserList(idChild);
+        final Page<ProjectUser> actual = roleService.retrieveRoleProjectUserList(idChild, pageable);
 
         // Check
-        Assert.assertTrue(expected.containsAll(actual) && actual.containsAll(expected));
+        Assert.assertEquals(expectedPage, actual);
 
         // Check that the repository's method was called with right arguments
         Mockito.verify(roleRepository).findOne(idChild);

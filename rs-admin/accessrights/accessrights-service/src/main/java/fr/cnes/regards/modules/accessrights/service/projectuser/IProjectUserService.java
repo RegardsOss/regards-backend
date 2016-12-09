@@ -5,6 +5,9 @@ package fr.cnes.regards.modules.accessrights.service.projectuser;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -29,14 +32,14 @@ public interface IProjectUserService {
      *
      * @return The list of project users
      */
-    List<ProjectUser> retrieveUserList();
+    Page<ProjectUser> retrieveUserList(Pageable pPageable);
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s with the given status.
      *
      * @return The list of project users
      */
-    List<ProjectUser> retrieveUserList(UserStatus pStatus);
+    Page<ProjectUser> retrieveUserList(UserStatus pStatus, Pageable pPageable);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
@@ -183,6 +186,6 @@ public interface IProjectUserService {
      *
      * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
      */
-    List<ProjectUser> retrieveAccessRequestList();
+    Page<ProjectUser> retrieveAccessRequestList(Pageable pPageable);
 
 }

@@ -1,4 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.modules.accessrights.fallback.ProjectUsersFallback,\
-fr.cnes.regards.modules.accessrights.fallback.RegistrationFallback
-

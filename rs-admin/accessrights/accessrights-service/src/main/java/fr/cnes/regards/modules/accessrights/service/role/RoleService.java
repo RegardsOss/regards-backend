@@ -19,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -277,7 +279,8 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public List<ProjectUser> retrieveRoleProjectUserList(final Long pRoleId) throws EntityNotFoundException {
+    public Page<ProjectUser> retrieveRoleProjectUserList(final Long pRoleId, final Pageable pPageable)
+            throws EntityNotFoundException {
         if (!existRole(pRoleId)) {
             throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
@@ -288,11 +291,8 @@ public class RoleService implements IRoleService {
 
         final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
         roleAndHisAncestors.addAll(roleLineageAssembler.of(role).get());
-
-        try (final Stream<Role> stream = roleAndHisAncestors.stream()) {
-            return stream.map(r -> projectUserRepository.findByRoleName(r.getName())).flatMap(l -> l.stream())
-                    .collect(Collectors.toList());
-        }
+        final List<String> roleNames = roleAndHisAncestors.stream().map(r -> r.getName()).collect(Collectors.toList());
+        return projectUserRepository.findByRoleNameIn(roleNames, pPageable);
     }
 
     @Override

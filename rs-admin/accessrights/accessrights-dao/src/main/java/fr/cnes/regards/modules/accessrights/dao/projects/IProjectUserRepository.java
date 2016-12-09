@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -41,7 +43,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      *            The {@link ProjectUser}'s <code>status</code>
      * @return The {@link List} of {@link ProjectUser}s with passed <code>status</code>
      */
-    List<ProjectUser> findByStatus(UserStatus pStatus);
+    Page<ProjectUser> findByStatus(UserStatus pStatus, Pageable pPageable);
 
     /**
      * Find all {@link ProjectUser}s where <code>email</code> is in passed collection.<br>
@@ -62,4 +64,14 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * @return all project users with this role
      */
     List<ProjectUser> findByRoleName(String pName);
+
+    /**
+     * Find all project users whose role name equals param.<br>
+     * Custom query auto-implemented by JPA thanks to the method naming convention.
+     *
+     * @param pName
+     *            The role name
+     * @return all project users with this role
+     */
+    Page<ProjectUser> findByRoleNameIn(List<String> pNames, Pageable pPageable);
 }
