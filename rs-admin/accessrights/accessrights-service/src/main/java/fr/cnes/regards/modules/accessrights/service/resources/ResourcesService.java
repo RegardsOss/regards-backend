@@ -163,7 +163,8 @@ public class ResourcesService implements IResourcesService {
         final ResourcesAccess defaultResource = new ResourcesAccess(pResource, pMicroserviceName);
         final List<Role> roles = new ArrayList<>();
 
-        if ((pResource.getResourceAccess() != null) && !pResource.getResourceAccess().role().equals(DefaultRole.NONE)) {
+        if ((pResource.getResourceAccess() != null)
+                && !pResource.getResourceAccess().role().equals(DefaultRole.PROJECT_ADMIN)) {
             final String roleName = pResource.getResourceAccess().role().name();
             try {
                 roles.add(roleService.retrieveRole(roleName));
