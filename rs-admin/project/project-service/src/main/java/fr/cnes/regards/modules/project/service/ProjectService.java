@@ -3,25 +3,23 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -88,7 +86,7 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public Project retrieveProject(final String pProjectName) throws EntityNotFoundException {
+    public Project retrieveProject(final String pProjectName) throws ModuleException {
         final Project project = projectRepository.findOneByName(pProjectName);
         if (project == null) {
             throw new EntityNotFoundException(pProjectName, Project.class);
@@ -97,15 +95,14 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public List<Project> deleteProject(final String pProjectName) throws EntityNotFoundException {
+    public void deleteProject(final String pProjectName) throws ModuleException {
         final Project deleted = retrieveProject(pProjectName);
         deleted.setDeleted(true);
-        projectRepository.delete(deleted);
-        return this.retrieveProjectList();
+        projectRepository.save(deleted);
     }
 
     @Override
-    public Project updateProject(final String pProjectName, final Project pProject) throws EntityException {
+    public Project updateProject(final String pProjectName, final Project pProject) throws ModuleException {
         final Project theProject = projectRepository.findOneByName(pProjectName);
         if (theProject == null) {
             throw new EntityNotFoundException(pProjectName, Project.class);
@@ -120,31 +117,28 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
-    public List<Project> retrieveProjectList() {
-        try (Stream<Project> stream = StreamSupport.stream(projectRepository.findAll().spliterator(), false)) {
-            return stream.collect(Collectors.toList());
-        }
+    public Page<Project> retrieveProjectList(final Pageable pPageable) {
+        return projectRepository.findAll(pPageable);
     }
 
     @Override
-    public Project createProject(final Project pNewProject) throws EntityAlreadyExistsException {
+    public List<Project> retrieveProjectList() {
+        return projectRepository.findAll();
+    }
+
+    @Override
+    public Page<Project> retrievePublicProjectList(final Pageable pPageable) {
+        return projectRepository.findByIsPublicTrue(pPageable);
+    }
+
+    @Override
+    public Project createProject(final Project pNewProject) throws ModuleException {
         final Project theProject = projectRepository.findOneByName(pNewProject.getName());
         if (theProject != null) {
             throw new EntityAlreadyExistsException(pNewProject.getName());
         }
 
         return projectRepository.save(pNewProject);
-    }
-
-    @Override
-    public List<Project> retrievePublicProjectList() {
-        final List<Project> results = new ArrayList<>();
-        retrieveProjectList().forEach(p -> {
-            if (p.isPublic()) {
-                results.add(p);
-            }
-        });
-        return results;
     }
 
 }

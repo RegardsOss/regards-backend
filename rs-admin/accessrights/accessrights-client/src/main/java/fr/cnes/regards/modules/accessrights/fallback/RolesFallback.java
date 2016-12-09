@@ -16,6 +16,7 @@ import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
 
 /**
  *
@@ -40,7 +41,7 @@ public class RolesFallback implements IRolesClient {
     private static final String FALLBACK_ERROR_MESSAGE = "RS-ADMIN /roles request error. Fallback.";
 
     @Override
-    public ResponseEntity<List<Resource<Role>>> retrieveRoleList() {
+    public ResponseEntity<List<Resource<RoleDTO>>> retrieveRoleList() {
         LOG.error(FALLBACK_ERROR_MESSAGE);
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }

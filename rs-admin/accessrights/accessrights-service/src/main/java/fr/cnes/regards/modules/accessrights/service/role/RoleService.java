@@ -336,4 +336,16 @@ public class RoleService implements IRoleService {
                 .orElseGet(() -> roleRepository.save(factory.createPublic()));
     }
 
+    @Override
+    public List<Role> retrieveInheritedRoles(final Role pRole) {
+        final List<Role> results = new ArrayList<>();
+        final List<Role> inheritedRoles = roleRepository.findByParentRoleName(pRole.getName());
+        if (inheritedRoles != null) {
+            results.addAll(inheritedRoles);
+            for (final Role role : inheritedRoles) {
+                results.addAll(retrieveInheritedRoles(role));
+            }
+        }
+        return results;
+    }
 }

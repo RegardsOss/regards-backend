@@ -6,13 +6,18 @@ package fr.cnes.regards.modules.notification.domain;
 /**
  * List all possible values for a notification status: read and unread by its recipient.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public enum NotificationStatus {
 
     /**
-     * Possible read statuses
+     * Read status notification
      */
-    READ, UNREAD;
+    READ,
+    
+    /**
+     * Unread status notification
+     */
+    UNREAD;
 
 }

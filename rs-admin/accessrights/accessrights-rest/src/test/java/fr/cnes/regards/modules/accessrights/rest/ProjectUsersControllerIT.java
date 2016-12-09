@@ -55,24 +55,15 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     private static final String EMAIL = "email@test.com";
 
     /**
-     * The users endpoint
-     */
-    private String apiUsers;
-
-    /**
      * Specific user endpoint
      */
     private String apiUserId;
 
     private String apiUserEmail;
 
-    private String apiUserLogin;
-
     private String apiUserPermissions;
 
     private String apiUserPermissionsBorrowedRole;
-
-    private String apiUserMetaData;
 
     private String errorMessage;
 
@@ -97,29 +88,27 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
      */
     private ProjectUser projectUser;
 
-    private static final String ROLE_TEST = "TEST_ROLE";
-
-    private Role roleTest;
-
     private Role publicRole;
 
     @Before
     public void setUp() {
-        apiUsers = "/users";
-        apiUserId = apiUsers + "/{user_id}";
-        apiUserEmail = apiUsers + "/{user_email}";
-        apiUserLogin = apiUsers + "/{user_login}";
-        apiUserPermissions = apiUserLogin + "/permissions";
+        apiUserId = ProjectUsersController.REQUEST_MAPPING_ROOT + "/{user_id}";
+        apiUserEmail = ProjectUsersController.REQUEST_MAPPING_ROOT + "/{user_email}";
+
+        apiUserPermissions = ResourcesController.REQUEST_MAPPING_ROOT + apiUserId;
         apiUserPermissionsBorrowedRole = apiUserPermissions + "?borrowedRoleName=";
-        apiUserMetaData = apiUserId + "/metadata";
+
         errorMessage = "Cannot reach model attributes";
 
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
-        roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
-        roleTest = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
         projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, roleTest, roleTest.getPermissions(), new ArrayList<>()));
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+    }
+
+    @Override
+    protected String getDefaultRole() {
+        return DefaultRole.PROJECT_ADMIN.toString();
     }
 
     @Test
@@ -128,7 +117,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void getAllUsers() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(apiUsers, expectations, errorMessage);
+        performDefaultGet(ProjectUsersController.REQUEST_MAPPING_ROOT, expectations, errorMessage);
     }
 
     @Test
@@ -150,7 +139,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void getUserMetaData() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(apiUserMetaData, expectations, errorMessage, projectUser.getId());
+        performDefaultGet(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, expectations, errorMessage,
+                          projectUser.getId());
     }
 
     @Test
@@ -231,7 +221,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(apiUserMetaData, newPermissionList, expectations, errorMessage, projectUser.getId());
+        performDefaultPut(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, newPermissionList, expectations,
+                          errorMessage, projectUser.getId());
     }
 
     @Test
@@ -255,7 +246,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void deleteUserMetaData() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(apiUserMetaData, expectations, errorMessage, projectUser.getId());
+        performDefaultDelete(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, expectations, errorMessage,
+                             projectUser.getId());
     }
 
     @Test

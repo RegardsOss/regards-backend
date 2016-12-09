@@ -7,6 +7,10 @@ import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +68,25 @@ public class ProjectConnectionController implements IResourceController<ProjectC
         super();
         projectConnectionService = pProjectConnectionService;
         resourceService = pResourceService;
+    }
+
+    /**
+     *
+     * Create a new project connection in instance database. The associated Project must exists and have a valid
+     * identifier.
+     *
+     * @param pProjectConnection
+     *            ProjectConnection to create.
+     * @return ProjectConnection created
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/connections", produces = "application/json")
+    @ResponseBody
+    @ResourceAccess(description = "Retreieve all projects connections", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<PagedResources<Resource<ProjectConnection>>> retrieveProjectsConnections(
+            final Pageable pPageable, final PagedResourcesAssembler<ProjectConnection> pAssembler) {
+        final Page<ProjectConnection> connections = projectConnectionService.retrieveProjectsConnections(pPageable);
+        return ResponseEntity.ok(toPagedResources(connections, pAssembler));
     }
 
     /**

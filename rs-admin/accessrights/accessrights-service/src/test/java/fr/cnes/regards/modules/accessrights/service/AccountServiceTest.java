@@ -11,6 +11,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -92,16 +96,18 @@ public class AccountServiceTest {
 
         // Mock
         final List<Account> mockedResult = Arrays.asList(account);
-        Mockito.when(accountRepository.findAll()).thenReturn(mockedResult);
+        final Page<Account> mockedPage = new PageImpl<>(mockedResult);
+        Mockito.when(accountRepository.findAll(Mockito.any(Pageable.class))).thenReturn(mockedPage);
 
         // Define actual
-        final List<Account> actual = accountService.retrieveAccountList();
+        final Page<Account> actual = accountService.retrieveAccountList(new PageRequest(0, 100));
 
         // Check equal
-        Assert.assertThat(actual, Matchers.samePropertyValuesAs(expected));
+        Assert.assertEquals(actual.getContent().size(), expected.size());
+        Assert.assertThat(actual.getContent().get(0), Matchers.samePropertyValuesAs(expected.get(0)));
 
         // Verify method call
-        Mockito.verify(accountRepository).findAll();
+        Mockito.verify(accountRepository).findAll(Mockito.any(Pageable.class));
     }
 
     /**

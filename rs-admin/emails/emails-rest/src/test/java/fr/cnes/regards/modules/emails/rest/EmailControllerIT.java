@@ -74,13 +74,12 @@ public class EmailControllerIT extends AbstractRegardsIT {
      */
     @Before
     public void init() {
-        final String tenant = "test-1";
-        jwt = jwtService.generateToken(tenant, "email", "SVG", "USER");
-        authService.setAuthorities(tenant, "/emails", RequestMethod.GET, "USER");
-        authService.setAuthorities(tenant, "/emails", RequestMethod.POST, "USER");
-        authService.setAuthorities(tenant, "/emails/{mail_id}", RequestMethod.GET, "USER");
-        authService.setAuthorities(tenant, "/emails/{mail_id}", RequestMethod.PUT, "USER");
-        authService.setAuthorities(tenant, "/emails/{mail_id}", RequestMethod.DELETE, "USER");
+        jwt = jwtService.generateToken(DEFAULT_TENANT, "email", "SVG", DEFAULT_ROLE);
+        authService.setAuthorities(DEFAULT_TENANT, "/emails", RequestMethod.GET, DEFAULT_ROLE);
+        authService.setAuthorities(DEFAULT_TENANT, "/emails", RequestMethod.POST, DEFAULT_ROLE);
+        authService.setAuthorities(DEFAULT_TENANT, "/emails/{mail_id}", RequestMethod.GET, DEFAULT_ROLE);
+        authService.setAuthorities(DEFAULT_TENANT, "/emails/{mail_id}", RequestMethod.PUT, DEFAULT_ROLE);
+        authService.setAuthorities(DEFAULT_TENANT, "/emails/{mail_id}", RequestMethod.DELETE, DEFAULT_ROLE);
     }
 
     /**

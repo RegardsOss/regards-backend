@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 /**
  * Validate getters/setters and hibernate constraints on {@link Notification}.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public class NotificationSettingsTest {
 

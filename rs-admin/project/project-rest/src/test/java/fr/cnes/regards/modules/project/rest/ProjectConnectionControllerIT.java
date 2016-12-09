@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.project.rest;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
+@InstanceTransactional
 public class ProjectConnectionControllerIT extends AbstractRegardsIT {
 
     /**
@@ -98,13 +100,27 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to get a project connection and Hateoas returned links")
-    @InstanceTransactional
     @Test
     public void retrieveProjectConnection() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
         performGet("/projects/" + PROJECT_TEST + "/connection/" + MICROSERVICE_TEST, instanceAdmintoken, expectations,
                    "error");
+    }
+
+    @Requirement("REGARDS_DSL_SYS_ARC_050")
+    @Requirement("REGARDS_DSL_SYS_ARC_020")
+    @Purpose("Check REST Access to all projects database connections and Hateoas returned links")
+    @Test
+    public void retrieveAllProjectsConnection() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(20)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(1)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages", Matchers.is(1)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
+        performGet("/projects/connections", instanceAdmintoken, expectations, "error");
     }
 
     /**
@@ -116,7 +132,6 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to create a project connection and Hateoas returned links")
-    @InstanceTransactional
     @Test
     public void createProjectConnection() {
         final Project project = projectRepo.findOneByName(PROJECT_TEST);
@@ -137,7 +152,6 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
-    @InstanceTransactional
     @Test
     public void updateProjectConnection() {
         final ProjectConnection connection = projectConnRepo.findOneByProjectNameAndMicroservice(PROJECT_TEST,
@@ -157,7 +171,6 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
-    @InstanceTransactional
     @Test
     public void deleteProjectConnection() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);

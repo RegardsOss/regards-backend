@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -68,11 +66,6 @@ public class EmailValidationListener implements ApplicationListener<OnAcceptAcco
         registrationService = pRegistrationService;
         templateService = pTemplateService;
         emailClient = pEmailClient;
-    }
-
-    @PostConstruct
-    public void init() {
-
     }
 
     @Override

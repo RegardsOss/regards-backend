@@ -3,15 +3,15 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,15 +33,14 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.accountunlock.IAccountUnlockService;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.passwordreset.OnPasswordResetEvent;
 import fr.cnes.regards.modules.accessrights.registration.AppUrlBuilder;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions;
 
 /**
@@ -55,13 +54,13 @@ import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions
 @RestController
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping(path = "/accounts")
+@RequestMapping(AccountsController.REQUEST_MAPPING_ROOT)
 public class AccountsController implements IResourceController<Account> {
 
     /**
-     * Class logger
+     * Root mapping for requests of this rest controller
      */
-    private static final Logger LOG = LoggerFactory.getLogger(AccountsController.class);
+    public static final String REQUEST_MAPPING_ROOT = "/accounts";
 
     @Autowired
     private IAccountService accountService;
@@ -76,7 +75,13 @@ public class AccountsController implements IResourceController<Account> {
     private IAccountTransitions accountWorkflowManager;
 
     @Autowired
-    private IAccountSettingsService accountSettingsService;
+    private IAccountUnlockService accountUnlockService;
+
+    /**
+     * Root admin user login
+     */
+    @Value("${regards.accounts.root.user.login}")
+    private String rootAdminUserLogin;
 
     /**
      * Use this to publish events
@@ -92,9 +97,9 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the list of account in the instance", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<List<Resource<Account>>> retrieveAccountList() {
-        return ResponseEntity.ok(toResources(accountService.retrieveAccountList()));
-
+    public ResponseEntity<PagedResources<Resource<Account>>> retrieveAccountList(final Pageable pPageable,
+            final PagedResourcesAssembler<Account> pAssembler) {
+        return ResponseEntity.ok(toPagedResources(accountService.retrieveAccountList(pPageable), pAssembler));
     }
 
     /**
@@ -193,6 +198,25 @@ public class AccountsController implements IResourceController<Account> {
     }
 
     /**
+     * Send to the user an email containing a code to unlock the account
+     *
+     * @param pId
+     *            The {@link Account}'s <code>id</code>
+     * @return void
+     * @throws EntityNotFoundException
+     */
+    @ResponseBody
+    @RequestMapping(value = "/{account_id}/accountUnlock", method = RequestMethod.GET)
+    @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<Void> sendAccountUnlockCode(@RequestParam("email") final Long pId,
+            final HttpServletRequest pRequest) throws EntityNotFoundException {
+        final Account account = accountService.retrieveAccount(pId);
+        final String appUrl = AppUrlBuilder.buildFrom(pRequest);
+        accountUnlockService.sendAccountUnlockEmail(account, appUrl);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * Do not respect REST architecture because the request comes from a mail client, ideally should be a PUT
      *
      * @param pAccountId
@@ -261,35 +285,6 @@ public class AccountsController implements IResourceController<Account> {
     }
 
     /**
-     * Retrieve the {@link AccountSettings} for the instance.
-     *
-     * @return The {@link AccountSettings} wrapped in a {@link Resource} and a {@link ResponseEntity}
-     */
-    @ResponseBody
-    @RequestMapping(value = "/settings", method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the list of setting managing the accounts",
-            role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<AccountSettings>> retrieveAccountSettings() {
-        final AccountSettings settings = accountSettingsService.retrieve();
-        return new ResponseEntity<>(new Resource<>(settings), HttpStatus.OK);
-    }
-
-    /**
-     * Update the {@link AccountSettings} for the instance.
-     *
-     * @param pUpdatedAccountSetting
-     *            The {@link AccountSettings}
-     * @return The updated {@link AccountSettings}
-     */
-    @ResponseBody
-    @RequestMapping(value = "/settings", method = RequestMethod.PUT)
-    @ResourceAccess(description = "update the setting managing the account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> updateAccountSetting(@Valid @RequestBody final AccountSettings pUpdatedAccountSetting) {
-        accountSettingsService.update(pUpdatedAccountSetting);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
      * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of
      * passed <code>email</code>
      *
@@ -322,13 +317,11 @@ public class AccountsController implements IResourceController<Account> {
             resourceService.addLink(resource, this.getClass(), "updateAccount", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
                                     MethodParamFactory.build(Account.class));
-            resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
-                                    MethodParamFactory.build(Long.class, pElement.getId()));
-            resourceService.addLink(resource, this.getClass(), "retrieveAccountList", LinkRels.LIST,
-                                    MethodParamFactory.build(Account.class));
-            resourceService.addLink(resource, this.getClass(), "retrieveAccountSettings", "getAccountSettings");
-            resourceService.addLink(resource, this.getClass(), "updateAccountSetting", "setAccountSetting",
-                                    MethodParamFactory.build(AccountSettings.class));
+            if (!pElement.getEmail().equals(rootAdminUserLogin)) {
+                resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
+                                        MethodParamFactory.build(Long.class, pElement.getId()));
+            }
+            resourceService.addLink(resource, this.getClass(), "retrieveAccountList", LinkRels.LIST);
         }
         return resource;
     }

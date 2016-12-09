@@ -105,6 +105,7 @@ public class NotificationController {
      *            The notification <code>id</code>
      * @param pStatus
      *            The new <code>status</code>
+     * @return The updated {@link Notification} wrapped in a {@link ResponseEntity}
      * @throws EntityNotFoundException
      *             Thrown when no notification with passed <code>id</code> could be found
      *
@@ -112,9 +113,10 @@ public class NotificationController {
     @ResponseBody
     @RequestMapping(value = "/{notification_id}", method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status")
-    public void updateNotificationStatus(@PathVariable("notification_id") final Long pId,
+    public ResponseEntity<Notification> updateNotificationStatus(@PathVariable("notification_id") final Long pId,
             @Valid @RequestBody final NotificationStatus pStatus) throws EntityNotFoundException {
-        notificationService.updateNotificationStatus(pId, pStatus);
+        final Notification notification = notificationService.updateNotificationStatus(pId, pStatus);
+        return new ResponseEntity<>(notification, HttpStatus.OK);
     }
 
     /**
@@ -124,12 +126,14 @@ public class NotificationController {
      *            The notification <code>id</code>
      * @throws EntityNotFoundException
      *             Thrown when no notification with passed <code>id</code> could be found
-     * @return
+     * @return void
      */
     @RequestMapping(value = "/{notification_id}", method = RequestMethod.DELETE)
     @ResourceAccess(description = "Define the endpoint for deleting a notification")
-    public void deleteNotification(@PathVariable("notification_id") final Long pId) throws EntityNotFoundException {
+    public ResponseEntity<Void> deleteNotification(@PathVariable("notification_id") final Long pId)
+            throws EntityNotFoundException {
         notificationService.deleteNotification(pId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
@@ -151,14 +155,17 @@ public class NotificationController {
      *
      * @param pNotificationSettings
      *            The facade exposing user updatable fields of notification settings
+     * @return The updated {@link NotificationSettings} wrapped in a {@link ResponseEntity}
      * @throws EntityNotFoundException
      *             Thrown when no notification settings with passed <code>id</code> could be found
      */
     @RequestMapping(value = "/settings", method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status")
-    public void updateNotificationSettings(final NotificationSettingsDTO pNotificationSettings)
-            throws EntityNotFoundException {
-        notificationSettingsService.updateNotificationSettings(pNotificationSettings);
+    public ResponseEntity<NotificationSettings> updateNotificationSettings(
+            final NotificationSettingsDTO pNotificationSettings) throws EntityNotFoundException {
+        final NotificationSettings settings = notificationSettingsService
+                .updateNotificationSettings(pNotificationSettings);
+        return new ResponseEntity<>(settings, HttpStatus.OK);
     }
 
 }

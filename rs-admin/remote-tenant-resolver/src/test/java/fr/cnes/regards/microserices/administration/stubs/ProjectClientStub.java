@@ -6,6 +6,8 @@ package fr.cnes.regards.microserices.administration.stubs;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,10 +37,12 @@ public class ProjectClientStub implements IProjectsClient {
     public static final Project PROJECT = new Project(0L, "", "", true, PROJECT_NAME);
 
     @Override
-    public ResponseEntity<List<Resource<Project>>> retrieveProjectList() {
+    public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(final int pPage, final int pSize) {
         final List<Resource<Project>> resouces = new ArrayList<>();
         resouces.add(new Resource<Project>(PROJECT));
-        return new ResponseEntity<>(resouces, HttpStatus.OK);
+        final PagedResources<Resource<Project>> page = new PagedResources<>(resouces, new PageMetadata(pSize, pPage, 1),
+                new ArrayList<>());
+        return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
     @Override

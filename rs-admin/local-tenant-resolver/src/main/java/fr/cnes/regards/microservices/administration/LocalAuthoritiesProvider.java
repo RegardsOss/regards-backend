@@ -9,9 +9,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -72,33 +70,20 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<String> getRoleAuthorizedAddress(final String pRole) throws SecurityException {
-        try {
-            final List<String> results = new ArrayList<>();
-            final Role role = roleService.retrieveRole(pRole);
-            results.addAll(role.getAuthorizedAddresses());
-            return results;
-        } catch (final EntityNotFoundException e) {
-            throw new SecurityException("Could not get role authorized addresses", e);
-        }
-    }
-
-    @Override
-    public boolean hasCorsRequestsAccess(final String pRole) throws SecurityException {
-        try {
-            if (!RoleAuthority.isSysRole(pRole) && !RoleAuthority.isInstanceAdminRole(pRole)) {
-                final Role role = roleService.retrieveRole(RoleAuthority.getRoleName(pRole));
-                boolean access = role.isCorsRequestsAuthorized();
-                if (access && (role.getCorsRequestsAuthorizationEndDate() != null)) {
-                    access = LocalDateTime.now().isBefore(role.getCorsRequestsAuthorizationEndDate());
-                }
-                return access;
-            } else {
-                return true;
+    public List<RoleAuthority> getRoleAuthorities() {
+        final List<RoleAuthority> results = new ArrayList<>();
+        final List<Role> roles = roleService.retrieveRoleList();
+        for (final Role role : roles) {
+            final RoleAuthority roleAuth = new RoleAuthority(role.getName());
+            boolean access = role.isCorsRequestsAuthorized();
+            if (access && (role.getCorsRequestsAuthorizationEndDate() != null)) {
+                access = LocalDateTime.now().isBefore(role.getCorsRequestsAuthorizationEndDate());
             }
-        } catch (final EntityNotFoundException e) {
-            throw new SecurityException("Could not get CORS requests access", e);
+            roleAuth.setAuthorizedIpAdresses(role.getAuthorizedAddresses());
+            roleAuth.setCorsAccess(access);
+            results.add(roleAuth);
         }
+        return results;
     }
 
 }

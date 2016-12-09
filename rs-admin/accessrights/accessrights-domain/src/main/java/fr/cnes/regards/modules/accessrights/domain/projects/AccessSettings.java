@@ -17,7 +17,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  * Models the different access settings.<br>
  * Instead of using a list of values, each field of this POJO defines a specific setting.
  *
- * @author Xavier-Alexandre
+ * @author Xavier-Alexandre Brochard
  */
 @Entity(name = "T_ACCESS_SETTINGS")
 @SequenceGenerator(name = "accessSettingsSequence", initialValue = 1, sequenceName = "SEQ_ACCESS_SETTINGS")
@@ -43,6 +43,7 @@ public class AccessSettings implements IIdentifiable<Long> {
      */
     public AccessSettings() {
         super();
+        mode = "auto-accept";
     }
 
     @Override

@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
 
 /**
  *
@@ -45,7 +46,7 @@ public interface IRolesClient {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<Role>>> retrieveRoleList();
+    ResponseEntity<List<Resource<RoleDTO>>> retrieveRoleList();
 
     /**
      * Define the endpoint for creating a new {@link Role}.

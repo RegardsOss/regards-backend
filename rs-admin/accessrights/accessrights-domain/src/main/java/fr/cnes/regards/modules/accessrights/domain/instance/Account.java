@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -19,8 +20,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import fr.cnes.regards.framework.gson.annotation.GSonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -34,6 +34,9 @@ public class Account implements IIdentifiable<Long>, Serializable {
      * Generated serial
      */
     private static final long serialVersionUID = 6641844290657477573L;
+
+    @Transient
+    private static final int RANDOM_STRING_LENGTH = 10;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accountSequence")
@@ -52,8 +55,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     @Column(name = "lastName")
     private String lastName;
 
-    // TODO: validation du mot de passe
-    // TODO: json ignore dans le sens serveur => client
+    @GSonIgnore
     @Column(name = "password")
     private String password;
 
@@ -62,7 +64,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     private AccountStatus status;
 
     @NotBlank
-    @JsonIgnore
+    @GSonIgnore
     @Column(name = "code")
     private String code;
 
@@ -73,7 +75,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     private Account() {
         super();
         status = AccountStatus.PENDING;
-        code = RandomStringUtils.randomAlphanumeric(10);
+        code = RandomStringUtils.randomAlphanumeric(RANDOM_STRING_LENGTH);
     }
 
     /**
@@ -91,7 +93,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     public Account(final String pEmail, final String pFirstName, final String pLastName, final String pPassword) {
         super();
         status = AccountStatus.PENDING;
-        code = RandomStringUtils.randomAlphanumeric(10);
+        code = RandomStringUtils.randomAlphanumeric(RANDOM_STRING_LENGTH);
         email = pEmail;
         firstName = pFirstName;
         lastName = pLastName;

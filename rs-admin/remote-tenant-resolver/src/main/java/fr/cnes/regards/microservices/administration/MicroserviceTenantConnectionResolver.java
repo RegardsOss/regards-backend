@@ -5,6 +5,7 @@ package fr.cnes.regards.microservices.administration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +17,8 @@ import feign.FeignException;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -62,51 +62,38 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
     private final IProjectConnectionClient projectConnectionsClient;
 
     /**
-     *
-     * Constructor
-     *
-     * @param pProjectsClient
-     *            Admin client
-     * @param pMicroserviceName
-     *            microservice name
-     * @since 1.0-SNAPSHOT
+     * Tenant resolver
      */
+    private final ITenantResolver tenantResolver;
+
     public MicroserviceTenantConnectionResolver(final String pMicroserviceName, final JWTService pJwtService,
-            final IProjectsClient pProjectsClient, final IProjectConnectionClient pProjectConnectionsClient) {
+            final IProjectsClient pProjectsClient, final IProjectConnectionClient pProjectConnectionsClient,
+            final ITenantResolver pTenantResolver) {
         super();
         microserviceName = pMicroserviceName;
         jwtService = pJwtService;
         projectsClient = pProjectsClient;
         projectConnectionsClient = pProjectConnectionsClient;
+        tenantResolver = pTenantResolver;
     }
 
     @Override
     public List<TenantConnection> getTenantConnections() {
 
-        final List<TenantConnection> tenants = new ArrayList<>();
+        final List<TenantConnection> tenantsConnections = new ArrayList<>();
 
-        try {
-            jwtService.injectToken("instance", RoleAuthority.getSysRole(microserviceName));
+        final Set<String> tenants = tenantResolver.getAllTenants();
 
-            final ResponseEntity<List<Resource<Project>>> results = projectsClient.retrieveProjectList();
-
-            if ((results != null) && (results.getBody() != null)) {
-                for (final Resource<Project> resource : results.getBody()) {
-                    final ProjectConnection projectConnection = getProjectConnection(resource.getContent().getName());
-                    if (projectConnection != null) {
-                        tenants.add(new TenantConnection(resource.getContent().getName(), projectConnection.getUrl(),
-                                projectConnection.getUserName(), projectConnection.getPassword(),
-                                projectConnection.getDriverClassName()));
-                    }
-                }
-            } else {
-                LOG.error("Error during remote request to administration service");
+        for (final String tenant : tenants) {
+            final ProjectConnection projectConnection = getProjectConnection(tenant);
+            if (projectConnection != null) {
+                tenantsConnections
+                        .add(new TenantConnection(tenant, projectConnection.getUrl(), projectConnection.getUserName(),
+                                projectConnection.getPassword(), projectConnection.getDriverClassName()));
             }
-        } catch (final JwtException e) {
-            LOG.error(e.getMessage(), e);
         }
 
-        return tenants;
+        return tenantsConnections;
 
     }
 

@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
@@ -32,7 +31,6 @@ import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  *
@@ -66,12 +64,6 @@ public class LocalAuthoritiesProviderTest {
     @Autowired
     private IResourcesAccessRepository resourcesAccessRepository;
 
-    /**
-     * Role service
-     */
-    @Autowired
-    private IRoleService roleService;
-
     @Autowired
     private JWTService jwtService;
 
@@ -80,7 +72,8 @@ public class LocalAuthoritiesProviderTest {
 
     @Before
     public void init() throws JwtException {
-        jwtService.injectToken(AuthoritiesTestConfiguration.PROJECT_NAME, AuthoritiesTestConfiguration.CORS_ROLE_NAME_GRANTED);
+        jwtService.injectToken(AuthoritiesTestConfiguration.PROJECT_NAME,
+                               AuthoritiesTestConfiguration.CORS_ROLE_NAME_GRANTED);
         final List<String> addresses = new ArrayList<>();
         addresses.add("127.0.0.1");
         addresses.add("127.0.0.2");
@@ -134,28 +127,23 @@ public class LocalAuthoritiesProviderTest {
     @Requirement("REGARDS_DSL_SYS_ARC_040")
     @Purpose("Check cors requests access by role with date limitation")
     @Test
-    public void checkCorsRequestsAccessByRole() throws ModuleEntityNotFoundException, SecurityException {
-        Assert.assertEquals(provider.getRoleAuthorizedAddress(AuthoritiesTestConfiguration.CORS_ROLE_NAME_GRANTED).size(), 3);
-        Assert.assertTrue(provider.hasCorsRequestsAccess(AuthoritiesTestConfiguration.CORS_ROLE_NAME_GRANTED));
-        Assert.assertFalse(provider.hasCorsRequestsAccess(AuthoritiesTestConfiguration.CORS_ROLE_NAME_INVALID_1));
-        Assert.assertFalse(provider.hasCorsRequestsAccess(AuthoritiesTestConfiguration.CORS_ROLE_NAME_INVALID_2));
-    }
-
-    /**
-     *
-     * Verify access to all resources access per microservice with internal administration microservice authorities.
-     *
-     * @since 1.0-SNAPSHOT
-     */
-    @Ignore
-    @Requirement("REGARDS_DSL_SYS_SEC_200")
-    @Purpose("Verify access to all resources access per microservice with internal administration microservice authorities.")
-    @Test
-    public void checkEndpointsRegister() {
-        resourcesAccessRepository.deleteAll();
-        resourcesAccessRepository.save(new ResourcesAccess("desc0", "ms0", "res0", HttpVerb.GET));
-        resourcesAccessRepository.save(new ResourcesAccess("desc1", "ms1", "res1", HttpVerb.POST));
-        // TODO
+    public void checkCorsRequestsAccessByRole() throws SecurityException {
+        final List<RoleAuthority> roles = provider.getRoleAuthorities();
+        Assert.assertEquals(roles.size(), roleRepository.findAll().size());
+        for (final RoleAuthority role : roles) {
+            switch (RoleAuthority.getRoleName(role.getAuthority())) {
+                case AuthoritiesTestConfiguration.CORS_ROLE_NAME_GRANTED:
+                    Assert.assertTrue(role.getCorsAccess());
+                    break;
+                case AuthoritiesTestConfiguration.CORS_ROLE_NAME_INVALID_1:
+                case AuthoritiesTestConfiguration.CORS_ROLE_NAME_INVALID_2:
+                    Assert.assertFalse(role.getCorsAccess());
+                    break;
+                default:
+                    // Nothing to do
+                    break;
+            }
+        }
     }
 
 }

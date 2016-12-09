@@ -3,7 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.service.account;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -21,9 +22,12 @@ public interface IAccountService {
     /**
      * Retrieve the list of all {@link Account}s.
      *
+     * @param pPageable
+     *            pagination informations
+     *
      * @return The accounts list
      */
-    List<Account> retrieveAccountList();
+    Page<Account> retrieveAccountList(final Pageable pPageable);
 
     /**
      * Retrieve the {@link Account} of passed <code>id</code>.

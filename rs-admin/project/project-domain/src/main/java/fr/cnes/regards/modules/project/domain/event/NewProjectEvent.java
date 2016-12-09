@@ -19,7 +19,11 @@ public class NewProjectEvent {
     /**
      * The new project to manage
      */
-    private final Project newProject;
+    private Project newProject;
+
+    public NewProjectEvent() {
+        super();
+    }
 
     /**
      *
@@ -36,6 +40,10 @@ public class NewProjectEvent {
 
     public Project getNewProject() {
         return newProject;
+    }
+
+    public void setNewProject(final Project pNewProject) {
+        newProject = pNewProject;
     }
 
 }

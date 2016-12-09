@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.notification.domain.Notification;
  * Implementation of the {@link INotificationSendingStrategy}.<br>
  * Sends the notifications as emails.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 @Component
 public class EmailSendingStrategy implements ISendingStrategy {

@@ -171,6 +171,18 @@ public interface IRoleService {
 
     /**
      *
+     * Retrieve the inherited roles of the given role. For exemple this method return PUBLIC, REGISTERED_USER and ADMIN
+     * for role INSTANCE_ADMIN.
+     *
+     * @param pRole
+     *            role to retrieve inherited roles
+     * @return list of {@link Role}
+     * @since 1.0-SNAPSHOT
+     */
+    List<Role> retrieveInheritedRoles(Role pRole);
+
+    /**
+     *
      */
     void initDefaultRoles();
 

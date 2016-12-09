@@ -81,27 +81,27 @@ public class PasswordResetToken {
         return token;
     }
 
-    public void setToken(final String token) {
-        this.token = token;
+    public void setToken(final String pToken) {
+        this.token = pToken;
     }
 
     public Date getExpiryDate() {
         return expiryDate;
     }
 
-    public void setExpiryDate(final Date expiryDate) {
-        this.expiryDate = expiryDate;
+    public void setExpiryDate(final Date pExpiryDate) {
+        this.expiryDate = pExpiryDate;
     }
 
-    private Date calculateExpiryDate(final int expiryTimeInMinutes) {
+    private Date calculateExpiryDate(final int pExpiryTimeInMinutes) {
         final Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(new Date().getTime());
-        cal.add(Calendar.MINUTE, expiryTimeInMinutes);
+        cal.add(Calendar.MINUTE, pExpiryTimeInMinutes);
         return new Date(cal.getTime().getTime());
     }
 
-    public void updateToken(final String token) {
-        this.token = token;
+    public void updateToken(final String pToken) {
+        this.token = pToken;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
@@ -118,17 +118,17 @@ public class PasswordResetToken {
     }
 
     @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
+    public boolean equals(final Object pObj) {
+        if (this == pObj) {
             return true;
         }
-        if (obj == null) {
+        if (pObj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (getClass() != pObj.getClass()) {
             return false;
         }
-        final PasswordResetToken other = (PasswordResetToken) obj;
+        final PasswordResetToken other = (PasswordResetToken) pObj;
         if (expiryDate == null) {
             if (other.expiryDate != null) {
                 return false;

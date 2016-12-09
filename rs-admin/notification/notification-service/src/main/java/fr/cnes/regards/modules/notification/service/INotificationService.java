@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 /**
  * Strategy interface to handle CRUD operations on Notification entities
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
  */
 public interface INotificationService {
 
@@ -56,10 +56,11 @@ public interface INotificationService {
      *            The notification <code>id</code>
      * @param pStatus
      *            The new status value
+     * @return The {@link Notification}
      * @throws EntityNotFoundException
      *             Thrown when no notification with passed <code>id</code> could be found
      */
-    void updateNotificationStatus(Long pId, NotificationStatus pStatus) throws EntityNotFoundException;
+    Notification updateNotificationStatus(Long pId, NotificationStatus pStatus) throws EntityNotFoundException;
 
     /**
      * Delete a notification

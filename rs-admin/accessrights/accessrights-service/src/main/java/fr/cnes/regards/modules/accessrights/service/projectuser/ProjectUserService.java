@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 /**
  * {@link IProjectUserService} implementation
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */
 @Service
@@ -88,7 +88,17 @@ public class ProjectUserService implements IProjectUserService {
      */
     @Override
     public List<ProjectUser> retrieveUserList() {
-        return projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED);
+        return projectUserRepository.findAll();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserList(UserStatus)
+     */
+    @Override
+    public List<ProjectUser> retrieveUserList(final UserStatus pStatus) {
+        return projectUserRepository.findByStatus(pStatus);
     }
 
     /*
@@ -161,14 +171,14 @@ public class ProjectUserService implements IProjectUserService {
      * fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser) throws EntityException {
+    public ProjectUser updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser) throws EntityException {
         if (!pUpdatedProjectUser.getId().equals(pUserId)) {
             throw new EntityInconsistentIdentifierException(pUserId, pUpdatedProjectUser.getId(), ProjectUser.class);
         }
         if (!existUser(pUserId)) {
             throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
         }
-        save(pUpdatedProjectUser);
+        return save(pUpdatedProjectUser);
     }
 
     /*
@@ -229,11 +239,12 @@ public class ProjectUserService implements IProjectUserService {
      * java.util.List)
      */
     @Override
-    public void updateUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData)
+    public List<MetaData> updateUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData)
             throws EntityNotFoundException {
         final ProjectUser user = retrieveUser(pUserId);
         user.setMetaData(pUpdatedUserMetaData);
-        save(user);
+        final ProjectUser savedUser = save(user);
+        return savedUser.getMetaData();
     }
 
     /*
@@ -312,9 +323,9 @@ public class ProjectUserService implements IProjectUserService {
      * @param pProjectUser
      *            The user to save
      */
-    private void save(final ProjectUser pProjectUser) {
+    private ProjectUser save(final ProjectUser pProjectUser) {
         pProjectUser.setLastUpdate(LocalDateTime.now());
-        projectUserRepository.save(pProjectUser);
+        return projectUserRepository.save(pProjectUser);
     }
 
 }

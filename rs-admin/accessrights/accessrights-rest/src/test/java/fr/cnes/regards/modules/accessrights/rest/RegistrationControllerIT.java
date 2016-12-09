@@ -6,38 +6,36 @@ package fr.cnes.regards.modules.accessrights.rest;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
- *
- * Class RegistrationControllerIT
- *
  * Integration tests for the accesses functionalities.
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
-public class RegistrationControllerIT extends AbstractAdministrationIT {
+public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
@@ -55,19 +53,21 @@ public class RegistrationControllerIT extends AbstractAdministrationIT {
      */
     private ProjectUser projectUser;
 
-    /**
-     * The autowired authorization service.
-     */
-    @Autowired
-    private MethodAuthorizationService authService;
-
     @Autowired
     private IProjectUserRepository projectUserRepository;
+
+    @Autowired
+    private IAccessSettingsRepository accessSettingsRepository;
 
     /**
      * Root access request endpoint
      */
     private String apiAccesses;
+
+    /**
+     * Endpoint to access list of users in status access pending
+     */
+    private String apiAccessesPending;
 
     /**
      * Endpoint for a specific access request
@@ -94,48 +94,49 @@ public class RegistrationControllerIT extends AbstractAdministrationIT {
      */
     private String errorMessage;
 
+    private Role publicRole;
+
+    @Autowired
+    private IRoleRepository roleRepository;
+
     /**
      * Do some setup before each test
      */
-    @Override
-    public void init() {
+    @Before
+    public void setUp() {
 
-        apiAccesses = "/accesses";
+        apiAccesses = RegistrationController.REQUEST_MAPPING_ROOT;
         apiAccessId = apiAccesses + "/{access_id}";
         apiAccessAccept = apiAccessId + "/accept";
         apiAccessDeny = apiAccessId + "/deny";
         apiAccessSettings = apiAccesses + "/settings";
 
-        authService.setAuthorities(PROJECT_TEST_NAME, apiAccesses, RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, apiAccesses, RequestMethod.POST, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, apiAccessId, RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, apiAccessAccept, RequestMethod.PUT, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, apiAccessDeny, RequestMethod.PUT, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, apiAccessId, RequestMethod.DELETE, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, apiAccessSettings, RequestMethod.GET, ROLE_TEST);
-        authService.setAuthorities(PROJECT_TEST_NAME, apiAccessSettings, RequestMethod.PUT, ROLE_TEST);
+        apiAccessesPending = ProjectUsersController.REQUEST_MAPPING_ROOT + "/pendingaccesses";
 
         errorMessage = "Cannot reach model attributes";
 
+        publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
         projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, roleTest, roleTest.getPermissions(), new ArrayList<>()));
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
     }
 
     /**
      * Check that the system allows to retrieve all access requests for a project.
      */
+    @MultitenantTransactional
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve all access requests for a project.")
     public void getAllAccesses() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performGet(apiAccesses, token, expectations, errorMessage);
+        performDefaultGet(apiAccessesPending, expectations, errorMessage);
     }
 
     /**
      * Check that the system allows the user to request a registration.
      */
+    @MultitenantTransactional
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system allows the user to request a registration.")
@@ -150,16 +151,17 @@ public class RegistrationControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isCreated());
-        performPost(apiAccesses, token, newAccessRequest, expectations, errorMessage);
+        performDefaultPost(apiAccesses, newAccessRequest, expectations, errorMessage);
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isConflict());
-        performPost(apiAccesses, token, newAccessRequest, expectations, errorMessage);
+        performDefaultPost(apiAccesses, newAccessRequest, expectations, errorMessage);
     }
 
     /**
      * Check that the system allows to reactivate access to an access denied project user.
      */
+    @MultitenantTransactional
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to reactivate access to an access denied project user.")
@@ -170,22 +172,23 @@ public class RegistrationControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performPut(apiAccessAccept, token, null, expectations, errorMessage, projectUser.getId());
+        performDefaultPut(apiAccessAccept, null, expectations, errorMessage, projectUser.getId());
 
         // Now the project user is ACCESS_GRANTED, so trying to re-accept will fail
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isForbidden());
-        performPut(apiAccessAccept, token, null, expectations, errorMessage, projectUser.getId());
+        performDefaultPut(apiAccessAccept, null, expectations, errorMessage, projectUser.getId());
 
         // something that does not exist
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performPut(apiAccessAccept, token, null, expectations, errorMessage, Long.MAX_VALUE);
+        performDefaultPut(apiAccessAccept, null, expectations, errorMessage, Long.MAX_VALUE);
     }
 
     /**
      * Check that the system allows to deny access to an already access granted project user.
      */
+    @MultitenantTransactional
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to deny access to an already access granted project user.")
@@ -196,21 +199,22 @@ public class RegistrationControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performPut(apiAccessDeny, token, null, expectations, errorMessage, projectUser.getId());
+        performDefaultPut(apiAccessDeny, null, expectations, errorMessage, projectUser.getId());
 
         // Now the project user is ACCESS_DENIED, so trying to re-deny it will fail
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isForbidden());
-        performPut(apiAccessDeny, token, null, expectations, errorMessage, projectUser.getId());
+        performDefaultPut(apiAccessDeny, null, expectations, errorMessage, projectUser.getId());
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performPut(apiAccessDeny, token, null, expectations, errorMessage, Long.MAX_VALUE);
+        performDefaultPut(apiAccessDeny, null, expectations, errorMessage, Long.MAX_VALUE);
     }
 
     /**
      * Check that the system allows to delete a registration request.
      */
+    @MultitenantTransactional
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to delete a registration request.")
@@ -218,34 +222,37 @@ public class RegistrationControllerIT extends AbstractAdministrationIT {
         // Case not found
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDelete(apiAccessId, token, expectations, errorMessage, 1L);
+        performDefaultDelete(apiAccessId, expectations, errorMessage, 1L);
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDelete(apiAccessId, token, expectations, errorMessage, projectUser.getId());
+        performDefaultDelete(apiAccessId, expectations, errorMessage, projectUser.getId());
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDelete(apiAccessId, token, expectations, errorMessage, projectUser.getId());
+        performDefaultDelete(apiAccessId, expectations, errorMessage, projectUser.getId());
     }
 
     /**
      * Check that the system allows to retrieve the access settings.
      */
+    @MultitenantTransactional
     @Test
-    @Requirement("?")
     @Purpose("Check that the system allows to retrieve the access settings.")
     public void getAccessSettings() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        // Populate
+        accessSettingsRepository.save(new AccessSettings());
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performGet(apiAccessSettings, token, expectations, errorMessage);
+        performDefaultGet(apiAccessSettings, expectations, errorMessage);
     }
 
     /**
      * Check that the system fails when trying to update a non existing access settings.
      */
+    @MultitenantTransactional
     @Test
-    @Requirement("?")
     @Purpose("Check that the system fails when trying to update a non existing access settings.")
     public void updateAccessSettingsEntityNotFound() {
         final AccessSettings settings = new AccessSettings();
@@ -253,22 +260,26 @@ public class RegistrationControllerIT extends AbstractAdministrationIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performPut(apiAccessSettings, token, settings, expectations, "TODO Error message");
+        performDefaultPut(apiAccessSettings, settings, expectations, "TODO Error message");
     }
 
     /**
      * Check that the system allows to update access settings in regular case.
      */
+    @MultitenantTransactional
     @Test
-    @Requirement("?")
     @Purpose("Check that the system allows to update access settings in regular case.")
     public void updateAccessSettings() {
+        // First save settings
         final AccessSettings settings = new AccessSettings();
-        settings.setId(0L);
+        accessSettingsRepository.save(settings);
+
+        // Then update them
+        settings.setMode("manual");
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performPut(apiAccessSettings, token, settings, expectations, "TODO Error message");
+        performDefaultPut(apiAccessSettings, settings, expectations, "TODO Error message");
     }
 
     @Override

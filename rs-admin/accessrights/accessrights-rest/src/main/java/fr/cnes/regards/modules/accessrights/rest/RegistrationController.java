@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -19,22 +17,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
 import fr.cnes.regards.modules.accessrights.registration.AppUrlBuilder;
 import fr.cnes.regards.modules.accessrights.registration.IRegistrationService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
 import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWorkflowManager;
@@ -49,8 +43,13 @@ import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWork
 @RestController
 @ModuleInfo(name = "registration", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping(value = "/accesses")
+@RequestMapping(RegistrationController.REQUEST_MAPPING_ROOT)
 public class RegistrationController {
+
+    /**
+     * Root mapping for requests of this rest controller
+     */
+    public static final String REQUEST_MAPPING_ROOT = "/accesses";
 
     /**
      * Service handling CRUD operation on access requests. Autowired by Spring. Must no be <code>null</code>.
@@ -71,29 +70,10 @@ public class RegistrationController {
     private AccountWorkflowManager accountWorkflowManager;
 
     /**
-     * Service handling CRUD operation on {@link AccessSettings}. Autowired by Spring. Must no be <code>null</code>.
-     */
-    @Autowired
-    private IAccessSettingsService accessSettingsService;
-
-    /**
      * Service handling CRUD operation on {@link AccountSettings}. Autowired by Spring. Must no be <code>null</code>.
      */
     @Autowired
     private IRegistrationService registrationService;
-
-    /**
-     * Retrieve all access requests.
-     *
-     * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
-     */
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieves the list of access request", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList() {
-        final List<ProjectUser> projectUsers = projectUserService.retrieveAccessRequestList();
-        return new ResponseEntity<>(HateoasUtils.wrapList(projectUsers), HttpStatus.OK);
-    }
 
     /**
      * Request a new access, i.e. a new project user
@@ -192,37 +172,6 @@ public class RegistrationController {
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
         projectUserWorkflowManager.removeAccess(projectUser);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * Retrieve the {@link AccountSettings}.
-     *
-     * @return The {@link AccountSettings}
-     */
-    @ResponseBody
-    @RequestMapping(value = "/settings", method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieves the settings managing the access requests",
-            role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<AccessSettings>> getAccessSettings() {
-        final AccessSettings accessSettings = accessSettingsService.retrieve();
-        final Resource<AccessSettings> resource = new Resource<>(accessSettings);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
-    }
-
-    /**
-     * Update the {@link AccountSettings}.
-     *
-     * @param pAccessSettings
-     *            The {@link AccountSettings}
-     * @return The updated access settings
-     */
-    @ResponseBody
-    @RequestMapping(value = "/settings", method = RequestMethod.PUT)
-    @ResourceAccess(description = "Updates the setting managing the access requests", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> updateAccessSettings(@Valid @RequestBody final AccessSettings pAccessSettings)
-            throws EntityNotFoundException {
-        accessSettingsService.update(pAccessSettings);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

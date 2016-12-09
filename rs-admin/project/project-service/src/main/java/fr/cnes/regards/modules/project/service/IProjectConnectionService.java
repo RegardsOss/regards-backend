@@ -6,6 +6,9 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -21,6 +24,17 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @since 1.0-SNAPSHOT
  */
 public interface IProjectConnectionService {
+
+    /**
+     *
+     * Retrieve all projects connections.
+     *
+     * @param pPageable
+     *            Pagination information
+     * @return List of {@link ProjectConnection}
+     * @since 1.0-SNAPSHOT
+     */
+    Page<ProjectConnection> retrieveProjectsConnections(Pageable pPageable);
 
     /**
      *

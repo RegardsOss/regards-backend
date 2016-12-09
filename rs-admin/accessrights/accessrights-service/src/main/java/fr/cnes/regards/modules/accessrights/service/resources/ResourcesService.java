@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.resources;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -17,11 +18,15 @@ import org.springframework.stereotype.Service;
 
 import feign.FeignException;
 import fr.cnes.regards.client.core.TokenClientProvider;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
+import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.event.UpdateAuthoritiesEvent;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -74,13 +79,19 @@ public class ResourcesService implements IResourcesService {
     private final JWTService jwtService;
 
     /**
+     * AMQP Event publisher.
+     */
+    private final IPublisher eventPublisher;
+
+    /**
      * Tenant resolver to identify configured tenants
      */
     private final ITenantResolver tenantResolver;
 
     public ResourcesService(@Value("${spring.application.name}") final String pMicroserviceName,
             final DiscoveryClient pDiscoveryClient, final IResourcesAccessRepository pResourceAccessRepo,
-            final IRoleService pRoleService, final JWTService pJwtService, final ITenantResolver pTenantResolver) {
+            final IRoleService pRoleService, final JWTService pJwtService, final ITenantResolver pTenantResolver,
+            final IPublisher pEventPublisher) {
         super();
         microserviceName = pMicroserviceName;
         discoveryClient = pDiscoveryClient;
@@ -88,6 +99,7 @@ public class ResourcesService implements IResourcesService {
         roleService = pRoleService;
         jwtService = pJwtService;
         tenantResolver = pTenantResolver;
+        eventPublisher = pEventPublisher;
     }
 
     /**
@@ -113,15 +125,35 @@ public class ResourcesService implements IResourcesService {
 
     @Override
     public List<ResourcesAccess> retrieveRessources() {
-        final Iterable<ResourcesAccess> results = resourceAccessRepo.findAll();
-        final List<ResourcesAccess> result = new ArrayList<>();
-        results.forEach(result::add);
+        final Iterable<ResourcesAccess> allResources = resourceAccessRepo.findAll();
+        final List<ResourcesAccess> resourcesList = new ArrayList<>();
+        allResources.forEach(resourcesList::add);
+        return filterResourcesForCurrentUser(resourcesList);
+    }
+
+    @Override
+    public ResourcesAccess retrieveRessource(final Long pResourceId) throws EntityNotFoundException {
+        final ResourcesAccess result = resourceAccessRepo.findOne(pResourceId);
+        if (result == null) {
+            throw new EntityNotFoundException(pResourceId, ResourcesAccess.class);
+        }
         return result;
     }
 
     @Override
+    public ResourcesAccess updateResource(final ResourcesAccess pResourceToUpdate) throws EntityNotFoundException {
+        if (resourceAccessRepo.exists(pResourceToUpdate.getId())) {
+            throw new EntityNotFoundException(pResourceToUpdate.getId(), ResourcesAccess.class);
+        }
+        return resourceAccessRepo.save(pResourceToUpdate);
+    }
+
+    @Override
     public List<ResourcesAccess> retrieveMicroserviceRessources(final String pMicroserviceName) {
-        return resourceAccessRepo.findByMicroservice(pMicroserviceName);
+        final Iterable<ResourcesAccess> allResources = resourceAccessRepo.findByMicroservice(pMicroserviceName);
+        final List<ResourcesAccess> resourcesList = new ArrayList<>();
+        allResources.forEach(resourcesList::add);
+        return filterResourcesForCurrentUser(resourcesList);
     }
 
     @Override
@@ -163,11 +195,11 @@ public class ResourcesService implements IResourcesService {
         final ResourcesAccess defaultResource = new ResourcesAccess(pResource, pMicroserviceName);
         final List<Role> roles = new ArrayList<>();
 
-        if ((pResource.getResourceAccess() != null)
-                && !pResource.getResourceAccess().role().equals(DefaultRole.PROJECT_ADMIN)) {
+        if (pResource.getResourceAccess() != null) {
             final String roleName = pResource.getResourceAccess().role().name();
             try {
-                roles.add(roleService.retrieveRole(roleName));
+                final Role role = roleService.retrieveRole(roleName);
+                roles.add(role);
             } catch (final EntityNotFoundException e) {
                 LOG.debug(e.getMessage(), e);
                 LOG.warn("Default role {} for resource {} does not exists.", roleName, defaultResource.getResource());
@@ -218,9 +250,71 @@ public class ResourcesService implements IResourcesService {
      */
     private List<ResourcesAccess> saveResources(final List<ResourcesAccess> pResourcesToSave) {
         final List<ResourcesAccess> results = new ArrayList<>();
+
+        // First Step is to calculate new associated roles for each resource
+        for (final ResourcesAccess resource : pResourcesToSave) {
+            calculateResourceInheritedRoles(resource);
+        }
+
         final Iterable<ResourcesAccess> savedResources = resourceAccessRepo.save(pResourcesToSave);
         if (savedResources != null) {
-            savedResources.forEach(r -> results.add(r));
+            savedResources.forEach(results::add);
+        }
+        try {
+            eventPublisher.publish(UpdateAuthoritiesEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
+                                   AmqpCommunicationTarget.EXTERNAL);
+        } catch (final RabbitMQVhostException e) {
+            LOG.error("Error publishing resources updates to all running microservices.");
+            LOG.error(e.getMessage(), e);
+        }
+        return results;
+    }
+
+    /**
+     *
+     * Method to update given resource roles with all inherited roles of each role.
+     *
+     * @param pResource
+     *            resource to update
+     * @since 1.0-SNAPSHOT
+     */
+    private void calculateResourceInheritedRoles(final ResourcesAccess pResource) {
+
+        final List<Role> inheritedRoles = new ArrayList<>();
+        for (final Role role : pResource.getRoles()) {
+            for (final Role inheritedRole : roleService.retrieveInheritedRoles(role)) {
+                inheritedRoles.add(inheritedRole);
+            }
+        }
+        pResource.addRoles(inheritedRoles);
+
+    }
+
+    /**
+     *
+     * Filter given resources to return only available resoources for the current connected user.
+     *
+     * @param pResources
+     *            List of {@link ResourcesAccess} to filter
+     * @return List of {@link ResourcesAccess} accessible by the current connected user.
+     * @since 1.0-SNAPSHOT
+     */
+    private List<ResourcesAccess> filterResourcesForCurrentUser(final List<ResourcesAccess> pResources) {
+        final List<ResourcesAccess> results = new ArrayList<>();
+        final String role = jwtService.getActualRole();
+        // IF the current user final role is instance final admin role or final System role all final resources are
+        // available
+        if ((role == null) || RoleAuthority.isInstanceAdminRole(role) || RoleAuthority.isSysRole(role)) {
+            pResources.forEach(results::add);
+        } else {
+            // Else only return available resources for the current user role.
+            pResources.forEach(resource -> {
+                final Optional<Role> authorizedRole = resource.getRoles().stream().filter(r -> r.getName().equals(role))
+                        .findFirst();
+                if (authorizedRole.isPresent()) {
+                    results.add(resource);
+                }
+            });
         }
         return results;
     }

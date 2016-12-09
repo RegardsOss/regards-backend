@@ -10,6 +10,7 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
@@ -27,6 +28,7 @@ import javax.validation.Valid;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublic;
 
 /**
@@ -36,6 +38,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParent
  * @author Sébastien Binda
  */
 @Entity
+@EntityListeners(UpdateAuthoritiesListener.class)
 @Table(name = "T_ROLE", indexes = { @Index(name = "IDX_ROLE_NAME", columnList = "name") })
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
 @HasParentOrPublic
@@ -61,7 +64,7 @@ public class Role implements IIdentifiable<Long> {
      * <p/>
      * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasParentOrPublic} annotation.
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "parent_role_id", foreignKey = @ForeignKey(name = "FK_ROLE_PARENT_ROLE"))
     private Role parentRole;
 
@@ -70,7 +73,7 @@ public class Role implements IIdentifiable<Long> {
      */
     @Valid
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "TA_RESOURCES_ROLES", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
+    @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
             inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
     private List<ResourcesAccess> permissions;
 
@@ -253,6 +256,26 @@ public class Role implements IIdentifiable<Long> {
      */
     public void setId(final Long pId) {
         id = pId;
+    }
+
+    @Override
+    public int hashCode() {
+        if (this.id != null) {
+            return this.id.hashCode();
+        } else
+            if (this.name != null) {
+                return this.name.hashCode();
+            } else {
+                return 0;
+            }
+    }
+
+    @Override
+    public boolean equals(final Object pObj) {
+        if (pObj instanceof Role) {
+            return this.hashCode() == pObj.hashCode();
+        }
+        return false;
     }
 
 }

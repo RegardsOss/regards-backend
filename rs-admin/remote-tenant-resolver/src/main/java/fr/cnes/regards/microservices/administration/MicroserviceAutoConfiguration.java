@@ -60,9 +60,9 @@ public class MicroserviceAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     ITenantConnectionResolver multintenantResolver(final IProjectsClient pProjectsClient,
-            final IProjectConnectionClient pProjectConnectionClient) {
+            final IProjectConnectionClient pProjectConnectionClient, final ITenantResolver pTenantResolver) {
         return new MicroserviceTenantConnectionResolver(microserviceName, jwtService, pProjectsClient,
-                pProjectConnectionClient);
+                pProjectConnectionClient, pTenantResolver);
     }
 
     /**
@@ -96,7 +96,7 @@ public class MicroserviceAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     ITenantResolver tenantResolver(final FeignInitialAdminClients pInitClients) {
-        return new RemoteTenantResolver(pInitClients.getProjectsClient());
+        return new RemoteTenantResolver(pInitClients.getProjectsClient(), jwtService, microserviceName);
     }
 
     /**
