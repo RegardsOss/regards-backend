@@ -95,6 +95,8 @@ public final class HateoasUtils {
      *
      * Retrieve all elements from a hateoas paginated endpoint
      *
+     * @param number
+     *            of elements to retrieve by page
      * @param pRequest
      *            request to execute for each page
      * @return {@link List} of results
