@@ -17,7 +17,10 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.stub.AuthenticationPluginStub;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
@@ -78,6 +81,15 @@ public class AuthenticationTestConfiguration {
                 new Resource<Project>(new Project("", "", true, PROJECT_TEST_NAME)), HttpStatus.OK);
         Mockito.when(client.retrieveProject(Mockito.anyString())).thenReturn(response);
         return client;
+    }
+
+    @Bean
+    IAccountsClient accountsClient() {
+        final IAccountsClient mock = Mockito.mock(IAccountsClient.class);
+        final Resource<Account> resource = HateoasUtils.wrap(new Account("", "", "", ""));
+        final ResponseEntity<Resource<Account>> response = ResponseEntity.ok(resource);
+        Mockito.when(mock.retrieveAccounByEmail(Mockito.any())).thenReturn(response);
+        return mock;
     }
 
 }
