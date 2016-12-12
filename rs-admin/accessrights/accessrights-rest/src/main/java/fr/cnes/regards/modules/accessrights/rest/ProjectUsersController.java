@@ -33,7 +33,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbidden
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
@@ -210,14 +209,16 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
         if ((pElement != null) && (pElement.getId() != null)) {
             resource = resourceService.toResource(pElement);
             resourceService.addLink(resource, this.getClass(), "retrieveProjectUser", LinkRels.SELF,
-                                    MethodParamFactory.build(Long.class, pElement.getId()));
+                                    MethodParamFactory.build(String.class, pElement.getEmail()));
             resourceService.addLink(resource, this.getClass(), "updateProjectUser", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
-                                    MethodParamFactory.build(Account.class));
+                                    MethodParamFactory.build(ProjectUser.class, pElement));
             resourceService.addLink(resource, this.getClass(), "removeProjectUser", LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, pElement.getId()));
             resourceService.addLink(resource, this.getClass(), "retrieveProjectUserList", LinkRels.LIST,
-                                    MethodParamFactory.build(String.class, pElement.getStatus().toString()));
+                                    MethodParamFactory.build(String.class, pElement.getStatus().toString()),
+                                    MethodParamFactory.build(Pageable.class),
+                                    MethodParamFactory.build(PagedResourcesAssembler.class));
         }
         return resource;
     }

@@ -442,7 +442,6 @@ public class RoleServiceTest {
     @Purpose("Check that the system allows to retrieve all users  from a role hierarchy.")
     public void retrieveRoleProjectUserList() throws EntityNotFoundException {
         final Long idParent = 0L;
-        final Long idChild = 1L;
         final String roleParentName = "parent";
         final String roleChildName = "child";
 
@@ -464,24 +463,32 @@ public class RoleServiceTest {
         expected.addAll(childUsers);
 
         // Mock
-        Mockito.when(roleRepository.exists(idChild)).thenReturn(true);
-        Mockito.when(roleRepository.findOne(idChild)).thenReturn(roleChild);
-        Mockito.when(projectUserRepository.findByRoleName(roleParentName)).thenReturn(parentUsers);
-        Mockito.when(projectUserRepository.findByRoleName(roleChildName)).thenReturn(childUsers);
+        Mockito.when(roleRepository.exists(idParent)).thenReturn(true);
+        Mockito.when(roleRepository.findOne(idParent)).thenReturn(roleParent);
+
+        final List<String> roleNames = new ArrayList<>();
+        roleNames.add(roleChildName);
+        roleNames.add(roleParentName);
+
+        final List<Role> inehtitedRoleOfParentRole = new ArrayList<>();
+        inehtitedRoleOfParentRole.add(roleChild);
+        final Page<ProjectUser> pageExpected = new PageImpl<>(expected);
 
         final Pageable pageable = new PageRequest(0, 100);
-        final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
+        Mockito.when(roleRepository.findByParentRoleName(roleParentName)).thenReturn(inehtitedRoleOfParentRole);
+        Mockito.when(projectUserRepository.findByRoleNameIn(roleNames, pageable)).thenReturn(pageExpected);
+
+        final Page<ProjectUser> expectedPage = new PageImpl<>(expected);
 
         // Define actual result
-        final Page<ProjectUser> actual = roleService.retrieveRoleProjectUserList(idChild, pageable);
+        final Page<ProjectUser> actual = roleService.retrieveRoleProjectUserList(idParent, pageable);
 
         // Check
         Assert.assertEquals(expectedPage, actual);
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(roleRepository).findOne(idChild);
-        Mockito.verify(projectUserRepository).findByRoleName(roleParentName);
-        Mockito.verify(projectUserRepository).findByRoleName(roleChildName);
+        Mockito.verify(roleRepository).findOne(idParent);
+        Mockito.verify(projectUserRepository).findByRoleNameIn(roleNames, pageable);
     }
 
     /**

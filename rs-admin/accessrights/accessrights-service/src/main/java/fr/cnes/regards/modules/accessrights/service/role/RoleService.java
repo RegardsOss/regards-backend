@@ -284,14 +284,10 @@ public class RoleService implements IRoleService {
         if (!existRole(pRoleId)) {
             throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
-        final List<Role> roleAndHisAncestors = new ArrayList<>();
-
         final Role role = roleRepository.findOne(pRoleId);
-        roleAndHisAncestors.add(role);
-
-        final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
-        roleAndHisAncestors.addAll(roleLineageAssembler.of(role).get());
-        final List<String> roleNames = roleAndHisAncestors.stream().map(r -> r.getName()).collect(Collectors.toList());
+        final List<Role> roles = retrieveInheritedRoles(role);
+        roles.add(role);
+        final List<String> roleNames = roles.stream().map(r -> r.getName()).collect(Collectors.toList());
         return projectUserRepository.findByRoleNameIn(roleNames, pPageable);
     }
 

@@ -309,10 +309,11 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
         Resource<ResourcesAccess> resource = null;
         if ((pElement != null) && (pElement.getId() != null)) {
             resource = hateoasService.toResource(pElement);
-            hateoasService.addLink(resource, this.getClass(), "updateResourceAccess", LinkRels.SELF,
+            hateoasService.addLink(resource, this.getClass(), "retrieveResourceAccesses", LinkRels.SELF,
                                    MethodParamFactory.build(Long.class, pElement.getId()));
             hateoasService.addLink(resource, this.getClass(), "updateResourceAccess", LinkRels.UPDATE,
-                                   MethodParamFactory.build(Long.class, pElement.getId()));
+                                   MethodParamFactory.build(Long.class, pElement.getId()),
+                                   MethodParamFactory.build(ResourcesAccess.class, pElement));
         } else {
             LOG.warn(String.format("Invalid %s entity. Cannot create hateoas resources", this.getClass().getName()));
         }
