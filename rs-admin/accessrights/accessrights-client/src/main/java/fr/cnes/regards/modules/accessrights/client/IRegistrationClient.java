@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.client.core.annotation.RestClient;
@@ -43,7 +44,8 @@ public interface IRegistrationClient {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList();
+    ResponseEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList(@RequestParam("page") int pPage,
+            @RequestParam("size") int pSize);
 
     /**
      * Request a new access, i.e. a new project user

@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
@@ -163,10 +162,10 @@ public class RolesController implements IResourceController<Role> {
         if ((pElement != null) && (pElement.getId() != null)) {
             resource = resourceService.toResource(pElement);
             resourceService.addLink(resource, this.getClass(), "retrieveRole", LinkRels.SELF,
-                                    MethodParamFactory.build(Long.class, pElement.getId()));
+                                    MethodParamFactory.build(String.class, pElement.getName()));
             resourceService.addLink(resource, this.getClass(), "updateRole", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
-                                    MethodParamFactory.build(Account.class));
+                                    MethodParamFactory.build(Role.class));
             resourceService.addLink(resource, this.getClass(), "removeRole", LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, pElement.getId()));
             resourceService.addLink(resource, this.getClass(), "retrieveRoleList", LinkRels.LIST);

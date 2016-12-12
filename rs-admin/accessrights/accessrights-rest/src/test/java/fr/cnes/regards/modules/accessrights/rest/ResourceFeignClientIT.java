@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
 import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
 import org.springframework.hateoas.Resource;
@@ -37,7 +36,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@EnableFeignClients(clients = { IResourcesClient.class })
 public class ResourceFeignClientIT extends AbstractRegardsWebIT {
 
     /**
