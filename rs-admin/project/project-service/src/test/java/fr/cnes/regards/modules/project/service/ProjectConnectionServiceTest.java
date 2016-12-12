@@ -7,11 +7,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -31,6 +33,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * Project business service tests
  *
  * @author Sébastien Binda
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
 public class ProjectConnectionServiceTest {
@@ -106,6 +109,11 @@ public class ProjectConnectionServiceTest {
     private JWTService jwtService;
 
     /**
+     * Stubbed repository
+     */
+    private IProjectConnectionRepository projectConnectionRepoStub;
+
+    /**
      *
      * Initializa DAO Stub and inline entities for tests
      *
@@ -117,7 +125,6 @@ public class ProjectConnectionServiceTest {
         // Init jwtService
         jwtService = new JWTService();
         jwtService.setSecret("123456789");
-
         jwtService.injectMockToken("instance", "DEFAULT");
 
         // use a stub repository, to be able to only test the service
@@ -126,7 +133,7 @@ public class ProjectConnectionServiceTest {
 
         final IPublisher mockPublisher = Mockito.mock(IPublisher.class);
 
-        final IProjectConnectionRepository projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
+        projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
         projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub,
                 mockPublisher);
 
@@ -265,6 +272,25 @@ public class ProjectConnectionServiceTest {
             // Nothing to do
         }
 
+    }
+
+    /**
+     * Test to retrieve projects connections of given project's name in instance database.
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Requirement("REGARDS_DSL_SYS_ARC_050")
+    @Purpose(" Test to retrieve projects connections of given project's name in instance database.")
+    @Test
+    public void testRetrieveProjectsConnectionsByProject() {
+        final Pageable pageable = new PageRequest(0, 100);
+
+        // Call tested method
+        final Page<ProjectConnection> actual = projectConnectionService
+                .retrieveProjectsConnectionsByProject(PROJECT_TEST_1, pageable);
+
+        // Check
+        Assert.assertEquals(1, actual.getTotalElements());
     }
 
 }

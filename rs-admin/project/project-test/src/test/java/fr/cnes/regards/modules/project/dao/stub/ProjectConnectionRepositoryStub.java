@@ -3,7 +3,13 @@
  */
 package fr.cnes.regards.modules.project.dao.stub;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
@@ -17,6 +23,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * STUB for JPA ProjectConnection Repository.
  *
  * @author CS
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
 @Repository
@@ -37,6 +44,19 @@ public class ProjectConnectionRepositoryStub extends JpaRepositoryStub<ProjectCo
         }
 
         return result;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.project.dao.IProjectConnectionRepository#findByProjectName(java.lang.String,
+     * org.springframework.data.domain.Pageable)
+     */
+    @Override
+    public Page<ProjectConnection> findByProjectName(final String pProjectName, final Pageable pPageable) {
+        final List<ProjectConnection> list = entities.stream()
+                .filter(e -> e.getProject().getName().equals(pProjectName)).collect(Collectors.toList());
+        return new PageImpl<>(list);
     }
 
 }

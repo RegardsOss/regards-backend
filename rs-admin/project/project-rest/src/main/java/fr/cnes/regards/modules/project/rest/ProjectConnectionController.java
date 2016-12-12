@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.project.service.IProjectConnectionService;
  * Endpoints to manage the projects databases name ProjectConnection
  *
  * @author CS
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
 @RestController
@@ -86,6 +87,30 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     public ResponseEntity<PagedResources<Resource<ProjectConnection>>> retrieveProjectsConnections(
             final Pageable pPageable, final PagedResourcesAssembler<ProjectConnection> pAssembler) {
         final Page<ProjectConnection> connections = projectConnectionService.retrieveProjectsConnections(pPageable);
+        return ResponseEntity.ok(toPagedResources(connections, pAssembler));
+    }
+
+    /**
+     * Retrieve all project connections from database for a given project/tenant.
+     *
+     * @param pProjectName
+     *            The project name
+     * @param pPageable
+     *            Spring managed object containing pagination information
+     * @param pAssembler
+     *            Spring managed resource assembler to convert {@link Page} into {@link PagedResources}
+     * @return The list of project connections wrapped in a response entity of pages resources
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/{project_name}/connections", produces = "application/json")
+    @ResponseBody
+    @ResourceAccess(description = "Retrieve all projects connections for a given project/tenant",
+            role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<PagedResources<Resource<ProjectConnection>>> retrieveProjectsConnectionsByProjectName(
+            @PathVariable("project_name") final String pProjectName, final Pageable pPageable,
+            final PagedResourcesAssembler<ProjectConnection> pAssembler) {
+        final Page<ProjectConnection> connections = projectConnectionService
+                .retrieveProjectsConnectionsByProject(pProjectName, pPageable);
         return ResponseEntity.ok(toPagedResources(connections, pAssembler));
     }
 

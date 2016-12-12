@@ -7,8 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
@@ -24,10 +28,31 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * Test class for DAO of project module
  *
  * @author CS
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
 @ContextConfiguration(classes = { ProjectDaoTestConfiguration.class })
 public class ProjectDaoIT extends AbstractDaoTest {
+
+    /**
+     * A microservce name
+     */
+    private static final String MICROSERVICE_1 = "microservice-test";
+
+    /**
+     * An other microservice name
+     */
+    private static final String MICROSERVICE_2 = "microservice-test-2";
+
+    /**
+     * Common string value for project creation.
+     */
+    private static final String COMMON_PROJECT_NAME_1 = "project-test";
+
+    /**
+     * Common string value for project creation.
+     */
+    private static final String COMMON_PROJECT_NAME_2 = "project-test-2";
 
     /**
      * Common string value for project creation.
@@ -72,6 +97,37 @@ public class ProjectDaoIT extends AbstractDaoTest {
     private IProjectConnectionRepository projectConnectionRepository;
 
     /**
+     * A project initialized before each test
+     */
+    private Project project;
+
+    @Before
+    public void setUp() {
+        // First clean all elements from databse
+        projectConnectionRepository.deleteAll();
+        projectRepository.deleteAll();
+
+        // Create a new projects
+        project = projectRepository
+                .save(new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, COMMON_PROJECT_NAME_1));
+        projectRepository
+                .save(new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, COMMON_PROJECT_NAME_2));
+
+        // Check results
+        final Iterable<Project> projects = projectRepository.findAll();
+        final List<Project> results = new ArrayList<>();
+        projects.forEach(p -> results.add(p));
+        Assert.assertTrue(String.format("There must be 2 projects in database not %d", results.size()),
+                          results.size() == 2);
+
+        // Create new projects connections
+        projectConnectionRepository.save(new ProjectConnection(project, MICROSERVICE_1, COMMON_PROJECT_USER_NAME,
+                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
+        projectConnectionRepository.save(new ProjectConnection(project, MICROSERVICE_2, COMMON_PROJECT_USER_NAME,
+                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
+    }
+
+    /**
      *
      * Test to create and retrieve projects connections in instance database
      *
@@ -82,31 +138,6 @@ public class ProjectDaoIT extends AbstractDaoTest {
     @Test
     public void createAndRetreiveProjectConnections() {
 
-        final String microservice = "microservice-test";
-        final String microservice2 = "microservice-test-2";
-
-        // First clean all elements from databse
-        projectConnectionRepository.deleteAll();
-        projectRepository.deleteAll();
-
-        // Create a new projects
-        final Project project = projectRepository
-                .save(new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, "project-test"));
-        projectRepository.save(new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, "project-test-2"));
-
-        // Check results
-        final Iterable<Project> projects = projectRepository.findAll();
-        final List<Project> results = new ArrayList<>();
-        projects.forEach(p -> results.add(p));
-        Assert.assertTrue(String.format("There must be 2 projects in database not %d", results.size()),
-                          results.size() == 2);
-
-        // Create new projects connections
-        projectConnectionRepository.save(new ProjectConnection(project, microservice, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
-        projectConnectionRepository.save(new ProjectConnection(project, microservice2, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
-
         // Check results
         final Iterable<ProjectConnection> connections = projectConnectionRepository.findAll();
         final List<ProjectConnection> cresults = new ArrayList<>();
@@ -114,12 +145,42 @@ public class ProjectDaoIT extends AbstractDaoTest {
         Assert.assertTrue(String.format("There must be 2 project connection in database not %d", cresults.size()),
                           cresults.size() == 2);
         final ProjectConnection conn = projectConnectionRepository
-                .findOneByProjectNameAndMicroservice(project.getName(), microservice);
+                .findOneByProjectNameAndMicroservice(project.getName(), MICROSERVICE_1);
         final String errorMessage = "Error retreiving project connection for project name %s and microservice %s";
-        Assert.assertNotNull(String.format(errorMessage, project.getName(), microservice), conn);
+        Assert.assertNotNull(String.format(errorMessage, project.getName(), MICROSERVICE_1), conn);
         Assert.assertTrue("Error retreiving project connection for project name %s and microservice %s.",
-                          conn.getMicroservice().equals(microservice));
+                          conn.getMicroservice().equals(MICROSERVICE_1));
+    }
 
+    /**
+     * Test to retrieve projects connections of given project's name in instance database.
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Requirement("REGARDS_DSL_SYS_ARC_050")
+    @Purpose(" Test to retrieve projects connections of given project's name in instance database.")
+    @Test
+    public void testFindByProjectName() {
+        final Pageable pageable = new PageRequest(0, 100);
+
+        final Page<ProjectConnection> result = projectConnectionRepository.findByProjectName(COMMON_PROJECT_NAME_1,
+                                                                                             pageable);
+        // Check
+        final ProjectConnection connection0 = result.getContent().get(0);
+        final ProjectConnection connection1 = result.getContent().get(1);
+        Assert.assertEquals(2, result.getTotalElements());
+        Assert.assertEquals(connection0.getProject(), project);
+        Assert.assertEquals(connection0.getMicroservice(), MICROSERVICE_1);
+        Assert.assertEquals(connection0.getUserName(), COMMON_PROJECT_USER_NAME);
+        Assert.assertEquals(connection0.getPassword(), COMMON_PROJECT_USER_PWD);
+        Assert.assertEquals(connection0.getDriverClassName(), COMMON_PROJECT_DRIVER);
+        Assert.assertEquals(connection0.getUrl(), COMMON_PROJECT_URL);
+        Assert.assertEquals(connection1.getProject(), project);
+        Assert.assertEquals(connection1.getMicroservice(), MICROSERVICE_2);
+        Assert.assertEquals(connection1.getUserName(), COMMON_PROJECT_USER_NAME);
+        Assert.assertEquals(connection1.getPassword(), COMMON_PROJECT_USER_PWD);
+        Assert.assertEquals(connection1.getDriverClassName(), COMMON_PROJECT_DRIVER);
+        Assert.assertEquals(connection1.getUrl(), COMMON_PROJECT_URL);
     }
 
 }

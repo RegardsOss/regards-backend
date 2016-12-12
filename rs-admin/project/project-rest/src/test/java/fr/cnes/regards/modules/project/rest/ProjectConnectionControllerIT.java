@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * Tests REST endpoint to access ProjectConnection entities
  *
  * @author Sébastien Binda
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
 @InstanceTransactional
@@ -177,6 +178,26 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         performDelete("/projects/" + PROJECT_TEST + "/connection/" + MICROSERVICE_TEST, instanceAdmintoken,
                       expectations, "Error there must be project results");
+    }
+
+    /**
+     * Check REST Access to project connections by project name and Hateoas returned links.
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Requirement("REGARDS_DSL_SYS_ARC_050")
+    @Purpose("Check REST Access to project connections by project name and Hateoas returned links.")
+    @Test
+    public void testRetrieveProjectConnectionsByProjectName() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(20)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(1)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages", Matchers.is(1)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
+        performGet("/projects/" + PROJECT_TEST + "/connections", instanceAdmintoken, expectations, "error");
     }
 
 }
