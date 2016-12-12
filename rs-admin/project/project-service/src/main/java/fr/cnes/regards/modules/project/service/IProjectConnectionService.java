@@ -21,6 +21,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * Interface for ProjectService. Allow to query projects entities.
  *
  * @author CS
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
 public interface IProjectConnectionService {
@@ -92,5 +93,17 @@ public interface IProjectConnectionService {
      */
     ProjectConnection retrieveProjectConnection(final String pProjectName, String pMicroService)
             throws EntityNotFoundException;
+
+    /**
+     * Retrieve all project connections from database for a given project/tenant.
+     *
+     * @param pProjectName
+     *            The project name
+     * @param pPageable
+     *            Spring managed object containing pagination information
+     * @return The list of project connections wrapped in a {@link Page}
+     * @since 1.0-SNAPSHOT
+     */
+    Page<ProjectConnection> retrieveProjectsConnectionsByProject(String pProjectName, Pageable pPageable);
 
 }

@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
  * @author Sébastien Binda
+ * @author Xavier-Alexandre Brochard
  *
  * @since 1.0-SNAPSHOT
  */
@@ -164,6 +165,18 @@ public class ProjectConnectionService implements IProjectConnectionService {
             throw new EntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
         }
         return connection;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.project.service.IProjectConnectionService#retrieveProjectsConnectionsByProject(org.
+     * springframework.data.domain.Pageable)
+     */
+    @Override
+    public Page<ProjectConnection> retrieveProjectsConnectionsByProject(final String pProjectName,
+            final Pageable pPageable) {
+        return projectConnectionRepository.findByProjectName(pProjectName, pPageable);
     }
 
 }
