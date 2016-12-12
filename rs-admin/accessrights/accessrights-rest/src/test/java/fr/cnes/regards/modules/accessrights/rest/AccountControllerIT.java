@@ -265,7 +265,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     public void getAccountUser() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$._links", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.notNullValue()));
         // expectations.add(MockMvcResultMatchers.jsonPath("$._links.delete", Matchers.notNullValue()));
         // expectations.add(MockMvcResultMatchers.jsonPath("$._links.self", Matchers.notNullValue()));
         // expectations.add(MockMvcResultMatchers.jsonPath("$._links.update", Matchers.notNullValue()));
@@ -280,7 +280,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     public void getAccountInstance() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$._links", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.notNullValue()));
         // expectations.add(MockMvcResultMatchers.jsonPath("$._links.self", Matchers.notNullValue()));
         // expectations.add(MockMvcResultMatchers.jsonPath("$._links.update", Matchers.notNullValue()));
         // expectations.add(MockMvcResultMatchers.jsonPath("$._links.self.href", Matchers.notNullValue()));

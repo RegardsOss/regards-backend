@@ -4,7 +4,6 @@
 package fr.cnes.regards.microserices.administration;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,18 +14,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.HttpStatus;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
 import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
 import fr.cnes.regards.microservices.administration.FeignInitialAdminClients;
 import fr.cnes.regards.microservices.administration.MicroserviceClientsAutoConfiguration;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
@@ -136,9 +137,17 @@ public class JpaTenantConnectionConfiguration {
     @Bean
     @Primary
     public IResourcesClient resourceClient() {
-        final ResponseEntity<List<ResourceMapping>> response = new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
+        final ResponseEntity<Void> response = ResponseEntity.ok(null);
         final IResourcesClient mock = Mockito.mock(IResourcesClient.class);
-        Mockito.when(mock.registerMicroserviceEndpoints(Mockito.any(), Mockito.any())).thenReturn(response);
+        Mockito.stub(mock.registerMicroserviceEndpoints(Mockito.anyString(), Mockito.any())).toReturn(response);
+
+        final PageMetadata md = new PageMetadata(0, 0, 0);
+        final PagedResources<Resource<ResourcesAccess>> pagedResources = new PagedResources<>(new ArrayList<>(), md,
+                new ArrayList<>());
+        final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> resourcesResponse = ResponseEntity
+                .ok(pagedResources);
+        Mockito.stub(mock.retrieveResourcesAccesses(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
+                .toReturn(resourcesResponse);
         return mock;
     }
 

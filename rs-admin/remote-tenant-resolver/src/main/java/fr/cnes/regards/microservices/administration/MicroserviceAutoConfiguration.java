@@ -79,7 +79,7 @@ public class MicroserviceAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     IAuthoritiesProvider authoritiesProvider(final IResourcesClient pResourcesClient, final IRolesClient pRolesClient) {
-        return new MicroserviceAuthoritiesProvider(microserviceName, pResourcesClient, pRolesClient, jwtService);
+        return new MicroserviceAuthoritiesProvider(microserviceName, pResourcesClient, pRolesClient);
     }
 
     /**

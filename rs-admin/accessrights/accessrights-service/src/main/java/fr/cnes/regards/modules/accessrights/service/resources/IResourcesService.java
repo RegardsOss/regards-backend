@@ -5,6 +5,9 @@ package fr.cnes.regards.modules.accessrights.service.resources;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -19,6 +22,17 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * @since 1.0-SNAPSHOT
  */
 public interface IResourcesService {
+
+    /**
+     *
+     * Retrieve paged resources in database
+     *
+     * @param
+     *
+     * @return {@link Page} of {@link ResourcesAccess}
+     * @since 1.0-SNAPSHOT
+     */
+    Page<ResourcesAccess> retrieveRessources(Pageable pPageable);
 
     /**
      *
@@ -54,9 +68,10 @@ public interface IResourcesService {
      * Retrieve all resources in database for the given microservice
      *
      * @return List of {@link ResourcesAccess}
+     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
-    List<ResourcesAccess> retrieveMicroserviceRessources(String pMicroserviceName);
+    Page<ResourcesAccess> retrieveMicroserviceRessources(String pMicroserviceName, final Pageable pPageable);
 
     /**
      *
@@ -67,10 +82,8 @@ public interface IResourcesService {
      *            list of {@link ResourceMapping} to register
      * @param pMicroserviceName
      *            microservice owner of the resources to register
-     * @return List of configured {@link ResourcesAccess}
      * @since 1.0-SNAPSHOT
      */
-    List<ResourcesAccess> registerResources(final List<ResourceMapping> pResourcesToRegister,
-            final String pMicroserviceName);
+    void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName);
 
 }

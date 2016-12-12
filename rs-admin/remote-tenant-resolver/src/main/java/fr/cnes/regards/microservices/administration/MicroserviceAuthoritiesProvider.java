@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.context.ApplicationContextException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,9 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
 
@@ -49,11 +50,6 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     private final IRolesClient roleClient;
 
     /**
-     * Security service
-     */
-    private final JWTService jwtService;
-
-    /**
      *
      * Constructor
      *
@@ -64,24 +60,31 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
      * @since 1.0-SNAPSHOT
      */
     public MicroserviceAuthoritiesProvider(final String pMicroserviceName, final IResourcesClient pResourcesclient,
-            final IRolesClient pRolesClient, final JWTService pJwtService) {
+            final IRolesClient pRolesClient) {
         super();
         microserviceName = pMicroserviceName;
         resourcesClient = pResourcesclient;
         roleClient = pRolesClient;
-        jwtService = pJwtService;
     }
 
     @Override
     public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
+        final List<ResourceMapping> results = new ArrayList<>();
         // Register endpoints to administration service and retrieve configured ones
-        final ResponseEntity<List<ResourceMapping>> response = resourcesClient
-                .registerMicroserviceEndpoints(microserviceName, pLocalEndpoints);
+        final ResponseEntity<Void> response = resourcesClient.registerMicroserviceEndpoints(microserviceName,
+                                                                                            pLocalEndpoints);
         if (response.getStatusCode().equals(HttpStatus.OK)) {
-            return response.getBody();
+            // Then get configured endpoints
+
+            final List<ResourcesAccess> resources = HateoasUtils.retrieveAllPages(100, (final Pageable pPageable) -> {
+                return resourcesClient.retrieveResourcesAccesses(microserviceName, pPageable.getPageNumber(),
+                                                                 pPageable.getPageSize());
+            });
+            resources.forEach(r -> results.add(r.toResourceMapping()));
         } else {
             throw new ApplicationContextException("Error registring endpoints to administration service");
         }
+        return results;
     }
 
     @Override

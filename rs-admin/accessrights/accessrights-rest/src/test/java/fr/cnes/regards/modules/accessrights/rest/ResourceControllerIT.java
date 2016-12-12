@@ -127,7 +127,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     @Purpose("Check first registration of a microservice endpoints")
-    public void saveResource() {
+    public void initialMicroserviceEndpointsRegistration() {
 
         final List<ResourceMapping> mapping = new ArrayList<>();
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
@@ -140,9 +140,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
                 CONFIGURED_ENDPOINT_URL, RequestMethod.GET));
         final List<ResultMatcher> expectations = new ArrayList<>(3);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performPost(ResourcesController.REQUEST_MAPPING_ROOT + "/register/microservice/{microservice}", instanceToken,
+        performPost(ResourcesController.REQUEST_MAPPING_ROOT + "/register/microservices/{microservice}", instanceToken,
                     mapping, expectations, "Error during registring endpoints", DEFAULT_MICROSERVICE);
 
         final List<ResourcesAccess> resources = repository.findByMicroservice(DEFAULT_MICROSERVICE);
@@ -206,8 +204,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     public void retrieveResources() {
         final List<ResultMatcher> expectations = new ArrayList<>(3);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
         performGet(ResourcesController.REQUEST_MAPPING_ROOT, publicToken, expectations, "Error retrieving endpoints");
     }
 

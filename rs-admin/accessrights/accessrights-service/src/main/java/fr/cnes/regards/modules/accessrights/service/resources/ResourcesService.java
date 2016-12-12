@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.accessrights.service.resources;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -14,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import feign.FeignException;
@@ -124,11 +126,51 @@ public class ResourcesService implements IResourcesService {
     }
 
     @Override
+    public Page<ResourcesAccess> retrieveRessources(final Pageable pPageable) {
+        Page<ResourcesAccess> results;
+        final String roleName = jwtService.getActualRole();
+        // If role is System role or InstanceAdminRole retrieve all resources
+        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
+            results = resourceAccessRepo.findAll(pPageable);
+        } else {
+            // Else retrieve only accessible resources
+            Role currentRole;
+            try {
+                currentRole = roleService.retrieveRole(roleName);
+                final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
+                final List<String> rolesName = new ArrayList<>();
+                roles.forEach(r -> rolesName.add(r.getName()));
+                results = resourceAccessRepo.findDistinctByRolesNameIn(rolesName, pPageable);
+            } catch (final EntityNotFoundException e) {
+                LOG.error(e.getMessage(), e);
+                results = new PageImpl<>(new ArrayList<>(), pPageable, 0);
+            }
+        }
+        return results;
+    }
+
+    @Override
     public List<ResourcesAccess> retrieveRessources() {
-        final Iterable<ResourcesAccess> allResources = resourceAccessRepo.findAll();
-        final List<ResourcesAccess> resourcesList = new ArrayList<>();
-        allResources.forEach(resourcesList::add);
-        return filterResourcesForCurrentUser(resourcesList);
+        List<ResourcesAccess> results;
+        final String roleName = jwtService.getActualRole();
+        // If role is System role or InstanceAdminRole retrieve all resources
+        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
+            results = resourceAccessRepo.findAll();
+        } else {
+            // Else retrieve only accessible resources
+            Role currentRole;
+            try {
+                currentRole = roleService.retrieveRole(roleName);
+                final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
+                final List<String> rolesName = new ArrayList<>();
+                roles.forEach(r -> rolesName.add(r.getName()));
+                results = resourceAccessRepo.findDistinctByRolesNameIn(rolesName);
+            } catch (final EntityNotFoundException e) {
+                LOG.error(e.getMessage(), e);
+                results = new ArrayList<>();
+            }
+        }
+        return results;
     }
 
     @Override
@@ -149,21 +191,39 @@ public class ResourcesService implements IResourcesService {
     }
 
     @Override
-    public List<ResourcesAccess> retrieveMicroserviceRessources(final String pMicroserviceName) {
-        final Iterable<ResourcesAccess> allResources = resourceAccessRepo.findByMicroservice(pMicroserviceName);
-        final List<ResourcesAccess> resourcesList = new ArrayList<>();
-        allResources.forEach(resourcesList::add);
-        return filterResourcesForCurrentUser(resourcesList);
+    public Page<ResourcesAccess> retrieveMicroserviceRessources(final String pMicroserviceName,
+            final Pageable pPageable) {
+        Page<ResourcesAccess> results;
+        final String roleName = jwtService.getActualRole();
+        // If role is System role or InstanceAdminRole retrieve all resources
+        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
+            results = resourceAccessRepo.findByMicroservice(pMicroserviceName, pPageable);
+        } else {
+            // Else retrieve only accessible resources
+            Role currentRole;
+            try {
+                currentRole = roleService.retrieveRole(roleName);
+                final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
+                final List<String> rolesName = new ArrayList<>();
+                roles.forEach(r -> rolesName.add(r.getName()));
+                results = resourceAccessRepo.findDistinctByMicroserviceAndRolesNameIn(pMicroserviceName, rolesName,
+                                                                                      pPageable);
+            } catch (final EntityNotFoundException e) {
+                LOG.error(e.getMessage(), e);
+                results = new PageImpl<>(new ArrayList<>(), pPageable, 0);
+            }
+
+        }
+        return results;
     }
 
     @Override
-    public List<ResourcesAccess> registerResources(final List<ResourceMapping> pResourcesToRegister,
-            final String pMicroserviceName) {
+    public void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName) {
         final List<ResourcesAccess> resources = new ArrayList<>();
         pResourcesToRegister.forEach(r -> resources.add(createDefaultResourceConfiguration(r, pMicroserviceName)));
 
         // Retrieve aleady configured resources for the given microservice
-        final List<ResourcesAccess> existingResources = retrieveMicroserviceRessources(pMicroserviceName);
+        final List<ResourcesAccess> existingResources = resourceAccessRepo.findByMicroservice(pMicroserviceName);
 
         final List<ResourcesAccess> newResources = new ArrayList<>();
         // Create missing resources
@@ -175,10 +235,6 @@ public class ResourcesService implements IResourcesService {
 
         // Save missing resources
         saveResources(newResources);
-
-        // Return all microservice configured resources
-        return retrieveMicroserviceRessources(pMicroserviceName);
-
     }
 
     /**
@@ -288,35 +344,6 @@ public class ResourcesService implements IResourcesService {
         }
         pResource.addRoles(inheritedRoles);
 
-    }
-
-    /**
-     *
-     * Filter given resources to return only available resoources for the current connected user.
-     *
-     * @param pResources
-     *            List of {@link ResourcesAccess} to filter
-     * @return List of {@link ResourcesAccess} accessible by the current connected user.
-     * @since 1.0-SNAPSHOT
-     */
-    private List<ResourcesAccess> filterResourcesForCurrentUser(final List<ResourcesAccess> pResources) {
-        final List<ResourcesAccess> results = new ArrayList<>();
-        final String role = jwtService.getActualRole();
-        // IF the current user final role is instance final admin role or final System role all final resources are
-        // available
-        if ((role == null) || RoleAuthority.isInstanceAdminRole(role) || RoleAuthority.isSysRole(role)) {
-            pResources.forEach(results::add);
-        } else {
-            // Else only return available resources for the current user role.
-            pResources.forEach(resource -> {
-                final Optional<Role> authorizedRole = resource.getRoles().stream().filter(r -> r.getName().equals(role))
-                        .findFirst();
-                if (authorizedRole.isPresent()) {
-                    results.add(resource);
-                }
-            });
-        }
-        return results;
     }
 
 }

@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
@@ -13,14 +14,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
 import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
 import feign.hystrix.HystrixFeign;
 import fr.cnes.regards.client.core.TokenClientProvider;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
@@ -82,10 +86,38 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
      * @since 1.0-SNAPSHOT
      */
     @Test
-    public void retrieveAccountListFromFeignClient() {
+    public void retrieveResourcesListFromFeignClient() {
         try {
             jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PUBLIC.toString());
-            final ResponseEntity<List<Resource<ResourcesAccess>>> response = client.retrieveResourcesAccesses();
+            final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> response = client
+                    .retrieveResourcesAccesses(0, 20);
+            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        } catch (final Exception e) {
+            LOG.error(e.getMessage(), e);
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void registerResourcesFromFeignClient() {
+        try {
+            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString());
+            final List<ResourceMapping> resources = new ArrayList<>();
+            resources.add(new ResourceMapping("/register/test", RequestMethod.GET));
+            final ResponseEntity<Void> response = client.registerMicroserviceEndpoints("rs-test", resources);
+            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        } catch (final Exception e) {
+            LOG.error(e.getMessage(), e);
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void retrieveMicroserviceResourcesFromFeignClient() {
+        try {
+            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PUBLIC.toString());
+            final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> response = client
+                    .retrieveResourcesAccesses("rs-test", 0, 20);
             Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);

@@ -11,6 +11,10 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,7 +60,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping(ResourcesController.REQUEST_MAPPING_ROOT)
+@RequestMapping(value = ResourcesController.REQUEST_MAPPING_ROOT)
 public class ResourcesController implements IResourceController<ResourcesAccess> {
 
     /**
@@ -101,14 +105,41 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      *
      * Retrieve the ResourceAccess list of all microservices
      *
-     * @return List<ResourceAccess>
+     * @param pPageable
+     *            pagination informations
+     *
+     * @return {@link Page} of {@link ResourceAccess}
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
     @ResponseBody
-    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveResourcesAccesses() {
-        return new ResponseEntity<>(toResources(service.retrieveRessources()), HttpStatus.OK);
+    public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> retrieveResourcesAccesses(final Pageable pPageable,
+            final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) {
+        return new ResponseEntity<>(toPagedResources(service.retrieveRessources(pPageable), pPagedResourcesAssembler),
+                HttpStatus.OK);
+    }
+
+    /**
+     *
+     * Retrieve the ResourceAccess list of the given microservice
+     *
+     * @param pPageable
+     *            pagination informations
+     *
+     * @return {@link Page} of {@link ResourceAccess}
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(value = "/microservices/{microservice}", method = RequestMethod.GET)
+    @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
+    @ResponseBody
+    public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> retrieveResourcesAccesses(
+            @PathVariable("microservice") final String pMicroserviceName, final Pageable pPageable,
+            final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) {
+        return new ResponseEntity<>(
+                toPagedResources(service.retrieveMicroserviceRessources(pMicroserviceName, pPageable),
+                                 pPagedResourcesAssembler),
+                HttpStatus.OK);
     }
 
     /**
@@ -291,17 +322,15 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      * @return List<ResourceAccess>
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(value = "/register/microservice/{microservicename}", method = RequestMethod.POST)
+    @RequestMapping(value = "/register/microservices/{microservicename}", method = RequestMethod.POST)
     @ResourceAccess(description = "Endpoint to register all endpoints of a microservice to the administration service.",
             role = DefaultRole.INSTANCE_ADMIN)
     @ResponseBody
-    public ResponseEntity<List<ResourceMapping>> registerMicroserviceEndpoints(
+    public ResponseEntity<Void> registerMicroserviceEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,
             @RequestBody final List<ResourceMapping> pResourcesToRegister) {
-        final List<ResourcesAccess> resources = service.registerResources(pResourcesToRegister, pMicroserviceName);
-        final List<ResourceMapping> results = new ArrayList<>();
-        resources.forEach(r -> results.add(r.toResourceMapping()));
-        return new ResponseEntity<>(results, HttpStatus.OK);
+        service.registerResources(pResourcesToRegister, pMicroserviceName);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override

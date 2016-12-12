@@ -6,6 +6,10 @@ package fr.cnes.regards.modules.accessrights.dao.stubs;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
@@ -33,6 +37,43 @@ public class ResourcesAccessRepositoryStub extends JpaRepositoryStub<ResourcesAc
 
     @Override
     public List<ResourcesAccess> findByMicroservice(final String pMicroservice) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public Page<ResourcesAccess> findDistinctByRolesNameIn(final List<String> pRolesName, final Pageable pPageable) {
+        return new PageImpl<>(new ArrayList<>(), pPageable, 0);
+    }
+
+    @Override
+    public Page<ResourcesAccess> findByMicroservice(final String pMicroservice, final Pageable pPageable) {
+        final List<ResourcesAccess> results = new ArrayList<>();
+        this.entities.forEach(r -> {
+            if (r.getMicroservice().equals(pMicroservice)) {
+                results.add(r);
+            }
+        });
+        return new PageImpl<>(results, pPageable, 0);
+    }
+
+    @Override
+    public Page<ResourcesAccess> findDistinctByMicroserviceAndRolesNameIn(final String pMicroservice,
+            final List<String> pRolesName, final Pageable pPageable) {
+        final List<ResourcesAccess> results = new ArrayList<>();
+        this.entities.forEach(r -> {
+            if (r.getMicroservice().equals(pMicroservice)) {
+                r.getRoles().forEach(role -> {
+                    if (pRolesName.contains(role.getName())) {
+                        results.add(r);
+                    }
+                });
+            }
+        });
+        return new PageImpl<>(results, pPageable, 0);
+    }
+
+    @Override
+    public List<ResourcesAccess> findDistinctByRolesNameIn(final List<String> pRolesName) {
         return new ArrayList<>();
     }
 

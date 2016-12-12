@@ -127,7 +127,9 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     }
 
     public ResourcesAccess(final ResourceMapping pMapping, final String pMicroservicename) {
-        description = pMapping.getResourceAccess().description();
+        if (pMapping.getResourceAccess() != null) {
+            description = pMapping.getResourceAccess().description();
+        }
         microservice = pMicroservicename;
         resource = pMapping.getFullPath();
         verb = HttpVerb.valueOf(pMapping.getMethod().toString());

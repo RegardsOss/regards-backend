@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -33,6 +34,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AccessRightsDaoTestConfiguration.class })
+@MultitenantTransactional
 public class ProjectUserDaoTest {
 
     /**

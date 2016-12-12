@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
  *
  */
 @Service
+@EnableFeignClients(clients = { IRolesClient.class })
 @MultitenantTransactional
 public class NotificationService implements INotificationService {
 
