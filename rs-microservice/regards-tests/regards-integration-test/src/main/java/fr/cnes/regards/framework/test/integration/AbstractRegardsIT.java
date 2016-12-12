@@ -288,6 +288,10 @@ public abstract class AbstractRegardsIT {
         final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(pHttpMethod, pUrlTemplate,
                                                                                             pUrlVars);
         addSecurityHeader(requestBuilder, pAuthToken);
+
+        requestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
+        requestBuilder.header(HttpConstants.ACCEPT, "application/json");
+
         return requestBuilder;
     }
 

@@ -5,9 +5,14 @@ package fr.cnes.regards.framework.hateoas;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -84,5 +89,40 @@ public final class HateoasUtils {
             result.add(r.getContent());
         }
         return result;
+    }
+
+    /**
+     *
+     * Retrieve all elements from a hateoas paginated endpoint
+     *
+     * @param pRequest
+     *            request to execute for each page
+     * @return {@link List} of results
+     * @since 1.0-SNAPSHOT
+     */
+    public static <T> List<T> retrieveAllPages(final int pPageSize,
+            final Function<Pageable, ResponseEntity<PagedResources<Resource<T>>>> pRequest) {
+        final List<T> results = new ArrayList<>();
+        final List<Resource<T>> pageResources = new ArrayList<>();
+        Pageable pageable = new PageRequest(0, pPageSize);
+        boolean newPage;
+        do {
+            final ResponseEntity<PagedResources<Resource<T>>> response = pRequest.apply(pageable);
+            if (response.getStatusCode().equals(HttpStatus.OK)) {
+                final PagedResources<Resource<T>> page = response.getBody();
+                pageResources.clear();
+                page.getContent().forEach(pageResources::add);
+                results.addAll(HateoasUtils.unwrapList(pageResources));
+                if (results.size() < page.getMetadata().getTotalElements()) {
+                    pageable = pageable.next();
+                    newPage = true;
+                } else {
+                    newPage = false;
+                }
+            } else {
+                newPage = false;
+            }
+        } while (newPage);
+        return results;
     }
 }

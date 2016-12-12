@@ -9,8 +9,12 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -91,6 +95,65 @@ public class HateoasUtilsTest {
                 .collect(Collectors.toList());
 
         Assert.assertEquals(expected, HateoasUtils.unwrapList(actual));
+    }
+
+    /**
+     *
+     * Test util to retrieve all elements form a paginated endpoints with Hateoas resources
+     *
+     * @since 1.0-SNAPHSOT
+     */
+    @Test
+    public void retrieveAllEnttitiesFromPaginatedEndpoint() {
+
+        // First with total elements = 20 and 5 elements per page
+        List<String> allResults = HateoasUtils.retrieveAllPages(5, (final Pageable pPageable) -> {
+            final List<String> entities = new ArrayList<>();
+
+            for (int i = 0; i < pPageable.getPageSize(); i++) {
+                entities.add("value_" + String.valueOf(pPageable.getOffset() + i));
+            }
+
+            final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 20);
+            final PagedResources<Resource<String>> resources = new PagedResources<>(HateoasUtils.wrapList(entities), md,
+                    new ArrayList<>());
+            final ResponseEntity<PagedResources<Resource<String>>> response = ResponseEntity.ok(resources);
+            return response;
+        });
+
+        Assert.assertNotNull(allResults);
+        Assert.assertEquals(20, allResults.size());
+        Assert.assertEquals("value_0", allResults.get(0));
+        Assert.assertEquals("value_1", allResults.get(1));
+
+        // Second with no elements in results
+        allResults = HateoasUtils.retrieveAllPages(5, (final Pageable pPageable) -> {
+            final List<String> entities = new ArrayList<>();
+            final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 0);
+            final PagedResources<Resource<String>> resources = new PagedResources<>(HateoasUtils.wrapList(entities), md,
+                    new ArrayList<>());
+            final ResponseEntity<PagedResources<Resource<String>>> response = ResponseEntity.ok(resources);
+            return response;
+        });
+
+        Assert.assertNotNull(allResults);
+        Assert.assertEquals(0, allResults.size());
+
+        // Third with with 1 elements in results and 5 per page
+        allResults = HateoasUtils.retrieveAllPages(5, (final Pageable pPageable) -> {
+            final List<String> entities = new ArrayList<>();
+            entities.add("value_" + String.valueOf(pPageable.getOffset()));
+            final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 1);
+            final PagedResources<Resource<String>> resources = new PagedResources<>(HateoasUtils.wrapList(entities), md,
+                    new ArrayList<>());
+            final ResponseEntity<PagedResources<Resource<String>>> response = ResponseEntity.ok(resources);
+            return response;
+        });
+
+        Assert.assertNotNull(allResults);
+        Assert.assertEquals(1, allResults.size());
+        Assert.assertEquals("value_0", allResults.get(0));
+
     }
 
 }
