@@ -205,7 +205,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     @Override
     public Resource<ProjectUser> toResource(final ProjectUser pElement, final Object... pExtras) {
-        Resource<ProjectUser> resource = null;
+        Resource<ProjectUser> resource = resourceService.toResource(pElement);
         if ((pElement != null) && (pElement.getId() != null)) {
             resource = resourceService.toResource(pElement);
             resourceService.addLink(resource, this.getClass(), "retrieveProjectUser", LinkRels.SELF,
