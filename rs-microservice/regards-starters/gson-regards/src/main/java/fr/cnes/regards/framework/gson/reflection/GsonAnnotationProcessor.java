@@ -14,7 +14,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
 
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
-import fr.cnes.regards.framework.gson.annotation.GsonAdapterFactory;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonDiscriminator;
 import fr.cnes.regards.framework.gson.annotation.Gsonable;
 import fr.cnes.regards.framework.gson.utils.GSONUtils;
@@ -38,7 +38,7 @@ public final class GsonAnnotationProcessor {
     /**
      * Process all object annotated with {@link Gsonable} to dynamically create
      * {@link PolymorphicTypeAdapterFactory}.<br/>
-     * Process all {@link GsonAdapterFactory} to register this factories.
+     * Process all {@link GsonTypeAdapterFactory} to register this factories.
      *
      * @param pBuilder
      *            {@link GsonBuilder}
@@ -142,7 +142,7 @@ public final class GsonAnnotationProcessor {
     }
 
     /**
-     * Process all object annotated with {@link GsonAdapterFactory} to dynamically register {@link TypeAdapterFactory}.
+     * Process all object annotated with {@link GsonTypeAdapterFactory} to dynamically register {@link TypeAdapterFactory}.
      *
      * @param pBuilder
      *            {@link GsonBuilder}
@@ -153,15 +153,21 @@ public final class GsonAnnotationProcessor {
 
         // Scan for Gsonable
         final Reflections reflections = new Reflections(pPrefix);
-        final Set<Class<?>> factoryTypes = reflections.getTypesAnnotatedWith(GsonAdapterFactory.class, true);
+        final Set<Class<?>> factoryTypes = reflections.getTypesAnnotatedWith(GsonTypeAdapterFactory.class, true);
 
         if (factoryTypes != null) {
             for (Class<?> factoryType : factoryTypes) {
-                // Retrieve annotation
-                final GsonAdapterFactory a = factoryType.getAnnotation(GsonAdapterFactory.class);
 
-                // Retrieve factory and create an instance
-                Class<? extends TypeAdapterFactory> factoryClass = a.value();
+                if (!TypeAdapterFactory.class.isAssignableFrom(factoryType)) {
+                    final String errorMessage = String.format("Factory %s must be an implementation of %s", factoryType,
+                                                              TypeAdapterFactory.class);
+                    LOGGER.error(errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
+                }
+
+                // Create an instance
+                @SuppressWarnings("unchecked")
+                Class<? extends TypeAdapterFactory> factoryClass = (Class<? extends TypeAdapterFactory>) factoryType;
                 try {
                     TypeAdapterFactory factory = factoryClass.newInstance();
                     pBuilder.registerTypeAdapterFactory(factory);

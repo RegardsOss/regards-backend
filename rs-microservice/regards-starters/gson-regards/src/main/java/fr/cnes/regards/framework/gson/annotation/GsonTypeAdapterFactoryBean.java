@@ -8,18 +8,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.stereotype.Component;
+
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
 
 /**
- * Identify a GSON factory to add dynamically to the {@link GsonBuilder} on startup
+ * Identify a GSON {@link TypeAdapterFactory} to be added dynamically to the {@link GsonBuilder} at startup. The target
+ * factory is managed by Spring so we can use dependency injection.
  *
  * @author Marc Sordi
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface GsonAdapterFactory {
-
-    Class<? extends TypeAdapterFactory> value();
+@Component
+public @interface GsonTypeAdapterFactoryBean {
 }

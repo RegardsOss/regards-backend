@@ -28,13 +28,24 @@ regards.gson.scan-prefix=fr.cnes.regards
 
 ### Autoconfiguration
 
-GSON add GSON serialization to SPRING HttpMessageConverter.
+GSON add GSON (de)serialization to SPRING HttpMessageConverter.
 
 GSON is customize through **GsonBuilder** to :
-- dynamically create adapter factories for Gsonable element (polymorphic factories),
-- dynamically register **TypeAdapterFactory**, 
+- dynamically create adapter factories for **Gsonable** element (polymorphic factories),
+- dynamically register **TypeAdapterFactory** annotated with **GsonTypeAdapterFactory**,
+- dynamically register Spring **TypeAdapterFactory** annotated with **GsonTypeAdapterFactoryBean** or Spring **Component**, 
 - add an exclusion strategy based on **GSonIgnore** annotation,
 - add a **PathAdapter** for **Path** class.
+
+### How to register a custom factory
+
+#### With **GsonTypeAdapterFactory** annotation
+
+This annotation allows to register automatically a **TypeAdapterFactory** with a no arg constructor.
+
+#### With **GsonTypeAdapterFactoryBean** or **Component** annotation
+
+Useful for Spring based factories allowing dependency injection. The factory must implement GSON **TypeAdapterFactory**.
 
 ### How to use polymorphic element (de)serialization
 
@@ -44,9 +55,13 @@ This annotation allows to register a dynamically created **PolymorphicTypeAdapte
 
 You optionnaly can specify the discriminator name in **Gsonable** and the discriminator values on sub types through **GsonDiscriminator**.
 
-#### With **GsonAdapterFactory** whatever your want.
+#### Creating a sub class of **PolymorphicTypeAdapterFactory** and registering it with annotation
 
-This annotation allows to register automatically a **TypeAdapterFactory** with a no arg constructor.
+### How to instanciate polymorphic factory
+
+Init an instance of **PolymorphicTypeAdapterFactory** or a subclasses and **registerSubtype** on it.
+
+Subtype can be registered even if factory has already been created.
 
 ## HATEOAS starter
 

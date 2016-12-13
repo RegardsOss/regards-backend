@@ -4,11 +4,13 @@
 package fr.cnes.regards.framework.gson.adapters.sample5;
 
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 
 /**
  * @author Marc Sordi
  *
  */
+@GsonTypeAdapterFactory
 public class AnimalAdapterFactory5 extends PolymorphicTypeAdapterFactory<Animal> {
 
     public AnimalAdapterFactory5() {
