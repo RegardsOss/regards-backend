@@ -24,28 +24,19 @@ import io.jsonwebtoken.impl.TextCodec;
 
 /**
  *
- * Utility service based on JJWT library to generate or parte a JWT based on a secret.
+ * Utility service based on JJWT library to generate or part a JWT based on a secret.
  *
- * @author msordi
+ * @author Marc Sordi
+ * @author Christophe Mertz
  *
  */
 @Service
 public class JWTService {
 
     /**
-     * Crypting algorithm
-     */
-    private static SignatureAlgorithm ALGO = SignatureAlgorithm.HS512;
-
-    /**
      * Project claim
      */
     public static final String CLAIM_PROJECT = "project";
-
-    /**
-     * Email claim
-     */
-    public static final String CLAIM_EMAIL = "email";
 
     /**
      * Role claim
@@ -56,6 +47,11 @@ public class JWTService {
      * Subject claim
      */
     public static final String CLAIM_SUBJECT = "sub";
+    
+    /**
+     * Encryption algorithm
+     */
+    private static final SignatureAlgorithm ALGO = SignatureAlgorithm.HS512;
 
     /**
      * Class logger
@@ -110,17 +106,14 @@ public class JWTService {
      *            Project
      * @param pRole
      *            Role name
-     * @param pUserEmail
-     *            User email
      * @param pUserName
      *            User name
      * @throws JwtException
      *             Error during token generation
      * @since 1.0-SNAPSHOT
      */
-    public void injectToken(final String pTenant, final String pRole, final String pUserEmail, final String pUserName)
-            throws JwtException {
-        final String token = generateToken(pTenant, pUserEmail, pUserName, pRole);
+    public void injectToken(final String pTenant, final String pRole, final String pUserName) throws JwtException {
+        final String token = generateToken(pTenant, pUserName, pRole);
         final JWTAuthentication auth = parseToken(new JWTAuthentication(token));
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
@@ -138,7 +131,7 @@ public class JWTService {
      * @since 1.0-SNAPSHOT
      */
     public void injectToken(final String pTenant, final String pRole) throws JwtException {
-        injectToken(pTenant, pRole, "", "");
+        injectToken(pTenant, pRole, "");
     }
 
     /**
@@ -169,9 +162,7 @@ public class JWTService {
      * @param pAuthentication
      *            containing just JWT
      * @return Full user information
-     * @throws MissingClaimException
-     *             JWT claim missing
-     * @throws InvalidJwtException
+     * @throws JwtException
      *             Invalid JWT signature
      */
     public JWTAuthentication parseToken(final JWTAuthentication pAuthentication) throws JwtException {
@@ -188,12 +179,6 @@ public class JWTService {
                 throw new MissingClaimException(CLAIM_PROJECT);
             }
             user.setTenant(project);
-
-            final String email = claims.getBody().get(CLAIM_EMAIL, String.class);
-            if (email == null) {
-                throw new MissingClaimException(CLAIM_EMAIL);
-            }
-            user.setEmail(email);
 
             final String name = claims.getBody().getSubject();
             if (name == null) {
@@ -223,9 +208,9 @@ public class JWTService {
     // JWT should be completed with :
     // - expiration date
     // - data access groups
-    public String generateToken(final String pProject, final String pEmail, final String pName, final String pRole) {
-        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(pProject, pEmail, pRole, pName))
-                .setSubject(pName).signWith(ALGO, TextCodec.BASE64.encode(secret)).compact();
+    public String generateToken(final String pProject, final String pName, final String pRole) {
+        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(pProject, pRole, pName)).setSubject(pName)
+                .signWith(ALGO, TextCodec.BASE64.encode(secret)).compact();
     }
 
     /**
@@ -234,8 +219,6 @@ public class JWTService {
      *
      * @param pProject
      *            project name
-     * @param pEmail
-     *            user email
      * @param pRole
      *            user role
      * @param pUserName
@@ -243,11 +226,9 @@ public class JWTService {
      * @return claim map
      * @since 1.0-SNAPSHOT
      */
-    public Map<String, Object> generateClaims(final String pProject, final String pEmail, final String pRole,
-            final String pUserName) {
+    public Map<String, Object> generateClaims(final String pProject, final String pRole, final String pUserName) {
         final Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_PROJECT, pProject);
-        claims.put(CLAIM_EMAIL, pEmail);
         claims.put(CLAIM_ROLE, pRole);
         claims.put(CLAIM_SUBJECT, pUserName);
         return claims;

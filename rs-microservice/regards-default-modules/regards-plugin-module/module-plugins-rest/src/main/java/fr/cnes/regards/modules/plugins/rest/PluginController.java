@@ -282,7 +282,7 @@ public class PluginController {
             @PathVariable("configId") final Long pConfigId) throws EntityNotFoundException {
         pluginService.deletePluginConfiguration(pConfigId);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }

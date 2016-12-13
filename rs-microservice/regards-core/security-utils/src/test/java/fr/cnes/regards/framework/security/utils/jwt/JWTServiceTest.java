@@ -40,11 +40,10 @@ public class JWTServiceTest {
     public void generateJWT() {
         final String project = "PROJECT";
         final String email = "marc.sordi@c-s.fr";
-        final String name = "Marc SORDI";
         final String role = "USER";
 
         // Generate token
-        final String jwt = jwtService.generateToken(project, email, name, role);
+        final String jwt = jwtService.generateToken(project, email, role);
         LOG.debug("JWT = " + jwt);
 
         // Parse token and retrieve user information
@@ -54,8 +53,7 @@ public class JWTServiceTest {
             Assert.assertEquals(project, jwtAuth.getProject());
 
             final UserDetails user = jwtAuth.getPrincipal();
-            Assert.assertEquals(email, user.getEmail());
-            Assert.assertEquals(name, user.getName());
+            Assert.assertEquals(email, user.getName());
             Assert.assertEquals(project, user.getTenant());
         } catch (JwtException e) {
             final String message = "JWT test error";

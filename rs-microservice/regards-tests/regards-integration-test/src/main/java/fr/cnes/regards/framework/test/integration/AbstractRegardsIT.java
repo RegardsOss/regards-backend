@@ -62,11 +62,6 @@ public abstract class AbstractRegardsIT {
     protected static final String DEFAULT_TENANT = "PROJECT";
 
     /**
-     * Default user
-     */
-    protected static final String DEFAULT_USER = "default_user";
-
-    /**
      * Default user email
      */
     protected static final String DEFAULT_USER_EMAIL = "default_user@regards.fr";
@@ -296,7 +291,7 @@ public abstract class AbstractRegardsIT {
     }
 
     /**
-     * Build a multipart request builder based on file {@link Path}
+     * Build a multi-part request builder based on file {@link Path}
      *
      * @param pAuthToken
      *            authorization token
@@ -378,16 +373,14 @@ public abstract class AbstractRegardsIT {
     /**
      * Generate token for default tenant
      *
-     * @param pEmail
-     *            user email
      * @param pName
      *            user name
      * @param pRole
      *            user role
      * @return JWT
      */
-    protected String generateToken(final String pEmail, final String pName, final String pRole) {
-        return jwtService.generateToken(DEFAULT_TENANT, pEmail, pName, pRole);
+    protected String generateToken(final String pName, final String pRole) {
+        return jwtService.generateToken(DEFAULT_TENANT, pName, pRole);
     }
 
     /**
@@ -425,7 +418,7 @@ public abstract class AbstractRegardsIT {
         if (pUrlPath.contains("?")) {
             path = path.substring(0, pUrlPath.indexOf("?"));
         }
-        final String jwt = generateToken(DEFAULT_USER_EMAIL, DEFAULT_USER, getDefaultRole());
+        final String jwt = generateToken(DEFAULT_USER_EMAIL, getDefaultRole());
         setAuthorities(path, pMethod, getDefaultRole());
         return jwt;
     }

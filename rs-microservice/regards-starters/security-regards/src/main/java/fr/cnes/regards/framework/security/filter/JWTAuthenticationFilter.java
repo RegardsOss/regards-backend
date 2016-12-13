@@ -110,15 +110,15 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
      * Generate a public token
      *
      * @param pRequest
-     *            http request
+     *            HTTP request
      * @param pResponse
-     *            http response
+     *            HTTP response
      * @param pFilterChain
      *            all filters to apply next
      * @throws IOException
-     *             Error generating http response
+     *             Error in HTTP response generation
      * @throws ServletException
-     *             Error generatin token
+     *             Error token generation
      * @throws JwtException
      * @since 1.0-SNAPSHOT
      */
@@ -137,7 +137,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             } else {
                 // Generate a token with PUBLIC Role
-                jwtService.injectToken(scope, DefaultRole.PUBLIC.name(), "public@regards.com", "public");
+                jwtService.injectToken(scope, DefaultRole.PUBLIC.name(), "public@regards.com");
                 pFilterChain.doFilter(pRequest, pResponse);
             }
         } catch (final JwtException | ServletException e) {
