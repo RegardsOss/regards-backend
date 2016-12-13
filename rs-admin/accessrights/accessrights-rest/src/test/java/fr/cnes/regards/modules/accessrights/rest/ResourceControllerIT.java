@@ -93,7 +93,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      *
-     * Initiaze test datas
+     * Initialize all datas for this unit tests
      *
      * @throws EntityNotFoundException
      *             test error
@@ -104,10 +104,9 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
 
         final JWTService service = new JWTService();
         service.setSecret("123456789");
-        instanceToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DEFAULT_USER,
+        instanceToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL,
                                               DefaultRole.INSTANCE_ADMIN.toString());
-        publicToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DEFAULT_USER,
-                                            DefaultRole.PUBLIC.toString());
+        publicToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DefaultRole.PUBLIC.toString());
 
         final ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE,
                 CONFIGURED_ENDPOINT_URL, HttpVerb.GET);

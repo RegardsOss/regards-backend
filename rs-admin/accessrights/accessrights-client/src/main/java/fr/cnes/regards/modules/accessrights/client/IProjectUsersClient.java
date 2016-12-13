@@ -27,6 +27,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * Feign client for rs-admin ProjectUsers controller.
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
@@ -46,6 +48,9 @@ public interface IProjectUsersClient {
 
     /**
      * Retrieve all users with a pending access requests.
+     * 
+     * @param pPage
+     * @param pSize
      *
      * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
      */
@@ -57,8 +62,9 @@ public interface IProjectUsersClient {
     /**
      * Retrieve the {@link ProjectUser} of passed <code>email</code>.
      *
-     * @param pUserId
+     * @param pUserEmail
      *            The {@link ProjectUser}'s <code>email</code>
+     * @return {@link PagedResources} of {@link ProjectUser}
      */
     @ResponseBody
     @RequestMapping(value = "/{user_email}", method = RequestMethod.GET)
@@ -71,6 +77,7 @@ public interface IProjectUsersClient {
      *            The {@link ProjectUser} <code>id</code>
      * @param pUpdatedProjectUser
      *            The new {@link ProjectUser}
+     * @return {@link PagedResources} of {@link ProjectUser}
      */
     @ResponseBody
     @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT)
@@ -82,6 +89,7 @@ public interface IProjectUsersClient {
      *
      * @param pUserId
      *            The {@link ProjectUser}'s <code>id</code>
+     * @return void
      */
     @ResponseBody
     @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE)

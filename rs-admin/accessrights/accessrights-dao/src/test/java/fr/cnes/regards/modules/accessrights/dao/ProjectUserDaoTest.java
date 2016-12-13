@@ -15,7 +15,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -67,13 +66,12 @@ public class ProjectUserDaoTest {
     }
 
     /**
-     * Check that the system updates automaticly the field lastUpdate before any db persistence.
+     * Check that the system updates automatically the field lastUpdate before any db persistence.
      */
     @Test
     @Purpose("Check that the system updates automaticly the field lastUpdate before any db persistence.")
     public final void setLastUpdateListener() {
 
-        final UpdateAuthoritiesListener iop = new UpdateAuthoritiesListener();
         final RoleFactory factory = new RoleFactory();
         final Role role = roleRepository.save(factory.createPublic());
         final ProjectUser user = new ProjectUser("email@test.com", role, new ArrayList<>(), new ArrayList<>());

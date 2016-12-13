@@ -83,7 +83,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
      */
     @Before
     public void initialize() {
-        instanceAdmintoken = jwtService.generateToken(PROJECT_TEST, "public@regards.fr", "public",
+        instanceAdmintoken = jwtService.generateToken(PROJECT_TEST, "public@regards.fr",
                                                       DefaultRole.INSTANCE_ADMIN.name());
 
         final Project project = projectRepo.findOneByName(PROJECT_TEST);
