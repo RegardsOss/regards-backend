@@ -18,6 +18,16 @@ public final class HttpConstants {
     public static final String AUTHORIZATION = "Authorization";
 
     /**
+     * Content-type
+     */
+    public static final String CONTENT_TYPE = "Content-type";
+
+    /**
+     * Accept type
+     */
+    public static final String ACCEPT = "Accept";
+
+    /**
      * Authorization header scheme
      */
     public static final String BEARER = "Bearer";

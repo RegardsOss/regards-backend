@@ -64,10 +64,15 @@ public class JpaRepositoryStub<T extends IIdentifiable<Long>> extends Repository
     @Override
     public Page<T> findAll(final Pageable pPageable) {
         final List<T> elements = new ArrayList<>();
-        final int firstIndex = (pPageable.getPageNumber() + 1) * pPageable.getPageSize();
-        elements.addAll(this.entities.subList(firstIndex, this.entities.size()).stream().limit(pPageable.getPageSize())
-                .collect(Collectors.toList()));
-        return new PageImpl<>(elements, pPageable, this.entities.size());
+        final int firstIndex = pPageable.getPageNumber() * pPageable.getPageSize();
+        if ((this.entities != null) && !this.entities.isEmpty()) {
+            elements.addAll(this.entities.subList(firstIndex, this.entities.size()).stream()
+                    .limit(pPageable.getPageSize()).collect(Collectors.toList()));
+            return new PageImpl<>(elements, pPageable, this.entities.size());
+        } else {
+            return new PageImpl<>(new ArrayList<>(), pPageable, 0);
+        }
+
     }
 
     @Override
