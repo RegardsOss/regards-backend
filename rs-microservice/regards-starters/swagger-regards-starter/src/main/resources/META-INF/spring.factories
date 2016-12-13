@@ -1,1 +1,3 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=fr.cnes.regards.framework.swagger.autoconfigure.SwaggerAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.framework.swagger.autoconfigure.SwaggerWebAutoConfiguration,\
+fr.cnes.regards.framework.swagger.autoconfigure.SwaggerAutoConfiguration
