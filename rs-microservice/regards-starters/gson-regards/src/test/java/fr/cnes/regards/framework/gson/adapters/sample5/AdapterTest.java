@@ -12,11 +12,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.JsonAdapter;
 
-import fr.cnes.regards.framework.gson.annotation.GsonAdapterFactory;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.reflection.GsonAnnotationProcessor;
 
 /**
- * Test with custom {@link GsonAdapterFactory} annotation.
+ * Test with custom {@link GsonTypeAdapterFactory} annotation.
  *
  * @author Marc Sordi
  *
