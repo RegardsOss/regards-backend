@@ -37,6 +37,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * Internal authentication plugins manager
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
 @Service
@@ -67,6 +68,13 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
      */
     private final IProjectUsersClient projectUsersClient;
 
+    /**
+     * Constructor with attributes
+     * @param pPluginService
+     * @param pJwtService
+     * @param pProjectsClient
+     * @param pProjectUsersClient
+     */
     public ExternalAuthenticationPluginService(final IPluginService pPluginService, final JWTService pJwtService,
             final IProjectsClient pProjectsClient, final IProjectUsersClient pProjectUsersClient) {
         super();
@@ -143,21 +151,20 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
             if (plugin.checkTicketValidity(pAuthInformations)) {
 
                 // Get informations about the user from the external service provider
-                final UserDetails details = plugin.getUserInformations(pAuthInformations);
+                final UserDetails userDetails = plugin.getUserInformations(pAuthInformations);
 
                 // Get informations about the user from the regards internal accounts.
                 final ResponseEntity<Resource<ProjectUser>> userResponse = projectUsersClient
-                        .retrieveProjectUser(details.getEmail());
+                        .retrieveProjectUser(userDetails.getName());
 
                 if (userResponse.getStatusCode().equals(HttpStatus.OK)
                         && (userResponse.getBody().getContent() != null)) {
                     jwtService.generateToken(pAuthInformations.getProject(),
                                              userResponse.getBody().getContent().getEmail(),
-                                             pAuthInformations.getUserName(),
                                              userResponse.getBody().getContent().getRole().getName());
                 } else {
                     throw new BadCredentialsException(
-                            String.format("User %s does not have access to project %s", details.getEmail(),
+                            String.format("User %s does not have access to project %s", userDetails.getName(),
                                           pAuthInformations.getProject()));
                 }
             }

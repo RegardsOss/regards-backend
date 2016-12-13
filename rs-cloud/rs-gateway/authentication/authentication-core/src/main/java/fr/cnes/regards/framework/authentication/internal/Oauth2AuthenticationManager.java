@@ -53,6 +53,8 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * account.
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNPASHOT
  */
 public class Oauth2AuthenticationManager implements AuthenticationManager, BeanFactoryAware {
@@ -213,7 +215,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     /**
      *
-     * Check with administration service, the existance of the given project
+     * Check with administration service, the existence of the given project
      *
      * @param pScope
      *            Project to check
@@ -252,9 +254,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
         final UserDetails details = (UserDetails) pToken.getPrincipal();
 
-        final ResponseEntity<Resource<Account>> response = accountClient.retrieveAccounByEmail(details.getEmail());
+        final ResponseEntity<Resource<Account>> response = accountClient.retrieveAccounByEmail(details.getName());
         if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-            accountClient.createAccount(new Account(details.getEmail(), "", "", null));
+            accountClient.createAccount(new Account(details.getName(), "", "", null));
         }
 
     }
@@ -339,7 +341,6 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             final ResponseEntity<Resource<ProjectUser>> response = projectUsersClient.retrieveProjectUser(pEmail);
             if (response.getStatusCode() == HttpStatus.OK) {
                 final ProjectUser projectUser = response.getBody().getContent();
-                user.setEmail(projectUser.getEmail());
                 user.setName(projectUser.getEmail());
                 user.setRole(projectUser.getRole().getName());
             } else {

@@ -178,7 +178,7 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
                 Subject.doAs(subject, ldapAction);
                 final String mail = ldapAction.getUserEmail(ldapCN, ldapEmailAttribute, ldapSearchUserFilter,
                                                             ldapUserLoginAttribute);
-                userDetails.setEmail(mail);
+                userDetails.setName(mail);
             } catch (final GSSException | LdapException e) {
                 LOG.error(e.getMessage(), e);
             }

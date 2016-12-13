@@ -39,6 +39,8 @@ import fr.cnes.regards.modules.project.domain.Project;
  * Test REST endpoints to manage Service provider plugins
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
@@ -135,7 +137,7 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
         manageDefaultSecurity(SP_URL, RequestMethod.DELETE);
         manageDefaultSecurity(AUTHENTICATE_URL, RequestMethod.POST);
 
-        token = generateToken("test@regards.fr", "", DEFAULT_ROLE);
+        token = generateToken("test@regards.fr", DEFAULT_ROLE);
     }
 
     /**

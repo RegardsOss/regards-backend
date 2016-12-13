@@ -38,6 +38,8 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * Test the Kerberos service provider plugin
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 public class KerberosServiceProviderPluginTest {
@@ -122,8 +124,8 @@ public class KerberosServiceProviderPluginTest {
                     userPrincipal, "test", ticket, "");
             Assert.assertTrue(plugin.checkTicketValidity(authInformations));
             final UserDetails details = plugin.getUserInformations(authInformations);
-            Assert.assertTrue((details.getEmail() != null) && !details.getEmail().isEmpty());
-            LOG.info("Email retrieved : {}", details.getEmail());
+            Assert.assertTrue((details.getName() != null) && !details.getName().isEmpty());
+            LOG.info("Email retrieved : {}", details.getName());
         } else {
             LOG.warn("Skip Test");
         }

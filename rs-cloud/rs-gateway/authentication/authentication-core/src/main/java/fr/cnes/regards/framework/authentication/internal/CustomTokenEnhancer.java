@@ -47,8 +47,7 @@ public class CustomTokenEnhancer implements TokenEnhancer {
         final Set<String> scopes = pAuthentication.getOAuth2Request().getScope();
         if ((jwtService != null) && (user != null) && (scopes != null) && !scopes.isEmpty()) {
             ((DefaultOAuth2AccessToken) pAccessToken).setAdditionalInformation(jwtService
-                    .generateClaims(scopes.stream().findFirst().get(), user.getEmail(), user.getRole(),
-                                    user.getEmail()));
+                    .generateClaims(scopes.stream().findFirst().get(), user.getRole(), user.getName()));
         } else {
             LOG.error("[OAUTH2 AUTHENTICATION] Error adding claims to JWT token.");
         }

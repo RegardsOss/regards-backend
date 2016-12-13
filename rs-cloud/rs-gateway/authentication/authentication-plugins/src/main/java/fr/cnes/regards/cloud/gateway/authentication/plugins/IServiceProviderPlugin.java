@@ -5,6 +5,7 @@ package fr.cnes.regards.cloud.gateway.authentication.plugins;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.ExternalAuthenticationInformations;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
 
 /**
  *
@@ -15,6 +16,7 @@ import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
+@PluginInterface(description="Interface for all Service Provider.")
 public interface IServiceProviderPlugin {
 
     /**

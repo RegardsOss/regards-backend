@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
  * Test REST endpoints to manage Identity provider plugins
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
@@ -115,7 +116,7 @@ public class AuthenticationControllerTest extends AbstractRegardsIT {
         manageDefaultSecurity(IDP_URL, RequestMethod.PUT);
         manageDefaultSecurity(IDP_URL, RequestMethod.DELETE);
 
-        token = generateToken("teszt@regards.fr", "", DEFAULT_ROLE);
+        token = generateToken("teszt@regards.fr", DEFAULT_ROLE);
     }
 
     /**
