@@ -339,7 +339,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
             Assert.fail();
         }
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isOk());
+        expectations.add(status().isNoContent());
         performDefaultDelete(apiPluginsOneConfigId, expectations, "unable to delete a plugin configuration", PLUGIN_ID,
                              aPluginConfiguration.getId());
     }
