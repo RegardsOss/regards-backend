@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.framework.gson.adapters.sample5;
 
-import fr.cnes.regards.framework.gson.annotation.GsonAdapterFactory;
-
 /**
  *
  * Test on animal objects
@@ -12,7 +10,6 @@ import fr.cnes.regards.framework.gson.annotation.GsonAdapterFactory;
  * @author Marc Sordi
  *
  */
-@GsonAdapterFactory(AnimalAdapterFactory5.class)
 public class Animal {
 
     /**
