@@ -10,6 +10,7 @@ import java.io.Serializable;
  * After request authentication, this object can be retrieved calling {@link JWTAuthentication#getPrincipal()}
  *
  * @author msordi
+ * @author Christophe Mertz
  *
  */
 public class UserDetails implements Serializable {
@@ -23,11 +24,6 @@ public class UserDetails implements Serializable {
      * User real name
      */
     private String name;
-
-    /**
-     * User email
-     */
-    private String email;
 
     /**
      * User role name
@@ -52,21 +48,6 @@ public class UserDetails implements Serializable {
      */
     public void setName(String pName) {
         name = pName;
-    }
-
-    /**
-     * @return the email
-     */
-    public String getEmail() {
-        return email;
-    }
-
-    /**
-     * @param pEmail
-     *            the email to set
-     */
-    public void setEmail(String pEmail) {
-        email = pEmail;
     }
 
     /**

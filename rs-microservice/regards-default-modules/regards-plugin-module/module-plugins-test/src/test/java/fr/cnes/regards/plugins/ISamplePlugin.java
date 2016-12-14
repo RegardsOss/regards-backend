@@ -3,12 +3,15 @@
  */
 package fr.cnes.regards.plugins;
 
+import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
+
 /**
  * ISamplePlugin
  * 
  * @author Christophe Mertz
  *
  */
+@PluginInterface(description = "hello sample plugin interface")
 public interface ISamplePlugin {
 
     /**

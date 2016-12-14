@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
  * @author Christophe Mertz
  *
  */
-@PluginInterface(description="hello")
+@PluginInterface(description = "hello sample plugin interface")
 public interface ISamplePlugin {
 
     /**
