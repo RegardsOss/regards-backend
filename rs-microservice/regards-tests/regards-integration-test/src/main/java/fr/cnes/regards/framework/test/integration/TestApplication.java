@@ -6,8 +6,6 @@ package fr.cnes.regards.framework.test.integration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import fr.cnes.regards.framework.swagger.autoconfigure.SwaggerAutoConfiguration;
-
 /**
  * Mock to test API endpoints at module level
  *
@@ -15,8 +13,7 @@ import fr.cnes.regards.framework.swagger.autoconfigure.SwaggerAutoConfiguration;
  *
  */
 // CHECKSTYLE:OFF
-@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices" },
-        exclude = { SwaggerAutoConfiguration.class })
+@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices" })
 public class TestApplication {
 
     public static void main(final String[] pArgs) {

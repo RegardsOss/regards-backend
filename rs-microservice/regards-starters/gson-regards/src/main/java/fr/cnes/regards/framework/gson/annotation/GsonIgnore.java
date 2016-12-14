@@ -23,6 +23,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
-public @interface GSonIgnore {
+public @interface GsonIgnore {
     // Field tag only annotation
 }

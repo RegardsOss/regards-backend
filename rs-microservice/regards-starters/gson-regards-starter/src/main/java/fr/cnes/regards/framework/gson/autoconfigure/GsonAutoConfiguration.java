@@ -7,6 +7,9 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.web.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -22,7 +25,7 @@ import fr.cnes.regards.framework.gson.adapters.PathAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
 import fr.cnes.regards.framework.gson.reflection.GsonAnnotationProcessor;
-import fr.cnes.regards.framework.gson.strategy.GSonIgnoreExclusionStrategy;
+import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
 
 /**
  * GSON support auto configuration
@@ -32,6 +35,7 @@ import fr.cnes.regards.framework.gson.strategy.GSonIgnoreExclusionStrategy;
  */
 @Configuration
 @EnableConfigurationProperties(GsonProperties.class)
+@AutoConfigureBefore(HttpMessageConvertersAutoConfiguration.class)
 public class GsonAutoConfiguration implements ApplicationContextAware {
 
     @Autowired
@@ -52,6 +56,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public GsonHttpMessageConverter gsonConverter(GsonBuilder pBuilder) {
         final Gson gson = pBuilder.create();
 
@@ -63,7 +68,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
 
     private void customizeBuilder(GsonBuilder pBuilder) {
         pBuilder.registerTypeAdapter(Path.class, new PathAdapter().nullSafe());
-        pBuilder.setExclusionStrategies(new GSonIgnoreExclusionStrategy());
+        pBuilder.setExclusionStrategies(new GsonIgnoreExclusionStrategy());
     }
 
     /**

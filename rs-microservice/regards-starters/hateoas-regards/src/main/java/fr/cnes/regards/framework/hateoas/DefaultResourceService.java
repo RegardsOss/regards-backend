@@ -85,7 +85,6 @@ public class DefaultResourceService implements IResourceService {
             pResource.add(link);
         } catch (final MethodException e) {
             // Do not insert link
-            LOG.debug(e.getMessage(), e);
         }
     }
 

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 
-import fr.cnes.regards.framework.gson.annotation.GSonIgnore;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 
 /**
  *
@@ -20,20 +20,23 @@ import fr.cnes.regards.framework.gson.annotation.GSonIgnore;
  * @author Christophe Mertz
  * @author Marc Sordi
  */
-public class GSonIgnoreExclusionStrategy implements ExclusionStrategy {
+public class GsonIgnoreExclusionStrategy implements ExclusionStrategy {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(GSonIgnoreExclusionStrategy.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GsonIgnoreExclusionStrategy.class);
 
+    /**
+     * Type to skip
+     */
     private final Class<?> typeToSkip;
 
-    public GSonIgnoreExclusionStrategy() {
+    public GsonIgnoreExclusionStrategy() {
         typeToSkip = null;
     }
 
-    public GSonIgnoreExclusionStrategy(Class<?> pTypeToSkip) {
+    public GsonIgnoreExclusionStrategy(Class<?> pTypeToSkip) {
         this.typeToSkip = pTypeToSkip;
     }
 
@@ -44,8 +47,11 @@ public class GSonIgnoreExclusionStrategy implements ExclusionStrategy {
 
     @Override
     public boolean shouldSkipField(FieldAttributes pFieldAttributes) {
-        LOG.debug(String.format("name:%s - annotation present:%s", pFieldAttributes.getName(),
-                                pFieldAttributes.getAnnotation(GSonIgnore.class) != null));
-        return pFieldAttributes.getAnnotation(GSonIgnore.class) != null;
+        final boolean isSkipped = pFieldAttributes.getAnnotation(GsonIgnore.class) != null;
+        if (isSkipped) {
+            LOG.debug(String.format("Skipping field %s in class %s.", pFieldAttributes.getName(),
+                                    pFieldAttributes.getClass()));
+        }
+        return isSkipped;
     }
 }
