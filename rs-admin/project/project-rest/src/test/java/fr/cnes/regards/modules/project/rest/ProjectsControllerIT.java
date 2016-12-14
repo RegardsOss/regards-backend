@@ -64,9 +64,8 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
 
     @Before
     public void initialize() {
-        instanceAdmintoken = jwtService.generateToken("test1", "public@regards.fr", "public",
-                                                      DefaultRole.INSTANCE_ADMIN.name());
-        publicToken = jwtService.generateToken("test1", "public@regards.fr", "public", DefaultRole.PUBLIC.name());
+        instanceAdmintoken = jwtService.generateToken("test1", DEFAULT_USER_EMAIL, DefaultRole.INSTANCE_ADMIN.name());
+        publicToken = jwtService.generateToken("test1", DEFAULT_USER_EMAIL, DefaultRole.PUBLIC.name());
     }
 
     /**

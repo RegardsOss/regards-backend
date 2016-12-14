@@ -59,7 +59,7 @@ public class EmailControllerIT extends AbstractRegardsIT {
     private MethodAuthorizationService authService;
 
     /**
-     * The jwt string
+     * The JWT string
      */
     private String jwt;
 
@@ -74,7 +74,7 @@ public class EmailControllerIT extends AbstractRegardsIT {
      */
     @Before
     public void init() {
-        jwt = jwtService.generateToken(DEFAULT_TENANT, "email", "SVG", DEFAULT_ROLE);
+        jwt = jwtService.generateToken(DEFAULT_TENANT, "email", DEFAULT_ROLE);
         authService.setAuthorities(DEFAULT_TENANT, "/emails", RequestMethod.GET, DEFAULT_ROLE);
         authService.setAuthorities(DEFAULT_TENANT, "/emails", RequestMethod.POST, DEFAULT_ROLE);
         authService.setAuthorities(DEFAULT_TENANT, "/emails/{mail_id}", RequestMethod.GET, DEFAULT_ROLE);
