@@ -47,13 +47,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     private static final Logger LOG = LoggerFactory.getLogger(AccountControllerIT.class);
 
     /**
-     * A dummy account
-     */
-    private static Account account;
-
-    private static Account accountInstance;
-
-    /**
      * Dummy email
      */
     private static final String EMAIL = "email@test.com";
@@ -87,9 +80,25 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
     private String errorMessage;
 
+    /**
+     * A dummy account
+     */
+    private Account account;
+
+    /**
+     * A dummy instance account
+     */
+    private Account accountInstance;
+
+    /**
+     * Account repository
+     */
     @Autowired
     private IAccountRepository accountRepository;
 
+    /**
+     * Account setting repository
+     */
     @Autowired
     private IAccountSettingsService settingsService;
 

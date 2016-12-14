@@ -24,7 +24,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.gson.annotation.GSonIgnore;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -93,7 +93,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
                     foreignKey = @javax.persistence.ForeignKey(name = "FK_RESOURCES_ROLES")),
             inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID",
                     foreignKey = @javax.persistence.ForeignKey(name = "FK_ROLES_RESOURCES")))
-    @GSonIgnore
+    @GsonIgnore
     private List<Role> roles = new ArrayList<>();
 
     public ResourcesAccess() {

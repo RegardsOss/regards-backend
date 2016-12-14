@@ -20,7 +20,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
-import fr.cnes.regards.framework.gson.annotation.GSonIgnore;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -55,7 +55,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     @Column(name = "lastName")
     private String lastName;
 
-    @GSonIgnore
+    @GsonIgnore
     @Column(name = "password")
     private String password;
 
@@ -64,7 +64,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     private AccountStatus status;
 
     @NotBlank
-    @GSonIgnore
+    @GsonIgnore
     @Column(name = "code")
     private String code;
 
