@@ -12,8 +12,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,6 +62,11 @@ public class EmailServiceTest {
      * Interface defining a strategy for sending mails
      */
     private JavaMailSenderImpl mailSender;
+
+    /**
+     * Test sentDate
+     */
+    private static final LocalDateTime SEND_DATE = LocalDateTime.now().minusMinutes(5);
 
     /**
      * Defines a rule starting an SMTP server before each test. All test emails will be sent to this server instead of
@@ -261,6 +269,7 @@ public class EmailServiceTest {
         message.setSubject("subject");
         message.setText("message");
         message.setTo("xavier-alexandre.brochard@c-s.fr");
+        message.setSentDate(Date.from(SEND_DATE.atZone(ZoneId.systemDefault()).toInstant()));
         return message;
     }
 
@@ -282,6 +291,7 @@ public class EmailServiceTest {
         email.setSubject(subject);
         email.setFrom(sender + "@test.com");
         email.setText(body);
+        email.setSentDate(SEND_DATE);
 
         return email;
     }

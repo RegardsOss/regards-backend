@@ -28,7 +28,7 @@ public class PasswordResetToken {
     /**
      * Expiration delay in minutes (=24 hours)
      */
-    private static final long EXPIRATION = 60 * 24;
+    private static final int EXPIRATION = 60 * 24;
 
     /**
      * Id

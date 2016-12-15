@@ -20,6 +20,8 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  * Verification token for verifying the user's email process.
  *
  * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
+ * 
  * @see <a>http://www.baeldung.com/registration-verify-user-by-email</a>
  */
 @InstanceEntity
@@ -29,7 +31,7 @@ public class VerificationToken {
     /**
      * Expiration delay in minutes (=24 hours)
      */
-    private static final long EXPIRATION = 60 * 24;
+    private static final int EXPIRATION = 60 * 24;
 
     /**
      * Id
@@ -47,8 +49,7 @@ public class VerificationToken {
      * The link back to the {@link Account}
      */
     @OneToOne(optional = false)
-    @JoinColumn(updatable = false, name = "account_id",
-            foreignKey = @ForeignKey(name = "FK_VERIFICATION_TOKEN"))
+    @JoinColumn(updatable = false, name = "account_id", foreignKey = @ForeignKey(name = "FK_VERIFICATION_TOKEN"))
     private Account account;
 
     /**
