@@ -80,8 +80,8 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      *
      * @param pMicroservice
      *            Microservice name who own the resource
-     * @param pagination
-     *            information
+     * @param pPageable
+     *            the pagination information
      * @return {@link Page} of {@link ResourcesAccess}
      * @since 1.0-SNAPSHOT
      */
@@ -89,12 +89,12 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
 
     /**
      *
-     * Retrieve paginaed resources for a given microservice and a list of roles.
+     * Retrieve paginated resources for a given microservice and a list of roles.
      *
      * @param pMicroservice
      *            resources owner to retrieve
      * @param pRolesName
-     *            resources roles to retrieve
+     *            a {@link List} of role name
      * @param pPageable
      *            pagination information
      * @return {@link Page} of {@link ResourcesAccess}

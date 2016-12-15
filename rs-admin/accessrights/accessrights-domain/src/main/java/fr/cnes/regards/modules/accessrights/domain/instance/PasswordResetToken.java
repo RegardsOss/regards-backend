@@ -1,11 +1,10 @@
 /**LICENSE_PLACEHOLDER*/
 package fr.cnes.regards.modules.accessrights.domain.instance;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -18,25 +17,43 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
  * Data base persisted token for resetting password
  *
  * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
+ * 
  * @see <a>http://www.baeldung.com/spring-security-registration-i-forgot-my-password</a>
  */
 @InstanceEntity
 @Entity(name = "T_PASSWORD_RESET_TOKEN")
 public class PasswordResetToken {
 
-    private static final int EXPIRATION = 60 * 24;
+    /**
+     * Expiration delay in minutes (=24 hours)
+     */
+    private static final long EXPIRATION = 60 * 24;
 
+    /**
+     * Id
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    /**
+     * Randomly generated string
+     */
     private String token;
 
-    @OneToOne(targetEntity = Account.class, fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false, name = "account_id")
+    /**
+     * The link back to the {@link Account}
+     */
+    @OneToOne(optional = false)
+    @JoinColumn(updatable = false, name = "account_id",
+            foreignKey = @ForeignKey(name = "FK_PASSWORD_RESET_TOKEN"))
     private Account account;
 
-    private Date expiryDate;
+    /**
+     * The computed expiration date based on EXPIRATION delay in minutes
+     */
+    private LocalDateTime expiryDate;
 
     public PasswordResetToken() {
         super();
@@ -57,7 +74,20 @@ public class PasswordResetToken {
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    //
+    /**
+     * Calculate expiration date
+     *
+     * @param pExpiryTimeInMinutes
+     *            the expiration time in minutes
+     * @return the expiration date
+     */
+    private LocalDateTime calculateExpiryDate(final long pExpiryTimeInMinutes) {
+        return LocalDateTime.now().plusMinutes(pExpiryTimeInMinutes);
+    }
+
+    /**
+     * @return the id
+     */
     public Long getId() {
         return id;
     }
@@ -77,35 +107,25 @@ public class PasswordResetToken {
         account = pAccount;
     }
 
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(final String pToken) {
-        this.token = pToken;
-    }
-
-    public Date getExpiryDate() {
+    /**
+     * @return the expiryDate
+     */
+    public LocalDateTime getExpiryDate() {
         return expiryDate;
     }
 
-    public void setExpiryDate(final Date pExpiryDate) {
+    /**
+     * @param pExpiryDate
+     *            the expiryDate to set
+     */
+    public void setExpiryDate(final LocalDateTime pExpiryDate) {
         this.expiryDate = pExpiryDate;
-    }
-
-    private Date calculateExpiryDate(final int pExpiryTimeInMinutes) {
-        final Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(new Date().getTime());
-        cal.add(Calendar.MINUTE, pExpiryTimeInMinutes);
-        return new Date(cal.getTime().getTime());
     }
 
     public void updateToken(final String pToken) {
         this.token = pToken;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
-
-    //
 
     @Override
     public int hashCode() {

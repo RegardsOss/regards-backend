@@ -18,6 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
@@ -39,12 +40,17 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 public class ResourcesAccessDaoTest {
 
     private static final String MS_NAME = "rs-test";
+    
+    /**
+     * The number of {@link Role} used for the unit testing
+     */
+    private int nRole=0;
 
     @Autowired
-    IRoleRepository roleRepository;
+    private IRoleRepository roleRepository;
 
     @Autowired
-    IResourcesAccessRepository resourcesAccessRespository;
+    private IResourcesAccessRepository resourcesAccessRespository;
 
     /**
      *
@@ -55,14 +61,17 @@ public class ResourcesAccessDaoTest {
     @Before
     public void init() {
 
-        Role publicRole = new Role("PUBLIC", null);
+        Role publicRole = new Role(DefaultRole.PUBLIC.toString(), null);
         publicRole = roleRepository.save(publicRole);
+        nRole++;
 
-        Role userRole = new Role("USER", publicRole);
+        Role userRole = new Role(DefaultRole.REGISTERED_USER.toString(), publicRole);
         userRole = roleRepository.save(userRole);
+        nRole++;
 
-        Role adminRole = new Role("ADMIN", userRole);
+        Role adminRole = new Role(DefaultRole.ADMIN.toString(), userRole);
         adminRole = roleRepository.save(adminRole);
+        nRole++;
 
         final ResourcesAccess publicResource = new ResourcesAccess("Public resource", MS_NAME, "/public", HttpVerb.GET);
         publicResource.addRole(publicRole);
@@ -78,7 +87,6 @@ public class ResourcesAccessDaoTest {
         final ResourcesAccess adminResource = new ResourcesAccess("Admin resource", MS_NAME, "/admin", HttpVerb.GET);
         adminResource.addRole(adminRole);
         resourcesAccessRespository.save(adminResource);
-
     }
 
     /**
@@ -90,15 +98,18 @@ public class ResourcesAccessDaoTest {
     @Test
     public void testRetrieveResourcesByRole() {
 
-        final List<String> publicRolesName = Arrays.asList("PUBLIC");
-        final List<String> userRolesName = Arrays.asList("PUBLIC", "USER");
-        final List<String> adminRolesName = Arrays.asList("PUBLIC", "USER", "ADMIN");
+        final List<String> publicRolesName = Arrays.asList(DefaultRole.PUBLIC.toString());
+        final List<String> userRolesName = Arrays.asList(DefaultRole.PUBLIC.toString(),
+                                                         DefaultRole.REGISTERED_USER.toString());
+        final List<String> adminRolesName = Arrays.asList(DefaultRole.PUBLIC.toString(),
+                                                          DefaultRole.REGISTERED_USER.toString(),
+                                                          DefaultRole.ADMIN.toString());
 
         final Pageable pageable = new PageRequest(0, 10);
 
         final List<ResourcesAccess> allResources = resourcesAccessRespository.findByMicroservice(MS_NAME);
         Assert.assertNotNull(allResources);
-        Assert.assertEquals(3, allResources.size());
+        Assert.assertEquals(nRole, allResources.size());
 
         final Page<ResourcesAccess> publicResources = resourcesAccessRespository
                 .findDistinctByMicroserviceAndRolesNameIn(MS_NAME, publicRolesName, pageable);

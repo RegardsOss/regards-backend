@@ -127,6 +127,8 @@ public interface IRoleService {
      *
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
+     * @param pPageable
+     *            the paging information
      * @return The {@link List} of {@link ProjectUser} for the {@link Role}
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found

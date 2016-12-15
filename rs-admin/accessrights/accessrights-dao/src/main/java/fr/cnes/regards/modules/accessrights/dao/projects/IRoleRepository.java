@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * Interface for a JPA auto-generated CRUD repository managing {@link Role}s.<br>
- * Embeds paging/sorting abilities by entending {@link PagingAndSortingRepository}.<br>
+ * Embed paging/sorting abilities by extending {@link PagingAndSortingRepository}.<br>
  * Allows execution of Query by Example {@link Example} instances.
  *
  * @author Xavier-Alexandre Brochard
@@ -48,8 +48,6 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      *
      * @param pNames
      *            The {@link Collection} of <code>name</code>
-     * @param Pagination
-     *            informations
      * @return The {@link List} of found {@link Role}s
      */
     List<Role> findByNameIn(Collection<String> pNames);

@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.accountunlock;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -19,6 +19,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  * Interface for a JPA auto-generated CRUD repository managing {@link AccountUnlockToken}s.<br>
  *
  * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
  */
 @InstanceEntity
 public interface IAccountUnlockTokenRepository extends JpaRepository<AccountUnlockToken, Long> {
@@ -27,11 +28,11 @@ public interface IAccountUnlockTokenRepository extends JpaRepository<AccountUnlo
 
     Optional<AccountUnlockToken> findByAccount(Account pAccount);
 
-    Stream<AccountUnlockToken> findAllByExpiryDateLessThan(Date pNow);
+    Stream<AccountUnlockToken> findAllByExpiryDateLessThan(LocalDateTime pNow);
 
-    void deleteByExpiryDateLessThan(Date pNow);
+    void deleteByExpiryDateLessThan(LocalDateTime pNow);
 
     @Modifying
     @Query("delete from T_VERIFICATION_TOKEN t where t.expiryDate <= ?1")
-    void deleteAllExpiredSince(Date pNow);
+    void deleteAllExpiredSince(LocalDateTime pNow);
 }

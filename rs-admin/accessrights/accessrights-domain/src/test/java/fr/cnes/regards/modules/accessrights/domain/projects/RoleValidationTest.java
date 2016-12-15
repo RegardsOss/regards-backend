@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
  */
 public class RoleValidationTest {
 
+    private static final String ROLE_NAME ="RandomRoleName"; 
     /**
      * Javax validator
      */
@@ -92,7 +93,7 @@ public class RoleValidationTest {
     @Purpose("Check that the system prevent a role not PUBLIC to have a null parent.")
     public void testRoleIsNotPublicAndNullParent() {
         // Init the malformed role
-        role.setName("RandomRoleName");
+        role.setName(ROLE_NAME);
         role.setParentRole(null);
 
         // Run the validator
@@ -109,7 +110,7 @@ public class RoleValidationTest {
     @Purpose("Check that the system allows a role not PUBLIC to have a non null parent.")
     public void testRoleIsNotPublicAndNotNullParent() {
         // Init the wellformed role
-        role.setName("RandomRoleName");
+        role.setName(ROLE_NAME);
         role.setParentRole(new Role());
 
         // Run the validator

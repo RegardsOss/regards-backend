@@ -27,7 +27,8 @@ public interface IResourcesService {
      *
      * Retrieve paged resources in database
      *
-     * @param
+     * @param pPageable
+     *            the paging information
      *
      * @return {@link Page} of {@link ResourcesAccess}
      * @since 1.0-SNAPSHOT
@@ -45,7 +46,10 @@ public interface IResourcesService {
 
     /**
      *
-     * Retrieve resource
+     * Retrieve a {@link ResourcesAccess}
+     * 
+     * @param pResourceId
+     *            the if of the {@link ResourcesAccess} to retrieve
      *
      * @return {@link ResourcesAccess}
      * @since 1.0-SNAPSHOT
@@ -67,6 +71,10 @@ public interface IResourcesService {
      *
      * Retrieve all resources in database for the given microservice
      *
+     * @param pMicroserviceName
+     *            the microservice name
+     * @param pPageable
+     *            the paging information
      * @return List of {@link ResourcesAccess}
      * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT

@@ -29,6 +29,9 @@ public interface IProjectUserService {
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
+     * 
+     * @param pPageable
+     *            the paging information
      *
      * @return The list of project users
      */
@@ -36,6 +39,11 @@ public interface IProjectUserService {
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s with the given status.
+     * 
+     * @param pStatus
+     *            the {@link UserStatus} to retrieve
+     * @param pPageable
+     *            the paging information
      *
      * @return The list of project users
      */
@@ -183,6 +191,9 @@ public interface IProjectUserService {
 
     /**
      * Retrieve all access requests.
+     * 
+     * @param pPageable
+     *            the pagination information
      *
      * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
      */

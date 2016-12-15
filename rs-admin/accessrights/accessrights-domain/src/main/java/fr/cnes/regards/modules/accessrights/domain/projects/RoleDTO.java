@@ -16,6 +16,9 @@ public class RoleDTO extends Role {
     /**
      *
      * Constructor
+     * 
+     * @param pRole
+     *            The {@link Role} to extends
      *
      * @since 1.0-SNAPSHOT
      */
