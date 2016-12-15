@@ -26,6 +26,7 @@ public enum PluginType {
      */
     USER;
 
+    @Override
     public String toString() {
         return this.name();
     }

@@ -32,6 +32,12 @@ import fr.cnes.regards.modules.access.service.INavigationContextService;
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class NavigationContextControllerIT extends AbstractRegardsIT {
 
+    private static final String JSON_CONTENT_ROUTE = JSON_PATH_CONTENT+".route";
+
+    private static final String JSON_CONTENT_TINY_URL = JSON_PATH_CONTENT+".tinyUrl";
+    
+    private static final String JSON_CONTENT_STORE = JSON_PATH_CONTENT+".store";
+
     @Autowired
     private INavigationContextService service;
 
@@ -96,11 +102,11 @@ public class NavigationContextControllerIT extends AbstractRegardsIT {
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.id",
                                                         Matchers.hasToString(navContext.getId().toString())));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.tinyUrl",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_CONTENT_TINY_URL,
                                                         Matchers.hasToString(navContext.getTinyUrl())));
         expectations
-                .add(MockMvcResultMatchers.jsonPath("$.content.route", Matchers.hasToString(navContext.getRoute())));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.store",
+                .add(MockMvcResultMatchers.jsonPath(JSON_CONTENT_ROUTE, Matchers.hasToString(navContext.getRoute())));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_CONTENT_STORE,
                                                         Matchers.hasToString(navContext.getStore().toString())));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.project.name",
                                                         Matchers.hasToString(navContext.getProject().getName())));
@@ -191,11 +197,11 @@ public class NavigationContextControllerIT extends AbstractRegardsIT {
         navContext.addQueryParameters(new ConfigParameter("a second param", "a second value"));
 
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.tinyUrl",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_CONTENT_TINY_URL,
                                                         Matchers.hasToString(navContext.getTinyUrl())));
         expectations
-                .add(MockMvcResultMatchers.jsonPath("$.content.route", Matchers.hasToString(navContext.getRoute())));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.store",
+                .add(MockMvcResultMatchers.jsonPath(JSON_CONTENT_ROUTE, Matchers.hasToString(navContext.getRoute())));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_CONTENT_STORE,
                                                         Matchers.hasToString(navContext.getStore().toString())));
         expectations.add(status().isCreated());
 

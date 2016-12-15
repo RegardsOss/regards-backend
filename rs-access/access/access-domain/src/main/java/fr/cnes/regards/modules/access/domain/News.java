@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.access.domain;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 /**
  *
@@ -30,7 +30,7 @@ public class News {
     /**
      *
      */
-    private Date creationDate;
+    private LocalDate creationDate;
 
     /**
      *
@@ -55,7 +55,7 @@ public class News {
      * @param pTitle
      *            the title
      * @param pContent
-     *            the cntent description
+     *            the content description
      * @param pCreationDate
      *            the creation date
      * @param pProject
@@ -63,7 +63,7 @@ public class News {
      * @param pNewsType
      *            a {@link NewsType}
      */
-    public News(String pTitle, String pContent, Date pCreationDate, Project pProject, NewsType pNewsType) {
+    public News(String pTitle, String pContent, LocalDate pCreationDate, Project pProject, NewsType pNewsType) {
         super();
         this.title = pTitle;
         this.content = pContent;
@@ -92,11 +92,11 @@ public class News {
         content = pContent;
     }
 
-    public Date getCreationDate() {
+    public LocalDate getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(Date pCreationDate) {
+    public void setCreationDate(LocalDate pCreationDate) {
         creationDate = pCreationDate;
     }
 

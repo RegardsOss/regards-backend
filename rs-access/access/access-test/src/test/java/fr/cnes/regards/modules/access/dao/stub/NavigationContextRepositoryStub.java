@@ -43,7 +43,7 @@ public class NavigationContextRepositoryStub extends RepositoryStub<NavigationCo
             final List<ConfigParameter> themeParameters = Arrays
                     .asList(new ConfigParameter("theme param 1 ", "theme param value 1"),
                             new ConfigParameter("theme param 2 ", "theme param value 2"));
-            List<ConfigParameter> navCtxtParameters = new ArrayList<>();
+            final List<ConfigParameter> navCtxtParameters = new ArrayList<>();
             navCtxtParameters.add(new ConfigParameter("param 1 ", "value 1"));
             navCtxtParameters.add(new ConfigParameter("param 2 ", "value 2"));
             navCtxtParameters.add(new ConfigParameter("param 3 ", "value 3"));
