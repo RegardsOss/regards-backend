@@ -58,7 +58,8 @@ public class RoleAuthority implements GrantedAuthority {
      *
      * Constructor
      *
-     * @param pAuthority
+     * @param pRoleName
+     *            The role name
      * @since 1.0-SNAPSHOT
      */
     public RoleAuthority(final String pRoleName) {
@@ -74,7 +75,7 @@ public class RoleAuthority implements GrantedAuthority {
      * Remove Authority ROLE_ prefix to get real role name
      *
      * @param pRoleAuthorityName
-     *            Authrotity role name with ROLE_PREFIX
+     *            Authority role name with ROLE_PREFIX
      * @return role name
      * @since 1.0-SNAPSHOT
      */
@@ -91,7 +92,7 @@ public class RoleAuthority implements GrantedAuthority {
      * Add Authority PREFIX to given Role name
      *
      * @param pRoleName
-     *            role name
+     *            The role name
      * @return RoleAuthority
      * @since 1.0-SNAPSHOT
      */
@@ -105,6 +106,7 @@ public class RoleAuthority implements GrantedAuthority {
      * administration endpoints.
      *
      * @param pMicroserviceName
+     *            the current microservice name
      * @return SYS Role name
      * @since 1.0-SNAPSHOT
      */
@@ -117,6 +119,7 @@ public class RoleAuthority implements GrantedAuthority {
      * Is the given role a system role ?
      *
      * @param pRoleName
+     *            The role name
      * @return [true|false]
      * @since 1.0-SNAPSHOT
      */
@@ -133,6 +136,7 @@ public class RoleAuthority implements GrantedAuthority {
      * Is the given role the virtual instance admin role ?
      *
      * @param pRoleName
+     *            The role name
      * @return [true|false]
      * @since 1.0-SNAPSHOT
      */
