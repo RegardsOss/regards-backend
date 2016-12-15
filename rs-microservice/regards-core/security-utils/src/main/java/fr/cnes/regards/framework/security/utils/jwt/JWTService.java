@@ -47,7 +47,7 @@ public class JWTService {
      * Subject claim
      */
     public static final String CLAIM_SUBJECT = "sub";
-    
+
     /**
      * Encryption algorithm
      */
@@ -114,7 +114,20 @@ public class JWTService {
      */
     public void injectToken(final String pTenant, final String pRole, final String pUserName) throws JwtException {
         final String token = generateToken(pTenant, pUserName, pRole);
-        final JWTAuthentication auth = parseToken(new JWTAuthentication(token));
+        injectToken(token);
+    }
+
+    /**
+     * Inject a generated token in the {@link SecurityContextHolder}
+     *
+     * @param pToken
+     *            the token to inject into the {@link SecurityContextHolder}
+     * @throws JwtException
+     *             Error during token parsing
+     * @since 1.2-SNAPSHOT
+     */
+    public void injectToken(final String pToken) throws JwtException {
+        final JWTAuthentication auth = parseToken(new JWTAuthentication(pToken));
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 

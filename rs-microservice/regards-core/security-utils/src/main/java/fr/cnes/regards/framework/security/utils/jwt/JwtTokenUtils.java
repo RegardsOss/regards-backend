@@ -19,6 +19,7 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
  *
  * @author Xavier-Alexandre Brochard
  * @author Séastien Binda
+ * @author Sylvain Vissiere-Guerinet
  */
 public final class JwtTokenUtils {
 
@@ -68,17 +69,37 @@ public final class JwtTokenUtils {
      * - injects the new tenant<br>
      * - switches back to initial tenant at the end<br>
      *
-     * @param pTenant
-     *            The tenant on which to execute the predicate
      * @param pBooleanSupplier
      *            The decorated boolean supplier
      * @return the decorated predicate
      */
-    public static <T> Function<String, T> asSafeCallableOnRole(final Supplier<T> pSupplier,
+    public static <R> Function<String, R> asSafeCallableOnRole(final Supplier<R> pSupplier,
+            final JWTService pJwtService) {
+        final Function<Void, R> function = pT -> pSupplier.get();
+        return asSafeCallableOnRole(function, null, pJwtService);
+    }
+
+    /**
+     * Decorates a {@link BooleanSupplier} as a {@link Predicate} in order to execute it safeley on a passed tenant.<br>
+     * The call will be tenant-safe because it<br>
+     * - records the initial tenant<br>
+     * - injects the new tenant<br>
+     * - switches back to initial tenant at the end<br>
+     *
+     * @param pFunction
+     *            function to execute
+     * @param pParameters
+     *            parameter(s) of the <code>pFunction</code>, in case of multiple parameter use a collection as
+     *            parameter
+     * @param pJwtService
+     *            service used to handle the jwt
+     * @return a {@link Function} executing the <code>pFunction</code> with other privileges than the current one
+     */
+    public static <T, R> Function<String, R> asSafeCallableOnRole(final Function<T, R> pFunction, T pParameters,
             final JWTService pJwtService) {
         // Return a predicate taking a tenant as argument and which....
         return pRole -> {
-            T result = null;
+            R result = null;
             // ...records the inital tenant
             final JWTAuthentication initialToken = (JWTAuthentication) SecurityContextHolder.getContext()
                     .getAuthentication();
@@ -86,7 +107,7 @@ public final class JwtTokenUtils {
             try {
                 pJwtService.injectToken(initialToken.getProject(), pRole);
                 // ...evaluates the boolean supplier
-                result = pSupplier.get();
+                result = pFunction.apply(pParameters);
             } catch (final JwtException e) {
                 LOG.error(e.getMessage(), e);
             }

@@ -61,7 +61,7 @@ public interface IResourceController<T> {
             final PagedResourcesAssembler<T> pAssembler, final Object... pExtras) {
         Assert.notNull(pElements);
         final PagedResources<Resource<T>> pageResources = pAssembler.toResource(pElements);
-        pageResources.forEach(resource -> resource.add(toResource(resource.getContent()).getLinks()));
+        pageResources.forEach(resource -> resource.add(toResource(resource.getContent(), pExtras).getLinks()));
         return pageResources;
     }
 }
