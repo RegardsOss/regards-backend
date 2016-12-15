@@ -20,7 +20,7 @@ import fr.cnes.regards.modules.access.domain.ThemeType;
  */
 public class NavigationContextUtility {
 
-    List<NavigationContext> contexts = new ArrayList<>();
+    
 
     protected NavigationContext navCtx1 = new NavigationContext("/hello/toulouse",
             new Project("p1", new Theme(null, false, ThemeType.USER)), null, "route1", 330);
@@ -31,6 +31,8 @@ public class NavigationContextUtility {
     protected NavigationContext navCtx3 = new NavigationContext("/hello/london",
             new Project("p3", new Theme(null, false, ThemeType.USER)), null, "route3", 332);
 
+    protected List<NavigationContext> contexts = new ArrayList<>();
+    
     protected List<NavigationContext> getContexts() {
         contexts.clear();
         contexts.add(navCtx1);
