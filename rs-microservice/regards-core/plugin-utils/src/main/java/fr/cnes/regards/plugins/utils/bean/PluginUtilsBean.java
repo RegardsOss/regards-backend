@@ -21,7 +21,7 @@ import fr.cnes.regards.plugins.utils.ReflectionUtils;
 public class PluginUtilsBean implements IPluginUtilsBean, BeanFactoryAware {
 
     /**
-     * Spring bean factory
+     * A factory for accessing to the Spring bean container.
      */
     private BeanFactory beanFactory;
 
@@ -42,7 +42,7 @@ public class PluginUtilsBean implements IPluginUtilsBean, BeanFactoryAware {
                 try {
                     field.set(pPluginInstance, effectiveVal);
                 } catch (IllegalArgumentException | IllegalAccessException e) {
-                    throw new PluginUtilsException("Unable to set the field <"+field.getName()+">.", e);
+                    throw new PluginUtilsException("Unable to set the field <" + field.getName() + ">.", e);
                 }
             }
         }

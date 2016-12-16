@@ -22,10 +22,12 @@ import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.plugins.utils.bean.IPluginUtilsBean;
+import fr.cnes.regards.plugins.utils.bean.PluginUtilsBean;
 
 /**
  *
- * Plugin utilities
+ * This class contains all the utilities to create a {@link Plugin} instance, to retrieve all annotated plugins and to
+ * create a {@link PluginConfiguration}.
  *
  * @author Christophe Mertz
  */
@@ -36,6 +38,10 @@ public final class PluginUtils {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtils.class);
 
+    /**
+     * Interface to be implemented by {@link PluginUtilsBean} to load your own
+     * {@link org.springframework.beans.factory.BeanFactory}
+     */
     private static IPluginUtilsBean pluginUtilsBean;
 
     /**
@@ -49,8 +55,8 @@ public final class PluginUtils {
 
     /**
      *
-     * Retrieve all annotated plugin (@see {@link Plugin}) and init a map whose key is the plugin identifier and value
-     * the required plugin metadata.
+     * Retrieve all annotated plugins (@see {@link Plugin}) and initialize a map whose key is the {@link Plugin}
+     * identifier and value the required plugin metadata.
      * 
      * @param pPrefix
      *            a package prefix used for the scan
@@ -61,7 +67,7 @@ public final class PluginUtils {
 
         // Scan class path with Reflections library
         final Reflections reflections = new Reflections(pPrefix);
-        final Set<Class<?>> annotatedPlugins = reflections.getTypesAnnotatedWith(Plugin.class);
+        final Set<Class<?>> annotatedPlugins = reflections.getTypesAnnotatedWith(Plugin.class, true);
 
         // Create a plugin object for each class
         for (final Class<?> pluginClass : annotatedPlugins) {
@@ -88,8 +94,8 @@ public final class PluginUtils {
     }
 
     /**
-     * Retrieve all annotated plugin (@see {@link Plugin}) and init a map whose key is the plugin identifier and value
-     * the required plugin metadata.
+     * Retrieve all annotated plugins (@see {@link Plugin}) and initialize a map whose key is the {@link Plugin}
+     * identifier and value the required {@link PluginMetaData}.
      * 
      * @param pPrefixs
      *            a list of package prefix used for the scan
@@ -107,7 +113,7 @@ public final class PluginUtils {
 
     /**
      *
-     * Create plugin metadata based on its annotations {@link Plugin} and {@link PluginParameters} if any.
+     * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link PluginParameters} if any.
      *
      * @param pPluginClass
      *            a class that must contains a {@link Plugin} annotation
@@ -141,10 +147,10 @@ public final class PluginUtils {
 
     /**
      *
-     * Create an instance of plugin based on its configuration and metadata
+     * Create an instance of {@link Plugin} based on its configuration and metadata
      *
      * @param <T>
-     *            a plugin
+     *            a {@link Plugin}
      * @param pPluginConf
      *            the {@link PluginConfiguration}
      * @param pPluginMetadata
@@ -152,7 +158,7 @@ public final class PluginUtils {
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
      * 
-     * @return an instance of plugin
+     * @return an instance of a {@link Plugin}
      * 
      * @throws PluginUtilsException
      *             if problem occurs
@@ -193,18 +199,18 @@ public final class PluginUtils {
 
     /**
      *
-     * Create an instance of plugin based on its configuration and the plugin class name
+     * Create an instance of {@link Plugin} based on its configuration and the plugin class name
      *
      * @param <T>
-     *            a plugin
+     *            a {@link Plugin}
      * @param pPluginConf
      *            the {@link PluginConfiguration}
      * @param pPluginClassName
-     *            the plugin class name
+     *            the {@link Plugin} class name
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
      * 
-     * @return an instance of plugin
+     * @return an instance of {@link Plugin}
      * 
      * @throws PluginUtilsException
      *             if problem occurs
@@ -237,18 +243,20 @@ public final class PluginUtils {
 
     /**
      *
-     * Create an instance of plugin based on its configuration and metadata
+     * Create an instance of {@link Plugin} based on its configuration and metadata
      *
      * @param <T>
-     *            a plugin
+     *            a {@link Plugin}
      * @param pParameters
-     *            the plugin parameters
+     *            a {@link List} of {@link PluginParameter}
      * @param pReturnInterfaceType
      *            the required returned type
+     * @param pPluginUtilsBean
+     *            a {@link PluginUtilsBean} containing your own {@link org.springframework.beans.factory.BeanFactory}
      * @param pPluginParameters
-     *            an optional list of {@link PluginParameter}
+     *            an optional {@link List} of {@link PluginParameter}
      * 
-     * @return an instance
+     * @return a {@link Plugin} instance
      * @throws PluginUtilsException
      *             if problem occurs
      */
@@ -259,6 +267,21 @@ public final class PluginUtils {
         return PluginUtils.getPlugin(pParameters, pReturnInterfaceType, pPluginParameters);
     }
 
+    /**
+     * 
+     * Create an instance of {@link Plugin} based on its configuration and metadata
+     * 
+     * @param <T>
+     *            a {@link Plugin}
+     * @param pParameters
+     *            a {@link List} of {@link PluginParameter}
+     * @param pReturnInterfaceType
+     *            the required returned type
+     * @param pPluginParameters
+     *            an optional {@link List} of {@link PluginParameter}
+     * @return a {@link Plugin} instance
+     * @throws PluginUtilsException
+     */
     public static <T> T getPlugin(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
             final PluginParameter... pPluginParameters) throws PluginUtilsException {
         // Build plugin metadata
@@ -273,9 +296,9 @@ public final class PluginUtils {
      * Look for {@link PluginInit} annotation and launch corresponding method if found.
      *
      * @param <T>
-     *            a plugin instance
+     *            a {@link Plugin}
      * @param pPluginInstance
-     *            the plugin instance
+     *            the {@link Plugin} instance
      * @throws PluginUtilsException
      *             if problem occurs
      */
@@ -300,7 +323,7 @@ public final class PluginUtils {
 
     /**
      *
-     * Create an instance of plugin configuration
+     * Create an instance of {@link PluginConfiguration}
      *
      * @param <T>
      *            a plugin

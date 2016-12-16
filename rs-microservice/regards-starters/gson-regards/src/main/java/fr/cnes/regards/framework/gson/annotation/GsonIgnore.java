@@ -4,7 +4,7 @@
 
 /**
  *
- * Class GSonIgnore
+ * Class GsonIgnore
  *
  * @author Christophe Mertz
  */
