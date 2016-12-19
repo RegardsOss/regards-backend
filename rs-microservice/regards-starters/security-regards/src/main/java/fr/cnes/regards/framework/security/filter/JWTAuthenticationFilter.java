@@ -61,8 +61,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
      * @since 1.0-SNAPSHOT
      */
     public JWTAuthenticationFilter(final AuthenticationManager pAuthenticationManager, final JWTService pJwtService) {
-        this.jwtService = pJwtService;
-        this.authenticationManager = pAuthenticationManager;
+        jwtService = pJwtService;
+        authenticationManager = pAuthenticationManager;
     }
 
     @Override
