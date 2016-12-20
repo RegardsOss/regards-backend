@@ -237,6 +237,28 @@ public class PluginControllerIT extends AbstractRegardsIT {
         performDefaultPut(apiPluginsOneConfigId, aPluginConfiguration, expectations,
                           "unable to update a plugin configuration", PLUGIN_ID, 9999L);
     }
+    
+    @Test
+    @DirtiesContext
+    public void updatePluginConfigurationErrorVersion() {
+        // Add a PluginConfiguration with the PluginService
+        PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL, PARAMETERS,
+                0);
+        try {
+            aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
+            aPluginConfiguration.setId(AN_ID);
+            aPluginConfiguration.setVersion(null);
+        } catch (final PluginUtilsException e) {
+            Assert.fail();
+        }
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNotFound());
+
+        // Update the added PluginConfiguration
+        performDefaultPut(apiPluginsOneConfigId, aPluginConfiguration, expectations,
+                          "unable to update a plugin configuration", PLUGIN_ID, aPluginConfiguration.getId());
+    }
 
     @Test
     @DirtiesContext

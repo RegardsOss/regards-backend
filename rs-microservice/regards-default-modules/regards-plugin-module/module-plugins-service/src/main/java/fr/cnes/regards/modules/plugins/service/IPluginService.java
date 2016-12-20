@@ -108,13 +108,13 @@ public interface IPluginService {
      *
      * Delete a {@link PluginConfiguration}.
      *
-     * @param pPluginId
+     * @param pConfId
      *            a specific configuration
      * @return
      * @throws EntityNotFoundException
      *             Entity to delete does not exists
      */
-    void deletePluginConfiguration(Long pPluginId) throws EntityNotFoundException;
+    void deletePluginConfiguration(Long pConfId) throws EntityNotFoundException;
 
     /**
      *
