@@ -3,23 +3,14 @@
  */
 package fr.cnes.regards.framework.gson.adapters.sample6;
 
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
-import com.google.gson.TypeAdapter;
-import com.google.gson.internal.Streams;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 
@@ -35,152 +26,155 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomPolymorphicTypeAdapterFactory.class);
 
+    /**
+     * Discriminator field
+     */
+    private static final String DISCRIMINATOR_FIELD_NAME = "name";
+
+    /**
+     * Discriminator field
+     */
+    private static final String VALUE_FIELD = "value";
+
+    /**
+     * Namespace separator
+     */
+    private static final String NS_SEPARATOR = ".";
+
+    /**
+     * Regexp escape character
+     */
+    private static final String REGEXP_ESCAPE = "\\";
+
     protected CustomPolymorphicTypeAdapterFactory() {
-        super(AbstractProperty.class, "name", false);
+        super(AbstractProperty.class, DISCRIMINATOR_FIELD_NAME, false);
         registerSubtype(DateProperty.class, "date");
-        registerSubtype(StringProperty.class, "string");
-        registerSubtype(StringProperty.class, "CRS");
+        registerSubtype(StringProperty.class, AdapterTest.SAMPLE_ATT);
         registerSubtype(ObjectProperty.class, "GEO");
+        registerSubtype(StringProperty.class, "GEO.CRS");
+        registerSubtype(DateProperty.class, "GEO." + AdapterTest.SAMPLE_ATT);
+        registerSubtype(ObjectProperty.class, "CONTACT");
+        registerSubtype(StringProperty.class, "CONTACT.phone");
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory#create(com.google.gson.Gson,
-     * com.google.gson.reflect.TypeToken)
-     */
     @Override
-    public <T> TypeAdapter<T> create(Gson pGson, TypeToken<T> pType) {
-        final Class<? super T> requestedType = pType.getRawType();
-        if (!baseType.isAssignableFrom(requestedType)) {
-            return null;
+    protected void beforeDelegateRead(JsonElement pJsonElement, String pDiscriminator, Class<?> pSubType) {
+        if (pSubType == ObjectProperty.class) {
+            addNamespaceToChildren(pJsonElement, pDiscriminator);
         }
+        removeParentNamespace(pJsonElement);
+    }
 
-        final Map<String, TypeAdapter<?>> discriminatorToDelegate = new LinkedHashMap<>();
-        final Map<Class<?>, TypeAdapter<?>> subtypeToDelegate = new LinkedHashMap<>();
+    /**
+     * Add namespace to {@link JsonElement} children of {@link ObjectAttribute}
+     *
+     * @param pJsonElement
+     *            {@link JsonElement}
+     * @param pDiscriminator
+     *            discriminator value
+     */
+    protected void addNamespaceToChildren(JsonElement pJsonElement, String pDiscriminator) {
 
-        /**
-         * Register TypeAdapter delegation mapping from discriminator and type
-         */
-        for (Map.Entry<String, Class<?>> mapping : discriminatorToSubtype.entrySet()) {
-            final TypeAdapter<?> delegate = pGson.getDelegateAdapter(this, TypeToken.get(mapping.getValue()));
-            discriminatorToDelegate.put(mapping.getKey(), delegate);
-            subtypeToDelegate.put(mapping.getValue(), delegate);
-        }
+        if (pJsonElement.isJsonObject()) {
+            final JsonElement children = pJsonElement.getAsJsonObject().get(VALUE_FIELD);
 
-        return new TypeAdapter<T>() { // NOSONAR
-
-            /**
-             * Delegate writing to default type adapter
-             */
-            @Override
-            public void write(JsonWriter pOut, T pValue) throws IOException {
-
-                final Class<?> srcType = pValue.getClass();
-
-                @SuppressWarnings("unchecked") // registration requires that subtype extends base type
-                final TypeAdapter<T> delegate = (TypeAdapter<T>) subtypeToDelegate.get(srcType);
-                if (delegate == null) {
-                    String errorMessage = String.format("Cannot serialize %s. Did you forget to register a subtype?",
-                                                        srcType.getName());
-                    LOGGER.error(errorMessage);
-                    throw new JsonParseException(errorMessage);
-                }
-                Streams.write(getJsonObject(delegate, pValue), pOut);
+            if (children == null) {
+                throw missingFieldException(pJsonElement, VALUE_FIELD);
             }
 
-            /**
-             * Compute {@link JsonObject} to write. If field injection is required, clone the target object and add
-             * inject the field dynamically.
-             *
-             * @param delegate
-             *            {@link TypeAdapter} to transform object in JSON
-             * @param pValue
-             *            object to transform
-             * @return JsonObject fully qualified for correct polymorphic deserialization from json
-             */
-            private JsonObject getJsonObject(TypeAdapter<T> delegate, T pValue) {
-
-                // Compute raw JSON object
-                JsonObject jsonObject = delegate.toJsonTree(pValue).getAsJsonObject();
-
-                // Clone object and inject field if needed
-                if (injectField) {
-
-                    // Check field not already exists
-                    if (jsonObject.has(discriminatorFieldName)) {
-                        String errorMessage = String.format(
-                                                            "Discriminator field %s already exists. Change it or deny field injection.",
-                                                            discriminatorFieldName);
-                        LOGGER.error(errorMessage);
-                        throw new JsonParseException(errorMessage);
-                    }
-
-                    // Inject discriminator field
-                    JsonObject clone = new JsonObject();
-
-                    String discriminatorFieldValue = subtypeToDiscriminator.get(pValue.getClass());
-                    clone.add(discriminatorFieldName, new JsonPrimitive(discriminatorFieldValue));
-                    for (Map.Entry<String, JsonElement> e : jsonObject.entrySet()) {
-                        clone.add(e.getKey(), e.getValue());
-                    }
-                    return clone;
+            if (children.isJsonArray()) {
+                final Iterator<JsonElement> childrenIter = children.getAsJsonArray().iterator();
+                while (childrenIter.hasNext()) {
+                    addNamespaceToChild(childrenIter.next(), pDiscriminator);
                 }
+            } else {
+                throw objectRequiredException(pJsonElement);
+            }
+        } else {
+            throw objectRequiredException(pJsonElement);
+        }
+    }
 
-                // Check field already exists
-                if (!jsonObject.has(discriminatorFieldName)) {
-                    String errorMessage = String.format(
-                                                        "Discriminator field %s must exist. Change it or allow field injection.",
-                                                        discriminatorFieldName);
-                    LOGGER.error(errorMessage);
-                    throw new JsonParseException(errorMessage);
-                }
+    /**
+     * Add namespace to {@link JsonElement} child
+     *
+     * @param pJsonElement
+     *            {@link JsonElement}
+     * @param pDiscriminator
+     *            discriminator value
+     */
+    protected void addNamespaceToChild(JsonElement pJsonElement, String pDiscriminator) {
 
-                return jsonObject;
+        if (pJsonElement.isJsonObject()) {
+
+            // Backup for logging
+            String logOriginal = pJsonElement.toString();
+            JsonObject o = pJsonElement.getAsJsonObject();
+
+            JsonElement originalElement = o.get(DISCRIMINATOR_FIELD_NAME);
+            if (originalElement == null) {
+                throw missingFieldException(pJsonElement, DISCRIMINATOR_FIELD_NAME);
             }
 
-            /**
-             * Delegate reading to type adapter mapped to extracted discriminator value
-             */
-            @Override
-            public T read(JsonReader pIn) throws IOException {
+            // Compute and inject name with its namespace
+            String originalName = originalElement.getAsString();
+            String nsName = pDiscriminator.concat(NS_SEPARATOR).concat(originalName);
+            o.add(DISCRIMINATOR_FIELD_NAME, new JsonPrimitive(nsName));
 
-                // Compute raw JSON object
-                final JsonElement jsonElement = Streams.parse(pIn);
+            LOGGER.debug(String.format("Namespace added : \"%s\" -> \"%s\"", logOriginal, pJsonElement.toString()));
+        } else {
+            throw objectRequiredException(pJsonElement);
+        }
+    }
 
-                // Discriminator value
-                JsonElement discriminatorEl;
-                if (injectField) {
-                    // Retrieve and remove injected field
-                    discriminatorEl = jsonElement.getAsJsonObject().remove(discriminatorFieldName);
+    /**
+     * Remove namespace from {@link JsonElement}
+     *
+     * @param pJsonElement
+     *            target {@link JsonElement}
+     */
+    protected void removeParentNamespace(JsonElement pJsonElement) {
+
+        if (pJsonElement.isJsonObject()) {
+
+            // Backup for logging
+            String logOriginal = pJsonElement.toString();
+
+            final JsonObject o = pJsonElement.getAsJsonObject();
+            final JsonElement nsElement = o.get(DISCRIMINATOR_FIELD_NAME);
+            if (nsElement == null) {
+                throw missingFieldException(pJsonElement, DISCRIMINATOR_FIELD_NAME);
+            }
+
+            // Compute and inject name without its namespace
+            String nsName = nsElement.getAsString();
+            String[] splitNsName = nsName.split(REGEXP_ESCAPE + NS_SEPARATOR);
+            o.add(DISCRIMINATOR_FIELD_NAME, new JsonPrimitive(splitNsName[splitNsName.length - 1]));
+
+            if (LOGGER.isDebugEnabled()) {
+                if (splitNsName.length > 1) {
+                    LOGGER.debug(String.format("Namespace removed : \"%s\" -> \"%s\"", logOriginal,
+                                               pJsonElement.toString()));
                 } else {
-                    // Retrieve but DO NOT REMOVE existing field
-                    discriminatorEl = jsonElement.getAsJsonObject().get(discriminatorFieldName);
+                    LOGGER.debug(String.format("No namespace to remove : \"%s\" -> \"%s\"", logOriginal,
+                                               pJsonElement.toString()));
                 }
-
-                // Check value found
-                if (discriminatorEl == null) {
-                    String errorMessage = String.format(
-                                                        "Cannot deserialize %s because it does not define a field named %s.",
-                                                        baseType, discriminatorFieldName);
-                    LOGGER.error(errorMessage);
-                    throw new JsonParseException(errorMessage);
-                }
-
-                final String discriminator = discriminatorEl.getAsString();
-                @SuppressWarnings("unchecked") // registration requires that sub type extends T
-                final TypeAdapter<T> delegate = (TypeAdapter<T>) discriminatorToDelegate.get(discriminator);
-
-                if (delegate == null) {
-                    String errorMessage = String.format(
-                                                        "Cannot deserialize %s subtype named %s. Did you forget to register a subtype?",
-                                                        baseType, discriminator);
-                    LOGGER.error(errorMessage);
-                    throw new JsonParseException(errorMessage);
-                }
-                return delegate.fromJsonTree(jsonElement);
             }
+        } else {
+            throw objectRequiredException(pJsonElement);
+        }
+    }
 
-        }.nullSafe();
+    private IllegalArgumentException objectRequiredException(JsonElement pJsonElement) {
+        String errorMessage = String.format("Unexpected JSON element %s. Object required.", pJsonElement.toString());
+        LOGGER.error(errorMessage);
+        return new IllegalArgumentException(errorMessage);
+    }
+
+    private IllegalArgumentException missingFieldException(JsonElement pJsonElement, String pFieldName) {
+        String errorMessage = String.format("JSON element %s must contains a %s field", pJsonElement.toString(),
+                                            pFieldName);
+        LOGGER.error(errorMessage);
+        return new IllegalArgumentException(errorMessage);
     }
 }

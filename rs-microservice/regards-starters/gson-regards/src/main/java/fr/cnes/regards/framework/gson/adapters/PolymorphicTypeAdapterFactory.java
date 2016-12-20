@@ -244,6 +244,20 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
         }
     }
 
+    /**
+     * Overwrite this method to manipulate {@link JsonElement} before parsing it into target type.
+     *
+     * @param pJsonElement
+     *            {@link JsonElement}
+     * @param pDiscriminator
+     *            related discriminator value
+     * @param pSubType
+     *            target type
+     */
+    protected void beforeDelegateRead(JsonElement pJsonElement, String pDiscriminator, Class<?> pSubType) {
+        // Override this method to manipulate JsonElement
+    }
+
     // CHECKSTYLE:OFF
     @Override
     public <T> TypeAdapter<T> create(Gson pGson, TypeToken<T> pType) { // NOSONAR
@@ -395,9 +409,11 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
                         throw new JsonParseException(errorMessage);
                     }
                 }
+
+                beforeDelegateRead(jsonElement, discriminator, discriminatorToSubtype.get(discriminator));
+
                 return delegate.fromJsonTree(jsonElement);
             }
-
         }.nullSafe();
     }
     // CHECKSTYLE:ON
