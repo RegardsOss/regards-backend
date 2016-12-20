@@ -42,7 +42,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + this.toString());
         // Get all the plugin interfaces
         final List<String> pluginInterfaces = PluginInterfaceUtils
-                .getInterfaces("fr.cnes.regards.plugins.utils.plugintypes");
+                .getInterfaces(Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes",
+                                             "fr.cnes.regards.plugins.utils.bean", "fr.cnes.regards.plugins.utils"));
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
         Assert.assertTrue(pluginInterfaces.size() > 0);
@@ -114,7 +115,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                     .addParameter(AParameterPluginImplementation.LONG_PARAM, PluginInterfaceUtilsTest.LONG_STR_VALUE)
                     .getParameters();
             final PluginConfiguration pluginConfigurationInterface = PluginUtils
-                    .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class);
+                    .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class,
+                                            Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
             Assert.assertNotNull(pluginConfigurationInterface);
 
             /*
@@ -128,7 +130,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
             /*
              * Instantiate the parent plugin
              */
-            complexPlugin = PluginUtils.getPlugin(complexParameters, ComplexPlugin.class);
+            complexPlugin = PluginUtils.getPlugin(complexParameters, ComplexPlugin.class,
+                                                  Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
             Assert.assertNotNull(complexPlugin);
 
             Assert.assertTrue(complexPlugin.add(Integer.parseInt(PluginInterfaceUtilsTest.CINQ),
@@ -164,7 +167,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "coucou").getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class);
+        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class,
+                              Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
     }
 
     /**
@@ -185,7 +189,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "lorem ipsum").getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class);
+        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class,
+                              Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
     }
 
 }

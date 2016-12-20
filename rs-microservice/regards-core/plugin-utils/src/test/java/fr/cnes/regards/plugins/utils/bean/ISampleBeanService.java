@@ -3,11 +3,13 @@
  */
 package fr.cnes.regards.plugins.utils.bean;
 
+import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
 
 /**
  * @author Christophe Mertz
  *
  */
+@PluginInterface
 public interface ISampleBeanService {
     
     public String getId();

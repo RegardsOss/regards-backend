@@ -58,7 +58,7 @@ public class JobControllerIT extends AbstractRegardsIT {
     public void getAllJobs() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR,
                                                         Matchers.hasSize(jobInfoService.retrieveJobInfoList().size())));
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.links", Matchers.notNullValue()));
         performDefaultGet(apiJobs, expectations, "unable to load all jobs");
@@ -82,7 +82,7 @@ public class JobControllerIT extends AbstractRegardsIT {
                                                         Matchers.hasToString(aJob.getStatus().getJobStatus().name())));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.status.description",
                                                         Matchers.hasToString(aJob.getStatus().getDescription())));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS, Matchers.notNullValue()));
 
         performDefaultGet(apiAJob, expectations, String.format("unable to load the job <%s>", aJob.getId()),
                           aJob.getId());
@@ -93,7 +93,7 @@ public class JobControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         final JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$", hasSize(aJob.getResult().size())));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, hasSize(aJob.getResult().size())));
         performDefaultGet(apiAJobResults, expectations, String.format("unable to get job's result <%s>", aJob.getId()),
                           aJob.getId());
     }

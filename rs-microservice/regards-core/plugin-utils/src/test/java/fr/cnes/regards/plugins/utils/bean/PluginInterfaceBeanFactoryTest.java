@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.plugins.utils.bean;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -64,13 +65,15 @@ public final class PluginInterfaceBeanFactoryTest extends PluginUtilsTestConstan
                 .addParameter(SampleBeanFactoryPlugin.SUFFIXE, "chris_test_1").getParameters();
         try {
             // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SampleBeanFactoryPlugin.class, pluginUtilsBean);
+            samplePlugin = PluginUtils.getPlugin(parameters, SampleBeanFactoryPlugin.class, pluginUtilsBean,
+                                                 Arrays.asList("fr.cnes.regards.plugins.utils.bean"));
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
         Assert.assertNotNull(samplePlugin);
-        Assert.assertTrue(samplePlugin.echo("Toulouse").contains("Toulouse"));
-        LOGGER.info(samplePlugin.echo("Toulouse"));
+        final String toulouse = "Toulouse";
+        Assert.assertTrue(samplePlugin.echo(toulouse).contains(toulouse));
+        LOGGER.info(samplePlugin.echo(toulouse));
     }
 
 }

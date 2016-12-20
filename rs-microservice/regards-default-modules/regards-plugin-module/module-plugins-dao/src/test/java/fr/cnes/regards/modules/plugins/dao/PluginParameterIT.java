@@ -192,7 +192,7 @@ public class PluginParameterIT extends PluginDaoUtility {
             paramJpa.getDynamicsValuesAsString().stream()
                     .forEach(s -> paramFound.getDynamicsValuesAsString().contains(s));
 
-            PluginDynamicValue aDynamicValue = pluginDynamicValueRepository
+            final PluginDynamicValue aDynamicValue = pluginDynamicValueRepository
                     .findOne(paramJpa.getDynamicsValues().get(0).getId());
             Assert.assertEquals(paramJpa.getDynamicsValues().get(0).getValue(), aDynamicValue.getValue());
 

@@ -7,13 +7,16 @@ package fr.cnes.regards.modules.plugins.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.plugins.autoconfigure.PluginUtilsProperties;
+import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
@@ -38,19 +41,15 @@ public class PluginService implements IPluginService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
 
     /**
-     * The default Regards package for the {@link Plugin} of the core
+     * The properties of the plugins : the package to scan to find {@link PluginInterface}.
      */
-    private static final String REGARDS_PACKAGE_PLUGINS_DEFAULT = "fr.cnes.regards.plugins";
-
-    /**
-     * The default Regards package for the {@link Plugin} of the contributors
-     */
-    private static final String CONTRIB_PACKAGE_PLUGINS_DEFAULT = "fr.cnes.regards.contrib";
+    @Autowired
+    private PluginUtilsProperties properties;
 
     /**
      * The plugin's package to scan
      */
-    private final List<String> pluginPackage = new ArrayList<>();
+    private List<String> pluginPackage;
 
     /**
      * {@link PluginConfiguration} JPA Repository
@@ -72,8 +71,6 @@ public class PluginService implements IPluginService {
     public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository) {
         super();
         pluginConfRepository = pPluginConfigurationRepository;
-        getPluginPackage().add(REGARDS_PACKAGE_PLUGINS_DEFAULT);
-        getPluginPackage().add(CONTRIB_PACKAGE_PLUGINS_DEFAULT);
     }
 
     private Map<String, PluginMetaData> getLoadedPlugins() {
@@ -146,11 +143,13 @@ public class PluginService implements IPluginService {
     @Override
     public PluginConfiguration getPluginConfiguration(final Long pId) throws PluginUtilsException {
         // Get plugin configuration
-        final PluginConfiguration conf = pluginConfRepository.findOne(pId);
-
-        if (conf == null) {
-            throw new PluginUtilsException(String.format("Error while getting the plugin configuration <%s>.", pId));
+        final PluginConfiguration conf;
+        try {
+            conf = pluginConfRepository.findOne(pId);
+        } catch (final NoSuchElementException e) {
+            throw new PluginUtilsException(String.format("Error while getting the plugin configuration <%s>.", pId), e);
         }
+
         return conf;
     }
 
@@ -196,8 +195,8 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final PluginParameter... pPluginParameters)
-            throws PluginUtilsException {
+    public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final List<String> pPrefixs,
+            final PluginParameter... pPluginParameters) throws PluginUtilsException {
 
         // Get plugins configuration for given type
         final List<PluginConfiguration> confs = getPluginConfigurationsByType(pInterfacePluginType);
@@ -220,15 +219,15 @@ public class PluginService implements IPluginService {
         T resultPlugin = null;
 
         if (configuration != null) {
-            resultPlugin = getPlugin(configuration.getId(), pPluginParameters);
+            resultPlugin = getPlugin(configuration.getId(), pPrefixs, pPluginParameters);
         }
 
         return resultPlugin;
     }
 
     @Override
-    public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
-            throws PluginUtilsException {
+    public <T> T getPlugin(final Long pPluginConfigurationId, final List<String> pPrefixs,
+            final PluginParameter... pPluginParameters) throws PluginUtilsException {
 
         // Get last saved plugin configuration
         final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
@@ -242,16 +241,22 @@ public class PluginService implements IPluginService {
                                       pluginConf.getVersion(), pluginMetadata.getVersion()));
         }
 
-        return PluginUtils.getPlugin(pluginConf, pluginMetadata, pPluginParameters);
+        return PluginUtils.getPlugin(pluginConf, pluginMetadata, pPrefixs, pPluginParameters);
     }
 
-    public List<String> getPluginPackage() {
+    private List<String> getPluginPackage() {
+        if (pluginPackage == null) {
+            pluginPackage = new ArrayList<>();
+            if (properties != null) {
+                pluginPackage.addAll(properties.getPackagesToScan());
+            }
+        }
         return pluginPackage;
     }
 
     @Override
     public void addPluginPackage(final String pPluginPackage) {
-        this.pluginPackage.add(pPluginPackage);
+        getPluginPackage().add(pPluginPackage);
     }
 
 }

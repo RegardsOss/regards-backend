@@ -7,6 +7,8 @@ package fr.cnes.regards.modules.plugins.service;
 import java.util.List;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
@@ -56,13 +58,17 @@ public interface IPluginService {
      *            a plugin instance
      * @param pPluginConfigurationId
      *            the id of a {@link PluginConfiguration}.
+     * @param pPrefixs
+     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
+     *            
      * @return a plugin
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
-    <T> T getPlugin(Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
+    <T> T getPlugin(Long pPluginConfigurationId, final List<String> pPrefixs,final PluginParameter... pPluginParameters)
             throws PluginUtilsException;
 
     /**
@@ -73,13 +79,17 @@ public interface IPluginService {
      *            a plugin instance
      * @param pInterfacePluginType
      *            a specific interface plugin type
+     * @param pPrefixs
+     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
+     *            
      * @return a plugin
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
-    <T> T getFirstPluginByType(Class<?> pInterfacePluginType, final PluginParameter... pPluginParameters)
+    <T> T getFirstPluginByType(Class<?> pInterfacePluginType, final List<String> pPrefixs,final PluginParameter... pPluginParameters)
             throws PluginUtilsException;
 
     /**

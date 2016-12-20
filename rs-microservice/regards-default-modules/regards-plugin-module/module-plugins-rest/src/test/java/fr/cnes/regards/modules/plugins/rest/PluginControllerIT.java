@@ -63,9 +63,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
             .addParameter("param33", "value33").addParameter("param34", "value34").addParameter("param35", "value35")
             .getParameters();
 
-    /**
-     *
-     */
     @Autowired
     private IPluginService pluginService;
 
@@ -85,6 +82,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
     public void getAllPlugins() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR,
+                                                        Matchers.hasSize(pluginService.getPlugins().size())));
         performDefaultGet(apiPlugins, expectations, "unable to load all plugins");
     }
 
@@ -93,6 +92,9 @@ public class PluginControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         final String pluginType = IComplexInterfacePlugin.class.getCanonicalName();
+        expectations.add(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_STAR,
+                          Matchers.hasSize(pluginService.getPluginsByType(IComplexInterfacePlugin.class).size())));
         performDefaultGet(apiPluginsWithParamPluginType + pluginType, expectations,
                           String.format("unable to load plugins of type <%s>", pluginType));
     }
@@ -120,8 +122,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        expectations
-                .add(MockMvcResultMatchers.jsonPath("$.*", Matchers.hasSize(pluginService.getPluginTypes().size())));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR,
+                                                        Matchers.hasSize(pluginService.getPluginTypes().size())));
         performDefaultGet(apiPluginTypes, expectations, "unable to load all plugin types");
     }
 
@@ -172,6 +174,11 @@ public class PluginControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
+        expectations.add(MockMvcResultMatchers.jsonPath("$..content.active", Matchers.hasToString("[true]")));
+        expectations.add(MockMvcResultMatchers.jsonPath("$..content.parameters[0].dynamic",
+                                                        Matchers.hasToString("[true]")));
+        expectations.add(MockMvcResultMatchers.jsonPath("$..content.parameters[1].dynamic",
+                                                        Matchers.hasToString("[false]")));
         performDefaultGet(apiPluginsOneConfigId, expectations, "unable to load a plugin configuration", pluginId,
                           configId);
     }
@@ -235,9 +242,9 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
         // Update the added PluginConfiguration
         performDefaultPut(apiPluginsOneConfigId, aPluginConfiguration, expectations,
-                          "unable to update a plugin configuration", PLUGIN_ID, 9999L);
+                          "unable to update a plugin configuration", PLUGIN_ID, 9989L);
     }
-    
+
     @Test
     @DirtiesContext
     public void updatePluginConfigurationErrorVersion() {
