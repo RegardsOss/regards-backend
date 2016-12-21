@@ -5,7 +5,6 @@
 package fr.cnes.regards.modules.plugins.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -245,8 +244,8 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findOne(bPluginConfiguration.getId()))
                 .thenThrow(new NoSuchElementException(""));
 
-        pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,
-                                                 Arrays.asList("fr.cnes.regards.plugins.utils"));
+        pluginServiceMocked.addPluginPackage("fr.cnes.regards.plugins.utils");
+        pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
 
         Assert.fail();
     }

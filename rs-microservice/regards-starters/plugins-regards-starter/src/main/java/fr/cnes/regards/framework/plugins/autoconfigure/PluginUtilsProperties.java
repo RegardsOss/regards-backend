@@ -19,7 +19,7 @@ public class PluginUtilsProperties {
     /**
      * A {@link List} of package to scan
      */
-    List<String> packagesToScan;
+    private List<String> packagesToScan;
     
     public List<String> getPackagesToScan() {
         return packagesToScan;

@@ -195,8 +195,8 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final List<String> pPrefixs,
-            final PluginParameter... pPluginParameters) throws PluginUtilsException {
+    public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final PluginParameter... pPluginParameters)
+            throws PluginUtilsException {
 
         // Get plugins configuration for given type
         final List<PluginConfiguration> confs = getPluginConfigurationsByType(pInterfacePluginType);
@@ -219,15 +219,15 @@ public class PluginService implements IPluginService {
         T resultPlugin = null;
 
         if (configuration != null) {
-            resultPlugin = getPlugin(configuration.getId(), pPrefixs, pPluginParameters);
+            resultPlugin = getPlugin(configuration.getId(), pPluginParameters);
         }
 
         return resultPlugin;
     }
 
     @Override
-    public <T> T getPlugin(final Long pPluginConfigurationId, final List<String> pPrefixs,
-            final PluginParameter... pPluginParameters) throws PluginUtilsException {
+    public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
+            throws PluginUtilsException {
 
         // Get last saved plugin configuration
         final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
@@ -241,7 +241,7 @@ public class PluginService implements IPluginService {
                                       pluginConf.getVersion(), pluginMetadata.getVersion()));
         }
 
-        return PluginUtils.getPlugin(pluginConf, pluginMetadata, pPrefixs, pPluginParameters);
+        return PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), pPluginParameters);
     }
 
     private List<String> getPluginPackage() {
