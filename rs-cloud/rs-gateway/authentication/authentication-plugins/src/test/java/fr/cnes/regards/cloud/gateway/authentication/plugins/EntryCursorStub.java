@@ -21,6 +21,8 @@ import org.apache.directory.api.ldap.model.message.SearchResultDone;
  * Stub class to test LDAP authentication plugin
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 public class EntryCursorStub implements EntryCursor {
@@ -34,7 +36,7 @@ public class EntryCursorStub implements EntryCursor {
      * stub counter
      */
     private int count = 0;
-
+    
     public void setEntries(final List<Entry> pEntries) {
         entries = pEntries;
     }

@@ -5,6 +5,7 @@ package fr.cnes.regards.cloud.gateway.authentication.plugins;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 
 import org.ietf.jgss.GSSContext;
@@ -101,7 +102,9 @@ public class KerberosServiceProviderPluginTest {
                 .addParameter(KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, keytabFilePath.getPath()).getParameters();
         try {
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class);
+            plugin = PluginUtils
+                    .getPlugin(parameters, KerberosServiceProviderPlugin.class,
+                               Arrays.asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"));
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsException e) {
             Assert.fail();
