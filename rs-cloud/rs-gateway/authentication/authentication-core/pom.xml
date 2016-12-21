@@ -40,7 +40,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.plugins</groupId>
 			<artifactId>module-plugins-service</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
@@ -68,7 +67,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.plugins</groupId>
 			<artifactId>module-plugins-test</artifactId>
-			<version>1.0-SNAPSHOT</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>

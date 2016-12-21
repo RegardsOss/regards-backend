@@ -28,17 +28,12 @@
 			<version>1.0.0-M15</version>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.plugins</groupId>
-			<artifactId>module-plugins-domain</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
 			<artifactId>accessrights-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.utils</groupId>
-			<artifactId>plugin-utils</artifactId>
-			<scope>test</scope>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>plugins-regards-starter</artifactId>
 		</dependency>
 	</dependencies>
 </project>
