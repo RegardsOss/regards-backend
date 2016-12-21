@@ -109,7 +109,7 @@ public final class PluginUtils {
     public static Map<String, PluginMetaData> getPlugins(final List<String> pPrefixs) {
         final Map<String, PluginMetaData> plugins = new HashMap<>();
 
-        for (String p : pPrefixs) {
+        for (final String p : pPrefixs) {
             plugins.putAll(getPlugins(p, pPrefixs));
         }
 
@@ -128,13 +128,11 @@ public final class PluginUtils {
      * @return the {@link PluginMetaData} create
      */
     public static PluginMetaData createPluginMetaData(final Class<?> pPluginClass, final List<String> pPrefixs) {
-        final PluginMetaData pluginMetaData;
-
         // Get implementation associated annotations
         final Plugin plugin = pPluginClass.getAnnotation(Plugin.class);
 
         // Init plugin metadata
-        pluginMetaData = new PluginMetaData();
+        final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(pPluginClass.getCanonicalName());
 
         // Manage plugin id

@@ -143,7 +143,7 @@ public class PluginService implements IPluginService {
     @Override
     public PluginConfiguration getPluginConfiguration(final Long pId) throws PluginUtilsException {
         // Get plugin configuration
-        final PluginConfiguration conf;
+        PluginConfiguration conf;
         try {
             conf = pluginConfRepository.findOne(pId);
         } catch (final NoSuchElementException e) {

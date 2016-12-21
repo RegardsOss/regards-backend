@@ -83,7 +83,7 @@ public class PluginController {
     public ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
             @RequestParam(value = "pluginType", required = false) final String pPluginType)
             throws EntityInvalidException {
-        final List<PluginMetaData> metadaDatas;
+        List<PluginMetaData> metadaDatas;
 
         if (pPluginType == null) {
             // No plugintypes is specify, return all the plugins
@@ -173,14 +173,14 @@ public class PluginController {
     @ResponseBody
     public ResponseEntity<Resource<PluginConfiguration>> savePluginConfiguration(
             @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws EntityInvalidException {
-        final PluginConfiguration pluginConfiguration;
+        PluginConfiguration pluginConfig;
         try {
-            pluginConfiguration = pluginService.savePluginConfiguration(pPluginConfiguration);
+            pluginConfig = pluginService.savePluginConfiguration(pPluginConfiguration);
         } catch (final PluginUtilsException e) {
             LOGGER.error("Cannot create the plugin configuration : <" + pPluginConfiguration.getPluginId() + ">", e);
             throw new EntityInvalidException(e.getMessage());
         }
-        final Resource<PluginConfiguration> resource = new Resource<>(pluginConfiguration);
+        final Resource<PluginConfiguration> resource = new Resource<>(pluginConfig);
 
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
@@ -206,14 +206,14 @@ public class PluginController {
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId)
             throws EntityNotFoundException {
-        final PluginConfiguration pluginConfiguration;
+        PluginConfiguration pluginConfig;
         try {
-            pluginConfiguration = pluginService.getPluginConfiguration(pConfigId);
+            pluginConfig = pluginService.getPluginConfiguration(pConfigId);
         } catch (final PluginUtilsException e) {
             LOGGER.error("Cannot get the plugin configuration : <" + pConfigId + ">", e);
             throw new EntityNotFoundException(pConfigId, PluginConfiguration.class);
         }
-        final Resource<PluginConfiguration> resource = new Resource<>(pluginConfiguration);
+        final Resource<PluginConfiguration> resource = new Resource<>(pluginConfig);
 
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -241,23 +241,27 @@ public class PluginController {
     public ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId,
             @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws EntityNotFoundException {
-        final PluginConfiguration pluginConfiguration;
+        
         if (!pPluginId.equals(pPluginConfiguration.getPluginId())) {
             LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
                     + ">- config id= <" + pConfigId + ">");
             throw new EntityNotFoundException(pPluginId, PluginConfiguration.class);
         }
+        
         if (pConfigId != pPluginConfiguration.getId()) {
             throw new EntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
         }
+        
+        PluginConfiguration pluginConfig;
+        
         try {
-            pluginConfiguration = pluginService.updatePluginConfiguration(pPluginConfiguration);
+            pluginConfig = pluginService.updatePluginConfiguration(pPluginConfiguration);
         } catch (final PluginUtilsException e) {
             LOGGER.error("Cannot update the plugin configuration : <" + pConfigId + ">", e);
             throw new EntityNotFoundException(pConfigId, PluginConfiguration.class);
         }
-        final Resource<PluginConfiguration> resource = new Resource<>(pluginConfiguration);
-
+        
+        final Resource<PluginConfiguration> resource = new Resource<>(pluginConfig);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 

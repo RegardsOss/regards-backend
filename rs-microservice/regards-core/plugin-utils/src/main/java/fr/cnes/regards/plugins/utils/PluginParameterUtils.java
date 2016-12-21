@@ -231,7 +231,9 @@ public final class PluginParameterUtils {
     public static <T> void postProcess(final T pReturnPlugin, final PluginConfiguration pPlgConf,
             final List<String> pPrefixs, final fr.cnes.regards.modules.plugins.domain.PluginParameter... pPlgParameters)
             throws PluginUtilsException {
-        LOGGER.debug("Starting postProcess :" + pReturnPlugin.getClass().getSimpleName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Starting postProcess :" + pReturnPlugin.getClass().getSimpleName());
+        }
 
         // Test if the plugin configuration is active
         if (!pPlgConf.isActive()) {
@@ -247,7 +249,9 @@ public final class PluginParameterUtils {
             }
         }
 
-        LOGGER.debug("Ending postProcess :" + pReturnPlugin.getClass().getSimpleName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Ending postProcess :" + pReturnPlugin.getClass().getSimpleName());
+        }
     }
 
     /**
@@ -323,7 +327,9 @@ public final class PluginParameterUtils {
             final Optional<PrimitiveObject> pTypeWrapper, PluginParameter pPlgParamAnnotation,
             fr.cnes.regards.modules.plugins.domain.PluginParameter... pPlgParameters) throws PluginUtilsException {
 
-        LOGGER.debug("Starting postProcessPrimitiveType :" + pPlgParamAnnotation.name());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Starting postProcessPrimitiveType :" + pPlgParamAnnotation.name());
+        }
 
         // Get setup value
         String paramValue = pPlgConf.getParameterValue(pPlgParamAnnotation.name());
@@ -348,10 +354,12 @@ public final class PluginParameterUtils {
             }
         }
 
-        LOGGER.debug(String.format("primitive parameter value : %s", paramValue));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("primitive parameter value : %s", paramValue));
+        }
 
         try {
-            final Object effectiveVal;
+            Object effectiveVal;
             if (pTypeWrapper.get().getType().equals(String.class)) {
                 effectiveVal = paramValue;
             } else {
@@ -367,7 +375,10 @@ public final class PluginParameterUtils {
                                   pPlgParamAnnotation.name(), pPluginInstance.getClass(), paramValue),
                     e);
         }
-        LOGGER.debug("Ending postProcessPrimitiveType :" + pPlgParamAnnotation.name());
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Ending postProcessPrimitiveType :" + pPlgParamAnnotation.name());
+        }
     }
 
     /**
@@ -391,7 +402,9 @@ public final class PluginParameterUtils {
     private static <T> void postProcessInterface(T pPluginInstance, PluginConfiguration pPlgConf, Field pField,
             PluginParameter pPlgParamAnnotation, final List<String> pPrefixs) throws PluginUtilsException {
 
-        LOGGER.debug("Starting postProcessInterface :" + pPlgParamAnnotation.name());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Starting postProcessInterface :" + pPlgParamAnnotation.name());
+        }
 
         // Get setup value
         final PluginConfiguration paramValue = pPlgConf.getParameterConfiguration(pPlgParamAnnotation.name());
@@ -409,7 +422,9 @@ public final class PluginParameterUtils {
                     e);
         }
 
-        LOGGER.debug("Ending postProcessInterface :" + pPlgParamAnnotation.name());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Ending postProcessInterface :" + pPlgParamAnnotation.name());
+        }
     }
 
     /**
@@ -429,8 +444,6 @@ public final class PluginParameterUtils {
             final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> pConfiguredPlgParam,
             final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> pDynamicPlgParam)
             throws PluginUtilsException {
-        final String paramValue;
-
         LOGGER.debug(String.format("Starting postProcessDynamicValues : %s - init value= <%s>",
                                    pDynamicPlgParam.get().getName(), pParamValue));
 
@@ -443,7 +456,7 @@ public final class PluginParameterUtils {
                                   pDynamicPlgParam.get().getValue(), pDynamicPlgParam.get().getName()));
         }
 
-        paramValue = pDynamicPlgParam.get().getValue();
+        final String paramValue = pDynamicPlgParam.get().getValue();
 
         LOGGER.debug(String.format("Ending postProcessDynamicValues : %s - new value= <%s>",
                                    pDynamicPlgParam.get().getName(), paramValue));
