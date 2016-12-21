@@ -247,7 +247,7 @@ public class PluginService implements IPluginService {
     private List<String> getPluginPackage() {
         if (pluginPackage == null) {
             pluginPackage = new ArrayList<>();
-            if (properties != null) {
+            if (properties != null && properties.getPackagesToScan()!=null) {
                 pluginPackage.addAll(properties.getPackagesToScan());
             }
         }
