@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.plugins.annotations.PluginInit;
+import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.plugins.domain.PluginParameter;
@@ -60,9 +61,12 @@ public final class PluginUtils {
      * 
      * @param pPrefix
      *            a package prefix used for the scan
+     * @param pPrefixs
+     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     * 
      * @return all class annotated {@link Plugin}
      */
-    public static Map<String, PluginMetaData> getPlugins(final String pPrefix) {
+    public static Map<String, PluginMetaData> getPlugins(final String pPrefix, final List<String> pPrefixs) {
         final Map<String, PluginMetaData> plugins = new HashMap<>();
 
         // Scan class path with Reflections library
@@ -73,7 +77,7 @@ public final class PluginUtils {
         for (final Class<?> pluginClass : annotatedPlugins) {
 
             // Create plugin metadata
-            final PluginMetaData plugin = PluginUtils.createPluginMetaData(pluginClass);
+            final PluginMetaData plugin = PluginUtils.createPluginMetaData(pluginClass, pPrefixs);
 
             // Check a plugin does not already exists with the same plugin id
             if (plugins.containsKey(plugin.getPluginId())) {
@@ -98,14 +102,15 @@ public final class PluginUtils {
      * identifier and value the required {@link PluginMetaData}.
      * 
      * @param pPrefixs
-     *            a list of package prefix used for the scan
+     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     * 
      * @return all class annotated {@link Plugin}
      */
     public static Map<String, PluginMetaData> getPlugins(final List<String> pPrefixs) {
         final Map<String, PluginMetaData> plugins = new HashMap<>();
 
-        for (String p : pPrefixs) {
-            plugins.putAll(getPlugins(p));
+        for (final String p : pPrefixs) {
+            plugins.putAll(getPlugins(p, pPrefixs));
         }
 
         return plugins;
@@ -117,16 +122,17 @@ public final class PluginUtils {
      *
      * @param pPluginClass
      *            a class that must contains a {@link Plugin} annotation
+     * @param pPrefixs
+     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     * 
      * @return the {@link PluginMetaData} create
      */
-    public static PluginMetaData createPluginMetaData(final Class<?> pPluginClass) {
-        final PluginMetaData pluginMetaData;
-
+    public static PluginMetaData createPluginMetaData(final Class<?> pPluginClass, final List<String> pPrefixs) {
         // Get implementation associated annotations
         final Plugin plugin = pPluginClass.getAnnotation(Plugin.class);
 
         // Init plugin metadata
-        pluginMetaData = new PluginMetaData();
+        final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(pPluginClass.getCanonicalName());
 
         // Manage plugin id
@@ -140,7 +146,7 @@ public final class PluginUtils {
         pluginMetaData.setDescription(plugin.description());
 
         // Try to detect parameters if any
-        pluginMetaData.setParameters(PluginParameterUtils.getParameters(pPluginClass));
+        pluginMetaData.setParameters(PluginParameterUtils.getParameters(pPluginClass, pPrefixs));
 
         return pluginMetaData;
     }
@@ -155,16 +161,18 @@ public final class PluginUtils {
      *            the {@link PluginConfiguration}
      * @param pPluginMetadata
      *            the {@link PluginMetaData}
+     * @param pPrefixs
+     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
      * 
      * @return an instance of a {@link Plugin}
      * 
      * @throws PluginUtilsException
-     *             if problem occurs
+     *             if a problem occurs
      */
     public static <T> T getPlugin(final PluginConfiguration pPluginConf, final PluginMetaData pPluginMetadata,
-            final PluginParameter... pPluginParameters) throws PluginUtilsException {
+            final List<String> pPrefixs, final PluginParameter... pPluginParameters) throws PluginUtilsException {
         T returnPlugin = null;
 
         try {
@@ -172,7 +180,7 @@ public final class PluginUtils {
             returnPlugin = (T) Class.forName(pPluginMetadata.getPluginClassName()).newInstance();
 
             // Post process parameters
-            PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPluginParameters);
+            PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPrefixs, pPluginParameters);
 
             if (pluginUtilsBean != null) {
                 pluginUtilsBean.processAutowiredBean(returnPlugin);
@@ -191,10 +199,10 @@ public final class PluginUtils {
     }
 
     public static <T> T getPlugin(final PluginConfiguration pPluginConf, final PluginMetaData pPluginMetadata,
-            final IPluginUtilsBean pPluginUtilsBean, final PluginParameter... pPluginParameters)
-            throws PluginUtilsException {
+            final IPluginUtilsBean pPluginUtilsBean, final List<String> pPrefixs,
+            final PluginParameter... pPluginParameters) throws PluginUtilsException {
         pluginUtilsBean = pPluginUtilsBean;
-        return PluginUtils.getPlugin(pPluginConf, pPluginMetadata, pPluginParameters);
+        return PluginUtils.getPlugin(pPluginConf, pPluginMetadata, pPrefixs, pPluginParameters);
     }
 
     /**
@@ -207,16 +215,18 @@ public final class PluginUtils {
      *            the {@link PluginConfiguration}
      * @param pPluginClassName
      *            the {@link Plugin} class name
+     * @param pPrefixs
+     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
      * 
      * @return an instance of {@link Plugin}
      * 
      * @throws PluginUtilsException
-     *             if problem occurs
+     *             if a problem occurs
      */
     public static <T> T getPlugin(final PluginConfiguration pPluginConf, final String pPluginClassName,
-            final PluginParameter... pPluginParameters) throws PluginUtilsException {
+            final List<String> pPrefixs, final PluginParameter... pPluginParameters) throws PluginUtilsException {
         T returnPlugin = null;
 
         try {
@@ -224,7 +234,7 @@ public final class PluginUtils {
             returnPlugin = (T) Class.forName(pPluginClassName).newInstance();
 
             // Post process parameters
-            PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPluginParameters);
+            PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPrefixs, pPluginParameters);
 
             if (pluginUtilsBean != null) {
                 pluginUtilsBean.processAutowiredBean(returnPlugin);
@@ -253,18 +263,20 @@ public final class PluginUtils {
      *            the required returned type
      * @param pPluginUtilsBean
      *            a {@link PluginUtilsBean} containing your own {@link org.springframework.beans.factory.BeanFactory}
+     * @param pPrefixs
+     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPluginParameters
      *            an optional {@link List} of {@link PluginParameter}
      * 
      * @return a {@link Plugin} instance
      * @throws PluginUtilsException
-     *             if problem occurs
+     *             if a problem occurs
      */
     public static <T> T getPlugin(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
-            final IPluginUtilsBean pPluginUtilsBean, final PluginParameter... pPluginParameters)
-            throws PluginUtilsException {
+            final IPluginUtilsBean pPluginUtilsBean, final List<String> pPrefixs,
+            final PluginParameter... pPluginParameters) throws PluginUtilsException {
         pluginUtilsBean = pPluginUtilsBean;
-        return PluginUtils.getPlugin(pParameters, pReturnInterfaceType, pPluginParameters);
+        return PluginUtils.getPlugin(pParameters, pReturnInterfaceType, pPrefixs, pPluginParameters);
     }
 
     /**
@@ -277,18 +289,21 @@ public final class PluginUtils {
      *            a {@link List} of {@link PluginParameter}
      * @param pReturnInterfaceType
      *            the required returned type
+     * @param pPrefixs
+     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPluginParameters
      *            an optional {@link List} of {@link PluginParameter}
      * @return a {@link Plugin} instance
      * @throws PluginUtilsException
+     *             if a problem occurs
      */
     public static <T> T getPlugin(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
-            final PluginParameter... pPluginParameters) throws PluginUtilsException {
+            final List<String> pPrefixs, final PluginParameter... pPluginParameters) throws PluginUtilsException {
         // Build plugin metadata
-        final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType);
+        final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType, pPrefixs);
 
         final PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", pParameters, 0);
-        return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, pPluginParameters);
+        return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, pPrefixs, pPluginParameters);
     }
 
     /**
@@ -300,7 +315,7 @@ public final class PluginUtils {
      * @param pPluginInstance
      *            the {@link Plugin} instance
      * @throws PluginUtilsException
-     *             if problem occurs
+     *             if a problem occurs
      */
     private static <T> void doInitPlugin(final T pPluginInstance) throws PluginUtilsException {
         final Method[] allMethods = pPluginInstance.getClass().getDeclaredMethods();
@@ -331,15 +346,17 @@ public final class PluginUtils {
      *            the plugin parameters
      * @param pReturnInterfaceType
      *            the required returned type
+     * @param pPrefixs
+     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * 
      * @return an instance
      * @throws PluginUtilsException
-     *             if problem occurs
+     *             if a problem occurs
      */
     public static <T> PluginConfiguration getPluginConfiguration(final List<PluginParameter> pParameters,
-            final Class<T> pReturnInterfaceType) throws PluginUtilsException {
+            final Class<T> pReturnInterfaceType, final List<String> pPrefixs) throws PluginUtilsException {
         // Build plugin metadata
-        final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType);
+        final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType, pPrefixs);
 
         return new PluginConfiguration(pluginMetadata, "", pParameters, 0);
     }

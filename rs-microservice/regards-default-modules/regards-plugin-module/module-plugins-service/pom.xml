@@ -28,14 +28,14 @@
 			<artifactId>spring-context</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.utils</groupId>
-			<artifactId>plugin-utils</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.plugins</groupId>
 			<artifactId>module-plugins-test</artifactId>
 			<scope>test</scope>
 			<type>test-jar</type>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>plugins-regards-starter</artifactId>
 		</dependency>
 	</dependencies>
 </project>

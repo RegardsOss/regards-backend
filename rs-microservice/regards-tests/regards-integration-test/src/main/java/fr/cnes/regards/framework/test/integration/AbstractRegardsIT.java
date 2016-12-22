@@ -85,6 +85,11 @@ public abstract class AbstractRegardsIT {
      * JSON path root in responses
      */
     protected static final String JSON_PATH_ROOT = "$";
+    
+    /**
+     * JSON path $.* in responses
+     */
+    protected static final String JSON_PATH_STAR = "$.*";
 
     /**
      * URL Path separator

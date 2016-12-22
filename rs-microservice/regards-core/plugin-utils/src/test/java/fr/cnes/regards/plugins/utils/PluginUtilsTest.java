@@ -38,7 +38,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + this.toString());
 
         // Get all the plugins
-        final Map<String, PluginMetaData> maps = PluginUtils.getPlugins("fr.cnes.regards.plugins.utils");
+        final Map<String, PluginMetaData> maps = PluginUtils.getPlugins("fr.cnes.regards.plugins.utils",
+                                                                        Arrays.asList("fr.cnes.regards.plugins.utils"));
         Assert.assertNotNull(maps);
         Assert.assertTrue(maps.size() > 1);
 
@@ -70,7 +71,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.SUFFIXE, "chris_test_1").getParameters();
         try {
             // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class);
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
+                                                 Arrays.asList("fr.cnes.regards.plugins.utils"));
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -109,7 +111,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                     .addParameter(SamplePlugin.COEFF, "-1").getParameters().stream().findAny().get();
 
             // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
+                                                 Arrays.asList("fr.cnes.regards.plugins.utils"), aDynamicPlgParam);
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -179,7 +182,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                     .addParameter(SamplePlugin.SUFFIXE, PluginUtilsTest.BLUE).getParameters().stream().findAny().get();
 
             // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
+                                                 Arrays.asList("fr.cnes.regards.plugins.utils"), aDynamicPlgParam);
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -212,7 +216,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameterDynamic(SamplePlugin.SUFFIXE, PluginUtilsTest.RED, dynamicValues).getParameters();
         try {
             // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class);
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
+                                                 Arrays.asList("fr.cnes.regards.plugins.utils"));
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -250,7 +255,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.SUFFIXE, PluginUtilsTest.CINQ).getParameters().stream().findAny().get();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters, SamplePlugin.class, aDynamicPlgParam);
+        PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList("fr.cnes.regards.plugins.utils"),
+                              aDynamicPlgParam);
     }
 
     /**
@@ -271,7 +277,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters, SamplePlugin.class);
+        PluginUtils.getPlugin(parameters, SamplePlugin.class,
+                              Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
     }
 
     /**
@@ -293,7 +300,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.CINQ).getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters, SampleErrorPlugin.class);
+        PluginUtils.getPlugin(parameters, SampleErrorPlugin.class, Arrays.asList("fr.cnes.regards.plugins.utils"));
     }
 
     @Test
