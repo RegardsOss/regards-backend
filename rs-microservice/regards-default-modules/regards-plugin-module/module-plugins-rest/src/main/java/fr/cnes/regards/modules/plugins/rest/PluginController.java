@@ -10,6 +10,7 @@ import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,9 +23,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
@@ -44,7 +50,32 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
 @RestController
 @ModuleInfo(name = "plugins", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-public class PluginController {
+public class PluginController implements IResourceController<PluginConfiguration> {
+
+    /**
+     * REST mapping resource : /plugins
+     */
+    public static final String PLUGINS = "/plugins";
+
+    /**
+     * REST mapping resource : /plugintypes
+     */
+    public static final String PLUGIN_TYPES = "/plugintypes";
+
+    /**
+     * REST mapping resource : /plugins/{pluginId}
+     */
+    public static final String PLUGINS_PLUGINID = "/plugins/{pluginId}";
+
+    /**
+     * REST mapping resource : /plugins/{pluginId}/config
+     */
+    public static final String PLUGINS_CONFIGS = "/plugins/{pluginId}/config";
+
+    /**
+     * REST mapping resource : /plugins/{pluginId}/config/{configId}
+     */
+    public static final String PLUGINS_CONFIGID = "/plugins/{pluginId}/config/{configId}";
 
     /**
      * Class logger
@@ -55,6 +86,12 @@ public class PluginController {
      * Business service for Plugin.
      */
     private final IPluginService pluginService;
+
+    /**
+     * Resource service to manage visibles hateoas links
+     */
+    @Autowired
+    private IResourceService resourceService;
 
     /**
      * Constructor to specify a particular {@link IPluginService}.
@@ -78,8 +115,11 @@ public class PluginController {
      * @throws EntityInvalidException
      *             if problem occurs
      */
-    @RequestMapping(value = "/plugins", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PluginController.PLUGINS, method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @ResourceAccess(
+            description = "Get all the class annotaded with @Plugin or only the one that implemented an optional pluginType")
     public ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
             @RequestParam(value = "pluginType", required = false) final String pPluginType)
             throws EntityInvalidException {
@@ -110,8 +150,10 @@ public class PluginController {
      *
      * @return a list of interface annotated with {@link PluginInterface}.
      */
-    @RequestMapping(value = "/plugintypes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PluginController.PLUGIN_TYPES, method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @ResourceAccess(description = "Get all the plugin types (ie interface annotated with @PluginInterface)")
     public ResponseEntity<List<Resource<String>>> getPluginTypes() {
         final List<String> types = pluginService.getPluginTypes();
         final List<Resource<String>> resources = types.stream().map(p -> new Resource<>(p))
@@ -128,9 +170,10 @@ public class PluginController {
      *
      * @return a list of {@link PluginParameter}
      */
-    @RequestMapping(value = "/plugins/{pluginId}", method = RequestMethod.GET,
+    @RequestMapping(value = PluginController.PLUGINS_PLUGINID, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @ResourceAccess(description = "Get the plugin Meta data for a specific plugin id")
     public ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(
             @PathVariable("pluginId") final String pPluginId) {
         final PluginMetaData metaData = pluginService.getPluginMetaDataById(pPluginId);
@@ -146,15 +189,14 @@ public class PluginController {
      *
      * @return a list of {@link PluginConfiguration}
      */
-    @RequestMapping(value = "/plugins/{pluginId}/config", method = RequestMethod.GET,
+    @RequestMapping(value = PluginController.PLUGINS_CONFIGS, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @ResourceAccess(description = "Get all the plugin configuration for a specific plugin id")
     public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurations(
             @PathVariable("pluginId") final String pPluginId) {
         final List<PluginConfiguration> pluginConfs = pluginService.getPluginConfigurationsByType(pPluginId);
-        final List<Resource<PluginConfiguration>> resources = pluginConfs.stream().map(p -> new Resource<>(p))
-                .collect(Collectors.toList());
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+        return ResponseEntity.ok(toResources(pluginConfs));
     }
 
     /**
@@ -168,9 +210,10 @@ public class PluginController {
      * @throws EntityInvalidException
      *             if problem occurs
      */
-    @RequestMapping(value = "/plugins/{pluginId}/config", method = RequestMethod.POST,
+    @RequestMapping(value = PluginController.PLUGINS_CONFIGS, method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @ResourceAccess(description = "Create a plugin configuration")
     public ResponseEntity<Resource<PluginConfiguration>> savePluginConfiguration(
             @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws EntityInvalidException {
         PluginConfiguration pluginConfig;
@@ -180,9 +223,8 @@ public class PluginController {
             LOGGER.error("Cannot create the plugin configuration : <" + pPluginConfiguration.getPluginId() + ">", e);
             throw new EntityInvalidException(e.getMessage());
         }
-        final Resource<PluginConfiguration> resource = new Resource<>(pluginConfig);
 
-        return new ResponseEntity<>(resource, HttpStatus.CREATED);
+        return new ResponseEntity<>(toResource(pluginConfig), HttpStatus.CREATED);
     }
 
     /**
@@ -200,9 +242,10 @@ public class PluginController {
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      *
      */
-    @RequestMapping(value = "/plugins/{pluginId}/config/{configId}", method = RequestMethod.GET,
+    @RequestMapping(value = PluginController.PLUGINS_CONFIGID, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @ResourceAccess(description = "Get a the plugin configuration")
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId)
             throws EntityNotFoundException {
@@ -213,9 +256,8 @@ public class PluginController {
             LOGGER.error("Cannot get the plugin configuration : <" + pConfigId + ">", e);
             throw new EntityNotFoundException(pConfigId, PluginConfiguration.class);
         }
-        final Resource<PluginConfiguration> resource = new Resource<>(pluginConfig);
 
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        return ResponseEntity.ok(toResource(pluginConfig));
     }
 
     /**
@@ -235,34 +277,34 @@ public class PluginController {
      * @throws EntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      */
-    @RequestMapping(value = "/plugins/{pluginId}/config/{configId}", method = RequestMethod.PUT,
+    @RequestMapping(value = PluginController.PLUGINS_CONFIGID, method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @ResourceAccess(description = "Update a plugin configuration")
     public ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId,
             @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws EntityNotFoundException {
-        
+
         if (!pPluginId.equals(pPluginConfiguration.getPluginId())) {
             LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
                     + ">- config id= <" + pConfigId + ">");
             throw new EntityNotFoundException(pPluginId, PluginConfiguration.class);
         }
-        
+
         if (pConfigId != pPluginConfiguration.getId()) {
             throw new EntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
         }
-        
+
         PluginConfiguration pluginConfig;
-        
+
         try {
             pluginConfig = pluginService.updatePluginConfiguration(pPluginConfiguration);
         } catch (final PluginUtilsException e) {
             LOGGER.error("Cannot update the plugin configuration : <" + pConfigId + ">", e);
             throw new EntityNotFoundException(pConfigId, PluginConfiguration.class);
         }
-        
-        final Resource<PluginConfiguration> resource = new Resource<>(pluginConfig);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+
+        return ResponseEntity.ok(toResource(pluginConfig));
     }
 
     /**
@@ -279,14 +321,36 @@ public class PluginController {
      * @throws EntityNotFoundException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      */
-    @RequestMapping(value = "/plugins/{pluginId}/config/{configId}", method = RequestMethod.DELETE,
+    @RequestMapping(value = PluginController.PLUGINS_CONFIGID, method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @ResourceAccess(description = "Delete a plugin configuration")
     public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") final String pPluginId,
             @PathVariable("configId") final Long pConfigId) throws EntityNotFoundException {
         pluginService.deletePluginConfiguration(pConfigId);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Override
+    public Resource<PluginConfiguration> toResource(PluginConfiguration pElement, Object... pExtras) {
+        Resource<PluginConfiguration> resource = null;
+        if ((pElement != null) && (pElement.getId() != null)) {
+            resource = resourceService.toResource(pElement);
+            resourceService.addLink(resource, this.getClass(), "getPluginConfiguration", LinkRels.SELF,
+                                    MethodParamFactory.build(String.class, pElement.getPluginId()),
+                                    MethodParamFactory.build(Long.class, pElement.getId()));
+            resourceService.addLink(resource, this.getClass(), "deletePluginConfiguration", LinkRels.DELETE,
+                                    MethodParamFactory.build(String.class, pElement.getPluginId()),
+                                    MethodParamFactory.build(Long.class, pElement.getId()));
+            resourceService.addLink(resource, this.getClass(), "updatePluginConfiguration", LinkRels.UPDATE,
+                                    MethodParamFactory.build(String.class, pElement.getPluginId()),
+                                    MethodParamFactory.build(Long.class, pElement.getId()),
+                                    MethodParamFactory.build(PluginConfiguration.class));
+            resourceService.addLink(resource, this.getClass(), "getPluginConfigurations", LinkRels.LIST,
+                                    MethodParamFactory.build(String.class, pElement.getPluginId()));
+        }
+        return resource;
     }
 
 }
