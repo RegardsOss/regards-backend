@@ -99,7 +99,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR,
                                                         Matchers.hasSize(pluginService.getPlugins().size())));
-        performGet(PluginController.PLUGIN_TYPES, token, expectations, "unable to load all plugins");
+        performGet(PluginController.PLUGINS, token, expectations, "unable to load all plugins");
     }
 
     @Test
