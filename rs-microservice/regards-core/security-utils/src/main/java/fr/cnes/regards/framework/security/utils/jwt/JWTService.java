@@ -71,7 +71,7 @@ public class JWTService {
      * @return tenant
      * @since 1.0-SNAPSHOT
      */
-    public String getActualTenant() {
+    public static String getActualTenant() {
         final JWTAuthentication authentication = ((JWTAuthentication) SecurityContextHolder.getContext()
                 .getAuthentication());
         if ((authentication != null) && (authentication.getTenant() != null)) {
