@@ -46,9 +46,6 @@ public class ProjectsFeignClientsIT extends AbstractRegardsWebIT {
     @Value("${server.address}")
     private String serverAddress;
 
-    @Value("${server.port}")
-    private String serverPort;
-
     /**
      *
      * Check that the projects Feign Client handle the pagination parameters.
@@ -64,7 +61,7 @@ public class ProjectsFeignClientsIT extends AbstractRegardsWebIT {
             final IProjectsClient projectsClient = HystrixFeign.builder().contract(new SpringMvcContract())
                     .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
                     .target(new TokenClientProvider<>(IProjectsClient.class,
-                            "http://" + serverAddress + ":" + serverPort));
+                            "http://" + serverAddress + ":" + getPort()));
             final ResponseEntity<PagedResources<Resource<Project>>> projects = projectsClient.retrieveProjectList(0,
                                                                                                                   10);
             Assert.assertTrue(projects.getStatusCode().equals(HttpStatus.OK));

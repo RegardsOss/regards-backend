@@ -42,9 +42,6 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     @Value("${server.address}")
     private String serverAddress;
 
-    @Value("${server.port}")
-    private String serverPort;
-
     @Autowired
     private IAccountRepository accountRepo;
 
@@ -57,7 +54,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString());
         accountsClient = HystrixFeign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
                 .decoder(new ResponseEntityDecoder(new GsonDecoder())).decode404()
-                .target(new TokenClientProvider<>(IAccountsClient.class, "http://" + serverAddress + ":" + serverPort));
+                .target(new TokenClientProvider<>(IAccountsClient.class, "http://" + serverAddress + ":" + getPort()));
 
         final Optional<Account> account = accountRepo.findOneByEmail(MAIL_TEST);
         account.ifPresent(accountRepo::delete);
