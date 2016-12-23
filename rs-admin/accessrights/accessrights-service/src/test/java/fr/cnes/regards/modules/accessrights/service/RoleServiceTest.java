@@ -144,7 +144,7 @@ public class RoleServiceTest {
     @Test(expected = EntityAlreadyExistsException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to create an already existing role.")
-    public void createRole_duplicate() throws EntityAlreadyExistsException {
+    public void createRoleDuplicate() throws EntityAlreadyExistsException {
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
         final Role duplicate = new Role(NAME, null);
@@ -506,8 +506,8 @@ public class RoleServiceTest {
 
         // Define a parent role with a few resource accesses
         final List<ResourcesAccess> parentAcceses = new ArrayList<>();
-        parentAcceses.add(new ResourcesAccess(0L, "desc0", "mic0", "res0", HttpVerb.TRACE));
-        parentAcceses.add(new ResourcesAccess(1L, "desc1", "mic1", "res1", HttpVerb.DELETE));
+        parentAcceses.add(new ResourcesAccess(idParent, "desc0", "mic0", "res0", HttpVerb.TRACE));
+        parentAcceses.add(new ResourcesAccess(idChild, "desc1", "mic1", "res1", HttpVerb.DELETE));
         final Role roleParent = new Role("parent", null);
         roleParent.setPermissions(parentAcceses);
 
@@ -547,19 +547,25 @@ public class RoleServiceTest {
         // Init default roles
         final RoleFactory factory = new RoleFactory();
         final Role roleInstanceAdmin = factory.createInstanceAdmin();
-        final Role roleProjectAdmin = roleInstanceAdmin.getParentRole();
-        final Role roleAdmin = roleProjectAdmin.getParentRole();
-        final Role roleRegisteredUser = roleAdmin.getParentRole();
-        final Role rolePublic = roleRegisteredUser.getParentRole();
+        final Role roleProjectAdminParent = roleInstanceAdmin.getParentRole();
+        final Role roleAdminParent = roleProjectAdminParent.getParentRole();
+        final Role roleRegisteredUserParent = roleAdminParent.getParentRole();
+        final Role rolePublicParent = roleRegisteredUserParent.getParentRole();
 
-        Assert.assertTrue(roleService.isHierarchicallyInferior(roleRegisteredUser, roleProjectAdmin));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(roleProjectAdmin, roleRegisteredUser));
+        Assert.assertNotNull(roleInstanceAdmin);
+        Assert.assertNotNull(roleProjectAdminParent);
+        Assert.assertNotNull(roleAdminParent);
+        Assert.assertNotNull(roleRegisteredUserParent);
+        Assert.assertNotNull(rolePublicParent);
+
+        Assert.assertTrue(roleService.isHierarchicallyInferior(roleRegisteredUserParent, roleProjectAdminParent));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(roleProjectAdminParent, roleRegisteredUserParent));
 
         // final Role admin = roleService.retrieveRole(2L);
-        final Role customRoleFromAdmin = new Role("custom role", roleAdmin);
+        final Role customRoleFromAdmin = new Role("custom role", roleAdminParent);
 
-        Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, roleRegisteredUser));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, roleProjectAdmin));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, roleRegisteredUserParent));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, roleProjectAdminParent));
     }
 
     /**

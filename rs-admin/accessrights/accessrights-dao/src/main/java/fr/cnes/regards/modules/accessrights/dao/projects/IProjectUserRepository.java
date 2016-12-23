@@ -21,7 +21,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * Embeds paging/sorting abilities by entending {@link PagingAndSortingRepository}.<br>
  * Allows execution of Query by Example {@link Example} instances.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
  */
 public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long> {
 
@@ -41,6 +42,8 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      *
      * @param pStatus
      *            The {@link ProjectUser}'s <code>status</code>
+     * @param pPageable
+     *            the pagination information
      * @return The {@link List} of {@link ProjectUser}s with passed <code>status</code>
      */
     Page<ProjectUser> findByStatus(UserStatus pStatus, Pageable pPageable);
@@ -69,8 +72,10 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * Find all project users whose role name equals param.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pName
-     *            The role name
+     * @param pNames
+     *            a {@link List} of role name
+     * @param pPageable
+     *            the pagination information
      * @return all project users with this role
      */
     Page<ProjectUser> findByRoleNameIn(List<String> pNames, Pageable pPageable);

@@ -3,9 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.accountunlock;
 
-import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -13,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.validation.Valid;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
@@ -22,6 +21,8 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  * Token for account unlocking process.
  *
  * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
+ * 
  * @see <a>http://www.baeldung.com/registration-verify-user-by-email</a>
  */
 @InstanceEntity
@@ -46,17 +47,17 @@ public class AccountUnlockToken {
     private String token;
 
     /**
-     * The link back to the accout
+     * The link back to the {@link Account}
      */
     @Valid
-    @JoinColumn(nullable = false, name = "account_id",
-            foreignKey = @ForeignKey(name = "FK_ACCOUNT_UNLOCK_TOKEN_ACCOUNT"))
+    @OneToOne(optional = false)
+    @JoinColumn(updatable = false, name = "account_id", foreignKey = @ForeignKey(name = "FK_UNLOCK_TOKEN"))
     private Account account;
 
     /**
-     * The compouted expiry date based on EXPIRATION
+     * The computed expiration date based on EXPIRATION delay in minutes
      */
-    private Date expiryDate;
+    private LocalDateTime expiryDate;
 
     /**
      * Verified?
@@ -76,17 +77,14 @@ public class AccountUnlockToken {
     }
 
     /**
-     * Calculate expiry date
+     * Calculate expiration date
      *
      * @param pExpiryTimeInMinutes
-     *            self expl
-     * @return the expiry date
+     *            the expiration time in minutes
+     * @return the expiration date
      */
-    private Date calculateExpiryDate(final int pExpiryTimeInMinutes) {
-        final Calendar cal = Calendar.getInstance();
-        cal.setTime(new Timestamp(cal.getTime().getTime()));
-        cal.add(Calendar.MINUTE, pExpiryTimeInMinutes);
-        return new Date(cal.getTime().getTime());
+    private LocalDateTime calculateExpiryDate(final long pExpiryTimeInMinutes) {
+        return LocalDateTime.now().plusMinutes(pExpiryTimeInMinutes);
     }
 
     /**
@@ -120,7 +118,7 @@ public class AccountUnlockToken {
     }
 
     /**
-     * @return the account
+     * @return the {@link Account}
      */
     public Account getAccount() {
         return account;
@@ -128,7 +126,7 @@ public class AccountUnlockToken {
 
     /**
      * @param pAccount
-     *            the account to set
+     *            the {@link Account} to set
      */
     public void setAccount(final Account pAccount) {
         account = pAccount;
@@ -137,7 +135,7 @@ public class AccountUnlockToken {
     /**
      * @return the expiryDate
      */
-    public Date getExpiryDate() {
+    public LocalDateTime getExpiryDate() {
         return expiryDate;
     }
 
@@ -145,7 +143,7 @@ public class AccountUnlockToken {
      * @param pExpiryDate
      *            the expiryDate to set
      */
-    public void setExpiryDate(final Date pExpiryDate) {
+    public void setExpiryDate(final LocalDateTime pExpiryDate) {
         expiryDate = pExpiryDate;
     }
 

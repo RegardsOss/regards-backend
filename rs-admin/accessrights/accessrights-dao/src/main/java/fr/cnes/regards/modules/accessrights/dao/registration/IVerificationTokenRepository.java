@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.registration;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -19,6 +19,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToke
  * Interface for a JPA auto-generated CRUD repository managing {@link VerificationToken}s.<br>
  *
  * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
  */
 @InstanceEntity
 public interface IVerificationTokenRepository extends JpaRepository<VerificationToken, Long> {
@@ -27,11 +28,11 @@ public interface IVerificationTokenRepository extends JpaRepository<Verification
 
     VerificationToken findByAccount(Account pAccount);
 
-    Stream<VerificationToken> findAllByExpiryDateLessThan(Date pNow);
+    Stream<VerificationToken> findAllByExpiryDateLessThan(LocalDateTime pNow);
 
-    void deleteByExpiryDateLessThan(Date pNow);
+    void deleteByExpiryDateLessThan(LocalDateTime pNow);
 
     @Modifying
     @Query("delete from T_VERIFICATION_TOKEN t where t.expiryDate <= ?1")
-    void deleteAllExpiredSince(Date pNow);
+    void deleteAllExpiredSince(LocalDateTime pNow);
 }

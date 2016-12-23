@@ -3,7 +3,10 @@
  */
 package fr.cnes.regards.modules.emails.service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.mail.SimpleMailMessage;
@@ -14,9 +17,10 @@ import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
 
 /**
- * {@link IEmailService} implementation
+ * An implementation of {@link IEmailService}
  *
  * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
  *
  */
 @Service
@@ -101,8 +105,8 @@ public class EmailService implements IEmailService {
      * Create a {@link SimpleMailMessage} with same content as the passed {@link Email}.
      *
      * @param pEmail
-     *            The email
-     * @return The message
+     *            The {@link Email}
+     * @return The {@link SimpleMailMessage}
      */
     private SimpleMailMessage createSimpleMailMessageFromEmail(final Email pEmail) {
         final SimpleMailMessage message = new SimpleMailMessage();
@@ -110,7 +114,9 @@ public class EmailService implements IEmailService {
         message.setCc(pEmail.getCc());
         message.setFrom(pEmail.getFrom());
         message.setReplyTo(pEmail.getReplyTo());
-        message.setSentDate(pEmail.getSentDate());
+        if (pEmail.getSentDate() != null) {
+            message.setSentDate(Date.from(pEmail.getSentDate().atZone(ZoneId.systemDefault()).toInstant()));
+        }
         message.setSubject(pEmail.getSubject());
         message.setText(pEmail.getText());
         message.setTo(pEmail.getTo());
@@ -131,7 +137,9 @@ public class EmailService implements IEmailService {
         email.setCc(pMessage.getCc());
         email.setFrom(pMessage.getFrom());
         email.setReplyTo(pMessage.getReplyTo());
-        email.setSentDate(pMessage.getSentDate());
+        if (pMessage.getSentDate() != null) {
+            email.setSentDate(LocalDateTime.ofInstant(pMessage.getSentDate().toInstant(), ZoneId.systemDefault()));
+        }
         email.setSubject(pMessage.getSubject());
         email.setText(pMessage.getText());
         email.setTo(pMessage.getTo());

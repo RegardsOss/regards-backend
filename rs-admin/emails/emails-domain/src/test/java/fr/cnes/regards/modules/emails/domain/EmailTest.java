@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.emails.domain;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,8 +13,14 @@ import org.junit.Test;
  * Unit testing of {@link Email}
  *
  * @author Maxime Bouveron
+ * @author Christophe Mertz
  */
 public class EmailTest {
+
+    /**
+     * Test sentDate
+     */
+    private static final LocalDateTime SEND_DATE = LocalDateTime.now().minusMinutes(5);
 
     /**
      * Test email
@@ -47,11 +53,6 @@ public class EmailTest {
     private final String replyTo = "replyTo";
 
     /**
-     * Test sentDate
-     */
-    private final Date sentDate = new Date();
-
-    /**
      * Test subject
      */
     private final String subject = "subject";
@@ -74,7 +75,7 @@ public class EmailTest {
         email.setFrom(from);
         email.setId(id);
         email.setReplyTo(replyTo);
-        email.setSentDate(sentDate);
+        email.setSentDate(SEND_DATE);
         email.setSubject(subject);
         email.setText(text);
         email.setTo(to);
@@ -151,7 +152,7 @@ public class EmailTest {
      */
     @Test
     public void testGetSentDate() {
-        Assert.assertEquals(sentDate, email.getSentDate());
+        Assert.assertEquals(SEND_DATE, email.getSentDate());
     }
 
     /**
@@ -229,11 +230,11 @@ public class EmailTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.emails.domain.Email#setSentDate(java.util.Date)}.
+     * Test method for {@link fr.cnes.regards.modules.emails.domain.Email#setSentDate(java.time.LocalDateTime))}.
      */
     @Test
     public void testSetSentDate() {
-        final Date newSentDate = new Date();
+        final LocalDateTime newSentDate = LocalDateTime.now();
         email.setSentDate(newSentDate);
         Assert.assertEquals(newSentDate, email.getSentDate());
     }

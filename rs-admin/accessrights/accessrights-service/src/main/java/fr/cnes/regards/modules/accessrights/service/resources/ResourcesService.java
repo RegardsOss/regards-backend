@@ -134,7 +134,7 @@ public class ResourcesService implements IResourcesService {
             results = resourceAccessRepo.findAll(pPageable);
         } else {
             // Else retrieve only accessible resources
-            Role currentRole;
+            final Role currentRole;
             try {
                 currentRole = roleService.retrieveRole(roleName);
                 final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
@@ -158,7 +158,7 @@ public class ResourcesService implements IResourcesService {
             results = resourceAccessRepo.findAll();
         } else {
             // Else retrieve only accessible resources
-            Role currentRole;
+            final Role currentRole;
             try {
                 currentRole = roleService.retrieveRole(roleName);
                 final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
@@ -200,7 +200,7 @@ public class ResourcesService implements IResourcesService {
             results = resourceAccessRepo.findByMicroservice(pMicroserviceName, pPageable);
         } else {
             // Else retrieve only accessible resources
-            Role currentRole;
+            final Role currentRole;
             try {
                 currentRole = roleService.retrieveRole(roleName);
                 final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
@@ -243,6 +243,8 @@ public class ResourcesService implements IResourcesService {
      *
      * @param pResource
      *            New resource to configure
+     * @param pMicroserviceName
+     *            the microservice name
      * @return {@link ResourcesAccess}
      * @since 1.0-SNAPSHOT
      */

@@ -1,6 +1,8 @@
 package fr.cnes.regards.modules.emails.domain;
 
-import java.util.Date;
+
+
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,7 +24,9 @@ import fr.cnes.regards.framework.jpa.validator.PastOrNow;
  * <p>
  * This is a just a simplified representation of {@link SimpleMailMessage} for data base storage.
  *
- * @author CS SI
+ * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
+ * 
  * @see org.springframework.mail.SimpleMailMessage
  */
 @Entity(name = "T_EMAIL")
@@ -69,7 +73,7 @@ public class Email implements IIdentifiable<Long> {
      */
     @PastOrNow
     @Column(name = "sentDate")
-    private Date sentDate;
+    private LocalDateTime sentDate;
 
     /**
      * Subject of the email
@@ -143,7 +147,7 @@ public class Email implements IIdentifiable<Long> {
      *
      * @return The date when the email was sent
      */
-    public Date getSentDate() {
+    public LocalDateTime getSentDate() {
         return sentDate;
     }
 
@@ -230,7 +234,7 @@ public class Email implements IIdentifiable<Long> {
      * @param pSentDate
      *            The date when the email was sent
      */
-    public void setSentDate(final Date pSentDate) {
+    public void setSentDate(final LocalDateTime pSentDate) {
         sentDate = pSentDate;
     }
 

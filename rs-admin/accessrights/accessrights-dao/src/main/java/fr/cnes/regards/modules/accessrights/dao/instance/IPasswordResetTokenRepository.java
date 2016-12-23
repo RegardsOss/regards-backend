@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.instance;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -19,6 +19,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.PasswordResetToken;
  * Interface for a JPA auto-generated CRUD repository managing {@link PasswordResetToken}s.<br>
  *
  * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
  */
 @InstanceEntity
 public interface IPasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
@@ -27,11 +28,11 @@ public interface IPasswordResetTokenRepository extends JpaRepository<PasswordRes
 
     Optional<PasswordResetToken> findByAccount(Account pAccount);
 
-    Stream<PasswordResetToken> findAllByExpiryDateLessThan(Date pNow);
+    Stream<PasswordResetToken> findAllByExpiryDateLessThan(LocalDateTime pNow);
 
-    void deleteByExpiryDateLessThan(Date pNow);
+    void deleteByExpiryDateLessThan(LocalDateTime pNow);
 
     @Modifying
     @Query("delete from T_PASSWORD_RESET_TOKEN t where t.expiryDate <= ?1")
-    void deleteAllExpiredSince(Date pNow);
+    void deleteAllExpiredSince(LocalDateTime pNow);
 }
