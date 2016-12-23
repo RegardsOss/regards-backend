@@ -36,9 +36,6 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Value("${server.address}")
     private String serverAddress;
 
-    @Value("${server.port}")
-    private String serverPort;
-
     /**
      * Client to test
      */
@@ -49,7 +46,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
         client = HystrixFeign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
                 .decoder(new ResponseEntityDecoder(new GsonDecoder())).decode404().target(new TokenClientProvider<>(
-                        IProjectUsersClient.class, "http://" + serverAddress + ":" + serverPort));
+                        IProjectUsersClient.class, "http://" + serverAddress + ":" + getPort()));
     }
 
     /**

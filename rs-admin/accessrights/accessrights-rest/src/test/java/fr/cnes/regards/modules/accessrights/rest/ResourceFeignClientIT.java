@@ -54,12 +54,6 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
     private String serverAddress;
 
     /**
-     * Web server port for ResourceController
-     */
-    @Value("${server.port}")
-    private String serverPort;
-
-    /**
      * Feign Client to test
      */
     private IResourcesClient client;
@@ -75,8 +69,8 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
     public void init() throws JwtException {
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
         client = HystrixFeign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
-                .decoder(new ResponseEntityDecoder(new GsonDecoder())).decode404().target(new TokenClientProvider<>(
-                        IResourcesClient.class, "http://" + serverAddress + ":" + serverPort));
+                .decoder(new ResponseEntityDecoder(new GsonDecoder())).decode404()
+                .target(new TokenClientProvider<>(IResourcesClient.class, "http://" + serverAddress + ":" + getPort()));
     }
 
     /**
