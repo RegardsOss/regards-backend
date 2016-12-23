@@ -35,15 +35,36 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginInterfaceUtilsTest.class);
 
     /**
+     * The current plugin package
+     */
+    private static final String PLUGIN_CURRENT_PACKAGE = "fr.cnes.regards.plugins.utils.plugintypes";
+
+    /**
+     * A {@link List} of package
+     */
+    private static final List<String> PLUGIN_PACKAGES = Arrays
+            .asList(PLUGIN_CURRENT_PACKAGE, "fr.cnes.regards.plugins.utils.bean", "fr.cnes.regards.plugins.utils");
+
+    /**
+     * A not exiting plugin package
+     */
+    private static final String PLUGIN_EMPTY_PACKAGE = "fr.cnes.regards.plugins.utils.plugintypes.empty";
+
+    /**
+     * A {@link List} of not existing plugin package
+     */
+    private static final List<String> PLUGIN_EMPTY_PACKAGES = Arrays
+            .asList(PLUGIN_EMPTY_PACKAGE, "fr.cnes.regards.plugins.utils.plugintypes.empty.sub",
+                    "fr.cnes.regards.plugins.utils.plugintypes.empty.sub2");
+
+    /**
      * Load all plugins
      */
     @Test
     public void loadPluginsInterface() {
         LOGGER.debug(STARTING + this.toString());
         // Get all the plugin interfaces
-        final List<String> pluginInterfaces = PluginInterfaceUtils
-                .getInterfaces(Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes",
-                                             "fr.cnes.regards.plugins.utils.bean", "fr.cnes.regards.plugins.utils"));
+        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_PACKAGES);
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
         Assert.assertTrue(pluginInterfaces.size() > 0);
@@ -57,8 +78,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadPluginsInterfaceEmpty() {
         LOGGER.debug(STARTING + this.toString());
         // Get all the plugin interfaces
-        final List<String> pluginInterfaces = PluginInterfaceUtils
-                .getInterfaces("fr.cnes.regards.plugins.utils.plugintypes.empty");
+        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_EMPTY_PACKAGE);
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
         LOGGER.debug(ENDING + this.toString());
@@ -71,8 +91,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadPluginsInterfaceSeveralPrefix() {
         LOGGER.debug(STARTING + this.toString());
         // Get all the plugin interfaces
-        final List<String> pluginInterfaces = PluginInterfaceUtils
-                .getInterfaces(Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
+        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(Arrays.asList(PLUGIN_CURRENT_PACKAGE));
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
         Assert.assertTrue(pluginInterfaces.size() > 0);
@@ -86,10 +105,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadNoPluginsInterfaceSeveralPrefix() {
         LOGGER.debug(STARTING + this.toString());
         // Get all the plugin interfaces
-        final List<String> pluginInterfaces = PluginInterfaceUtils
-                .getInterfaces(Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes.empty",
-                                             "fr.cnes.regards.plugins.utils.plugintypes.empty.sub",
-                                             "fr.cnes.regards.plugins.utils.plugintypes.empty.sub2"));
+        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_EMPTY_PACKAGES);
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
         LOGGER.debug(ENDING + this.toString());
@@ -116,7 +132,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                     .getParameters();
             final PluginConfiguration pluginConfigurationInterface = PluginUtils
                     .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class,
-                                            Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
+                                            Arrays.asList(PLUGIN_CURRENT_PACKAGE));
             Assert.assertNotNull(pluginConfigurationInterface);
 
             /*
@@ -131,7 +147,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
              * Instantiate the parent plugin
              */
             complexPlugin = PluginUtils.getPlugin(complexParameters, ComplexPlugin.class,
-                                                  Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
+                                                  Arrays.asList(PLUGIN_CURRENT_PACKAGE));
             Assert.assertNotNull(complexPlugin);
 
             Assert.assertTrue(complexPlugin.add(Integer.parseInt(PluginInterfaceUtilsTest.CINQ),
@@ -167,8 +183,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "coucou").getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class,
-                              Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
+        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE));
     }
 
     /**
@@ -189,8 +204,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "lorem ipsum").getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class,
-                              Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
+        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE));
     }
 
 }

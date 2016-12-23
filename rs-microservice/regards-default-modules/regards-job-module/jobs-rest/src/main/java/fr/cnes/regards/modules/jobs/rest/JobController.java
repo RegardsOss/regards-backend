@@ -38,8 +38,13 @@ import fr.cnes.regards.modules.jobs.service.service.JobInfoService;
 @RestController
 @ModuleInfo(name = "jobs", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping("/jobs")
+@RequestMapping(JobController.JOBS)
 public class JobController implements IResourceController<JobInfo> {
+
+    /**
+     * REST mapping resource : /jobs
+     */
+    public static final String JOBS = "/jobs";
 
     /**
      * Business service for {@link JobInfo}.
@@ -72,7 +77,6 @@ public class JobController implements IResourceController<JobInfo> {
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Resource<JobInfo>>> retrieveJobs() {
         return ResponseEntity.ok(toResources(jobInfoService.retrieveJobInfoList()));
-
     }
 
     /**
@@ -85,10 +89,7 @@ public class JobController implements IResourceController<JobInfo> {
     @ResourceAccess(description = "Retrieve all the jobs with a specific state", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(value = "/state/{state}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Resource<JobInfo>>> retrieveJobsByState(@PathVariable("state") final JobStatus pState) {
-        final List<JobInfo> jobInfoList = jobInfoService.retrieveJobInfoListByState(pState);
-        final List<Resource<JobInfo>> resources = jobInfoList.stream().map(u -> new Resource<>(u))
-                .collect(Collectors.toList());
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+        return ResponseEntity.ok(toResources(jobInfoService.retrieveJobInfoListByState(pState)));
     }
 
     /**

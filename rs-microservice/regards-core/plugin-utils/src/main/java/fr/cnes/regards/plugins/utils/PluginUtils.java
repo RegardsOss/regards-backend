@@ -40,6 +40,11 @@ public final class PluginUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtils.class);
 
     /**
+     * Message error plugin instantiate
+     */
+    private static final String CANNOT_INSTANTIATE = "Cannot instantiate <%s>";
+
+    /**
      * Interface to be implemented by {@link PluginUtilsBean} to load your own
      * {@link org.springframework.beans.factory.BeanFactory}
      */
@@ -190,8 +195,7 @@ public final class PluginUtils {
             doInitPlugin(returnPlugin);
 
         } catch (InstantiationException | IllegalAccessException | NoSuchElementException | ClassNotFoundException e) {
-            throw new PluginUtilsException(
-                    String.format("Cannot instantiate <%s>", pPluginMetadata.getPluginClassName()), e);
+            throw new PluginUtilsException(String.format(CANNOT_INSTANTIATE, pPluginMetadata.getPluginClassName()), e);
 
         }
 
@@ -245,7 +249,7 @@ public final class PluginUtils {
 
         } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
                 | SecurityException | ClassNotFoundException e) {
-            throw new PluginUtilsException(String.format("Cannot instantiate <%s>", pPluginClassName), e);
+            throw new PluginUtilsException(String.format(CANNOT_INSTANTIATE, pPluginClassName), e);
         }
 
         return returnPlugin;

@@ -30,6 +30,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtilsTest.class);
 
+    private static final String PLUGIN_PACKAGE = "fr.cnes.regards.plugins.utils";
+
     /**
      * Load all plugins
      */
@@ -38,8 +40,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + this.toString());
 
         // Get all the plugins
-        final Map<String, PluginMetaData> maps = PluginUtils.getPlugins("fr.cnes.regards.plugins.utils",
-                                                                        Arrays.asList("fr.cnes.regards.plugins.utils"));
+        final Map<String, PluginMetaData> maps = PluginUtils.getPlugins(PLUGIN_PACKAGE, Arrays.asList(PLUGIN_PACKAGE));
         Assert.assertNotNull(maps);
         Assert.assertTrue(maps.size() > 1);
 
@@ -71,8 +72,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.SUFFIXE, "chris_test_1").getParameters();
         try {
             // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
-                                                 Arrays.asList("fr.cnes.regards.plugins.utils"));
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE));
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -104,15 +104,15 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameterDynamic(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
-                .addParameter(SamplePlugin.SUFFIXE, "chris_test_2").getParameters();
+                .addParameter(SamplePlugin.SUFFIXE, "suffix").getParameters();
         try {
             // init a dynamic parameter
             final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
                     .addParameter(SamplePlugin.COEFF, "-1").getParameters().stream().findAny().get();
 
             // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
-                                                 Arrays.asList("fr.cnes.regards.plugins.utils"), aDynamicPlgParam);
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
+                                                 aDynamicPlgParam);
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -139,7 +139,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameterDynamic(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
-                .addParameter(SamplePlugin.SUFFIXE, "chris_test_2").getParameters();
+                .addParameter(SamplePlugin.SUFFIXE, "a suffix").getParameters();
         try {
             // instantiate plugin
             samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, null);
@@ -182,8 +182,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                     .addParameter(SamplePlugin.SUFFIXE, PluginUtilsTest.BLUE).getParameters().stream().findAny().get();
 
             // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
-                                                 Arrays.asList("fr.cnes.regards.plugins.utils"), aDynamicPlgParam);
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
+                                                 aDynamicPlgParam);
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -216,8 +216,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameterDynamic(SamplePlugin.SUFFIXE, PluginUtilsTest.RED, dynamicValues).getParameters();
         try {
             // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
-                                                 Arrays.asList("fr.cnes.regards.plugins.utils"));
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE));
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
@@ -255,8 +254,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.SUFFIXE, PluginUtilsTest.CINQ).getParameters().stream().findAny().get();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList("fr.cnes.regards.plugins.utils"),
-                              aDynamicPlgParam);
+        PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE), aDynamicPlgParam);
     }
 
     /**
@@ -300,7 +298,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.CINQ).getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters, SampleErrorPlugin.class, Arrays.asList("fr.cnes.regards.plugins.utils"));
+        PluginUtils.getPlugin(parameters, SampleErrorPlugin.class, Arrays.asList(PLUGIN_PACKAGE));
     }
 
     @Test

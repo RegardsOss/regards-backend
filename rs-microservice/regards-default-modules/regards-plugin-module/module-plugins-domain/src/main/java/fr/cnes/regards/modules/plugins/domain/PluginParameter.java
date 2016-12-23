@@ -20,6 +20,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -29,7 +30,8 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  *
  * @author Christophe Mertz
  */
-@Entity(name = "T_PLUGIN_PARAMETER_VALUE")
+@Entity
+@Table(name = "T_PLUGIN_PARAMETER_VALUE")
 @SequenceGenerator(name = "pluginParameterSequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_PARAMETER")
 public class PluginParameter implements IIdentifiable<Long> {
 
@@ -76,7 +78,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     @ElementCollection
     @CollectionTable(joinColumns = @JoinColumn(name = "ID",
             foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_DYN_ID")))
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PluginDynamicValue> dynamicsValues;
 
     /**
@@ -85,7 +87,7 @@ public class PluginParameter implements IIdentifiable<Long> {
      */
     public PluginParameter() {
         super();
-        name="undefined";
+        name = "undefined";
     }
 
     /**
