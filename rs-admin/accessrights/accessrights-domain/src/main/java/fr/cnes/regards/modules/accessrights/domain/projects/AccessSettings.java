@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -19,7 +20,8 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  *
  * @author Xavier-Alexandre Brochard
  */
-@Entity(name = "T_ACCESS_SETTINGS")
+@Entity
+@Table(name = "T_ACCESS_SETTINGS")
 @SequenceGenerator(name = "accessSettingsSequence", initialValue = 1, sequenceName = "SEQ_ACCESS_SETTINGS")
 public class AccessSettings implements IIdentifiable<Long> {
 
