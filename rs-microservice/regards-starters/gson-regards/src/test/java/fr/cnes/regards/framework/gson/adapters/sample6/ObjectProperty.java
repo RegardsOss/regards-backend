@@ -11,6 +11,9 @@ import java.util.List;
  */
 public class ObjectProperty extends AbstractProperty<List<AbstractProperty<?>>> {
 
+    /**
+     * Contained properties
+     */
     private List<AbstractProperty<?>> value;
 
     @Override

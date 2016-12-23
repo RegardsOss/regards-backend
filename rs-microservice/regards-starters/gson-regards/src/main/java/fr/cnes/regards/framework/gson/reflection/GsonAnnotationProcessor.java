@@ -14,8 +14,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
 
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
-import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonDiscriminator;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.Gsonable;
 import fr.cnes.regards.framework.gson.utils.GSONUtils;
 
@@ -79,7 +79,7 @@ public final class GsonAnnotationProcessor {
                 } else {
 
                     // Injection is always enabled with Gsonable so prevent field conflict
-                    for (final Field field : gsonable.getDeclaredFields()) {
+                    for (final Field field : gsonable.getDeclaredFields()) { // NOSONAR
                         if (field.getName().equals(a.value())) { // NOSONAR
                             // CHECKSTYLE:OFF
                             final String format = "Conflict between discriminator %s and %s field. Update or remove discriminator name.";
@@ -142,7 +142,8 @@ public final class GsonAnnotationProcessor {
     }
 
     /**
-     * Process all object annotated with {@link GsonTypeAdapterFactory} to dynamically register {@link TypeAdapterFactory}.
+     * Process all object annotated with {@link GsonTypeAdapterFactory} to dynamically register
+     * {@link TypeAdapterFactory}.
      *
      * @param pBuilder
      *            {@link GsonBuilder}
@@ -172,9 +173,8 @@ public final class GsonAnnotationProcessor {
                     TypeAdapterFactory factory = factoryClass.newInstance();
                     pBuilder.registerTypeAdapterFactory(factory);
                 } catch (InstantiationException | IllegalAccessException e) {
-                    final String errorMessage = String.format(
-                                                              "Factory % cannot be instanciated. No arg public constructor must exist.",
-                                                              factoryClass);
+                    String format = "Factory % cannot be instanciated. No arg public constructor must exist.";
+                    final String errorMessage = String.format(format, factoryClass);
                     LOGGER.error(errorMessage, e);
                     throw new IllegalArgumentException(errorMessage);
                 }

@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
  */
 public class DateProperty extends AbstractProperty<LocalDateTime> {
 
+    /**
+     * {@link LocalDateTime}
+     */
     private LocalDateTime value;
 
     @Override

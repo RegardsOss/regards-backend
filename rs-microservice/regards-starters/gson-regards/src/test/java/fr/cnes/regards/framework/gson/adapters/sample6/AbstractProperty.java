@@ -7,11 +7,15 @@ import fr.cnes.regards.framework.gson.annotation.Gsonable;
 
 /**
  * @author Marc Sordi
- *
+ * @param <T>
+ *            property type
  */
 @Gsonable
 public abstract class AbstractProperty<T> implements IProperty<T> {
 
+    /**
+     * sample field
+     */
     protected String name;
 
     @Override
