@@ -3,7 +3,8 @@
  */
 package fr.cnes.regards.framework.microservice.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -24,8 +25,10 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class GlobalNonFunctionnalExceptionManager {
 
-    @Autowired
-    private JWTService jwtService;
+    /**
+     * Logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalNonFunctionnalExceptionManager.class);
 
     /**
      * Exception handler catching any exception that are not already handled
@@ -36,7 +39,8 @@ public class GlobalNonFunctionnalExceptionManager {
      */
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<ServerErrorResponse> nonFunctionnalException(Exception pException) {
-        String tenant = jwtService.getActualTenant();
+        LOGGER.error("Unexpected server error", pException);
+        String tenant = JWTService.getActualTenant();
         MaintenanceManager.setMaintenance(tenant);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(new ServerErrorResponse(pException.getMessage()));
