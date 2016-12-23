@@ -88,7 +88,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     @ElementCollection
     @CollectionTable(
             joinColumns = @JoinColumn(name = "ID", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_ID")))
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PluginParameter> parameters;
 
     /**
