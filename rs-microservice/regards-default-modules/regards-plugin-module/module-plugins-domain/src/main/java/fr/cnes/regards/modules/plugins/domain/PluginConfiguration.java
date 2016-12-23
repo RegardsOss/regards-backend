@@ -96,7 +96,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public PluginConfiguration() {
         super();
-        pluginId="undefined";
+        pluginId = "undefined";
     }
 
     /**
@@ -181,29 +181,38 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return value;
     }
 
-    
     /**
-     * Log the parameters of the {@link PluginConfiguration}
+     * Log the {@link PluginParameter} of the {@link PluginConfiguration}.
      */
     public void logParams() {
         LOGGER.info("===> parameters <===");
         LOGGER.info("  ---> number of dynamic parameters : "
                 + this.getParameters().stream().filter(p -> p.isDynamic()).count());
+
         this.getParameters().stream().filter(p -> p.isDynamic()).forEach(p -> {
-            LOGGER.info("  ---> dynamic parameter : " + p.getName() + "-def val:" + p.getValue());
-            if (!p.getDynamicsValuesAsString().isEmpty()) {
-                p.getDynamicsValuesAsString().forEach(v -> LOGGER.info("     --> val=" + v));
-            }
+            logParam(p, "  ---> dynamic parameter : ");
         });
-        
+
         LOGGER.info("  ---> number of no dynamic parameters : "
                 + this.getParameters().stream().filter(p -> !p.isDynamic()).count());
         this.getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> {
-            LOGGER.info("  ---> parameter : " + p.getName() + "-def val:" + p.getValue());
-            if (!p.getDynamicsValuesAsString().isEmpty()) {
-                p.getDynamicsValuesAsString().forEach(v -> LOGGER.info("     --> val=" + v));
-            }
+            logParam(p, "  ---> parameter : ");
         });
+    }
+
+    /**
+     * Log a {@link PluginParameter}.
+     * 
+     * @param pParam
+     *            the {@link PluginParameter} to log
+     * @param pPrefix
+     *            a prefix to set in the log
+     */
+    private void logParam(PluginParameter pParam, String pPrefix) {
+        LOGGER.info(pPrefix + pParam.getName() + "-def val:" + pParam.getValue());
+        if (!pParam.getDynamicsValuesAsString().isEmpty()) {
+            pParam.getDynamicsValuesAsString().forEach(v -> LOGGER.info("     --> val=" + v));
+        }
     }
 
     public final String getLabel() {

@@ -75,11 +75,11 @@ public class UserDetails implements Serializable {
 
     /**
      *
-     * @param role
+     * @param pRole
      *            the role name
      */
-    public void setRole(String role) {
-        this.role = role;
+    public void setRole(String pRole) {
+        this.role = pRole;
     }
 
 }
