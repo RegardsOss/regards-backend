@@ -89,7 +89,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     /**
      * List of authorized roles to access the resource
      */
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "TA_RESOURCES_ROLES",
             joinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID",
                     foreignKey = @javax.persistence.ForeignKey(name = "FK_RESOURCES_ROLES")),
