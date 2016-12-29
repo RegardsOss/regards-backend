@@ -206,6 +206,8 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
         }
     }
 
+    // TODO : unregister subtype
+
     /**
      * Register a mapping between an enumeration and an explicit type.
      *
@@ -232,7 +234,7 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
      * @param pSubtypeToDelegate
      *            mapping between sub type and adapter
      */
-    private void doMapping(Gson pGson, Map<String, TypeAdapter<?>> pDiscriminatorToDelegate,
+    protected void doMapping(Gson pGson, Map<String, TypeAdapter<?>> pDiscriminatorToDelegate,
             Map<Class<?>, TypeAdapter<?>> pSubtypeToDelegate) {
         /**
          * Register TypeAdapter delegation mapping from discriminator and type
@@ -245,7 +247,28 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     }
 
     /**
-     * Overwrite this method to manipulate {@link JsonElement} before parsing it into target type.
+     * Default behavior to retrieve discriminator on read.<br/>
+     * Override this method to customize discriminator retrieval.
+     *
+     * @param pJsonElement
+     *            parsed JSON
+     * @return {@link JsonElement} containing a {@link String} representing the discriminator field value.
+     */
+    protected JsonElement getOnReadDiscriminator(JsonElement pJsonElement) {
+        JsonElement discriminator;
+        if (injectField) {
+            // Retrieve and remove injected field
+            discriminator = pJsonElement.getAsJsonObject().remove(discriminatorFieldName);
+        } else {
+            // Retrieve but DO NOT REMOVE existing field
+            discriminator = pJsonElement.getAsJsonObject().get(discriminatorFieldName);
+        }
+        return discriminator;
+    }
+
+    /**
+     * Default behavior before parsing {@link JsonElement} to sub type.<br/>
+     * Override this method to manipulate {@link JsonElement} before parsing it into target type.
      *
      * @param pJsonElement
      *            {@link JsonElement}
@@ -253,9 +276,57 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
      *            related discriminator value
      * @param pSubType
      *            target type
+     * @return {@link JsonElement} that will be parsed.
      */
-    protected void beforeDelegateRead(JsonElement pJsonElement, String pDiscriminator, Class<?> pSubType) {
-        // Override this method to manipulate JsonElement
+    protected JsonElement beforeRead(JsonElement pJsonElement, String pDiscriminator, Class<?> pSubType) { // NOSONAR
+        return pJsonElement;
+    }
+
+    /**
+     * Default behavior before writing {@link JsonElement} to output stream.<br/>
+     * Override this method to manipulate {@link JsonElement} before writing it to JSON.
+     *
+     * @param pJsonElement
+     *            {@link JsonElement}
+     * @param pSubType
+     *            target type
+     * @return {@link JsonElement} that will be write on output stream.
+     */
+    protected JsonElement beforeWrite(JsonElement pJsonElement, Class<?> pSubType) { // NOSONAR
+
+        JsonObject jsonObject = pJsonElement.getAsJsonObject();
+
+        // Clone object and inject field if needed
+        if (injectField) {
+
+            // Check field not already exists
+            if (jsonObject.has(discriminatorFieldName)) {
+                String format = "Discriminator field %s already exists. Change it or deny field injection.";
+                String errorMessage = String.format(format, discriminatorFieldName);
+                LOGGER.error(errorMessage);
+                throw new JsonParseException(errorMessage);
+            }
+
+            // Inject discriminator field
+            JsonObject clone = new JsonObject();
+
+            String discriminatorFieldValue = subtypeToDiscriminator.get(pSubType);
+            clone.add(discriminatorFieldName, new JsonPrimitive(discriminatorFieldValue));
+            for (Map.Entry<String, JsonElement> e : jsonObject.entrySet()) {
+                clone.add(e.getKey(), e.getValue());
+            }
+            return clone;
+        }
+
+        // Check field already exists
+        if (!jsonObject.has(discriminatorFieldName)) {
+            String format = "Discriminator field %s must exist. Change it or allow field injection.";
+            String errorMessage = String.format(format, discriminatorFieldName);
+            LOGGER.error(errorMessage);
+            throw new JsonParseException(errorMessage);
+        }
+
+        return jsonObject;
     }
 
     // CHECKSTYLE:OFF
@@ -306,57 +377,9 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
                         throw new JsonParseException(errorMessage);
                     }
                 }
-                Streams.write(getJsonObject(delegate, pValue), pOut);
-            }
-
-            /**
-             * Compute {@link JsonObject} to write. If field injection is required, clone the target object and add
-             * inject the field dynamically.
-             *
-             * @param delegate
-             *            {@link TypeAdapter} to transform object in JSON
-             * @param pValue
-             *            object to transform
-             * @return JsonObject fully qualified for correct polymorphic deserialization from json
-             */
-            private JsonObject getJsonObject(TypeAdapter<T> delegate, T pValue) {
-
-                // Compute raw JSON object
-                JsonObject jsonObject = delegate.toJsonTree(pValue).getAsJsonObject();
-
-                // Clone object and inject field if needed
-                if (injectField) {
-
-                    // Check field not already exists
-                    if (jsonObject.has(discriminatorFieldName)) {
-                        String errorMessage = String.format(
-                                                            "Discriminator field %s already exists. Change it or deny field injection.",
-                                                            discriminatorFieldName);
-                        LOGGER.error(errorMessage);
-                        throw new JsonParseException(errorMessage);
-                    }
-
-                    // Inject discriminator field
-                    JsonObject clone = new JsonObject();
-
-                    String discriminatorFieldValue = subtypeToDiscriminator.get(pValue.getClass());
-                    clone.add(discriminatorFieldName, new JsonPrimitive(discriminatorFieldValue));
-                    for (Map.Entry<String, JsonElement> e : jsonObject.entrySet()) {
-                        clone.add(e.getKey(), e.getValue());
-                    }
-                    return clone;
-                }
-
-                // Check field already exists
-                if (!jsonObject.has(discriminatorFieldName)) {
-                    String errorMessage = String.format(
-                                                        "Discriminator field %s must exist. Change it or allow field injection.",
-                                                        discriminatorFieldName);
-                    LOGGER.error(errorMessage);
-                    throw new JsonParseException(errorMessage);
-                }
-
-                return jsonObject;
+                // Raw JSON object
+                JsonElement rawJson = delegate.toJsonTree(pValue);
+                Streams.write(beforeWrite(rawJson, srcType), pOut);
             }
 
             /**
@@ -370,14 +393,7 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
                 final JsonElement jsonElement = Streams.parse(pIn);
 
                 // Discriminator value
-                JsonElement discriminatorEl;
-                if (injectField) {
-                    // Retrieve and remove injected field
-                    discriminatorEl = jsonElement.getAsJsonObject().remove(discriminatorFieldName);
-                } else {
-                    // Retrieve but DO NOT REMOVE existing field
-                    discriminatorEl = jsonElement.getAsJsonObject().get(discriminatorFieldName);
-                }
+                JsonElement discriminatorEl = getOnReadDiscriminator(jsonElement);
 
                 // Check value found
                 if (discriminatorEl == null) {
@@ -410,9 +426,8 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
                     }
                 }
 
-                beforeDelegateRead(jsonElement, discriminator, discriminatorToSubtype.get(discriminator));
-
-                return delegate.fromJsonTree(jsonElement);
+                return delegate.fromJsonTree(beforeRead(jsonElement, discriminator,
+                                                        discriminatorToSubtype.get(discriminator)));
             }
         }.nullSafe();
     }
