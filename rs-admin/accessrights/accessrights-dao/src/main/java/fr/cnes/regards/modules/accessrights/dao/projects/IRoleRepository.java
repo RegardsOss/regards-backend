@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Example;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -62,4 +64,10 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      * @since 1.0-SNAPSHOT
      */
     List<Role> findByParentRoleName(final String pName);
+
+//    @Override
+//    @EntityGraph(value = "graph.role.permissions", type = EntityGraphType.LOAD)
+//    List<Role> findAll();
+    
+    
 }

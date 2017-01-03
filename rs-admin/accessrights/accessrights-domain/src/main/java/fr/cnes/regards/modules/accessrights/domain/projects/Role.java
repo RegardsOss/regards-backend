@@ -21,6 +21,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.Valid;
@@ -42,6 +44,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParent
 @Table(name = "T_ROLE", indexes = { @Index(name = "IDX_ROLE_NAME", columnList = "name") })
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
 @HasParentOrPublic
+@NamedEntityGraph(name = "graph.role.permissions",
+        attributeNodes = @NamedAttributeNode(value = "permissions", subgraph = "permissions"))
 public class Role implements IIdentifiable<Long> {
 
     /**
@@ -72,7 +76,7 @@ public class Role implements IIdentifiable<Long> {
      * Role permissions
      */
     @Valid
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
             inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
     private List<ResourcesAccess> permissions;

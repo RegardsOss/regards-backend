@@ -130,19 +130,6 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
-    @Purpose("Check that the allows to retrieve roles.")
-    public void retrieveRoleList() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        // 6 = 5 roles and the added role TEST_ROLE has two permissions
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
-        // 5 = 5 roles has a parent (public has no parent)
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(5)));
-        performDefaultGet(apiRoles, expectations, "TODO Error message");
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to create a role and handle fail cases.")
     public void createRole() throws EntityException {
         final String newRoleName = "NEW_ROLE";
@@ -267,7 +254,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      *
-     * Check hierachy of roles
+     * Check hierarchy of roles
      *
      * @since 1.0-SNAPSHOT
      */
