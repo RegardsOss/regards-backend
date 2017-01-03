@@ -27,8 +27,6 @@ import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
  */
 public class RegardsAmqpAdmin {
 
-    private static final String REGARDS_NAMESPACE = "Regards.amqp.";
-
     /**
      * _
      */

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hamcrest.Matchers;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
@@ -41,27 +43,31 @@ public class JobControllerIT extends AbstractRegardsIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobControllerIT.class);
 
     /**
-     * 
+     * Generated token for tests
      */
+    private static String token = "";
+
     @Autowired
     private IJobInfoService jobInfoService;
 
-    private final String apiJobs = "/jobs";
+    @Before
+    public void init() {
 
-    private final String apiAJob = apiJobs + "/{jobId}";
+        manageDefaultSecurity(JobController.JOBS, RequestMethod.GET);
+        manageDefaultSecurity(JobController.JOBS + "/{jobId}", RequestMethod.GET);
+        manageDefaultSecurity(JobController.JOBS + "/{jobId}/results", RequestMethod.GET);
 
-    private final String apiAJobResults = apiAJob + "/results";
-
-    private final String apiJobsState = apiJobs + "/state/{state}";
+        token = generateToken(DEFAULT_USER_EMAIL, DEFAULT_ROLE);
+    }
 
     @Test
     public void getAllJobs() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR,
                                                         Matchers.hasSize(jobInfoService.retrieveJobInfoList().size())));
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.links", Matchers.notNullValue()));
-        performDefaultGet(apiJobs, expectations, "unable to load all jobs");
+        performGet(JobController.JOBS, token, expectations, "unable to load all jobs");
     }
 
     @Test
@@ -82,10 +88,10 @@ public class JobControllerIT extends AbstractRegardsIT {
                                                         Matchers.hasToString(aJob.getStatus().getJobStatus().name())));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.status.description",
                                                         Matchers.hasToString(aJob.getStatus().getDescription())));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS, Matchers.notNullValue()));
 
-        performDefaultGet(apiAJob, expectations, String.format("unable to load the job <%s>", aJob.getId()),
-                          aJob.getId());
+        performGet(JobController.JOBS + "/{jobId}", token, expectations,
+                          String.format("unable to load the job <%s>", aJob.getId()), aJob.getId());
     }
 
     @Test
@@ -93,9 +99,9 @@ public class JobControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         final JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$", hasSize(aJob.getResult().size())));
-        performDefaultGet(apiAJobResults, expectations, String.format("unable to get job's result <%s>", aJob.getId()),
-                          aJob.getId());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, hasSize(aJob.getResult().size())));
+        performGet(JobController.JOBS + "/{jobId}/results", token, expectations,
+                   String.format("unable to get job's result <%s>", aJob.getId()), aJob.getId());
     }
 
     @Test
@@ -103,7 +109,7 @@ public class JobControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
 
-        performDefaultGet(apiJobsState, expectations,
+        performDefaultGet(JobController.JOBS + "/state/{state}", expectations,
                           String.format("unable to get jobs with status  <%s>", JobStatus.RUNNING), JobStatus.RUNNING);
     }
 
@@ -113,8 +119,9 @@ public class JobControllerIT extends AbstractRegardsIT {
         final Long jobId = jobInfoService.retrieveJobInfoList().get(0).getId();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.notNullValue()));
-        
-        performDefaultDelete(apiAJob, expectations, String.format("unable to stop the job <%s>", jobId), jobId);
+
+        performDefaultDelete(JobController.JOBS + "/{jobId}", expectations,
+                             String.format("unable to stop the job <%s>", jobId), jobId);
     }
 
     @Override

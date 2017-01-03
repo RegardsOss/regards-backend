@@ -71,7 +71,7 @@ public class JWTService {
      * @return tenant
      * @since 1.0-SNAPSHOT
      */
-    public String getActualTenant() {
+    public static String getActualTenant() {
         final JWTAuthentication authentication = ((JWTAuthentication) SecurityContextHolder.getContext()
                 .getAuthentication());
         if ((authentication != null) && (authentication.getTenant() != null)) {
@@ -189,12 +189,14 @@ public class JWTService {
 
             final String project = claims.getBody().get(CLAIM_PROJECT, String.class);
             if (project == null) {
+                LOG.error("The project cannot be null");
                 throw new MissingClaimException(CLAIM_PROJECT);
             }
             user.setTenant(project);
 
             final String name = claims.getBody().getSubject();
             if (name == null) {
+                LOG.error("The subject cannot be null");
                 throw new MissingClaimException(CLAIM_SUBJECT);
             }
             user.setName(name);
@@ -203,6 +205,7 @@ public class JWTService {
 
             final String role = claims.getBody().get(CLAIM_ROLE, String.class);
             if (role == null) {
+                LOG.error("The role cannot be null");
                 throw new MissingClaimException(CLAIM_ROLE);
             }
             pAuthentication.setRole(role);

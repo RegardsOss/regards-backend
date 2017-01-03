@@ -11,10 +11,19 @@ import java.util.List;
  */
 public class Mission {
 
+    /**
+     * name field
+     */
     private String name;
 
+    /**
+     * field description
+     */
     private String description;
 
+    /**
+     * Property list
+     */
     private List<AbstractProperty<?>> properties;
 
     public String getName() {

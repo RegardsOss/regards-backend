@@ -117,4 +117,9 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
         }
     }
 
+    @Override
+    public PluginConfiguration findOneWithPluginParameter(Long pId) {
+        return null;
+    }
+
 }

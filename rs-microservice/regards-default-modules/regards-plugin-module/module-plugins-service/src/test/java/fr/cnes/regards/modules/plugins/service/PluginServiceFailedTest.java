@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.plugins.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,6 +52,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked);
+        pluginServiceMocked.addPluginPackage("fr.cnes.regards.plugins");
     }
 
     /**
@@ -61,10 +63,10 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      */
     @Test(expected = PluginUtilsException.class)
     public void getAPluginConfigurationUnknown() throws PluginUtilsException {
-        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        Mockito.when(pluginConfRepositoryMocked.findOne(null)).thenReturn(null);
+        Mockito.when(pluginConfRepositoryMocked.findOne(AN_ID))
+                .thenThrow(new NoSuchElementException("get an unknown configuration"));
 
-        pluginServiceMocked.getPluginConfiguration(aPluginConfiguration.getId());
+        pluginServiceMocked.getPluginConfiguration(AN_ID);
     }
 
     /**
@@ -183,7 +185,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     @Test(expected = PluginUtilsException.class)
     public void getFirstPluginByTypeNullPluginConf() throws PluginUtilsException {
-        pluginServiceMocked.getFirstPluginByType(INotInterfacePlugin.class);
+        pluginServiceMocked.getFirstPluginByType(INotInterfacePlugin.class, null);
         Assert.fail();
     }
 
@@ -208,7 +210,8 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
-        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
+        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,
+                                                                                    null);
 
         Assert.assertNotNull(aSamplePlugin);
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(RED));
@@ -231,15 +234,17 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         final PluginConfiguration bPluginConfiguration = getPluginConfigurationWithParameters();
         // this conf is the most priority
         bPluginConfiguration.setPriorityOrder(1);
-        aPluginConfiguration.setId(1 + AN_ID);
+        bPluginConfiguration.setId(1 + AN_ID);
 
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(bPluginConfiguration);
 
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findOne(bPluginConfiguration.getId())).thenReturn(null);
+        Mockito.when(pluginConfRepositoryMocked.findOne(bPluginConfiguration.getId()))
+                .thenThrow(new NoSuchElementException(""));
 
+        pluginServiceMocked.addPluginPackage("fr.cnes.regards.plugins.utils");
         pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
 
         Assert.fail();
@@ -262,7 +267,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
-        pluginServiceMocked.getPlugin(AN_ID);
+        pluginServiceMocked.getPlugin(AN_ID, null);
 
         Assert.fail();
     }

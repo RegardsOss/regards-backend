@@ -53,10 +53,14 @@ public class JobInfoRepositoryStub extends RepositoryStub<JobInfo> implements IJ
             outputs.add(new Output(MediaType.APPLICATION_OCTET_STREAM_VALUE, new URI("http://localhost/results.txt")));
 
             jobInfo1.setResult(outputs);
-
             setIdAndStatusAndAddToRepository(jobInfo1, 33L, JobStatus.RUNNING);
+
             jobInfo2.getStatus().setDescription("status jobInfo2 azertyazerty");
             setIdAndStatusAndAddToRepository(jobInfo2, 44L, JobStatus.QUEUED);
+
+            jobInfo3.getStatus().setDescription("status jobInfo3 azertyazerty");
+            setIdAndStatusAndAddToRepository(jobInfo3, 55L, JobStatus.RUNNING);
+
         } catch (URISyntaxException e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -91,8 +95,8 @@ public class JobInfoRepositoryStub extends RepositoryStub<JobInfo> implements IJ
     private static final JobInfo jobInfo1 = new JobInfo(jobConfiguration1);
 
     private static final JobParameters jobParameters2 = JobParametersFactory.build()
-            .addParameter("parameter22", "parameter value22").addParameter("parameter22", "parameter value22")
-            .addParameter("parameter32", "parameter value32").addParameter("parameter42", "parameter value42")
+            .addParameter("parameter21", "parameter value21").addParameter("parameter22", "parameter value22")
+            .addParameter("parameter23", "parameter value23").addParameter("parameter24", "parameter value24")
             .getParameters();
 
     private static JobConfiguration jobConfiguration2 = new JobConfiguration("", jobParameters2,
@@ -100,5 +104,16 @@ public class JobInfoRepositoryStub extends RepositoryStub<JobInfo> implements IJ
             LocalDateTime.now().plusDays(15), 10, null, "master@ubuntu.org");
 
     private static final JobInfo jobInfo2 = new JobInfo(jobConfiguration2);
+
+    private static final JobParameters jobParameters3 = JobParametersFactory.build()
+            .addParameter("parameter31", "parameter value31").addParameter("parameter32", "parameter value32")
+            .addParameter("parameter33", "parameter value33").addParameter("parameter34", "parameter value34")
+            .addParameter("parameter35", "parameter value35").getParameters();
+
+    private static JobConfiguration jobConfiguration3 = new JobConfiguration("", jobParameters3,
+            "fr.cnes.regards.modules.MyOtherCustomJob", LocalDateTime.now().plusDays(2),
+            LocalDateTime.now().plusDays(15), 10, null, "master@ubuntu.org");
+
+    private static final JobInfo jobInfo3 = new JobInfo(jobConfiguration3);
 
 }

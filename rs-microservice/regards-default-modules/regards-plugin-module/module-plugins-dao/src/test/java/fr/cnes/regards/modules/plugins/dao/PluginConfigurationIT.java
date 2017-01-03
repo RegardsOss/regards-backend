@@ -86,7 +86,8 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         Assert.assertEquals(1, pluginConfigurationRepository.count());
 
         // find it
-        final PluginConfiguration jpaConf = pluginConfigurationRepository.findOne(aPluginConf.getId());
+        final PluginConfiguration jpaConf = pluginConfigurationRepository
+                .findOneWithPluginParameter(aPluginConf.getId());
 
         // compare the initial conf with the results of the search
         Assert.assertEquals(aPluginConf.getLabel(), jpaConf.getLabel());

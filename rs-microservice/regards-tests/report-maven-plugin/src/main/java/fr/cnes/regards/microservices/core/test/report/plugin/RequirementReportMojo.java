@@ -38,19 +38,19 @@ public class RequirementReportMojo extends AbstractMojo {
      * Prefix to detect all requirement reports
      */
     @Parameter(property = "prefix", defaultValue = "RQMT-")
-    private String prefix_;
+    private String prefix;
 
     /**
      * Scan base directory
      */
     @Parameter(property = "basedir", defaultValue = ".")
-    private String basedir_;
+    private String basedir;
 
     /**
      * Target aggregated file
      */
     @Parameter(property = "target", defaultValue = "./target/requirements.xlsx")
-    private String target_;
+    private String target;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -58,14 +58,14 @@ public class RequirementReportMojo extends AbstractMojo {
         getLog().info("Generating requirement report.");
         final XmlRequirements rqmts = aggregateReports(scanFileTree());
         try {
-            final Path targetPath = Paths.get(target_);
+            final Path targetPath = Paths.get(target);
             if (!targetPath.getParent().toFile().exists()) {
                 getLog().info("Creating target directory");
                 targetPath.getParent().toFile().mkdirs();
             }
             XlsxHelper.write(targetPath, rqmts, "sheet");
         } catch (ReportException e) {
-            throw new MojoExecutionException(e.getMessage());
+            throw new MojoExecutionException(e.getMessage(),e);
         }
     }
 
@@ -77,8 +77,8 @@ public class RequirementReportMojo extends AbstractMojo {
      *             if file tree cannot be scanned
      */
     private List<Path> scanFileTree() throws MojoExecutionException {
-        try (Stream<Path> paths = Files.walk(Paths.get(basedir_))) {
-            final List<Path> targetPaths = paths.filter(path -> path.toFile().getName().startsWith(prefix_))
+        try (Stream<Path> paths = Files.walk(Paths.get(basedir))) {
+            final List<Path> targetPaths = paths.filter(path -> path.toFile().getName().startsWith(prefix))
                     .collect(Collectors.toList());
             for (Path target : targetPaths) {
                 getLog().info(target.toString());

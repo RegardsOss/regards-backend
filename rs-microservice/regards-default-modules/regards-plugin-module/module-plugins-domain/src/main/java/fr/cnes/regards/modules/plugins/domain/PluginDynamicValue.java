@@ -9,6 +9,7 @@ import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Class PluginDynamicValue
@@ -17,7 +18,8 @@ import javax.persistence.Id;
  *
  */
 @Embeddable
-@Entity(name = "T_PLUGIN_DYN_VALUE")
+@Entity
+@Table(name = "T_PLUGIN_DYN_VALUE")
 public class PluginDynamicValue {
 
     /**

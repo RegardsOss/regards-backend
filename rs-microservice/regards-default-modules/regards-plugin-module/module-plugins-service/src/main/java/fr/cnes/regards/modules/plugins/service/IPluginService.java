@@ -58,7 +58,9 @@ public interface IPluginService {
      *            the id of a {@link PluginConfiguration}.
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
+     * 
      * @return a plugin
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -75,7 +77,9 @@ public interface IPluginService {
      *            a specific interface plugin type
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
+     * 
      * @return a plugin
+     * 
      * @throws PluginUtilsException
      *             throw if an error occurs
      */
@@ -108,13 +112,13 @@ public interface IPluginService {
      *
      * Delete a {@link PluginConfiguration}.
      *
-     * @param pPluginId
+     * @param pConfId
      *            a specific configuration
      * @return
      * @throws EntityNotFoundException
      *             Entity to delete does not exists
      */
-    void deletePluginConfiguration(Long pPluginId) throws EntityNotFoundException;
+    void deletePluginConfiguration(Long pConfId) throws EntityNotFoundException;
 
     /**
      *
