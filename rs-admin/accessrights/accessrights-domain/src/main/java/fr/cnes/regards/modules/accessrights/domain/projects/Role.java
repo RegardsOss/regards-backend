@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -76,7 +77,7 @@ public class Role implements IIdentifiable<Long> {
      * Role permissions
      */
     @Valid
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
             inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
     private List<ResourcesAccess> permissions;

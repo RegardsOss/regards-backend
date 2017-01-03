@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -89,12 +90,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     /**
      * List of authorized roles to access the resource
      */
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "TA_RESOURCES_ROLES",
-            joinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_RESOURCES_ROLES")),
-            inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_ROLES_RESOURCES")))
+    @ManyToMany(mappedBy="permissions")
     @GsonIgnore
     private List<Role> roles = new ArrayList<>();
 

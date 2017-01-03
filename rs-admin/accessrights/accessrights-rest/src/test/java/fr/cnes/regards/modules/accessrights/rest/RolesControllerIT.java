@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
@@ -27,6 +26,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
 @MultitenantTransactional
@@ -107,24 +108,22 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         aResourcesAccessPublic.setRoles(Arrays.asList(publicRole));
         resourcesAccessPublic.add(aResourcesAccessPublic);
         publicRole.setPermissions(resourcesAccessPublic);
-        resourcesAccessRepository.save(aResourcesAccessPublic);
         roleRepository.save(publicRole);
 
         // Create a new Role
         roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
-        final Role aNewRole = new Role(ROLE_TEST, publicRole);
+        final Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
+
         final List<ResourcesAccess> resourcesAccess = new ArrayList<>();
         final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", HttpVerb.GET);
         final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource",
                 HttpVerb.DELETE);
-        aResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(0)));
-        aResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(1)));
-        bResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(0)));
-        bResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(2)));
+        aResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(0), aNewRole));
+        bResourcesAccess.setRoles(Arrays.asList(aNewRole, roleRepository.findAll().get(1)));
+
         resourcesAccess.add(aResourcesAccess);
         resourcesAccess.add(bResourcesAccess);
         aNewRole.setPermissions(resourcesAccess);
-        resourcesAccessRepository.save(resourcesAccess);
         roleTest = roleRepository.save(aNewRole);
     }
 
@@ -182,30 +181,41 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Check that the system prevents from deleting a native role.
+     * 
+     * @throws JwtException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system prevents from deleting a native role.")
-    public void removeRoleNative() {
+    public void removeRoleNative() throws JwtException {
         // Role public is native, we use this one
-
+        final long nRole = roleRepository.count();
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
         performDefaultDelete(apiRolesId, expectations, "TODO Error message", publicRole.getId());
+
+        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
+        Assert.assertEquals(nRole, roleRepository.count());
     }
 
     /**
      * Check that the system allows to delete a role.
+     * 
+     * @throws JwtException
      *
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to delete a role.")
-    public void removeRole() {
+    public void removeRole() throws JwtException {
+        final long nRole = roleRepository.count();
         // Create a non-native role
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultDelete(apiRolesId, expectations, "TODO Error message", roleTest.getId());
+
+        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
+        Assert.assertEquals(nRole - 1, roleRepository.count());
     }
 
     @Test

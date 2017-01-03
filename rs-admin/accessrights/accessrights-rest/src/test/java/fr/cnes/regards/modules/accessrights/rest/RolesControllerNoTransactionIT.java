@@ -106,24 +106,22 @@ public class RolesControllerNoTransactionIT extends AbstractRegardsTransactional
         aResourcesAccessPublic.setRoles(Arrays.asList(publicRole));
         resourcesAccessPublic.add(aResourcesAccessPublic);
         publicRole.setPermissions(resourcesAccessPublic);
-        resourcesAccessRepository.save(aResourcesAccessPublic);
         roleRepository.save(publicRole);
 
         // Create a new Role
         roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
-        final Role aNewRole = new Role(ROLE_TEST, publicRole);
+        final Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
+
         final List<ResourcesAccess> resourcesAccess = new ArrayList<>();
         final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", HttpVerb.GET);
         final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource",
                 HttpVerb.DELETE);
-        aResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(0)));
-        aResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(1)));
-        bResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(0)));
-        bResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(2)));
+        aResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(0), aNewRole));
+        bResourcesAccess.setRoles(Arrays.asList(aNewRole, roleRepository.findAll().get(1)));
+
         resourcesAccess.add(aResourcesAccess);
         resourcesAccess.add(bResourcesAccess);
         aNewRole.setPermissions(resourcesAccess);
-        resourcesAccessRepository.save(resourcesAccess);
         roleTest = roleRepository.save(aNewRole);
     }
 
@@ -134,21 +132,21 @@ public class RolesControllerNoTransactionIT extends AbstractRegardsTransactional
         Assert.assertEquals(roleRepository.count(), 6);
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-//        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(6)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(6)));
         // 6 = 5 roles and the added role TEST_ROLE has two permissions
-//        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
-//        // 5 = 5 roles has a parent (public has no parent)
-//        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(5)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
+        // 5 = 5 roles has a parent (public has no parent)
+        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(5)));
         performDefaultGet(apiRoles, expectations, "TODO Error message");
     }
 
     @After
     public void rollback() throws JwtException {
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
-        roleRepository.delete(roleTest.getId());
+        roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
         Assert.assertEquals(roleRepository.count(), 5);
     }
-    
+
     @Override
     protected Logger getLogger() {
         return LOG;

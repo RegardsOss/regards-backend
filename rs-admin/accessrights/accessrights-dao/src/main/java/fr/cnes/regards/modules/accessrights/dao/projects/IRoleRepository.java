@@ -9,8 +9,8 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -32,6 +32,7 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      *            <code>True</code> or <code>False</code>
      * @return The found {@link Role}
      */
+    @EntityGraph(value = "graph.role.permissions")
     Optional<Role> findOneByIsDefault(boolean pIsDefault);
 
     /**
@@ -42,6 +43,7 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      *            The <code>name</code>
      * @return The found {@link Role}
      */
+    @EntityGraph(value = "graph.role.permissions")
     Optional<Role> findOneByName(String pName);
 
     /**
@@ -60,14 +62,17 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      *
      * @param pName
      *            name of the parent role
-     * @return List of {@link Role}
+     * @return a {@link List} of {@link Role}
      * @since 1.0-SNAPSHOT
      */
     List<Role> findByParentRoleName(final String pName);
 
-//    @Override
-//    @EntityGraph(value = "graph.role.permissions", type = EntityGraphType.LOAD)
-//    List<Role> findAll();
-    
-    
+    /**
+     * Find all {@link Role} all load the permissions attributes.
+     * 
+     * @return a {@link List} of {@link Role}
+     */
+    @Query("select distinct r from Role r left join fetch r.permissions")
+    List<Role> findAllDistinctLazy();
+
 }
