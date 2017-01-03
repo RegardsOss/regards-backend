@@ -3,6 +3,9 @@
  */
 package fr.cnes.regards.framework.module.rest.exception;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Class InvalidEntityException
  *
@@ -23,6 +26,11 @@ public class EntityInvalidException extends EntityException {
     private static final long serialVersionUID = 1677039769133438679L;
 
     /**
+     * Detailed messages
+     */
+    private final List<String> messages;
+
+    /**
      *
      * Constructor
      *
@@ -32,6 +40,16 @@ public class EntityInvalidException extends EntityException {
      */
     public EntityInvalidException(final String pMessage) {
         super(pMessage);
+        this.messages = new ArrayList<>();
+        this.messages.add(pMessage);
     }
 
+    public EntityInvalidException(final List<String> pMessages) {
+        super("Invalid entity");
+        this.messages = pMessages;
+    }
+
+    public List<String> getMessages() {
+        return messages;
+    }
 }
