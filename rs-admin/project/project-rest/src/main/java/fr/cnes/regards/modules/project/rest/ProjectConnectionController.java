@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,7 +47,7 @@ import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 @RestController
 @ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping("/projects")
+@RequestMapping("/project_connections")
 public class ProjectConnectionController implements IResourceController<ProjectConnection> {
 
     /**
@@ -73,21 +74,40 @@ public class ProjectConnectionController implements IResourceController<ProjectC
 
     /**
      *
-     * Create a new project connection in instance database. The associated Project must exists and have a valid
-     * identifier.
+     * Retrieve all project connections in instance database.
      *
      * @param pProjectConnection
      *            ProjectConnection to create.
-     * @return ProjectConnection created
+     * @return The list of project connections wrapped in a response entity of pages resources
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/connections", produces = "application/json")
+    @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     @ResourceAccess(description = "Retreieve all projects connections", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedResources<Resource<ProjectConnection>>> retrieveProjectsConnections(
             final Pageable pPageable, final PagedResourcesAssembler<ProjectConnection> pAssembler) {
         final Page<ProjectConnection> connections = projectConnectionService.retrieveProjectsConnections(pPageable);
         return ResponseEntity.ok(toPagedResources(connections, pAssembler));
+    }
+
+    /**
+     *
+     * Retrieve the project connection of passed id.
+     *
+     * @param pId
+     *            The id
+     * @return The project connection wrapped in a response entity of pages resources
+     * @throws EntityNotFoundException
+     *             Project connection doesn't exists
+     * @since 1.0-SNAPSHOT
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/{project_connection_id}", produces = "application/json")
+    @ResponseBody
+    @ResourceAccess(description = "Retreieve the project connection of passed id", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnectionById(
+            @PathVariable("project_connection_id") final Long pId) throws EntityNotFoundException {
+        final ProjectConnection connection = projectConnectionService.retrieveProjectConnectionById(pId);
+        return ResponseEntity.ok(toResource(connection));
     }
 
     /**
@@ -102,12 +122,12 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      * @return The list of project connections wrapped in a response entity of pages resources
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/{project_name}/connections", produces = "application/json")
+    @RequestMapping(method = RequestMethod.GET, value = "?project_name={project_name}", produces = "application/json")
     @ResponseBody
     @ResourceAccess(description = "Retrieve all projects connections for a given project/tenant",
             role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedResources<Resource<ProjectConnection>>> retrieveProjectsConnectionsByProjectName(
-            @PathVariable("project_name") final String pProjectName, final Pageable pPageable,
+            @RequestParam("project_name") final String pProjectName, final Pageable pPageable,
             final PagedResourcesAssembler<ProjectConnection> pAssembler) {
         final Page<ProjectConnection> connections = projectConnectionService
                 .retrieveProjectsConnectionsByProject(pProjectName, pPageable);
@@ -125,14 +145,14 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      * @return HttpEntity<Resource<ProjectConnection>>
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/{project_name}/connection/{microservice}")
+    @RequestMapping(method = RequestMethod.GET, value = "?project_name={project_name}&microservice={microservice}")
     @ResponseBody
     @ResourceAccess(
             description = "retrieve a project connection associated to a given project and a given microservice",
             role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
-            @PathVariable("project_name") final String pProjectName,
-            @PathVariable("microservice") final String pMicroService) {
+            @RequestParam("project_name") final String pProjectName,
+            @RequestParam("microservice") final String pMicroService) {
 
         ResponseEntity<Resource<ProjectConnection>> response;
         try {
@@ -161,7 +181,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      * @return ProjectConnection created
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.POST, value = "/connections")
+    @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "create a new project connection", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
@@ -186,7 +206,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      * @return updated pProjectConnection
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.PUT, value = "/connections")
+    @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody
     @ResourceAccess(description = "update a project connection", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
@@ -213,11 +233,11 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      * @return void
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}/connection/{microservice}")
+    @RequestMapping(method = RequestMethod.DELETE)
     @ResponseBody
     @ResourceAccess(description = "delete a project connection", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> deleteProjectConnection(@PathVariable("project_name") final String pProjectName,
-            @PathVariable("microservice") final String pMicroservice) {
+    public ResponseEntity<Void> deleteProjectConnection(@RequestParam("project_name") final String pProjectName,
+            @RequestParam("microservice") final String pMicroservice) {
 
         ResponseEntity<Void> response;
         try {

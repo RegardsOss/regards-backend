@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -177,6 +178,18 @@ public class ProjectConnectionService implements IProjectConnectionService {
     public Page<ProjectConnection> retrieveProjectsConnectionsByProject(final String pProjectName,
             final Pageable pPageable) {
         return projectConnectionRepository.findByProjectName(pProjectName, pPageable);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.project.service.IProjectConnectionService#retrieveProjectConnectionById(java.lang.String)
+     */
+    @Override
+    public ProjectConnection retrieveProjectConnectionById(final Long pId) throws EntityNotFoundException {
+        final Optional<ProjectConnection> result = Optional.ofNullable(projectConnectionRepository.findOne(pId));
+        return result.orElseThrow(() -> new EntityNotFoundException(pId, ProjectConnection.class));
     }
 
 }

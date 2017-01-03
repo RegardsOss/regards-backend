@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+@RequestMapping(value = "/project_connections", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectConnectionClient {
 
@@ -42,7 +42,7 @@ public interface IProjectConnectionClient {
      * @return HttpEntity<Resource<ProjectConnection>>
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/{project_name}/connection/{microservice}")
+    @RequestMapping(method = RequestMethod.GET, value = "?project_name={project_name}&microservice={microservice}")
     @ResponseBody
     ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
             @PathVariable("project_name") String pProjectName, @PathVariable("microservice") String pMicroService);
@@ -57,7 +57,7 @@ public interface IProjectConnectionClient {
      * @return ProjectConnection created
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.POST, value = "/connections")
+    @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
             @Valid @RequestBody ProjectConnection pProjectConnection);
@@ -71,7 +71,7 @@ public interface IProjectConnectionClient {
      * @return updated pProjectConnection
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.PUT, value = "/connections")
+    @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody
     ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
             @Valid @RequestBody ProjectConnection pProjectConnection);
@@ -87,7 +87,7 @@ public interface IProjectConnectionClient {
      * @return void
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}/connection/{microservice}")
+    @RequestMapping(method = RequestMethod.DELETE)
     @ResponseBody
     ResponseEntity<Void> deleteProjectConnection(@PathVariable("project_name") String pProjectName,
             @PathVariable("microservice") String pMicroservice);

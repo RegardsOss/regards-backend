@@ -106,4 +106,16 @@ public interface IProjectConnectionService {
      */
     Page<ProjectConnection> retrieveProjectsConnectionsByProject(String pProjectName, Pageable pPageable);
 
+    /**
+     * Retrieve a project connection by its id
+     *
+     * @param pId
+     *            The project connection id
+     * @return The project connection of passed id
+     * @throws EntityNotFoundException
+     *             Project connection doesn't exists
+     * @since 1.0-SNAPSHOT
+     */
+    ProjectConnection retrieveProjectConnectionById(Long pId) throws EntityNotFoundException;
+
 }

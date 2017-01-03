@@ -293,4 +293,23 @@ public class ProjectConnectionServiceTest {
         Assert.assertEquals(1, actual.getTotalElements());
     }
 
+    /**
+     * Test to retrieve projects connections of passed id in instance database.
+     *
+     * @throws EntityNotFoundException
+     *             No project connection with passed id
+     * @since 1.0-SNAPSHOT
+     */
+    @Requirement("REGARDS_DSL_SYS_ARC_050")
+    @Purpose("Test to retrieve projects connections of passed id in instance database.")
+    @Test
+    public void testRetrieveProjectConnectionById() throws EntityNotFoundException {
+
+        // Call tested method
+        final ProjectConnection actual = projectConnectionService.retrieveProjectConnectionById(0L);
+
+        // Check
+        Assert.assertNotNull(actual);
+    }
+
 }
