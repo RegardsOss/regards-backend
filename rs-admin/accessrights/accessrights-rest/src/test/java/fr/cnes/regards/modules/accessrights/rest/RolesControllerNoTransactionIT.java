@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -43,6 +44,7 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
+@MultitenantTransactional
 public class RolesControllerNoTransactionIT extends AbstractRegardsTransactionalIT {
 
     /**

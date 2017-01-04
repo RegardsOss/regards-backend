@@ -90,7 +90,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     /**
      * List of authorized roles to access the resource
      */
-    @ManyToMany(mappedBy="permissions")
+    @ManyToMany(mappedBy="permissions", fetch=FetchType.EAGER)
     @GsonIgnore
     private List<Role> roles = new ArrayList<>();
 

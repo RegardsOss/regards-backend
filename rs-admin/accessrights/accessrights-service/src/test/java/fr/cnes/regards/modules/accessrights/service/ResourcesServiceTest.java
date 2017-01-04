@@ -92,6 +92,7 @@ public class ResourcesServiceTest {
 
         roleServiceMock = Mockito.mock(IRoleService.class);
         final Role roleAdmin = new Role("ADMIN", null);
+        roleAdmin.setId(33L);
         Mockito.stub(roleServiceMock.retrieveInheritedRoles(Mockito.any(Role.class)))
                 .toReturn(Arrays.asList(roleAdmin));
         Mockito.stub(roleServiceMock.retrieveRole("ADMIN")).toReturn(roleAdmin);

@@ -77,7 +77,7 @@ public class Role implements IIdentifiable<Long> {
      * Role permissions
      */
     @Valid
-    @ManyToMany(cascade=CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
             inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
     private List<ResourcesAccess> permissions;
@@ -261,6 +261,22 @@ public class Role implements IIdentifiable<Long> {
      */
     public void setId(final Long pId) {
         id = pId;
+    }
+
+    /**
+     *
+     * Add the given {@link ResourcesAccess} to the permissions of the current {@link Role}
+     *
+     * @param pResourcesAccess
+     *            A {@link ResourcesAccess} to add
+     */
+    public void addPermission(final ResourcesAccess pResourcesAccess) {
+        if (permissions == null) {
+            permissions = new ArrayList<>();
+        }
+        if (!permissions.contains(pResourcesAccess)) {
+            permissions.add(pResourcesAccess);
+        }
     }
 
     @Override

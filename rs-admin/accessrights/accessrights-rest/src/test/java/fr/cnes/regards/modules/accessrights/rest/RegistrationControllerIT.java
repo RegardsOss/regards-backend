@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
+@MultitenantTransactional
 public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
