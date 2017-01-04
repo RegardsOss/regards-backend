@@ -47,6 +47,8 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * Test for resources management
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 public class ResourcesServiceTest {

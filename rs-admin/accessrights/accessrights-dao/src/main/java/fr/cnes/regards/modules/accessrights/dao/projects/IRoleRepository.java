@@ -21,6 +21,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * Allows execution of Query by Example {@link Example} instances.
  *
  * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
  */
 public interface IRoleRepository extends JpaRepository<Role, Long> {
 

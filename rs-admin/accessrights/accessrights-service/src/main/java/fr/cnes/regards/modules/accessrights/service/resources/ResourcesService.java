@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.accessrights.service.resources;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -48,6 +47,7 @@ import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
  * Business service for Resources entities
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
 @Service
@@ -348,6 +348,7 @@ public class ResourcesService implements IResourcesService {
      *
      * @param pResource
      *            resource to update
+     * @return the {@link List} of {@link Role} updated
      * @since 1.0-SNAPSHOT
      */
     private List<Role> calculateResourceInheritedRoles(final ResourcesAccess pResource) {

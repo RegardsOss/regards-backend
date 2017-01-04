@@ -40,8 +40,9 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 /**
  * Test class for {@link RoleService}.
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
+ * @author Christophe Mertz
  */
 public class RoleServiceTest {
 
