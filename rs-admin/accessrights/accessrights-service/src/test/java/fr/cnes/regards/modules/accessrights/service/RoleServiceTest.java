@@ -105,13 +105,13 @@ public class RoleServiceTest {
         final List<Role> expected = new ArrayList<>();
         expected.add(rolePublic);
 
-        Mockito.when(roleRepository.findAll()).thenReturn(expected);
+        Mockito.when(roleRepository.findAllDistinctLazy()).thenReturn(expected);
         final List<Role> actual = roleService.retrieveRoleList();
 
         // Check that the expected and actual role have same values
         checkRolesEqual(expected.get(0), actual.get(0));
         // Check that the repository's method was called with right arguments
-        Mockito.verify(roleRepository).findAll();
+        Mockito.verify(roleRepository).findAllDistinctLazy();
     }
 
     /**
