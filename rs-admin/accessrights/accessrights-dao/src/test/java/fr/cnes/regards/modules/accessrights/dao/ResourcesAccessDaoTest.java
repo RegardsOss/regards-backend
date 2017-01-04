@@ -4,10 +4,7 @@
 package fr.cnes.regards.modules.accessrights.dao;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -76,30 +73,45 @@ public class ResourcesAccessDaoTest {
     @Before
     public void init() {
 
-        publicRole = roleRepository.save(new Role(DefaultRole.PUBLIC.toString(), null));
+        /*
+         * Create 3 Role
+         */
+        publicRole = new Role(DefaultRole.PUBLIC.toString(), null);
         nRole++;
 
-        userRole = roleRepository.save(new Role(DefaultRole.REGISTERED_USER.toString(), publicRole));
+        userRole = new Role(DefaultRole.REGISTERED_USER.toString(), publicRole);
         nRole++;
 
-        adminRole = roleRepository.save(new Role(DefaultRole.ADMIN.toString(), userRole));
+        adminRole = new Role(DefaultRole.ADMIN.toString(), userRole);
         nRole++;
 
+        /*
+         * Create 3 ResourcesAcces
+         */
         final ResourcesAccess publicResource = new ResourcesAccess("Public resource", MS_NAME, PUBLIC_URL,
                 HttpVerb.GET);
         publicResource.addRole(publicRole);
         publicResource.addRole(userRole);
         publicResource.addRole(adminRole);
-        resourcesAccessRespository.save(publicResource);
 
         final ResourcesAccess userResource = new ResourcesAccess("User resource", MS_NAME, USER_URL, HttpVerb.GET);
         userResource.addRole(userRole);
         userResource.addRole(adminRole);
-        resourcesAccessRespository.save(userResource);
 
         final ResourcesAccess adminResource = new ResourcesAccess("Admin resource", MS_NAME, ADMIN_URL, HttpVerb.GET);
         adminResource.addRole(adminRole);
-        resourcesAccessRespository.save(adminResource);
+
+        /*
+         * Set Permission to Role and persist the Role
+         */
+        publicRole.setPermissions(Arrays.asList(publicResource));
+        roleRepository.save(publicRole);
+
+        userRole.setPermissions(Arrays.asList(publicResource, userResource));
+        roleRepository.save(userRole);
+
+        adminRole.setPermissions(Arrays.asList(publicResource, userResource, adminResource));
+        roleRepository.save(adminRole);
     }
 
     /**
@@ -134,29 +146,28 @@ public class ResourcesAccessDaoTest {
         final List<ResourcesAccess> publicResources = resourcesAccessRespository
                 .findDistinctByRolesNameIn(publicRolesName);
         Assert.assertNotNull(publicResources);
-//        Assert.assertEquals(1,publicResources.size());
+        Assert.assertEquals(1, publicResources.size());
 
         final Page<ResourcesAccess> publicResourcesPage = resourcesAccessRespository
                 .findDistinctByMicroserviceAndRolesNameIn(MS_NAME, publicRolesName, pageable);
         Assert.assertNotNull(publicResourcesPage);
         Assert.assertNotNull(publicResourcesPage.getContent());
-//        Assert.assertEquals(1, publicResourcesPage.getTotalElements());
-//        Assert.assertEquals(1, publicResourcesPage.getContent().size());
+        Assert.assertEquals(1, publicResourcesPage.getTotalElements());
+        Assert.assertEquals(1, publicResourcesPage.getContent().size());
 
         final Page<ResourcesAccess> userResourcesPage = resourcesAccessRespository
                 .findDistinctByMicroserviceAndRolesNameIn(MS_NAME, userRolesName, pageable);
         Assert.assertNotNull(userResourcesPage);
         Assert.assertNotNull(userResourcesPage.getContent());
-//        Assert.assertEquals(2, userResourcesPage.getTotalElements());
-//        Assert.assertEquals(2, userResourcesPage.getContent().size());
+        Assert.assertEquals(2, userResourcesPage.getTotalElements());
+        Assert.assertEquals(2, userResourcesPage.getContent().size());
 
         final Page<ResourcesAccess> adminResourcesPage = resourcesAccessRespository
                 .findDistinctByMicroserviceAndRolesNameIn(MS_NAME, adminRolesName, pageable);
         Assert.assertNotNull(adminResourcesPage);
         Assert.assertNotNull(adminResourcesPage.getContent());
-//        Assert.assertEquals(3, adminResourcesPage.getTotalElements());
-//        Assert.assertEquals(3, adminResourcesPage.getContent().size());
-
+        Assert.assertEquals(3, adminResourcesPage.getTotalElements());
+        Assert.assertEquals(3, adminResourcesPage.getContent().size());
     }
 
 }
