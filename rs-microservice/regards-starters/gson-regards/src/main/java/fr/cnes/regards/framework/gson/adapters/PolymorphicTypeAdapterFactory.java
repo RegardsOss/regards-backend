@@ -186,8 +186,10 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
 
         LOGGER.info("Subtype \"{}\" mapped to \"{}\" value", pType, pDiscriminatorFieldValue);
 
-        // Check if map not already contains value
-        if (discriminatorToSubtype.containsKey(pDiscriminatorFieldValue)) {
+        // Check if map not already contains value with a different mapping
+        if (discriminatorToSubtype.containsKey(pDiscriminatorFieldValue)
+                && (pType != discriminatorToSubtype.get(pDiscriminatorFieldValue))) {
+
             final String errorMessage = String.format("Discrimator field value %s must be unique",
                                                       pDiscriminatorFieldValue);
             LOGGER.error(errorMessage);
