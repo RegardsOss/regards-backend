@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
@@ -66,7 +67,8 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      * @return a {@link List} of {@link Role}
      * @since 1.0-SNAPSHOT
      */
-    List<Role> findByParentRoleName(final String pName);
+    @Query("select distinct r from Role r left join fetch r.permissions where r.parentRole.name=:pName")
+    List<Role> findByParentRoleName(@Param("pName") final String pName);
 
     /**
      * Find all {@link Role} all load the permissions attributes.

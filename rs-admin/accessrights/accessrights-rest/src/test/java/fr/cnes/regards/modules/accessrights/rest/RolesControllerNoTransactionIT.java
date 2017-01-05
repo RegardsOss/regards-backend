@@ -44,7 +44,6 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
-@MultitenantTransactional
 public class RolesControllerNoTransactionIT extends AbstractRegardsTransactionalIT {
 
     /**
@@ -147,6 +146,11 @@ public class RolesControllerNoTransactionIT extends AbstractRegardsTransactional
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
         roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
         Assert.assertEquals(roleRepository.count(), 5);
+        publicRole.setPermissions(new ArrayList<>());
+        roleRepository.save(publicRole);
+        resourcesAccessRepository.findAll();
+        resourcesAccessRepository.deleteAll();
+        Assert.assertEquals(0, resourcesAccessRepository.count());
     }
 
     @Override

@@ -170,4 +170,13 @@ public class ResourcesAccessDaoTest {
         Assert.assertEquals(3, adminResourcesPage.getContent().size());
     }
 
+    @Test
+    public void findByParentRoleName() {
+        List<Role> roles = roleRepository.findByParentRoleName(DefaultRole.PUBLIC.toString());
+        Assert.assertNotNull(roles);
+        Assert.assertEquals(1, roles.size());
+        Assert.assertNotNull(roles.get(0).getPermissions());
+        Assert.assertTrue(roles.get(0).getPermissions().size() > 0);
+    }
+
 }
