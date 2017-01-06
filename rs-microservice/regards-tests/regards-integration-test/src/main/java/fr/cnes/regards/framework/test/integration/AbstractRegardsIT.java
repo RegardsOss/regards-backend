@@ -43,7 +43,8 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
  *
- * Base class to realize integration tests using JWT and MockMvc
+ * Base class to realize integration tests using JWT and MockMvc. Should hold all the configurations to be considred by
+ * any of its children.
  *
  * @author svissier
  * @author Sébastien Binda
@@ -51,7 +52,8 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.MOCK)
-@ContextConfiguration(classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class })
+@ContextConfiguration(
+        classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class, DefaultTestFeignConfiguration.class })
 @AutoConfigureMockMvc
 @ActiveProfiles({ "default", "test" })
 public abstract class AbstractRegardsIT {
