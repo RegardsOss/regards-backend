@@ -3,6 +3,9 @@
  */
 package fr.cnes.regards.framework.module.rest.representation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Server error response representation
  *
@@ -15,17 +18,18 @@ public class ServerErrorResponse {
     /**
      * Error message
      */
-    private String message;
+    private final List<String> messages;
 
     public ServerErrorResponse(String pMessage) {
-        this.message = pMessage;
+        this.messages = new ArrayList<>();
+        this.messages.add(pMessage);
     }
 
-    public String getMessage() {
-        return message;
+    public ServerErrorResponse(List<String> pMessages) {
+        this.messages = pMessages;
     }
 
-    public void setMessage(String pMessage) {
-        message = pMessage;
+    public List<String> getMessages() {
+        return messages;
     }
 }

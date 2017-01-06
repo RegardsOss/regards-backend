@@ -143,7 +143,7 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(EntityInvalidException.class)
     public ResponseEntity<ServerErrorResponse> manualValidation(final EntityInvalidException pException) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(pException.getMessage()));
+                .body(new ServerErrorResponse(pException.getMessages()));
     }
 
     /*

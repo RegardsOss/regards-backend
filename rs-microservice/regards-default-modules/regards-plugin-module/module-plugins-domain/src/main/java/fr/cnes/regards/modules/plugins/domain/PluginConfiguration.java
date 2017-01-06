@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -53,6 +54,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Unique identifier of the plugin. This id is the id defined in the "@Plugin" annotation of the plugin
      * implementation class.
      */
+    @Column(nullable = false)
     @NotNull
     private String pluginId;
 
@@ -86,7 +88,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Configuration parameters of the plugin
      */
     @ElementCollection
-    @CollectionTable(
+    @CollectionTable(name = "TA_PLUGIN_CONF_PLUGIN_PARAM",
             joinColumns = @JoinColumn(name = "ID", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_ID")))
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PluginParameter> parameters;
