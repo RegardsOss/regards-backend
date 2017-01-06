@@ -208,7 +208,27 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
         }
     }
 
-    // TODO : unregister subtype
+    /**
+     * Unregister mapping between a field value and an explicit type
+     *
+     * @param pType
+     *            type
+     * @param pDiscriminatorFieldValue
+     *            field value
+     *
+     */
+    public void unregisterSubtype(Class<?> pType, String pDiscriminatorFieldValue) {
+        refreshMapping = true;
+        GSONUtils.assertNotNull(pType, "Sub type is required.");
+        GSONUtils.assertNotNull(pDiscriminatorFieldValue, "Discriminator field value is required.");
+
+        LOGGER.info("Subtype \"{}\" unmapped to \"{}\" value", pType, pDiscriminatorFieldValue);
+
+        discriminatorToSubtype.remove(pDiscriminatorFieldValue);
+        if (injectField) {
+            subtypeToDiscriminator.remove(pType);
+        }
+    }
 
     /**
      * Register a mapping between an enumeration and an explicit type.
@@ -236,8 +256,13 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
      * @param pSubtypeToDelegate
      *            mapping between sub type and adapter
      */
-    protected void doMapping(Gson pGson, Map<String, TypeAdapter<?>> pDiscriminatorToDelegate,
+    protected synchronized void doMapping(Gson pGson, Map<String, TypeAdapter<?>> pDiscriminatorToDelegate,
             Map<Class<?>, TypeAdapter<?>> pSubtypeToDelegate) {
+
+        // Clear maps before computing delegation
+        pDiscriminatorToDelegate.clear();
+        pSubtypeToDelegate.clear();
+
         /**
          * Register TypeAdapter delegation mapping from discriminator and type
          */
@@ -357,28 +382,23 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
             @Override
             public void write(JsonWriter pOut, T pValue) throws IOException {
 
+                if (refreshMapping) {
+                    doMapping(pGson, discriminatorToDelegate, subtypeToDelegate);
+                    refreshMapping = false;
+                }
+
                 final Class<?> srcType = pValue.getClass();
 
                 // registration requires that subtype extends base type
                 TypeAdapter<T> delegate = (TypeAdapter<T>) subtypeToDelegate.get(srcType);
 
                 if (delegate == null) {
-                    // Try to refresh
-                    if (refreshMapping) {
-                        doMapping(pGson, discriminatorToDelegate, subtypeToDelegate);
-                        delegate = (TypeAdapter<T>) subtypeToDelegate.get(srcType);
-                        refreshMapping = false;
-                    }
-
-                    // If delegate still null
-                    if (delegate == null) {
-                        String errorMessage = String.format(
-                                                            "Cannot serialize %s. Did you forget to register a subtype?",
-                                                            srcType.getName());
-                        LOGGER.error(errorMessage);
-                        throw new JsonParseException(errorMessage);
-                    }
+                    String errorMessage = String.format("Cannot serialize %s. Did you forget to register a subtype?",
+                                                        srcType.getName());
+                    LOGGER.error(errorMessage);
+                    throw new JsonParseException(errorMessage);
                 }
+
                 // Raw JSON object
                 JsonElement rawJson = delegate.toJsonTree(pValue);
                 Streams.write(beforeWrite(rawJson, srcType), pOut);
@@ -390,6 +410,11 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
             @SuppressWarnings("unchecked")
             @Override
             public T read(JsonReader pIn) throws IOException {
+
+                if (refreshMapping) {
+                    doMapping(pGson, discriminatorToDelegate, subtypeToDelegate);
+                    refreshMapping = false;
+                }
 
                 // Compute raw JSON object
                 final JsonElement jsonElement = Streams.parse(pIn);
@@ -411,21 +436,11 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
                 TypeAdapter<T> delegate = (TypeAdapter<T>) discriminatorToDelegate.get(discriminator);
 
                 if (delegate == null) {
-                    // Try to refresh
-                    if (refreshMapping) {
-                        doMapping(pGson, discriminatorToDelegate, subtypeToDelegate);
-                        delegate = (TypeAdapter<T>) discriminatorToDelegate.get(discriminator);
-                        refreshMapping = false;
-                    }
-
-                    // If delegate still null
-                    if (delegate == null) {
-                        String errorMessage = String.format(
-                                                            "Cannot deserialize %s subtype named %s. Did you forget to register a subtype?",
-                                                            baseType, discriminator);
-                        LOGGER.error(errorMessage);
-                        throw new JsonParseException(errorMessage);
-                    }
+                    String errorMessage = String.format(
+                                                        "Cannot deserialize %s subtype named %s. Did you forget to register a subtype?",
+                                                        baseType, discriminator);
+                    LOGGER.error(errorMessage);
+                    throw new JsonParseException(errorMessage);
                 }
 
                 return delegate.fromJsonTree(beforeRead(jsonElement, discriminator,
