@@ -5,10 +5,12 @@ package fr.cnes.regards.framework.amqp;
 
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 
 /**
- * 
+ * Interface for publishing events
+ *
+ * @author Sylvain Vissière-Guérinet
+ * @author Marc Sordi
  */
 public interface IPublisher {
 
@@ -21,11 +23,9 @@ public interface IPublisher {
      *            publishing mode
      * @param pAmqpCommunicationTarget
      *            publishing scope
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     <T> void publish(T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
-            AmqpCommunicationTarget pAmqpCommunicationTarget) throws RabbitMQVhostException;
+            AmqpCommunicationTarget pAmqpCommunicationTarget);
 
     /**
      * @param <T>
@@ -38,11 +38,9 @@ public interface IPublisher {
      *            publishing mode
      * @param pAmqpCommunicationTarget
      *            publishing scope
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     <T> void publish(T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
-            AmqpCommunicationTarget pAmqpCommunicationTarget, int pPriority) throws RabbitMQVhostException;
+            AmqpCommunicationTarget pAmqpCommunicationTarget, int pPriority);
 
     /**
      * @param <T>
@@ -55,11 +53,9 @@ public interface IPublisher {
      *            publishing mode
      * @param pAmqpCommunicationTarget
      *            publishing scope
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     <T> void publish(String pTenant, T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
-            AmqpCommunicationTarget pAmqpCommunicationTarget) throws RabbitMQVhostException;
+            AmqpCommunicationTarget pAmqpCommunicationTarget);
 
     /**
      * @param <T>
@@ -74,10 +70,8 @@ public interface IPublisher {
      *            publishing mode
      * @param pAmqpCommunicationTarget
      *            publishing scope
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     <T> void publish(String pTenant, T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
-            AmqpCommunicationTarget pAmqpCommunicationTarget, int pPriority) throws RabbitMQVhostException;
+            AmqpCommunicationTarget pAmqpCommunicationTarget, int pPriority);
 
 }
