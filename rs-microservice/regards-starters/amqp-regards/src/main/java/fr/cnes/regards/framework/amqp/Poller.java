@@ -12,7 +12,6 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 
@@ -21,7 +20,7 @@ import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
  * @author svissier
  *
  */
-public class Poller {
+public class Poller implements IPoller {
 
     /**
      * bean provided by spring to receive message from broker
@@ -46,26 +45,16 @@ public class Poller {
         rabbitVirtualHostUtils = pRabbitVirtualHostUtils;
     }
 
-    /**
-     *
-     * TODO: desactivate auto-ack and add an ack method
-     *
-     * @param <T>
-     *            event published
-     * @param pTenant
-     *            tenant to poll message for
-     * @param pEvt
-     *            event class token
-     * @param pAmqpCommunicationMode
-     *            communication mode
-     * @param pAmqpCommunicationTarget
-     *            communication target
-     * @return received message from the broker
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
+    /*
+     * (non-Javadoc)
+     * 
+     * @see fr.cnes.regards.framework.amqp.IPoller#poll(java.lang.String, java.lang.Class,
+     * fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode,
+     * fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget)
      */
+    @Override
     public <T> TenantWrapper<T> poll(String pTenant, Class<T> pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
-            AmqpCommunicationTarget pAmqpCommunicationTarget) throws RabbitMQVhostException {
+            AmqpCommunicationTarget pAmqpCommunicationTarget) {
 
         rabbitVirtualHostUtils.addVhost(pTenant);
         final Exchange exchange = regardsAmqpAdmin.declareExchange(pEvt, pAmqpCommunicationMode, pTenant,
