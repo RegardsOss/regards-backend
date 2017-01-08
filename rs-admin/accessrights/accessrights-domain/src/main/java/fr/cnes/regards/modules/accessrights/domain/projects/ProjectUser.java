@@ -21,6 +21,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -38,7 +39,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUse
  *
  * @author CS
  */
-@Entity(name = "T_PROJECT_USER")
+@Entity
+@Table(name = "T_PROJECT_USER")
 @EntityListeners(ProjectUserListener.class)
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "SEQ_PROJECT_USER")
 public class ProjectUser implements IIdentifiable<Long> {
@@ -101,7 +103,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      * The list of specific permissions for this user, augmenting the permissions granted by the role.
      */
     @Valid
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.LAZY)
     @Column(name = "permissions")
     private List<ResourcesAccess> permissions;
 

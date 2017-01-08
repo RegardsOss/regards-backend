@@ -47,6 +47,8 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * Test for resources management
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 public class ResourcesServiceTest {
@@ -92,6 +94,7 @@ public class ResourcesServiceTest {
 
         roleServiceMock = Mockito.mock(IRoleService.class);
         final Role roleAdmin = new Role("ADMIN", null);
+        roleAdmin.setId(33L);
         Mockito.stub(roleServiceMock.retrieveInheritedRoles(Mockito.any(Role.class)))
                 .toReturn(Arrays.asList(roleAdmin));
         Mockito.stub(roleServiceMock.retrieveRole("ADMIN")).toReturn(roleAdmin);

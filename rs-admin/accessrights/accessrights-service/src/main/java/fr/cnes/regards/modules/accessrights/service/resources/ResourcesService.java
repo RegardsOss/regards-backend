@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.resources;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
 
@@ -24,6 +25,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.client.IResourcesClient;
@@ -36,6 +38,7 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessReposit
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 
 /**
  *
@@ -44,6 +47,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * Business service for Resources entities
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
 @Service
@@ -220,10 +224,11 @@ public class ResourcesService implements IResourcesService {
     @Override
     public void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName) {
         final List<ResourcesAccess> resources = new ArrayList<>();
-        pResourcesToRegister.forEach(r -> resources.add(createDefaultResourceConfiguration(r, pMicroserviceName)));
 
-        // Retrieve aleady configured resources for the given microservice
+        // Retrieve already configured resources for the given microservice
         final List<ResourcesAccess> existingResources = resourceAccessRepo.findByMicroservice(pMicroserviceName);
+
+        pResourcesToRegister.forEach(r -> resources.add(createDefaultResourceConfiguration(r, pMicroserviceName)));
 
         final List<ResourcesAccess> newResources = new ArrayList<>();
         // Create missing resources
@@ -251,21 +256,19 @@ public class ResourcesService implements IResourcesService {
     private ResourcesAccess createDefaultResourceConfiguration(final ResourceMapping pResource,
             final String pMicroserviceName) {
         final ResourcesAccess defaultResource = new ResourcesAccess(pResource, pMicroserviceName);
-        final List<Role> roles = new ArrayList<>();
 
         if (pResource.getResourceAccess() != null) {
             final String roleName = pResource.getResourceAccess().role().name();
             try {
                 final Role role = roleService.retrieveRole(roleName);
-                roles.add(role);
+                role.addPermission(defaultResource);
+                defaultResource.addRole(role);
             } catch (final EntityNotFoundException e) {
                 LOG.debug(e.getMessage(), e);
                 LOG.warn("Default role {} for resource {} does not exists.", roleName, defaultResource.getResource());
             }
 
         }
-
-        defaultResource.setRoles(roles);
         return defaultResource;
     }
 
@@ -308,16 +311,27 @@ public class ResourcesService implements IResourcesService {
      */
     private List<ResourcesAccess> saveResources(final List<ResourcesAccess> pResourcesToSave) {
         final List<ResourcesAccess> results = new ArrayList<>();
+        final List<Role> inheritedRoles = new ArrayList<>();
 
         // First Step is to calculate new associated roles for each resource
         for (final ResourcesAccess resource : pResourcesToSave) {
-            calculateResourceInheritedRoles(resource);
+            inheritedRoles.addAll(calculateResourceInheritedRoles(resource));
         }
 
         final Iterable<ResourcesAccess> savedResources = resourceAccessRepo.save(pResourcesToSave);
+
         if (savedResources != null) {
+            final Predicate<Role> filter = RegardsStreamUtils.distinctByKey(r -> r.getId());
+            inheritedRoles.stream().filter(filter).forEach(r -> {
+                try {
+                    roleService.updateRole(r.getId(), r);
+                } catch (EntityException e) {
+                    LOG.error(e.getMessage(), e);
+                }
+            });
             savedResources.forEach(results::add);
         }
+
         try {
             eventPublisher.publish(UpdateAuthoritiesEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
                                    AmqpCommunicationTarget.EXTERNAL);
@@ -334,9 +348,10 @@ public class ResourcesService implements IResourcesService {
      *
      * @param pResource
      *            resource to update
+     * @return the {@link List} of {@link Role} updated
      * @since 1.0-SNAPSHOT
      */
-    private void calculateResourceInheritedRoles(final ResourcesAccess pResource) {
+    private List<Role> calculateResourceInheritedRoles(final ResourcesAccess pResource) {
 
         final List<Role> inheritedRoles = new ArrayList<>();
         for (final Role role : pResource.getRoles()) {
@@ -345,6 +360,9 @@ public class ResourcesService implements IResourcesService {
             }
         }
         pResource.addRoles(inheritedRoles);
+        inheritedRoles.forEach(r -> r.addPermission(pResource));
+
+        return inheritedRoles;
 
     }
 

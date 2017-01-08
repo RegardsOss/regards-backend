@@ -15,10 +15,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -43,7 +42,8 @@ import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
  * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
-@Entity(name = "T_RESOURCES_ACCESS")
+@Entity
+@Table(name = "T_RESOURCES_ACCESS")
 @EntityListeners(UpdateAuthoritiesListener.class)
 @SequenceGenerator(name = "resourcesAccessSequence", initialValue = 1, sequenceName = "SEQ_RESOURCES_ACCESS")
 public class ResourcesAccess implements IIdentifiable<Long> {
@@ -87,12 +87,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     /**
      * List of authorized roles to access the resource
      */
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "TA_RESOURCES_ROLES",
-            joinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_RESOURCES_ROLES")),
-            inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_ROLES_RESOURCES")))
+    @ManyToMany(mappedBy="permissions", fetch=FetchType.EAGER)
     @GsonIgnore
     private List<Role> roles = new ArrayList<>();
 

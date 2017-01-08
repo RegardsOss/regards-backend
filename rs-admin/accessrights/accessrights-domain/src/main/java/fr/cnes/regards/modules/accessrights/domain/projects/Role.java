@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -21,6 +22,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.Valid;
@@ -42,6 +45,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParent
 @Table(name = "T_ROLE", indexes = { @Index(name = "IDX_ROLE_NAME", columnList = "name") })
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
 @HasParentOrPublic
+@NamedEntityGraph(name = "graph.role.permissions",
+        attributeNodes = @NamedAttributeNode(value = "permissions", subgraph = "permissions"))
 public class Role implements IIdentifiable<Long> {
 
     /**
@@ -72,7 +77,7 @@ public class Role implements IIdentifiable<Long> {
      * Role permissions
      */
     @Valid
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
             inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
     private List<ResourcesAccess> permissions;
@@ -256,6 +261,22 @@ public class Role implements IIdentifiable<Long> {
      */
     public void setId(final Long pId) {
         id = pId;
+    }
+
+    /**
+     *
+     * Add the given {@link ResourcesAccess} to the permissions of the current {@link Role}
+     *
+     * @param pResourcesAccess
+     *            A {@link ResourcesAccess} to add
+     */
+    public void addPermission(final ResourcesAccess pResourcesAccess) {
+        if (permissions == null) {
+            permissions = new ArrayList<>();
+        }
+        if (!permissions.contains(pResourcesAccess)) {
+            permissions.add(pResourcesAccess);
+        }
     }
 
     @Override

@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -66,16 +67,13 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      * JPA Respository used to initialize datas and check results
      */
     @Autowired
-    private IResourcesAccessRepository repository;
+    private IResourcesAccessRepository resourcesAccessRepository;
 
     @Autowired
     private IProjectUserRepository projectUserRepository;
 
-    /**
-     * Service to manage Role entities
-     */
     @Autowired
-    private IRoleService roleService;
+    IRoleRepository roleRepository;
 
     /**
      * Security token to access ADMIN_INSTANCE endpoints
@@ -102,6 +100,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Before
     public void initResources() throws EntityNotFoundException {
 
+        resourcesAccessRepository.deleteAll();
+
         final JWTService service = new JWTService();
         service.setSecret("123456789");
         instanceToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL,
@@ -110,12 +110,16 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
 
         final ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE,
                 CONFIGURED_ENDPOINT_URL, HttpVerb.GET);
-        final Role adminRole = roleService.retrieveRole(DefaultRole.ADMIN.toString());
+
+        final Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         resource.addRole(adminRole);
+        adminRole.addPermission(resource);
 
         testUser = projectUserRepository
                 .save(new ProjectUser(DEFAULT_USER_EMAIL, adminRole, new ArrayList<>(), new ArrayList<>()));
-        testResource = repository.save(resource);
+
+        testResource = resourcesAccessRepository.save(resource);
+        roleRepository.save(adminRole);
     }
 
     /**
@@ -127,7 +131,6 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check first registration of a microservice endpoints")
     public void initialMicroserviceEndpointsRegistration() {
-
         final List<ResourceMapping> mapping = new ArrayList<>();
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
                 "/endpoint/test", RequestMethod.GET));
@@ -142,7 +145,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         performPost(ResourcesController.REQUEST_MAPPING_ROOT + "/register/microservices/{microservice}", instanceToken,
                     mapping, expectations, "Error during registring endpoints", DEFAULT_MICROSERVICE);
 
-        final List<ResourcesAccess> resources = repository.findByMicroservice(DEFAULT_MICROSERVICE);
+        final List<ResourcesAccess> resources = resourcesAccessRepository.findByMicroservice(DEFAULT_MICROSERVICE);
 
         // Check that the first endpoint is accessible by all default roles
         Optional<ResourcesAccess> resource = resources.stream().filter(r -> r.getResource().equals("/endpoint/test"))

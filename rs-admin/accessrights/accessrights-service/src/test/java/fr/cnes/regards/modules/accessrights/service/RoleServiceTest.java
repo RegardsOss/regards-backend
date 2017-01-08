@@ -40,8 +40,9 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 /**
  * Test class for {@link RoleService}.
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
+ * @author Christophe Mertz
  */
 public class RoleServiceTest {
 
@@ -105,13 +106,13 @@ public class RoleServiceTest {
         final List<Role> expected = new ArrayList<>();
         expected.add(rolePublic);
 
-        Mockito.when(roleRepository.findAll()).thenReturn(expected);
+        Mockito.when(roleRepository.findAllDistinctLazy()).thenReturn(expected);
         final List<Role> actual = roleService.retrieveRoleList();
 
         // Check that the expected and actual role have same values
         checkRolesEqual(expected.get(0), actual.get(0));
         // Check that the repository's method was called with right arguments
-        Mockito.verify(roleRepository).findAll();
+        Mockito.verify(roleRepository).findAllDistinctLazy();
     }
 
     /**
@@ -450,12 +451,14 @@ public class RoleServiceTest {
         final Role roleParent = new Role(roleParentName, null);
         parentUsers.add(new ProjectUser("user0@email.com", roleParent, null, null));
         parentUsers.add(new ProjectUser("user1@email.com", roleParent, null, null));
+        roleParent.setId(190L);
 
         // Define a child role with a few users
         final List<ProjectUser> childUsers = new ArrayList<>();
         final Role roleChild = new Role(roleChildName, roleParent);
         childUsers.add(new ProjectUser("user2@email.com", roleChild, null, null));
         childUsers.add(new ProjectUser("user3@email.com", roleChild, null, null));
+        roleChild.setId(191L);
 
         // Define the expected result: all accesses, from child and its parent
         final List<ProjectUser> expected = new ArrayList<>();

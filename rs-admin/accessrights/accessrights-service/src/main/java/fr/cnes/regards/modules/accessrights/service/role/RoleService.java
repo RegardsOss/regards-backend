@@ -184,7 +184,7 @@ public class RoleService implements IRoleService {
 
     @Override
     public List<Role> retrieveRoleList() {
-        try (Stream<Role> stream = StreamSupport.stream(roleRepository.findAll().spliterator(), true)) {
+        try (Stream<Role> stream = StreamSupport.stream(roleRepository.findAllDistinctLazy().spliterator(), true)) {
             return stream.collect(Collectors.toList());
         }
     }
@@ -337,9 +337,12 @@ public class RoleService implements IRoleService {
         final List<Role> results = new ArrayList<>();
         final List<Role> inheritedRoles = roleRepository.findByParentRoleName(pRole.getName());
         if (inheritedRoles != null) {
-            results.addAll(inheritedRoles);
+            final Predicate<Role> filter = RegardsStreamUtils.distinctByKey(r -> r.getId());
+
+            inheritedRoles.stream().filter(filter).forEach(r -> results.add(r));
+
             for (final Role role : inheritedRoles) {
-                results.addAll(retrieveInheritedRoles(role));
+                retrieveInheritedRoles(role).stream().filter(filter).forEach(r -> results.add(r));
             }
         }
         return results;

@@ -70,6 +70,11 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
      */
     private final static String MICROSERVICE_TEST = "microservice-test";
 
+    /**
+     * A project connection
+     */
+    private ProjectConnection connection;
+
     @Override
     protected Logger getLogger() {
         return LOG;
@@ -87,8 +92,8 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
                                                       DefaultRole.INSTANCE_ADMIN.name());
 
         final Project project = projectRepo.findOneByName(PROJECT_TEST);
-        final ProjectConnection connection = new ProjectConnection(project, MICROSERVICE_TEST, "newUserName",
-                "newPassword", "newDriver", "newUrl");
+        connection = new ProjectConnection(project, MICROSERVICE_TEST, "newUserName", "newPassword", "newDriver",
+                "newUrl");
         projectConnRepo.save(connection);
     }
 
@@ -105,8 +110,8 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     public void retrieveProjectConnection() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performGet("/projects/" + PROJECT_TEST + "/connection/" + MICROSERVICE_TEST, instanceAdmintoken, expectations,
-                   "error");
+        performGet("/project_connections?project_name=" + PROJECT_TEST + "&microservice=" + MICROSERVICE_TEST,
+                   instanceAdmintoken, expectations, "error");
     }
 
     @Requirement("REGARDS_DSL_SYS_ARC_050")
@@ -121,7 +126,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(1)));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages", Matchers.is(1)));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
-        performGet("/projects/connections", instanceAdmintoken, expectations, "error");
+        performGet("/project_connections", instanceAdmintoken, expectations, "error");
     }
 
     /**
@@ -140,7 +145,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
                 "newPassword", "newDriver", "newUrl");
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isCreated());
-        performPost("/projects/connections", instanceAdmintoken, connection, expectations,
+        performPost("/project_connections", instanceAdmintoken, connection, expectations,
                     "Error there must be project results");
     }
 
@@ -159,7 +164,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
                                                                                                  MICROSERVICE_TEST);
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performPut("/projects/connections", instanceAdmintoken, connection, expectations,
+        performPut("/project_connections", instanceAdmintoken, connection, expectations,
                    "Error there must be project results");
     }
 
@@ -176,8 +181,8 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     public void deleteProjectConnection() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDelete("/projects/" + PROJECT_TEST + "/connection/" + MICROSERVICE_TEST, instanceAdmintoken,
-                      expectations, "Error there must be project results");
+        performDelete("/project_connections?project_name=" + PROJECT_TEST + "&microservice=" + MICROSERVICE_TEST,
+                      instanceAdmintoken, expectations, "Error there must be project results");
     }
 
     /**
@@ -197,7 +202,22 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(1)));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages", Matchers.is(1)));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
-        performGet("/projects/" + PROJECT_TEST + "/connections", instanceAdmintoken, expectations, "error");
+        performGet("/project_connections?project_name=" + PROJECT_TEST, instanceAdmintoken, expectations, "error");
+    }
+
+    /**
+     * Check REST Access to project connections by id.
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Requirement("REGARDS_DSL_SYS_ARC_050")
+    @Purpose("Check REST Access to project connections by id.")
+    @Test
+    public void testRetrieveProjectConnectionsById() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        performGet("/project_connections/" + connection.getId(), instanceAdmintoken, expectations, "error");
     }
 
 }
