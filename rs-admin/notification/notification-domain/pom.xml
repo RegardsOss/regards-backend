@@ -22,7 +22,12 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
 			<artifactId>accessrights-domain</artifactId>
-			<version>1.1-SNAPSHOT</version>
+		</dependency>
+		<!-- Tests -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
