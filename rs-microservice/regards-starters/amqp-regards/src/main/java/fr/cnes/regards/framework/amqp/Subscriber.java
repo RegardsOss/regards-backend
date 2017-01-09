@@ -17,9 +17,10 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
-import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * @author svissier
@@ -61,6 +62,11 @@ public class Subscriber implements ISubscriber {
         tenantResolver = pTenantResolver;
     }
 
+    @Override
+    public <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver) {
+        subscribeTo(pEvent, pReceiver, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.EXTERNAL);
+    }
+
     /**
      *
      * initialize any necessary container to listen to all tenant provided by the provider for the specified element
@@ -80,8 +86,8 @@ public class Subscriber implements ISubscriber {
      */
     @Override
     public final <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver,
-            final AmqpCommunicationMode pAmqpCommunicationMode, final AmqpCommunicationTarget pAmqpCommunicationTarget)
-            throws RabbitMQVhostException {
+            final AmqpCommunicationMode pAmqpCommunicationMode,
+            final AmqpCommunicationTarget pAmqpCommunicationTarget) {
         final Set<String> tenants = tenantResolver.getAllTenants();
         jackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
         for (final String tenant : tenants) {
@@ -113,14 +119,11 @@ public class Subscriber implements ISubscriber {
      * @param pAmqpCommunicationTarget
      *            communication scope
      * @return a container fully parameterized to listen to the corresponding event for the specified tenant
-     *
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     public <T> SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(final Class<T> pEvt,
             final String pTenant, final Jackson2JsonMessageConverter pJackson2JsonMessageConverter,
             final IHandler<T> pReceiver, final AmqpCommunicationMode pAmqpCommunicationMode,
-            final AmqpCommunicationTarget pAmqpCommunicationTarget) throws RabbitMQVhostException {
+            final AmqpCommunicationTarget pAmqpCommunicationTarget) {
         final CachingConnectionFactory connectionFactory = regardsAmqpAdmin.createConnectionFactory(pTenant);
         rabbitVirtualHostUtils.addVhost(pTenant, connectionFactory);
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
@@ -147,5 +150,4 @@ public class Subscriber implements ISubscriber {
     public void startSimpleMessageListenerContainer(final SimpleMessageListenerContainer pContainer) {
         pContainer.start();
     }
-
 }

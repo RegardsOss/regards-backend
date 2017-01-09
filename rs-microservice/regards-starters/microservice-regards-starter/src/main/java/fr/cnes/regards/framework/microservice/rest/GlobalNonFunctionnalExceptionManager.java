@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.microservice.rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -31,6 +32,12 @@ public class GlobalNonFunctionnalExceptionManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalNonFunctionnalExceptionManager.class);
 
     /**
+     * Tenant resolver
+     */
+    @Autowired
+    private IThreadTenantResolver resolver;
+
+    /**
      * Exception handler catching any exception that are not already handled
      *
      * @param pException
@@ -40,8 +47,7 @@ public class GlobalNonFunctionnalExceptionManager {
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<ServerErrorResponse> nonFunctionnalException(Exception pException) {
         LOGGER.error("Unexpected server error", pException);
-        String tenant = JWTService.getActualTenant();
-        MaintenanceManager.setMaintenance(tenant);
+        MaintenanceManager.setMaintenance(resolver.getTenant());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(new ServerErrorResponse(pException.getMessage()));
     }

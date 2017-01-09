@@ -10,6 +10,8 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+
 /**
  * Resolve tenant base on configuration properties
  *

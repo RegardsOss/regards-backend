@@ -4,12 +4,12 @@
 package fr.cnes.regards.framework.amqp.test;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.security.crypto.codec.Base64;
 
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
@@ -82,8 +82,7 @@ public class RabbitVirtualHostUtilsTests {
 
         final String fullCredential = RABBITMQ_USERNAME + COLON + RABBITMQ_PASSWORD;
         final byte[] plainCredsBytes = fullCredential.getBytes();
-        final byte[] base64CredsBytes = Base64.encode(plainCredsBytes);
-        final String encoded = new String(base64CredsBytes);
+        String encoded = Base64.getEncoder().encodeToString(plainCredsBytes);
         final String expected = "Basic " + encoded;
 
         Assert.assertEquals(expected, rabbitVirtualHostUtils.setBasic());

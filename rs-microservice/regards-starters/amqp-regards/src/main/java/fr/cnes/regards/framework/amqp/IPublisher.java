@@ -5,6 +5,8 @@ package fr.cnes.regards.framework.amqp;
 
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 
 /**
  * Interface for publishing events
@@ -13,6 +15,26 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
  * @author Marc Sordi
  */
 public interface IPublisher {
+
+    /**
+     * Publish an {@link ISubscribable} event
+     *
+     * @param <T>
+     *            {@link ISubscribable} event
+     * @param pEvent
+     *            {@link ISubscribable} event to publish
+     */
+    <T extends ISubscribable> void publish(T pEvent);
+
+    /**
+     * Publish an {@link IPollable} event
+     *
+     * @param <T>
+     *            {@link IPollable} event
+     * @param pEvent
+     *            {@link IPollable} event to publish
+     */
+    <T extends IPollable> void publish(T pEvent);
 
     /**
      * @param <T>
@@ -24,6 +46,7 @@ public interface IPublisher {
      * @param pAmqpCommunicationTarget
      *            publishing scope
      */
+    @Deprecated
     <T> void publish(T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
             AmqpCommunicationTarget pAmqpCommunicationTarget);
 
@@ -39,6 +62,7 @@ public interface IPublisher {
      * @param pAmqpCommunicationTarget
      *            publishing scope
      */
+    @Deprecated
     <T> void publish(T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
             AmqpCommunicationTarget pAmqpCommunicationTarget, int pPriority);
 
@@ -54,6 +78,7 @@ public interface IPublisher {
      * @param pAmqpCommunicationTarget
      *            publishing scope
      */
+    @Deprecated
     <T> void publish(String pTenant, T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
             AmqpCommunicationTarget pAmqpCommunicationTarget);
 
@@ -71,6 +96,7 @@ public interface IPublisher {
      * @param pAmqpCommunicationTarget
      *            publishing scope
      */
+    @Deprecated
     <T> void publish(String pTenant, T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
             AmqpCommunicationTarget pAmqpCommunicationTarget, int pPriority);
 

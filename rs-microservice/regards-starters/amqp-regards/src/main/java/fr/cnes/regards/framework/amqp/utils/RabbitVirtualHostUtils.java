@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.framework.amqp.utils;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.codec.Base64;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
@@ -146,8 +146,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
     public String encode(String pRabbitmqUserName, String pRabbitmqPassword) {
         final String fullCredential = pRabbitmqUserName + COLON + pRabbitmqPassword;
         final byte[] plainCredsBytes = fullCredential.getBytes();
-        final byte[] base64CredsBytes = Base64.encode(plainCredsBytes);
-        return new String(base64CredsBytes);
+        return Base64.getEncoder().encodeToString(plainCredsBytes);
     }
 
     @Override

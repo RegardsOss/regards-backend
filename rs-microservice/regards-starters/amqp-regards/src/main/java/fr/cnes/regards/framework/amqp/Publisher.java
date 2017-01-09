@@ -11,20 +11,21 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
 
 /**
  * @author svissier
  * @author lmieulet
+ * @author Marc Sordi
  *
  */
 public class Publisher implements IPublisher {
@@ -32,7 +33,7 @@ public class Publisher implements IPublisher {
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(Publisher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Publisher.class);
 
     /**
      * bean allowing us to send message to the broker
@@ -49,12 +50,30 @@ public class Publisher implements IPublisher {
      */
     private final IRabbitVirtualHostUtils rabbitVirtualHostUtils;
 
+    /**
+     * Resolve thread tenant
+     */
+    private final IThreadTenantResolver threadTenantResolver;
+
     public Publisher(final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
-            final IRabbitVirtualHostUtils pRabbitVirtualHostUtils) {
+            final IRabbitVirtualHostUtils pRabbitVirtualHostUtils, IThreadTenantResolver pThreadTenantResolver) {
         super();
         rabbitTemplate = pRabbitTemplate;
         regardsAmqpAdmin = pRegardsAmqpAdmin;
         rabbitVirtualHostUtils = pRabbitVirtualHostUtils;
+        this.threadTenantResolver = pThreadTenantResolver;
+    }
+
+    @Override
+    public <T extends ISubscribable> void publish(T pEvent) {
+        publish(threadTenantResolver.getTenant(), pEvent, AmqpCommunicationMode.ONE_TO_MANY,
+                AmqpCommunicationTarget.EXTERNAL, 0);
+    }
+
+    @Override
+    public <T extends IPollable> void publish(T pEvent) {
+        publish(threadTenantResolver.getTenant(), pEvent, AmqpCommunicationMode.ONE_TO_ONE,
+                AmqpCommunicationTarget.INTERNAL, 0);
     }
 
     /**
@@ -66,12 +85,10 @@ public class Publisher implements IPublisher {
      *            publishing mode
      * @param pAmqpCommunicationTarget
      *            publishing scope
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     @Override
     public final <T> void publish(final T pEvt, final AmqpCommunicationMode pAmqpCommunicationMode,
-            final AmqpCommunicationTarget pAmqpCommunicationTarget) throws RabbitMQVhostException {
+            final AmqpCommunicationTarget pAmqpCommunicationTarget) {
         publish(pEvt, pAmqpCommunicationMode, pAmqpCommunicationTarget, 0);
     }
 
@@ -86,21 +103,16 @@ public class Publisher implements IPublisher {
      *            publishing mode
      * @param pAmqpCommunicationTarget
      *            publishing scope
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     @Override
     public final <T> void publish(final T pEvt, final AmqpCommunicationMode pAmqpCommunicationMode,
-            final AmqpCommunicationTarget pAmqpCommunicationTarget, final int pPriority) throws RabbitMQVhostException {
+            final AmqpCommunicationTarget pAmqpCommunicationTarget, final int pPriority) {
 
-        final JWTAuthentication auth = ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication());
-        if ((auth != null) && (auth.getTenant() != null)) {
-            final String tenant = ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication())
-                    .getTenant();
-            this.publish(tenant, pEvt, pAmqpCommunicationMode, pAmqpCommunicationTarget, pPriority);
+        String tenant = threadTenantResolver.getTenant();
+        if (tenant != null) {
+            publish(tenant, pEvt, pAmqpCommunicationMode, pAmqpCommunicationTarget, pPriority);
         } else {
-            LOG.error("[AMQP Publisher] Unable to publish event {}. Cause : Authentication context do not contains tenant information.",
-                      pEvt.getClass());
+            LOGGER.error("[AMQP Publisher] Unable to publish event {} because no tenant found.", pEvt.getClass());
         }
     }
 
@@ -115,13 +127,11 @@ public class Publisher implements IPublisher {
      *            publishing mode
      * @param pAmqpCommunicationTarget
      *            publishing scope
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     @Override
     public final <T> void publish(final String pTenant, final T pEvt,
-            final AmqpCommunicationMode pAmqpCommunicationMode, final AmqpCommunicationTarget pAmqpCommunicationTarget)
-            throws RabbitMQVhostException {
+            final AmqpCommunicationMode pAmqpCommunicationMode,
+            final AmqpCommunicationTarget pAmqpCommunicationTarget) {
         publish(pTenant, pEvt, pAmqpCommunicationMode, pAmqpCommunicationTarget, 0);
     }
 
@@ -138,13 +148,11 @@ public class Publisher implements IPublisher {
      *            publishing mode
      * @param pAmqpCommunicationTarget
      *            publishing scope
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     @Override
     public final <T> void publish(final String pTenant, final T pEvt,
             final AmqpCommunicationMode pAmqpCommunicationMode, final AmqpCommunicationTarget pAmqpCommunicationTarget,
-            final int pPriority) throws RabbitMQVhostException {
+            final int pPriority) {
         final Class<?> evtClass = pEvt.getClass();
         // add the Vhost corresponding to this tenant
         rabbitVirtualHostUtils.addVhost(pTenant);

@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -23,10 +23,10 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  */
 public class MaintenanceFilter extends OncePerRequestFilter {
 
-    private final JWTService jwtService;
+    private final IThreadTenantResolver resolver;
 
-    public MaintenanceFilter(JWTService pJwtService) {
-        jwtService = pJwtService;
+    public MaintenanceFilter(IThreadTenantResolver pResolver) {
+        this.resolver = pResolver;
     }
 
     @Override
@@ -36,8 +36,7 @@ public class MaintenanceFilter extends OncePerRequestFilter {
         if (pRequest.getMethod().equals(HttpMethod.GET.name())) {
             pFilterChain.doFilter(pRequest, pResponse);
         } else {
-            String tenant = jwtService.getActualTenant();
-            if (MaintenanceManager.getMaintenance(tenant)) {
+            if (MaintenanceManager.getMaintenance(resolver.getTenant())) {
                 pResponse.sendError(HttpStatus.SERVICE_UNAVAILABLE.value(), "Tenant in maintenance");
             } else {
                 pFilterChain.doFilter(pRequest, pResponse);

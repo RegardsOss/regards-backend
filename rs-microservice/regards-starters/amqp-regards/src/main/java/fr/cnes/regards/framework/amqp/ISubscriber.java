@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.amqp;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 
 /**
  *
@@ -13,10 +14,22 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
  *
  * @author Sylvain Vissière-Guérinet
  * @author Sébastien Binda
+ * @author Marc Sordi
  * @since 1.0-SNAPSHOT
  */
-@FunctionalInterface
 public interface ISubscriber {
+
+    /**
+     * Subscribe to an {@link ISubscribable} event
+     *
+     * @param <T>
+     *            {@link ISubscribable} event
+     * @param pEvent
+     *            {@link ISubscribable} event
+     * @param pReceiver
+     *            event {@link IHandler}
+     */
+    <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver);
 
     /**
      *
@@ -33,6 +46,7 @@ public interface ISubscriber {
      * @param pAmqpCommunicationTarget
      *            communication scope
      */
+    @Deprecated
     <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver,
             final AmqpCommunicationMode pAmqpCommunicationMode, final AmqpCommunicationTarget pAmqpCommunicationTarget);
 
