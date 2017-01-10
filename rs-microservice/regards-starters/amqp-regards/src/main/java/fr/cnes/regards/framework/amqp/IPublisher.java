@@ -5,8 +5,8 @@ package fr.cnes.regards.framework.amqp;
 
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
-import fr.cnes.regards.framework.amqp.event.IPollable;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.IPollableEvent;
+import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
 
 /**
  * Interface for publishing events
@@ -17,24 +17,24 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 public interface IPublisher {
 
     /**
-     * Publish an {@link ISubscribable} event
+     * Publish an {@link ISubscribableEvent} event
      *
      * @param <T>
-     *            {@link ISubscribable} event
+     *            {@link ISubscribableEvent} event
      * @param pEvent
-     *            {@link ISubscribable} event to publish
+     *            {@link ISubscribableEvent} event to publish
      */
-    <T extends ISubscribable> void publish(T pEvent);
+    <T extends ISubscribableEvent> void publish(T pEvent);
 
     /**
-     * Publish an {@link IPollable} event
+     * Publish an {@link IPollableEvent} event
      *
      * @param <T>
-     *            {@link IPollable} event
+     *            {@link IPollableEvent} event
      * @param pEvent
-     *            {@link IPollable} event to publish
+     *            {@link IPollableEvent} event to publish
      */
-    <T extends IPollable> void publish(T pEvent);
+    <T extends IPollableEvent> void publish(T pEvent);
 
     /**
      * @param <T>

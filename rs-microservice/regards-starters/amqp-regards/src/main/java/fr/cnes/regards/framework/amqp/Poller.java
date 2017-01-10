@@ -12,7 +12,7 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.IPollableEvent;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 
@@ -47,7 +47,10 @@ public class Poller implements IPoller {
     }
 
     @Override
-    public <T extends IPollable> TenantWrapper<T> poll(String pTenant, Class<T> pEvent) {
+    public <T extends IPollableEvent> TenantWrapper<T> poll(String pTenant, Class<T> pEvent) {
+        AmqpCommunicationMode mode;
+        AmqpCommunicationTarget target;
+
         return poll(pTenant, pEvent, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.INTERNAL);
     }
 

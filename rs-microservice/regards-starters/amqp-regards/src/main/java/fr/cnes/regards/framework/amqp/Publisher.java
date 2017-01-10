@@ -16,8 +16,8 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.event.IPollable;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.IPollableEvent;
+import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
@@ -65,13 +65,13 @@ public class Publisher implements IPublisher {
     }
 
     @Override
-    public <T extends ISubscribable> void publish(T pEvent) {
+    public <T extends ISubscribableEvent> void publish(T pEvent) {
         publish(threadTenantResolver.getTenant(), pEvent, AmqpCommunicationMode.ONE_TO_MANY,
                 AmqpCommunicationTarget.EXTERNAL, 0);
     }
 
     @Override
-    public <T extends IPollable> void publish(T pEvent) {
+    public <T extends IPollableEvent> void publish(T pEvent) {
         publish(threadTenantResolver.getTenant(), pEvent, AmqpCommunicationMode.ONE_TO_ONE,
                 AmqpCommunicationTarget.INTERNAL, 0);
     }

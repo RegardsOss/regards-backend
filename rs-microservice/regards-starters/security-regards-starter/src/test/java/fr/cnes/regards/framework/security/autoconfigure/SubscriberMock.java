@@ -7,7 +7,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 
 /**
@@ -29,7 +29,7 @@ public class SubscriberMock implements ISubscriber {
     }
 
     @Override
-    public <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver) {
+    public <T extends ISubscribableEvent> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver) {
         // Nothing to do.
     }
 

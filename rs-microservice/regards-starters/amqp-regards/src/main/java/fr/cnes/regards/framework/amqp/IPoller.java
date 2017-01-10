@@ -6,7 +6,7 @@ package fr.cnes.regards.framework.amqp;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.IPollableEvent;
 
 /**
  * @author Marc Sordi
@@ -16,14 +16,14 @@ public interface IPoller {
 
     /**
      * @param <T>
-     *            {@link IPollable} event
+     *            {@link IPollableEvent} event
      * @param pTenant
      *            tenant
      * @param pEvent
-     *            {@link IPollable} event
-     * @return {@link IPollable} event in a tenant wrapper
+     *            {@link IPollableEvent} event
+     * @return {@link IPollableEvent} event in a tenant wrapper
      */
-    <T extends IPollable> TenantWrapper<T> poll(String pTenant, Class<T> pEvent);
+    <T extends IPollableEvent> TenantWrapper<T> poll(String pTenant, Class<T> pEvent);
 
     /**
      *
