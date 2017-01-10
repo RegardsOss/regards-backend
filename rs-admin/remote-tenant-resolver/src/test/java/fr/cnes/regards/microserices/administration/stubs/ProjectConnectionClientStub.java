@@ -3,11 +3,17 @@
  */
 package fr.cnes.regards.microserices.administration.stubs;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
@@ -22,13 +28,16 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
 public class ProjectConnectionClientStub implements IProjectConnectionClient {
 
     @Override
-    public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(final String pProjectName,
-            final String pMicroService) {
-
+    public ResponseEntity<PagedResources<Resource<ProjectConnection>>> retrieveProjectsConnections(
+            final String pProjectName, final String pMicroService) {
+        final List<Resource<ProjectConnection>> resources = new ArrayList<>();
         final ProjectConnection connection = new ProjectConnection(0L, ProjectClientStub.PROJECT, pMicroService, "", "",
                 "", "");
-        final Resource<ProjectConnection> resource = new Resource<ProjectConnection>(connection);
-        return new ResponseEntity<Resource<ProjectConnection>>(resource, HttpStatus.OK);
+        resources.add(new Resource<ProjectConnection>(connection));
+
+        final PagedResources<Resource<ProjectConnection>> page = new PagedResources<>(resources,
+                new PageMetadata(1, 1, 1), new ArrayList<>());
+        return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
     @Override

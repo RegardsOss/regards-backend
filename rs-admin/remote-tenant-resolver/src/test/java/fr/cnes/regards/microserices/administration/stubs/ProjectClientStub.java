@@ -38,9 +38,9 @@ public class ProjectClientStub implements IProjectsClient {
 
     @Override
     public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(final int pPage, final int pSize) {
-        final List<Resource<Project>> resouces = new ArrayList<>();
-        resouces.add(new Resource<Project>(PROJECT));
-        final PagedResources<Resource<Project>> page = new PagedResources<>(resouces, new PageMetadata(pSize, pPage, 1),
+        final List<Resource<Project>> resources = new ArrayList<>();
+        resources.add(new Resource<Project>(PROJECT));
+        final PagedResources<Resource<Project>> page = new PagedResources<>(resources, new PageMetadata(pSize, pPage, 1),
                 new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }

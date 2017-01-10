@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -112,10 +113,10 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
         ProjectConnection projectConnection = null;
 
         try {
-            final ResponseEntity<Resource<ProjectConnection>> response = projectConnectionsClient
-                    .retrieveProjectConnection(pProjectName, microserviceName);
+            final ResponseEntity<PagedResources<Resource<ProjectConnection>>> response = projectConnectionsClient
+                    .retrieveProjectsConnections(pProjectName, microserviceName);
             if (response.getStatusCode().equals(HttpStatus.OK)) {
-                projectConnection = response.getBody().getContent();
+                projectConnection = response.getBody().iterator().next().getContent();
             }
 
         } catch (final FeignException e) {

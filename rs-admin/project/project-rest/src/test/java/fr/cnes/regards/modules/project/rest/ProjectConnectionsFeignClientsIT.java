@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
 import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,8 +62,8 @@ public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
                     .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
                     .target(new TokenClientProvider<>(IProjectConnectionClient.class,
                             "http://" + serverAddress + ":" + getPort()));
-            ResponseEntity<Resource<ProjectConnection>> connections = projectsClient
-                    .retrieveProjectConnection("test", "rs-test");
+            ResponseEntity<PagedResources<Resource<ProjectConnection>>> connections = projectsClient
+                    .retrieveProjectsConnections("test", "rs-test");
             Assert.assertTrue(connections.getStatusCode().equals(HttpStatus.OK));
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
