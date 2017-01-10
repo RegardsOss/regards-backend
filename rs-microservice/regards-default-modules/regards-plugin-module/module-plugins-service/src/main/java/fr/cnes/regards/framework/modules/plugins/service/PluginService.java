@@ -11,16 +11,12 @@ import java.util.NoSuchElementException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.plugins.autoconfigure.PluginUtilsProperties;
 import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
@@ -32,19 +28,12 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * @author Christophe Mertz
  * @author Sébastien Binda
  */
-@Service
 public class PluginService implements IPluginService {
 
     /**
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
-
-    /**
-     * The properties of the plugins : the package to scan to find {@link PluginInterface}.
-     */
-    @Autowired
-    private PluginUtilsProperties properties;
 
     /**
      * The plugin's package to scan
@@ -71,6 +60,18 @@ public class PluginService implements IPluginService {
     public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository) {
         super();
         pluginConfRepository = pPluginConfigurationRepository;
+    }
+
+    public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository,
+            List<String> pPackagesToScan) {
+        super();
+        pluginConfRepository = pPluginConfigurationRepository;
+        if (pPackagesToScan != null && !pPackagesToScan.isEmpty()) {
+            if (pluginPackage == null) {
+                pluginPackage = new ArrayList<>();
+            }
+            pluginPackage.addAll(pPackagesToScan);
+        }
     }
 
     private Map<String, PluginMetaData> getLoadedPlugins() {
@@ -247,9 +248,6 @@ public class PluginService implements IPluginService {
     private List<String> getPluginPackage() {
         if (pluginPackage == null) {
             pluginPackage = new ArrayList<>();
-            if ((properties != null) && (properties.getPackagesToScan() != null)) {
-                pluginPackage.addAll(properties.getPackagesToScan());
-            }
         }
         return pluginPackage;
     }
