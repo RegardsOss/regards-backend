@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -46,7 +47,7 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 @Configuration
 @EnableJpaRepositories(
         includeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
-        basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "instanceEntityManagerFactory",
+        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "instanceEntityManagerFactory",
         transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties(InstanceDaoProperties.class)
@@ -86,7 +87,7 @@ public class InstanceJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public InstanceJpaAutoConfiguration() throws MultiDataBasesException {
-        DaoUtils.checkClassPath(DaoUtils.PACKAGES_TO_SCAN);
+        DaoUtils.checkClassPath(DaoUtils.ROOT_PACKAGE);
     }
 
     /**
@@ -133,8 +134,8 @@ public class InstanceJpaAutoConfiguration {
         hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
         hibernateProps.put(DataSourceHelper.HIBERNATE_ID_GENERATOR_PROP, "true");
 
-        final List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, InstanceEntity.class,
-                                                                    null);
+        final Set<String> packagesToScan = DaoUtils.findPackagesForJpa();
+        final List<Class<?>> packages = DaoUtils.scanPackagesForJpa(InstanceEntity.class, null, packagesToScan);
 
         return pBuilder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();

@@ -4,11 +4,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.plugins</groupId>
+	<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 	<artifactId>module-plugins-rest</artifactId>
 
 	<parent>
-		<groupId>fr.cnes.regards.modules</groupId>
+		<groupId>fr.cnes.regards.framework.modules</groupId>
 		<artifactId>module-plugins</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
@@ -19,7 +19,7 @@
 			<artifactId>microservice-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.plugins</groupId>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>module-plugins-service</artifactId>
 		</dependency>
 		<!-- Test dependencies -->		
@@ -29,7 +29,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.plugins</groupId>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>module-plugins-test</artifactId>
 			<scope>test</scope>
 			<type>test-jar</type>			
