@@ -222,7 +222,7 @@ public class MultitenantJpaAutoConfiguration {
         }
 
         // Find classpath for each Entity and not NonStandardEntity
-        final Set<String> packagesToScan = DaoUtils.findPackagesForJpa();
+        final Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
         final List<Class<?>> packages = DaoUtils.scanPackagesForJpa(Entity.class, InstanceEntity.class, packagesToScan);
 
         return pBuilder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)

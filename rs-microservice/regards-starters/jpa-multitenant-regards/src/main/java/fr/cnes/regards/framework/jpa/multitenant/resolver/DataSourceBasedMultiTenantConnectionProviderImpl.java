@@ -146,7 +146,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         final MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder()
                 .applySetting(Environment.DIALECT, dialect).applySetting(Environment.DATASOURCE, pDataSource).build());
 
-        Set<String> packagesToScan = DaoUtils.findPackagesForJpa();
+        Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
         packagesToScan.stream()
                 .flatMap(pPackage -> DaoUtils.scanPackageForJpa(pPackage, Entity.class, InstanceEntity.class).stream())
                 .forEach(classe -> metadata.addAnnotatedClass(classe));
