@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
@@ -83,7 +84,7 @@ public final class DaoUtils {
 
         LOG.info("Checking classpath for conflicts between instance and projects databases ...");
 
-        final Set<String> packagesToScan = findPackagesForJpa();
+        final Set<String> packagesToScan = findPackagesForJpa(pPackageToScan);
         final List<Class<?>> instanceClasses = DaoUtils.scanPackagesForJpa(InstanceEntity.class, null, packagesToScan);
         final List<Class<?>> projectsClasses = DaoUtils.scanPackagesForJpa(Entity.class, InstanceEntity.class,
                                                                            packagesToScan);
@@ -107,7 +108,7 @@ public final class DaoUtils {
 
     }
 
-    public static Set<String> findPackagesForJpa() {
+    public static Set<String> findPackagesForJpa(String rootPackage) {
         // 2 Add Entity for database mapping from classpath but only for entities from modules that provide repository
         // AND framework entities
         // Why ? If a module depends on a <other_module>-client it contains entities that MUST NOT be taken into account
@@ -116,21 +117,26 @@ public final class DaoUtils {
         Set<String> packagesToScan = new HashSet<>();
         try {
             ClassPath classpath = ClassPath.from(ClassLoader.getSystemClassLoader());
-            ImmutableSet<ClassPath.ClassInfo> classInfos = classpath.getAllClasses();
+            ImmutableSet<ClassPath.ClassInfo> classInfos = classpath.getTopLevelClassesRecursive(rootPackage);
             for (ClassPath.ClassInfo info : classInfos) {
                 // Add all framework package if one of its class is into classpath (this always should be the case)
                 if (info.getPackageName().startsWith(DaoUtils.FRAMEWORK_PACKAGE)) {
                     packagesToScan.add(DaoUtils.FRAMEWORK_PACKAGE);
-                } else
+                } else {
+                    // Restrict to fr.cnes.regards.modules package and search for "Repository" classes
+                    // A "Repository" is an interface extending org.springframework.data.repository.Repository
+                    // or a class annotated with @Repository
+                    Class<?> clazz = info.load();
                     if (info.getPackageName().startsWith(DaoUtils.MODULES_PACKAGE)
-                            && info.getName().contains("Repository")) {
-                        // Restrict to fr.cnes.regards.modules package and search for "Repository" classes
+                            && (org.springframework.data.repository.Repository.class.isAssignableFrom(clazz)
+                                    || clazz.isAnnotationPresent(Repository.class))) {
                         // package name has format : fr.cnes.regards.modules.(name)....
                         // We must only take fr.cnes.regards.modules.(name)
                         String packageEnd = info.getPackageName().substring(DaoUtils.MODULES_PACKAGE.length() + 1);
                         packagesToScan
                                 .add(DaoUtils.MODULES_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.')));
                     }
+                }
             }
         } catch (IOException e) {
             Throwables.propagate(e);

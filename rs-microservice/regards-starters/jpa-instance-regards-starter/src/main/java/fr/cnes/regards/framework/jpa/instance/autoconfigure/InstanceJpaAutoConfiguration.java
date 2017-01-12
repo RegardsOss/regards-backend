@@ -134,7 +134,7 @@ public class InstanceJpaAutoConfiguration {
         hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
         hibernateProps.put(DataSourceHelper.HIBERNATE_ID_GENERATOR_PROP, "true");
 
-        final Set<String> packagesToScan = DaoUtils.findPackagesForJpa();
+        final Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
         final List<Class<?>> packages = DaoUtils.scanPackagesForJpa(InstanceEntity.class, null, packagesToScan);
 
         return pBuilder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
