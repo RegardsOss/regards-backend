@@ -167,7 +167,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
                                                         Matchers.hasToString("[false]")));
 
         performGet(PluginController.PLUGINS_CONFIGS, token, expectations,
-                          "unable to load all plugin configuration of a specific plugin id", PLUGIN_ID);
+                   "unable to load all plugin configuration of a specific plugin id", PLUGIN_ID);
     }
 
     @Test
@@ -208,7 +208,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isNotFound());
         performGet(PluginController.PLUGINS_CONFIGID, token, expectations, "unable to load a plugin configuration",
-                          pluginId, configId);
+                   pluginId, configId);
     }
 
     @Test
@@ -237,7 +237,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
         // Update the added PluginConfiguration
         performPut(PluginController.PLUGINS_CONFIGID, token, aPluginConfiguration, expectations,
-                          "unable to update a plugin configuration", PLUGIN_ID, aPluginConfiguration.getId());
+                   "unable to update a plugin configuration", PLUGIN_ID, aPluginConfiguration.getId());
     }
 
     @Test
@@ -258,7 +258,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
         // Update the added PluginConfiguration
         performPut(PluginController.PLUGINS_CONFIGID, token, aPluginConfiguration, expectations,
-                          "unable to update a plugin configuration", PLUGIN_ID, 9989L);
+                   "unable to update a plugin configuration", PLUGIN_ID, 9989L);
     }
 
     @Test
@@ -324,7 +324,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 pluginParameters, 0);
         // we use a Stub Repository, it is necessary to set the Id
-        aPluginConfiguration.setId(AN_ID+339);
+        aPluginConfiguration.setId(AN_ID + 339);
 
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isCreated());
@@ -338,7 +338,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
                 .add(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic", Matchers.hasToString("false")));
 
         performPost(PluginController.PLUGINS_CONFIGS, token, aPluginConfiguration, expectations,
-                           "unable to save a plugin configuration", PLUGIN_ID);
+                    "unable to save a plugin configuration", PLUGIN_ID);
     }
 
     @Test

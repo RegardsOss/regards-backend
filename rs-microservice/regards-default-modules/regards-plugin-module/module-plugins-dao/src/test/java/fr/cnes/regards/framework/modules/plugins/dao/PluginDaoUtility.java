@@ -84,7 +84,7 @@ public class PluginDaoUtility extends AbstractDaoTest {
      */
     static final List<PluginParameter> PARAMETERS2 = PluginParametersFactory.build()
             .addParameterDynamic("param-dyn21", RED, DYNAMICVALUES)
-            .addParameterDynamic("param-dyn31", GREEN, DYNAMICVALUES).addParameter("param41", "value41")
+            .addParameterDynamic("param-dyn31", GREEN, DYNAMICVALUES).addParameter("param31", "value31")
             .addParameter("param51", "value51").addParameter("param61", "value61").getParameters();
 
     /**

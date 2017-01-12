@@ -8,7 +8,7 @@ import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * class regrouping properties about the plugins
+ * class regrouping properties about the plugins. Get the properties regards.plugins.packages-to-scan.
  * 
  * @author Christophe Mertz
  *
@@ -20,7 +20,7 @@ public class PluginUtilsProperties {
      * A {@link List} of package to scan
      */
     private List<String> packagesToScan;
-    
+
     public List<String> getPackagesToScan() {
         return packagesToScan;
     }
