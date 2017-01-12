@@ -16,10 +16,10 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
  *
@@ -223,13 +223,13 @@ public final class PluginParameterUtils {
      * @param pPrefixs
      *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPlgParameters
-     *            an optional set of {@link fr.cnes.regards.modules.plugins.domain.PluginParameter}
+     *            an optional set of {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter}
      * 
      * @throws PluginUtilsException
      *             if any error occurs
      */
     public static <T> void postProcess(final T pReturnPlugin, final PluginConfiguration pPlgConf,
-            final List<String> pPrefixs, final fr.cnes.regards.modules.plugins.domain.PluginParameter... pPlgParameters)
+            final List<String> pPrefixs, final fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters)
             throws PluginUtilsException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Starting postProcess :" + pReturnPlugin.getClass().getSimpleName());
@@ -270,14 +270,14 @@ public final class PluginParameterUtils {
      * @param pPrefixs
      *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPlgParameters
-     *            an optional set of {@link fr.cnes.regards.modules.plugins.domain.PluginParameter}
+     *            an optional set of {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter}
      * 
      * @throws PluginUtilsException
      *             if any error occurs
      */
     private static <T> void processPluginParameter(final T pPluginInstance, final PluginConfiguration pPlgConf,
             final Field pField, final PluginParameter pPlgParamAnnotation, final List<String> pPrefixs,
-            fr.cnes.regards.modules.plugins.domain.PluginParameter... pPlgParameters) throws PluginUtilsException {
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters) throws PluginUtilsException {
 
         // Inject value
         ReflectionUtils.makeAccessible(pField);
@@ -318,14 +318,14 @@ public final class PluginParameterUtils {
      * @param pPlgParamAnnotation
      *            the plugin parameter
      * @param pPlgParameters
-     *            an optional set of {@link fr.cnes.regards.modules.plugins.domain.PluginParameter}
+     *            an optional set of {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter}
      * 
      * @throws PluginUtilsException
      *             if any error occurs
      */
     private static <T> void postProcessPrimitiveType(T pPluginInstance, PluginConfiguration pPlgConf, Field pField,
             final Optional<PrimitiveObject> pTypeWrapper, PluginParameter pPlgParamAnnotation,
-            fr.cnes.regards.modules.plugins.domain.PluginParameter... pPlgParameters) throws PluginUtilsException {
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters) throws PluginUtilsException {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Starting postProcessPrimitiveType :" + pPlgParamAnnotation.name());
@@ -338,14 +338,14 @@ public final class PluginParameterUtils {
             /*
              * Test if a specific value is given for this annotation parameter
              */
-            final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> aDynamicPlgParam = Arrays
+            final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> aDynamicPlgParam = Arrays
                     .asList(pPlgParameters).stream().filter(s -> s.getName().equals(pPlgParamAnnotation.name()))
                     .findFirst();
             if (aDynamicPlgParam.isPresent()) {
                 /*
                  * Test if this parameter is set as dynamic in the plugin configuration
                  */
-                final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> cfd = pPlgConf.getParameters()
+                final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> cfd = pPlgConf.getParameters()
                         .stream().filter(s -> s.getName().equals(aDynamicPlgParam.get().getName()) && s.isDynamic())
                         .findFirst();
                 if (cfd.isPresent()) {
@@ -441,8 +441,8 @@ public final class PluginParameterUtils {
      *             if any error occurs
      */
     private static String postProcessDynamicValues(final String pParamValue,
-            final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> pConfiguredPlgParam,
-            final Optional<fr.cnes.regards.modules.plugins.domain.PluginParameter> pDynamicPlgParam)
+            final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> pConfiguredPlgParam,
+            final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> pDynamicPlgParam)
             throws PluginUtilsException {
         LOGGER.debug(String.format("Starting postProcessDynamicValues : %s - init value= <%s>",
                                    pDynamicPlgParam.get().getName(), pParamValue));

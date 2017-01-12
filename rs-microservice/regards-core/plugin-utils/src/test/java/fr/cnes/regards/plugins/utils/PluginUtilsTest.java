@@ -12,9 +12,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.plugins.utils.PluginParameterUtils.PrimitiveObject;
 
 /**
@@ -270,7 +270,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set parameters : Missing coeff parameter
          */
-        final List<fr.cnes.regards.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory.build()
+        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, "false").addParameter(SamplePlugin.SUFFIXE, "chris_test_3")
                 .getParameters();
 
@@ -292,7 +292,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set parameters
          */
-        final List<fr.cnes.regards.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory.build()
+        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.SUFFIXE, "chris_test_4")
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.CINQ).getParameters();
