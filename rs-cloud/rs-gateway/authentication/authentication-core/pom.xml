@@ -38,10 +38,6 @@
 		</dependency>
 		<!-- Regards dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules.plugins</groupId>
-			<artifactId>module-plugins-service</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
 			<artifactId>accessrights-client</artifactId>
 		</dependency>
@@ -65,15 +61,13 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.plugins</groupId>
-			<artifactId>module-plugins-test</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>plugins-regards-starter</artifactId>
 		</dependency>
 	</dependencies>
 </project>

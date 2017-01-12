@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE configuration>
 <!-- LICENSE_PLACEHOLDER -->
 <configuration>
 
@@ -11,7 +10,10 @@
 		</encoder>
 	</appender>
 
-	<root level="info">
+	<logger name="fr.cnes.regards" level="DEBUG" />
+	<logger name="org.springframework" level="INFO" />
+
+	<root level="debug">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>

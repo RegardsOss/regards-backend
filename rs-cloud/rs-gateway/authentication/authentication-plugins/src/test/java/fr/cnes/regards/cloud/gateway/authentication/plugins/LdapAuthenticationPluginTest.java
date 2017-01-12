@@ -23,9 +23,9 @@ import org.mockito.Mockito;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.ldap.LdapAuthenticationPlugin;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
@@ -43,7 +43,7 @@ public class LdapAuthenticationPluginTest {
     /**
      * Test email to return by ldap mock
      */
-    private final static String EMAIL = "test@regards.fr";
+    private static final String EMAIL = "test@regards.fr";
 
     /**
      * LDAP Authentication plugin to test

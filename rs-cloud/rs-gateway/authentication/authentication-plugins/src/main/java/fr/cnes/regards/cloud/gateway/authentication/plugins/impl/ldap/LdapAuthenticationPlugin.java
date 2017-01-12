@@ -26,10 +26,9 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
-import fr.cnes.regards.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.plugins.annotations.PluginInit;
-import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
-
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 /**
  *
  * Class LdapAuthenticationPlugin

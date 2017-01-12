@@ -22,19 +22,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.ExternalAuthenticationInformations;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos.KerberosServiceProviderPlugin;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
 
 /**
  *
- * Class AuthenticationControllerTest
+ * Class AuthenticationControllerIT
  *
  * Test REST endpoints to manage Service provider plugins
  *
@@ -45,12 +43,12 @@ import fr.cnes.regards.modules.project.domain.Project;
  */
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
 @ComponentScan("fr.cnes.regards.framework.authentication")
-public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
+public class ExternalAuthenticationControllerIT extends AbstractRegardsIT {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ExternalAuthenticationControllerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExternalAuthenticationControllerIT.class);
 
     /**
      * Access route
@@ -73,11 +71,6 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
     private static String token = "";
 
     /**
-     * Plugin id for this test
-     */
-    private static final Long PLUGIN_ID_TEST = 0L;
-
-    /**
      * Default plugin version
      */
     private static final String DEFAULT_PLUGIN_VERSION = "1.0";
@@ -98,8 +91,10 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
     @Autowired
     private IPluginConfigurationRepository pluginConfRepo;
 
-    @Autowired
-    private IProjectsClient projectsClient;
+    /**
+     * A {@link PluginConfiguration} used in the test
+     */
+    private PluginConfiguration aPluginConfSaved;
 
     @Override
     protected Logger getLogger() {
@@ -108,26 +103,23 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
 
     /**
      *
-     * Init repository and resource accesses
-     *
-     * @throws EntityException
-     *             test error
+     * Init the context of the tests
      *
      * @since 1.0-SNAPSHOT
      */
     @Before
-    public void init() throws EntityException {
-
-        // SAve project
-        projectsClient.createProject(new Project("description", "icon", true, DEFAULT_TENANT));
+    public void init() {
+        JWTService jwtService = new JWTService();
+        jwtService.setSecret("123456789");
+        jwtService.injectMockToken(DEFAULT_TENANT, "PUBLIC");
+        jwtService.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DEFAULT_ROLE);
 
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
-        conf.setId(0L);
-        pluginConfRepo.save(conf);
+        aPluginConfSaved = pluginConfRepo.save(conf);
 
         manageDefaultSecurity(SPS_URL, RequestMethod.GET);
         manageDefaultSecurity(SPS_URL, RequestMethod.POST);
@@ -137,7 +129,7 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
         manageDefaultSecurity(SP_URL, RequestMethod.DELETE);
         manageDefaultSecurity(AUTHENTICATE_URL, RequestMethod.POST);
 
-        token = generateToken("test@regards.fr", DEFAULT_ROLE);
+        token = generateToken(DEFAULT_USER_EMAIL, DEFAULT_ROLE);
     }
 
     /**
@@ -174,7 +166,7 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isArray());
-        performGet(SPS_URL + URL_PATH_SEPARATOR + PLUGIN_ID_TEST, token, expectations,
+        performGet(SPS_URL + URL_PATH_SEPARATOR + aPluginConfSaved.getId().toString(), token, expectations,
                    "retrieveServiceProvider : Error getting Service provider");
     }
 
@@ -233,15 +225,8 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void updateServiceProvider() {
-
         final String newVersion = "2.0";
-
-        final PluginMetaData metadata = new PluginMetaData();
-        metadata.setPluginId(PLUGIN_ID_KERBEROS);
-        metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
-        metadata.setVersion(newVersion);
-        final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
-        conf.setId(0L);
+        aPluginConfSaved.setVersion(newVersion);
 
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -250,8 +235,8 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".version",
                                                         org.hamcrest.Matchers.is(newVersion)));
-        performPut(SPS_URL + URL_PATH_SEPARATOR + PLUGIN_ID_TEST, token, conf, expectations,
-                   "updateServiceProvider : Error getting Service provider");
+        performPut(SPS_URL + URL_PATH_SEPARATOR + aPluginConfSaved.getId().toString(), token, aPluginConfSaved,
+                   expectations, "updateServiceProvider : Error getting Service provider");
     }
 
     /**
@@ -265,17 +250,16 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void updateInexistantServiceProvider() {
-        final Long testId = new Long(1234);
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
-        final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
-        conf.setId(testId);
+        final PluginConfiguration unSavedPluginConf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
+        unSavedPluginConf.setId(12345L);
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
-        performPut(SPS_URL + "/1234", token, conf, expectations,
-                   "updateInexistantServiceProvider : Error getting Service provider");
+        performPut(SPS_URL + URL_PATH_SEPARATOR + unSavedPluginConf.getId().toString(), token, unSavedPluginConf,
+                   expectations, "updateInexistantServiceProvider : Error getting Service provider");
     }
 
     /**
@@ -289,13 +273,12 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void updateInvalidServiceProvider() {
-        final Long testId = new Long(123);
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
-        conf.setId(testId);
+        conf.setId(123L);
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().is(HttpStatus.BAD_REQUEST_400));
         performPut(SPS_URL + "/12", token, conf, expectations,
@@ -312,18 +295,17 @@ public class ExternalAuthenticationControllerTest extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_ARC_010")
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
-    public void deleteIndentityProvider() {
-        final Long testId = new Long(10);
+    public void deleteIdentityProvider() {
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
-        final PluginConfiguration conf = new PluginConfiguration(metadata, "PluginToDelete", 0);
-        conf.setId(testId);
-        pluginConfRepo.save(conf);
+        PluginConfiguration aPluginConfToDelete = new PluginConfiguration(metadata, "PluginToDelete", 0);
+        aPluginConfToDelete = pluginConfRepo.save(aPluginConfToDelete);
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDelete(SPS_URL + "/10", token, expectations, "deleteIndentityProvider : Error getting Service provider");
+        performDelete(SPS_URL + URL_PATH_SEPARATOR + aPluginConfToDelete.getId().toString(), token, expectations,
+                      "deleteIdentityProvider : Error getting Service provider");
     }
 
     /**

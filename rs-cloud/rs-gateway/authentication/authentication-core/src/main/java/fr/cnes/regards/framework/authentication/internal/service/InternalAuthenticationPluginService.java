@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**

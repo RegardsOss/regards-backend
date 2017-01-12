@@ -16,8 +16,7 @@ import fr.cnes.regards.framework.authentication.internal.Oauth2DefaultTokenMessa
 import fr.cnes.regards.framework.authentication.internal.controller.InternalAuthenticationController;
 import fr.cnes.regards.framework.authentication.internal.service.IInternalAuthenticationPluginsService;
 import fr.cnes.regards.framework.authentication.internal.service.InternalAuthenticationPluginService;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 
 /**
  *
@@ -52,16 +51,12 @@ public class Oauth2WebAutoConfiguration extends WebMvcConfigurerAdapter {
      *
      * @param pPluginService
      *            Plugin service
-     * @param pResourceService
-     *            Hateoas Resource Service
      * @return {@link InternalAuthenticationController}
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public InternalAuthenticationController internalAuthenticationController(final IPluginService pPluginService,
-            final IResourceService pResourceService) {
-        return new InternalAuthenticationController(internalAuthenticationPluginService(pPluginService),
-                pResourceService);
+    public InternalAuthenticationController internalAuthenticationController(final IPluginService pPluginService) {
+        return new InternalAuthenticationController(internalAuthenticationPluginService(pPluginService));
     }
 
     /**
