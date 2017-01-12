@@ -15,5 +15,5 @@ package fr.cnes.regards.framework.amqp.domain;
 @FunctionalInterface
 public interface IHandler<T> {
 
-    public void handle(TenantWrapper<T> pT);
+    public void handle(TenantWrapper<T> pWrapper);
 }

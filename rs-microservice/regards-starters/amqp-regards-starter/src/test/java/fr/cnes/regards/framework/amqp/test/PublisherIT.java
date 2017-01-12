@@ -131,14 +131,14 @@ public class PublisherIT {
         try {
             final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class,
                                                                         AmqpCommunicationMode.ONE_TO_MANY, tenant,
-                                                                        AmqpCommunicationTarget.EXTERNAL);
+                                                                        AmqpCommunicationTarget.ALL);
             final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                                               tenant, AmqpCommunicationTarget.EXTERNAL);
+                                                               tenant, AmqpCommunicationTarget.ALL);
             amqpConfiguration.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, tenant);
 
             final TestEvent sended = new TestEvent("test1");
 
-            publisher.publish(sended, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.EXTERNAL);
+            publisher.publish(sended, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.ALL);
             LOGGER.info("SENDED " + sended);
 
             SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(),
@@ -147,7 +147,7 @@ public class PublisherIT {
             @SuppressWarnings("unchecked")
             final TenantWrapper<TestEvent> wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
                     .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class,
-                                                                      AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.EXTERNAL));
+                                                                      AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.ALL));
             // CHECKSTYLE:ON
             SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
 
@@ -174,38 +174,38 @@ public class PublisherIT {
         try {
             final Exchange exchange = amqpConfiguration.declareExchange(TestEvent.class,
                                                                         AmqpCommunicationMode.ONE_TO_ONE, tenant,
-                                                                        AmqpCommunicationTarget.EXTERNAL);
+                                                                        AmqpCommunicationTarget.ALL);
             final Queue queue = amqpConfiguration.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                                               tenant, AmqpCommunicationTarget.EXTERNAL);
+                                                               tenant, AmqpCommunicationTarget.ALL);
             amqpConfiguration.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_ONE, tenant);
 
             final TestEvent priority0 = new TestEvent("priority 0");
             final TestEvent priority1 = new TestEvent("priority 1");
             final TestEvent priority02 = new TestEvent("priority 02");
 
-            publisher.publish(priority0, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.EXTERNAL, 0);
-            publisher.publish(priority1, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.EXTERNAL, 1);
-            publisher.publish(priority02, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.EXTERNAL, 0);
+            publisher.publish(priority0, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.ALL, 0);
+            publisher.publish(priority1, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.ALL, 1);
+            publisher.publish(priority02, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.ALL, 0);
 
             SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(),
                                       RabbitVirtualHostUtils.getVhostName(tenant));
             TenantWrapper<TestEvent> wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
                     .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                                                      AmqpCommunicationTarget.EXTERNAL));
+                                                                      AmqpCommunicationTarget.ALL));
             SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
             Assert.assertEquals(priority1, wrappedMessage.getContent());
 
             SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(),
                                       RabbitVirtualHostUtils.getVhostName(tenant));
             wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate.receiveAndConvert(amqpConfiguration
-                    .getQueueName(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.EXTERNAL));
+                    .getQueueName(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.ALL));
             SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
             Assert.assertEquals(priority0, wrappedMessage.getContent());
 
             SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(),
                                       RabbitVirtualHostUtils.getVhostName(tenant));
             wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate.receiveAndConvert(amqpConfiguration
-                    .getQueueName(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.EXTERNAL));
+                    .getQueueName(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.ALL));
             SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
             Assert.assertEquals(priority02, wrappedMessage.getContent());
         } catch (RabbitMQVhostException e) {

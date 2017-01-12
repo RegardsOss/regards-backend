@@ -33,7 +33,7 @@ public class NewJobPublisher implements INewJobPublisher {
     @Override
     public void sendJob(final long pJobInfoId) throws RabbitMQVhostException {
         final AmqpCommunicationMode amqpCommunicationMode = AmqpCommunicationMode.ONE_TO_ONE;
-        final AmqpCommunicationTarget amqpCommunicationTarget = AmqpCommunicationTarget.INTERNAL;
+        final AmqpCommunicationTarget amqpCommunicationTarget = AmqpCommunicationTarget.MICROSERVICE;
         final NewJobEvent event = new NewJobEvent(pJobInfoId);
         publisher.publish(event, amqpCommunicationMode, amqpCommunicationTarget);
     }

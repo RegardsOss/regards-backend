@@ -52,7 +52,7 @@ public class UpdateAuthoritiesListener {
             final IPublisher eventPublisher = SpringBeanHelper.getBean(IPublisher.class);
             if (eventPublisher != null) {
                 eventPublisher.publish(UpdateAuthoritiesEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                       AmqpCommunicationTarget.EXTERNAL);
+                                       AmqpCommunicationTarget.ALL);
             } else {
                 LOG.error("Impossible to send update authorities event to cloud microservices. The authorities of microservices will not be updated");
             }

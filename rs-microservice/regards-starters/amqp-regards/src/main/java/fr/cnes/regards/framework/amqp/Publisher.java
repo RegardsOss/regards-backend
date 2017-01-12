@@ -16,6 +16,7 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollableEvent;
 import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
@@ -66,14 +67,26 @@ public class Publisher implements IPublisher {
 
     @Override
     public <T extends ISubscribableEvent> void publish(T pEvent) {
+        publish(pEvent, 0);
+    }
+
+    @Override
+    public <T extends ISubscribableEvent> void publish(T pEvent, int pPriority) {
+        Class<?> eventClass = pEvent.getClass();
         publish(threadTenantResolver.getTenant(), pEvent, AmqpCommunicationMode.ONE_TO_MANY,
-                AmqpCommunicationTarget.EXTERNAL, 0);
+                EventUtils.getCommunicationTarget(eventClass), pPriority);
     }
 
     @Override
     public <T extends IPollableEvent> void publish(T pEvent) {
-        publish(threadTenantResolver.getTenant(), pEvent, AmqpCommunicationMode.ONE_TO_ONE,
-                AmqpCommunicationTarget.INTERNAL, 0);
+        publish(pEvent, 0);
+    }
+
+    @Override
+    public <T extends IPollableEvent> void publish(T pEvent, int pPriority) {
+        Class<?> eventClass = pEvent.getClass();
+        publish(threadTenantResolver.getTenant(), pEvent, EventUtils.getCommunicationMode(eventClass),
+                EventUtils.getCommunicationTarget(eventClass), pPriority);
     }
 
     /**

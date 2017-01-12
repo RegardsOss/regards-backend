@@ -39,7 +39,7 @@ public class StoppingJobPublisherTest {
         publisherMock = Mockito.mock(IPublisher.class);
         stoppingJobPublisher = new StoppingJobPublisher(publisherMock);
         mode = AmqpCommunicationMode.ONE_TO_MANY;
-        target = AmqpCommunicationTarget.INTERNAL;
+        target = AmqpCommunicationTarget.MICROSERVICE;
         jobInfoId = 5L;
         stoppingJobEvent = new StoppingJobEvent(jobInfoId);
     }

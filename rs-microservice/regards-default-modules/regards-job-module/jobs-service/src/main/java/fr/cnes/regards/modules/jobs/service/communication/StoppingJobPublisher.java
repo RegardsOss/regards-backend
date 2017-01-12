@@ -32,7 +32,7 @@ public class StoppingJobPublisher implements IStoppingJobPublisher {
     @Override
     public void send(final Long pJobInfoId) throws RabbitMQVhostException {
         final AmqpCommunicationMode mode = AmqpCommunicationMode.ONE_TO_MANY;
-        final AmqpCommunicationTarget target = AmqpCommunicationTarget.INTERNAL;
+        final AmqpCommunicationTarget target = AmqpCommunicationTarget.MICROSERVICE;
         final StoppingJobEvent event = new StoppingJobEvent(pJobInfoId);
         publisher.publish(event, mode, target);
     }

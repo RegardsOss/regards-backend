@@ -76,11 +76,11 @@ public class RegardsAmqpAdminTests {
         final String name = "name";
 
         String expected = name;
-        Assert.assertEquals(expected, regardsAmqpAdmin.getExchangeName(name, AmqpCommunicationTarget.EXTERNAL));
+        Assert.assertEquals(expected, regardsAmqpAdmin.getExchangeName(name, AmqpCommunicationTarget.ALL));
 
         expected = TYPE_IDENTIFIER + UNDERSCORE + name;
 
-        Assert.assertEquals(expected, regardsAmqpAdmin.getExchangeName(name, AmqpCommunicationTarget.INTERNAL));
+        Assert.assertEquals(expected, regardsAmqpAdmin.getExchangeName(name, AmqpCommunicationTarget.MICROSERVICE));
     }
 
     /**
@@ -92,19 +92,19 @@ public class RegardsAmqpAdminTests {
 
         String expectedOneToOne = stringClass.getName();
         Assert.assertEquals(expectedOneToOne, regardsAmqpAdmin
-                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.EXTERNAL));
+                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.ALL));
 
         expectedOneToOne = TYPE_IDENTIFIER + UNDERSCORE + stringClass.getName();
         Assert.assertEquals(expectedOneToOne, regardsAmqpAdmin
-                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.INTERNAL));
+                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.MICROSERVICE));
 
         String expectedOneToMany = stringClass.getName() + UNDERSCORE + INSTANCE_IDENTIFIER;
         Assert.assertEquals(expectedOneToMany, regardsAmqpAdmin
-                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.EXTERNAL));
+                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.ALL));
 
         expectedOneToMany = TYPE_IDENTIFIER + UNDERSCORE + stringClass.getName() + UNDERSCORE + INSTANCE_IDENTIFIER;
         Assert.assertEquals(expectedOneToMany, regardsAmqpAdmin
-                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.INTERNAL));
+                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.MICROSERVICE));
 
     }
 

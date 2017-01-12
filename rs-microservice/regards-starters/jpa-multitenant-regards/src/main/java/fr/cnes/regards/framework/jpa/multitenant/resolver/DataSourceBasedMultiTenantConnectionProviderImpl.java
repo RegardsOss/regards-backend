@@ -123,9 +123,9 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         if (amqpSubscriber != null) {
             final IHandler<NewTenantEvent> tenantHandler = new NewTenantHandler(this, microserviceName);
             amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler, AmqpCommunicationMode.ONE_TO_MANY,
-                                       AmqpCommunicationTarget.EXTERNAL);
+                                       AmqpCommunicationTarget.ALL);
             amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler, AmqpCommunicationMode.ONE_TO_ONE,
-                                       AmqpCommunicationTarget.INTERNAL);
+                                       AmqpCommunicationTarget.MICROSERVICE);
         }
     }
 

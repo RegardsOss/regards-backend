@@ -140,7 +140,7 @@ public class SubscriberIT {
         try {
             subscriberOneToManyExternal.subscribeTo(TestEvent.class, receiverOneToMany,
                                                     AmqpCommunicationMode.ONE_TO_MANY,
-                                                    AmqpCommunicationTarget.EXTERNAL);
+                                                    AmqpCommunicationTarget.ALL);
 
         } catch (RabbitMQVhostException e) {
             LOGGER.error(e.getMessage(), e);
@@ -162,7 +162,7 @@ public class SubscriberIT {
         // CHECKSTYLE:OFF
         rabbitTemplate.convertAndSend(
                                       amqpConfiguration.getExchangeName(TestEvent.class.getName(),
-                                                                        AmqpCommunicationTarget.EXTERNAL),
+                                                                        AmqpCommunicationTarget.ALL),
                                       amqpConfiguration.getRoutingKey("", AmqpCommunicationMode.ONE_TO_MANY), sended,
                                       pMessage -> {
                                           final MessageProperties propertiesWithPriority = pMessage

@@ -10,12 +10,5 @@ package fr.cnes.regards.framework.amqp.event;
  * @author Marc Sordi
  *
  */
-public interface IPollableEvent extends IEvent {
-
-    /**
-     * Define the worker mode
-     *
-     * @return {@link WorkerMode}
-     */
-    WorkerMode withWorkerMode();
+public interface IPollableEvent {
 }

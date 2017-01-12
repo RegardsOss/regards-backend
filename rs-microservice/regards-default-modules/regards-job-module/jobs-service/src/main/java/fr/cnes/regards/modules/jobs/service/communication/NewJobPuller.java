@@ -45,7 +45,7 @@ public class NewJobPuller implements INewJobPuller {
     public Long getJob(final String pProjectName) {
         Long jobInfoId = null;
         final AmqpCommunicationMode pAmqpCommunicationMode = AmqpCommunicationMode.ONE_TO_ONE;
-        final AmqpCommunicationTarget pAmqpCommunicationTarget = AmqpCommunicationTarget.INTERNAL;
+        final AmqpCommunicationTarget pAmqpCommunicationTarget = AmqpCommunicationTarget.MICROSERVICE;
         try {
             final TenantWrapper<NewJobEvent> tenantWrapper = poller
                     .poll(pProjectName, NewJobEvent.class, pAmqpCommunicationMode, pAmqpCommunicationTarget);
