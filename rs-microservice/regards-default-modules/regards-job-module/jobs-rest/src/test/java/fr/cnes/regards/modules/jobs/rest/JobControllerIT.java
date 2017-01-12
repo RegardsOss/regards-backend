@@ -76,22 +76,24 @@ public class JobControllerIT extends AbstractRegardsIT {
         final JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.id", Matchers.hasToString(aJob.getId().toString())));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.owner", Matchers.hasToString(aJob.getOwner())));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.priority",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".id",
+                                                        Matchers.hasToString(aJob.getId().toString())));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".owner",
+                                                        Matchers.hasToString(aJob.getOwner())));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".priority",
                                                         Matchers.hasToString(String.format("%s", aJob.getPriority()))));
-        expectations
-                .add(MockMvcResultMatchers.jsonPath("$.content.className", Matchers.hasToString(aJob.getClassName())));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.archived",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".className",
+                                                        Matchers.hasToString(aJob.getClassName())));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".archived",
                                                         Matchers.hasToString(aJob.isArchived().toString())));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.status.status",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".status.status",
                                                         Matchers.hasToString(aJob.getStatus().getJobStatus().name())));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.status.description",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".status.description",
                                                         Matchers.hasToString(aJob.getStatus().getDescription())));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS, Matchers.notNullValue()));
 
         performGet(JobController.JOBS + "/{jobId}", token, expectations,
-                          String.format("unable to load the job <%s>", aJob.getId()), aJob.getId());
+                   String.format("unable to load the job <%s>", aJob.getId()), aJob.getId());
     }
 
     @Test
