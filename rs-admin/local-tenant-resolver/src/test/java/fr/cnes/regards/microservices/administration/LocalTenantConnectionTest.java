@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microserices.administration;
+package fr.cnes.regards.microservices.administration;
 
 import java.io.File;
 
