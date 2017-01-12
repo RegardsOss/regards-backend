@@ -66,23 +66,6 @@ public class JWTService {
 
     /**
      *
-     * Return the tenant for the current connected user.
-     *
-     * @return tenant
-     * @since 1.0-SNAPSHOT
-     */
-    public static String getActualTenant() {
-        final JWTAuthentication authentication = ((JWTAuthentication) SecurityContextHolder.getContext()
-                .getAuthentication());
-        if ((authentication != null) && (authentication.getTenant() != null)) {
-            return authentication.getTenant();
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     *
      * Return the role for the current connected user
      *
      * @return role

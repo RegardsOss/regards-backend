@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.jobs.domain.JobStatus;
 @ContextConfiguration(classes = { JobDaoTestConfiguration.class })
 public class JobRepositoryIT extends AbstractDaoTest {
 
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(JobRepositoryIT.class);
 
     @Autowired
@@ -157,7 +158,7 @@ public class JobRepositoryIT extends AbstractDaoTest {
 
     /**
      * Test if 2 {@link JobInfo} are equals (ie the all the attributes).
-     * 
+     *
      * @param pJobExpected
      * @param pJobActual
      */

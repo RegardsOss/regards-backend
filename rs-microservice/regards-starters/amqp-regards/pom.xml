@@ -6,7 +6,7 @@
 
 	<artifactId>amqp-regards</artifactId>
 	<version>0.0.0-SNAPSHOT</version>
-	<description>REGARDS cloud auto configuration</description>
+	<description>REGARDS AMQP business module</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
@@ -17,39 +17,21 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
-			<optional>true</optional>
+			<artifactId>multitenant-regards</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-eureka</artifactId>
-			<optional>true</optional>
+			<groupId>org.springframework.amqp</groupId>
+			<artifactId>spring-amqp</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-config</artifactId>
-			<optional>true</optional>
+			<groupId>org.springframework.amqp</groupId>
+			<artifactId>spring-rabbit</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-amqp</artifactId>
-			<optional>true</optional>
-		</dependency>
+		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
-			<optional>true</optional>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>multitenant-regards-starter</artifactId>
-			<optional>true</optional>
 		</dependency>
 	</dependencies>
 

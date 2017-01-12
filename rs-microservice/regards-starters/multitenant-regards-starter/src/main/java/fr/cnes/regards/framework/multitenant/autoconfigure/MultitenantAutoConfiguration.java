@@ -8,8 +8,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.StaticThreadTenantResolver;
 
 /**
  *
@@ -26,5 +28,11 @@ public class MultitenantAutoConfiguration {
     @Bean
     public ITenantResolver tenantResolver() {
         return new LocalTenantResolver();
+    }
+
+    @ConditionalOnMissingBean
+    @Bean
+    public IThreadTenantResolver threadTenantResolver() {
+        return new StaticThreadTenantResolver();
     }
 }

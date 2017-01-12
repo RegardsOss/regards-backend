@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.multitenant.autoconfigure.tenant;
+package fr.cnes.regards.framework.multitenant;
 
 import java.util.Set;
 

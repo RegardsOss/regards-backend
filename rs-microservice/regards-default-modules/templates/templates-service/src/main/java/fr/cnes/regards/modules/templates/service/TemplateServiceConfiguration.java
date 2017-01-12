@@ -15,16 +15,16 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.templates.domain.Template;
 
 /**
- *
  * @author Xavier-Alexandre Brochard
+ * @author Marc Sordi
  */
-@Configuration
+@Component
 public class TemplateServiceConfiguration {
 
     /**

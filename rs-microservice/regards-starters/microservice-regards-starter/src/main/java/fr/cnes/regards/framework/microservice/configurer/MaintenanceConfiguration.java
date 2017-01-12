@@ -8,26 +8,30 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.microservice.filter.MaintenanceFilter;
+import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.filter.CorsFilter;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
  *
  * Custom configuration to handle request while in maintenance
  *
  * @author Sylvain Vissiere-Guerinet
+ * @author Marc Sordi
  *
  */
 @Component
 public class MaintenanceConfiguration implements ICustomWebSecurityConfiguration {
 
+    /**
+     * Thread tenant resolver
+     */
     @Autowired
-    private JWTService jwtService;
+    private IThreadTenantResolver pResolver;
 
     @Override
     public void configure(final HttpSecurity pHttp) {
-        pHttp.addFilterAfter(new MaintenanceFilter(jwtService), CorsFilter.class);
+        pHttp.addFilterAfter(new MaintenanceFilter(pResolver), CorsFilter.class);
     }
 
 }

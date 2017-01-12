@@ -20,10 +20,6 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>multitenant-regards-starter</artifactId>
-		</dependency>
 		<!-- Security feature -->
 		<dependency>
 			<groupId>org.springframework.security</groupId>

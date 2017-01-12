@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.ITenantResolver;
+import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.endpoint.IPluginResourceManager;
@@ -45,11 +45,11 @@ public class MethodSecurityAutoConfigurationTest {
     public void testMethodConfiguration() {
         this.context = new AnnotationConfigWebApplicationContext();
         this.context.setServletContext(new MockServletContext());
-        this.context.register(MethodSecurityAutoConfiguration.class, MethodAuthorizationServiceAutoConfiguration.class,
-                              WebSecurityAutoConfiguration.class, JWTService.class, SubscriberMock.class);
+        this.context.register(MultitenantAutoConfiguration.class, MethodSecurityAutoConfiguration.class,
+                              MethodAuthorizationServiceAutoConfiguration.class, WebSecurityAutoConfiguration.class,
+                              JWTService.class, SubscriberMock.class);
         this.context.refresh();
         Assertions.assertThat(this.context.getBean(IAuthoritiesProvider.class)).isNotNull();
-        Assertions.assertThat(this.context.getBean(ITenantResolver.class)).isNotNull();
         Assertions.assertThat(this.context.getBean(MethodAuthorizationService.class)).isNotNull();
         Assertions.assertThat(this.context.getBean(IPluginResourceManager.class)).isNotNull();
         Assertions.assertThat(this.context.getBean(SecurityResourcesController.class)).isNotNull();
