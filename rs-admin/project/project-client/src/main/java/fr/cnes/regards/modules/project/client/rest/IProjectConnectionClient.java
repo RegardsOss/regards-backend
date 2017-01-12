@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.project.client.rest;
 
 import javax.validation.Valid;
 
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +45,7 @@ public interface IProjectConnectionClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = "?project_name={project_name}&microservice={microservice}")
     @ResponseBody
-    ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
+    ResponseEntity<PagedResources<Resource<ProjectConnection>>> retrieveProjectsConnections(
             @PathVariable("project_name") String pProjectName, @PathVariable("microservice") String pMicroService);
 
     /**
