@@ -102,9 +102,9 @@ public class RegardsAmqpAdminIT {
 
             List<RestBinding> baseDeclaredBindings = retrieveBinding(TENANT1);
             Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                                                 TENANT1, AmqpCommunicationTarget.INTERNAL);
+                                                                 TENANT1, AmqpCommunicationTarget.MICROSERVICE);
             Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT1,
-                                                        AmqpCommunicationTarget.INTERNAL);
+                                                        AmqpCommunicationTarget.MICROSERVICE);
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_ONE, TENANT1);
             List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
             RestBinding restBinding = declaredBindings.get(0);
@@ -117,9 +117,9 @@ public class RegardsAmqpAdminIT {
 
             baseDeclaredBindings = retrieveBinding(TENANT2);
             exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT2,
-                                                        AmqpCommunicationTarget.INTERNAL);
+                                                        AmqpCommunicationTarget.MICROSERVICE);
             queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT2,
-                                                  AmqpCommunicationTarget.INTERNAL);
+                                                  AmqpCommunicationTarget.MICROSERVICE);
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_ONE, TENANT2);
             declaredBindings = retrieveBinding(TENANT2);
             restBinding = declaredBindings.get(0);
@@ -149,9 +149,9 @@ public class RegardsAmqpAdminIT {
 
             List<RestBinding> baseDeclaredBindings = retrieveBinding(TENANT1);
             Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                                                 TENANT1, AmqpCommunicationTarget.INTERNAL);
+                                                                 TENANT1, AmqpCommunicationTarget.MICROSERVICE);
             Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT1,
-                                                        AmqpCommunicationTarget.INTERNAL);
+                                                        AmqpCommunicationTarget.MICROSERVICE);
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT1);
             List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
             RestBinding restBinding = declaredBindings.get(0);
@@ -164,9 +164,9 @@ public class RegardsAmqpAdminIT {
 
             baseDeclaredBindings = retrieveBinding(TENANT2);
             exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT2,
-                                                        AmqpCommunicationTarget.INTERNAL);
+                                                        AmqpCommunicationTarget.MICROSERVICE);
             queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT2,
-                                                  AmqpCommunicationTarget.INTERNAL);
+                                                  AmqpCommunicationTarget.MICROSERVICE);
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT2);
             declaredBindings = retrieveBinding(TENANT2);
             restBinding = declaredBindings.get(0);
@@ -195,9 +195,9 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT1);
 
             Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                                                 TENANT1, AmqpCommunicationTarget.EXTERNAL);
+                                                                 TENANT1, AmqpCommunicationTarget.ALL);
             Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT1,
-                                                        AmqpCommunicationTarget.EXTERNAL);
+                                                        AmqpCommunicationTarget.ALL);
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_ONE, TENANT1);
             List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
             RestBinding restBinding = declaredBindings.get(0);
@@ -208,9 +208,9 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT2);
 
             exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT2,
-                                                        AmqpCommunicationTarget.EXTERNAL);
+                                                        AmqpCommunicationTarget.ALL);
             queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT2,
-                                                  AmqpCommunicationTarget.EXTERNAL);
+                                                  AmqpCommunicationTarget.ALL);
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_ONE, TENANT2);
             declaredBindings = retrieveBinding(TENANT2);
             restBinding = declaredBindings.get(0);
@@ -239,9 +239,9 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT1);
 
             Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                                                 TENANT1, AmqpCommunicationTarget.EXTERNAL);
+                                                                 TENANT1, AmqpCommunicationTarget.ALL);
             Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT1,
-                                                        AmqpCommunicationTarget.EXTERNAL);
+                                                        AmqpCommunicationTarget.ALL);
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT1);
             List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
             RestBinding restBinding = declaredBindings.get(0);
@@ -252,9 +252,9 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT2);
 
             exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT2,
-                                                        AmqpCommunicationTarget.EXTERNAL);
+                                                        AmqpCommunicationTarget.ALL);
             queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT2,
-                                                  AmqpCommunicationTarget.EXTERNAL);
+                                                  AmqpCommunicationTarget.ALL);
             regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT2);
             declaredBindings = retrieveBinding(TENANT2);
             restBinding = declaredBindings.get(0);
@@ -337,7 +337,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT1);
 
             Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                                                 TENANT1, AmqpCommunicationTarget.INTERNAL);
+                                                                 TENANT1, AmqpCommunicationTarget.MICROSERVICE);
             List<RestExchange> declaredExchanges = retrieveExchange(TENANT1);
             // TODO: get newly declared exchange not one of the default
             RestExchange restExchange = declaredExchanges.get(0);
@@ -350,7 +350,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT2);
 
             exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT2,
-                                                        AmqpCommunicationTarget.INTERNAL);
+                                                        AmqpCommunicationTarget.MICROSERVICE);
             declaredExchanges = retrieveExchange(TENANT2);
             // TODO: get newly declared exchange not one of the default
             restExchange = declaredExchanges.get(0);
@@ -381,7 +381,7 @@ public class RegardsAmqpAdminIT {
 
             List<RestExchange> baseDeclaredExchanges = retrieveExchange(TENANT1);
             Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                                                 TENANT1, AmqpCommunicationTarget.INTERNAL);
+                                                                 TENANT1, AmqpCommunicationTarget.MICROSERVICE);
             List<RestExchange> declaredExchanges = retrieveExchange(TENANT1);
 
             RestExchange restExchange = declaredExchanges.get(0);
@@ -395,7 +395,7 @@ public class RegardsAmqpAdminIT {
 
             baseDeclaredExchanges = retrieveExchange(TENANT2);
             exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT2,
-                                                        AmqpCommunicationTarget.INTERNAL);
+                                                        AmqpCommunicationTarget.MICROSERVICE);
             declaredExchanges = retrieveExchange(TENANT2);
 
             restExchange = declaredExchanges.get(0);
@@ -425,7 +425,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT1);
 
             Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                                                 TENANT1, AmqpCommunicationTarget.EXTERNAL);
+                                                                 TENANT1, AmqpCommunicationTarget.ALL);
             List<RestExchange> declaredExchanges = retrieveExchange(TENANT1);
             // TODO: get newly declared exchange not one of the default
             RestExchange restExchange = declaredExchanges.get(0);
@@ -438,7 +438,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT2);
 
             exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT2,
-                                                        AmqpCommunicationTarget.EXTERNAL);
+                                                        AmqpCommunicationTarget.ALL);
             declaredExchanges = retrieveExchange(TENANT2);
             // TODO: get newly declared exchange not one of the default
             restExchange = declaredExchanges.get(0);
@@ -468,7 +468,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT1);
 
             Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                                                 TENANT1, AmqpCommunicationTarget.EXTERNAL);
+                                                                 TENANT1, AmqpCommunicationTarget.ALL);
             List<RestExchange> declaredExchanges = retrieveExchange(TENANT1);
             // TODO: get newly declared exchange not one of the default
             RestExchange restExchange = declaredExchanges.get(0);
@@ -481,7 +481,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT2);
 
             exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT2,
-                                                        AmqpCommunicationTarget.EXTERNAL);
+                                                        AmqpCommunicationTarget.ALL);
             declaredExchanges = retrieveExchange(TENANT2);
             // TODO: get newly declared exchange not one of the default
             restExchange = declaredExchanges.get(0);
@@ -538,7 +538,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT1);
 
             Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT1,
-                                                        AmqpCommunicationTarget.INTERNAL);
+                                                        AmqpCommunicationTarget.MICROSERVICE);
             List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
             RestQueue restQueue = declaredQueues.get(0);
             // Assert.assertEquals(1, declaredQueues.size());
@@ -549,7 +549,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT2);
 
             queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT2,
-                                                  AmqpCommunicationTarget.INTERNAL);
+                                                  AmqpCommunicationTarget.MICROSERVICE);
             declaredQueues = retrieveQueues(TENANT2);
             restQueue = declaredQueues.get(0);
             // Assert.assertEquals(1, declaredQueues.size());
@@ -577,7 +577,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT1);
 
             Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT1,
-                                                        AmqpCommunicationTarget.INTERNAL);
+                                                        AmqpCommunicationTarget.MICROSERVICE);
             List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
             // TODO: get newly declared exchange not one of the default
             RestQueue restQueue = declaredQueues.get(0);
@@ -590,7 +590,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT2);
 
             queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT2,
-                                                  AmqpCommunicationTarget.INTERNAL);
+                                                  AmqpCommunicationTarget.MICROSERVICE);
             declaredQueues = retrieveQueues(TENANT2);
             restQueue = declaredQueues.get(0);
             // Assert.assertEquals(3, declaredQueues.size());
@@ -618,7 +618,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT1);
 
             Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT1,
-                                                        AmqpCommunicationTarget.EXTERNAL);
+                                                        AmqpCommunicationTarget.ALL);
             List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
             RestQueue restQueue = declaredQueues.get(0);
             // Assert.assertEquals(4, declaredQueues.size());
@@ -629,7 +629,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT2);
 
             queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE, TENANT2,
-                                                  AmqpCommunicationTarget.EXTERNAL);
+                                                  AmqpCommunicationTarget.ALL);
             declaredQueues = retrieveQueues(TENANT2);
             restQueue = declaredQueues.get(0);
             // Assert.assertEquals(4, declaredQueues.size());
@@ -657,7 +657,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT1);
 
             Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT1,
-                                                        AmqpCommunicationTarget.EXTERNAL);
+                                                        AmqpCommunicationTarget.ALL);
             List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
             RestQueue restQueue = declaredQueues.get(0);
             // Assert.assertEquals(4, declaredQueues.size());
@@ -668,7 +668,7 @@ public class RegardsAmqpAdminIT {
             rabbitVirtualHostUtils.addVhost(TENANT2);
 
             queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT2,
-                                                  AmqpCommunicationTarget.EXTERNAL);
+                                                  AmqpCommunicationTarget.ALL);
             declaredQueues = retrieveQueues(TENANT2);
             restQueue = declaredQueues.get(0);
             // Assert.assertEquals(4, declaredQueues.size());

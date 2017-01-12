@@ -13,9 +13,9 @@ public enum AmqpCommunicationTarget {
     /**
      * means that the target of the published message is internal
      */
-    INTERNAL,
+    MICROSERVICE,
     /**
      * means that the target of the published message is external
      */
-    EXTERNAL;
+    ALL;
 }

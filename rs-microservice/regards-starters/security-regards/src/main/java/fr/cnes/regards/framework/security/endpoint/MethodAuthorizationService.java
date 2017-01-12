@@ -117,7 +117,7 @@ public class MethodAuthorizationService {
             // Update authorities event must be provided by administration service when the authorities configuration
             // are updated like resourceAccess or Roles configurations.
             eventListener.subscribeTo(UpdateAuthoritiesEvent.class, new UpdateAuthoritiesEventHandler(this),
-                                      AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.EXTERNAL);
+                                      AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.ALL);
         } catch (final RabbitMQVhostException e) {
             LOG.error("Error during security module initialization. {}", e.getMessage(), e);
             throw new ApplicationContextException(e.getMessage());

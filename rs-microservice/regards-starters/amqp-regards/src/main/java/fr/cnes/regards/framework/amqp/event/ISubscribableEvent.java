@@ -5,12 +5,11 @@ package fr.cnes.regards.framework.amqp.event;
 
 /**
  *
- * Event you can subscribe to.<br/>
- * Default target : {@link Target#ALL}
+ * Event you can subscribe to.
  *
  * @author Marc Sordi
  *
  */
-public interface ISubscribableEvent extends IEvent {
+public interface ISubscribableEvent {
 
 }

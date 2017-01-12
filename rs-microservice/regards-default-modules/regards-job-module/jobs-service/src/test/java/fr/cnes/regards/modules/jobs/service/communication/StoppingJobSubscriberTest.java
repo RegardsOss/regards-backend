@@ -40,7 +40,7 @@ public class StoppingJobSubscriberTest {
         jobHandlerMock = Mockito.mock(IJobHandler.class);
         newJobPuller = new StoppingJobSubscriber(jobHandlerMock);
         pAmqpCommunicationMode = AmqpCommunicationMode.ONE_TO_ONE;
-        pAmqpCommunicationTarget = AmqpCommunicationTarget.INTERNAL;
+        pAmqpCommunicationTarget = AmqpCommunicationTarget.MICROSERVICE;
         jobInfoIdExpected = 1L;
         stoppingJobEvent = new StoppingJobEvent(jobInfoIdExpected);
         projectName = "project1";

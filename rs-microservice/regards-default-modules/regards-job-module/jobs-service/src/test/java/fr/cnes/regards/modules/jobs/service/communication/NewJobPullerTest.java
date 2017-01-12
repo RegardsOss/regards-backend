@@ -37,7 +37,7 @@ public class NewJobPullerTest {
         pollerMock.toString();
         newJobPullerMessageBroker = new NewJobPuller(pollerMock);
         pAmqpCommunicationMode = AmqpCommunicationMode.ONE_TO_ONE;
-        pAmqpCommunicationTarget = AmqpCommunicationTarget.INTERNAL;
+        pAmqpCommunicationTarget = AmqpCommunicationTarget.MICROSERVICE;
         newJobEvent = new NewJobEvent(1L);
         projectName = "project1";
     }

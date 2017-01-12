@@ -123,9 +123,9 @@ public class PollerIT {
     @Test
     public void testPollOneToManyExternal() {
         final Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                                                   TENANT, AmqpCommunicationTarget.EXTERNAL);
+                                                                   TENANT, AmqpCommunicationTarget.ALL);
         final Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT,
-                                                          AmqpCommunicationTarget.EXTERNAL);
+                                                          AmqpCommunicationTarget.ALL);
         regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT);
 
         final TestEvent toSend = new TestEvent("test3");
@@ -138,7 +138,7 @@ public class PollerIT {
         final TenantWrapper<TestEvent> wrapperReceived;
         try {
             wrapperReceived = poller.poll(TENANT, TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                          AmqpCommunicationTarget.EXTERNAL);
+                                          AmqpCommunicationTarget.ALL);
             LOGGER.info("=================RECEIVED " + wrapperReceived.getContent());
             final TestEvent received = wrapperReceived.getContent();
             Assert.assertEquals(toSend, received);
@@ -163,9 +163,9 @@ public class PollerIT {
     public void testPollOneToOneExternal() {
         final Exchange exchangeOneToOne = regardsAmqpAdmin.declareExchange(TestEvent.class,
                                                                            AmqpCommunicationMode.ONE_TO_ONE, TENANT,
-                                                                           AmqpCommunicationTarget.EXTERNAL);
+                                                                           AmqpCommunicationTarget.ALL);
         final Queue queueOneToOne = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                                                  TENANT, AmqpCommunicationTarget.EXTERNAL);
+                                                                  TENANT, AmqpCommunicationTarget.ALL);
         regardsAmqpAdmin.declareBinding(queueOneToOne, exchangeOneToOne, AmqpCommunicationMode.ONE_TO_ONE, TENANT);
 
         final TestEvent toSend = new TestEvent("test4");
@@ -179,7 +179,7 @@ public class PollerIT {
         final TenantWrapper<TestEvent> wrapperReceived;
         try {
             wrapperReceived = poller.poll(TENANT, TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                          AmqpCommunicationTarget.EXTERNAL);
+                                          AmqpCommunicationTarget.ALL);
             LOGGER.info("=================RECEIVED :" + wrapperReceived.getContent());
             final TestEvent received = wrapperReceived.getContent();
             Assert.assertEquals(toSend, received);

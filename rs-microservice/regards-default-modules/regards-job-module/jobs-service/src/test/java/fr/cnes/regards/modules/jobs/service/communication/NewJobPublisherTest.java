@@ -37,7 +37,7 @@ public class NewJobPublisherTest {
         publisherMock = Mockito.mock(IPublisher.class);
         newJobPublisherMessageBroker = new NewJobPublisher(publisherMock);
         mode = AmqpCommunicationMode.ONE_TO_ONE;
-        target = AmqpCommunicationTarget.INTERNAL;
+        target = AmqpCommunicationTarget.MICROSERVICE;
         jobInfoId = 5L;
         newJobEvent = new NewJobEvent(jobInfoId);
     }

@@ -17,10 +17,10 @@ public class AmqpEnumsTests {
 
     @Test
     public void amqpCommunicationTargetTest() {
-        Assert.assertEquals(AmqpCommunicationTarget.EXTERNAL,
-                            AmqpCommunicationTarget.valueOf(AmqpCommunicationTarget.EXTERNAL.toString()));
-        Assert.assertEquals(AmqpCommunicationTarget.INTERNAL,
-                            AmqpCommunicationTarget.valueOf(AmqpCommunicationTarget.INTERNAL.toString()));
+        Assert.assertEquals(AmqpCommunicationTarget.ALL,
+                            AmqpCommunicationTarget.valueOf(AmqpCommunicationTarget.ALL.toString()));
+        Assert.assertEquals(AmqpCommunicationTarget.MICROSERVICE,
+                            AmqpCommunicationTarget.valueOf(AmqpCommunicationTarget.MICROSERVICE.toString()));
     }
 
     @Test

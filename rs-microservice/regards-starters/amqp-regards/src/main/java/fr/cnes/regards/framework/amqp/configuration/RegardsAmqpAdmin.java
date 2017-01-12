@@ -201,10 +201,10 @@ public class RegardsAmqpAdmin {
     protected String getQueueNamePrefix(AmqpCommunicationTarget pAmqpCommunicationTarget) {
         final String queueNamePrefix;
         switch (pAmqpCommunicationTarget) {
-            case INTERNAL:
+            case MICROSERVICE:
                 queueNamePrefix = typeIdentifier + UNDERSCORE;
                 break;
-            case EXTERNAL:
+            case ALL:
                 queueNamePrefix = "";
                 break;
             default:
@@ -321,10 +321,10 @@ public class RegardsAmqpAdmin {
     protected String getExchangeNamePrefix(AmqpCommunicationTarget pAmqpCommunicationTarget) {
         final String exchangeNamePrefix;
         switch (pAmqpCommunicationTarget) {
-            case EXTERNAL:
+            case ALL:
                 exchangeNamePrefix = "";
                 break;
-            case INTERNAL:
+            case MICROSERVICE:
                 exchangeNamePrefix = typeIdentifier + UNDERSCORE;
                 break;
             default:

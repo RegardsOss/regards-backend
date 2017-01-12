@@ -27,6 +27,18 @@ public interface IPublisher {
     <T extends ISubscribableEvent> void publish(T pEvent);
 
     /**
+     * Publish an {@link ISubscribableEvent} event
+     *
+     * @param <T>
+     *            {@link ISubscribableEvent} event
+     * @param pEvent
+     *            {@link ISubscribableEvent} event to publish
+     * @param pPriority
+     *            event priority
+     */
+    <T extends ISubscribableEvent> void publish(T pEvent, int pPriority);
+
+    /**
      * Publish an {@link IPollableEvent} event
      *
      * @param <T>
@@ -35,6 +47,18 @@ public interface IPublisher {
      *            {@link IPollableEvent} event to publish
      */
     <T extends IPollableEvent> void publish(T pEvent);
+
+    /**
+     * Publish an {@link IPollableEvent} event
+     *
+     * @param <T>
+     *            {@link IPollableEvent} event
+     * @param pEvent
+     *            {@link IPollableEvent} event to publish
+     * @param pPriority
+     *            event priority
+     */
+    <T extends IPollableEvent> void publish(T pEvent, int pPriority);
 
     /**
      * @param <T>

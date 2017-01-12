@@ -13,8 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author svissier
  *
  */
-@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.framework.security.utils.jwt",
-        "fr.cnes.regards.framework.amqp", "fr.cnes.regards.modules.project" })
+@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.framework.amqp", "fr.cnes.regards.modules.project" })
 public class Application {
 
     /**
