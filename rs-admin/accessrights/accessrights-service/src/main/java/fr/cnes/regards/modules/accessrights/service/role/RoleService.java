@@ -127,7 +127,7 @@ public class RoleService implements IRoleService {
     public void init() throws RabbitMQVhostException {
 
         subscriber.subscribeTo(NewProjectConnectionEvent.class, new NewProjectConnectionEventHandler(jwtService, this),
-                               AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.INTERNAL);
+                               AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.MICROSERVICE);
 
         initDefaultRoles();
     }

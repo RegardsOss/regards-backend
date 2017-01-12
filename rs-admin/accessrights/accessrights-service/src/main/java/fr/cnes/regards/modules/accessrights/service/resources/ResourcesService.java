@@ -334,7 +334,7 @@ public class ResourcesService implements IResourcesService {
 
         try {
             eventPublisher.publish(UpdateAuthoritiesEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                   AmqpCommunicationTarget.EXTERNAL);
+                                   AmqpCommunicationTarget.ALL);
         } catch (final RabbitMQVhostException e) {
             LOG.error("Error publishing resources updates to all running microservices.");
             LOG.error(e.getMessage(), e);

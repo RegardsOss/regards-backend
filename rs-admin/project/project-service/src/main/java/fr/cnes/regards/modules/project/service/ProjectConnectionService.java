@@ -125,7 +125,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
         final Supplier<Boolean> publishNewtenantEvent = () -> {
             try {
                 publisher.publish(new NewTenantEvent(tenant, connection.getMicroservice()),
-                                  AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.EXTERNAL);
+                                  AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.ALL);
                 return Boolean.TRUE;
             } catch (final RabbitMQVhostException e) {
                 LOG.error(e.getMessage(), e);
