@@ -3,9 +3,15 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.Entity;
 
@@ -14,6 +20,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.stereotype.Repository;
+
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.reflect.ClassPath;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
@@ -30,9 +41,19 @@ import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 public final class DaoUtils {
 
     /**
-     * Package to scan for DAO Entities and Repositories
+     * Root package
      */
-    public static final String PACKAGES_TO_SCAN = "fr.cnes.regards";
+    public static final String ROOT_PACKAGE = "fr.cnes.regards";
+
+    /**
+     * Framework root package
+     */
+    public static final String FRAMEWORK_PACKAGE = "fr.cnes.regards.framework";
+
+    /**
+     * Modules root package
+     */
+    public static final String MODULES_PACKAGE = "fr.cnes.regards.modules";
 
     /**
      * Class logger
@@ -63,9 +84,10 @@ public final class DaoUtils {
 
         LOG.info("Checking classpath for conflicts between instance and projects databases ...");
 
-        final List<Class<?>> instanceClasses = DaoUtils.scanForJpaPackages(pPackageToScan, InstanceEntity.class, null);
-        final List<Class<?>> projectsClasses = DaoUtils.scanForJpaPackages(pPackageToScan, Entity.class,
-                                                                           InstanceEntity.class);
+        final Set<String> packagesToScan = findPackagesForJpa(pPackageToScan);
+        final List<Class<?>> instanceClasses = DaoUtils.scanPackagesForJpa(InstanceEntity.class, null, packagesToScan);
+        final List<Class<?>> projectsClasses = DaoUtils.scanPackagesForJpa(Entity.class, InstanceEntity.class,
+                                                                           packagesToScan);
         final List<String> instancePackages = new ArrayList<>();
         instanceClasses.forEach(instanceClass -> instancePackages.add(instanceClass.getPackage().getName()));
         final List<String> projectPackages = new ArrayList<>();
@@ -86,20 +108,64 @@ public final class DaoUtils {
 
     }
 
+    public static Set<String> findPackagesForJpa(String rootPackage) {
+        // 2 Add Entity for database mapping from classpath but only for entities from modules that provide repository
+        // AND framework entities
+        // Why ? If a module depends on a <other_module>-client it contains entities that MUST NOT be taken into account
+        // specially if they are from another microservice (rs-admin for example if we are into rs-dam)
+        // and framework ones because all framework content is embedded into all micro-services
+        Set<String> packagesToScan = new HashSet<>();
+        try {
+            ClassPath classpath = ClassPath.from(ClassLoader.getSystemClassLoader());
+            ImmutableSet<ClassPath.ClassInfo> classInfos = classpath.getTopLevelClassesRecursive(rootPackage);
+            for (ClassPath.ClassInfo info : classInfos) {
+                // Add all framework package if one of its class is into classpath (this always should be the case)
+                if (info.getPackageName().startsWith(DaoUtils.FRAMEWORK_PACKAGE)) {
+                    packagesToScan.add(DaoUtils.FRAMEWORK_PACKAGE);
+                } else {
+                    // Restrict to fr.cnes.regards.modules package and search for "Repository" classes
+                    // A "Repository" is an interface extending org.springframework.data.repository.Repository
+                    // or a class annotated with @Repository
+                    Class<?> clazz = info.load();
+                    if (info.getPackageName().startsWith(DaoUtils.MODULES_PACKAGE)
+                            && (org.springframework.data.repository.Repository.class.isAssignableFrom(clazz)
+                                    || clazz.isAnnotationPresent(Repository.class))) {
+                        // package name has format : fr.cnes.regards.modules.(name)....
+                        // We must only take fr.cnes.regards.modules.(name)
+                        String packageEnd = info.getPackageName().substring(DaoUtils.MODULES_PACKAGE.length() + 1);
+                        packagesToScan
+                                .add(DaoUtils.MODULES_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.')));
+                    }
+                }
+            }
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
+        return packagesToScan;
+    }
+
+    public static List<Class<?>> scanPackagesForJpa(Class<? extends Annotation> pIncludeAnnotation,
+            Class<? extends Annotation> pExcludeAnnotation, String... pPackages) {
+        return Arrays.stream(pPackages)
+                .flatMap(pPackage -> scanPackageForJpa(pPackage, pIncludeAnnotation, pExcludeAnnotation).stream())
+                .collect(Collectors.toList());
+    }
+
+    public static List<Class<?>> scanPackagesForJpa(Class<? extends Annotation> pIncludeAnnotation,
+            Class<? extends Annotation> pExcludeAnnotation, Collection<String> pPackages) {
+        return pPackages.stream()
+                .flatMap(pPackage -> scanPackageForJpa(pPackage, pIncludeAnnotation, pExcludeAnnotation).stream())
+                .collect(Collectors.toList());
+    }
+
     /**
-     *
      * Scan classpath into given package with given filters and return matching classes
-     *
-     * @param pPackageToScan
-     *            Package to scan
-     * @param pIncludeAnnotation
-     *            Include filter
-     * @param pExcludeAnnotation
-     *            Exclude filter
+     * @param pPackageToScan Package to scan
+     * @param pIncludeAnnotation Include filter
+     * @param pExcludeAnnotation Exclude filter
      * @return matching classes
-     * @since 1.0-SNAPSHOT
      */
-    public static List<Class<?>> scanForJpaPackages(final String pPackageToScan,
+    public static List<Class<?>> scanPackageForJpa(final String pPackageToScan,
             final Class<? extends Annotation> pIncludeAnnotation,
             final Class<? extends Annotation> pExcludeAnnotation) {
         final List<Class<?>> packages = new ArrayList<>();

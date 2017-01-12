@@ -100,11 +100,15 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
 
     @Bean
     @ConditionalOnMissingBean
-    public GsonHttpMessageConverter gsonConverter(GsonBuilder pBuilder) {
-        final Gson gson = pBuilder.create();
+    public Gson gson(GsonBuilder pBuilder) {
+        return pBuilder.create();
+    }
 
+    @Bean
+    @ConditionalOnMissingBean
+    public GsonHttpMessageConverter gsonConverter(Gson pGson) {
         final GsonHttpMessageConverter gsonHttpMessageConverter = new GsonHttpMessageConverter();
-        gsonHttpMessageConverter.setGson(gson);
+        gsonHttpMessageConverter.setGson(pGson);
 
         return gsonHttpMessageConverter;
     }

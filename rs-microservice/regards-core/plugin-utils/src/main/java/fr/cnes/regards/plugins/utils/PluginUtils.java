@@ -16,12 +16,12 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.plugins.annotations.PluginInit;
-import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.plugins.utils.bean.IPluginUtilsBean;
 import fr.cnes.regards.plugins.utils.bean.PluginUtilsBean;
 

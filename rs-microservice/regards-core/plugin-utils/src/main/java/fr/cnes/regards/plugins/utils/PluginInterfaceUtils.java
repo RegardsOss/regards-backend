@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.reflections.Reflections;
 
-import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  *

@@ -3,8 +3,8 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.Entity;
@@ -146,10 +146,10 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         final MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder()
                 .applySetting(Environment.DIALECT, dialect).applySetting(Environment.DATASOURCE, pDataSource).build());
 
-        // 2 Add Entity for database mapping from classpath
-        final List<Class<?>> classes = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, Entity.class,
-                                                                   InstanceEntity.class);
-        classes.forEach(classe -> metadata.addAnnotatedClass(classe));
+        Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
+        packagesToScan.stream()
+                .flatMap(pPackage -> DaoUtils.scanPackageForJpa(pPackage, Entity.class, InstanceEntity.class).stream())
+                .forEach(classe -> metadata.addAnnotatedClass(classe));
 
         final SchemaUpdate export = new SchemaUpdate((MetadataImplementor) metadata.buildMetadata());
         export.execute(false, true);

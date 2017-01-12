@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.sql.DataSource;
@@ -58,7 +59,7 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 @Configuration
 @EnableJpaRepositories(
         excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
-        basePackages = DaoUtils.PACKAGES_TO_SCAN, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
+        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
         transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
@@ -128,7 +129,7 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     public MultitenantJpaAutoConfiguration() throws MultiDataBasesException {
-        DaoUtils.checkClassPath(DaoUtils.PACKAGES_TO_SCAN);
+        DaoUtils.checkClassPath(DaoUtils.ROOT_PACKAGE);
     }
 
     /**
@@ -221,9 +222,8 @@ public class MultitenantJpaAutoConfiguration {
         }
 
         // Find classpath for each Entity and not NonStandardEntity
-        // FIXME add a property to the starter to define package to scan
-        final List<Class<?>> packages = DaoUtils.scanForJpaPackages(DaoUtils.PACKAGES_TO_SCAN, Entity.class,
-                                                                    InstanceEntity.class);
+        final Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
+        final List<Class<?>> packages = DaoUtils.scanPackagesForJpa(Entity.class, InstanceEntity.class, packagesToScan);
 
         return pBuilder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();

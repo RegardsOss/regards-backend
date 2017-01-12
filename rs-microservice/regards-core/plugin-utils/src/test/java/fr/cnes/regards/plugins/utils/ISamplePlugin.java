@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.plugins.utils;
 
-import fr.cnes.regards.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * ISamplePlugin

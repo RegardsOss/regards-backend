@@ -3,8 +3,8 @@
  */
 package fr.cnes.regards.plugins.utils.plugintypes;
 
-import fr.cnes.regards.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * ParameterPlugin
