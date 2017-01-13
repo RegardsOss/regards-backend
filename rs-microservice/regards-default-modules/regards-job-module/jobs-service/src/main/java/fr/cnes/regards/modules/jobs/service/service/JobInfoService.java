@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.jobs.service.service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,8 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.jpa.utils.IterableUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.modules.jobs.domain.JobInfo;
@@ -97,7 +99,8 @@ public class JobInfoService implements IJobInfoService {
 
     @Override
     public List<JobInfo> retrieveJobInfoList() {
-        return IterableUtils.toList(jobInfoRepository.findAll());
+        Iterable<JobInfo> jobInfos = jobInfoRepository.findAll();
+        return (jobInfos != null) ? Lists.newArrayList(jobInfos) : Collections.emptyList();
     }
 
     @Override
