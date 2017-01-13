@@ -41,7 +41,7 @@ public class PluginMetaData {
     /**
      * The parameters of the plugin
      */
-    private List<String> parameters;
+    private List<PluginParameterType> parameters;
 
     public String getPluginId() {
         return this.pluginId;
@@ -83,11 +83,13 @@ public class PluginMetaData {
         this.description = pDescription;
     }
 
-    public List<String> getParameters() {
-        return this.parameters;
+    public List<PluginParameterType> getParameters() {
+        return parameters;
     }
 
-    public void setParameters(List<String> pParameters) {
+    public void setParameters(List<PluginParameterType> pParameters) {
         this.parameters = pParameters;
     }
+
+
 }

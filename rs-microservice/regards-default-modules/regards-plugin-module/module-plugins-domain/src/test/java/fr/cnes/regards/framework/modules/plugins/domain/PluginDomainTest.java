@@ -11,6 +11,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginDynamicValue;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType.ParamType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 
 /**
@@ -100,7 +101,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         Assert.assertEquals(plgConf.getVersion(), aPluginConfiguration.getVersion());
         Assert.assertEquals(plgConf.getParameters().get(0).getId(),
                             aPluginConfiguration.getParameters().get(0).getId());
-        
+
         plgConf.logParams();
     }
 
@@ -142,7 +143,10 @@ public class PluginDomainTest extends PluginDomainUtility {
         plgMetaData.setAuthor(anAuthor);
         final String aDescription = USERROLE + BLUE + RED;
         plgMetaData.setDescription(aDescription);
-        final List<String> parameters = Arrays.asList(RED, BLUE, GREEN);
+        final List<PluginParameterType> parameters = Arrays
+                .asList(new PluginParameterType(RED, String.class.getName(), ParamType.PRIMITIVE),
+                        new PluginParameterType(BLUE, String.class.getName(), ParamType.PRIMITIVE),
+                        new PluginParameterType(GREEN, String.class.getName(), ParamType.PLUGIN));
         plgMetaData.setParameters(parameters);
 
         Assert.assertEquals(anAuthor, plgMetaData.getAuthor());
