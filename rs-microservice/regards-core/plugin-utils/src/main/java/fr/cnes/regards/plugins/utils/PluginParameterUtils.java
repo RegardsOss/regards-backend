@@ -135,9 +135,8 @@ public final class PluginParameterUtils {
             if (field.isAnnotationPresent(PluginParameter.class)) {
 
                 boolean aPrimitiveType = isAPrimitiveType(field).isPresent();
-                boolean anInterface = isAnInterface(field, pPrefixs);
 
-                if (aPrimitiveType || anInterface) {
+                if (aPrimitiveType || isAnInterface(field, pPrefixs)) {
                     if (parameters == null) {
                         parameters = new ArrayList<>();
                     }
