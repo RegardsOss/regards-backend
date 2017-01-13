@@ -20,6 +20,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType.ParamType;
 
 /**
  *
@@ -126,19 +128,20 @@ public final class PluginParameterUtils {
      *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @return list of parameters or null
      */
-    public static List<String> getParameters(final Class<?> pPluginClass, final List<String> pPrefixs) {
-        List<String> parameters = null;
+    public static List<PluginParameterType> getParameters(final Class<?> pPluginClass, final List<String> pPrefixs) {
+        List<PluginParameterType> parameters = null;
 
         for (final Field field : pPluginClass.getDeclaredFields()) {
             if (field.isAnnotationPresent(PluginParameter.class)) {
 
-                if (isAPrimitiveType(field).isPresent() || isAnInterface(field, pPrefixs)) {
+                boolean aPrimitiveType = isAPrimitiveType(field).isPresent();
+                boolean anInterface = isAnInterface(field, pPrefixs);
+
+                if (aPrimitiveType || anInterface) {
                     if (parameters == null) {
                         parameters = new ArrayList<>();
                     }
-                    // Get annotation and add parameter
-                    final PluginParameter pluginParameter = field.getAnnotation(PluginParameter.class);
-                    parameters.add(pluginParameter.name());
+                    parameters.add(buildPluginParameter(field, aPrimitiveType));
                 } else {
                     /*
                      * The type of the field is unknown
@@ -150,6 +153,33 @@ public final class PluginParameterUtils {
             }
         }
         return parameters;
+    }
+
+    /**
+     * Build a {@link PluginParameterType}.
+     * 
+     * @param pField
+     *            The current {@link Field}
+     * @param pIsPrimitive
+     *            True if the type of the field is a Java primitive type False otherwise
+     * @return a {@link PluginParameterType}
+     */
+    private static PluginParameterType buildPluginParameter(Field pField, boolean pIsPrimitive) {
+        PluginParameterType paramType = new PluginParameterType();
+
+        // Get annotation
+        final PluginParameter pluginParameter = pField.getAnnotation(PluginParameter.class);
+
+        paramType.setName(pluginParameter.name());
+        paramType.setType(pField.getType().getName());
+
+        if (pIsPrimitive) {
+            paramType.setParamType(ParamType.PRIMITIVE);
+        } else {
+            paramType.setParamType(ParamType.PLUGIN);
+        }
+
+        return paramType;
     }
 
     /**
@@ -171,7 +201,7 @@ public final class PluginParameterUtils {
      *            a field
      * @param pPrefixs
      *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * @return true is the type of the field is a {@link PrimitiveObject}
+     * @return true is the type of the field is a {@link Plugin}
      */
     private static boolean isAnInterface(final Field pField, final List<String> pPrefixs) {
         boolean isInterface = false;
@@ -229,7 +259,8 @@ public final class PluginParameterUtils {
      *             if any error occurs
      */
     public static <T> void postProcess(final T pReturnPlugin, final PluginConfiguration pPlgConf,
-            final List<String> pPrefixs, final fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters)
+            final List<String> pPrefixs,
+            final fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters)
             throws PluginUtilsException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Starting postProcess :" + pReturnPlugin.getClass().getSimpleName());
@@ -277,7 +308,8 @@ public final class PluginParameterUtils {
      */
     private static <T> void processPluginParameter(final T pPluginInstance, final PluginConfiguration pPlgConf,
             final Field pField, final PluginParameter pPlgParamAnnotation, final List<String> pPrefixs,
-            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters) throws PluginUtilsException {
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters)
+            throws PluginUtilsException {
 
         // Inject value
         ReflectionUtils.makeAccessible(pField);
@@ -325,7 +357,8 @@ public final class PluginParameterUtils {
      */
     private static <T> void postProcessPrimitiveType(T pPluginInstance, PluginConfiguration pPlgConf, Field pField,
             final Optional<PrimitiveObject> pTypeWrapper, PluginParameter pPlgParamAnnotation,
-            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters) throws PluginUtilsException {
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters)
+            throws PluginUtilsException {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Starting postProcessPrimitiveType :" + pPlgParamAnnotation.name());
@@ -345,9 +378,9 @@ public final class PluginParameterUtils {
                 /*
                  * Test if this parameter is set as dynamic in the plugin configuration
                  */
-                final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> cfd = pPlgConf.getParameters()
-                        .stream().filter(s -> s.getName().equals(aDynamicPlgParam.get().getName()) && s.isDynamic())
-                        .findFirst();
+                final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> cfd = pPlgConf
+                        .getParameters().stream()
+                        .filter(s -> s.getName().equals(aDynamicPlgParam.get().getName()) && s.isDynamic()).findFirst();
                 if (cfd.isPresent()) {
                     paramValue = postProcessDynamicValues(paramValue, cfd, aDynamicPlgParam);
                 }

@@ -48,9 +48,6 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         final PluginMetaData pluginMetaData = maps.get(maps.keySet().stream().findFirst().get());
         Assert.assertNotNull(pluginMetaData);
 
-        // Log the parameters of the first plugin
-        pluginMetaData.getParameters().stream().forEach(s -> LOGGER.info(s));
-
         LOGGER.debug(ENDING + this.toString());
     }
 
@@ -270,8 +267,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set parameters : Missing coeff parameter
          */
-        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SamplePlugin.ACTIVE, "false").addParameter(SamplePlugin.SUFFIXE, "chris_test_3")
+        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
+                .build().addParameter(SamplePlugin.ACTIVE, "false").addParameter(SamplePlugin.SUFFIXE, "chris_test_3")
                 .getParameters();
 
         // instantiate plugin
@@ -292,8 +289,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set parameters
          */
-        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
+        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
+                .build().addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.SUFFIXE, "chris_test_4")
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.CINQ).getParameters();
 
