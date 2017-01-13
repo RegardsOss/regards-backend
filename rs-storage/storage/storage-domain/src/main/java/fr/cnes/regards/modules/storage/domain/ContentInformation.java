@@ -1,4 +1,9 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.domain;
+
+import java.net.MalformedURLException;
 
 public class ContentInformation {
 
@@ -25,10 +30,10 @@ public class ContentInformation {
         representationInformation = pRepresentationInformation;
     }
 
-    public ContentInformation generate() {
+    public ContentInformation generate() throws MalformedURLException {
 
-        this.dataObject = new DataObject().generate();
-        this.representationInformation = new RepresentationInformation().generate();
+        dataObject = new DataObject().generate();
+        representationInformation = new RepresentationInformation().generate();
         return this;
     }
 

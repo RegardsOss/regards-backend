@@ -1,5 +1,9 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.domain;
 
+import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 
 public class InformationObject {
@@ -28,9 +32,9 @@ public class InformationObject {
         pdi = pPdi;
     }
 
-    public InformationObject generateRandomInformationObject() throws NoSuchAlgorithmException {
-        this.contentInformation = new ContentInformation().generate();
-        this.pdi = new PreservationDescriptionInformation().generate();
+    public InformationObject generateRandomInformationObject() throws NoSuchAlgorithmException, MalformedURLException {
+        contentInformation = new ContentInformation().generate();
+        pdi = new PreservationDescriptionInformation().generate();
         return this;
     }
 

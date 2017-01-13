@@ -5,15 +5,12 @@ package fr.cnes.regards.modules.storage.dao;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.DataObject;
 
 /**
- *
- * Repository handling JPA representation of AIP.
- *
  * @author Sylvain Vissiere-Guerinet
  *
  */
-public interface AIPRepository extends JpaRepository<AIP, Long> {
+public interface DataObjectRepository extends JpaRepository<DataObject, Long> {
 
 }

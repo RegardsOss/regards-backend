@@ -3,6 +3,12 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,8 +18,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.modules.storage.domain.AIP;
-//import fr.cnes.regards.modules.storage.domain.Greeting;
-import fr.cnes.regards.modules.storage.service.GreetingsService;
+import fr.cnes.regards.modules.storage.service.IStorageService;
 
 /**
  * REST module controller
@@ -33,7 +38,7 @@ public class AIPController implements IResourceController<AIP> {
     private IResourceService resourceService;
 
     @Autowired
-    private GreetingsService myService;
+    private IStorageService storageService;
 
     // @RequestMapping(value = "/greeting", method = RequestMethod.GET)
     // @ResponseBody
@@ -50,6 +55,26 @@ public class AIPController implements IResourceController<AIP> {
     // Greeting greeting = myService.getGreeting(pName);
     // return new ResponseEntity<>(new Resource<Greeting>(greeting), HttpStatus.OK);
     // }
+
+    public boolean validateChecksum() {
+        String checksum;
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            // oos.writeObject(obj);
+            oos.close();
+            byte[] digest = md.digest(baos.toByteArray());
+            checksum = new String(digest);
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     @Override
     public Resource<AIP> toResource(AIP pElement, Object... pExtras) {
