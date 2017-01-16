@@ -49,7 +49,7 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  *        http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#mvc-ann-rest-spring-mvc-exceptions
  */
 @RestControllerAdvice(annotations = RestController.class)
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.LOWEST_PRECEDENCE - 1)
 public class GlobalControllerAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
