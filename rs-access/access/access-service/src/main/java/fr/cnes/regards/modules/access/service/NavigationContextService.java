@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.utils.IterableUtils;
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.access.dao.INavigationContextRepository;
@@ -85,7 +86,7 @@ public class NavigationContextService implements INavigationContextService {
     @Override
     public List<NavigationContext> list() {
         final Iterable<NavigationContext> navContexts = navigationContextReposiory.findAll();
-        return IterableUtils.toList(navContexts);
+        return Lists.newArrayList(navContexts);
     }
 
 }
