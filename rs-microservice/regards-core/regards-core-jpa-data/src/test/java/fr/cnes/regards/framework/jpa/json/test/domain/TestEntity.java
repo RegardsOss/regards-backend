@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -21,8 +22,9 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
  *
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-@Entity(name = "T_TEST_ENTITY")
-@SequenceGenerator(name = "testEntitySequence", initialValue = 1, sequenceName = "SEQ_TEST_ENTITY")
+@Entity
+@Table(name = "t_test_entity")
+@SequenceGenerator(name = "testEntitySequence", initialValue = 1, sequenceName = "seq_test_entity")
 public class TestEntity {
 
     /**

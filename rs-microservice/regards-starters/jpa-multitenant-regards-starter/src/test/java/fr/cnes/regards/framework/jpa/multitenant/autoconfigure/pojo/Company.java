@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
 /**
  *
@@ -19,8 +20,9 @@ import javax.persistence.SequenceGenerator;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@Entity(name = "T_COMPANY")
-@SequenceGenerator(name = "companySequence", initialValue = 1, sequenceName = "SEQ_COMPANY")
+@Entity
+@Table(name = "t_company")
+@SequenceGenerator(name = "companySequence", initialValue = 1, sequenceName = "seq_company")
 public class Company {
 
     /**
