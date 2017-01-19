@@ -68,14 +68,11 @@ public class DAOTest extends AbstractDaoTransactionalTest {
         aip1.setState(AIPState.VALID);
         aip1.setSubmissionDate(LocalDateTime.now().minusMinutes(10));
         aip1.getLastEvent().setDate(LocalDateTime.now().minusMinutes(10));
+        aip12 = aip1;
         aip1 = repository.save(aip1);
-        aip12 = new AIP(AipType.COLLECTION).generateAIP();
-        UniformResourceName version2 = aip12.getIpId();
+        UniformResourceName version2 = UniformResourceName.fromString(aip12.getIpId());
         version2.setVersion(2);
-        aip12.setIpId(version2);
-        aip12.setState(AIPState.VALID);
-        aip12.setSubmissionDate(LocalDateTime.now().minusMinutes(10));
-        aip12.getLastEvent().setDate(LocalDateTime.now().minusMinutes(10));
+        aip12.setIpId(version2.toString());
         aip12 = repository.save(aip12);
         aip2 = new AIP(AipType.COLLECTION).generateAIP();
         aip2.setState(AIPState.PENDING);
@@ -314,7 +311,7 @@ public class DAOTest extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindAllByIpIdStartingWith() {
-        String ipIdWithoutVersion = aip1.getIpId().toString();
+        String ipIdWithoutVersion = aip1.getIpId();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
         List<AIP> aips = repository.findAllByIpIdStartingWith(ipIdWithoutVersion);
         Assert.assertTrue(aips.contains(aip1));

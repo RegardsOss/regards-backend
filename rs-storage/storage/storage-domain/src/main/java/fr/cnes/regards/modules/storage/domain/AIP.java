@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -35,6 +34,7 @@ import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.modules.storage.urn.OAISIdentifier;
 import fr.cnes.regards.modules.storage.urn.UniformResourceName;
+import fr.cnes.regards.modules.storage.urn.validator.URN;
 
 /**
  *
@@ -63,9 +63,11 @@ public class AIP {
     private String sipId;
 
     /**
-     * private Id for the application
+     * private Id for the application, it's a {@link UniformResourceName} but due to the need of retrieving all AIP's
+     * version(which is in {@link UniformResourceName}) it's mapped to a String, validated as a URN
      */
-    private UniformResourceName ipId;
+    @URN
+    private String ipId;
 
     /**
      * Last Event that affected this AIP
@@ -108,7 +110,8 @@ public class AIP {
 
     public AIP generateAIP() throws NoSuchAlgorithmException, MalformedURLException {
         sipId = String.valueOf(generateRandomString(new Random(), 40));
-        ipId = new UniformResourceName(OAISIdentifier.SIP, AipType.COLLECTION, "tenant", UUID.randomUUID(), 1);
+        ipId = new UniformResourceName(OAISIdentifier.SIP, AipType.COLLECTION, "tenant", UUID.randomUUID(), 1)
+                .toString();
         tags = generateRandomTags();
         informationObjects = generateRandomInformationObjects();
         checksum = "checksum";
@@ -167,13 +170,12 @@ public class AIP {
     }
 
     @NotNull
-    @Column(name = "ipid", unique = true)
-    @Convert(converter = fr.cnes.regards.modules.storage.urn.converters.UrnConverter.class)
-    public UniformResourceName getIpId() {
+    @Column(name = "ipid", unique = true, length = 200)
+    public String getIpId() {
         return ipId;
     }
 
-    public void setIpId(UniformResourceName pIpId) {
+    public void setIpId(@URN String pIpId) {
         ipId = pIpId;
     }
 

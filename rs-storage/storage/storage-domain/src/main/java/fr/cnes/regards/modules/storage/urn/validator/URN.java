@@ -17,15 +17,15 @@ import javax.validation.Payload;
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE })
-@Constraint(validatedBy = RegardsOaisUrnValidator.class)
+@Target({ ElementType.FIELD, ElementType.PARAMETER })
+@Constraint(validatedBy = UrnValidator.class)
 @Documented
-public @interface RegardsOaisUrn {
+public @interface URN {
 
     /**
      * Class to validate
      */
-    static final String CLASS_NAME = "fr.cnes.regards.modules.storage.urn.validator.RegardsOaisUrn.";
+    static final String CLASS_NAME = "fr.cnes.regards.modules.Storage.urn.validator.URN.";
 
     /**
      *
