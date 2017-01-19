@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
@@ -21,9 +22,10 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@Entity(name = "T_PROJECT")
+@Entity
+@Table(name = "t_project")
 @InstanceEntity
-@SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "SEQ_PROJECT")
+@SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "seq_project")
 public class TestProject {
 
     /**
