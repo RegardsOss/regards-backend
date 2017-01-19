@@ -6,11 +6,13 @@ package fr.cnes.regards.modules.storage.domain;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 
+import com.google.gson.JsonElement;
+
 public class InformationObject {
 
     private ContentInformation contentInformation;
 
-    private PreservationDescriptionInformation pdi;
+    private JsonElement pdi;
 
     public InformationObject() {
 
@@ -24,17 +26,17 @@ public class InformationObject {
         contentInformation = pContentInformation;
     }
 
-    public PreservationDescriptionInformation getPdi() {
+    public JsonElement getPdi() {
         return pdi;
     }
 
-    public void setPdi(PreservationDescriptionInformation pPdi) {
+    public void setPdi(JsonElement pPdi) {
         pdi = pPdi;
     }
 
     public InformationObject generateRandomInformationObject() throws NoSuchAlgorithmException, MalformedURLException {
         contentInformation = new ContentInformation().generate();
-        pdi = new PreservationDescriptionInformation().generate();
+        pdi = null;
         return this;
     }
 

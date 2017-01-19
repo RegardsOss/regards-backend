@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.domain;
 
 import java.security.MessageDigest;
@@ -6,11 +9,11 @@ import java.util.Random;
 
 public class FixityInformation extends Information {
 
-    private String algorithm;
+    private transient String algorithm;
 
-    private String checksum;
+    private transient String checksum;
 
-    private int fileSize;
+    private transient int fileSize;
 
     public FixityInformation() {
         super();
@@ -32,6 +35,7 @@ public class FixityInformation extends Information {
 
     public void setAlgorithm(String pAlgorithm) {
         algorithm = pAlgorithm;
+        addMetadata("algorithm", algorithm);
     }
 
     public String getChecksum() {
@@ -40,6 +44,7 @@ public class FixityInformation extends Information {
 
     public void setChecksum(String pChecksum) {
         checksum = pChecksum;
+        addMetadata("checksum", checksum);
     }
 
     public int getFileSize() {
@@ -48,15 +53,16 @@ public class FixityInformation extends Information {
 
     public void setFileSize(int pFileSize) {
         fileSize = pFileSize;
+        addMetadata("fileSize", fileSize);
     }
 
     public FixityInformation generate() throws NoSuchAlgorithmException {
-        this.algorithm = "SHA1";
-        this.addMetadata(new KeyValuePair("algorithm", this.algorithm));
-        this.fileSize = (new Random()).nextInt(10000000);
-        this.addMetadata(new KeyValuePair("fileSize", this.fileSize));
-        this.checksum = sha1("blahblah");
-        this.addMetadata(new KeyValuePair("checksum", this.checksum));
+        algorithm = "SHA1";
+        addMetadata("algorithm", algorithm);
+        fileSize = (new Random()).nextInt(10000000);
+        addMetadata("fileSize", fileSize);
+        checksum = sha1("blahblah");
+        addMetadata("checksum", checksum);
         return this;
     }
 

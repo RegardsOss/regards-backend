@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.domain;
 
 import java.util.ArrayList;
@@ -5,9 +8,9 @@ import java.util.List;
 
 public class ProvenanceInformation extends Information {
 
-    private String facility;
+    private transient String facility;
 
-    private List<Event> history;
+    private transient List<Event> history;
 
     public ProvenanceInformation() {
         super();
@@ -19,6 +22,7 @@ public class ProvenanceInformation extends Information {
 
     public void setFacility(String pFacility) {
         facility = pFacility;
+        addMetadata("facility", facility);
     }
 
     public List<Event> getHistory() {
@@ -27,17 +31,19 @@ public class ProvenanceInformation extends Information {
 
     public void setHistory(List<Event> pHistory) {
         history = pHistory;
+        addMetadata("history", history);
     }
 
     public void addHistoryElement(Event element) {
-        this.history.add(element);
+        history.add(element);
+        addMetadata("history", history);
     }
 
     public ProvenanceInformation generate() {
-        this.facility = "TestPerf";
-        this.addMetadata(new KeyValuePair("facility", this.facility));
-        this.history = new ArrayList<>();
-        this.addMetadata(new KeyValuePair("history", this.history));
+        facility = "TestPerf";
+        addMetadata("facility", facility);
+        history = new ArrayList<>();
+        addMetadata("history", history);
         return this;
     }
 

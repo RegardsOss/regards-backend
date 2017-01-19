@@ -8,20 +8,25 @@ import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
+import org.hibernate.annotations.Type;
+
 @Embeddable
 public class Event {
 
-    @Column
     private String comment;
 
-    @Column
-    private LocalDateTime eventDate;
+    private LocalDateTime date;
 
-    public Event(String comment) {
-        this.comment = comment;
-        eventDate = LocalDateTime.now();
+    private Event() {
     }
 
+    public Event(String pComment) {
+        comment = pComment;
+        date = LocalDateTime.now();
+    }
+
+    @Column
+    @Type(type = "text")
     public String getComment() {
         return comment;
     }
@@ -30,12 +35,13 @@ public class Event {
         comment = pComment;
     }
 
-    public LocalDateTime getEventDate() {
-        return eventDate;
+    @Column
+    public LocalDateTime getDate() {
+        return date;
     }
 
-    public void setEventDate(LocalDateTime pEventDate) {
-        eventDate = pEventDate;
+    public void setDate(LocalDateTime pDate) {
+        date = pDate;
     }
 
 }

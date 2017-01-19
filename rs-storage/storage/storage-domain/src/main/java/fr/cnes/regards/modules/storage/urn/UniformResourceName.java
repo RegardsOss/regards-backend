@@ -14,7 +14,10 @@ import javax.validation.constraints.NotNull;
 
 import org.springframework.util.Assert;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import fr.cnes.regards.modules.storage.domain.AipType;
+import fr.cnes.regards.modules.storage.urn.converters.UrnAdapter;
 import fr.cnes.regards.modules.storage.urn.converters.UrnConverter;
 import fr.cnes.regards.modules.storage.urn.validator.RegardsOaisUrn;
 
@@ -25,8 +28,8 @@ import fr.cnes.regards.modules.storage.urn.validator.RegardsOaisUrn;
  * <br/>
  * Example:
  * <ul>
- * <li>URN:SIP:Collection:CDPP::1</li>
- * <li>URN:AIP:Collection:CDPP::1,5:REV2</li>
+ * <li>URN:SIP:Collection:CDPP::V1</li>
+ * <li>URN:AIP:Collection:CDPP::V1,5:REV2</li>
  * </ul>
  *
  * @author Sylvain Vissiere-Guerinet
@@ -34,6 +37,7 @@ import fr.cnes.regards.modules.storage.urn.validator.RegardsOaisUrn;
  */
 @RegardsOaisUrn
 @Convert(converter = UrnConverter.class)
+@JsonAdapter(UrnAdapter.class)
 public class UniformResourceName {
 
     /**

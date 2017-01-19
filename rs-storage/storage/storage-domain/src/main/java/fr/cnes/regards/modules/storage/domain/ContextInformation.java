@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.domain;
 
 public class ContextInformation extends Information {
@@ -7,7 +10,7 @@ public class ContextInformation extends Information {
     }
 
     public ContextInformation generate() {
-        this.addMetadata(new KeyValuePair("context", "OK"));
+        addMetadata("context", "OK");
         return this;
     }
 
