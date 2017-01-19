@@ -14,6 +14,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.LocalDateTimeAttributeConverter;
@@ -21,12 +22,13 @@ import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 
 /**
  * Store job status
- * 
+ *
  * @author Léo Mieulet
  * @author Christophe Mertz
  */
-@Entity(name = "T_JOB_STATUS_INFO")
-@SequenceGenerator(name = "statusInfoSequence", initialValue = 1, sequenceName = "SEQ_JOB_STATUS_INFO")
+@Entity
+@Table(name = "t_job_status_info")
+@SequenceGenerator(name = "statusInfoSequence", initialValue = 1, sequenceName = "seq_job_status_info")
 public class StatusInfo implements IIdentifiable<Long> {
 
     /**
@@ -40,8 +42,8 @@ public class StatusInfo implements IIdentifiable<Long> {
     /**
      * the job status
      */
-    @Column(name = "status")
-    @Enumerated(value = EnumType.ORDINAL)
+    @Column(name = "status", length = 16)
+    @Enumerated(value = EnumType.STRING)
     private JobStatus status;
 
     /**

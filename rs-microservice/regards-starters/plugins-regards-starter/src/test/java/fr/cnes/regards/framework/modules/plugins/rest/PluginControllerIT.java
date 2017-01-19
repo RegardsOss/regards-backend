@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
+import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
@@ -106,10 +107,10 @@ public class PluginControllerIT extends AbstractRegardsIT {
     public void getPluginOneType() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
-        final String pluginType = IComplexInterfacePlugin.class.getCanonicalName();
+        final String pluginType = ISamplePlugin.class.getCanonicalName();
         expectations.add(MockMvcResultMatchers
                 .jsonPath(JSON_PATH_STAR,
-                          Matchers.hasSize(pluginService.getPluginsByType(IComplexInterfacePlugin.class).size())));
+                          Matchers.hasSize(pluginService.getPluginsByType(ISamplePlugin.class).size())));
         performDefaultGet(PluginController.PLUGINS + "?pluginType=" + pluginType, expectations,
                           String.format("unable to load plugins of type <%s>", pluginType));
     }

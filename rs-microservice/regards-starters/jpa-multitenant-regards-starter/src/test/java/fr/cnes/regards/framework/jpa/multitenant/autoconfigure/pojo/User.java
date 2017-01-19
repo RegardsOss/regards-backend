@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
 /**
  *
@@ -22,8 +23,9 @@ import javax.persistence.SequenceGenerator;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@Entity(name = "T_USER")
-@SequenceGenerator(name = "userSequence", initialValue = 1, sequenceName = "SEQ_USER")
+@Entity
+@Table(name = "t_user")
+@SequenceGenerator(name = "userSequence", initialValue = 1, sequenceName = "seq_user")
 public class User {
 
     /**
@@ -50,7 +52,7 @@ public class User {
      * User's company
      */
     @ManyToOne
-    @JoinColumn(name = "company_id", foreignKey = @javax.persistence.ForeignKey(name = "FK_USER_COMPANY"))
+    @JoinColumn(name = "company_id", foreignKey = @javax.persistence.ForeignKey(name = "fk_user_company"))
     private Company company;
 
     /**
