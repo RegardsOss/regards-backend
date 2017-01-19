@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -21,6 +22,7 @@ import com.google.gson.JsonSyntaxException;
  * @author Sylvain Vissiere-Guerinet
  *
  */
+@Ignore
 public class IOTest {
 
     @Autowired

@@ -74,7 +74,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public List<DataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException {
-        AIP aip = repo.findOneByIpIdWithDataObjects(pIpId);
+        AIP aip = repo.findOneByIpIdWithDataObjects(pIpId.toString());
         if (aip == null) {
             throw new EntityNotFoundException(pIpId.toString(), AIP.class);
         }
@@ -82,7 +82,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public List<UniformResourceName> retrieveAIPVersionHistory(UniformResourceName pIpId) {
+    public List<String> retrieveAIPVersionHistory(UniformResourceName pIpId) {
         String ipIdWithoutVersion = pIpId.toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
         List<AIP> versions = repo.findAllByIpIdStartingWith(ipIdWithoutVersion);

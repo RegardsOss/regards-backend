@@ -11,6 +11,8 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -101,7 +103,8 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     @ResourceAccess(description = "validate and create the specified AIP")
     public HttpEntity<Long> createAIP(@RequestHeader(name = "Content-MD5", required = true) String pChecksum,
-            @RequestBody List<AIP> pAIP) throws EntityCorruptByNetworkException, NoSuchAlgorithmException, IOException {
+            @RequestBody @Valid List<AIP> pAIP)
+            throws EntityCorruptByNetworkException, NoSuchAlgorithmException, IOException {
         // String calculatedChecksum = "";
         // if (!validateChecksum(pChecksum, pAIP, calculatedChecksum)) {
         // throw new EntityCorruptByNetworkException(pAIP.getIpId().toString(), calculatedChecksum, pChecksum);
@@ -115,7 +118,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of files of a specified aip")
-    public HttpEntity<List<DataObject>> retrieveAIPFiles(@PathVariable("ip_id") UniformResourceName pIpId)
+    public HttpEntity<List<DataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid UniformResourceName pIpId)
             throws EntityNotFoundException {
         List<DataObject> files = aipService.retrieveAIPFiles(pIpId);
         return new ResponseEntity<>(files, HttpStatus.OK);
@@ -124,10 +127,9 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of files of a specified aip")
-    public HttpEntity<List<UniformResourceName>> retrieveAIPVersionHistory(
-            @PathVariable("ip_id") UniformResourceName pIpId, final Pageable pPageable,
-            final PagedResourcesAssembler<AIP> pAssembler) throws EntityNotFoundException {
-        List<UniformResourceName> versions = aipService.retrieveAIPVersionHistory(pIpId);
+    public HttpEntity<List<String>> retrieveAIPVersionHistory(@PathVariable("ip_id") @Valid UniformResourceName pIpId,
+            final Pageable pPageable, final PagedResourcesAssembler<AIP> pAssembler) throws EntityNotFoundException {
+        List<String> versions = aipService.retrieveAIPVersionHistory(pIpId);
         return new ResponseEntity<>(versions, HttpStatus.OK);
     }
 

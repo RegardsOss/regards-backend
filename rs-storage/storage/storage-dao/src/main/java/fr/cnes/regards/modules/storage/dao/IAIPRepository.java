@@ -14,7 +14,6 @@ import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.urn.UniformResourceName;
 
 /**
  *
@@ -82,7 +81,7 @@ public interface IAIPRepository extends JpaRepository<AIP, Long> {
     Page<AIP> findAllByLastEventDateBefore(LocalDateTime pTo, Pageable pPageable);
 
     @Query("from AIP aip join fetch aip.dataObjects where aip.ipId=:ipId")
-    AIP findOneByIpIdWithDataObjects(@Param("ipId") UniformResourceName pIpId);
+    AIP findOneByIpIdWithDataObjects(@Param("ipId") String pIpId);
 
     @Query("from AIP aip where aip.ipId LIKE :urnWithoutVersion%")
     List<AIP> findAllByIpIdStartingWith(@Param("urnWithoutVersion") String pUrnWithoutVersion);

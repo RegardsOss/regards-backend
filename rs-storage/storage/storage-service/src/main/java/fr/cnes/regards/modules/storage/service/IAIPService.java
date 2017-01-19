@@ -53,6 +53,6 @@ public interface IAIPService {
      * @param pIpId
      * @return
      */
-    List<UniformResourceName> retrieveAIPVersionHistory(UniformResourceName pIpId);
+    List<String> retrieveAIPVersionHistory(UniformResourceName pIpId);
 
 }
