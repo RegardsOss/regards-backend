@@ -27,5 +27,9 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>gson-regards-starter</artifactId>
+		</dependency>
 	</dependencies>
 </project>

@@ -1,26 +1,29 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.domain;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Information {
 
-    private List<KeyValuePair> metadata;
+    private Map<String, Object> metadata;
 
     public Information() {
-        this.metadata = new ArrayList<>();
+        metadata = new HashMap<>();
     }
 
-    public List<KeyValuePair> getMetadata() {
+    public Map<String, Object> getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(List<KeyValuePair> pMetadata) {
+    public void setMetadata(Map<String, Object> pMetadata) {
         metadata = pMetadata;
     }
 
-    public void addMetadata(KeyValuePair metadata) {
-        this.metadata.add(metadata);
+    public void addMetadata(String pKey, Object pValue) {
+        metadata.put(pKey, pValue);
     }
 
 }

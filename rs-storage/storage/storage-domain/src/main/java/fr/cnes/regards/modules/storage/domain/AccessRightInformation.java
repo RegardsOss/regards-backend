@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.domain;
 
 public class AccessRightInformation extends Information {
@@ -7,7 +10,7 @@ public class AccessRightInformation extends Information {
     }
 
     public AccessRightInformation generate() {
-        this.addMetadata(new KeyValuePair("READ", "Group1"));
+        addMetadata("READ", "Group1");
         return this;
     }
 

@@ -5,12 +5,14 @@ package fr.cnes.regards.modules.storage.domain;
 
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -19,6 +21,7 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -26,6 +29,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
@@ -39,7 +43,8 @@ import fr.cnes.regards.modules.storage.urn.UniformResourceName;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@Entity(name = "t_aip")
+@Entity
+@Table(name = "t_aip")
 public class AIP {
 
     /**
@@ -47,26 +52,53 @@ public class AIP {
      */
     private Long id;
 
-    private String checksum;
+    /**
+     * checksum of the AIP
+     */
+    private transient String checksum;
 
-    // FIXME: constraint the column
-    private UniformResourceName sipId;
+    /**
+     * SIP ID
+     */
+    private String sipId;
 
     /**
      * private Id for the application
      */
-    // FIXME: constraint the column
     private UniformResourceName ipId;
 
+    /**
+     * Last Event that affected this AIP
+     */
     private Event lastEvent;
 
+    /**
+     * Submission Date into REGARDS
+     */
+    private LocalDateTime submissionDate;
+
+    /**
+     * Type of this AIP
+     */
     private AipType type;
 
+    /**
+     * List of tag
+     */
     private List<String> tags;
 
+    /**
+     * List of Information Object
+     */
     private List<InformationObject> informationObjects;
 
-    private AIPState state;
+    /**
+     * State of this AIP
+     */
+    private transient AIPState state;
+
+    private AIP() {
+    }
 
     public AIP(AipType pType) {
         type = pType;
@@ -75,12 +107,14 @@ public class AIP {
     }
 
     public AIP generateAIP() throws NoSuchAlgorithmException, MalformedURLException {
-        sipId = new UniformResourceName(OAISIdentifier.SIP, AipType.COLLECTION, "tenant", UUID.randomUUID(), 1);
+        sipId = String.valueOf(generateRandomString(new Random(), 40));
         ipId = new UniformResourceName(OAISIdentifier.SIP, AipType.COLLECTION, "tenant", UUID.randomUUID(), 1);
         tags = generateRandomTags();
         informationObjects = generateRandomInformationObjects();
         checksum = "checksum";
         state = AIPState.VALID;
+        submissionDate = LocalDateTime.now();
+        lastEvent = new Event("toc");
         return this;
     }
 
@@ -97,36 +131,43 @@ public class AIP {
     }
 
     private List<String> generateRandomTags() {
-        String possibleLetters = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWYXZ";
         int listMaxSize = 15;
         int tagMaxSize = 10;
         Random random = new Random();
         int listSize = random.nextInt(listMaxSize);
         List<String> tags = new ArrayList<>(listSize);
         for (int i = 0; i < listSize; i++) {
-            int tagSize = random.nextInt(tagMaxSize);
-            char[] tag = new char[tagSize];
-            for (int j = 0; j < tagSize; j++) {
-                tag[j] = possibleLetters.charAt(random.nextInt(possibleLetters.length()));
-            }
+            char[] tag = generateRandomString(random, tagMaxSize);
             tags.add(String.valueOf(tag));
         }
         return tags;
     }
 
+    /**
+     * @return
+     */
+    private char[] generateRandomString(Random random, int maxStringLength) {
+        String possibleLetters = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWYXZ";
+        int tagSize = random.nextInt(maxStringLength);
+        char[] tag = new char[tagSize];
+        for (int j = 0; j < tagSize; j++) {
+            tag[j] = possibleLetters.charAt(random.nextInt(possibleLetters.length()));
+        }
+        return tag;
+    }
+
     @NotNull
     @Column(name = "sipid")
-    @Convert(converter = fr.cnes.regards.modules.storage.urn.converters.UrnConverter.class)
-    public UniformResourceName getSipId() {
+    public String getSipId() {
         return sipId;
     }
 
-    public void setSipId(UniformResourceName pSipId) {
+    public void setSipId(String pSipId) {
         sipId = pSipId;
     }
 
     @NotNull
-    @Column(name = "ipid")
+    @Column(name = "ipid", unique = true)
     @Convert(converter = fr.cnes.regards.modules.storage.urn.converters.UrnConverter.class)
     public UniformResourceName getIpId() {
         return ipId;
@@ -148,8 +189,8 @@ public class AIP {
     }
 
     @ElementCollection
-    @CollectionTable(name = "ta_aip_tag", joinColumns = @JoinColumn(name = "aip_id"),
-            foreignKey = @ForeignKey(name = "fk_aip_tag"))
+    @CollectionTable(name = "t_aip_tag")
+    @Column(name = "value", length = 200)
     public List<String> getTags() {
         return tags;
     }
@@ -208,7 +249,7 @@ public class AIP {
         lastEvent = pLastEvent;
     }
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "aip_id", foreignKey = @ForeignKey(name = "fk_aip_data_objects"))
     @Column
     public List<DataObject> getDataObjects() {
@@ -219,6 +260,14 @@ public class AIP {
     @SuppressWarnings("unused")
     private void setDataObjects(List<DataObject> pDataObjects) { // NOSONAR
 
+    }
+
+    public LocalDateTime getSubmissionDate() {
+        return submissionDate;
+    }
+
+    public void setSubmissionDate(LocalDateTime pSubmissionDate) {
+        submissionDate = pSubmissionDate;
     }
 
 }
