@@ -6,6 +6,8 @@ package fr.cnes.regards.plugins.utils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,6 +141,11 @@ public final class PluginUtils {
         // Init plugin metadata
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(pPluginClass.getCanonicalName());
+        List<String> types = new ArrayList<>();
+        for (Type  aInterface : pPluginClass.getGenericInterfaces()) {
+            types.add(aInterface.getTypeName());
+        }
+        pluginMetaData.setInterfaceClassName(types);
 
         // Manage plugin id
         if ("".equals(plugin.id())) {
