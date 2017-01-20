@@ -12,6 +12,8 @@ import javax.sql.DataSource;
 
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.cfg.Environment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -45,14 +47,18 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(
-        includeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
-        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "instanceEntityManagerFactory",
-        transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
+@EnableJpaRepositories(includeFilters = {
+        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "instanceEntityManagerFactory", transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties(InstanceDaoProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "instance.enabled", matchIfMissing = true)
 public class InstanceJpaAutoConfiguration {
+
+    /**
+     * Class logger
+     */
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(InstanceJpaAutoConfiguration.class);
 
     /**
      * JPA Persistence unit name. Used to separate multiples databases

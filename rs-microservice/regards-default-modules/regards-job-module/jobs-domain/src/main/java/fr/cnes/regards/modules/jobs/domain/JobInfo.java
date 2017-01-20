@@ -17,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.jobs.domain.converters.JobOuputConverter;
@@ -24,12 +25,13 @@ import fr.cnes.regards.modules.jobs.domain.converters.PathConverter;
 
 /**
  * Store Job Information
- * 
+ *
  * @author Léo Mieulet
  * @author Christophe Mertz
  */
-@Entity(name = "T_JOB_INFO")
-@SequenceGenerator(name = "jobInfoSequence", initialValue = 1, sequenceName = "SEQ_JOB_INFO")
+@Entity
+@Table(name = "t_job_info")
+@SequenceGenerator(name = "jobInfoSequence", initialValue = 1, sequenceName = "seq_job_info")
 public class JobInfo implements IIdentifiable<Long> {
 
     /**
@@ -99,7 +101,7 @@ public class JobInfo implements IIdentifiable<Long> {
     }
 
     /**
-     * 
+     *
      * @param pJobConfiguration
      *            the {@link JobConfiguration} to used
      */
@@ -111,7 +113,7 @@ public class JobInfo implements IIdentifiable<Long> {
         status = pJobConfiguration.getStatusInfo();
         workspace = pJobConfiguration.getWorkspace();
         priority = pJobConfiguration.getPriority();
-        archived=Boolean.FALSE;
+        archived = Boolean.FALSE;
     }
 
     /**

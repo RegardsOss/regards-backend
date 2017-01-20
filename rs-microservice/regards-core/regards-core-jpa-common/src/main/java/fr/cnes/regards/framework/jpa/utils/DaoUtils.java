@@ -41,6 +41,11 @@ import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 public final class DaoUtils {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(DaoUtils.class);
+
+    /**
      * Root package
      */
     public static final String ROOT_PACKAGE = "fr.cnes.regards";
@@ -54,11 +59,6 @@ public final class DaoUtils {
      * Modules root package
      */
     public static final String MODULES_PACKAGE = "fr.cnes.regards.modules";
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(DaoUtils.class);
 
     /**
      *
@@ -82,7 +82,7 @@ public final class DaoUtils {
      */
     public static void checkClassPath(final String pPackageToScan) throws MultiDataBasesException {
 
-        LOG.info("Checking classpath for conflicts between instance and projects databases ...");
+        LOGGER.info("Checking classpath for conflicts between instance and projects databases ...");
 
         final Set<String> packagesToScan = findPackagesForJpa(pPackageToScan);
         final List<Class<?>> instanceClasses = DaoUtils.scanPackagesForJpa(InstanceEntity.class, null, packagesToScan);
@@ -95,16 +95,16 @@ public final class DaoUtils {
         for (final String instancePackage : instancePackages) {
             for (final String pack : projectPackages) {
                 if (pack.contains(instancePackage) || instancePackage.contains(pack)) {
-                    LOG.error(String.format(
-                                            "Invalid classpath. Package %s is used for instance DAO Entities and multitenant DAO Entities",
-                                            instancePackage));
+                    LOGGER.error(String.format(
+                                               "Invalid classpath. Package %s is used for instance DAO Entities and multitenant DAO Entities",
+                                               instancePackage));
                     throw new MultiDataBasesException(
                             "Invalid classpath for JPA multitenant and JPA instance databases.");
                 }
             }
         }
 
-        LOG.info("Classpath is valid !");
+        LOGGER.info("Classpath is valid !");
 
     }
 
@@ -116,7 +116,8 @@ public final class DaoUtils {
         // and framework ones because all framework content is embedded into all micro-services
         Set<String> packagesToScan = new HashSet<>();
         try {
-            ClassPath classpath = ClassPath.from(ClassLoader.getSystemClassLoader());
+            ClassPath classpath = ClassPath.from(DaoUtils.class.getClassLoader());
+
             ImmutableSet<ClassPath.ClassInfo> classInfos = classpath.getTopLevelClassesRecursive(rootPackage);
             for (ClassPath.ClassInfo info : classInfos) {
                 // Add all framework package if one of its class is into classpath (this always should be the case)
@@ -135,6 +136,9 @@ public final class DaoUtils {
                         String packageEnd = info.getPackageName().substring(DaoUtils.MODULES_PACKAGE.length() + 1);
                         packagesToScan
                                 .add(DaoUtils.MODULES_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.')));
+                    } else {
+                        LOGGER.info("Package {} not selected for scanning cause not starting with {}.",
+                                    info.getPackageName(), DaoUtils.MODULES_PACKAGE);
                     }
                 }
             }
@@ -160,9 +164,13 @@ public final class DaoUtils {
 
     /**
      * Scan classpath into given package with given filters and return matching classes
-     * @param pPackageToScan Package to scan
-     * @param pIncludeAnnotation Include filter
-     * @param pExcludeAnnotation Exclude filter
+     *
+     * @param pPackageToScan
+     *            Package to scan
+     * @param pIncludeAnnotation
+     *            Include filter
+     * @param pExcludeAnnotation
+     *            Exclude filter
      * @return matching classes
      */
     public static List<Class<?>> scanPackageForJpa(final String pPackageToScan,
@@ -172,17 +180,20 @@ public final class DaoUtils {
         final ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         if (pExcludeAnnotation != null) {
+            LOGGER.info("Excluding JPA entities with {} annotation", pExcludeAnnotation.getName());
             scanner.addExcludeFilter(new AnnotationTypeFilter(pExcludeAnnotation));
         }
         if (pIncludeAnnotation != null) {
+            LOGGER.info("Including JPA entities with {} annotation", pIncludeAnnotation.getName());
             scanner.addIncludeFilter(new AnnotationTypeFilter(pIncludeAnnotation));
         }
         for (final BeanDefinition def : scanner.findCandidateComponents(pPackageToScan)) {
             try {
+                LOGGER.info("Package {} selected for scanning", def.getBeanClassName());
                 packages.add(Class.forName(def.getBeanClassName()));
             } catch (final ClassNotFoundException e) {
-                LOG.error("Error adding entity " + def.getBeanClassName() + " for hibernate database update");
-                LOG.error(e.getMessage(), e);
+                LOGGER.error("Error adding entity " + def.getBeanClassName() + " for hibernate database update");
+                LOGGER.error(e.getMessage(), e);
             }
         }
         return packages;
