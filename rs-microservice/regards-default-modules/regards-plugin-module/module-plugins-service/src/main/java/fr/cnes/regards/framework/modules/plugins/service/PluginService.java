@@ -210,7 +210,7 @@ public class PluginService implements IPluginService {
         return getLoadedPlugins().get(pPluginImplId);
     }
 
-    @SuppressWarnings("unchecked") // for a configuration the type of the plugin is unique
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final PluginParameter... pPluginParameters)
             throws PluginUtilsException {
@@ -254,23 +254,40 @@ public class PluginService implements IPluginService {
         return resultPlugin;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
             throws PluginUtilsException {
+        // Get the plugin associated to this configuration
+        T resultPlugin = null;
 
-        // Get last saved plugin configuration
-        final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
+        if (!instanciatePlugins.containsKey(pPluginConfigurationId)
+                || (instanciatePlugins.containsKey(pPluginConfigurationId) && pPluginParameters.length > 0)) {
 
-        // Get the plugin implementation associated
-        final PluginMetaData pluginMetadata = getLoadedPlugins().get(pluginConf.getPluginId());
+            // Get last saved plugin configuration
+            final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
 
-        // Check if plugin version has changed since the last saved configuration of the plugin
-        if ((pluginConf.getVersion() != null) && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
-            LOGGER.warn(String.format("Plugin version <%s> changed since last configuration <%s>.",
-                                      pluginConf.getVersion(), pluginMetadata.getVersion()));
+            // Get the plugin implementation associated
+            final PluginMetaData pluginMetadata = getLoadedPlugins().get(pluginConf.getPluginId());
+
+            // Check if plugin version has changed since the last saved configuration of the plugin
+            if ((pluginConf.getVersion() != null) && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
+                LOGGER.warn(String.format("Plugin version <%s> changed since last configuration <%s>.",
+                                          pluginConf.getVersion(), pluginMetadata.getVersion()));
+            }
+
+            resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), pPluginParameters);
+
+            // Put in the map, only if there is no dynamic parameters
+            if (pPluginParameters.length == 0) {
+                instanciatePlugins.put(pPluginConfigurationId, resultPlugin);
+            }
+
+        } else {
+            resultPlugin = (T) instanciatePlugins.get(pPluginConfigurationId);
         }
 
-        return PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), pPluginParameters);
+        return resultPlugin;
     }
 
     private List<String> getPluginPackage() {
