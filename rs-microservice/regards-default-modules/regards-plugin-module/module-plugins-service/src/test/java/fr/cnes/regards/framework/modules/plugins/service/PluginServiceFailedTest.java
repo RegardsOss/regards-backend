@@ -210,8 +210,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
-        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,
-                                                                                    null);
+        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
 
         Assert.assertNotNull(aSamplePlugin);
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(RED));

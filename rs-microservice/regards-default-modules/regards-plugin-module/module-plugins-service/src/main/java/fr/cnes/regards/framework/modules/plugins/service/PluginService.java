@@ -5,6 +5,7 @@
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -50,6 +51,8 @@ public class PluginService implements IPluginService {
      * implementation class.
      */
     private Map<String, PluginMetaData> plugins;
+
+    private Map<Long, Object> instanciatePlugins = new HashMap<Long, Object>();
 
     /**
      * A constructor with the {@link IPluginConfigurationRepository}.
@@ -155,13 +158,20 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPlugin)
+    public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPluginConf)
             throws EntityNotFoundException, PluginUtilsException {
         // Check if plugin configuration exists
-        if (!pluginConfRepository.exists(pPlugin.getId())) {
-            throw new EntityNotFoundException(pPlugin.getId().toString(), PluginConfiguration.class);
+        if (!pluginConfRepository.exists(pPluginConf.getId())) {
+            throw new EntityNotFoundException(pPluginConf.getId().toString(), PluginConfiguration.class);
         }
-        return savePluginConfiguration(pPlugin);
+        PluginConfiguration newPLuginConfiguration = savePluginConfiguration(pPluginConf);
+
+        /**
+         * Remove the PluginConfiguratin from the map
+         */
+        instanciatePlugins.remove(pPluginConf.getId());
+
+        return newPLuginConfiguration;
     }
 
     @Override
@@ -171,6 +181,11 @@ public class PluginService implements IPluginService {
             throw new EntityNotFoundException(pConfId.toString(), PluginConfiguration.class);
         }
         pluginConfRepository.delete(pConfId);
+
+        /**
+         * Remove the PluginConfiguratin from the map
+         */
+        instanciatePlugins.remove(pConfId);
     }
 
     @Override
@@ -195,6 +210,7 @@ public class PluginService implements IPluginService {
         return getLoadedPlugins().get(pPluginImplId);
     }
 
+    @SuppressWarnings("unchecked") // for a configuration the type of the plugin is unique
     @Override
     public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final PluginParameter... pPluginParameters)
             throws PluginUtilsException {
@@ -220,7 +236,19 @@ public class PluginService implements IPluginService {
         T resultPlugin = null;
 
         if (configuration != null) {
-            resultPlugin = getPlugin(configuration.getId(), pPluginParameters);
+            if (!instanciatePlugins.containsKey(configuration.getId())
+                    || (instanciatePlugins.containsKey(configuration.getId()) && pPluginParameters.length > 0)) {
+
+                resultPlugin = getPlugin(configuration.getId(), pPluginParameters);
+
+                // Put in the map, only if there is no dynamic parameters
+                if (pPluginParameters.length == 0) {
+                    instanciatePlugins.put(configuration.getId(), resultPlugin);
+                }
+
+            } else {
+                resultPlugin = (T) instanciatePlugins.get(configuration.getId());
+            }
         }
 
         return resultPlugin;

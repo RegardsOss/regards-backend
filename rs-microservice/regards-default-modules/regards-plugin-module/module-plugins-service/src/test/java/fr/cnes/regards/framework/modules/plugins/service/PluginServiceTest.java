@@ -297,6 +297,108 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
+     * Get twice a specific Plugin with the same PluginConfiguration
+     *
+     * @throws PluginUtilsException
+     *             throw if an error occurs
+     */
+    @Test
+    @Purpose("Load twice a plugin with the same configuration.")
+    public void getExistingFirstPluginByType() throws PluginUtilsException {
+        final List<PluginConfiguration> pluginConfs = new ArrayList<>();
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
+        aPluginConfiguration.setId(AN_ID);
+
+        pluginConfs.add(aPluginConfiguration);
+        pluginConfs.add(getPluginConfigurationWithDynamicParameter());
+
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+                .thenReturn(pluginConfs);
+        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+
+        pluginServiceMocked.addPluginPackage(pluginsPackage);
+        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
+        Assert.assertNotNull(aSamplePlugin);
+
+        final SamplePlugin bSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
+        Assert.assertNotNull(bSamplePlugin);
+
+        Assert.assertEquals(aSamplePlugin.add(5, 3), bSamplePlugin.add(5, 3));
+        Assert.assertEquals(aSamplePlugin.echo(GREEN), bSamplePlugin.echo(GREEN));
+
+        Assert.assertEquals(aSamplePlugin, bSamplePlugin);
+    }
+
+    /**
+     * Get twice a specific Plugin with the same PluginConfiguration with a dynamic parameter
+     *
+     * @throws PluginUtilsException
+     *             throw if an error occurs
+     */
+    @Test
+    @Purpose("Load a plugin twice from a specific type with a configuration.")
+    public void getExistingFirstPluginByTypeWithDynamicParameter() throws PluginUtilsException {
+        final List<PluginConfiguration> pluginConfs = new ArrayList<>();
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
+        aPluginConfiguration.setId(AN_ID);
+
+        pluginConfs.add(aPluginConfiguration);
+        pluginConfs.add(getPluginConfigurationWithParameters());
+
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+                .thenReturn(pluginConfs);
+        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+
+        // the argument for the dynamic parameter
+        final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
+                .addParameter(SamplePlugin.SUFFIXE, BLUE).getParameters().get(0);
+
+        pluginServiceMocked.addPluginPackage(pluginsPackage);
+        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,
+                                                                                    aDynamicPlgParam);
+        Assert.assertNotNull(aSamplePlugin);
+
+        final SamplePlugin bSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,
+                                                                                    aDynamicPlgParam);
+        Assert.assertNotNull(bSamplePlugin);
+        Assert.assertNotEquals(aSamplePlugin, bSamplePlugin);
+    }
+
+    /**
+     * Get twice a specific Plugin with the same PluginConfiguration with a dynamic parameter the second time
+     *
+     * @throws PluginUtilsException
+     *             throw if an error occurs
+     */
+    @Test
+    @Purpose("Load a plugin twice from a specific type with a configuration.")
+    public void getExistingFirstPluginByTypeWithDynamicParameter2() throws PluginUtilsException {
+        final List<PluginConfiguration> pluginConfs = new ArrayList<>();
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
+        aPluginConfiguration.setId(AN_ID);
+
+        pluginConfs.add(aPluginConfiguration);
+        pluginConfs.add(getPluginConfigurationWithParameters());
+
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+                .thenReturn(pluginConfs);
+        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+
+        // the argument for the dynamic parameter
+        final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
+                .addParameter(SamplePlugin.SUFFIXE, BLUE).getParameters().get(0);
+
+        pluginServiceMocked.addPluginPackage(pluginsPackage);
+        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
+        Assert.assertNotNull(aSamplePlugin);
+
+        final SamplePlugin bSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,
+                                                                                    aDynamicPlgParam);
+        Assert.assertNotNull(bSamplePlugin);
+        Assert.assertNotEquals(aSamplePlugin, bSamplePlugin);
+    }
+
+    /**
      * Get the first plugin of a specific type with a specific parameter
      *
      * @throws PluginUtilsException
