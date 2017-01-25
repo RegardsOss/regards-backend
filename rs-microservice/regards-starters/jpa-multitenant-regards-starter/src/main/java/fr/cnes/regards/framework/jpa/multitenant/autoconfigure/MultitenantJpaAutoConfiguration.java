@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectio
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  *
@@ -57,10 +58,8 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(
-        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
-        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
-        transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
+@EnableJpaRepositories(excludeFilters = {
+        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory", transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
@@ -140,8 +139,9 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public CurrentTenantIdentifierResolver currentTenantIdentifierResolver() {
-        return new CurrentTenantIdentifierResolverImpl();
+    public CurrentTenantIdentifierResolver currentTenantIdentifierResolver(
+            IRuntimeTenantResolver pThreadTenantResolver) {
+        return new CurrentTenantIdentifierResolverImpl(pThreadTenantResolver);
     }
 
     /**

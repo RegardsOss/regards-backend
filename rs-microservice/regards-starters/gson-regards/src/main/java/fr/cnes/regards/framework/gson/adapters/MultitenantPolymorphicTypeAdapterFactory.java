@@ -30,7 +30,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.gson.utils.GSONUtils;
-import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * Generic polymorphic adapter factory. This adapter is based on a discriminator field to explicitly map an entity to
@@ -87,7 +87,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     /**
      * Resolve thread tenant at runtime
      */
-    protected IThreadTenantResolver runtimeTenantResolver;
+    protected IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      *
@@ -102,7 +102,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
      * @param pInjectField
      *            do not inject field if already exists else yes.
      */
-    protected MultitenantPolymorphicTypeAdapterFactory(IThreadTenantResolver pTenantResolver, Class<E> pBaseType,
+    protected MultitenantPolymorphicTypeAdapterFactory(IRuntimeTenantResolver pTenantResolver, Class<E> pBaseType,
             String pDiscriminatorFieldName, boolean pInjectField) {
         GSONUtils.assertNotNull(pTenantResolver, "Dynamic tenant resolver is required.");
         GSONUtils.assertNotNull(pBaseType, "Base hierarchy type is required.");
@@ -131,7 +131,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
      * @param pDiscriminatorFieldName
      *            discriminator field name
      */
-    protected MultitenantPolymorphicTypeAdapterFactory(IThreadTenantResolver pTenantResolver, Class<E> pBaseType,
+    protected MultitenantPolymorphicTypeAdapterFactory(IRuntimeTenantResolver pTenantResolver, Class<E> pBaseType,
             String pDiscriminatorFieldName) {
         this(pTenantResolver, pBaseType, pDiscriminatorFieldName, false);
     }
@@ -144,7 +144,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
      * @param pBaseType
      *            base hierarchy type
      */
-    protected MultitenantPolymorphicTypeAdapterFactory(IThreadTenantResolver pTenantResolver, Class<E> pBaseType) {
+    protected MultitenantPolymorphicTypeAdapterFactory(IRuntimeTenantResolver pTenantResolver, Class<E> pBaseType) {
         this(pTenantResolver, pBaseType, DEFAULT_DISCRIMINATOR_FIELD_NAME, true);
     }
 

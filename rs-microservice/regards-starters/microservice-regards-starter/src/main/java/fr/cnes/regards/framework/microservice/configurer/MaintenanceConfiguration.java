@@ -8,7 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.microservice.filter.MaintenanceFilter;
-import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.filter.CorsFilter;
 
@@ -27,7 +27,7 @@ public class MaintenanceConfiguration implements ICustomWebSecurityConfiguration
      * Thread tenant resolver
      */
     @Autowired
-    private IThreadTenantResolver pResolver;
+    private IRuntimeTenantResolver pResolver;
 
     @Override
     public void configure(final HttpSecurity pHttp) {

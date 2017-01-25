@@ -21,7 +21,7 @@ import fr.cnes.regards.framework.amqp.event.IPollableEvent;
 import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
-import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * @author svissier
@@ -54,10 +54,10 @@ public class Publisher implements IPublisher {
     /**
      * Resolve thread tenant
      */
-    private final IThreadTenantResolver threadTenantResolver;
+    private final IRuntimeTenantResolver threadTenantResolver;
 
     public Publisher(final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
-            final IRabbitVirtualHostUtils pRabbitVirtualHostUtils, IThreadTenantResolver pThreadTenantResolver) {
+            final IRabbitVirtualHostUtils pRabbitVirtualHostUtils, IRuntimeTenantResolver pThreadTenantResolver) {
         super();
         rabbitTemplate = pRabbitTemplate;
         regardsAmqpAdmin = pRegardsAmqpAdmin;

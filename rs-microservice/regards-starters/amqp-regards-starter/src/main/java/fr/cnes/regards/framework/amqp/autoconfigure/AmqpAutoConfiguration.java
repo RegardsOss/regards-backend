@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.amqp.connection.RegardsSimpleRoutingConnectionF
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  *
@@ -111,7 +111,7 @@ public class AmqpAutoConfiguration {
     @Bean
     public IPublisher publisher(final IRabbitVirtualHostUtils pIRabbitVirtualHostUtils,
             final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
-            IThreadTenantResolver pThreadTenantResolver) {
+            IRuntimeTenantResolver pThreadTenantResolver) {
         return new Publisher(pRabbitTemplate, pRegardsAmqpAdmin, pIRabbitVirtualHostUtils, pThreadTenantResolver);
     }
 

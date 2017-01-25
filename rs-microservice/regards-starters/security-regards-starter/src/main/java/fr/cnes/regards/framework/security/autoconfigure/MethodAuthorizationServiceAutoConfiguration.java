@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
 import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
 import fr.cnes.regards.framework.security.endpoint.DefaultPluginResourceManager;
@@ -30,7 +30,7 @@ public class MethodAuthorizationServiceAutoConfiguration {
 
     @ConditionalOnMissingBean
     @Bean
-    public IThreadTenantResolver secureThreadTenantResolver() {
+    public IRuntimeTenantResolver secureThreadTenantResolver() {
         return new SecureThreadTenantResolver();
     }
 

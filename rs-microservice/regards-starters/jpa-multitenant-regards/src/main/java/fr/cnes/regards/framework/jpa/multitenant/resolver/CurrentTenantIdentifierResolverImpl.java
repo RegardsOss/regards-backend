@@ -4,9 +4,8 @@
 package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
-import org.springframework.security.core.context.SecurityContextHolder;
 
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  *
@@ -23,15 +22,15 @@ public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentif
      */
     private static final String DEFAULT_TENANT = "default";
 
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    public CurrentTenantIdentifierResolverImpl(IRuntimeTenantResolver pThreadTenantResolver) {
+        this.runtimeTenantResolver = pThreadTenantResolver;
+    }
+
     @Override
     public String resolveCurrentTenantIdentifier() {
-        String tenant = DEFAULT_TENANT;
-        final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
-                .getAuthentication();
-        if (authentication != null) {
-            tenant = authentication.getTenant();
-        }
-        return tenant;
+        return runtimeTenantResolver.getTenant() == null ? DEFAULT_TENANT : runtimeTenantResolver.getTenant();
     }
 
     @Override
