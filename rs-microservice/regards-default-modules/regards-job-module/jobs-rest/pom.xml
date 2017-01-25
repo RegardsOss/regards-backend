@@ -4,12 +4,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.jobs</groupId>
+	<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 	<artifactId>jobs-rest</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
-		<groupId>fr.cnes.regards.modules</groupId>
+		<groupId>fr.cnes.regards.framework.modules</groupId>
 		<artifactId>module-jobs</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
@@ -21,7 +21,7 @@
 		</dependency>
 		<!-- Microservice internal dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules.jobs</groupId>
+			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 			<artifactId>jobs-service</artifactId>
 		</dependency>
 		<dependency>
@@ -30,7 +30,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.jobs</groupId>
+			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 			<artifactId>jobs-test</artifactId>
 			<scope>test</scope>
 			<type>test-jar</type>
