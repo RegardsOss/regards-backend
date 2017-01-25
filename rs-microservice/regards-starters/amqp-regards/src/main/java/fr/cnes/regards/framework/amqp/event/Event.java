@@ -10,18 +10,18 @@ import java.lang.annotation.Target;
 
 /**
  *
- * An event must be annotated with {@link EventProperties} to identify its
+ * An event must be annotated with {@link Event} to identify its
  * {@link fr.cnes.regards.framework.amqp.event.Target}.<br\>
  *
- * For {@link IPollableEvent}, the {@link WorkerMode} can be customized. Default to {@link WorkerMode#SINGLE}. This
- * property is not used for {@link ISubscribableEvent}.
+ * For {@link IPollable}, the {@link WorkerMode} can be customized. Default to {@link WorkerMode#SINGLE}. This
+ * property is not used for {@link ISubscribable}.
  *
  * @author Marc Sordi
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface EventProperties {
+public @interface Event {
 
     /**
      * @return event {@link fr.cnes.regards.framework.amqp.event.Target}
@@ -30,7 +30,7 @@ public @interface EventProperties {
 
     /**
      *
-     * @return worker mode. Only use for {@link IPollableEvent}
+     * @return worker mode. Only use for {@link IPollable}
      */
     WorkerMode mode() default WorkerMode.SINGLE;
 }

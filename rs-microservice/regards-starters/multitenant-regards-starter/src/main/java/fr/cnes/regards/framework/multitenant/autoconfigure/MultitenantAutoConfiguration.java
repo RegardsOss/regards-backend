@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
-import fr.cnes.regards.framework.multitenant.test.SingleThreadTenantResolver;
+import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
 
 /**
  *
@@ -47,6 +47,6 @@ public class MultitenantAutoConfiguration {
     @ConditionalOnMissingBean
     @Bean
     public IRuntimeTenantResolver threadTenantResolver() {
-        return new SingleThreadTenantResolver(tenant);
+        return new SingleRuntimeTenantResolver(tenant);
     }
 }

@@ -3,10 +3,8 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.event.IPollableEvent;
+import fr.cnes.regards.framework.amqp.event.IPollable;
 
 /**
  * @author Marc Sordi
@@ -15,33 +13,15 @@ import fr.cnes.regards.framework.amqp.event.IPollableEvent;
 public interface IPoller {
 
     /**
-     * @param <T>
-     *            {@link IPollableEvent} event
-     * @param pTenant
-     *            tenant
-     * @param pEvent
-     *            {@link IPollableEvent} event
-     * @return {@link IPollableEvent} event in a tenant wrapper
-     */
-    <T extends IPollableEvent> TenantWrapper<T> poll(String pTenant, Class<T> pEvent);
-
-    /**
-     *
      * TODO: desactivate auto-ack and add an ack method
      *
      * @param <T>
-     *            event published
+     *            {@link IPollable} event
      * @param pTenant
-     *            tenant to poll message for
-     * @param pEvt
-     *            event class token
-     * @param pAmqpCommunicationMode
-     *            communication mode
-     * @param pAmqpCommunicationTarget
-     *            communication target
-     * @return received message from the broker
+     *            tenant
+     * @param pEvent
+     *            {@link IPollable} event
+     * @return {@link IPollable} event in a tenant wrapper
      */
-    @Deprecated
-    <T> TenantWrapper<T> poll(String pTenant, Class<T> pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
-            AmqpCommunicationTarget pAmqpCommunicationTarget);
+    <T extends IPollable> TenantWrapper<T> poll(String pTenant, Class<T> pEvent);
 }

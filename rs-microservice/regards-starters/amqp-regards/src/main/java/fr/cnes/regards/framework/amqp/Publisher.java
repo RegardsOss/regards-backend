@@ -17,8 +17,8 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
-import fr.cnes.regards.framework.amqp.event.IPollableEvent;
-import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
+import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -66,43 +66,26 @@ public class Publisher implements IPublisher {
     }
 
     @Override
-    public <T extends ISubscribableEvent> void publish(T pEvent) {
+    public <T extends ISubscribable> void publish(T pEvent) {
         publish(pEvent, 0);
     }
 
     @Override
-    public <T extends ISubscribableEvent> void publish(T pEvent, int pPriority) {
+    public <T extends ISubscribable> void publish(T pEvent, int pPriority) {
         Class<?> eventClass = pEvent.getClass();
-        publish(threadTenantResolver.getTenant(), pEvent, AmqpCommunicationMode.ONE_TO_MANY,
-                EventUtils.getCommunicationTarget(eventClass), pPriority);
+        publish(pEvent, AmqpCommunicationMode.ONE_TO_MANY, EventUtils.getCommunicationTarget(eventClass), pPriority);
     }
 
     @Override
-    public <T extends IPollableEvent> void publish(T pEvent) {
+    public <T extends IPollable> void publish(T pEvent) {
         publish(pEvent, 0);
     }
 
     @Override
-    public <T extends IPollableEvent> void publish(T pEvent, int pPriority) {
+    public <T extends IPollable> void publish(T pEvent, int pPriority) {
         Class<?> eventClass = pEvent.getClass();
-        publish(threadTenantResolver.getTenant(), pEvent, EventUtils.getCommunicationMode(eventClass),
-                EventUtils.getCommunicationTarget(eventClass), pPriority);
-    }
-
-    /**
-     * @param <T>
-     *            event to be published
-     * @param pEvt
-     *            the event you want to publish
-     * @param pAmqpCommunicationMode
-     *            publishing mode
-     * @param pAmqpCommunicationTarget
-     *            publishing scope
-     */
-    @Override
-    public final <T> void publish(final T pEvt, final AmqpCommunicationMode pAmqpCommunicationMode,
-            final AmqpCommunicationTarget pAmqpCommunicationTarget) {
-        publish(pEvt, pAmqpCommunicationMode, pAmqpCommunicationTarget, 0);
+        publish(pEvent, EventUtils.getCommunicationMode(eventClass), EventUtils.getCommunicationTarget(eventClass),
+                pPriority);
     }
 
     /**
@@ -117,7 +100,6 @@ public class Publisher implements IPublisher {
      * @param pAmqpCommunicationTarget
      *            publishing scope
      */
-    @Override
     public final <T> void publish(final T pEvt, final AmqpCommunicationMode pAmqpCommunicationMode,
             final AmqpCommunicationTarget pAmqpCommunicationTarget, final int pPriority) {
 
@@ -136,25 +118,6 @@ public class Publisher implements IPublisher {
      *            the tenant name
      * @param pEvt
      *            the event you want to publish
-     * @param pAmqpCommunicationMode
-     *            publishing mode
-     * @param pAmqpCommunicationTarget
-     *            publishing scope
-     */
-    @Override
-    public final <T> void publish(final String pTenant, final T pEvt,
-            final AmqpCommunicationMode pAmqpCommunicationMode,
-            final AmqpCommunicationTarget pAmqpCommunicationTarget) {
-        publish(pTenant, pEvt, pAmqpCommunicationMode, pAmqpCommunicationTarget, 0);
-    }
-
-    /**
-     * @param <T>
-     *            event to be published
-     * @param pTenant
-     *            the tenant name
-     * @param pEvt
-     *            the event you want to publish
      * @param pPriority
      *            priority given to the event
      * @param pAmqpCommunicationMode
@@ -162,8 +125,7 @@ public class Publisher implements IPublisher {
      * @param pAmqpCommunicationTarget
      *            publishing scope
      */
-    @Override
-    public final <T> void publish(final String pTenant, final T pEvt,
+    private final <T> void publish(final String pTenant, final T pEvt,
             final AmqpCommunicationMode pAmqpCommunicationMode, final AmqpCommunicationTarget pAmqpCommunicationTarget,
             final int pPriority) {
         final Class<?> evtClass = pEvt.getClass();

@@ -31,7 +31,7 @@ public class MethodAuthorizationServiceAutoConfiguration {
     @ConditionalOnMissingBean
     @Bean
     public IRuntimeTenantResolver secureThreadTenantResolver() {
-        return new SecureThreadTenantResolver();
+        return new SecureRuntimeTenantResolver();
     }
 
     @Bean

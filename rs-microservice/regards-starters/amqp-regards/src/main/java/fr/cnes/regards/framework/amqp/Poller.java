@@ -13,7 +13,7 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
-import fr.cnes.regards.framework.amqp.event.IPollableEvent;
+import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 
@@ -48,12 +48,26 @@ public class Poller implements IPoller {
     }
 
     @Override
-    public <T extends IPollableEvent> TenantWrapper<T> poll(String pTenant, Class<T> pEvent) {
+    public <T extends IPollable> TenantWrapper<T> poll(String pTenant, Class<T> pEvent) {
         return poll(pTenant, pEvent, EventUtils.getCommunicationMode(pEvent),
                     EventUtils.getCommunicationTarget(pEvent));
     }
 
-    @Override
+    /**
+     * Poll an event
+     *
+     * @param <T>
+     *            event object
+     * @param pTenant
+     *            tenant
+     * @param pEvt
+     *            event to poll
+     * @param pAmqpCommunicationMode
+     *            {@link AmqpCommunicationMode}
+     * @param pAmqpCommunicationTarget
+     *            {@link AmqpCommunicationTarget}
+     * @return event in a {@link TenantWrapper}
+     */
     public <T> TenantWrapper<T> poll(String pTenant, Class<T> pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
             AmqpCommunicationTarget pAmqpCommunicationTarget) {
 

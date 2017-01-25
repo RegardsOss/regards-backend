@@ -3,10 +3,15 @@
  */
 package fr.cnes.regards.modules.jobs.service.communication;
 
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.Target;
+
 /**
  * @author Léo Mieulet
  */
-public class NewJobEvent {
+@Event(target = Target.MICROSERVICE)
+public class NewJobEvent implements IPollable {
 
     /**
      * the jobInfo id

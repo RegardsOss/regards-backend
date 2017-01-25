@@ -44,7 +44,6 @@ public class NewJobPullerTest {
 
     @Test
     public void testGetJob() throws RabbitMQVhostException {
-        final TenantWrapper<NewJobEvent> tenantWrapper;
         final long jobInfoIdExpected = 666L;
         // Also test the setter
         newJobEvent.setJobInfoId(jobInfoIdExpected);

@@ -138,7 +138,7 @@ public class PublisherIT {
 
             final TestEvent sended = new TestEvent("test1");
 
-            publisher.publish(sended, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.ALL);
+            publisher.publish(sended, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.ALL, 0);
             LOGGER.info("SENDED " + sended);
 
             SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(),

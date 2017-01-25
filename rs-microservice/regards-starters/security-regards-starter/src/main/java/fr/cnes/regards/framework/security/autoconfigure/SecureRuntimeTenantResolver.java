@@ -16,12 +16,12 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  * @author Marc Sordi
  *
  */
-public class SecureThreadTenantResolver implements IRuntimeTenantResolver {
+public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SecureThreadTenantResolver.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SecureRuntimeTenantResolver.class);
 
     @Override
     public String getTenant() {

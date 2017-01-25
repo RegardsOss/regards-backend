@@ -38,7 +38,7 @@ public class SpringBeanHelper implements BeanFactoryAware {
      *
      * Get bean factory
      *
-     * @return
+     * @return {@link BeanFactory}
      * @since 1.0-SNAPSHOT
      */
     public BeanFactory getBeanFactory() {
@@ -54,6 +54,8 @@ public class SpringBeanHelper implements BeanFactoryAware {
      *
      * Get a Bean referenced in the Spring context
      *
+     * @param <T>
+     *            bean for class
      * @param pBeanClass
      *            Bean class to obtain
      * @return Bean

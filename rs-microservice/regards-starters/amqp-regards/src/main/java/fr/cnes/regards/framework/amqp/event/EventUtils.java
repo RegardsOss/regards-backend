@@ -22,15 +22,15 @@ public final class EventUtils {
     }
 
     /**
-     * Retrieve annotation {@link EventProperties} from class. This annotation must exist!
+     * Retrieve annotation {@link Event} from class. This annotation must exist!
      *
      * @param pClass
-     *            {@link EventProperties} annotated class
-     * @return {@link EventProperties}
+     *            {@link Event} annotated class
+     * @return {@link Event}
      */
-    public static EventProperties getEventProperties(Class<?> pClass) {
+    public static Event getEventProperties(Class<?> pClass) {
         Assert.notNull(pClass);
-        EventProperties ppt = AnnotationUtils.findAnnotation(pClass, EventProperties.class);
+        Event ppt = AnnotationUtils.findAnnotation(pClass, Event.class);
         Assert.notNull(ppt);
         return ppt;
     }
@@ -38,11 +38,11 @@ public final class EventUtils {
     /**
      *
      * @param pClass
-     *            {@link EventProperties} annotated class
+     *            {@link Event} annotated class
      * @return {@link AmqpCommunicationMode}
      */
     public static AmqpCommunicationMode getCommunicationMode(Class<?> pClass) {
-        EventProperties ppt = EventUtils.getEventProperties(pClass);
+        Event ppt = EventUtils.getEventProperties(pClass);
 
         AmqpCommunicationMode mode;
         if (WorkerMode.SINGLE.equals(ppt.mode())) {
@@ -59,11 +59,11 @@ public final class EventUtils {
     /**
      *
      * @param pClass
-     *            {@link EventProperties} annotated class
+     *            {@link Event} annotated class
      * @return {@link AmqpCommunicationMode}
      */
     public static AmqpCommunicationTarget getCommunicationTarget(Class<?> pClass) {
-        EventProperties ppt = EventUtils.getEventProperties(pClass);
+        Event ppt = EventUtils.getEventProperties(pClass);
         AmqpCommunicationTarget target;
         if (Target.ALL.equals(ppt.target())) {
             target = AmqpCommunicationTarget.ALL;

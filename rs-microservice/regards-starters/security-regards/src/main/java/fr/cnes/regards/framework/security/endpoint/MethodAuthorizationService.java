@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.ApplicationContextException;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -29,9 +28,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -112,16 +108,10 @@ public class MethodAuthorizationService {
     @PostConstruct
     public void init() {
         refreshAuthorities();
-        try {
-            // Listen for every update authorities message
-            // Update authorities event must be provided by administration service when the authorities configuration
-            // are updated like resourceAccess or Roles configurations.
-            eventListener.subscribeTo(UpdateAuthoritiesEvent.class, new UpdateAuthoritiesEventHandler(this),
-                                      AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.ALL);
-        } catch (final RabbitMQVhostException e) {
-            LOG.error("Error during security module initialization. {}", e.getMessage(), e);
-            throw new ApplicationContextException(e.getMessage());
-        }
+        // Listen for every update authorities message
+        // Update authorities event must be provided by administration service when the authorities configuration
+        // are updated like resourceAccess or Roles configurations.
+        eventListener.subscribeTo(UpdateAuthoritiesEvent.class, new UpdateAuthoritiesEventHandler(this));
     }
 
     /**

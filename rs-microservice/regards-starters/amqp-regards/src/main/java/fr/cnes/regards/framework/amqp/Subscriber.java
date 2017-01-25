@@ -18,7 +18,7 @@ import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
 import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
-import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
@@ -63,7 +63,7 @@ public class Subscriber implements ISubscriber {
     }
 
     @Override
-    public <T extends ISubscribableEvent> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver) {
+    public <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver) {
         subscribeTo(pEvent, pReceiver, AmqpCommunicationMode.ONE_TO_MANY, EventUtils.getCommunicationTarget(pEvent));
     }
 
@@ -82,7 +82,6 @@ public class Subscriber implements ISubscriber {
      * @param pAmqpCommunicationTarget
      *            communication scope
      */
-    @Override
     public final <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver,
             final AmqpCommunicationMode pAmqpCommunicationMode,
             final AmqpCommunicationTarget pAmqpCommunicationTarget) {
