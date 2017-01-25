@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
@@ -32,6 +33,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.modules.storage.urn.OAISIdentifier;
 import fr.cnes.regards.modules.storage.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.urn.validator.URN;
@@ -45,17 +48,13 @@ import fr.cnes.regards.modules.storage.urn.validator.URN;
  */
 @Entity
 @Table(name = "t_aip")
-public class AIP {
+// FIXME: url de stockage en base
+public class AIP implements Serializable {
 
     /**
      * Database Id
      */
     private Long id;
-
-    /**
-     * checksum of the AIP
-     */
-    private transient String checksum;
 
     /**
      * SIP ID
@@ -66,7 +65,7 @@ public class AIP {
      * private Id for the application, it's a {@link UniformResourceName} but due to the need of retrieving all AIP's
      * version(which is in {@link UniformResourceName}) it's mapped to a String, validated as a URN
      */
-    @URN
+    @URN(OAISIdentifier.AIP)
     private String ipId;
 
     /**
@@ -97,7 +96,9 @@ public class AIP {
     /**
      * State of this AIP
      */
-    private transient AIPState state;
+    private AIPState state;
+
+    private String checksum;
 
     private AIP() {
     }
@@ -108,16 +109,16 @@ public class AIP {
         informationObjects = new ArrayList<>();
     }
 
-    public AIP generateAIP() throws NoSuchAlgorithmException, MalformedURLException {
+    public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
         sipId = String.valueOf(generateRandomString(new Random(), 40));
-        ipId = new UniformResourceName(OAISIdentifier.SIP, AipType.COLLECTION, "tenant", UUID.randomUUID(), 1)
+        ipId = new UniformResourceName(OAISIdentifier.AIP, AipType.COLLECTION, "tenant", UUID.randomUUID(), 1)
                 .toString();
         tags = generateRandomTags();
         informationObjects = generateRandomInformationObjects();
-        checksum = "checksum";
         state = AIPState.VALID;
         submissionDate = LocalDateTime.now();
         lastEvent = new Event("toc");
+        checksum = "checksum";
         return this;
     }
 
@@ -125,7 +126,7 @@ public class AIP {
             throws NoSuchAlgorithmException, MalformedURLException {
         int listMaxSize = 5;
         Random random = new Random();
-        int listSize = random.nextInt(listMaxSize);
+        int listSize = random.nextInt(listMaxSize) + 1;
         List<InformationObject> informationObjects = new ArrayList<>(listSize);
         for (int i = 0; i < listSize; i++) {
             informationObjects.add((new InformationObject()).generateRandomInformationObject());
@@ -175,7 +176,7 @@ public class AIP {
         return ipId;
     }
 
-    public void setIpId(@URN String pIpId) {
+    public void setIpId(@URN(OAISIdentifier.AIP) String pIpId) {
         ipId = pIpId;
     }
 
@@ -255,8 +256,11 @@ public class AIP {
     @JoinColumn(name = "aip_id", foreignKey = @ForeignKey(name = "fk_aip_data_objects"))
     @Column
     public List<DataObject> getDataObjects() {
-        return informationObjects.stream().map(io -> io.getContentInformation().getDataObject())
-                .collect(Collectors.toList());
+        return informationObjects.stream().map((InformationObject io) -> {
+            String checksum = io.getPdi().getFixityInformation().getChecksum();
+            io.getContentInformation().getDataObject().setChecksum(checksum);
+            return io.getContentInformation().getDataObject();
+        }).collect(Collectors.toList());
     }
 
     @SuppressWarnings("unused")
@@ -270,6 +274,23 @@ public class AIP {
 
     public void setSubmissionDate(LocalDateTime pSubmissionDate) {
         submissionDate = pSubmissionDate;
+    }
+
+    public AIP(AIP src) {
+        informationObjects = Lists.newArrayList(src.informationObjects);
+        ipId = String.valueOf(src.ipId);
+        lastEvent = new Event(String.valueOf(src.lastEvent.getComment()), LocalDateTime.from(src.lastEvent.getDate()));
+        sipId = String.valueOf(src.sipId);
+        state = src.state;
+        submissionDate = LocalDateTime.from(src.submissionDate);
+        tags = Lists.newArrayList(src.tags);
+        type = src.type;
+        checksum = String.valueOf(src.checksum);
+    }
+
+    @Override
+    public boolean equals(Object pOther) {
+        return (pOther instanceof AIP) && ipId.equals(((AIP) pOther).ipId) && checksum.equals(((AIP) pOther).checksum);
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.urn.validator;
+package fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -12,24 +12,20 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-import fr.cnes.regards.modules.storage.urn.OAISIdentifier;
-
 /**
  * @author Sylvain Vissiere-Guerinet
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.PARAMETER })
-@Constraint(validatedBy = UrnValidator.class)
+@Constraint(validatedBy = DirectoryValidator.class)
 @Documented
-public @interface URN {
+public @interface Directory {
 
     /**
      * Class to validate
      */
-    static final String CLASS_NAME = "fr.cnes.regards.modules.Storage.urn.validator.URN.";
-
-    OAISIdentifier value();
+    static final String CLASS_NAME = "fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation.Directory.";
 
     /**
      *
@@ -48,4 +44,5 @@ public @interface URN {
      * @return custom payload
      */
     Class<? extends Payload>[] payload() default {};
+
 }

@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,8 +41,10 @@ public interface IAIPService {
     /**
      * @param pAIP
      * @return
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
      */
-    AIP create(AIP pAIP);
+    Long create(AIP pAIP) throws NoSuchAlgorithmException, IOException;
 
     /**
      * @param pIpId

@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -23,7 +24,7 @@ import javax.persistence.SequenceGenerator;
  *
  */
 @Entity(name = "t_data_object")
-public class DataObject {
+public class DataObject implements Serializable {
 
     @Id
     @SequenceGenerator(name = "DataObjectSequence", initialValue = 1, sequenceName = "seq_data_object")
@@ -33,11 +34,11 @@ public class DataObject {
     @Enumerated(EnumType.STRING)
     private FileType type;
 
-    @Column(length = 32)
-    private String checksum;
-
     @Column
     private URL url;
+
+    @Column(length = 64)
+    private transient String checksum;
 
     public DataObject() {
 
@@ -51,11 +52,11 @@ public class DataObject {
         type = pType;
     }
 
-    public URL getUri() {
+    public URL getUrl() {
         return url;
     }
 
-    public void setUri(URL pUri) {
+    public void setUrl(URL pUri) {
         url = pUri;
     }
 
@@ -63,6 +64,25 @@ public class DataObject {
         type = FileType.OTHER;
         url = new URL("ftp://bla");
         return this;
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(String pChecksum) {
+        checksum = pChecksum;
+    }
+
+    @Override
+    public boolean equals(Object pOther) {
+        return (pOther instanceof DataObject) && type.equals(((DataObject) pOther).type)
+                && url.toString().equals(((DataObject) pOther).url.toString());
+    }
+
+    @Override
+    public int hashCode() {
+        return url.toString().hashCode();
     }
 
 }

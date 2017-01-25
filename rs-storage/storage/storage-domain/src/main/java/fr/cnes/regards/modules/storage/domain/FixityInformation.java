@@ -3,17 +3,22 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
-public class FixityInformation extends Information {
+import javax.validation.constraints.NotNull;
 
-    private transient String algorithm;
+public class FixityInformation implements Serializable {
 
-    private transient String checksum;
+    @NotNull
+    private String algorithm;
 
-    private transient int fileSize;
+    @NotNull
+    private String checksum;
+
+    private Double fileSize;
 
     public FixityInformation() {
         super();
@@ -35,7 +40,6 @@ public class FixityInformation extends Information {
 
     public void setAlgorithm(String pAlgorithm) {
         algorithm = pAlgorithm;
-        addMetadata("algorithm", algorithm);
     }
 
     public String getChecksum() {
@@ -44,26 +48,70 @@ public class FixityInformation extends Information {
 
     public void setChecksum(String pChecksum) {
         checksum = pChecksum;
-        addMetadata("checksum", checksum);
     }
 
-    public int getFileSize() {
+    public Double getFileSize() {
         return fileSize;
     }
 
-    public void setFileSize(int pFileSize) {
+    public void setFileSize(Double pFileSize) {
         fileSize = pFileSize;
-        addMetadata("fileSize", fileSize);
     }
 
     public FixityInformation generate() throws NoSuchAlgorithmException {
         algorithm = "SHA1";
-        addMetadata("algorithm", algorithm);
-        fileSize = (new Random()).nextInt(10000000);
-        addMetadata("fileSize", fileSize);
+        fileSize = new Double((new Random()).nextInt(10000000));
         checksum = sha1("blahblah");
-        addMetadata("checksum", checksum);
         return this;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((algorithm == null) ? 0 : algorithm.hashCode());
+        result = (prime * result) + ((checksum == null) ? 0 : checksum.hashCode());
+        result = (prime * result) + ((fileSize == null) ? 0 : fileSize.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        FixityInformation other = (FixityInformation) obj;
+        if (algorithm == null) {
+            if (other.algorithm != null) {
+                return false;
+            }
+        } else
+            if (!algorithm.equals(other.algorithm)) {
+                return false;
+            }
+        if (checksum == null) {
+            if (other.checksum != null) {
+                return false;
+            }
+        } else
+            if (!checksum.equals(other.checksum)) {
+                return false;
+            }
+        if (fileSize == null) {
+            if (other.fileSize != null) {
+                return false;
+            }
+        } else
+            if (!fileSize.equals(other.fileSize)) {
+                return false;
+            }
+        return true;
     }
 
 }

@@ -15,9 +15,11 @@ import fr.cnes.regards.modules.storage.urn.UniformResourceName;
  */
 public class UrnValidator implements ConstraintValidator<URN, String> {
 
+    OAISIdentifier aipType;
+
     @Override
     public void initialize(URN pConstraintAnnotation) {
-        // nothing to initialize for now
+        aipType = pConstraintAnnotation.value();
     }
 
     @Override
@@ -25,7 +27,10 @@ public class UrnValidator implements ConstraintValidator<URN, String> {
         // parsing will ensure that this supposed URN has the right format
         UniformResourceName urnObject = UniformResourceName.fromString(pValue);
         // verify that the parsed URN is valid
-        return (urnObject == null) || !(urnObject.getOaisIdentifier().equals(OAISIdentifier.SIP)
-                && ((urnObject.getOrder() != null) || (urnObject.getRevision() != null)));
+        if (aipType.equals(OAISIdentifier.SIP)) {
+            return (urnObject == null) || !((urnObject.getOrder() != null) || (urnObject.getRevision() != null));
+        } else {
+            return (urnObject == null) || urnObject.getOaisIdentifier().equals(aipType);
+        }
     }
 }

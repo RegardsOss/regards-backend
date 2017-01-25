@@ -3,12 +3,10 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -24,7 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -102,17 +99,13 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = AIP_PATH, method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "validate and create the specified AIP")
-    public HttpEntity<Long> createAIP(@RequestHeader(name = "Content-MD5", required = true) String pChecksum,
-            @RequestBody @Valid List<AIP> pAIP)
+    public HttpEntity<List<Long>> createAIP(@RequestBody @Valid List<AIP> pAIPs)
             throws EntityCorruptByNetworkException, NoSuchAlgorithmException, IOException {
-        // String calculatedChecksum = "";
-        // if (!validateChecksum(pChecksum, pAIP, calculatedChecksum)) {
-        // throw new EntityCorruptByNetworkException(pAIP.getIpId().toString(), calculatedChecksum, pChecksum);
-        // }
-        // Long jobId = aipService.create(pAIP);
-        // return new ResponseEntity<>(jobId, HttpStatus.SEE_OTHER);
-        // FIXME
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+        List<Long> jobIds = new ArrayList<>();
+        for (AIP aip : pAIPs) {
+            jobIds.add(aipService.create(aip));
+        }
+        return new ResponseEntity<>(jobIds, HttpStatus.SEE_OTHER);
     }
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
@@ -124,6 +117,15 @@ public class AIPController implements IResourceController<AIP> {
         return new ResponseEntity<>(files, HttpStatus.OK);
     }
 
+    // @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
+    // @ResponseBody
+    // @ResourceAccess(description = "send the history of event occured on each data file of the specified AIP")
+    // public HttpEntity<Map<String, List<Event>>> retrieveAIPHistory(
+    // @PathVariable("ip_id") @Valid UniformResourceName pIpId) throws EntityNotFoundException {
+    // Map<String, List<Event>> history = aipService.retrieveAIPHistory(pIpId);
+    // return new ResponseEntity<>(history, HttpStatus.OK);
+    // }
+
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of files of a specified aip")
@@ -131,20 +133,6 @@ public class AIPController implements IResourceController<AIP> {
             final Pageable pPageable, final PagedResourcesAssembler<AIP> pAssembler) throws EntityNotFoundException {
         List<String> versions = aipService.retrieveAIPVersionHistory(pIpId);
         return new ResponseEntity<>(versions, HttpStatus.OK);
-    }
-
-    public boolean validateChecksum(String pChecksum, Object pObject, String pCalculatedChecksum)
-            throws NoSuchAlgorithmException, IOException {
-
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(pObject);
-        oos.close();
-        byte[] digest = md.digest(baos.toByteArray());
-        pCalculatedChecksum = new String(digest);
-        return pChecksum.equals(pCalculatedChecksum);
-
     }
 
     @Override

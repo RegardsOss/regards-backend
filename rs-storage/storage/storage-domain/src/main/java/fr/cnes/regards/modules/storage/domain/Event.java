@@ -15,14 +15,19 @@ public class Event {
 
     private String comment;
 
-    private LocalDateTime date;
+    private LocalDateTime eventDate;
 
     private Event() {
     }
 
     public Event(String pComment) {
         comment = pComment;
-        date = LocalDateTime.now();
+        eventDate = LocalDateTime.now();
+    }
+
+    public Event(String pComment, LocalDateTime pDate) {
+        comment = pComment;
+        eventDate = pDate;
     }
 
     @Column
@@ -37,11 +42,11 @@ public class Event {
 
     @Column
     public LocalDateTime getDate() {
-        return date;
+        return eventDate;
     }
 
     public void setDate(LocalDateTime pDate) {
-        date = pDate;
+        eventDate = pDate;
     }
 
 }

@@ -1,11 +1,21 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.domain;
 
-public class Syntax {
+import java.io.Serializable;
 
+import javax.validation.constraints.NotNull;
+
+public class Syntax implements Serializable {
+
+    @NotNull
     private String description;
 
+    @NotNull
     private String mimeType;
 
+    @NotNull
     private String name;
 
     public Syntax() {
@@ -36,10 +46,21 @@ public class Syntax {
     }
 
     public Syntax generate() {
-        this.description = "SYNTAX_DESCRIPTION";
-        this.mimeType = "MIME_TYPE";
-        this.name = "NAME";
+        description = "SYNTAX_DESCRIPTION";
+        mimeType = "MIME_TYPE";
+        name = "NAME";
         return this;
+    }
+
+    @Override
+    public boolean equals(Object pOther) {
+        return (pOther instanceof Syntax) && description.equals(((Syntax) pOther).description)
+                && name.equals(((Syntax) pOther).name) && mimeType.equals(((Syntax) pOther).mimeType);
+    }
+
+    @Override
+    public int hashCode() {
+        return description.hashCode();
     }
 
 }

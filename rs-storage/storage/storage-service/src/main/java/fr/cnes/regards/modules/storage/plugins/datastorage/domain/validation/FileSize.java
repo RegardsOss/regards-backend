@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.urn.validator;
+package fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -12,24 +12,23 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-import fr.cnes.regards.modules.storage.urn.OAISIdentifier;
-
 /**
+ *
+ * Validation annotation, validated by {@link FileSizeValidator}
+ *
  * @author Sylvain Vissiere-Guerinet
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.PARAMETER })
-@Constraint(validatedBy = UrnValidator.class)
+@Constraint(validatedBy = FileSizeValidator.class)
 @Documented
-public @interface URN {
+public @interface FileSize {
 
     /**
      * Class to validate
      */
-    static final String CLASS_NAME = "fr.cnes.regards.modules.Storage.urn.validator.URN.";
-
-    OAISIdentifier value();
+    static final String CLASS_NAME = "fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation.FileSize.";
 
     /**
      *

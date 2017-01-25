@@ -23,17 +23,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="3" language="java" name="fr.cnes.regards.modules.storage.domain.Information" project="storage-domain" 
-    file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/Information.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="570" y="1136"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </class>  
-  <class id="4" language="java" name="fr.cnes.regards.modules.storage.domain.RepresentationInformation" 
+  <class id="3" language="java" name="fr.cnes.regards.modules.storage.domain.RepresentationInformation" 
     project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/RepresentationInformation.java" 
     binary="false" corner="BOTTOM_RIGHT">    
@@ -44,7 +34,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="5" language="java" name="fr.cnes.regards.modules.storage.domain.AIP" project="storage-domain" 
+  <class id="4" language="java" name="fr.cnes.regards.modules.storage.domain.AIP" project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/AIP.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="329" width="322" x="242" y="-92"/>    
@@ -54,18 +44,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="6" language="java" name="fr.cnes.regards.modules.storage.domain.ContextInformation" 
-    project="storage-domain" 
-    file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/ContextInformation.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="495" y="822"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </class>  
-  <class id="7" language="java" name="fr.cnes.regards.modules.storage.domain.FixityInformation" project="storage-domain" 
+  <class id="5" language="java" name="fr.cnes.regards.modules.storage.domain.FixityInformation" project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/FixityInformation.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="264" y="882"/>    
@@ -75,7 +54,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="8" language="java" name="fr.cnes.regards.modules.storage.domain.InformationObject" project="storage-domain" 
+  <class id="6" language="java" name="fr.cnes.regards.modules.storage.domain.InformationObject" project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/InformationObject.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="277" y="371"/>    
@@ -85,7 +64,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="9" language="java" name="fr.cnes.regards.modules.storage.domain.Event" project="storage-domain" 
+  <class id="7" language="java" name="fr.cnes.regards.modules.storage.domain.Event" project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/Event.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1207" y="867"/>    
@@ -95,7 +74,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <enumeration id="10" language="java" name="fr.cnes.regards.modules.storage.domain.AipType" project="storage-domain" 
+  <enumeration id="8" language="java" name="fr.cnes.regards.modules.storage.domain.AipType" project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/AipType.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="149" width="179" x="-85" y="277"/>    
@@ -105,7 +84,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </enumeration>  
-  <enumeration id="11" language="java" name="fr.cnes.regards.modules.storage.domain.FileType" project="storage-domain" 
+  <enumeration id="9" language="java" name="fr.cnes.regards.modules.storage.domain.FileType" project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/FileType.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="149" width="179" x="141" y="1078"/>    
@@ -115,7 +94,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </enumeration>  
-  <class id="12" language="java" name="fr.cnes.regards.modules.storage.domain.DataObject" project="storage-domain" 
+  <class id="10" language="java" name="fr.cnes.regards.modules.storage.domain.DataObject" project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/DataObject.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="167" width="206" x="-78" y="763"/>    
@@ -125,7 +104,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="13" language="java" name="fr.cnes.regards.modules.storage.domain.ContentInformation" 
+  <class id="11" language="java" name="fr.cnes.regards.modules.storage.domain.ContentInformation" 
     project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/ContentInformation.java" binary="false" 
     corner="BOTTOM_RIGHT">    
@@ -136,7 +115,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="14" language="java" name="fr.cnes.regards.modules.storage.domain.Syntax" project="storage-domain" 
+  <class id="12" language="java" name="fr.cnes.regards.modules.storage.domain.Syntax" project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/Syntax.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="-386" y="1205"/>    
@@ -146,7 +125,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="15" language="java" name="fr.cnes.regards.modules.storage.domain.Semantic" project="storage-domain" 
+  <class id="13" language="java" name="fr.cnes.regards.modules.storage.domain.Semantic" project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/Semantic.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="-156" y="1140"/>    
@@ -156,7 +135,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="16" language="java" name="fr.cnes.regards.modules.storage.domain.AccessRightInformation" 
+  <class id="14" language="java" name="fr.cnes.regards.modules.storage.domain.AccessRightInformation" 
     project="storage-domain" 
     file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/AccessRightInformation.java" 
     binary="false" corner="BOTTOM_RIGHT">    
@@ -167,138 +146,141 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="17" language="java" name="fr.cnes.regards.modules.storage.domain.KeyValuePair" project="storage-domain" 
-    file="/storage-domain/src/main/java/fr/cnes/regards/modules/storage/domain/KeyValuePair.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="837" y="1158"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </class>  
-  <association id="18">    
-    <end type="SOURCE" refId="8" navigable="false">      
-      <attribute id="19" name="pdi">        
+  <association id="15">    
+    <end type="SOURCE" refId="2" navigable="false">      
+      <attribute id="16" name="history">        
         <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="17" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="7" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="18">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="19" name="semantic">        
+        <position height="0" width="0" x="52" y="-12"/>      
       </attribute>      
       <multiplicity id="20" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="1" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="21">    
-    <end type="SOURCE" refId="4" navigable="false">      
-      <attribute id="22" name="syntax">        
-        <position height="0" width="0" x="41" y="-1"/>      
-      </attribute>      
-      <multiplicity id="23" minimum="0" maximum="1">        
-        <position height="0" width="0" x="41" y="-1"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="14" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="24">    
-    <end type="SOURCE" refId="5" navigable="false">      
-      <attribute id="25" name="informationObjects">        
-        <position height="16" width="98" x="208" y="265"/>      
-      </attribute>      
-      <multiplicity id="26" minimum="0" maximum="2147483647">        
-        <position height="14" width="21" x="322" y="272"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="8" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="27">    
-    <end type="SOURCE" refId="2"/>    
-    <end type="TARGET" refId="3"/>  
-  </generalization>  
-  <association id="28">    
-    <end type="SOURCE" refId="8" navigable="false">      
-      <attribute id="29" name="contentInformation">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </attribute>      
-      <multiplicity id="30" minimum="0" maximum="1">        
-        <position height="14" width="23" x="190" y="467"/>      
+        <position height="0" width="0" x="52" y="-12"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="13" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="31">    
-    <end type="SOURCE" refId="2" navigable="false">      
-      <attribute id="32" name="history">        
+  <association id="21">    
+    <end type="SOURCE" refId="10" navigable="false">      
+      <attribute id="22" name="type">        
         <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
-      <multiplicity id="33" minimum="0" maximum="2147483647">        
+      <multiplicity id="23" minimum="0" maximum="1">        
         <position height="0" width="0" x="0" y="0"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="9" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <generalization id="34">    
-    <end type="SOURCE" refId="6"/>    
-    <end type="TARGET" refId="3"/>  
-  </generalization>  
-  <association id="35">    
-    <end type="SOURCE" refId="5" navigable="false">      
-      <attribute id="36" name="type">        
+  <association id="24">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="25" name="fixityInformation">        
+        <position height="16" width="84" x="288" y="725"/>      
+      </attribute>      
+      <multiplicity id="26" minimum="0" maximum="1">        
+        <position height="14" width="23" x="353" y="740"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="5" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="27">    
+    <end type="SOURCE" refId="11" navigable="false">      
+      <attribute id="28" name="representationInformation">        
         <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
-      <multiplicity id="37" minimum="0" maximum="1">        
+      <multiplicity id="29" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="3" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="30">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="31" name="accessRightInformation">        
+        <position height="16" width="115" x="511" y="728"/>      
+      </attribute>      
+      <multiplicity id="32" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="14" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="33">    
+    <end type="SOURCE" refId="11" navigable="false">      
+      <attribute id="34" name="dataObject">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="35" minimum="0" maximum="1">        
         <position height="0" width="0" x="0" y="0"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="10" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="38">    
-    <end type="SOURCE" refId="4" navigable="false">      
-      <attribute id="39" name="semantic">        
-        <position height="0" width="0" x="52" y="-12"/>      
-      </attribute>      
-      <multiplicity id="40" minimum="0" maximum="1">        
-        <position height="0" width="0" x="52" y="-12"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="15" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="41">    
-    <end type="SOURCE" refId="13" navigable="false">      
-      <attribute id="42" name="representationInformation">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </attribute>      
-      <multiplicity id="43" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="4" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="44">    
-    <end type="SOURCE" refId="7"/>    
-    <end type="TARGET" refId="3"/>  
-  </generalization>  
-  <association id="45">    
+  <association id="36">    
+    <bendpoint x="937" y="604"/>    
     <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="46" name="contextInformation">        
+      <attribute id="37" name="provenanceInformation">        
+        <position height="16" width="119" x="814" y="701"/>      
+      </attribute>      
+      <multiplicity id="38" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="2" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="39">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="40" name="contentInformation">        
         <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
-      <multiplicity id="47" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
+      <multiplicity id="41" minimum="0" maximum="1">        
+        <position height="14" width="23" x="190" y="467"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="11" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="42">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="43" name="syntax">        
+        <position height="0" width="0" x="41" y="-1"/>      
+      </attribute>      
+      <multiplicity id="44" minimum="0" maximum="1">        
+        <position height="0" width="0" x="41" y="-1"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="12" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="45">    
+    <end type="SOURCE" refId="4" navigable="false">      
+      <attribute id="46" name="informationObjects">        
+        <position height="16" width="98" x="208" y="265"/>      
+      </attribute>      
+      <multiplicity id="47" minimum="0" maximum="2147483647">        
+        <position height="14" width="21" x="322" y="272"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="6" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
   <association id="48">    
-    <end type="SOURCE" refId="12" navigable="false">      
+    <end type="SOURCE" refId="4" navigable="false">      
       <attribute id="49" name="type">        
         <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
@@ -306,74 +288,9 @@
         <position height="0" width="0" x="0" y="0"/>      
       </multiplicity>    
     </end>    
-    <end type="TARGET" refId="11" navigable="true"/>    
+    <end type="TARGET" refId="8" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="51">    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="52" name="accesRightInformation">        
-        <position height="16" width="115" x="511" y="728"/>      
-      </attribute>      
-      <multiplicity id="53" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="16" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="54">    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="55" name="fixityInformation">        
-        <position height="16" width="84" x="288" y="725"/>      
-      </attribute>      
-      <multiplicity id="56" minimum="0" maximum="1">        
-        <position height="14" width="23" x="353" y="740"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="7" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="57">    
-    <end type="SOURCE" refId="3" navigable="false">      
-      <attribute id="58" name="metadata">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </attribute>      
-      <multiplicity id="59" minimum="0" maximum="2147483647">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="17" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="60">    
-    <bendpoint x="937" y="604"/>    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="61" name="provenanceInformation">        
-        <position height="16" width="119" x="814" y="701"/>      
-      </attribute>      
-      <multiplicity id="62" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="2" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="63">    
-    <end type="SOURCE" refId="13" navigable="false">      
-      <attribute id="64" name="dataObject">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </attribute>      
-      <multiplicity id="65" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="12" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="66">    
-    <end type="SOURCE" refId="16"/>    
-    <end type="TARGET" refId="3"/>  
-  </generalization>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
     sort-features="false" accessors="true" visibility="true">    
     <attributes public="true" package="true" protected="true" private="true" static="true"/>    

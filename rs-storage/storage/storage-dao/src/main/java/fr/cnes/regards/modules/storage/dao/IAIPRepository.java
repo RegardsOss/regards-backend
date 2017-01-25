@@ -80,7 +80,7 @@ public interface IAIPRepository extends JpaRepository<AIP, Long> {
      */
     Page<AIP> findAllByLastEventDateBefore(LocalDateTime pTo, Pageable pPageable);
 
-    @Query("from AIP aip join fetch aip.dataObjects where aip.ipId=:ipId")
+    @Query("from AIP aip left join fetch aip.dataObjects where aip.ipId=:ipId")
     AIP findOneByIpIdWithDataObjects(@Param("ipId") String pIpId);
 
     @Query("from AIP aip where aip.ipId LIKE :urnWithoutVersion%")
