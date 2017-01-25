@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules</groupId>
+	<groupId>fr.cnes.regards.framework.modules</groupId>
 	<artifactId>module-jobs</artifactId>
 	<description>module Jobs manager</description> 
 	<version>1.0-SNAPSHOT</version>
@@ -32,37 +32,32 @@
 		<dependencies>
 			<!-- Module layers -->
 			<dependency>
-				<groupId>fr.cnes.regards.modules.jobs</groupId>
+				<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 				<artifactId>jobs-dao</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules.jobs</groupId>
+				<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 				<artifactId>jobs-domain</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules.jobs</groupId>
+				<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 				<artifactId>jobs-rest</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules.jobs</groupId>
+				<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 				<artifactId>jobs-service</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules.jobs</groupId>
+				<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 				<artifactId>jobs-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules.jobs</groupId>
-				<artifactId>jobs-signature</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.jobs</groupId>
+				<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 				<artifactId>jobs-test</artifactId>
 				<version>${project.version}</version>
 				<type>test-jar</type>
