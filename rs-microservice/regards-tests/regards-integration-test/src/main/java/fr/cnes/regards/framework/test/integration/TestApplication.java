@@ -13,7 +13,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  */
 // CHECKSTYLE:OFF
-@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices" })
+@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.framework.modules",
+        "fr.cnes.regards.microservices" })
 public class TestApplication {
 
     public static void main(final String[] pArgs) {
