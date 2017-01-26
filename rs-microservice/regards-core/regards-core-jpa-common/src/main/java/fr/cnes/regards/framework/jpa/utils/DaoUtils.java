@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +24,10 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.reflect.ClassPath;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
@@ -124,21 +129,37 @@ public final class DaoUtils {
         Set<String> packagesToScan = new HashSet<>();
         final Reflections reflections = new Reflections(pRootPackage);
 
-        packagesToScan.add(DaoUtils.FRAMEWORK_PACKAGE);
-
+        // Add the packages that contains a class annotated with org.springframework.stereotype.Repository
         final Set<Class<?>> annotatedRepository = reflections.getTypesAnnotatedWith(Repository.class);
         for (Class<?> aClass : annotatedRepository) {
             packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
         }
 
+        // Add the packages that contains a class annotated with org.springframework.data.jpa.repository.JpaRepository
         final Set<Class<? extends JpaRepository>> subTypeJpaRepository = reflections.getSubTypesOf(JpaRepository.class);
         for (Class<?> aClass : subTypeJpaRepository) {
             packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
         }
 
+        // Add the packages that contains a class annotated with org.springframework.data.repository.CrudRepository
         final Set<Class<? extends CrudRepository>> subTypeRepository = reflections.getSubTypesOf(CrudRepository.class);
         for (Class<?> aClass : subTypeRepository) {
             packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
+        }
+
+        try {
+            ClassPath classpath = ClassPath.from(DaoUtils.class.getClassLoader());
+
+            // Add the package that contains class in package "fr.cnes.regards.framework"
+            ImmutableSet<ClassPath.ClassInfo> classInfos = classpath.getTopLevelClassesRecursive(pRootPackage);
+            for (ClassPath.ClassInfo info : classInfos) {
+                // Add all framework package if one of its class is into classpath (this always should be the case)
+                if (info.getPackageName().startsWith(DaoUtils.FRAMEWORK_PACKAGE)) {
+                    packagesToScan.add(info.getPackageName());
+                }
+            }
+        } catch (IOException e) {
+            Throwables.propagate(e);
         }
 
         return packagesToScan;
@@ -153,8 +174,12 @@ public final class DaoUtils {
      * @return
      */
     public static String getPackageToScan(String pPackageName) {
-        String packageEnd = pPackageName.substring(DaoUtils.MODULES_PACKAGE.length() + 1);
-        return DaoUtils.MODULES_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
+        if (pPackageName.startsWith(DaoUtils.FRAMEWORK_PACKAGE)) {
+            return DaoUtils.FRAMEWORK_PACKAGE;
+        } else {
+            String packageEnd = pPackageName.substring(DaoUtils.MODULES_PACKAGE.length() + 1);
+            return DaoUtils.MODULES_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
+        }
     }
 
     public static List<Class<?>> scanPackagesForJpa(Class<? extends Annotation> pIncludeAnnotation,
