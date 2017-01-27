@@ -17,14 +17,19 @@ import fr.cnes.regards.modules.storage.plugins.datastorage.IDataStorage;
 public class DataStorageManager {
 
     // TODO
+    /**
+     *
+     */
     @Autowired
     private IAllocationStrategy allocationStrategy;
 
+    /**
+     * used to get all plugins for storage
+     */
     private IPluginService pluginService;
 
-    private IDataStorage dataStorage;
-
     public void storeAip(AIP pAip) {
+        IDataStorage dataStorage;
         // get All data storage impl
         // get Storage target for the description file from AllocationStrategy
         // execute the storage of descriptor
