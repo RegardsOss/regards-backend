@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
+import java.nio.file.Path;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -28,7 +29,9 @@ public abstract class AbstractJob implements IJob {
     /**
      * Job parameters
      */
-    private JobParameters parameters;
+    protected JobParameters parameters;
+
+    private Path workspace;
 
     @Override
     public void setQueueEvent(final BlockingQueue<IEvent> pQueueEvent) {
@@ -70,14 +73,6 @@ public abstract class AbstractJob implements IJob {
     }
 
     /**
-     * @param pParameters
-     */
-    @Override
-    public void setParameters(final JobParameters pParameters) {
-        parameters = pParameters;
-    }
-
-    /**
      * @return the parameters
      */
     public JobParameters getParameters() {
@@ -88,8 +83,14 @@ public abstract class AbstractJob implements IJob {
      * @param pTenantName
      *            the tenantName to set
      */
+    @Override
     public void setTenantName(final String pTenantName) {
         tenantName = pTenantName;
+    }
+
+    @Override
+    public void setWorkspace(Path pWorkspace) {
+        workspace = pWorkspace;
     }
 
 }

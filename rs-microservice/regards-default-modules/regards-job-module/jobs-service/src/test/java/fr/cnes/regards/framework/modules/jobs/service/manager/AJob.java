@@ -11,8 +11,11 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.EventType;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameters;
 import fr.cnes.regards.framework.modules.jobs.domain.Output;
 import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 
 /**
  *
@@ -78,6 +81,13 @@ public class AJob extends AbstractJob {
     @Override
     public void setWorkspace(final Path pPath) {
         // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void setParameters(JobParameters pParameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
+        parameters = pParameters;
 
     }
 
