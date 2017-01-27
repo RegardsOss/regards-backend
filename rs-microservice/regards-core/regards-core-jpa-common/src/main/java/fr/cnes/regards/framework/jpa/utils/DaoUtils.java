@@ -15,11 +15,14 @@ import java.util.stream.Collectors;
 
 import javax.persistence.Entity;
 
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Throwables;
@@ -108,44 +111,75 @@ public final class DaoUtils {
 
     }
 
-    public static Set<String> findPackagesForJpa(String rootPackage) {
-        // 2 Add Entity for database mapping from classpath but only for entities from modules that provide repository
-        // AND framework entities
-        // Why ? If a module depends on a <other_module>-client it contains entities that MUST NOT be taken into account
-        // specially if they are from another microservice (rs-admin for example if we are into rs-dam)
-        // and framework ones because all framework content is embedded into all micro-services
+    /**
+     * Find the packages for the JPA. Find the class who used Jpa and extracts their package name.
+     * <p>
+     * Find all the class annotated with {@link org.springframework.data.repository.Repository}
+     * <p>
+     * Find all the class who extends {@link CrudRepository}
+     * <p>
+     * Find all the class who extends {@link JpaRepository}
+     * 
+     * @param rootPackage
+     *            the base package
+     * @return the {@link Set} of package
+     */
+    @SuppressWarnings("rawtypes")
+    public static Set<String> findPackagesForJpa(String pRootPackage) {
         Set<String> packagesToScan = new HashSet<>();
+        final Reflections reflections = new Reflections(pRootPackage);
+
+        // Add the packages that contains a class annotated with org.springframework.stereotype.Repository
+        final Set<Class<?>> annotatedRepository = reflections.getTypesAnnotatedWith(Repository.class);
+        for (Class<?> aClass : annotatedRepository) {
+            packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
+        }
+
+        // Add the packages that contains a class annotated with org.springframework.data.jpa.repository.JpaRepository
+        final Set<Class<? extends JpaRepository>> subTypeJpaRepository = reflections.getSubTypesOf(JpaRepository.class);
+        for (Class<?> aClass : subTypeJpaRepository) {
+            packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
+        }
+
+        // Add the packages that contains a class annotated with org.springframework.data.repository.CrudRepository
+        final Set<Class<? extends CrudRepository>> subTypeRepository = reflections.getSubTypesOf(CrudRepository.class);
+        for (Class<?> aClass : subTypeRepository) {
+            packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
+        }
+
         try {
             ClassPath classpath = ClassPath.from(DaoUtils.class.getClassLoader());
 
-            ImmutableSet<ClassPath.ClassInfo> classInfos = classpath.getTopLevelClassesRecursive(rootPackage);
+            // Add the package that contains class in package "fr.cnes.regards.framework"
+            ImmutableSet<ClassPath.ClassInfo> classInfos = classpath.getTopLevelClassesRecursive(pRootPackage);
             for (ClassPath.ClassInfo info : classInfos) {
                 // Add all framework package if one of its class is into classpath (this always should be the case)
                 if (info.getPackageName().startsWith(DaoUtils.FRAMEWORK_PACKAGE)) {
-                    packagesToScan.add(DaoUtils.FRAMEWORK_PACKAGE);
-                } else {
-                    // Restrict to fr.cnes.regards.modules package and search for "Repository" classes
-                    // A "Repository" is an interface extending org.springframework.data.repository.Repository
-                    // or a class annotated with @Repository
-                    Class<?> clazz = info.load();
-                    if (info.getPackageName().startsWith(DaoUtils.MODULES_PACKAGE)
-                            && (org.springframework.data.repository.Repository.class.isAssignableFrom(clazz)
-                                    || clazz.isAnnotationPresent(Repository.class))) {
-                        // package name has format : fr.cnes.regards.modules.(name)....
-                        // We must only take fr.cnes.regards.modules.(name)
-                        String packageEnd = info.getPackageName().substring(DaoUtils.MODULES_PACKAGE.length() + 1);
-                        packagesToScan
-                                .add(DaoUtils.MODULES_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.')));
-                    } else {
-                        LOGGER.info("Package {} not selected for scanning cause not starting with {}.",
-                                    info.getPackageName(), DaoUtils.MODULES_PACKAGE);
-                    }
+                    packagesToScan.add(info.getPackageName());
                 }
             }
         } catch (IOException e) {
             Throwables.propagate(e);
         }
+
         return packagesToScan;
+    }
+
+    /**
+     * package name has format : fr.cnes.regards.modules.(name)....
+     * <p>
+     * We must only take fr.cnes.regards.modules.(name)
+     *
+     * @param pPackageName
+     * @return
+     */
+    public static String getPackageToScan(String pPackageName) {
+        if (pPackageName.startsWith(DaoUtils.FRAMEWORK_PACKAGE)) {
+            return DaoUtils.FRAMEWORK_PACKAGE;
+        } else {
+            String packageEnd = pPackageName.substring(DaoUtils.MODULES_PACKAGE.length() + 1);
+            return DaoUtils.MODULES_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
+        }
     }
 
     public static List<Class<?>> scanPackagesForJpa(Class<? extends Annotation> pIncludeAnnotation,
