@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.systemservice.IJobInfoSystemService;
 import fr.cnes.regards.framework.modules.jobs.service.systemservice.JobInfoSystemService;
 
@@ -84,7 +86,7 @@ public class JobHandler implements IJobHandler {
 
     /**
      * Constructor with a {@link JobInfoSystemService}
-     * 
+     *
      * @param pJobInfoSystemService
      *            a {@link JobInfoSystemService}
      */
@@ -157,6 +159,7 @@ public class JobHandler implements IJobHandler {
                 newJob.setJobInfoId(pJobInfoId);
                 newJob.setTenantName(pTenant);
                 newJob.setParameters(jobInfo.getParameters());
+                newJob.setWorkspace(jobInfo.getWorkspace());
                 hasFailed = false;
                 final Thread thread = threadPoolExecutorFactoryBean.createThread(newJob);
                 thread.start();
@@ -167,6 +170,8 @@ public class JobHandler implements IJobHandler {
                 LOG.error(String.format("IllegalAccessException %s", jobInfo.getClassName()), e);
             } catch (final ClassNotFoundException e) {
                 LOG.error(String.format("Class not found %s", jobInfo.getClassName()), e);
+            } catch (JobParameterMissingException | JobParameterInvalidException e) {
+                LOG.error(String.format("could not initialized %s properly"), jobInfo.getClassName(), e);
             } finally {
                 if (hasFailed) {
                     jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
@@ -182,12 +187,12 @@ public class JobHandler implements IJobHandler {
 
     @Override
     public void shutdownNow() {
-        this.shutdownIn(timeoutShutdownNowInSeconds, TimeUnit.SECONDS);
+        shutdownIn(timeoutShutdownNowInSeconds, TimeUnit.SECONDS);
     }
 
     @Override
     public void shutdown() {
-        this.shutdownIn(timeoutShutdownInHours, TimeUnit.HOURS);
+        shutdownIn(timeoutShutdownInHours, TimeUnit.HOURS);
     }
 
     @Override
