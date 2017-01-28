@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.amqp.utils;
+package fr.cnes.regards.framework.amqp.configuration;
 
 import java.util.Base64;
 import java.util.List;
@@ -17,21 +17,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.connection.RegardsSimpleRoutingConnectionFactory;
 import fr.cnes.regards.framework.amqp.domain.RabbitMqVhostPermission;
 import fr.cnes.regards.framework.amqp.domain.RabbitVhost;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 
 /**
  * implementation compliant with RabbitMQ v3.6.5
  *
  * @author svissier
+ * @author Marc Sordi
  *
  */
-public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
+public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
 
     /**
      * :
@@ -51,7 +50,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
     /**
      * namespace of REGARDS
      */
-    private static final String REGARDS_NAMESPACE = "Regards.amqp.";
+    private static final String REGARDS_NAMESPACE = "regards.";
 
     /**
      * template used to perform REST request
@@ -88,7 +87,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
      */
     private final Integer amqpManagementPort;
 
-    private final RegardsAmqpAdmin regardsAmqpAdmin;
+    private final MultitenantAmqpAdmin regardsAmqpAdmin;
 
     /**
      *
@@ -107,9 +106,10 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
      * @param pSimpleRoutingConnectionFactory
      *            connection factory to handle multi-tenancy
      */
-    public RabbitVirtualHostUtils(String pRabbitmqUserName, String pRabbitmqPassword, String pAmqpManagementHost,
+    public RabbitVirtualHostAdmin(String pRabbitmqUserName, String pRabbitmqPassword, String pAmqpManagementHost,
             Integer pAmqpManagementPort, RestTemplate pRestTemplate,
-            RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory, RegardsAmqpAdmin pRegardsAmqpAdmin) {
+            RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
+            MultitenantAmqpAdmin pRegardsAmqpAdmin) {
         super();
         restTemplate = pRestTemplate;
         simpleRoutingConnectionFactory = pSimpleRoutingConnectionFactory;
@@ -160,7 +160,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
     }
 
     @Override
-    public void addVhost(String pName, CachingConnectionFactory pConnectionFactory) throws RabbitMQVhostException {
+    public void addVhost(String pName, CachingConnectionFactory pConnectionFactory) {
         registerConnectionFactory(pName, pConnectionFactory);
         addVhost(pName);
     }
@@ -178,7 +178,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
     }
 
     @Override
-    public void addVhost(String pName) throws RabbitMQVhostException {
+    public void addVhost(String pName) {
         retrieveVhostList();
         final String fullyQualifiedVhostName = getVhostName(pName);
         if (!existVhost(fullyQualifiedVhostName)) {
@@ -201,7 +201,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
     }
 
     @Override
-    public void addPermissionToAccessVhost(String pVhost) throws AddingRabbitMQVhostPermissionException {
+    public void addPermissionToAccessVhost(String pVhost) {
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add(HttpHeaders.AUTHORIZATION, setBasic());
@@ -247,6 +247,6 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
      * @return fully qualified name of vhost accord to namespace
      */
     public static String getVhostName(String pTenant) {
-        return REGARDS_NAMESPACE + pTenant;
+        return REGARDS_NAMESPACE + pTenant.toLowerCase();
     }
 }

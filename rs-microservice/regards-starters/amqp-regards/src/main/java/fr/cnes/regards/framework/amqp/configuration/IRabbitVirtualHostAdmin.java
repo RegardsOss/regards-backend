@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.amqp.utils;
+package fr.cnes.regards.framework.amqp.configuration;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
  * @author svissier
  *
  */
-public interface IRabbitVirtualHostUtils {
+public interface IRabbitVirtualHostAdmin {
 
     /**
      * GET Request to host/api/vhosts to know which Vhosts are already defined

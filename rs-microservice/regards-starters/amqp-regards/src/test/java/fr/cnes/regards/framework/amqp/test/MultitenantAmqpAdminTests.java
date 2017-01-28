@@ -8,19 +8,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
-import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.configuration.MultitenantAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  * @author svissier
  *
  */
-public class RegardsAmqpAdminTests {
+public class MultitenantAmqpAdminTests {
 
     /**
-     * _
+     * Prefix for naming
      */
     private static final String UNDERSCORE = "_";
 
@@ -35,11 +35,11 @@ public class RegardsAmqpAdminTests {
 
     private static final String ADDRESSES = "127.0.0.1:5762";
 
-    private static RegardsAmqpAdmin regardsAmqpAdmin;
+    private static MultitenantAmqpAdmin regardsAmqpAdmin;
 
     @BeforeClass
     public static void init() {
-        regardsAmqpAdmin = new RegardsAmqpAdmin(TYPE_IDENTIFIER, INSTANCE_IDENTIFIER, ADDRESSES);
+        regardsAmqpAdmin = new MultitenantAmqpAdmin(TYPE_IDENTIFIER, INSTANCE_IDENTIFIER, ADDRESSES);
     }
 
     /**
@@ -51,7 +51,7 @@ public class RegardsAmqpAdminTests {
         final String[] rabbitHostAndPort = parseRabbitAddresses(ADDRESSES);
         final CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHostAndPort[0],
                 Integer.parseInt(rabbitHostAndPort[1]));
-        connectionFactory.setVirtualHost(RabbitVirtualHostUtils.getVhostName(vhost));
+        connectionFactory.setVirtualHost(RabbitVirtualHostAdmin.getVhostName(vhost));
         final CachingConnectionFactory result = regardsAmqpAdmin.createConnectionFactory(vhost);
         // same host
         Assert.assertEquals(connectionFactory.getHost(), result.getHost());
@@ -76,11 +76,11 @@ public class RegardsAmqpAdminTests {
         final String name = "name";
 
         String expected = name;
-        Assert.assertEquals(expected, regardsAmqpAdmin.getExchangeName(name, AmqpCommunicationTarget.ALL));
+        Assert.assertEquals(expected, regardsAmqpAdmin.getExchangeName(name, Target.ALL));
 
         expected = TYPE_IDENTIFIER + UNDERSCORE + name;
 
-        Assert.assertEquals(expected, regardsAmqpAdmin.getExchangeName(name, AmqpCommunicationTarget.MICROSERVICE));
+        Assert.assertEquals(expected, regardsAmqpAdmin.getExchangeName(name, Target.MICROSERVICE));
     }
 
     /**
@@ -91,20 +91,19 @@ public class RegardsAmqpAdminTests {
         final Class<String> stringClass = String.class;
 
         String expectedOneToOne = stringClass.getName();
-        Assert.assertEquals(expectedOneToOne, regardsAmqpAdmin
-                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.ALL));
+        Assert.assertEquals(expectedOneToOne,
+                            regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.SINGLE, Target.ALL));
 
         expectedOneToOne = TYPE_IDENTIFIER + UNDERSCORE + stringClass.getName();
-        Assert.assertEquals(expectedOneToOne, regardsAmqpAdmin
-                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_ONE, AmqpCommunicationTarget.MICROSERVICE));
+        Assert.assertEquals(expectedOneToOne,
+                            regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.SINGLE, Target.MICROSERVICE));
 
         String expectedOneToMany = stringClass.getName() + UNDERSCORE + INSTANCE_IDENTIFIER;
-        Assert.assertEquals(expectedOneToMany, regardsAmqpAdmin
-                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.ALL));
+        Assert.assertEquals(expectedOneToMany, regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.ALL, Target.ALL));
 
         expectedOneToMany = TYPE_IDENTIFIER + UNDERSCORE + stringClass.getName() + UNDERSCORE + INSTANCE_IDENTIFIER;
-        Assert.assertEquals(expectedOneToMany, regardsAmqpAdmin
-                .getQueueName(stringClass, AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.MICROSERVICE));
+        Assert.assertEquals(expectedOneToMany,
+                            regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.ALL, Target.MICROSERVICE));
 
     }
 
@@ -114,8 +113,8 @@ public class RegardsAmqpAdminTests {
     @Test
     public void testGetRoutingKey() {
         final String expected = "TOTO";
-        Assert.assertEquals(expected, regardsAmqpAdmin.getRoutingKey(expected, AmqpCommunicationMode.ONE_TO_ONE));
-        Assert.assertEquals("", regardsAmqpAdmin.getRoutingKey(expected, AmqpCommunicationMode.ONE_TO_MANY));
+        Assert.assertEquals(expected, regardsAmqpAdmin.getRoutingKey(expected, WorkerMode.SINGLE));
+        Assert.assertEquals("", regardsAmqpAdmin.getRoutingKey(expected, WorkerMode.ALL));
     }
 
     /**
@@ -123,6 +122,6 @@ public class RegardsAmqpAdminTests {
      */
     @Test
     public void testGetUniqueName() {
-        Assert.assertEquals(INSTANCE_IDENTIFIER, regardsAmqpAdmin.getUniqueName());
+        Assert.assertEquals(INSTANCE_IDENTIFIER, regardsAmqpAdmin.getMicroserviceInstanceId());
     }
 }

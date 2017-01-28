@@ -13,13 +13,13 @@ import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.MultitenantAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
@@ -36,12 +36,12 @@ public class Subscriber implements ISubscriber {
     /**
      * configuration allowing us to declare virtual host using http api and get a unique name for the instance
      */
-    private final RegardsAmqpAdmin regardsAmqpAdmin;
+    private final MultitenantAmqpAdmin regardsAmqpAdmin;
 
     /**
      * bean assisting us to manipulate virtual hosts
      */
-    private final IRabbitVirtualHostUtils rabbitVirtualHostUtils;
+    private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     /**
      * bean handling the conversion using {@link com.fasterxml.jackson} 2
@@ -53,18 +53,19 @@ public class Subscriber implements ISubscriber {
      */
     private final ITenantResolver tenantResolver;
 
-    public Subscriber(final RegardsAmqpAdmin pRegardsAmqpAdmin, final IRabbitVirtualHostUtils pRabbitVirtualHostUtils,
+    public Subscriber(final MultitenantAmqpAdmin pRegardsAmqpAdmin,
+            final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
             final Jackson2JsonMessageConverter pJackson2JsonMessageConverter, final ITenantResolver pTenantResolver) {
         super();
         regardsAmqpAdmin = pRegardsAmqpAdmin;
-        rabbitVirtualHostUtils = pRabbitVirtualHostUtils;
+        rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
         jackson2JsonMessageConverter = pJackson2JsonMessageConverter;
         tenantResolver = pTenantResolver;
     }
 
     @Override
     public <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver) {
-        subscribeTo(pEvent, pReceiver, AmqpCommunicationMode.ONE_TO_MANY, EventUtils.getCommunicationTarget(pEvent));
+        subscribeTo(pEvent, pReceiver, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEvent));
     }
 
     /**
@@ -77,14 +78,13 @@ public class Subscriber implements ISubscriber {
      *            the event class token you want to subscribe to
      * @param pReceiver
      *            the POJO defining the method handling the corresponding event connection factory from context
-     * @param pAmqpCommunicationMode
-     *            {@link AmqpCommunicationMode}
-     * @param pAmqpCommunicationTarget
+     * @param pWorkerMode
+     *            {@link WorkerMode}
+     * @param pTarget
      *            communication scope
      */
-    public final <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver,
-            final AmqpCommunicationMode pAmqpCommunicationMode,
-            final AmqpCommunicationTarget pAmqpCommunicationTarget) {
+    public final <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver, final WorkerMode pWorkerMode,
+            final Target pTarget) {
         final Set<String> tenants = tenantResolver.getAllTenants();
         jackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
         for (final String tenant : tenants) {
@@ -92,8 +92,8 @@ public class Subscriber implements ISubscriber {
             final SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(pEvt, tenant,
                                                                                                       jackson2JsonMessageConverter,
                                                                                                       pReceiver,
-                                                                                                      pAmqpCommunicationMode,
-                                                                                                      pAmqpCommunicationTarget);
+                                                                                                      pWorkerMode,
+                                                                                                      pTarget);
             // CHECKSTYLE:ON
             startSimpleMessageListenerContainer(container);
         }
@@ -111,24 +111,21 @@ public class Subscriber implements ISubscriber {
      *            converter used to transcript messages
      * @param pReceiver
      *            handler provided by user to handle the event reception
-     * @param pAmqpCommunicationMode
+     * @param pWorkerMode
      *            communication Mode
-     * @param pAmqpCommunicationTarget
+     * @param pTarget
      *            communication scope
      * @return a container fully parameterized to listen to the corresponding event for the specified tenant
      */
     public <T> SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(final Class<T> pEvt,
             final String pTenant, final Jackson2JsonMessageConverter pJackson2JsonMessageConverter,
-            final IHandler<T> pReceiver, final AmqpCommunicationMode pAmqpCommunicationMode,
-            final AmqpCommunicationTarget pAmqpCommunicationTarget) {
+            final IHandler<T> pReceiver, final WorkerMode pWorkerMode, final Target pTarget) {
         final CachingConnectionFactory connectionFactory = regardsAmqpAdmin.createConnectionFactory(pTenant);
-        rabbitVirtualHostUtils.addVhost(pTenant, connectionFactory);
+        rabbitVirtualHostAdmin.addVhost(pTenant, connectionFactory);
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        final Exchange exchange = regardsAmqpAdmin.declareExchange(pEvt, pAmqpCommunicationMode, pTenant,
-                                                                   pAmqpCommunicationTarget);
-        final Queue queue = regardsAmqpAdmin.declareQueue(pEvt, pAmqpCommunicationMode, pTenant,
-                                                          pAmqpCommunicationTarget);
-        regardsAmqpAdmin.declareBinding(queue, exchange, pAmqpCommunicationMode, pTenant);
+        final Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
+        final Queue queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt, pWorkerMode, pTarget);
+        regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
 
         container.setConnectionFactory(connectionFactory);
 

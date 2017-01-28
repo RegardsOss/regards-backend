@@ -11,15 +11,15 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
-import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.MultitenantAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 
 /**
  * @author svissier
  *
  */
-public class RabbitVirtualHostUtilsTests {
+public class RabbitVirtualHostAdminTests {
 
     /**
      * :
@@ -65,13 +65,13 @@ public class RabbitVirtualHostUtilsTests {
     /**
      * bean to be tested
      */
-    private static IRabbitVirtualHostUtils rabbitVirtualHostUtils;
+    private static IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     @BeforeClass
     public static void init() {
-        rabbitVirtualHostUtils = new RabbitVirtualHostUtils(RABBITMQ_USERNAME, RABBITMQ_PASSWORD, AMQP_MANAGEMENT_HOST,
+        rabbitVirtualHostAdmin = new RabbitVirtualHostAdmin(RABBITMQ_USERNAME, RABBITMQ_PASSWORD, AMQP_MANAGEMENT_HOST,
                 AMQP_MANAGEMENT_PORT, null, null,
-                new RegardsAmqpAdmin(TYPE_IDENTIFIER, INSTANCE_IDENTIFIER, ADDRESSES));
+                new MultitenantAmqpAdmin(TYPE_IDENTIFIER, INSTANCE_IDENTIFIER, ADDRESSES));
     }
 
     /**
@@ -85,7 +85,7 @@ public class RabbitVirtualHostUtilsTests {
         String encoded = Base64.getEncoder().encodeToString(plainCredsBytes);
         final String expected = "Basic " + encoded;
 
-        Assert.assertEquals(expected, rabbitVirtualHostUtils.setBasic());
+        Assert.assertEquals(expected, rabbitVirtualHostAdmin.setBasic());
     }
 
     /**
@@ -97,20 +97,20 @@ public class RabbitVirtualHostUtilsTests {
         for (int i = 0; i < success.size(); i++) {
             success.set(i, TWO_HUNDRED + i);
         }
-        success.parallelStream().forEach(i -> Assert.assertEquals(true, rabbitVirtualHostUtils.isSuccess(i)));
+        success.parallelStream().forEach(i -> Assert.assertEquals(true, rabbitVirtualHostAdmin.isSuccess(i)));
 
         final List<Integer> inferiorTwoHundred = new ArrayList<>(200);
         for (int i = 0; i < inferiorTwoHundred.size(); i++) {
             inferiorTwoHundred.set(i, i);
         }
         inferiorTwoHundred.parallelStream()
-                .forEach(i -> Assert.assertEquals(false, rabbitVirtualHostUtils.isSuccess(i)));
+                .forEach(i -> Assert.assertEquals(false, rabbitVirtualHostAdmin.isSuccess(i)));
 
         final List<Integer> superiorTwoNintyNine = new ArrayList<>(300);
         for (int i = 0; i < superiorTwoNintyNine.size(); i++) {
             superiorTwoNintyNine.set(i, THREE_HUNDRED + i);
         }
         superiorTwoNintyNine.parallelStream()
-                .forEach(i -> Assert.assertEquals(false, rabbitVirtualHostUtils.isSuccess(i)));
+                .forEach(i -> Assert.assertEquals(false, rabbitVirtualHostAdmin.isSuccess(i)));
     }
 }

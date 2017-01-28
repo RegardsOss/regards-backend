@@ -6,9 +6,6 @@ package fr.cnes.regards.framework.amqp.event;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
-
 /**
  *
  * Utility class to extract annotation information from events.
@@ -39,41 +36,20 @@ public final class EventUtils {
      *
      * @param pClass
      *            {@link Event} annotated class
-     * @return {@link AmqpCommunicationMode}
+     * @return {@link WorkerMode}
      */
-    public static AmqpCommunicationMode getCommunicationMode(Class<?> pClass) {
-        Event ppt = EventUtils.getEventProperties(pClass);
-
-        AmqpCommunicationMode mode;
-        if (WorkerMode.SINGLE.equals(ppt.mode())) {
-            mode = AmqpCommunicationMode.ONE_TO_ONE;
-        } else
-            if (WorkerMode.ALL.equals(ppt.mode())) {
-                mode = AmqpCommunicationMode.ONE_TO_MANY;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        return mode;
+    public static WorkerMode getCommunicationMode(Class<?> pClass) {
+        return EventUtils.getEventProperties(pClass).mode();
     }
 
     /**
      *
      * @param pClass
      *            {@link Event} annotated class
-     * @return {@link AmqpCommunicationMode}
+     * @return {@link WorkerMode}
      */
-    public static AmqpCommunicationTarget getCommunicationTarget(Class<?> pClass) {
-        Event ppt = EventUtils.getEventProperties(pClass);
-        AmqpCommunicationTarget target;
-        if (Target.ALL.equals(ppt.target())) {
-            target = AmqpCommunicationTarget.ALL;
-        } else
-            if (Target.MICROSERVICE.equals(ppt.target())) {
-                target = AmqpCommunicationTarget.MICROSERVICE;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        return target;
+    public static Target getCommunicationTarget(Class<?> pClass) {
+        return EventUtils.getEventProperties(pClass).target();
     }
 
 }

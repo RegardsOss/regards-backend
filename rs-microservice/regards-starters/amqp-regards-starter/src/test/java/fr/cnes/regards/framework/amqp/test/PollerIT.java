@@ -31,15 +31,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
 import fr.cnes.regards.framework.amqp.Poller;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.MultitenantAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
-import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
-import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -58,11 +58,6 @@ public class PollerIT {
      * Logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PollerIT.class);
-
-    /**
-     * PROJECT1
-     */
-    private static final String REGARDS_NAMESPACE = "Regards.amqp.";
 
     /**
      * PROJECT1
@@ -96,13 +91,13 @@ public class PollerIT {
      * bean allowing us to know if the broker is running
      */
     @Autowired
-    private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
+    private IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     /**
      * bean completing AmqpAdmin and RabbitAdmin
      */
     @Autowired
-    private RegardsAmqpAdmin regardsAmqpAdmin;
+    private MultitenantAmqpAdmin regardsAmqpAdmin;
 
     /**
      *
@@ -111,8 +106,8 @@ public class PollerIT {
      */
     @Before
     public void init() throws RabbitMQVhostException {
-        Assume.assumeTrue(rabbitVirtualHostUtils.brokerRunning());
-        rabbitVirtualHostUtils.addVhost(TENANT);
+        Assume.assumeTrue(rabbitVirtualHostAdmin.brokerRunning());
+        rabbitVirtualHostAdmin.addVhost(TENANT);
     }
 
     /**
@@ -122,23 +117,20 @@ public class PollerIT {
     @Purpose("test the polling ONE_TO_MANY to message broker")
     @Test
     public void testPollOneToManyExternal() {
-        final Exchange exchange = regardsAmqpAdmin.declareExchange(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                                                   TENANT, AmqpCommunicationTarget.ALL);
-        final Queue queue = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY, TENANT,
-                                                          AmqpCommunicationTarget.ALL);
-        regardsAmqpAdmin.declareBinding(queue, exchange, AmqpCommunicationMode.ONE_TO_MANY, TENANT);
+        final Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT, TestEvent.class, WorkerMode.ALL, Target.ALL);
+        final Queue queue = regardsAmqpAdmin.declareQueue(TENANT, TestEvent.class, WorkerMode.ALL, Target.ALL);
+        regardsAmqpAdmin.declareBinding(TENANT, queue, exchange, WorkerMode.ALL);
 
         final TestEvent toSend = new TestEvent("test3");
         final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
         LOGGER.info("SENDED " + sended);
-        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), REGARDS_NAMESPACE + TENANT);
+        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), RabbitVirtualHostAdmin.getVhostName(TENANT));
         rabbitTemplate.convertAndSend(TestEvent.class.getName(), "", sended);
         SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
 
         final TenantWrapper<TestEvent> wrapperReceived;
         try {
-            wrapperReceived = poller.poll(TENANT, TestEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                          AmqpCommunicationTarget.ALL);
+            wrapperReceived = poller.poll(TENANT, TestEvent.class, WorkerMode.ALL, Target.ALL);
             LOGGER.info("=================RECEIVED " + wrapperReceived.getContent());
             final TestEvent received = wrapperReceived.getContent();
             Assert.assertEquals(toSend, received);
@@ -148,7 +140,7 @@ public class PollerIT {
             Assert.fail(msg);
         }
         try {
-            cleanRabbit(RabbitVirtualHostUtils.getVhostName(TENANT));
+            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT));
         } catch (CleaningRabbitMQVhostException e) {
             LOGGER.debug("Issue during cleaning the broker", e);
         }
@@ -161,25 +153,23 @@ public class PollerIT {
     @Purpose("test the polling ONE_TO_ONE to message broker")
     @Test
     public void testPollOneToOneExternal() {
-        final Exchange exchangeOneToOne = regardsAmqpAdmin.declareExchange(TestEvent.class,
-                                                                           AmqpCommunicationMode.ONE_TO_ONE, TENANT,
-                                                                           AmqpCommunicationTarget.ALL);
-        final Queue queueOneToOne = regardsAmqpAdmin.declareQueue(TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                                                  TENANT, AmqpCommunicationTarget.ALL);
-        regardsAmqpAdmin.declareBinding(queueOneToOne, exchangeOneToOne, AmqpCommunicationMode.ONE_TO_ONE, TENANT);
+        final Exchange exchangeOneToOne = regardsAmqpAdmin.declareExchange(TENANT, TestEvent.class, WorkerMode.SINGLE,
+                                                                           Target.ALL);
+        final Queue queueOneToOne = regardsAmqpAdmin.declareQueue(TENANT, TestEvent.class, WorkerMode.SINGLE,
+                                                                  Target.ALL);
+        regardsAmqpAdmin.declareBinding(TENANT, queueOneToOne, exchangeOneToOne, WorkerMode.SINGLE);
 
         final TestEvent toSend = new TestEvent("test4");
         final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
         LOGGER.info("SENDED :" + sended);
-        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), RabbitVirtualHostUtils.getVhostName(TENANT));
+        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), RabbitVirtualHostAdmin.getVhostName(TENANT));
         // for one to one communication, exchange is named after the application and not what we are exchanging
-        rabbitTemplate.convertAndSend("REGARDS", TestEvent.class.getName(), sended);
+        rabbitTemplate.convertAndSend(MultitenantAmqpAdmin.DEFAULT_EXCHANGE_NAME, TestEvent.class.getName(), sended);
         SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
 
         final TenantWrapper<TestEvent> wrapperReceived;
         try {
-            wrapperReceived = poller.poll(TENANT, TestEvent.class, AmqpCommunicationMode.ONE_TO_ONE,
-                                          AmqpCommunicationTarget.ALL);
+            wrapperReceived = poller.poll(TENANT, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
             LOGGER.info("=================RECEIVED :" + wrapperReceived.getContent());
             final TestEvent received = wrapperReceived.getContent();
             Assert.assertEquals(toSend, received);
@@ -189,7 +179,7 @@ public class PollerIT {
             Assert.fail(msg);
         }
         try {
-            cleanRabbit(RabbitVirtualHostUtils.getVhostName(TENANT));
+            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT));
         } catch (CleaningRabbitMQVhostException e) {
             LOGGER.debug("Issue during cleaning the broker", e);
         }
@@ -204,18 +194,18 @@ public class PollerIT {
      *             any issues that could occur
      */
     private void cleanRabbit(String pTenant1) throws CleaningRabbitMQVhostException {
-        final List<String> existingVhost = rabbitVirtualHostUtils.retrieveVhostList();
+        final List<String> existingVhost = rabbitVirtualHostAdmin.retrieveVhostList();
         if (existingVhost.stream().filter(vhost -> vhost.equals(pTenant1)).findAny().isPresent()) {
             final HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.add(HttpHeaders.AUTHORIZATION, rabbitVirtualHostUtils.setBasic());
+            headers.add(HttpHeaders.AUTHORIZATION, rabbitVirtualHostAdmin.setBasic());
             final HttpEntity<Void> request = new HttpEntity<>(headers);
             final ResponseEntity<String> response = restTemplate
-                    .exchange(rabbitVirtualHostUtils.getRabbitApiVhostEndpoint() + SLASH + pTenant1, HttpMethod.DELETE,
+                    .exchange(rabbitVirtualHostAdmin.getRabbitApiVhostEndpoint() + SLASH + pTenant1, HttpMethod.DELETE,
                               request, String.class);
             final int statusValue = response.getStatusCodeValue();
             // if successful or 404 then the broker is clean
-            if (!(rabbitVirtualHostUtils.isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
+            if (!(rabbitVirtualHostAdmin.isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
                 throw new CleaningRabbitMQVhostException(response.getBody());
             }
         }

@@ -12,6 +12,6 @@ import fr.cnes.regards.framework.amqp.event.Target;
  *
  */
 @Event(target = Target.ALL)
-public class PublishAllEvent extends AbstractEntityEvent implements ISubscribable {
+public class PublishToAllEvent extends AbstractEntityEvent implements ISubscribable {
 
 }

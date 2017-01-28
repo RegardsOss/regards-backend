@@ -18,8 +18,6 @@ import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTen
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 
 import fr.cnes.regards.framework.amqp.Subscriber;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
@@ -122,10 +120,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     private void listenForNewTenant() throws RabbitMQVhostException {
         if (amqpSubscriber != null) {
             final IHandler<NewTenantEvent> tenantHandler = new NewTenantHandler(this, microserviceName);
-            amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler, AmqpCommunicationMode.ONE_TO_MANY,
-                                       AmqpCommunicationTarget.ALL);
-            amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler, AmqpCommunicationMode.ONE_TO_ONE,
-                                       AmqpCommunicationTarget.MICROSERVICE);
+            amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler);
         }
     }
 
