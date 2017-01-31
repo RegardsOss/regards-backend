@@ -7,7 +7,7 @@ import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 
 /**
- * Interface for publishing events
+ * {@link IPublisher} allows to publish {@link ISubscribable} or {@link IPollable} events.
  *
  * @author Sylvain Vissière-Guérinet
  * @author Marc Sordi

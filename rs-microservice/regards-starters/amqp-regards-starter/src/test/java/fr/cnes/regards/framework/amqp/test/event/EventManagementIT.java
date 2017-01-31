@@ -12,9 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -22,22 +19,17 @@ import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.MultitenantAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.AmqpTestsConfiguration;
-import fr.cnes.regards.framework.amqp.test.Application;
 
 /**
  * @author Marc Sordi
  *
  */
-@ActiveProfiles("rabbit")
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AmqpTestsConfiguration.class })
-@SpringBootTest(classes = Application.class)
-@DirtiesContext
 public class EventManagementIT {
 
     /**
@@ -56,12 +48,6 @@ public class EventManagementIT {
      */
     @Autowired
     private IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
-
-    /**
-     * Bean to declare exchanges, queues, bindings, ...
-     */
-    @Autowired
-    private MultitenantAmqpAdmin regardsAmqpAdmin;
 
     /**
      * Publisher
@@ -124,9 +110,15 @@ public class EventManagementIT {
         publisher.publish(event);
 
         // Poll event
-        TenantWrapper<PollOneMicroserviceEvent> wrapper = poller.poll(tenant, PollOneMicroserviceEvent.class);
-        PollOneMicroserviceEvent received = wrapper.getContent();
-        Assert.assertEquals(message, received.getMessage());
+        try {
+            poller.bind(tenant);
+            TenantWrapper<PollOneMicroserviceEvent> wrapper = poller.poll(tenant, PollOneMicroserviceEvent.class);
+            PollOneMicroserviceEvent received = wrapper.getContent();
+            Assert.assertEquals(message, received.getMessage());
+        } finally {
+            poller.unbind();
+        }
+
     }
 
     @Test
@@ -138,64 +130,13 @@ public class EventManagementIT {
         publisher.publish(event);
 
         // Poll event
-        TenantWrapper<PollOneAllEvent> wrapper = poller.poll(tenant, PollOneAllEvent.class);
-        PollOneAllEvent received = wrapper.getContent();
-        Assert.assertEquals(message, received.getMessage());
-    }
-
-    @Test
-    public void pollOneAllEventWithError() {
-        // Publish a pollable event
-        PollOneAllEvent event = new PollOneAllEvent();
-        String message = "Poll by all!";
-        event.setMessage(message);
-        publisher.publish(event);
-
-        PollableService<PollOneAllEvent> crasher = new PollableService<>(poller, true);
         try {
-            crasher.pollAndSave(tenant, PollOneAllEvent.class);
-        } catch (Exception e) {
-            LOGGER.debug("Poll and save fails");
-        }
-
-        // Re-Poll event
-        PollableService<PollOneAllEvent> winner = new PollableService<>(poller, false);
-        TenantWrapper<PollOneAllEvent> wrapper = winner.pollAndSave(tenant, PollOneAllEvent.class);
-        PollOneAllEvent received = wrapper.getContent();
-        Assert.assertNotNull(wrapper);
-        Assert.assertEquals(message, received.getMessage());
-
-    }
-
-    public void pollWithError() {
-        // Poll event
-        TenantWrapper<PollOneAllEvent> wrapper = poller.poll(tenant, PollOneAllEvent.class);
-        Assert.assertNotNull(wrapper);
-        throw new UnsupportedOperationException("Simulate poll error");
-    }
-
-    private void pollWithSuccess(String pMessage) {
-        // Poll event
-        TenantWrapper<PollOneAllEvent> wrapper = poller.poll(tenant, PollOneAllEvent.class);
-        PollOneAllEvent received = wrapper.getContent();
-        Assert.assertEquals(pMessage, received.getMessage());
-    }
-
-    @Test
-    public void pollEachMicroserviceEvent() {
-        // Publish a pollable event
-        PollEachMicroserviceEvent event = new PollEachMicroserviceEvent();
-        String message = "Poll by each instance of a microservice!";
-        event.setMessage(message);
-        publisher.publish(event);
-
-        // This event may be polled many times
-        int iter = 3;
-        for (int i = 0; i < iter; i++) {
-            TenantWrapper<PollEachMicroserviceEvent> wrapper = poller.poll(tenant, PollEachMicroserviceEvent.class);
-            PollEachMicroserviceEvent received = wrapper.getContent();
+            poller.bind(tenant);
+            TenantWrapper<PollOneAllEvent> wrapper = poller.poll(tenant, PollOneAllEvent.class);
+            PollOneAllEvent received = wrapper.getContent();
             Assert.assertEquals(message, received.getMessage());
+        } finally {
+            poller.unbind();
         }
-
     }
 }

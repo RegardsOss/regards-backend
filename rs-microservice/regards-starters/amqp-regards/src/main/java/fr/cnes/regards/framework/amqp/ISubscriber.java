@@ -8,7 +8,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 
 /**
  *
- * Interface for message subscribing
+ * {@link ISubscriber} allows to subscribe to {@link ISubscribable} events.
  *
  * @author Sylvain Vissière-Guérinet
  * @author Sébastien Binda

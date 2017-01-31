@@ -12,7 +12,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.MultitenantAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 
 /**
@@ -56,10 +55,9 @@ public class RabbitVirtualHostAdminTests {
      */
     private static final Integer AMQP_MANAGEMENT_PORT = 15672;
 
-    private static final String TYPE_IDENTIFIER = "TypeIdentifier";
-
-    private static final String INSTANCE_IDENTIFIER = "InstanceIdentifier";
-
+    /**
+     * Local adress
+     */
     private static final String ADDRESSES = "127.0.0.1:5762";
 
     /**
@@ -70,8 +68,7 @@ public class RabbitVirtualHostAdminTests {
     @BeforeClass
     public static void init() {
         rabbitVirtualHostAdmin = new RabbitVirtualHostAdmin(RABBITMQ_USERNAME, RABBITMQ_PASSWORD, AMQP_MANAGEMENT_HOST,
-                AMQP_MANAGEMENT_PORT, null, null,
-                new MultitenantAmqpAdmin(TYPE_IDENTIFIER, INSTANCE_IDENTIFIER, ADDRESSES));
+                AMQP_MANAGEMENT_PORT, null, null, ADDRESSES);
     }
 
     /**

@@ -38,16 +38,6 @@ public final class EventUtils {
      *            {@link Event} annotated class
      * @return {@link WorkerMode}
      */
-    public static WorkerMode getCommunicationMode(Class<?> pClass) {
-        return EventUtils.getEventProperties(pClass).mode();
-    }
-
-    /**
-     *
-     * @param pClass
-     *            {@link Event} annotated class
-     * @return {@link WorkerMode}
-     */
     public static Target getCommunicationTarget(Class<?> pClass) {
         return EventUtils.getEventProperties(pClass).target();
     }

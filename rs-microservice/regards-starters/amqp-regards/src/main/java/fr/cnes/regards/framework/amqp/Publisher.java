@@ -9,12 +9,10 @@ import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.MultitenantAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
@@ -49,7 +47,7 @@ public class Publisher implements IPublisher {
     /**
      * configuration initializing required bean
      */
-    private final MultitenantAmqpAdmin regardsAmqpAdmin;
+    private final RegardsAmqpAdmin regardsAmqpAdmin;
 
     /**
      * bean assisting us to manipulate virtual host
@@ -61,7 +59,7 @@ public class Publisher implements IPublisher {
      */
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public Publisher(final RabbitTemplate pRabbitTemplate, final MultitenantAmqpAdmin pRegardsAmqpAdmin,
+    public Publisher(final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
             final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
         super();
         rabbitTemplate = pRabbitTemplate;
@@ -89,8 +87,7 @@ public class Publisher implements IPublisher {
     @Override
     public <T extends IPollable> void publish(T pEvent, int pPriority) {
         Class<?> eventClass = pEvent.getClass();
-        publish(pEvent, EventUtils.getCommunicationMode(eventClass), EventUtils.getCommunicationTarget(eventClass),
-                pPriority);
+        publish(pEvent, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(eventClass), pPriority);
     }
 
     /**
@@ -138,25 +135,32 @@ public class Publisher implements IPublisher {
         // add the Vhost corresponding to this tenant
         rabbitVirtualHostAdmin.addVhost(pTenant);
 
-        // Declare exchange
-        final Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, evtClass, pWorkerMode, pTarget);
+        try {
+            // Bind the connection to the right vHost (i.e. tenant to publish the message)
+            regardsAmqpAdmin.bind(pTenant);
 
-        if (WorkerMode.SINGLE.equals(pWorkerMode)) {
-            // Direct exchange needs a specific queue, a binding between this queue and exchange containing a specific
-            // routing key
-            final Queue queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt.getClass(), WorkerMode.SINGLE, pTarget);
-            regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
-            publishMessageByTenant(pTenant, exchange.getName(),
-                                   regardsAmqpAdmin.getRoutingKey(queue.getName(), pWorkerMode), pEvt, pPriority);
-        } else
-            if (WorkerMode.ALL.equals(pWorkerMode)) {
-                // Routing key useless ... always skipped with a fanout exchange
-                publishMessageByTenant(pTenant, exchange.getName(), DEFAULT_ROUTING_KEY, pEvt, pPriority);
-            } else {
-                String errorMessage = String.format("Unexpected communication mode : %s.", pWorkerMode);
-                LOGGER.error(errorMessage);
-                throw new IllegalArgumentException(errorMessage);
-            }
+            // Declare exchange
+            Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, evtClass, pWorkerMode, pTarget);
+
+            if (WorkerMode.SINGLE.equals(pWorkerMode)) {
+                // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
+                // specific routing key
+                Queue queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt.getClass(), WorkerMode.SINGLE, pTarget);
+                regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
+                publishMessageByTenant(pTenant, exchange.getName(),
+                                       regardsAmqpAdmin.getRoutingKey(queue.getName(), pWorkerMode), pEvt, pPriority);
+            } else
+                if (WorkerMode.ALL.equals(pWorkerMode)) {
+                    // Routing key useless ... always skipped with a fanout exchange
+                    publishMessageByTenant(pTenant, exchange.getName(), DEFAULT_ROUTING_KEY, pEvt, pPriority);
+                } else {
+                    String errorMessage = String.format("Unexpected communication mode : %s.", pWorkerMode);
+                    LOGGER.error(errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
+                }
+        } finally {
+            regardsAmqpAdmin.unbind();
+        }
     }
 
     /**
@@ -181,14 +185,11 @@ public class Publisher implements IPublisher {
         // Message to publish
         final TenantWrapper<T> messageSended = new TenantWrapper<>(pEvt, pTenant);
 
-        // Bind the connection to the right vHost (i.e. tenant to publish the message)
-        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), RabbitVirtualHostAdmin.getVhostName(pTenant));
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(pExchangeName, pRoutingKey, messageSended, pMessage -> {
             final MessageProperties propertiesWithPriority = pMessage.getMessageProperties();
             propertiesWithPriority.setPriority(pPriority);
             return new Message(pMessage.getBody(), propertiesWithPriority);
         });
-        SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
     }
 }

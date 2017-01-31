@@ -7,14 +7,14 @@ import java.util.Set;
 
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.MultitenantAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -36,7 +36,7 @@ public class Subscriber implements ISubscriber {
     /**
      * configuration allowing us to declare virtual host using http api and get a unique name for the instance
      */
-    private final MultitenantAmqpAdmin regardsAmqpAdmin;
+    private final RegardsAmqpAdmin regardsAmqpAdmin;
 
     /**
      * bean assisting us to manipulate virtual hosts
@@ -53,8 +53,7 @@ public class Subscriber implements ISubscriber {
      */
     private final ITenantResolver tenantResolver;
 
-    public Subscriber(final MultitenantAmqpAdmin pRegardsAmqpAdmin,
-            final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
+    public Subscriber(final RegardsAmqpAdmin pRegardsAmqpAdmin, final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
             final Jackson2JsonMessageConverter pJackson2JsonMessageConverter, final ITenantResolver pTenantResolver) {
         super();
         regardsAmqpAdmin = pRegardsAmqpAdmin;
@@ -120,13 +119,22 @@ public class Subscriber implements ISubscriber {
     public <T> SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(final Class<T> pEvt,
             final String pTenant, final Jackson2JsonMessageConverter pJackson2JsonMessageConverter,
             final IHandler<T> pReceiver, final WorkerMode pWorkerMode, final Target pTarget) {
-        final CachingConnectionFactory connectionFactory = regardsAmqpAdmin.createConnectionFactory(pTenant);
-        rabbitVirtualHostAdmin.addVhost(pTenant, connectionFactory);
-        final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        final Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
-        final Queue queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt, pWorkerMode, pTarget);
-        regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
 
+        // Retrieve tenant vhost connection factory
+        ConnectionFactory connectionFactory = rabbitVirtualHostAdmin.getVhostConnectionFactory(pTenant);
+
+        Queue queue;
+        try {
+            regardsAmqpAdmin.bind(pTenant);
+            Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
+            queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt, pWorkerMode, pTarget);
+            regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
+        } finally {
+            regardsAmqpAdmin.unbind();
+        }
+
+        // Init container
+        final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
 
         final MessageListenerAdapter messageListener = new MessageListenerAdapter(pReceiver, DEFAULT_HANDLING_METHOD);

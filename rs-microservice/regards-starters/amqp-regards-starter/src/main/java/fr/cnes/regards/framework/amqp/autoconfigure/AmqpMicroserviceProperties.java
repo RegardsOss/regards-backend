@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * class regrouping properties about the microservice
- * 
+ *
  * @author svissier
  *
  */
@@ -22,24 +22,11 @@ public class AmqpMicroserviceProperties {
     @NotNull
     private String typeIdentifier;
 
-    /**
-     * instance identifier unique to identify exchanges/queue related to only one instance of a microservice
-     */
-    private String instanceIdentifier;
-
     public String getTypeIdentifier() {
         return typeIdentifier;
     }
 
     public void setTypeIdentifier(String pTypeIdentifier) {
         typeIdentifier = pTypeIdentifier;
-    }
-
-    public String getInstanceIdentifier() {
-        return instanceIdentifier;
-    }
-
-    public void setInstanceIdentifier(String pInstanceIdentifier) {
-        instanceIdentifier = pInstanceIdentifier;
     }
 }

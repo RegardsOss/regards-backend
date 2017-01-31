@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -23,13 +22,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.MultitenantAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
@@ -46,9 +45,8 @@ import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
  * @author svissier
  *
  */
-@ActiveProfiles("rabbit")
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class)
+@ContextConfiguration(classes = { AmqpTestsConfiguration.class })
 public class MultitenantAmqpAdminIT {
 
     /**
@@ -75,7 +73,7 @@ public class MultitenantAmqpAdminIT {
      * bean tested
      */
     @Autowired
-    private MultitenantAmqpAdmin regardsAmqpAdmin;
+    private RegardsAmqpAdmin regardsAmqpAdmin;
 
     /**
      * bean helping us to test
@@ -96,34 +94,96 @@ public class MultitenantAmqpAdminIT {
 
     @Test
     public void testDeclareBindingOneToOneInternal() {
-        try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-            rabbitVirtualHostAdmin.addVhost(TENANT1);
+        declareBinding(Target.MICROSERVICE, WorkerMode.SINGLE);
 
-            List<RestBinding> baseDeclaredBindings = retrieveBinding(TENANT1);
-            Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, WorkerMode.SINGLE,
-                                                                 Target.MICROSERVICE);
-            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, WorkerMode.SINGLE,
-                                                        Target.MICROSERVICE);
-            regardsAmqpAdmin.declareBinding(TENANT1, queue, exchange, WorkerMode.SINGLE);
+    }
+
+    @Test
+    public void testDeclareBindingOneToManyInternal() {
+        declareBinding(Target.MICROSERVICE, WorkerMode.ALL);
+    }
+
+    @Test
+    public void testDeclareBindingOneToOneExternal() {
+        declareBinding(Target.ALL, WorkerMode.SINGLE);
+    }
+
+    @Test
+    public void testDeclareBindingOneToManyExternal() {
+        declareBinding(Target.ALL, WorkerMode.ALL);
+    }
+
+    @Test
+    public void testDeclareExchangeOneToOneInternal() {
+        declareExchange(Target.MICROSERVICE, WorkerMode.SINGLE);
+    }
+
+    @Test
+    public void testDeclareExchangeOneToManyInternal() {
+        declareExchange(Target.MICROSERVICE, WorkerMode.ALL);
+    }
+
+    @Test
+    public void testDeclareExchangeOneToOneExternal() {
+        declareExchange(Target.ALL, WorkerMode.SINGLE);
+    }
+
+    @Test
+    public void testDeclareExchangeOneToManyExternal() {
+        declareExchange(Target.ALL, WorkerMode.ALL);
+    }
+
+    @Test
+    public void testDeclareQueueOneToOneInternal() {
+        declareQueue(Target.MICROSERVICE, WorkerMode.SINGLE);
+    }
+
+    @Test
+    public void testDeclareQueueOneToManyInternal() {
+        declareQueue(Target.ALL, WorkerMode.SINGLE);
+    }
+
+    @Test
+    public void testDeclareQueueOneToOneExternal() {
+        declareQueue(Target.MICROSERVICE, WorkerMode.SINGLE);
+    }
+
+    @Test
+    public void testDeclareQueueOneToManyExternal() {
+        declareQueue(Target.ALL, WorkerMode.ALL);
+    }
+
+    private void declareBinding(Target pTarget, WorkerMode pWorkerMode) {
+        try {
+            rabbitVirtualHostAdmin.addVhost(TENANT1);
+            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
+
+            regardsAmqpAdmin.bind(TENANT1);
+
+            retrieveBinding(TENANT1);
+            Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, pWorkerMode, pTarget);
+            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, pWorkerMode, pTarget);
+            regardsAmqpAdmin.declareBinding(TENANT1, queue, exchange, pWorkerMode);
             List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
             RestBinding restBinding = declaredBindings.get(0);
             // because of default amqp exhange on rabbitMQ, it adds 2 binding and not only 1
             // Assert.assertEquals(baseDeclaredBindings.size() + 2, declaredBindings.size());
             Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restBinding.getVhost());
+            regardsAmqpAdmin.unbind();
 
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
             rabbitVirtualHostAdmin.addVhost(TENANT2);
+            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
 
-            baseDeclaredBindings = retrieveBinding(TENANT2);
-            exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, WorkerMode.SINGLE,
-                                                        Target.MICROSERVICE);
-            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, WorkerMode.SINGLE, Target.MICROSERVICE);
-            regardsAmqpAdmin.declareBinding(TENANT2, queue, exchange, WorkerMode.SINGLE);
+            regardsAmqpAdmin.bind(TENANT2);
+            retrieveBinding(TENANT2);
+            exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, pWorkerMode, pTarget);
+            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, pWorkerMode, pTarget);
+            regardsAmqpAdmin.declareBinding(TENANT2, queue, exchange, pWorkerMode);
             declaredBindings = retrieveBinding(TENANT2);
             restBinding = declaredBindings.get(0);
             // Assert.assertEquals(baseDeclaredBindings.size() + 2, declaredBindings.size());
             Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restBinding.getVhost());
+            regardsAmqpAdmin.unbind();
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQBindingException e) {
             Assert.fail("Failed to clean Tenant");
@@ -136,131 +196,7 @@ public class MultitenantAmqpAdminIT {
             } catch (CleaningRabbitMQVhostException e) {
                 LOGGER.debug("Issue during cleaning the broker", e);
             }
-        }
-    }
 
-    @Test
-    public void testDeclareBindingOneToManyInternal() {
-        try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT1);
-
-            List<RestBinding> baseDeclaredBindings = retrieveBinding(TENANT1);
-            Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, WorkerMode.ALL,
-                                                                 Target.MICROSERVICE);
-            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, WorkerMode.ALL, Target.MICROSERVICE);
-            regardsAmqpAdmin.declareBinding(TENANT1, queue, exchange, WorkerMode.ALL);
-            List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
-            RestBinding restBinding = declaredBindings.get(0);
-            // because of default exhange
-            // Assert.assertEquals(baseDeclaredBindings.size() + 1, declaredBindings.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restBinding.getVhost());
-
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            rabbitVirtualHostAdmin.addVhost(TENANT2);
-
-            baseDeclaredBindings = retrieveBinding(TENANT2);
-            exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, WorkerMode.ALL, Target.MICROSERVICE);
-            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, WorkerMode.ALL, Target.MICROSERVICE);
-            regardsAmqpAdmin.declareBinding(TENANT2, queue, exchange, WorkerMode.ALL);
-            declaredBindings = retrieveBinding(TENANT2);
-            restBinding = declaredBindings.get(0);
-            // because of default exchange
-            // Assert.assertEquals(baseDeclaredBindings.size() + 1, declaredBindings.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restBinding.getVhost());
-
-        } catch (CleaningRabbitMQVhostException | GettingRabbitMQBindingException e) {
-            Assert.fail("Failed to clean " + TENANT1);
-        } catch (RabbitMQVhostException e) {
-            Assert.fail("Failed to add virtualhost " + TENANT1);
-        } finally {
-            try {
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            } catch (CleaningRabbitMQVhostException e) {
-                LOGGER.debug("Issue during cleaning the broker", e);
-            }
-        }
-    }
-
-    @Test
-    public void testDeclareBindingOneToOneExternal() {
-        try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-            rabbitVirtualHostAdmin.addVhost(TENANT1);
-
-            Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, WorkerMode.SINGLE,
-                                                                 Target.ALL);
-            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
-            regardsAmqpAdmin.declareBinding(TENANT1, queue, exchange, WorkerMode.SINGLE);
-            List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
-            RestBinding restBinding = declaredBindings.get(0);
-            // Assert.assertEquals(7, declaredBindings.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restBinding.getVhost());
-
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            rabbitVirtualHostAdmin.addVhost(TENANT2);
-
-            exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
-            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
-            regardsAmqpAdmin.declareBinding(TENANT2, queue, exchange, WorkerMode.SINGLE);
-            declaredBindings = retrieveBinding(TENANT2);
-            restBinding = declaredBindings.get(0);
-            // Assert.assertEquals(7, declaredBindings.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restBinding.getVhost());
-
-        } catch (CleaningRabbitMQVhostException | GettingRabbitMQBindingException e) {
-            Assert.fail("Failed to clean " + TENANT1);
-        } catch (RabbitMQVhostException e) {
-            Assert.fail("Failed to add virtualhost " + TENANT1);
-        } finally {
-            try {
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            } catch (CleaningRabbitMQVhostException e) {
-                LOGGER.debug("Issue during cleaning the broker", e);
-            }
-        }
-    }
-
-    @Test
-    public void testDeclareBindingOneToManyExternal() {
-        try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT1);
-
-            Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            regardsAmqpAdmin.declareBinding(TENANT1, queue, exchange, WorkerMode.ALL);
-            List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
-            RestBinding restBinding = declaredBindings.get(0);
-            // Assert.assertEquals(4, declaredBindings.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restBinding.getVhost());
-
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            rabbitVirtualHostAdmin.addVhost(TENANT2);
-
-            exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            regardsAmqpAdmin.declareBinding(TENANT2, queue, exchange, WorkerMode.ALL);
-            declaredBindings = retrieveBinding(TENANT2);
-            restBinding = declaredBindings.get(0);
-            // Assert.assertEquals(4, declaredBindings.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restBinding.getVhost());
-
-        } catch (CleaningRabbitMQVhostException | GettingRabbitMQBindingException e) {
-            Assert.fail("Failed to clean " + TENANT1);
-        } catch (RabbitMQVhostException e) {
-            Assert.fail("Failed to add virtualhost " + TENANT1);
-        } finally {
-            try {
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            } catch (CleaningRabbitMQVhostException e) {
-                LOGGER.debug("Issue during cleaning the broker", e);
-            }
         }
     }
 
@@ -291,188 +227,35 @@ public class MultitenantAmqpAdminIT {
         return response.getBody();
     }
 
-    /**
-     * delete the virtual host if existing
-     *
-     * @param pTenant
-     *            tenant to clean
-     * @throws CleaningRabbitMQVhostException
-     *             any issues that could occur
-     */
-    private void cleanRabbit(String pTenant) throws CleaningRabbitMQVhostException {
-        final List<String> existingVhost = rabbitVirtualHostAdmin.retrieveVhostList();
-        final String vhostName = RabbitVirtualHostAdmin.getVhostName(pTenant);
-        if (existingVhost.stream().filter(vhost -> vhost.equals(vhostName)).findAny().isPresent()) {
-            final HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.add(HttpHeaders.AUTHORIZATION, rabbitVirtualHostAdmin.setBasic());
-            final HttpEntity<Void> request = new HttpEntity<>(headers);
-            final ResponseEntity<String> response = restTemplate
-                    .exchange(rabbitVirtualHostAdmin.getRabbitApiVhostEndpoint() + SLASH + vhostName, HttpMethod.DELETE,
-                              request, String.class);
-            final int statusValue = response.getStatusCodeValue();
-            // if successful or 404 then the broker is clean
-            if (!(rabbitVirtualHostAdmin.isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
-                throw new CleaningRabbitMQVhostException(response.getBody());
-            }
-        }
-    }
-
-    @Test
-    public void testDeclareExchangeOneToOneInternal() {
+    private void declareExchange(Target pTarget, WorkerMode pWorkerMode) {
         try {
             cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
 
             rabbitVirtualHostAdmin.addVhost(TENANT1);
 
-            Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, WorkerMode.SINGLE,
-                                                                 Target.MICROSERVICE);
+            regardsAmqpAdmin.bind(TENANT1);
+            Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, pWorkerMode, pTarget);
             List<RestExchange> declaredExchanges = retrieveExchange(TENANT1);
             // TODO: get newly declared exchange not one of the default
             RestExchange restExchange = declaredExchanges.get(0);
             // 1 + all default = 11
             // Assert.assertEquals(11, declaredExchanges.size());
             Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restExchange.getVhost());
+            regardsAmqpAdmin.unbind();
 
             cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
 
             rabbitVirtualHostAdmin.addVhost(TENANT2);
 
-            exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, WorkerMode.SINGLE,
-                                                        Target.MICROSERVICE);
+            regardsAmqpAdmin.bind(TENANT2);
+            exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, pWorkerMode, pTarget);
             declaredExchanges = retrieveExchange(TENANT2);
             // TODO: get newly declared exchange not one of the default
             restExchange = declaredExchanges.get(0);
             // 1 + all default = 11
             // Assert.assertEquals(11, declaredExchanges.size());
             Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restExchange.getVhost());
-
-        } catch (CleaningRabbitMQVhostException | GettingRabbitMQExchangeException e) {
-            Assert.fail("Failed to clean Tenant");
-        } catch (RabbitMQVhostException e) {
-            Assert.fail("Failed to add virtualhost " + TENANT1);
-        } finally {
-            try {
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            } catch (CleaningRabbitMQVhostException e) {
-                LOGGER.debug("Issue during cleaning the broker", e);
-            }
-        }
-    }
-
-    @Test
-    public void testDeclareExchangeOneToManyInternal() {
-        try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT1);
-
-            List<RestExchange> baseDeclaredExchanges = retrieveExchange(TENANT1);
-            Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, WorkerMode.ALL,
-                                                                 Target.MICROSERVICE);
-            List<RestExchange> declaredExchanges = retrieveExchange(TENANT1);
-
-            RestExchange restExchange = declaredExchanges.get(0);
-
-            // Assert.assertEquals(baseDeclaredExchanges.size() + 1, declaredExchanges.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restExchange.getVhost());
-
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT2);
-
-            baseDeclaredExchanges = retrieveExchange(TENANT2);
-            exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, WorkerMode.ALL, Target.MICROSERVICE);
-            declaredExchanges = retrieveExchange(TENANT2);
-
-            restExchange = declaredExchanges.get(0);
-
-            // Assert.assertEquals(baseDeclaredExchanges.size() + 1, declaredExchanges.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restExchange.getVhost());
-
-        } catch (CleaningRabbitMQVhostException | GettingRabbitMQExchangeException e) {
-            Assert.fail("Failed to clean Tenant");
-        } catch (RabbitMQVhostException e) {
-            Assert.fail("Failed to add virtualhost " + TENANT1);
-        } finally {
-            try {
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            } catch (CleaningRabbitMQVhostException e) {
-                LOGGER.debug("Issue during cleaning the broker", e);
-            }
-        }
-    }
-
-    @Test
-    public void testDeclareExchangeOneToOneExternal() {
-        try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT1);
-
-            Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, WorkerMode.SINGLE,
-                                                                 Target.ALL);
-            List<RestExchange> declaredExchanges = retrieveExchange(TENANT1);
-            // TODO: get newly declared exchange not one of the default
-            RestExchange restExchange = declaredExchanges.get(0);
-            // 1 + all default = 11
-            // Assert.assertEquals(11, declaredExchanges.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restExchange.getVhost());
-
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT2);
-
-            exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
-            declaredExchanges = retrieveExchange(TENANT2);
-            // TODO: get newly declared exchange not one of the default
-            restExchange = declaredExchanges.get(0);
-            // 1 + all default
-            // Assert.assertEquals(11, declaredExchanges.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restExchange.getVhost());
-
-        } catch (CleaningRabbitMQVhostException | GettingRabbitMQExchangeException e) {
-            Assert.fail("Failed to clean Tenant");
-        } catch (RabbitMQVhostException e) {
-            Assert.fail("Failed to add virtualhost " + TENANT1);
-        } finally {
-            try {
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            } catch (CleaningRabbitMQVhostException e) {
-                LOGGER.debug("Issue during cleaning the broker", e);
-            }
-        }
-    }
-
-    @Test
-    public void testDeclareExchangeOneToManyExternal() {
-        try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT1);
-
-            Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            List<RestExchange> declaredExchanges = retrieveExchange(TENANT1);
-            // TODO: get newly declared exchange not one of the default
-            RestExchange restExchange = declaredExchanges.get(0);
-            // 1 + all = 8 default
-            // Assert.assertEquals(11, declaredExchanges.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restExchange.getVhost());
-
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT2);
-
-            exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            declaredExchanges = retrieveExchange(TENANT2);
-            // TODO: get newly declared exchange not one of the default
-            restExchange = declaredExchanges.get(0);
-            // 1 + all default = 8
-            // Assert.assertEquals(11, declaredExchanges.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restExchange.getVhost());
+            regardsAmqpAdmin.unbind();
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQExchangeException e) {
             Assert.fail("Failed to clean Tenant");
@@ -515,142 +298,31 @@ public class MultitenantAmqpAdminIT {
         return response.getBody();
     }
 
-    @Test
-    public void testDeclareQueueOneToOneInternal() {
+    private void declareQueue(Target pTarget, WorkerMode pWorkerMode) {
         try {
             cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
 
             rabbitVirtualHostAdmin.addVhost(TENANT1);
 
-            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, WorkerMode.SINGLE,
-                                                        Target.MICROSERVICE);
+            regardsAmqpAdmin.bind(TENANT1);
+            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, pWorkerMode, pTarget);
             List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
             RestQueue restQueue = declaredQueues.get(0);
             // Assert.assertEquals(1, declaredQueues.size());
             Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restQueue.getVhost());
+            regardsAmqpAdmin.unbind();
 
             cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
 
             rabbitVirtualHostAdmin.addVhost(TENANT2);
 
-            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, WorkerMode.SINGLE, Target.MICROSERVICE);
+            regardsAmqpAdmin.bind(TENANT2);
+            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, pWorkerMode, pTarget);
             declaredQueues = retrieveQueues(TENANT2);
             restQueue = declaredQueues.get(0);
             // Assert.assertEquals(1, declaredQueues.size());
             Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restQueue.getVhost());
-
-        } catch (CleaningRabbitMQVhostException | GettingRabbitMQQueueException e) {
-            Assert.fail("Failed to clean Tenant");
-        } catch (RabbitMQVhostException e) {
-            Assert.fail("Failed to add virtualhost " + TENANT1);
-        } finally {
-            try {
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            } catch (CleaningRabbitMQVhostException e) {
-                LOGGER.debug("Issue during cleaning the broker", e);
-            }
-        }
-    }
-
-    @Test
-    public void testDeclareQueueOneToManyInternal() {
-        try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT1);
-
-            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, WorkerMode.ALL, Target.MICROSERVICE);
-            List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
-            // TODO: get newly declared exchange not one of the default
-            RestQueue restQueue = declaredQueues.get(0);
-            // TODO: 1 + al default
-            // Assert.assertEquals(3, declaredQueues.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restQueue.getVhost());
-
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT2);
-
-            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, WorkerMode.ALL, Target.MICROSERVICE);
-            declaredQueues = retrieveQueues(TENANT2);
-            restQueue = declaredQueues.get(0);
-            // Assert.assertEquals(3, declaredQueues.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restQueue.getVhost());
-
-        } catch (CleaningRabbitMQVhostException | GettingRabbitMQQueueException e) {
-            Assert.fail("Failed to clean Tenant");
-        } catch (RabbitMQVhostException e) {
-            Assert.fail("Failed to add virtualhost " + TENANT1);
-        } finally {
-            try {
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            } catch (CleaningRabbitMQVhostException e) {
-                LOGGER.debug("Issue during cleaning the broker", e);
-            }
-        }
-    }
-
-    @Test
-    public void testDeclareQueueOneToOneExternal() {
-        try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT1);
-
-            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
-            List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
-            RestQueue restQueue = declaredQueues.get(0);
-            // Assert.assertEquals(4, declaredQueues.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restQueue.getVhost());
-
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT2);
-
-            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
-            declaredQueues = retrieveQueues(TENANT2);
-            restQueue = declaredQueues.get(0);
-            // Assert.assertEquals(4, declaredQueues.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restQueue.getVhost());
-
-        } catch (CleaningRabbitMQVhostException | GettingRabbitMQQueueException e) {
-            Assert.fail("Failed to clean Tenant");
-        } catch (RabbitMQVhostException e) {
-            Assert.fail("Failed to add virtualhost " + TENANT1);
-        } finally {
-            try {
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-            } catch (CleaningRabbitMQVhostException e) {
-                LOGGER.debug("Issue during cleaning the broker", e);
-            }
-        }
-    }
-
-    @Test
-    public void testDeclareQueueOneToManyExternal() {
-        try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT1));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT1);
-
-            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
-            RestQueue restQueue = declaredQueues.get(0);
-            // Assert.assertEquals(4, declaredQueues.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT1), restQueue.getVhost());
-
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT2));
-
-            rabbitVirtualHostAdmin.addVhost(TENANT2);
-
-            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            declaredQueues = retrieveQueues(TENANT2);
-            restQueue = declaredQueues.get(0);
-            // Assert.assertEquals(4, declaredQueues.size());
-            Assert.assertEquals(RabbitVirtualHostAdmin.getVhostName(TENANT2), restQueue.getVhost());
+            regardsAmqpAdmin.unbind();
 
         } catch (CleaningRabbitMQVhostException | GettingRabbitMQQueueException e) {
             Assert.fail("Failed to clean Tenant");
@@ -691,6 +363,33 @@ public class MultitenantAmqpAdminIT {
             throw new GettingRabbitMQQueueException("GET queues of " + pTenant2);
         }
         return response.getBody();
+    }
+
+    /**
+     * delete the virtual host if existing
+     *
+     * @param pTenant
+     *            tenant to clean
+     * @throws CleaningRabbitMQVhostException
+     *             any issues that could occur
+     */
+    private void cleanRabbit(String pTenant) throws CleaningRabbitMQVhostException {
+        final List<String> existingVhost = rabbitVirtualHostAdmin.retrieveVhostList();
+        final String vhostName = RabbitVirtualHostAdmin.getVhostName(pTenant);
+        if (existingVhost.stream().filter(vhost -> vhost.equals(vhostName)).findAny().isPresent()) {
+            final HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.add(HttpHeaders.AUTHORIZATION, rabbitVirtualHostAdmin.setBasic());
+            final HttpEntity<Void> request = new HttpEntity<>(headers);
+            final ResponseEntity<String> response = restTemplate
+                    .exchange(rabbitVirtualHostAdmin.getRabbitApiVhostEndpoint() + SLASH + vhostName, HttpMethod.DELETE,
+                              request, String.class);
+            final int statusValue = response.getStatusCodeValue();
+            // if successful or 404 then the broker is clean
+            if (!(rabbitVirtualHostAdmin.isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
+                throw new CleaningRabbitMQVhostException(response.getBody());
+            }
+        }
     }
 
 }

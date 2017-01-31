@@ -21,14 +21,17 @@ import static org.junit.Assert.assertNull;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
 /**
  * @author Gary Russell
+ * @author Marc Sordi
  *
  */
+@Ignore("This test context has to be set manually : queues, vhosts, ...")
 public class TxTest {
 
     @Test
@@ -64,36 +67,51 @@ public class TxTest {
         assertNotNull(o);
     }
 
-    @Ignore
     @Test
-    public void test() {
-        final AbstractApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
+    public void multiVhostTest() {
+        final AbstractApplicationContext context = new AnnotationConfigApplicationContext(VhostConfig.class);
 
         RabbitTemplate template = context.getBean(RabbitTemplate.class);
-        template.convertAndSend("", Config.QUEUE_NAME, "foo");
+
+        // Publishing event
+        SimpleResourceHolder.bind(template.getConnectionFactory(), VhostConfig.VHOST1);
+        template.convertAndSend("", VhostConfig.QUEUE_NAME, "foo");
+        SimpleResourceHolder.unbind(template.getConnectionFactory());
+
         Service service = context.getBean(Service.class);
         try {
+            SimpleResourceHolder.bind(template.getConnectionFactory(), VhostConfig.VHOST1);
+            // Polling event
             service.process(false);
         } catch (Exception e1) {
             System.out.println(e1.getMessage());
             Assert.fail();
+        } finally {
+            SimpleResourceHolder.unbind(template.getConnectionFactory());
         }
-        Object o = template.receiveAndConvert(Config.QUEUE_NAME);
+        // Trying to re-poll event
+        SimpleResourceHolder.bind(template.getConnectionFactory(), VhostConfig.VHOST1);
+        Object o = template.receiveAndConvert(VhostConfig.QUEUE_NAME);
+        SimpleResourceHolder.unbind(template.getConnectionFactory());
         assertNull(o);
-        o = template.receiveAndConvert("txTestQ2");
-        assertNotNull(o);
-        System.out.println("message " + o + " moved from Q1 to Q2");
 
-        template.convertAndSend("", "txTestQ1", "bar");
+        // Publishing another event
+        SimpleResourceHolder.bind(template.getConnectionFactory(), VhostConfig.VHOST1);
+        template.convertAndSend("", VhostConfig.QUEUE_NAME, "bar");
+        SimpleResourceHolder.unbind(template.getConnectionFactory());
         try {
+            SimpleResourceHolder.bind(template.getConnectionFactory(), VhostConfig.VHOST1);
+            // Polling event with exception
             service.process(true);
         } catch (Exception e) {
             System.out.println(e.getMessage());
+        } finally {
+            SimpleResourceHolder.unbind(template.getConnectionFactory());
         }
-        o = template.receiveAndConvert("txTestQ1");
+        // Trying to re-poll event
+        SimpleResourceHolder.bind(template.getConnectionFactory(), VhostConfig.VHOST1);
+        o = template.receiveAndConvert(VhostConfig.QUEUE_NAME);
+        SimpleResourceHolder.unbind(template.getConnectionFactory());
         assertNotNull(o);
-        System.out.println("message " + o + " still in Q1");
-        o = template.receiveAndConvert("txTestQ2");
-        assertNull(o);
     }
 }

@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.amqp.autoconfigure;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
@@ -15,7 +16,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestTemplate;
 
@@ -25,9 +25,8 @@ import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.amqp.Subscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.MultitenantAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.connection.RegardsSimpleRoutingConnectionFactory;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
@@ -74,12 +73,11 @@ public class AmqpAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(IRabbitVirtualHostAdmin.class)
-    public IRabbitVirtualHostAdmin iRabbitVirtualHostAdmin(
-            final RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
-            final RestTemplate pRestTemplate, final MultitenantAmqpAdmin pRegardsAmqpAdmin) {
+    public IRabbitVirtualHostAdmin rabbitVirtualHostAdmin(
+            final SimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory, final RestTemplate pRestTemplate) {
         return new RabbitVirtualHostAdmin(amqpProperties.getRabbitmqUserName(), amqpProperties.getRabbitmqPassword(),
                 amqpProperties.getAmqpManagementHost(), amqpProperties.getAmqpManagementPort(), pRestTemplate,
-                pSimpleRoutingConnectionFactory, pRegardsAmqpAdmin);
+                pSimpleRoutingConnectionFactory, amqpProperties.getRabbitmqAddresses());
     }
 
     @Bean
@@ -89,20 +87,22 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public MultitenantAmqpAdmin regardsAmqpAdmin() {
-        return new MultitenantAmqpAdmin(amqpProperties.getTypeIdentifier(), amqpProperties.getInstanceIdentifier(),
-                amqpProperties.getRabbitmqAddresses());
+    public RegardsAmqpAdmin regardsAmqpAdmin() {
+        return new RegardsAmqpAdmin(amqpProperties.getTypeIdentifier());
     }
 
     @Bean
-    public RabbitAdmin rabbitAdmin(final RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory) {
+    public RabbitAdmin rabbitAdmin(final SimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory) {
         return new RabbitAdmin(pSimpleRoutingConnectionFactory);
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(final RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
+    public RabbitTemplate rabbitTemplate(final SimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
             final Jackson2JsonMessageConverter pJackson2JsonMessageConverter) {
         final RabbitTemplate rabbitTemplate = new RabbitTemplate(pSimpleRoutingConnectionFactory);
+        // Enable transaction management : if action is executed in a transaction and transaction fails,
+        // message is return to the broker.
+        rabbitTemplate.setChannelTransacted(true);
         rabbitTemplate.setMessageConverter(pJackson2JsonMessageConverter);
         return rabbitTemplate;
     }
@@ -114,13 +114,13 @@ public class AmqpAutoConfiguration {
 
     @Bean
     public IPublisher publisher(final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
-            final RabbitTemplate pRabbitTemplate, final MultitenantAmqpAdmin pRegardsAmqpAdmin,
+            final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
             IRuntimeTenantResolver pThreadTenantResolver) {
         return new Publisher(pRabbitTemplate, pRegardsAmqpAdmin, pRabbitVirtualHostAdmin, pThreadTenantResolver);
     }
 
     @Bean
-    public Subscriber subscriber(final MultitenantAmqpAdmin pRegardsAmqpAdmin,
+    public Subscriber subscriber(final RegardsAmqpAdmin pRegardsAmqpAdmin,
             final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
             final Jackson2JsonMessageConverter pJackson2JsonMessageConverter, final ITenantResolver pTenantResolver) {
         return new Subscriber(pRegardsAmqpAdmin, pRabbitVirtualHostAdmin, pJackson2JsonMessageConverter,
@@ -128,20 +128,18 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public IPoller poller(final RabbitTemplate pRabbitTemplate, final MultitenantAmqpAdmin pRegardsAmqpAdmin,
+    public IPoller poller(final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
             final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
         return new Poller(pRabbitTemplate, pRegardsAmqpAdmin, pRabbitVirtualHostAdmin);
     }
 
     @Bean
-    public RegardsSimpleRoutingConnectionFactory regardsSimpleRoutingConnectionFactory() {
-        return new RegardsSimpleRoutingConnectionFactory();
+    public SimpleRoutingConnectionFactory simpleRoutingConnectionFactory() {
+        return new SimpleRoutingConnectionFactory();
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    public PlatformTransactionManager transactionManager() {
-        // return new RabbitTransactionManager(new CachingConnectionFactory());
-        return new RabbitTransactionManager(regardsSimpleRoutingConnectionFactory());
+    public RabbitTransactionManager transactionManager() {
+        return new RabbitTransactionManager(simpleRoutingConnectionFactory());
     }
 }

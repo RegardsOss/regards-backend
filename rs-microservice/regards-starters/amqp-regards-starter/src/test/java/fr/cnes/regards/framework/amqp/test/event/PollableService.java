@@ -22,22 +22,16 @@ public class PollableService<T extends IPollable> {
      */
     private final IPoller poller;
 
-    /**
-     * Crash tester
-     */
-    private final boolean crash;
-
-    public PollableService(IPoller pPoller, boolean crash) {
+    public PollableService(IPoller pPoller) {
         this.poller = pPoller;
-        this.crash = crash;
     }
 
-    @Transactional
-    public TenantWrapper<T> pollAndSave(String pTenant, Class<T> pEventType) {
+    @Transactional(rollbackFor = Exception.class)
+    public TenantWrapper<T> pollAndSave(String pTenant, Class<T> pEventType, boolean pCrash) throws PollableException {
         TenantWrapper<T> wrapper = poller.poll(pTenant, pEventType);
         // FIXME store in database not to lose event
-        if (crash) {
-            throw new UnsupportedOperationException();
+        if (pCrash) {
+            throw new PollableException("Poll fails!");
         } else {
             return wrapper;
         }

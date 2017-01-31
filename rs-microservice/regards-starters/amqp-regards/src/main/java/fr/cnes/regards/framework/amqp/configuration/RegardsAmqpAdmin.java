@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.amqp.configuration;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +15,6 @@ import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.amqp.event.WorkerMode;
  * @author Marc Sordi
  *
  */
-public class MultitenantAmqpAdmin {
+public class RegardsAmqpAdmin {
 
     /**
      * Default exchange name
@@ -40,18 +40,12 @@ public class MultitenantAmqpAdmin {
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(MultitenantAmqpAdmin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAdmin.class);
 
     /**
-     *
      * _
      */
     private static final String UNDERSCORE = "_";
-
-    /**
-     * :
-     */
-    private static final String COLON = ":";
 
     /**
      * Bean allowing us to declare queue, exchange, binding
@@ -67,49 +61,16 @@ public class MultitenantAmqpAdmin {
     /**
      * Microservice instance identifier
      */
-    private final String microserviceInstanceId;
+    private String microserviceInstanceId;
 
-    /**
-     * addresses configured to
-     */
-    private final String rabbitAddresses;
-
-    public MultitenantAmqpAdmin(String pMicroserviceTypeId, String pMicroserviceInstanceId, String pRabbitAddresses) {
+    public RegardsAmqpAdmin(String pMicroserviceTypeId) {
         super();
         microserviceTypeId = pMicroserviceTypeId;
-        microserviceInstanceId = pMicroserviceInstanceId;
-        rabbitAddresses = pRabbitAddresses;
-    }
-
-    /**
-     * @param pRabbitAddresses
-     *            addresses from configuration file
-     * @return {host, port}
-     */
-    protected String[] parseRabbitAddresses(String pRabbitAddresses) {
-        return pRabbitAddresses.split(COLON);
-    }
-
-    /**
-     * Create {@link ConnectionFactory} for tenant
-     *
-     * @param pTenant
-     *            tenant
-     * @return {@link ConnectionFactory}
-     */
-    public CachingConnectionFactory createConnectionFactory(String pTenant) {
-
-        LOGGER.info("Creating connection factory for : tenant {}", pTenant);
-
-        final String[] rabbitHostAndPort = parseRabbitAddresses(rabbitAddresses);
-        final CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHostAndPort[0],
-                Integer.parseInt(rabbitHostAndPort[1]));
-        connectionFactory.setVirtualHost(RabbitVirtualHostAdmin.getVhostName(pTenant));
-        return connectionFactory;
     }
 
     /**
      * Declare an exchange for each event so we use its name to instantiate it.
+     *
      *
      * @param pTenant
      *            tenant
@@ -138,11 +99,7 @@ public class MultitenantAmqpAdmin {
                 throw new EnumConstantNotPresentException(WorkerMode.class, pWorkerMode.name());
         }
 
-        // Declare exchange in related tenant
-        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(),
-                                  RabbitVirtualHostAdmin.getVhostName(pTenant));
         rabbitAdmin.declareExchange(exchange);
-        SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
         return exchange;
     }
 
@@ -201,17 +158,13 @@ public class MultitenantAmqpAdmin {
         args.put("x-max-priority", maxPriority);
         Queue queue = new Queue(getQueueName(pEventType, pWorkerMode, pTarget), true, false, false, args);
 
-        // Declare queue in related tenant
-        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(),
-                                  RabbitVirtualHostAdmin.getVhostName(pTenant));
         rabbitAdmin.declareQueue(queue);
-        SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
 
         return queue;
     }
 
     /**
-     * Computing queue name according {@link WorkerMode} and {@link Target}
+     * Computing queue name according to {@link WorkerMode} and {@link Target}
      *
      * @param pEvtClass
      *            event type
@@ -219,7 +172,7 @@ public class MultitenantAmqpAdmin {
      *            {@link WorkerMode}
      * @param pTarget
      *            {@link Target}
-     * @return queue name according {@link WorkerMode} and {@link Target}
+     * @return queue name according to {@link WorkerMode} and {@link Target}
      */
     public String getQueueName(Class<?> pEvtClass, WorkerMode pWorkerMode, Target pTarget) {
         StringBuilder builder = new StringBuilder();
@@ -236,7 +189,6 @@ public class MultitenantAmqpAdmin {
                 throw new EnumConstantNotPresentException(Target.class, pTarget.name());
         }
 
-        // TODO explain
         switch (pWorkerMode) {
             case SINGLE:
                 builder.append(pEvtClass.getName());
@@ -285,11 +237,7 @@ public class MultitenantAmqpAdmin {
                 throw new EnumConstantNotPresentException(WorkerMode.class, pWorkerMode.name());
         }
 
-        // Declare binding in related tenant
-        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(),
-                                  RabbitVirtualHostAdmin.getVhostName(pTenant));
         rabbitAdmin.declareBinding(binding);
-        SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
         return binding;
     }
 
@@ -316,8 +264,35 @@ public class MultitenantAmqpAdmin {
         return routingKey;
     }
 
+    /**
+     * Use a random UUID to identify instance at runtime
+     *
+     * @return instance identifier
+     */
     public String getMicroserviceInstanceId() {
+        if (microserviceInstanceId == null) {
+            microserviceInstanceId = UUID.randomUUID().toString();
+        }
         return microserviceInstanceId;
+    }
+
+    /**
+     * Bind {@link ConnectionFactory} to tenant (and vhost) before declaring an AMQP element
+     *
+     * @param pTenant
+     *            tenant to bind
+     */
+    public void bind(String pTenant) {
+        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(),
+                                  RabbitVirtualHostAdmin.getVhostName(pTenant));
+    }
+
+    /**
+     * Unbind {@link ConnectionFactory} from tenant (and vhost
+     *
+     */
+    public void unbind() {
+        SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
     }
 
 }

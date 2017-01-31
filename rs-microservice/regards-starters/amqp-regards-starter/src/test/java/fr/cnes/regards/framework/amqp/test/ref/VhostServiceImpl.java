@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Gary Russell
  *
  */
-public class ServiceImpl2 implements Service {
+public class VhostServiceImpl implements Service {
 
     @Autowired
     private RabbitTemplate template;
@@ -33,7 +33,7 @@ public class ServiceImpl2 implements Service {
     @Transactional(rollbackFor = Exception.class)
     // @Transactional
     public void process(boolean crash) throws Exception {
-        Object o = template.receiveAndConvert(Config.QUEUE_NAME);
+        Object o = template.receiveAndConvert(VhostConfig.QUEUE_NAME);
         Assert.assertNotNull(o);
         if (crash) {
             throw new FooEx("crash");
