@@ -5,14 +5,15 @@
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -50,6 +51,8 @@ public class PluginService implements IPluginService {
      * implementation class.
      */
     private Map<String, PluginMetaData> plugins;
+
+    private Map<Long, Object> instanciatePlugins = new HashMap<Long, Object>();
 
     /**
      * A constructor with the {@link IPluginConfigurationRepository}.
@@ -111,7 +114,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public PluginConfiguration savePluginConfiguration(final PluginConfiguration pPluginConfiguration)
-            throws PluginUtilsException {
+            throws ModuleException {
         // Check plugin configuration validity
         final StringBuilder msg = new StringBuilder("Impossible to save a plugin configuration");
 
@@ -135,42 +138,49 @@ public class PluginService implements IPluginService {
         }
 
         if (throwError) {
-            throw new PluginUtilsException(msg.toString());
+            throw new ModuleException(msg.toString());
         }
 
         return pluginConfRepository.save(pPluginConfiguration);
     }
 
     @Override
-    public PluginConfiguration getPluginConfiguration(final Long pId) throws PluginUtilsException {
-        // Get plugin configuration
-        PluginConfiguration conf;
-        try {
-            conf = pluginConfRepository.findOne(pId);
-        } catch (final NoSuchElementException e) {
-            throw new PluginUtilsException(String.format("Error while getting the plugin configuration <%s>.", pId), e);
+    public PluginConfiguration getPluginConfiguration(final Long pId) throws ModuleException {
+        PluginConfiguration conf = pluginConfRepository.findOne(pId);
+        if (conf == null) {
+            throw new EntityNotFoundException(pId, PluginConfiguration.class);
         }
-
         return conf;
     }
 
     @Override
-    public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPlugin)
-            throws EntityNotFoundException, PluginUtilsException {
+    public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPluginConf) throws ModuleException {
         // Check if plugin configuration exists
-        if (!pluginConfRepository.exists(pPlugin.getId())) {
-            throw new EntityNotFoundException(pPlugin.getId().toString(), PluginConfiguration.class);
+        if (!pluginConfRepository.exists(pPluginConf.getId())) {
+            throw new EntityNotFoundException(pPluginConf.getId().toString(), PluginConfiguration.class);
         }
-        return savePluginConfiguration(pPlugin);
+        PluginConfiguration newPLuginConfiguration = savePluginConfiguration(pPluginConf);
+
+        /**
+         * Remove the PluginConfiguratin from the map
+         */
+        instanciatePlugins.remove(pPluginConf.getId());
+
+        return newPLuginConfiguration;
     }
 
     @Override
-    public void deletePluginConfiguration(final Long pConfId) throws EntityNotFoundException {
+    public void deletePluginConfiguration(final Long pConfId) throws ModuleException {
         if (!pluginConfRepository.exists(pConfId)) {
             LOGGER.error(String.format("Error while deleting the plugin configuration <%s>.", pConfId));
             throw new EntityNotFoundException(pConfId.toString(), PluginConfiguration.class);
         }
         pluginConfRepository.delete(pConfId);
+
+        /**
+         * Remove the PluginConfiguratin from the map
+         */
+        instanciatePlugins.remove(pConfId);
     }
 
     @Override
@@ -195,16 +205,17 @@ public class PluginService implements IPluginService {
         return getLoadedPlugins().get(pPluginImplId);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final PluginParameter... pPluginParameters)
-            throws PluginUtilsException {
+            throws ModuleException {
 
         // Get plugins configuration for given type
         final List<PluginConfiguration> confs = getPluginConfigurationsByType(pInterfacePluginType);
 
         if (confs.isEmpty()) {
-            throw new PluginUtilsException(String.format("No plugin configuration defined for the type <%s>.",
-                                                         pInterfacePluginType.getName()));
+            throw new ModuleException(String.format("No plugin configuration defined for the type <%s>.",
+                                                    pInterfacePluginType.getName()));
         }
 
         // Search the configuration the most priority
@@ -220,29 +231,62 @@ public class PluginService implements IPluginService {
         T resultPlugin = null;
 
         if (configuration != null) {
-            resultPlugin = getPlugin(configuration.getId(), pPluginParameters);
+            if (!instanciatePlugins.containsKey(configuration.getId())
+                    || (instanciatePlugins.containsKey(configuration.getId()) && pPluginParameters.length > 0)) {
+
+                resultPlugin = getPlugin(configuration.getId(), pPluginParameters);
+
+                // Put in the map, only if there is no dynamic parameters
+                if (pPluginParameters.length == 0) {
+                    instanciatePlugins.put(configuration.getId(), resultPlugin);
+                }
+
+            } else {
+                resultPlugin = (T) instanciatePlugins.get(configuration.getId());
+            }
         }
 
         return resultPlugin;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
-            throws PluginUtilsException {
+            throws ModuleException {
+        // Get the plugin associated to this configuration
+        T resultPlugin;
 
-        // Get last saved plugin configuration
-        final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
+        if (!instanciatePlugins.containsKey(pPluginConfigurationId)
+                || (instanciatePlugins.containsKey(pPluginConfigurationId) && pPluginParameters.length > 0)) {
 
-        // Get the plugin implementation associated
-        final PluginMetaData pluginMetadata = getLoadedPlugins().get(pluginConf.getPluginId());
+            // Get last saved plugin configuration
+            final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
 
-        // Check if plugin version has changed since the last saved configuration of the plugin
-        if ((pluginConf.getVersion() != null) && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
-            LOGGER.warn(String.format("Plugin version <%s> changed since last configuration <%s>.",
-                                      pluginConf.getVersion(), pluginMetadata.getVersion()));
+            // Get the plugin implementation associated
+            final PluginMetaData pluginMetadata = getLoadedPlugins().get(pluginConf.getPluginId());
+
+            // Check if plugin version has changed since the last saved configuration of the plugin
+            if ((pluginConf.getVersion() != null) && !pluginConf.getVersion().equals(pluginMetadata.getVersion())) {
+                LOGGER.warn(String.format("Plugin version <%s> changed since last configuration <%s>.",
+                                          pluginConf.getVersion(), pluginMetadata.getVersion()));
+            }
+
+            try {
+                resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), pPluginParameters);
+            } catch (PluginUtilsException e) {
+                throw new ModuleException(e);
+            }
+
+            // Put in the map, only if there is no dynamic parameters
+            if (pPluginParameters.length == 0) {
+                instanciatePlugins.put(pPluginConfigurationId, resultPlugin);
+            }
+
+        } else {
+            resultPlugin = (T) instanciatePlugins.get(pPluginConfigurationId);
         }
 
-        return PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), pPluginParameters);
+        return resultPlugin;
     }
 
     private List<String> getPluginPackage() {

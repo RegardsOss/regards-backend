@@ -77,7 +77,6 @@ public class JpaUtilsTest {
             LOG.info(e.getMessage());
             Assert.fail(e.getMessage());
         }
-
     }
 
     /**

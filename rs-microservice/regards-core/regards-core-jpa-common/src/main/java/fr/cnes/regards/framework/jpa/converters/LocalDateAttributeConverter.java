@@ -7,6 +7,7 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
 /**
+ * This {@link AttributeConverter} allows to convert a {@link LocalDate} to persist with JPA.
  * 
  * @author Christophe Mertz
  *
@@ -16,11 +17,11 @@ public class LocalDateAttributeConverter implements AttributeConverter<LocalDate
 
     @Override
     public Date convertToDatabaseColumn(LocalDate pLocDate) {
-        return (pLocDate == null ? null : Date.valueOf(pLocDate));
+        return pLocDate == null ? null : Date.valueOf(pLocDate);
     }
 
     @Override
     public LocalDate convertToEntityAttribute(Date pSqlDate) {
-        return (pSqlDate == null ? null : pSqlDate.toLocalDate());
+        return pSqlDate == null ? null : pSqlDate.toLocalDate();
     }
 }

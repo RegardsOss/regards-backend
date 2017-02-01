@@ -44,12 +44,6 @@ public class PluginParameterType {
         this.paramType = pTypeEnum;
     }
 
-    /**
-     * The default constructor
-     */
-    public PluginParameterType() {
-    }
-
     public String getName() {
         return name;
     }

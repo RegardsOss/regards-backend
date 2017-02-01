@@ -7,10 +7,10 @@ package fr.cnes.regards.framework.modules.plugins.service;
 import java.util.List;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
@@ -61,11 +61,10 @@ public interface IPluginService {
      *
      * @return a plugin
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
-    <T> T getPlugin(Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
-            throws PluginUtilsException;
+    <T> T getPlugin(Long pPluginConfigurationId, final PluginParameter... pPluginParameters) throws ModuleException;
 
     /**
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
@@ -80,11 +79,11 @@ public interface IPluginService {
      *
      * @return a plugin
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
     <T> T getFirstPluginByType(Class<?> pInterfacePluginType, final PluginParameter... pPluginParameters)
-            throws PluginUtilsException;
+            throws ModuleException;
 
     /**
      *
@@ -103,10 +102,10 @@ public interface IPluginService {
      * @param pPluginConfiguration
      *            the plugin configuration to saved
      * @return the saved {@link PluginConfiguration}
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
-    PluginConfiguration savePluginConfiguration(PluginConfiguration pPluginConfiguration) throws PluginUtilsException;
+    PluginConfiguration savePluginConfiguration(PluginConfiguration pPluginConfiguration) throws ModuleException;
 
     /**
      *
@@ -118,7 +117,7 @@ public interface IPluginService {
      * @throws EntityNotFoundException
      *             Entity to delete does not exists
      */
-    void deletePluginConfiguration(Long pConfId) throws EntityNotFoundException;
+    void deletePluginConfiguration(Long pConfId) throws ModuleException;
 
     /**
      *
@@ -127,13 +126,10 @@ public interface IPluginService {
      * @param pPlugin
      *            the {@link PluginConfiguration} to update
      * @return the updated {@link PluginConfiguration}
-     * @throws PluginUtilsException
-     *             throw if an error occurs
-     * @throws EntityNotFoundException
+     * @throws ModuleException
      *             plugin to update does not exists
      */
-    PluginConfiguration updatePluginConfiguration(PluginConfiguration pPlugin)
-            throws PluginUtilsException, EntityNotFoundException;
+    PluginConfiguration updatePluginConfiguration(PluginConfiguration pPlugin) throws ModuleException;
 
     /**
      *
@@ -142,10 +138,10 @@ public interface IPluginService {
      * @param pId
      *            a plugin identifier
      * @return a specific configuration
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
-    PluginConfiguration getPluginConfiguration(Long pId) throws PluginUtilsException;
+    PluginConfiguration getPluginConfiguration(Long pId) throws ModuleException;
 
     /**
      *

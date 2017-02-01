@@ -10,6 +10,8 @@
 package fr.cnes.regards.framework.gson.adapters;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -70,12 +72,12 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     /**
      * Map discriminator value to its corresponding explicit type
      */
-    protected final Map<String, Class<?>> discriminatorToSubtype = new LinkedHashMap<>();
+    protected final Map<String, Class<?>> discriminatorToSubtype = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Map explicit type to its corresponding discriminator value
      */
-    protected final Map<Class<?>, String> subtypeToDiscriminator = new LinkedHashMap<>();
+    protected final Map<Class<?>, String> subtypeToDiscriminator = new HashMap<>();
 
     /**
      * Whether to refresh mapping after factory creation at runtime
@@ -256,7 +258,7 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
      * @param pSubtypeToDelegate
      *            mapping between sub type and adapter
      */
-    protected synchronized void doMapping(Gson pGson, Map<String, TypeAdapter<?>> pDiscriminatorToDelegate,
+    protected void doMapping(Gson pGson, Map<String, TypeAdapter<?>> pDiscriminatorToDelegate,
             Map<Class<?>, TypeAdapter<?>> pSubtypeToDelegate) {
 
         // Clear maps before computing delegation
@@ -266,11 +268,14 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
         /**
          * Register TypeAdapter delegation mapping from discriminator and type
          */
-        for (Map.Entry<String, Class<?>> mapping : discriminatorToSubtype.entrySet()) {
-            final TypeAdapter<?> delegate = pGson.getDelegateAdapter(this, TypeToken.get(mapping.getValue()));
-            pDiscriminatorToDelegate.put(mapping.getKey(), delegate);
-            pSubtypeToDelegate.put(mapping.getValue(), delegate);
+        synchronized (discriminatorToSubtype) {
+            for (Map.Entry<String, Class<?>> mapping : discriminatorToSubtype.entrySet()) {
+                final TypeAdapter<?> delegate = pGson.getDelegateAdapter(this, TypeToken.get(mapping.getValue()));
+                pDiscriminatorToDelegate.put(mapping.getKey(), delegate);
+                pSubtypeToDelegate.put(mapping.getValue(), delegate);
+            }
         }
+
     }
 
     /**

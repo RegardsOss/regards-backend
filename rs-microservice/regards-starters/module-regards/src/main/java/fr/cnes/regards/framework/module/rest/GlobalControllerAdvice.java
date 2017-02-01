@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityCorruptByNetworkException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotEmptyException;
@@ -198,6 +199,13 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ServerErrorResponse> accessDeniedException(final AccessDeniedException pException) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    @ExceptionHandler(EntityCorruptByNetworkException.class)
+    public ResponseEntity<ServerErrorResponse> entityCorruptByNetworkException(
+            final EntityCorruptByNetworkException pException) {
+        return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
+                .body(new ServerErrorResponse(pException.getMessage()));
     }
 
 }

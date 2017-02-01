@@ -7,6 +7,7 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
 /**
+ * This {@link AttributeConverter} allows to convert a {@link LocalDateTime} to persist with JPA.
  * 
  * @author Christophe Mertz
  *

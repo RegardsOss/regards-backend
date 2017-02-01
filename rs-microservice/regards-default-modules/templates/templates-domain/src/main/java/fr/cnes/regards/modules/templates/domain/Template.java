@@ -14,8 +14,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -25,8 +27,9 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  *
  * @author Xavier-Alexandre Brochard
  */
-@Entity(name = "T_TEMPLATE")
-@SequenceGenerator(name = "templateSequence", initialValue = 1, sequenceName = "SEQ_TEMPLATE")
+@Entity
+@Table(name = "t_template")
+@SequenceGenerator(name = "templateSequence", initialValue = 1, sequenceName = "seq_template")
 public class Template implements IIdentifiable<Long> {
 
     /**
@@ -47,7 +50,8 @@ public class Template implements IIdentifiable<Long> {
      * The template as a string for db persistence
      */
     @NotBlank
-    @Column(name="content", length=10240)
+    @Column(name = "content")
+    @Type(type = "text")
     private String content;
 
     /**
@@ -56,7 +60,7 @@ public class Template implements IIdentifiable<Long> {
      */
     @NotNull
     @ElementCollection
-    @CollectionTable(name = "TEMPLATE_DATA")
+    @CollectionTable(name = "t_template_data")
     private Map<String, String> dataStructure;
 
     /**
