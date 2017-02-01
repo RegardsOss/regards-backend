@@ -23,15 +23,14 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
 import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
@@ -152,7 +151,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
-        } catch (final PluginUtilsException e) {
+        } catch (final ModuleException e) {
             Assert.fail();
         }
 
@@ -180,7 +179,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
-        } catch (final PluginUtilsException e) {
+        } catch (final ModuleException e) {
             Assert.fail();
         }
 
@@ -221,7 +220,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
-        } catch (final PluginUtilsException e) {
+        } catch (final ModuleException e) {
             Assert.fail();
         }
 
@@ -250,7 +249,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
-        } catch (final PluginUtilsException e) {
+        } catch (final ModuleException e) {
             Assert.fail();
         }
 
@@ -272,7 +271,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
             aPluginConfiguration.setVersion(null);
-        } catch (final PluginUtilsException e) {
+        } catch (final ModuleException e) {
             Assert.fail();
         }
 
@@ -292,7 +291,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setPluginId("hello-toulouse");
-        } catch (final PluginUtilsException e) {
+        } catch (final ModuleException e) {
             Assert.fail();
         }
 
@@ -384,7 +383,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         try {
             aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
             aPluginConfiguration.setId(AN_ID);
-        } catch (final PluginUtilsException e) {
+        } catch (final ModuleException e) {
             Assert.fail();
         }
         final List<ResultMatcher> expectations = new ArrayList<>();

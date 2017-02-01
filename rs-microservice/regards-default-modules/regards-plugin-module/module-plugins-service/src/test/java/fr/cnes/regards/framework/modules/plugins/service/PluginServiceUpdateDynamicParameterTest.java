@@ -12,14 +12,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginDynamicValue;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
@@ -94,7 +93,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
             aPluginConfiguration.logParams();
 
-        } catch (PluginUtilsException | EntityNotFoundException e) {
+        } catch (ModuleException e) {
             Assert.fail();
         }
     }
@@ -145,7 +144,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
             aPluginConfiguration.logParams();
 
-        } catch (PluginUtilsException | EntityNotFoundException e) {
+        } catch (ModuleException e) {
             Assert.fail();
         }
     }

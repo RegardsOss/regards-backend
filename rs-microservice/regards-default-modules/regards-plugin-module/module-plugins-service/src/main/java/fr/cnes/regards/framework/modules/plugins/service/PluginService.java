@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -114,7 +114,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public PluginConfiguration savePluginConfiguration(final PluginConfiguration pPluginConfiguration)
-            throws PluginUtilsException {
+            throws ModuleException {
         // Check plugin configuration validity
         final StringBuilder msg = new StringBuilder("Impossible to save a plugin configuration");
 
@@ -138,28 +138,23 @@ public class PluginService implements IPluginService {
         }
 
         if (throwError) {
-            throw new PluginUtilsException(msg.toString());
+            throw new ModuleException(msg.toString());
         }
 
         return pluginConfRepository.save(pPluginConfiguration);
     }
 
     @Override
-    public PluginConfiguration getPluginConfiguration(final Long pId) throws PluginUtilsException {
-        // Get plugin configuration
-        PluginConfiguration conf;
-        try {
-            conf = pluginConfRepository.findOne(pId);
-        } catch (final NoSuchElementException e) {
-            throw new PluginUtilsException(String.format("Error while getting the plugin configuration <%s>.", pId), e);
+    public PluginConfiguration getPluginConfiguration(final Long pId) throws ModuleException {
+        PluginConfiguration conf = pluginConfRepository.findOne(pId);
+        if (conf == null) {
+            throw new EntityNotFoundException(pId, PluginConfiguration.class);
         }
-
         return conf;
     }
 
     @Override
-    public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPluginConf)
-            throws EntityNotFoundException, PluginUtilsException {
+    public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPluginConf) throws ModuleException {
         // Check if plugin configuration exists
         if (!pluginConfRepository.exists(pPluginConf.getId())) {
             throw new EntityNotFoundException(pPluginConf.getId().toString(), PluginConfiguration.class);
@@ -175,7 +170,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public void deletePluginConfiguration(final Long pConfId) throws EntityNotFoundException {
+    public void deletePluginConfiguration(final Long pConfId) throws ModuleException {
         if (!pluginConfRepository.exists(pConfId)) {
             LOGGER.error(String.format("Error while deleting the plugin configuration <%s>.", pConfId));
             throw new EntityNotFoundException(pConfId.toString(), PluginConfiguration.class);
@@ -213,14 +208,14 @@ public class PluginService implements IPluginService {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final PluginParameter... pPluginParameters)
-            throws PluginUtilsException {
+            throws ModuleException {
 
         // Get plugins configuration for given type
         final List<PluginConfiguration> confs = getPluginConfigurationsByType(pInterfacePluginType);
 
         if (confs.isEmpty()) {
-            throw new PluginUtilsException(String.format("No plugin configuration defined for the type <%s>.",
-                                                         pInterfacePluginType.getName()));
+            throw new ModuleException(String.format("No plugin configuration defined for the type <%s>.",
+                                                    pInterfacePluginType.getName()));
         }
 
         // Search the configuration the most priority
@@ -257,7 +252,7 @@ public class PluginService implements IPluginService {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
-            throws PluginUtilsException {
+            throws ModuleException {
         // Get the plugin associated to this configuration
         T resultPlugin = null;
 
@@ -276,7 +271,11 @@ public class PluginService implements IPluginService {
                                           pluginConf.getVersion(), pluginMetadata.getVersion()));
             }
 
-            resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), pPluginParameters);
+            try {
+                resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), pPluginParameters);
+            } catch (PluginUtilsException e) {
+                throw new ModuleException(e);
+            }
 
             // Put in the map, only if there is no dynamic parameters
             if (pPluginParameters.length == 0) {

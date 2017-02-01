@@ -6,15 +6,13 @@ package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.dao.EmptyResultDataAccessException;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -23,7 +21,6 @@ import fr.cnes.regards.framework.plugins.INotInterfacePlugin;
 import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
@@ -58,30 +55,28 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Get an unsaved {@link PluginConfiguration}.
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
-    @Test(expected = PluginUtilsException.class)
-    public void getAPluginConfigurationUnknown() throws PluginUtilsException {
-        Mockito.when(pluginConfRepositoryMocked.findOne(AN_ID))
-                .thenThrow(new NoSuchElementException("get an unknown configuration"));
+    @Test(expected = ModuleException.class)
+    public void getAPluginConfigurationUnknown() throws ModuleException {
+        Mockito.when(pluginConfRepositoryMocked.findOne(AN_ID)).thenReturn(null);
 
-        pluginServiceMocked.getPluginConfiguration(AN_ID);
+        PluginConfiguration plg = pluginServiceMocked.getPluginConfiguration(AN_ID);
+        Assert.assertNull(plg);
     }
 
     /**
      * Delete an unsaved {@link PluginConfiguration}.
      *
-     * @throws PluginUtilsException
-     *             throw if an error occurs
-     * @throws EntityNotFoundException
+     * @throws ModuleException
      *             throw if an error occurs
      */
-    @Test(expected = EntityNotFoundException.class)
-    public void deleteAPluginConfigurationUnknown() throws PluginUtilsException, EntityNotFoundException {
+    @Test(expected = ModuleException.class)
+    public void deleteAPluginConfigurationUnknown() throws ModuleException {
         final Long aPluginId = 56789L;
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginId)).thenReturn(false);
-        Mockito.doThrow(EmptyResultDataAccessException.class).when(pluginConfRepositoryMocked).delete(aPluginId);
+        Mockito.doThrow(ModuleException.class).when(pluginConfRepositoryMocked).delete(aPluginId);
         pluginServiceMocked.deletePluginConfiguration(aPluginId);
         Assert.fail("There must be an exception thrown");
     }
@@ -89,11 +84,11 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Save a null {@link PluginConfiguration}.
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
-    @Test(expected = PluginUtilsException.class)
-    public void saveANullPluginConfiguration() throws PluginUtilsException {
+    @Test(expected = ModuleException.class)
+    public void saveANullPluginConfiguration() throws ModuleException {
         pluginServiceMocked.savePluginConfiguration(null);
         Assert.fail();
     }
@@ -101,11 +96,11 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Save a {@link PluginConfiguration} without pluginId attribute.
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
-    @Test(expected = PluginUtilsException.class)
-    public void saveAPluginConfigurationWithoutPluginId() throws PluginUtilsException {
+    @Test(expected = ModuleException.class)
+    public void saveAPluginConfigurationWithoutPluginId() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setPluginId(null);
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
@@ -115,11 +110,11 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Save a {@link PluginConfiguration} without priorityOrder attribute.
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
-    @Test(expected = PluginUtilsException.class)
-    public void saveAPluginConfigurationWithoutPriorityOrder() throws PluginUtilsException {
+    @Test(expected = ModuleException.class)
+    public void saveAPluginConfigurationWithoutPriorityOrder() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setPriorityOrder(null);
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
@@ -129,11 +124,11 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Save a {@link PluginConfiguration} without priorityOrder attribute.
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
-    @Test(expected = PluginUtilsException.class)
-    public void saveAPluginConfigurationWithoutVersion() throws PluginUtilsException {
+    @Test(expected = ModuleException.class)
+    public void saveAPluginConfigurationWithoutVersion() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setVersion(null);
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
@@ -143,10 +138,10 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Save a {@link PluginConfiguration} without parameters.
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
-    public void saveAPluginConfigurationWithoutParameters() throws PluginUtilsException {
+    public void saveAPluginConfigurationWithoutParameters() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
         final PluginConfiguration savedPluginConfiguration = pluginServiceMocked
                 .savePluginConfiguration(aPluginConfiguration);
@@ -161,13 +156,11 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Update an unsaved {@link PluginConfiguration}
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
-     * @throws EntityNotFoundException
-     *             test error
      */
-    @Test(expected = EntityNotFoundException.class)
-    public void updateAPluginConfigurationUnknown() throws PluginUtilsException, EntityNotFoundException {
+    @Test(expected = ModuleException.class)
+    public void updateAPluginConfigurationUnknown() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         final Long aPluginId = 999L;
         aPluginConfiguration.setId(aPluginId);
@@ -183,9 +176,9 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         Assert.assertNull(pluginMetaData);
     }
 
-    @Test(expected = PluginUtilsException.class)
-    public void getFirstPluginByTypeNullPluginConf() throws PluginUtilsException {
-        pluginServiceMocked.getFirstPluginByType(INotInterfacePlugin.class, null);
+    @Test(expected = ModuleException.class)
+    public void getFirstPluginByTypeNullPluginConf() throws ModuleException {
+        pluginServiceMocked.getFirstPluginByType(INotInterfacePlugin.class);
         Assert.fail();
     }
 
@@ -193,11 +186,11 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
      * parameter.
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
     @Test
-    public void getAPluginWithBadVersionConfiguration() throws PluginUtilsException {
+    public void getAPluginWithBadVersionConfiguration() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setVersion(BLUE);
@@ -219,11 +212,12 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Error to get a plugin with a configuration that is not the most priority.
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
+     * 
      */
-    @Test(expected = PluginUtilsException.class)
-    public void getFirstPluginTheMostPrioritaryError() throws PluginUtilsException {
+    @Test(expected = ModuleException.class)
+    public void getFirstPluginTheMostPrioritaryError() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
 
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
@@ -240,8 +234,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findOne(bPluginConfiguration.getId()))
-                .thenThrow(new NoSuchElementException(""));
+        Mockito.when(pluginConfRepositoryMocked.findOne(bPluginConfiguration.getId())).thenReturn(null);
 
         pluginServiceMocked.addPluginPackage("fr.cnes.regards.plugins.utils");
         pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.plugins.utils");
@@ -254,13 +247,13 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Error to get a plugin with a configuration that is not active.
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      */
-    @Test(expected = PluginUtilsException.class)
+    @Test(expected = ModuleException.class)
     @Requirement("REGARDS_DSL_CMP_PLG_100")
     @Purpose("Unable to load a plugin with a no active configuration")
-    public void getPluginNotActiveConfiguration() throws PluginUtilsException {
+    public void getPluginNotActiveConfiguration() throws ModuleException {
 
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
         aPluginConfiguration.setIsActive(Boolean.FALSE);
@@ -268,7 +261,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
-        pluginServiceMocked.getPlugin(AN_ID, null);
+        pluginServiceMocked.getPlugin(AN_ID);
 
         Assert.fail();
     }
