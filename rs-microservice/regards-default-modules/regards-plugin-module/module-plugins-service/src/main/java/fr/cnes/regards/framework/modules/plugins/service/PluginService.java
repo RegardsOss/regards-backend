@@ -254,7 +254,7 @@ public class PluginService implements IPluginService {
     public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
             throws ModuleException {
         // Get the plugin associated to this configuration
-        T resultPlugin = null;
+        T resultPlugin;
 
         if (!instanciatePlugins.containsKey(pPluginConfigurationId)
                 || (instanciatePlugins.containsKey(pPluginConfigurationId) && pPluginParameters.length > 0)) {
