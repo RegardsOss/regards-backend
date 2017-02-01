@@ -40,6 +40,14 @@ public interface IRabbitVirtualHostAdmin {
     void addVhost(String pTenant);
 
     /**
+     * DELETE Request to /api/vhost/{vhostName}
+     * 
+     * @param pTenant
+     *            name of the tenant related to the Vhost you want to remove
+     */
+    void removeVhost(String pTenant);
+
+    /**
      * Retrieve {@link ConnectionFactory} for tenant
      *
      * @param pTenant

@@ -57,6 +57,10 @@ public class AmqpProperties {
         return amqpMicroserviceProperties.getTypeIdentifier();
     }
 
+    public String getInstanceIdentifier() {
+        return amqpMicroserviceProperties.getInstanceIdentifier();
+    }
+
     public String getAmqpManagementHost() {
         return amqpManagementProperties.getHost();
     }

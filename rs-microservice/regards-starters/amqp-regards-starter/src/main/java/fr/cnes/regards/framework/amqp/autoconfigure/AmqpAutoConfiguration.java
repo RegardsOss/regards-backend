@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.amqp.Subscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.MultitenantSimpleRoutingConnectionFactory;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -74,7 +75,8 @@ public class AmqpAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(IRabbitVirtualHostAdmin.class)
     public IRabbitVirtualHostAdmin rabbitVirtualHostAdmin(
-            final SimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory, final RestTemplate pRestTemplate) {
+            final MultitenantSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
+            final RestTemplate pRestTemplate) {
         return new RabbitVirtualHostAdmin(amqpProperties.getRabbitmqUserName(), amqpProperties.getRabbitmqPassword(),
                 amqpProperties.getAmqpManagementHost(), amqpProperties.getAmqpManagementPort(), pRestTemplate,
                 pSimpleRoutingConnectionFactory, amqpProperties.getRabbitmqAddresses());
@@ -88,7 +90,7 @@ public class AmqpAutoConfiguration {
 
     @Bean
     public RegardsAmqpAdmin regardsAmqpAdmin() {
-        return new RegardsAmqpAdmin(amqpProperties.getTypeIdentifier());
+        return new RegardsAmqpAdmin(amqpProperties.getTypeIdentifier(), amqpProperties.getInstanceIdentifier());
     }
 
     @Bean
@@ -134,8 +136,8 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public SimpleRoutingConnectionFactory simpleRoutingConnectionFactory() {
-        return new SimpleRoutingConnectionFactory();
+    public MultitenantSimpleRoutingConnectionFactory simpleRoutingConnectionFactory() {
+        return new MultitenantSimpleRoutingConnectionFactory();
     }
 
     @Bean

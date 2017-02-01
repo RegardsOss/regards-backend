@@ -5,7 +5,6 @@ package fr.cnes.regards.framework.amqp.configuration;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,11 +60,12 @@ public class RegardsAmqpAdmin {
     /**
      * Microservice instance identifier
      */
-    private String microserviceInstanceId;
+    private final String microserviceInstanceId;
 
-    public RegardsAmqpAdmin(String pMicroserviceTypeId) {
+    public RegardsAmqpAdmin(String pMicroserviceTypeId, String pMicroserviceInstanceId) {
         super();
         microserviceTypeId = pMicroserviceTypeId;
+        microserviceInstanceId = pMicroserviceInstanceId;
     }
 
     /**
@@ -196,7 +196,7 @@ public class RegardsAmqpAdmin {
             case ALL:
                 builder.append(pEvtClass.getName());
                 builder.append(UNDERSCORE);
-                builder.append(getMicroserviceInstanceId());
+                builder.append(microserviceInstanceId);
                 break;
             default:
                 throw new EnumConstantNotPresentException(WorkerMode.class, pWorkerMode.name());
@@ -265,18 +265,6 @@ public class RegardsAmqpAdmin {
     }
 
     /**
-     * Use a random UUID to identify instance at runtime
-     *
-     * @return instance identifier
-     */
-    public String getMicroserviceInstanceId() {
-        if (microserviceInstanceId == null) {
-            microserviceInstanceId = UUID.randomUUID().toString();
-        }
-        return microserviceInstanceId;
-    }
-
-    /**
      * Bind {@link ConnectionFactory} to tenant (and vhost) before declaring an AMQP element
      *
      * @param pTenant
@@ -293,6 +281,14 @@ public class RegardsAmqpAdmin {
      */
     public void unbind() {
         SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
+    }
+
+    public String getMicroserviceTypeId() {
+        return microserviceTypeId;
+    }
+
+    public String getMicroserviceInstanceId() {
+        return microserviceInstanceId;
     }
 
 }

@@ -6,8 +6,7 @@ package fr.cnes.regards.framework.amqp.test;
  * LICENSE_PLACEHOLDER
  */
 
-import java.util.List;
-
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -15,30 +14,22 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
 
 import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -57,32 +48,22 @@ public class PublisherIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(PublisherIT.class);
 
     /**
-     * default message error
-     */
-    private static final String PUBLISH_TEST_FAILED = "Publish Test Failed";
-
-    /**
-     * \/
-     */
-    private static final String SLASH = "/";
-
-    /**
      * Static default tenant
      */
     @Value("${regards.tenant}")
     private String tenant;
 
     /**
-     * bean used to clean the broker after tests
-     */
-    @Autowired
-    private RestTemplate restTemplate;
-
-    /**
      * configuration
      */
     @Autowired
     private RegardsAmqpAdmin amqpConfiguration;
+
+    /**
+     * Bean allowing us to declare queue, exchange, binding
+     */
+    @Autowired
+    private RabbitAdmin rabbitAdmin;
 
     /**
      * bean used to publish message to the message broker and which is tested here
@@ -105,13 +86,16 @@ public class PublisherIT {
     /**
      * create and start a message listener to receive the published event
      *
-     * @throws RabbitMQVhostException
-     *             represent any error that could occur while handling RabbitMQ Vhosts
      */
     @Before
-    public void init() throws RabbitMQVhostException {
+    public void init() {
         Assume.assumeTrue(rabbitVirtualHostAdmin.brokerRunning());
         rabbitVirtualHostAdmin.addVhost(tenant);
+    }
+
+    @After
+    public void clean() {
+        rabbitVirtualHostAdmin.removeVhost(tenant);
     }
 
     /**
@@ -121,13 +105,15 @@ public class PublisherIT {
     @Requirement("REGARDS_DSL_CMP_ARC_030")
     @Test
     public void testPublishOneToManyExternal() {
+        Queue queue;
+        Exchange exchange;
+        Binding binding;
         try {
             amqpConfiguration.bind(tenant);
 
-            final Exchange exchange = amqpConfiguration.declareExchange(tenant, TestEvent.class, WorkerMode.ALL,
-                                                                        Target.ALL);
-            final Queue queue = amqpConfiguration.declareQueue(tenant, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            amqpConfiguration.declareBinding(tenant, queue, exchange, WorkerMode.ALL);
+            exchange = amqpConfiguration.declareExchange(tenant, TestEvent.class, WorkerMode.ALL, Target.ALL);
+            queue = amqpConfiguration.declareQueue(tenant, TestEvent.class, WorkerMode.ALL, Target.ALL);
+            binding = amqpConfiguration.declareBinding(tenant, queue, exchange, WorkerMode.ALL);
 
         } finally {
             amqpConfiguration.unbind();
@@ -151,10 +137,14 @@ public class PublisherIT {
             amqpConfiguration.unbind();
         }
 
+        // Clean
         try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(tenant));
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
+            amqpConfiguration.bind(tenant);
+            rabbitAdmin.removeBinding(binding);
+            rabbitAdmin.deleteQueue(queue.getName());
+            rabbitAdmin.deleteExchange(exchange.getName());
+        } finally {
+            amqpConfiguration.unbind();
         }
     }
 
@@ -165,13 +155,15 @@ public class PublisherIT {
     @Purpose("Send a message to the message broker using the publish client with priority")
     @Test
     public void testPublishPriorityExternal() {
+        Queue queue;
+        Exchange exchange;
+        Binding binding;
         try {
             amqpConfiguration.bind(tenant);
 
-            final Exchange exchange = amqpConfiguration.declareExchange(tenant, TestEvent.class, WorkerMode.SINGLE,
-                                                                        Target.ALL);
-            final Queue queue = amqpConfiguration.declareQueue(tenant, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
-            amqpConfiguration.declareBinding(tenant, queue, exchange, WorkerMode.SINGLE);
+            exchange = amqpConfiguration.declareExchange(tenant, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
+            queue = amqpConfiguration.declareQueue(tenant, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
+            binding = amqpConfiguration.declareBinding(tenant, queue, exchange, WorkerMode.SINGLE);
         } finally {
             amqpConfiguration.unbind();
         }
@@ -202,36 +194,14 @@ public class PublisherIT {
             amqpConfiguration.unbind();
         }
 
+        // Clean
         try {
-            cleanRabbit(RabbitVirtualHostAdmin.getVhostName(tenant));
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
-        }
-    }
-
-    /**
-     * delete the virtual host if existing
-     *
-     * @param pTenant1
-     *            tenant to clean
-     * @throws CleaningRabbitMQVhostException
-     *             any issues that could occur
-     */
-    private void cleanRabbit(String pTenant1) throws CleaningRabbitMQVhostException {
-        final List<String> existingVhost = rabbitVirtualHostAdmin.retrieveVhostList();
-        if (existingVhost.stream().filter(vhost -> vhost.equals(pTenant1)).findAny().isPresent()) {
-            final HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.add(HttpHeaders.AUTHORIZATION, rabbitVirtualHostAdmin.setBasic());
-            final HttpEntity<Void> request = new HttpEntity<>(headers);
-            final ResponseEntity<String> response = restTemplate
-                    .exchange(rabbitVirtualHostAdmin.getRabbitApiVhostEndpoint() + SLASH + pTenant1, HttpMethod.DELETE,
-                              request, String.class);
-            final int statusValue = response.getStatusCodeValue();
-            // if successful or 404 then the broker is clean
-            if (!(rabbitVirtualHostAdmin.isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
-                throw new CleaningRabbitMQVhostException(response.getBody());
-            }
+            amqpConfiguration.bind(tenant);
+            rabbitAdmin.removeBinding(binding);
+            rabbitAdmin.deleteQueue(queue.getName());
+            rabbitAdmin.deleteExchange(exchange.getName());
+        } finally {
+            amqpConfiguration.unbind();
         }
     }
 }

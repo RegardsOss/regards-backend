@@ -3,8 +3,12 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -24,9 +28,15 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * @author svissier
+ * @author Marc Sordi
  *
  */
 public class Subscriber implements ISubscriber {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(Subscriber.class);
 
     /**
      * method from {@link fr.cnes.regards.framework.amqp.domain.IHandler}
@@ -53,9 +63,15 @@ public class Subscriber implements ISubscriber {
      */
     private final ITenantResolver tenantResolver;
 
+    /**
+     * Reference to running listeners by event and tenant
+     */
+    private final Map<Class<?>, Map<String, SimpleMessageListenerContainer>> listeners;
+
     public Subscriber(final RegardsAmqpAdmin pRegardsAmqpAdmin, final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
             final Jackson2JsonMessageConverter pJackson2JsonMessageConverter, final ITenantResolver pTenantResolver) {
         super();
+        listeners = new HashMap<>();
         regardsAmqpAdmin = pRegardsAmqpAdmin;
         rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
         jackson2JsonMessageConverter = pJackson2JsonMessageConverter;
@@ -65,6 +81,23 @@ public class Subscriber implements ISubscriber {
     @Override
     public <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver) {
         subscribeTo(pEvent, pReceiver, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEvent));
+    }
+
+    @Override
+    public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent) {
+
+        LOGGER.info("Stopping listener for event {}", pEvent.getName());
+
+        Set<String> tenants = tenantResolver.getAllTenants();
+        Map<String, SimpleMessageListenerContainer> tenantContainers = listeners.get(pEvent);
+        if (tenantContainers != null) {
+            for (final String tenant : tenants) {
+                SimpleMessageListenerContainer container = tenantContainers.get(tenant);
+                if (container != null) {
+                    container.stop();
+                }
+            }
+        }
     }
 
     /**
@@ -84,8 +117,15 @@ public class Subscriber implements ISubscriber {
      */
     public final <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver, final WorkerMode pWorkerMode,
             final Target pTarget) {
-        final Set<String> tenants = tenantResolver.getAllTenants();
+
+        LOGGER.info("Subscribing to event {} with target {} and mode {}", pEvt.getName(), pTarget, pWorkerMode);
+
+        Set<String> tenants = tenantResolver.getAllTenants();
         jackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
+
+        Map<String, SimpleMessageListenerContainer> tenantContainers = new HashMap<>();
+        listeners.put(pEvt, tenantContainers);
+
         for (final String tenant : tenants) {
             // CHECKSTYLE:OFF
             final SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(pEvt, tenant,
@@ -93,8 +133,10 @@ public class Subscriber implements ISubscriber {
                                                                                                       pReceiver,
                                                                                                       pWorkerMode,
                                                                                                       pTarget);
+            tenantContainers.put(tenant, container);
+
             // CHECKSTYLE:ON
-            startSimpleMessageListenerContainer(container);
+            container.start();
         }
     }
 
@@ -142,14 +184,5 @@ public class Subscriber implements ISubscriber {
         container.setMessageListener(messageListener);
         container.addQueues(queue);
         return container;
-    }
-
-    /**
-     *
-     * @param pContainer
-     *            container to start
-     */
-    public void startSimpleMessageListenerContainer(final SimpleMessageListenerContainer pContainer) {
-        pContainer.start();
     }
 }

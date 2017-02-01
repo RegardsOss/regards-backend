@@ -28,13 +28,18 @@ public class MultitenantAmqpAdminTests {
     private static final String TYPE_IDENTIFIER = "TypeIdentifier";
 
     /**
+     * sample instance id
+     */
+    private static final String INSTANCE_IDENTIFIER = "InstanceIdentifier";
+
+    /**
      * Regard AMQP admin
      */
     private static RegardsAmqpAdmin regardsAmqpAdmin;
 
     @BeforeClass
     public static void init() {
-        regardsAmqpAdmin = new RegardsAmqpAdmin(TYPE_IDENTIFIER);
+        regardsAmqpAdmin = new RegardsAmqpAdmin(TYPE_IDENTIFIER, INSTANCE_IDENTIFIER);
     }
 
     /**
@@ -67,11 +72,10 @@ public class MultitenantAmqpAdminTests {
         Assert.assertEquals(expectedOneToOne,
                             regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.SINGLE, Target.MICROSERVICE));
 
-        String expectedOneToMany = stringClass.getName() + UNDERSCORE + regardsAmqpAdmin.getMicroserviceInstanceId();
+        String expectedOneToMany = stringClass.getName() + UNDERSCORE + INSTANCE_IDENTIFIER;
         Assert.assertEquals(expectedOneToMany, regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.ALL, Target.ALL));
 
-        expectedOneToMany = TYPE_IDENTIFIER + UNDERSCORE + stringClass.getName() + UNDERSCORE
-                + regardsAmqpAdmin.getMicroserviceInstanceId();
+        expectedOneToMany = TYPE_IDENTIFIER + UNDERSCORE + stringClass.getName() + UNDERSCORE + INSTANCE_IDENTIFIER;
         Assert.assertEquals(expectedOneToMany,
                             regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.ALL, Target.MICROSERVICE));
 

@@ -17,10 +17,16 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AmqpMicroserviceProperties {
 
     /**
-     * type identifier unique to identify exchanges/queue related to only one type of microservices
+     * Microservice identifier unique to identify exchanges/queue related to only one type of microservices
      */
     @NotNull
     private String typeIdentifier;
+
+    /**
+     * Microservice instance identifier
+     */
+    @NotNull
+    private String instanceIdentifier;
 
     public String getTypeIdentifier() {
         return typeIdentifier;
@@ -28,5 +34,13 @@ public class AmqpMicroserviceProperties {
 
     public void setTypeIdentifier(String pTypeIdentifier) {
         typeIdentifier = pTypeIdentifier;
+    }
+
+    public String getInstanceIdentifier() {
+        return instanceIdentifier;
+    }
+
+    public void setInstanceIdentifier(String pInstanceIdentifier) {
+        instanceIdentifier = pInstanceIdentifier;
     }
 }

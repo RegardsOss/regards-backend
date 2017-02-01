@@ -15,11 +15,10 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
  * @author Marc Sordi
  * @since 1.0-SNAPSHOT
  */
-@FunctionalInterface
 public interface ISubscriber {
 
     /**
-     * Subscribe to an {@link ISubscribable} event
+     * Subscribe to this {@link ISubscribable} event
      *
      * @param <T>
      *            {@link ISubscribable} event
@@ -30,4 +29,13 @@ public interface ISubscriber {
      */
     <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver);
 
+    /**
+     * Unsubscribte from this {@link ISubscribable} event.
+     * 
+     * @param <T>
+     *            {@link ISubscribable} event
+     * @param pEvent
+     *            {@link ISubscribable} event
+     */
+    <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent);
 }
