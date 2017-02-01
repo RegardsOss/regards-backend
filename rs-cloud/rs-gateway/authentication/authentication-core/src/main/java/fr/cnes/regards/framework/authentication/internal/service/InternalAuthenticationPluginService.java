@@ -12,11 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
@@ -57,40 +55,25 @@ public class InternalAuthenticationPluginService implements IInternalAuthenticat
 
     @Override
     public PluginConfiguration retrieveIdentityProviderPlugin(final Long pPluginConfigurationId)
-            throws EntityNotFoundException {
-        try {
-            return pluginService.getPluginConfiguration(pPluginConfigurationId);
-        } catch (final PluginUtilsException e) {
-            LOG.error(e.getMessage(), e);
-            throw new EntityNotFoundException(pPluginConfigurationId.toString(), PluginConfiguration.class);
-        }
+            throws ModuleException {
+
+        return pluginService.getPluginConfiguration(pPluginConfigurationId);
     }
 
     @Override
     public PluginConfiguration createIdentityProviderPlugin(final PluginConfiguration pPluginConfigurationToCreate)
             throws ModuleException {
-        try {
-            return pluginService.savePluginConfiguration(pPluginConfigurationToCreate);
-        } catch (final PluginUtilsException e) {
-            LOG.error(e.getMessage(), e);
-            throw new ModuleException(e.getMessage());
-        }
-
+        return pluginService.savePluginConfiguration(pPluginConfigurationToCreate);
     }
 
     @Override
     public PluginConfiguration updateIdentityProviderPlugin(final PluginConfiguration pPluginConfigurationToUpdate)
             throws ModuleException {
-        try {
-            return pluginService.updatePluginConfiguration(pPluginConfigurationToUpdate);
-        } catch (final PluginUtilsException e) {
-            LOG.error(e.getMessage(), e);
-            throw new ModuleException(e.getMessage());
-        }
+        return pluginService.updatePluginConfiguration(pPluginConfigurationToUpdate);
     }
 
     @Override
-    public void deleteIdentityProviderPlugin(final Long pPluginConfigurationId) throws EntityNotFoundException {
+    public void deleteIdentityProviderPlugin(final Long pPluginConfigurationId) throws ModuleException {
         pluginService.deletePluginConfiguration(pPluginConfigurationId);
     }
 

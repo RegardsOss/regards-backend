@@ -31,6 +31,7 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugi
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -43,7 +44,6 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
@@ -206,7 +206,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         while (it.hasNext() && ((token == null) || !token.isAuthenticated())) {
             try {
                 token = doPluginAuthentication(pluginService.getPlugin(it.next().getId()), pLogin, pPassword, pScope);
-            } catch (final PluginUtilsException e) {
+            } catch (final ModuleException e) {
                 LOG.error(e.getMessage(), e);
             }
         }

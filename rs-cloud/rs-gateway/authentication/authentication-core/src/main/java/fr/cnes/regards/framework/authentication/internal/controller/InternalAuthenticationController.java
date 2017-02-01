@@ -131,7 +131,7 @@ public class InternalAuthenticationController implements IResourceController<Plu
             } else {
                 response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleException e) {
             LOG.error(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

@@ -5,7 +5,6 @@ package fr.cnes.regards.framework.authentication.internal.service;
 
 import java.util.List;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
@@ -36,11 +35,11 @@ public interface IInternalAuthenticationPluginsService {
      * @param pPluginConfigurationId
      *            PluginConfiguration identifier to retrieve
      * @return PluginConfiguration
-     * @throws EntityNotFoundException
+     * @throws ModuleException
      *             Plugin does not exists
      * @since 1.0-SNAPSHOT
      */
-    PluginConfiguration retrieveIdentityProviderPlugin(Long pPluginConfigurationId) throws EntityNotFoundException;
+    PluginConfiguration retrieveIdentityProviderPlugin(Long pPluginConfigurationId) throws ModuleException;
 
     /**
      *
@@ -76,10 +75,10 @@ public interface IInternalAuthenticationPluginsService {
      *
      * @param pPluginConfigurationId
      *            PluginConfiguration identifier to delete
-     * @throws EntityNotFoundException
+     * @throws ModuleException
      *             Plugin to delete does not exists
      * @since 1.0-SNAPSHOT
      */
-    void deleteIdentityProviderPlugin(Long pPluginConfigurationId) throws EntityNotFoundException;
+    void deleteIdentityProviderPlugin(Long pPluginConfigurationId) throws ModuleException;
 
 }
