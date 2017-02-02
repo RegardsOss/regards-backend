@@ -164,18 +164,15 @@ public final class PluginParameterUtils {
      * @return a {@link PluginParameterType}
      */
     private static PluginParameterType buildPluginParameter(Field pField, boolean pIsPrimitive) {
-        PluginParameterType paramType = new PluginParameterType();
-
         // Get annotation
         final PluginParameter pluginParameter = pField.getAnnotation(PluginParameter.class);
 
-        paramType.setName(pluginParameter.name());
-        paramType.setType(pField.getType().getName());
-
+        PluginParameterType paramType;
         if (pIsPrimitive) {
-            paramType.setParamType(ParamType.PRIMITIVE);
+            paramType = new PluginParameterType(pluginParameter.name(), pField.getType().getName(),
+                    ParamType.PRIMITIVE);
         } else {
-            paramType.setParamType(ParamType.PLUGIN);
+            paramType = new PluginParameterType(pluginParameter.name(), pField.getType().getName(), ParamType.PLUGIN);
         }
 
         return paramType;

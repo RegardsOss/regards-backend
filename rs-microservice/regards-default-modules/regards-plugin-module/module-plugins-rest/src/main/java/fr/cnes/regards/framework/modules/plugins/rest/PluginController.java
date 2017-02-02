@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -38,7 +39,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  * Controller for REST Access to Plugin entities
@@ -207,7 +207,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      *
      * @return the {@link PluginConfiguration] created
      *
-     * @throws EntityInvalidException
+     * @throws ModuleException
      *             if problem occurs
      */
     @RequestMapping(value = PluginController.PLUGINS_CONFIGS, method = RequestMethod.POST,
@@ -215,13 +215,14 @@ public class PluginController implements IResourceController<PluginConfiguration
     @ResponseBody
     @ResourceAccess(description = "Create a plugin configuration")
     public ResponseEntity<Resource<PluginConfiguration>> savePluginConfiguration(
-            @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws EntityInvalidException {
+            @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws ModuleException {
         PluginConfiguration pluginConfig;
+
         try {
             pluginConfig = pluginService.savePluginConfiguration(pPluginConfiguration);
-        } catch (final PluginUtilsException e) {
+        } catch (final ModuleException e) {
             LOGGER.error("Cannot create the plugin configuration : <" + pPluginConfiguration.getPluginId() + ">", e);
-            throw new EntityInvalidException(e.getMessage());
+            throw e;
         }
 
         return new ResponseEntity<>(toResource(pluginConfig), HttpStatus.CREATED);
@@ -237,9 +238,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      *            a plugin configuration identifier
      *
      * @return the {@link PluginConfiguration} of the plugin
-     *
-     * @throws EntityNotFoundException
-     *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
+     * @throws ModuleException
      *
      */
     @RequestMapping(value = PluginController.PLUGINS_CONFIGID, method = RequestMethod.GET,
@@ -248,15 +247,8 @@ public class PluginController implements IResourceController<PluginConfiguration
     @ResourceAccess(description = "Get a the plugin configuration")
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId)
-            throws EntityNotFoundException {
-        PluginConfiguration pluginConfig;
-        try {
-            pluginConfig = pluginService.getPluginConfiguration(pConfigId);
-        } catch (final PluginUtilsException e) {
-            LOGGER.error("Cannot get the plugin configuration : <" + pConfigId + ">", e);
-            throw new EntityNotFoundException(pConfigId, PluginConfiguration.class);
-        }
-
+            throws ModuleException {
+        PluginConfiguration pluginConfig = pluginService.getPluginConfiguration(pConfigId);
         return ResponseEntity.ok(toResource(pluginConfig));
     }
 
@@ -274,7 +266,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      *
      * @return the {@link PluginConfiguration} of the plugin.
      *
-     * @throws EntityNotFoundException
+     * @throws ModuleException
      *             the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      */
     @RequestMapping(value = PluginController.PLUGINS_CONFIGID, method = RequestMethod.PUT,
@@ -283,7 +275,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @ResourceAccess(description = "Update a plugin configuration")
     public ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId,
-            @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws EntityNotFoundException {
+            @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws ModuleException {
 
         if (!pPluginId.equals(pPluginConfiguration.getPluginId())) {
             LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
@@ -299,9 +291,9 @@ public class PluginController implements IResourceController<PluginConfiguration
 
         try {
             pluginConfig = pluginService.updatePluginConfiguration(pPluginConfiguration);
-        } catch (final PluginUtilsException e) {
+        } catch (final ModuleException e) {
             LOGGER.error("Cannot update the plugin configuration : <" + pConfigId + ">", e);
-            throw new EntityNotFoundException(pConfigId, PluginConfiguration.class);
+            throw e;
         }
 
         return ResponseEntity.ok(toResource(pluginConfig));
@@ -326,7 +318,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @ResponseBody
     @ResourceAccess(description = "Delete a plugin configuration")
     public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") final String pPluginId,
-            @PathVariable("configId") final Long pConfigId) throws EntityNotFoundException {
+            @PathVariable("configId") final Long pConfigId) throws ModuleException {
         pluginService.deletePluginConfiguration(pConfigId);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

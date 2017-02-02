@@ -423,7 +423,7 @@ public abstract class AbstractRegardsIT {
 
         String path = pUrlPath;
         if (pUrlPath.contains("?")) {
-            path = path.substring(0, pUrlPath.indexOf("?"));
+            path = path.substring(0, pUrlPath.indexOf('?'));
         }
         final String jwt = generateToken(DEFAULT_USER_EMAIL, getDefaultRole());
         setAuthorities(path, pMethod, getDefaultRole());
