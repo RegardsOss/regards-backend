@@ -17,7 +17,7 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 
-import fr.cnes.regards.framework.amqp.Subscriber;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
@@ -51,7 +51,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     /**
      * AMQP Message subscriber
      */
-    private transient Subscriber amqpSubscriber;
+    private transient ISubscriber amqpSubscriber;
 
     /**
      * Microservice global configuration
@@ -64,7 +64,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     private transient Map<String, DataSource> dataSources;
 
     public DataSourceBasedMultiTenantConnectionProviderImpl(final MultitenantDaoProperties pDaoProperties,
-            final Map<String, DataSource> pDataSources, final Subscriber pAmqpSubscriber,
+            final Map<String, DataSource> pDataSources, final ISubscriber pAmqpSubscriber,
             final String pMicroserviceName) {
         super();
         daoProperties = pDaoProperties;
@@ -98,7 +98,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      * @since 1.0-SNAPSHOT
      */
     @PostConstruct
-    public void initDataSources() throws RabbitMQVhostException {
+    public void initDataSources() {
         // Hibernate do not initialize schema for multitenants.
         // Here whe manually update schema for all configured datasources
         for (final String tenant : dataSources.keySet()) {
@@ -117,7 +117,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      *             Unrecoverable error during AMQP initialization
      * @since 1.0-SNAPSHOT
      */
-    private void listenForNewTenant() throws RabbitMQVhostException {
+    private void listenForNewTenant() {
         if (amqpSubscriber != null) {
             final IHandler<NewTenantEvent> tenantHandler = new NewTenantHandler(this, microserviceName);
             amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler);

@@ -37,7 +37,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import fr.cnes.regards.framework.amqp.Subscriber;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
@@ -105,7 +105,7 @@ public class MultitenantJpaAutoConfiguration {
      * AMQP Message subscriber
      */
     @Autowired(required = false)
-    private Subscriber amqpSubscriber;
+    private ISubscriber subscriber;
 
     /**
      * Multitenant connection provider
@@ -141,7 +141,8 @@ public class MultitenantJpaAutoConfiguration {
     @Bean
     public CurrentTenantIdentifierResolver currentTenantIdentifierResolver(
             IRuntimeTenantResolver pThreadTenantResolver) {
-        return new CurrentTenantIdentifierResolverImpl(pThreadTenantResolver);
+        this.currentTenantIdentifierResolver = new CurrentTenantIdentifierResolverImpl(pThreadTenantResolver);
+        return currentTenantIdentifierResolver;
     }
 
     /**
@@ -153,7 +154,7 @@ public class MultitenantJpaAutoConfiguration {
      */
     @Bean
     public AbstractDataSourceBasedMultiTenantConnectionProviderImpl connectionProvider() {
-        return new DataSourceBasedMultiTenantConnectionProviderImpl(configuration, dataSources, amqpSubscriber,
+        return new DataSourceBasedMultiTenantConnectionProviderImpl(configuration, dataSources, subscriber,
                 microserviceName);
     }
 

@@ -23,9 +23,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProper
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  *
@@ -63,10 +61,10 @@ public class DataSourcesAutoConfiguration {
     private ITenantConnectionResolver multitenantResolver;
 
     /**
-     * JWT token management service
+     * Runtime tenant resolver
      */
     @Autowired
-    private JWTService jwtService;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      *
@@ -97,15 +95,9 @@ public class DataSourcesAutoConfiguration {
             }
             if (!datasources.containsKey(tenant.getName())) {
                 // Initialize connection in administration service
-                try {
-                    jwtService.injectToken(tenant.getName(), RoleAuthority.getSysRole(microserviceName));
-                    multitenantResolver.addTenantConnection(tenant);
-                    // Add datasource to managed datasources pool
-                    datasources.put(tenant.getName(), datasource);
-                } catch (final JwtException e) {
-                    LOG.error(e.getMessage(), e);
-                }
-
+                multitenantResolver.addTenantConnection(tenant);
+                // Add datasource to managed datasources pool
+                datasources.put(tenant.getName(), datasource);
             } else {
                 LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getName()));
             }

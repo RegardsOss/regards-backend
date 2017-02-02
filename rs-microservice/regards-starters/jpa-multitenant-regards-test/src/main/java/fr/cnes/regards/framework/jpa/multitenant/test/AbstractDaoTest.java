@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * Default configuration test
@@ -41,17 +41,14 @@ public abstract class AbstractDaoTest {
     @PersistenceContext
     protected EntityManager entityManager;
 
-    /**
-     * JWT service
-     */
     @Autowired
-    private JWTService jwtService;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     protected void injectDefaultToken() {
-        jwtService.injectMockToken(DEFAULT_TENANT, DEFAULT_ROLE);
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
     }
 
     protected void injectToken(String pTenant) {
-        jwtService.injectMockToken(pTenant, DEFAULT_ROLE);
+        runtimeTenantResolver.forceTenant(pTenant);
     }
 }

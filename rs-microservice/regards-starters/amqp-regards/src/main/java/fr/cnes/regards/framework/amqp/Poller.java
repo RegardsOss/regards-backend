@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import javax.transaction.Transaction;
-
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -18,8 +16,8 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
- * {@link Poller} allows to poll an event from a queue. Using {@link Transaction} on caller will cause event to be poll
- * in a safe manner. If transaction fails, the polled event is return to the broker.
+ * {@link Poller} allows to poll an event from a queue. Using transaction on caller will cause event to be poll in a
+ * safe manner. If transaction fails, the polled event is return to the broker.
  *
  * @author svissier
  * @author Marc Sordi

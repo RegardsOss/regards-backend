@@ -18,16 +18,19 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
  */
 public class SubscriberMock implements ISubscriber {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see fr.cnes.regards.framework.amqp.ISubscriber#subscribeTo(java.lang.Class,
-     * fr.cnes.regards.framework.amqp.domain.IHandler)
-     */
     @Override
     public <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver) {
         // Nothing to do
+    }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.framework.amqp.ISubscriber#unsubscribeFrom(java.lang.Class)
+     */
+    @Override
+    public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent) {
+        // Nothing to do
     }
 
 }

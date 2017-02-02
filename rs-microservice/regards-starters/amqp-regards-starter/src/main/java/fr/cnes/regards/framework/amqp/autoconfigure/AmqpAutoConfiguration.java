@@ -21,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.amqp.Subscriber;
@@ -122,7 +123,7 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public Subscriber subscriber(final RegardsAmqpAdmin pRegardsAmqpAdmin,
+    public ISubscriber subscriber(final RegardsAmqpAdmin pRegardsAmqpAdmin,
             final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
             final Jackson2JsonMessageConverter pJackson2JsonMessageConverter, final ITenantResolver pTenantResolver) {
         return new Subscriber(pRegardsAmqpAdmin, pRabbitVirtualHostAdmin, pJackson2JsonMessageConverter,
