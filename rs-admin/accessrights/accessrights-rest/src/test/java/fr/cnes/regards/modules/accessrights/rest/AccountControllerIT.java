@@ -24,9 +24,13 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
+import fr.cnes.regards.modules.accessrights.dao.instance.IPasswordResetTokenRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
+import fr.cnes.regards.modules.accessrights.domain.passwordreset.PasswordResetToken;
+import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
+import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 
 /**
@@ -76,7 +80,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
     private String apiUnlockAccount;
 
-    private String apiChangePassword;
+    private final String apiChangePassword = "/accounts/{account_email}/resetPassword";
 
     private String errorMessage;
 
@@ -102,6 +106,12 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IAccountSettingsService settingsService;
 
+    /**
+     * PasswordResetToken repository
+     */
+    @Autowired
+    private IPasswordResetTokenRepository passwordResetTokenRepository;
+
     @Value("${root.admin.login:admin}")
     private String rootAdminLogin;
 
@@ -119,7 +129,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         apiAccountEmail = apiAccounts + "/account/{account_email}";
         apiAccountSetting = apiAccounts + "/settings";
         apiUnlockAccount = apiAccountId + "/unlock/{unlock_code}";
-        apiChangePassword = apiAccountId + "/password/{reset_code}";
 
         // And start with a single account for convenience
         account = accountRepository.save(new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD));
@@ -244,13 +253,29 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_470")
-    @Purpose("Check that the system allows to reset an instance user's password.")
-    public void changeAccountPassword() throws EntityAlreadyExistsException {
+    @Purpose("Check that the system allows the user to request to receive a mail in order to reset its password.")
+    public void requestResetPassword() throws EntityAlreadyExistsException {
+        // Prepare the request parameters
+        final RequestResetPasswordDto dto = new RequestResetPasswordDto("/origin/url", "reset/url");
+
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isNoContent());
-        performDefaultPut(apiChangePassword, "newPassword", expectations, errorMessage, account.getId(),
-                          account.getCode());
+        performDefaultPost(apiChangePassword, dto, expectations, errorMessage, account.getEmail());
+    }
 
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_470")
+    @Purpose("Check that the system allows to reset an instance user's password.")
+    public void performResetPassword() throws EntityAlreadyExistsException {
+        // Prepare the request parameters
+        final PerformResetPasswordDto dto = new PerformResetPasswordDto("token", "newPassword");
+
+        // Create the token in db
+        passwordResetTokenRepository.save(new PasswordResetToken(dto.getToken(), account));
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNoContent());
+        performDefaultPut(apiChangePassword, dto, expectations, errorMessage, account.getEmail());
     }
 
     /**

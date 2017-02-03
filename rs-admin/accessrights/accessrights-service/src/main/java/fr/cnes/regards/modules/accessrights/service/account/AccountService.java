@@ -16,7 +16,6 @@ import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactiona
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
@@ -118,21 +117,6 @@ public class AccountService implements IAccountService {
     /*
      * (non-Javadoc)
      *
-     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#changeAccountPassword(java.lang.Long,
-     * java.lang.String, java.lang.String)
-     */
-    @Override
-    public void changeAccountPassword(final Long pAccountId, final String pResetCode, final String pNewPassword)
-            throws EntityException {
-        final Account account = retrieveAccount(pAccountId);
-        checkCode(account, pResetCode);
-        account.setPassword(pNewPassword);
-        accountRepository.save(account);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see
      * fr.cnes.regards.modules.accessrights.service.account.IAccountService#retrieveAccountByEmail(java.lang.String)
      */
@@ -162,22 +146,6 @@ public class AccountService implements IAccountService {
     @Override
     public boolean existAccount(final String pEmail) {
         return accountRepository.findOneByEmail(pEmail).isPresent();
-    }
-
-    /**
-     * Check the passed code matches the code set on the passed account.
-     *
-     * @param pAccount
-     *            The account
-     * @param pCode
-     *            The code to check
-     * @throws EntityOperationForbiddenException
-     *             Thrown if the passed code differs from the one set on the account
-     */
-    private void checkCode(final Account pAccount, final String pCode) throws EntityOperationForbiddenException {
-        if (!pAccount.getCode().equals(pCode)) {
-            throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, "Incorrect code");
-        }
     }
 
 }

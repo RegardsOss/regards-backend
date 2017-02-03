@@ -79,17 +79,24 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
      *            the init event
      */
     private void sendPasswordResetEmail(final OnPasswordResetEvent pEvent) {
+        // Retrieve the account
         final Account account = pEvent.getAccount();
+
+        // Create the token
         final String token = UUID.randomUUID().toString();
         passwordResetService.createPasswordResetToken(account, token);
 
-        // Create the password reset email from a template
+        // Build the list of recipients
         final String[] recipients = { account.getEmail() };
-        final String passwordResetUrl = pEvent.getAppUrl() + "/passwordReset/" + token;
-        final Map<String, String> data = new HashMap<>();
 
+        // Create a hash map in order to store the data to inject in the mail
+        final Map<String, String> data = new HashMap<>();
         data.put("name", account.getFirstName());
-        data.put("passwordResetUrl", passwordResetUrl);
+        data.put("resetUrl", pEvent.getResetUrl());
+        data.put("originUrl", pEvent.getOriginUrl());
+        data.put("token", token);
+        data.put("accountEmail", account.getEmail());
+
         SimpleMailMessage email;
         try {
             email = templateService.writeToEmail(MDP_RESET_TEMPLATE, data, recipients);
@@ -98,8 +105,11 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
             email = new SimpleMailMessage();
             email.setTo(recipients);
             email.setSubject("REGARDS - Password Reset");
-            email.setText("Please click on the following link to set a new password for your account: "
-                    + passwordResetUrl);
+
+            final String linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
+            final String linkUrl = String.format(linkUrlTemplate, pEvent.getResetUrl(), pEvent.getOriginUrl(), token,
+                                                 account.getEmail());
+            email.setText("Please click on the following link to set a new password for your account: " + linkUrl);
         }
 
         // Send it

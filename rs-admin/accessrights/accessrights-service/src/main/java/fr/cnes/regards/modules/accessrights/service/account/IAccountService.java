@@ -9,7 +9,6 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
@@ -86,24 +85,6 @@ public interface IAccountService {
      *
      */
     Account updateAccount(Long pAccountId, Account pUpdatedAccount) throws EntityException;
-
-    /**
-     * Change the passord of an {@link Account}.
-     *
-     * @param pAccountId
-     *            The {@link Account}'s <code>id</code>
-     * @param pResetCode
-     *            The reset code. Required to allow a password change
-     * @param pNewPassword
-     *            The new <code>password</code>
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityOperationForbiddenException} Thrown when the passed reset code is different from the one
-     *             expected<br>
-     *             {@link EntityNotFoundException} Thrown when no {@link Account} could be found with id
-     *             <code>pAccountId</code><br>
-     */
-    void changeAccountPassword(Long pAccountId, String pResetCode, String pNewPassword) throws EntityException;
 
     /**
      * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of

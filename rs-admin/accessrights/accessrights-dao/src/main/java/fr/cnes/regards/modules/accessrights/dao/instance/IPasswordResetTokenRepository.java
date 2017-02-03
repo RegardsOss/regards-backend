@@ -13,7 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.PasswordResetToken;
+import fr.cnes.regards.modules.accessrights.domain.passwordreset.PasswordResetToken;
 
 /**
  * Interface for a JPA auto-generated CRUD repository managing {@link PasswordResetToken}s.<br>

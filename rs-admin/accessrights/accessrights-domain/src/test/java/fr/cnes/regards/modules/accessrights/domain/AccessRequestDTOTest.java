@@ -17,14 +17,14 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
- * Unit test for {@link AccessRequestDto}
+ * Unit test for {@link PerformResetPasswordDto}
  *
  * @author Maxime Bouveron
  */
 public class AccessRequestDTOTest {
 
     /**
-     * Test AccessRequestDto
+     * Test PerformResetPasswordDto
      */
     private AccessRequestDto access;
 
@@ -209,7 +209,7 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link AccessRequestDto#setRole(Role)}.
+     * Test method for {@link PerformResetPasswordDto#setRole(Role)}.
      */
     @Test
     public void testSetRoleName() {

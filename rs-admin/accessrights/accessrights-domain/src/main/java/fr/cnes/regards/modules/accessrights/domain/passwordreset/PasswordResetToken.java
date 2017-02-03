@@ -1,5 +1,5 @@
 /**LICENSE_PLACEHOLDER*/
-package fr.cnes.regards.modules.accessrights.domain.instance;
+package fr.cnes.regards.modules.accessrights.domain.passwordreset;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +12,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
  * Data base persisted token for resetting password
