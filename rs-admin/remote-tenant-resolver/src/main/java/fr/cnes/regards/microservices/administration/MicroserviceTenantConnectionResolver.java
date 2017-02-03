@@ -14,12 +14,16 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.google.common.base.Throwables;
+
 import feign.FeignException;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -40,7 +44,7 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(MicroserviceTenantConnectionResolver.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MicroserviceTenantConnectionResolver.class);
 
     /**
      * Current Microservice name
@@ -120,8 +124,8 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
             }
 
         } catch (final FeignException e) {
-            LOG.error(e.getMessage(), e);
-            LOG.error(String.format("No database connection found for project %s", pProjectName));
+            LOGGER.error(e.getMessage(), e);
+            LOGGER.error(String.format("No database connection found for project %s", pProjectName));
         }
 
         return projectConnection;
@@ -129,6 +133,13 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
 
     @Override
     public void addTenantConnection(final TenantConnection pTenantConnection) {
+
+        try {
+            jwtService.injectToken(pTenantConnection.getName(), RoleAuthority.getSysRole(microserviceName));
+        } catch (JwtException e1) {
+            Throwables.propagate(e1);
+        }
+
         ResponseEntity<Resource<Project>> response;
         try {
             response = projectsClient.retrieveProject(pTenantConnection.getName());
@@ -140,13 +151,13 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
                         pTenantConnection.getDriverClassName(), pTenantConnection.getUrl());
                 projectConnectionsClient.createProjectConnection(projectConnection);
             } else {
-                LOG.error("Error getting {} project informations from administration microservice",
-                          pTenantConnection.getName());
+                LOGGER.error("Error getting {} project informations from administration microservice",
+                             pTenantConnection.getName());
             }
         } catch (final FeignException e) {
-            LOG.error("Error during initialization of new tenant connection for microservice {} and tenant {}",
-                      microserviceName, pTenantConnection.getName());
-            LOG.error(e.getMessage(), e);
+            LOGGER.error("Error during initialization of new tenant connection for microservice {} and tenant {}",
+                         microserviceName, pTenantConnection.getName());
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
