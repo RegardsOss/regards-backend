@@ -253,10 +253,10 @@ public class AccountsController implements IResourceController<Account> {
      *
      * @param pEmail
      *            The {@link Account}'s <code>email</code>
-     * @param pOriginUrl
-     *            The url of the app from where was issued the query
-     * @param pResetUrl
-     *            The url to redirect the user to the password reset interface
+     * @param pDto
+     *            The DTO containing<br>
+     *            - The url of the app from where was issued the query<br>
+     *            - The url to redirect the user to the password reset interface
      * @return void
      * @throws EntityNotFoundException
      */
@@ -264,8 +264,7 @@ public class AccountsController implements IResourceController<Account> {
     @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.POST)
     @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
-            @Valid @RequestBody final RequestResetPasswordDto pDto, final HttpServletRequest pRequest)
-            throws EntityNotFoundException {
+            @Valid @RequestBody final RequestResetPasswordDto pDto) throws EntityNotFoundException {
         // Retrieve the account
         final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
 

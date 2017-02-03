@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +104,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      * @since 1.0-SNAPSHOT
      */
     @Test
+    @Ignore
     public void updateAccountFromFeignClient() {
         try {
             final Account account = new Account("feign@user.com", "feign", "feign", "password");
@@ -122,6 +124,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      * @since 1.0-SNAPSHOT
      */
     @Test
+    @Ignore
     public void removeAccountFromFeignClient() {
         try {
             final ResponseEntity<Void> response = accountsClient.removeAccount(new Long(150));
@@ -139,6 +142,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      * @since 1.0-SNAPSHOT
      */
     @Test
+    @Ignore
     public void retrieveAccountFromFeignClient() {
         try {
             final ResponseEntity<Resource<Account>> response = accountsClient.retrieveAccount(new Long(150));
@@ -156,6 +160,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      * @since 1.0-SNAPSHOT
      */
     @Test
+    @Ignore
     public void retrieveAccountByEmailFromFeignClient() {
         try {
             final ResponseEntity<Resource<Account>> response = accountsClient.retrieveAccounByEmail("email@unkown.fr");
@@ -173,6 +178,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      * @since 1.0-SNAPSHOT
      */
     @Test
+    @Ignore
     public void unlockAccountFromFeignClient() {
         try {
             final ResponseEntity<Void> response = accountsClient.unlockAccount(new Long(150), "unlock_code");
@@ -190,24 +196,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      * @since 1.0-SNAPSHOT
      */
     @Test
-    public void changeAccountPasswordFromFeignClient() {
-        try {
-            final ResponseEntity<Void> response = accountsClient.changeAccountPassword(new Long(150), "reset_code",
-                                                                                       "new_password");
-            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        }
-    }
-
-    /**
-     *
-     * Check that the accounts Feign Client can retrieve an account.
-     *
-     * @since 1.0-SNAPSHOT
-     */
-    @Test
+    @Ignore
     public void sendAccountCodeFromFeignClient() {
         try {
             jwtService.injectToken(DEFAULT_TENANT, DefaultRole.REGISTERED_USER.toString());
@@ -226,6 +215,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      * @since 1.0-SNAPSHOT
      */
     @Test
+    @Ignore
     public void validatePasswordFromFeignClient() {
         try {
             final ResponseEntity<AccountStatus> response = accountsClient.validatePassword("email@unkown.fr",

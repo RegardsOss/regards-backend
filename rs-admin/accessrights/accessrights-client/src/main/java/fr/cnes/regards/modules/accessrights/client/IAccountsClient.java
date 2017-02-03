@@ -17,9 +17,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.client.core.annotation.RestClient;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
+import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPasswordDto;
 
 /**
  * Feign client for rs-admin Accounts controller.
@@ -116,19 +120,36 @@ public interface IAccountsClient {
             @PathVariable("unlock_code") String pUnlockCode);
 
     /**
-     * Change the passord of an {@link Account}.
+     * Send to the user an email containing a link with limited validity to reset its password.
      *
-     * @param pAccountId
-     *            The {@link Account}'s <code>id</code>
-     * @param pResetCode
-     *            The reset code. Required to allow a password change
-     * @param pNewPassword
-     *            The new <code>password</code>
+     * @param pEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pDto
+     *            The DTO containing<br>
+     *            - The url of the app from where was issued the query<br>
+     *            - The url to redirect the user to the password reset interface
+     * @return void
+     * @throws EntityNotFoundException
      */
     @ResponseBody
-    @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT)
-    ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") Long pAccountId,
-            @PathVariable("reset_code") String pResetCode, @Valid @RequestBody String pNewPassword);
+    @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.POST)
+    public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
+            @Valid @RequestBody final RequestResetPasswordDto pDto);
+
+    /**
+     * Change the passord of an {@link Account}.
+     *
+     * @param pEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pDto
+     *            The DTO containing : 1) the token 2) the new password
+     * @return void
+     * @throws EntityException
+     */
+    @ResponseBody
+    @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.PUT)
+    ResponseEntity<Void> performResetPassword(@PathVariable("account_email") final String pAccountEmail,
+            @Valid @RequestBody final PerformResetPasswordDto pDto);
 
     /**
      * Send to the user an email containing a code:<br>
