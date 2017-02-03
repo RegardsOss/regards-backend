@@ -23,9 +23,18 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SecureRuntimeTenantResolver.class);
 
+    // Thread safe tenant holder for forced tenant
+    private static final ThreadLocal<String> tenantHolder = new ThreadLocal<>();
+
     @Override
     public String getTenant() {
-        JWTAuthentication authentication = ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication());
+        // Try to get tenant from tenant holder
+        String tenant = tenantHolder.get();
+        if (tenant != null) {
+            return tenant;
+        }
+        // Try to get tenant from JWT
+        JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
             return authentication.getTenant();
         } else {
@@ -35,14 +44,12 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     @Override
     public void forceTenant(String pTenant) {
-        JWTAuthentication authentication = ((JWTAuthentication) SecurityContextHolder.getContext().getAuthentication());
-        if (authentication != null) {
-            authentication.setTenant(pTenant);
-        } else {
-            String errorMessage = "Cannot force tenant cause no authentication set";
-            LOGGER.error(errorMessage);
-            throw new UnsupportedOperationException(errorMessage);
-        }
+        LOGGER.info("Forcing tenant to : {}", pTenant);
+        tenantHolder.set(pTenant);
+    }
 
+    public void clearTenant() {
+        LOGGER.info("Clearing tenant");
+        tenantHolder.remove();
     }
 }

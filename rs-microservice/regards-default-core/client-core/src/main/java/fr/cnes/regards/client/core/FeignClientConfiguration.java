@@ -5,7 +5,6 @@ package fr.cnes.regards.client.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
 import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +20,6 @@ import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
 import feign.hystrix.HystrixFeign;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
  *
@@ -39,9 +37,6 @@ public class FeignClientConfiguration {
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(FeignClientConfiguration.class);
-
-    @Autowired
-    JWTService jwtService;
 
     /**
      *

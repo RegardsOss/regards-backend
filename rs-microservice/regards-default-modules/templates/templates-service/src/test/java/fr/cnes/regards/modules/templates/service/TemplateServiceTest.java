@@ -18,6 +18,7 @@ import org.springframework.mail.SimpleMailMessage;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -57,13 +58,19 @@ public class TemplateServiceTest {
      */
     private ITenantResolver tenantResolver;
 
+    /**
+     * Mocked runtime tenant resolver
+     */
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     @Before
     public void setUp() throws IOException {
         template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA,
                 TemplateTestConstants.SUBJECT);
         templateRepository = Mockito.mock(ITemplateRepository.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
-        templateService = new TemplateService(templateRepository, tenantResolver);
+        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        templateService = new TemplateService(templateRepository, tenantResolver, runtimeTenantResolver);
     }
 
     /**
