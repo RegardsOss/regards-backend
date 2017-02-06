@@ -6,7 +6,6 @@ package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.List;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -114,8 +113,8 @@ public interface IPluginService {
      * @param pConfId
      *            a specific configuration
      * @return
-     * @throws EntityNotFoundException
-     *             Entity to delete does not exists
+     * @throws ModuleException
+     *             Entity to delete does not exist
      */
     void deletePluginConfiguration(Long pConfId) throws ModuleException;
 
@@ -152,6 +151,14 @@ public interface IPluginService {
      * @return all the {@link PluginConfiguration} for a specific plugin type.
      */
     List<PluginConfiguration> getPluginConfigurationsByType(Class<?> pInterfacePluginType);
+
+    /**
+     *
+     * Get all plugin's configuration.
+     *
+     * @return all the {@link PluginConfiguration}.
+     */
+    List<PluginConfiguration> getAllPluginConfigurations();
 
     /**
      *
