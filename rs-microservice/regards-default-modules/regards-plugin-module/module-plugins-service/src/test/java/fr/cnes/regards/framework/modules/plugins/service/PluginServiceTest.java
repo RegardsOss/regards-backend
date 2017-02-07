@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  *
@@ -261,10 +260,22 @@ public class PluginServiceTest extends PluginServiceUtility {
         Assert.assertEquals(pluginConfs.size(), results.size());
     }
 
+    @Test
+    public void getAllPluginConfigurations() {
+        final List<PluginConfiguration> pluginConfs = new ArrayList<>();
+        pluginConfs.add(getPluginConfigurationWithParameters());
+        pluginConfs.add(getPluginConfigurationWithDynamicParameter());
+        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfs);
+        final List<PluginConfiguration> results = pluginServiceMocked.getAllPluginConfigurations();
+
+        Assert.assertNotNull(results);
+        Assert.assertEquals(pluginConfs.size(), results.size());
+    }
+
     /**
      * Get the first plugin of a specific type
      *
-     * @throws PluginUtilsException
+     * @throws ModuleException
      *             throw if an error occurs
      * @throws ModuleException
      */
