@@ -171,7 +171,9 @@ public class JobHandler implements IJobHandler {
             } catch (final ClassNotFoundException e) {
                 LOG.error(String.format("Class not found %s", jobInfo.getClassName()), e);
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
-                LOG.error(String.format("could not initialized %s properly"), jobInfo.getClassName(), e);
+                LOG.error(String.format("Could not initialized job parameters id job=<%d>: %s", jobInfo.getId(),
+                                        jobInfo.getParameters().toString()),
+                          e);
             } finally {
                 if (hasFailed) {
                     jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
