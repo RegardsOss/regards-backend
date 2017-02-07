@@ -58,8 +58,8 @@
 		</dependency>
 		<!-- Gson -->
 		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>gson-regards-starter</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>

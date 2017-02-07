@@ -20,7 +20,7 @@ public final class GsonUtil {
     /**
      * Json Mapper
      */
-    private static final Gson GSON = new Gson();
+    private static Gson GSON;
 
     private GsonUtil() {
         // Overriding public constructor
@@ -46,5 +46,12 @@ public final class GsonUtil {
     @SuppressWarnings("unchecked")
     public static <T> T clone(T pValue) {
         return fromString(toString(pValue), (Class<T>) pValue.getClass());
+    }
+
+    /**
+     * @param pGson
+     */
+    public static void setGson(Gson pGson) {
+        GSON = pGson;
     }
 }
