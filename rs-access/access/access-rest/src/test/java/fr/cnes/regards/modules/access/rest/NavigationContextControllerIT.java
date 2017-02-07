@@ -135,6 +135,9 @@ public class NavigationContextControllerIT extends AbstractRegardsIT {
         final NavigationContext navContext = new NavigationContext(new Project(), null, "hello", 9876);
         final Long tinyUrlId = 0157L;
         navContext.setId(tinyUrlId);
+        navContext.setRoute("http:/localhost:port/webapps/newRoute");
+        navContext.setStore(2468);
+        navContext.setTinyUrl("sdjksjdklqsjdkljsdkljqskldjklqsjkjqdkljqdkljldjq/skljdklsjdkljs");
 
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isNotFound());

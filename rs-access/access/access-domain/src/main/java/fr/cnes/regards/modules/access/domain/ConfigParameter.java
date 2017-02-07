@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
@@ -25,7 +26,17 @@ public class ConfigParameter implements IIdentifiable<Long> {
     /**
      * The max size of a {@link String} value
      */
-    private static final int MAX_STRING_VALUE = 2048;
+    public static final int MAX_STRING_VALUE = 2048;
+
+    /**
+     * Name min size
+     */
+    public static final int NAME_MIN_SIZE = 3;
+
+    /**
+     * Name max size
+     */
+    public static final int NAME_MAX_SIZE = 32;
 
     /**
      * Unique id
@@ -38,6 +49,9 @@ public class ConfigParameter implements IIdentifiable<Long> {
      * Parameter name
      */
     @NotNull
+    @Size(min = NAME_MIN_SIZE, max = NAME_MAX_SIZE,
+            message = "Parameter name must be between " + NAME_MIN_SIZE + " and " + NAME_MAX_SIZE + " length.")
+    @Column(nullable = false, updatable = false, unique = true, length = NAME_MAX_SIZE)
     private String name;
 
     /**

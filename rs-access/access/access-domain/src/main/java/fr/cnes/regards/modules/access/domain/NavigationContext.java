@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -18,6 +19,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
@@ -32,6 +34,16 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 public class NavigationContext implements IIdentifiable<Long> {
 
     /**
+     * String min size
+     */
+    public static final int STR_MIN_SIZE = 8;
+
+    /**
+     * String max size
+     */
+    public static final int STR_MAX_SIZE = 1024;
+
+    /**
      * Unique id
      */
     @Id
@@ -42,6 +54,9 @@ public class NavigationContext implements IIdentifiable<Long> {
      * 
      */
     @NotNull
+    @Size(min = STR_MIN_SIZE, max = STR_MAX_SIZE,
+            message = "Tiny URL must be between " + STR_MIN_SIZE + " and " + STR_MAX_SIZE + " length.")
+    @Column(nullable = false, updatable = true, unique = true, length = STR_MAX_SIZE)
     private String tinyUrl;
 
     /**
@@ -62,12 +77,16 @@ public class NavigationContext implements IIdentifiable<Long> {
      * 
      */
     @NotNull
+    @Size(min = STR_MIN_SIZE, max = STR_MAX_SIZE,
+            message = "Route must be between " + STR_MIN_SIZE + " and " + STR_MAX_SIZE + " length.")
+    @Column(nullable = false, updatable = true, unique = true, length = STR_MAX_SIZE)
     private String route;
 
     /**
      * 
      */
     @NotNull
+    @Column(nullable = false, updatable = true, unique = false)
     private Integer store;
 
     /**
@@ -75,9 +94,9 @@ public class NavigationContext implements IIdentifiable<Long> {
      */
     public NavigationContext() {
         super();
-        tinyUrl="undefined";
-        route="undefined";
-        store=0;
+        tinyUrl = "undefined";
+        route = "undefined";
+        store = 0;
     }
 
     /**
