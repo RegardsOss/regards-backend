@@ -306,7 +306,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         }
 
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isInternalServerError());
+        expectations.add(status().isBadRequest());
 
         // Update the added PluginConfiguration
         performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID, aPluginConfiguration, expectations,
@@ -378,7 +378,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
         aPluginConfiguration.setPriorityOrder(null);
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isInternalServerError());
+        expectations.add(status().isBadRequest());
         performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, aPluginConfiguration, expectations,
                            "unable to save a plugin configuration", PLUGIN_ID);
     }
@@ -391,7 +391,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
         aPluginConfiguration.setVersion(null);
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isInternalServerError());
+        expectations.add(status().isBadRequest());
         performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, aPluginConfiguration, expectations,
                            "unable to save a plugin configuration", PLUGIN_ID);
     }

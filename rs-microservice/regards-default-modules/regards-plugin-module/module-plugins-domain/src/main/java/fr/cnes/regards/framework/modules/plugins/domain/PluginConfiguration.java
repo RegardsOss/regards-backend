@@ -67,11 +67,15 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Version of the plugin configuration. Is set with the plugin version. This attribute is used to check if the saved
      * configuration plugin version differs from the loaded plugin.
      */
+    @NotNull
+    @Column(nullable=false, updatable=true)
     private String version;
 
     /**
      * Priority order of the plugin.
      */
+    @NotNull
+    @Column(nullable=false, updatable=true)
     private Integer priorityOrder;
 
     /**
