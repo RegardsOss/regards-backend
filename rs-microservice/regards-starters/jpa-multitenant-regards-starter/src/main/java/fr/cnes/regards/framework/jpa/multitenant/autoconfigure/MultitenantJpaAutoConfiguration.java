@@ -21,6 +21,7 @@ import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
@@ -37,9 +38,13 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.Subscriber;
+import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifierResolverImpl;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
@@ -63,6 +68,7 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
         transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
+@AutoConfigureAfter(value = { GsonAutoConfiguration.class })
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
 
@@ -241,4 +247,18 @@ public class MultitenantJpaAutoConfiguration {
     public ITenantConnectionResolver defaultTenantConnectionResolver() {
         return new DefaultTenantConnectionResolver();
     }
+
+    /**
+     * this bean allow us to set <b>our</b> instance of Gson, customized for the serialization of any data as jsonb into
+     * the database
+     *
+     * @param pGson
+     * @return
+     */
+    @Bean
+    public Void setGsonIntoGsonUtil(Gson pGson) {
+        GsonUtil.setGson(pGson);
+        return null;
+    }
+
 }

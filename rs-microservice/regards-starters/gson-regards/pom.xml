@@ -31,9 +31,19 @@
 			<version>0.2.1</version> </dependency> -->
 		<!-- Tests -->
 		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test-reporting</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>fr.cnes.regards.framework.test</groupId> -->
+		<!-- <artifactId>regards-test</artifactId> -->
+		<!-- <scope>test</scope> -->
+		<!-- </dependency> -->
 	</dependencies>
 </project>

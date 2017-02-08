@@ -21,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityCorruptByNetworkException;
+import fr.cnes.regards.framework.module.rest.exception.EntityEmbeddedEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotEmptyException;
@@ -79,8 +80,14 @@ public class GlobalControllerAdvice {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
+    @ExceptionHandler(EntityEmbeddedEntityNotFoundException.class)
+    public ResponseEntity<ServerErrorResponse> entityEmbeddedEntityNotFound(
+            final EntityEmbeddedEntityNotFoundException pException) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ServerErrorResponse> dataNotFound(final EntityNotFoundException pException) {
+    public ResponseEntity<ServerErrorResponse> entityNotFound(final EntityNotFoundException pException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
