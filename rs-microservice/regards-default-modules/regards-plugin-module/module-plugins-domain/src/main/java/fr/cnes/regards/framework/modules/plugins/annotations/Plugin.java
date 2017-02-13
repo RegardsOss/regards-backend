@@ -76,7 +76,7 @@ public @interface Plugin {
      *
      * @return the plugin's version
      */
-    String version();
+    String version() default "";
 
     /**
      *
