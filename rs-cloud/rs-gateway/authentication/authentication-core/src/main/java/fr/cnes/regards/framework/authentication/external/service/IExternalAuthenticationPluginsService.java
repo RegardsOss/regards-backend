@@ -44,7 +44,7 @@ public interface IExternalAuthenticationPluginsService {
      *             Plugin does not exists
      * @since 1.0-SNAPSHOT
      */
-    PluginConfiguration retrieveServiceProviderPlugin(Long pPluginConfigurationId) throws EntityNotFoundException;
+    PluginConfiguration retrieveServiceProviderPlugin(Long pPluginConfigurationId) throws ModuleException;
 
     /**
      *
@@ -80,11 +80,11 @@ public interface IExternalAuthenticationPluginsService {
      *
      * @param pPluginConfigurationId
      *            PluginConfiguration identifier to delete
-     * @throws EntityNotFoundException
+     * @throws ModuleException
      *             Plugin to delete does not exists
      * @since 1.0-SNAPSHOT
      */
-    void deleteServiceProviderPlugin(Long pPluginConfigurationId) throws EntityNotFoundException;
+    void deleteServiceProviderPlugin(Long pPluginConfigurationId) throws ModuleException;
 
     /**
      *

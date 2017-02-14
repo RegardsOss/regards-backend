@@ -29,7 +29,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 
-
 /**
  *
  * Class InternalAuthenicationController
@@ -125,7 +124,7 @@ public class ExternalAuthenticationController implements IResourceController<Plu
             } else {
                 response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleException e) {
             LOG.error(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -190,7 +189,7 @@ public class ExternalAuthenticationController implements IResourceController<Plu
         try {
             service.deleteServiceProviderPlugin(pPluginConfigurationId);
             response = new ResponseEntity<>(HttpStatus.OK);
-        } catch (final EntityNotFoundException e) {
+        } catch (final ModuleException e) {
             LOG.error(e.getMessage(), e);
             response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

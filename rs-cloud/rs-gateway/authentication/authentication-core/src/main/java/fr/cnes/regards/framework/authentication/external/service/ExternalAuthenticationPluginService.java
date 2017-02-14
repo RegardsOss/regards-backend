@@ -70,6 +70,7 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
 
     /**
      * Constructor with attributes
+     * 
      * @param pPluginService
      * @param pJwtService
      * @param pProjectsClient
@@ -95,41 +96,25 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
     }
 
     @Override
-    public PluginConfiguration retrieveServiceProviderPlugin(final Long pPluginConfigurationId)
-            throws EntityNotFoundException {
-        try {
-            return pluginService.getPluginConfiguration(pPluginConfigurationId);
-        } catch (final PluginUtilsException e) {
-            LOG.error(e.getMessage(), e);
-            throw new EntityNotFoundException(pPluginConfigurationId.toString(), PluginConfiguration.class);
-        }
+    public PluginConfiguration retrieveServiceProviderPlugin(final Long pPluginConfigurationId) throws ModuleException {
+
+        return pluginService.getPluginConfiguration(pPluginConfigurationId);
     }
 
     @Override
     public PluginConfiguration createServiceProviderPlugin(final PluginConfiguration pPluginConfigurationToCreate)
             throws ModuleException {
-        try {
-            return pluginService.savePluginConfiguration(pPluginConfigurationToCreate);
-        } catch (final PluginUtilsException e) {
-            LOG.error(e.getMessage(), e);
-            throw new ModuleException(e.getMessage());
-        }
-
+        return pluginService.savePluginConfiguration(pPluginConfigurationToCreate);
     }
 
     @Override
     public PluginConfiguration updateServiceProviderPlugin(final PluginConfiguration pPluginConfigurationToUpdate)
             throws ModuleException {
-        try {
-            return pluginService.updatePluginConfiguration(pPluginConfigurationToUpdate);
-        } catch (final PluginUtilsException e) {
-            LOG.error(e.getMessage(), e);
-            throw new ModuleException(e.getMessage());
-        }
+        return pluginService.updatePluginConfiguration(pPluginConfigurationToUpdate);
     }
 
     @Override
-    public void deleteServiceProviderPlugin(final Long pPluginConfigurationId) throws EntityNotFoundException {
+    public void deleteServiceProviderPlugin(final Long pPluginConfigurationId) throws ModuleException {
         pluginService.deletePluginConfiguration(pPluginConfigurationId);
     }
 
@@ -168,8 +153,7 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
                                           pAuthInformations.getProject()));
                 }
             }
-
-        } catch (final PluginUtilsException e) {
+        } catch (ModuleException e) {
             throw new BadCredentialsException(e.getMessage(), e);
         }
 
