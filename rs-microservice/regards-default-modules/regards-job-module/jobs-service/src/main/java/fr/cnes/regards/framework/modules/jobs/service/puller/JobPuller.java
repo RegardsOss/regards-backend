@@ -89,7 +89,7 @@ public class JobPuller {
     public void pullJobs() {
         final List<String> projects;
         try {
-            jwtService.injectToken("", MODULE_JOB_ROLE);
+            jwtService.injectToken("", MODULE_JOB_ROLE, "");
             projects = getTenants();
             if (projects.isEmpty()) {
                 LOG.warn("Jobs are deactivated because there is currently no project");

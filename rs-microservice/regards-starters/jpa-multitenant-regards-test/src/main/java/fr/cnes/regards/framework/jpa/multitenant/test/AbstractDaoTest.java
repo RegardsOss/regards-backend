@@ -31,11 +31,6 @@ public abstract class AbstractDaoTest {
     private static final String DEFAULT_TENANT = "PROJECT";
 
     /**
-     * Default role
-     */
-    private static final String DEFAULT_ROLE = "ROLE_USER";
-
-    /**
      * JPA entity manager : use it to flush context to prevent false positive
      */
     @PersistenceContext

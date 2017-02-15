@@ -52,8 +52,8 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.MOCK)
-@ContextConfiguration(
-        classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class, DefaultTestFeignConfiguration.class })
+@ContextConfiguration(classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class,
+        DefaultTestFeignConfiguration.class })
 @AutoConfigureMockMvc
 @ActiveProfiles({ "default", "test" })
 public abstract class AbstractRegardsIT {
@@ -87,7 +87,7 @@ public abstract class AbstractRegardsIT {
      * JSON path root in responses
      */
     protected static final String JSON_PATH_ROOT = "$";
-    
+
     /**
      * JSON path $.* in responses
      */
@@ -110,6 +110,9 @@ public abstract class AbstractRegardsIT {
     @Autowired
     protected MethodAuthorizationService authService;
 
+    /**
+     * Global {@link GsonBuilder}
+     */
     @Autowired
     protected GsonBuilder gsonBuilder;
 

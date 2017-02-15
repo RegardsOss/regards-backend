@@ -122,7 +122,7 @@ public class MethodAuthorizationService {
      */
     public void refreshAuthorities() {
         try {
-            jwtService.injectToken("instance", RoleAuthority.getSysRole(microserviceName));
+            jwtService.injectToken("instance", RoleAuthority.getSysRole(microserviceName), microserviceName);
             tenantResolver.getAllTenants().forEach(this::refreshTenantAuthorities);
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);
@@ -139,7 +139,7 @@ public class MethodAuthorizationService {
      */
     private void refreshTenantAuthorities(final String pTenant) {
         try {
-            jwtService.injectToken(pTenant, RoleAuthority.getSysRole(microserviceName));
+            jwtService.injectToken(pTenant, RoleAuthority.getSysRole(microserviceName), microserviceName);
             registerMethodResourcesAccessByTenant(pTenant);
             collectRolesByTenant(pTenant);
         } catch (final JwtException e) {

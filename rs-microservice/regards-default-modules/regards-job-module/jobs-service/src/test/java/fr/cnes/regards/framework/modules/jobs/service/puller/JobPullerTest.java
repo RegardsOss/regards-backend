@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.modules.jobs.service.allocationstrategy.Default
 import fr.cnes.regards.framework.modules.jobs.service.communication.INewJobPuller;
 import fr.cnes.regards.framework.modules.jobs.service.crossmoduleallocationstrategy.IJobAllocationStrategy;
 import fr.cnes.regards.framework.modules.jobs.service.manager.IJobHandler;
-import fr.cnes.regards.framework.modules.jobs.service.puller.JobPuller;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -118,7 +117,7 @@ public class JobPullerTest {
     @Test
     public void testPullJobWhenJWTTokenFail() throws JwtException {
         final String moduleJobRole = (String) ReflectionTestUtils.getField(jobPuller, "MODULE_JOB_ROLE");
-        Mockito.doThrow(new JwtException("some exception")).when(jwtServiceMocked).injectToken("", moduleJobRole);
+        Mockito.doThrow(new JwtException("some exception")).when(jwtServiceMocked).injectToken("", moduleJobRole, "");
         jobPuller.pullJobs();
         Mockito.verifyZeroInteractions(jobHandlerMock);
     }

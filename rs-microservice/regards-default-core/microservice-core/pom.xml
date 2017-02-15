@@ -17,27 +17,32 @@
 	</parent>
 
 	<dependencies>
-		<!-- REGARDS starters -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>gson-regards-starter</artifactId>
-		</dependency>
+		<!-- Enable microservice features -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>microservice-regards-starter</artifactId>
 		</dependency>
+		<!-- Enable module features -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>module-regards-starter</artifactId>
+		</dependency>
+		<!-- Enable Gson serialization features -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>gson-regards-starter</artifactId>
+		</dependency>
+		<!-- Enable security feature -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-regards-starter</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>amqp-regards-starter</artifactId>
-		</dependency>
+		<!-- Enable swagger features-->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>swagger-regards-starter</artifactId>
 		</dependency>
+		<!-- Enable cloud features -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>cloud-regards-starter</artifactId>

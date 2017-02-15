@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProper
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  *
@@ -59,12 +58,6 @@ public class DataSourcesAutoConfiguration {
      */
     @Autowired
     private ITenantConnectionResolver multitenantResolver;
-
-    /**
-     * Runtime tenant resolver
-     */
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      *

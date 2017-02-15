@@ -40,7 +40,7 @@ public class FeignClientConfiguration {
 
     /**
      *
-     * Intercepter for Feign client requests. This intercepter add the JWT token into requests header.
+     * Interceptor for Feign client requests. This intercepter add the JWT token into requests header.
      *
      * @return RequestInterceptor
      * @since 1.0-SNAPSHOT
@@ -102,7 +102,7 @@ public class FeignClientConfiguration {
     }
 
     @Bean
-    public Contract feignContractg() {
+    public Contract feignContract() {
         return new SpringMvcContract();
     }
 
