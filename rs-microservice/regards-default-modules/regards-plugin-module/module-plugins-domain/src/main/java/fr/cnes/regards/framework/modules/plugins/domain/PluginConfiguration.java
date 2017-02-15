@@ -103,6 +103,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     public PluginConfiguration() {
         super();
         pluginId = "undefined";
+        priorityOrder=0;
+        version="0.0";
     }
 
     /**
