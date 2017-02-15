@@ -35,9 +35,11 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.accountunlock.IAccountUnlockService;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
-import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
+import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.passwordreset.OnPasswordResetEvent;
 import fr.cnes.regards.modules.accessrights.registration.AppUrlBuilder;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
@@ -74,8 +76,17 @@ public class AccountsController implements IResourceController<Account> {
     @Autowired
     private IAccountTransitions accountWorkflowManager;
 
+    /**
+     * The service exposing account unlock functionalities
+     */
     @Autowired
     private IAccountUnlockService accountUnlockService;
+
+    /**
+     * The service exposing password reset functionalities
+     */
+    @Autowired
+    private IPasswordResetService passwordResetService;
 
     /**
      * Root admin user login
@@ -238,49 +249,47 @@ public class AccountsController implements IResourceController<Account> {
     }
 
     /**
-     * Change the passord of an {@link Account}.
-     *
-     * @param pAccountId
-     *            The {@link Account}'s <code>id</code>
-     * @param pResetCode
-     *            The reset code. Required to allow a password change
-     * @param pNewPassword
-     *            The new <code>password</code>
-     * @return void
-     * @throws EntityException
-     */
-    @ResponseBody
-    @RequestMapping(value = "/{account_id}/password/{reset_code}", method = RequestMethod.PUT)
-    @ResourceAccess(description = "change the passsword of account account_id according to the code reset_code",
-            role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> changeAccountPassword(@PathVariable("account_id") final Long pAccountId,
-            @PathVariable("reset_code") final String pResetCode, @Valid @RequestBody final String pNewPassword)
-            throws EntityException {
-        accountService.changeAccountPassword(pAccountId, pResetCode, pNewPassword);
-        return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * Send to the user an email containing a code:<br>
-     * - to reset password<br>
-     * - to unlock the account
+     * Send to the user an email containing a link with limited validity to reset its password.
      *
      * @param pEmail
      *            The {@link Account}'s <code>email</code>
-     * @param pType
-     *            The {@link CodeType} to send
+     * @param pDto
+     *            The DTO containing<br>
+     *            - The url of the app from where was issued the query<br>
+     *            - The url to redirect the user to the password reset interface
      * @return void
      * @throws EntityNotFoundException
      */
     @ResponseBody
-    @RequestMapping(value = "/code", method = RequestMethod.GET)
+    @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.POST)
     @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Void> sendAccountCode(@RequestParam("email") final String pEmail,
-            @RequestParam("type") final CodeType pType, final HttpServletRequest pRequest)
-            throws EntityNotFoundException {
-        final Account account = accountService.retrieveAccountByEmail(pEmail);
-        final String appUrl = AppUrlBuilder.buildFrom(pRequest);
-        eventPublisher.publishEvent(new OnPasswordResetEvent(account, appUrl));
+    public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
+            @Valid @RequestBody final RequestResetPasswordDto pDto) throws EntityNotFoundException {
+        // Retrieve the account
+        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+
+        // Publish an application event
+        eventPublisher.publishEvent(new OnPasswordResetEvent(account, pDto.getOriginUrl(), pDto.getResetUrl()));
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Change the passord of an {@link Account}.
+     *
+     * @param pEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pDto
+     *            The DTO containing : 1) the token 2) the new password
+     * @return void
+     * @throws EntityException
+     */
+    @ResponseBody
+    @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.PUT)
+    @ResourceAccess(description = "change the passsword of account account_email if provided token is valid",
+            role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> performResetPassword(@PathVariable("account_email") final String pAccountEmail,
+            @Valid @RequestBody final PerformResetPasswordDto pDto) throws EntityException {
+        passwordResetService.performPasswordReset(pAccountEmail, pDto.getToken(), pDto.getNewPassword());
         return ResponseEntity.noContent().build();
     }
 

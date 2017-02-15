@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationEvent;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
- * Event transporting the logic needed for account email validation.
+ * Event transporting the data needed for the password reset process.
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -20,26 +20,35 @@ public class OnPasswordResetEvent extends ApplicationEvent {
     private static final long serialVersionUID = -7099682370525387294L;
 
     /**
-     * The app url
+     * The initiator's account
      */
-    private final String appUrl;
+    private Account account;
 
     /**
-     * The registered account
+     * The url of the app from where was issued the query
      */
-    private final Account account;
+    private final String originUrl;
 
-    public OnPasswordResetEvent(final Account pAccount, final String pAppUrl) {
+    /**
+     * The url to redirect the user to the password reset interface
+     */
+    private final String resetUrl;
+
+    /**
+     * Class constructor
+     *
+     * @param pAccount
+     *            the account
+     * @param pOriginUrl
+     *            the origin url
+     * @param pResetUrl
+     *            the reset url
+     */
+    public OnPasswordResetEvent(final Account pAccount, final String pOriginUrl, final String pResetUrl) {
         super(pAccount);
         this.account = pAccount;
-        this.appUrl = pAppUrl;
-    }
-
-    /**
-     * @return the appUrl
-     */
-    public String getAppUrl() {
-        return appUrl;
+        this.originUrl = pOriginUrl;
+        this.resetUrl = pResetUrl;
     }
 
     /**
@@ -48,4 +57,27 @@ public class OnPasswordResetEvent extends ApplicationEvent {
     public Account getAccount() {
         return account;
     }
+
+    /**
+     * @param pAccount
+     *            the account to set
+     */
+    public void setAccount(final Account pAccount) {
+        account = pAccount;
+    }
+
+    /**
+     * @return the originUrl
+     */
+    public String getOriginUrl() {
+        return originUrl;
+    }
+
+    /**
+     * @return the resetUrl
+     */
+    public String getResetUrl() {
+        return resetUrl;
+    }
+
 }
