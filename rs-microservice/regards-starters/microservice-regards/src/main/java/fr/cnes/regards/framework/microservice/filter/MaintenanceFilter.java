@@ -25,7 +25,7 @@ public class MaintenanceFilter extends OncePerRequestFilter {
 
     private final IRuntimeTenantResolver resolver;
 
-    public MaintenanceFilter(IThreadTenantResolver pResolver) {
+    public MaintenanceFilter(IRuntimeTenantResolver pResolver) {
         resolver = pResolver;
     }
 
