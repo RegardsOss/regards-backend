@@ -24,7 +24,7 @@ public class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
     /**
      * ISO date time official support
      */
-    public static final DateTimeFormatter ISO_DATE_TIME_OPTIONAL_OFFSET;
+    private static final DateTimeFormatter ISO_DATE_TIME_OPTIONAL_OFFSET;
     static {
         ISO_DATE_TIME_OPTIONAL_OFFSET = new DateTimeFormatterBuilder().parseCaseInsensitive()
                 .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME).optionalStart().appendOffsetId().toFormatter();
@@ -39,4 +39,13 @@ public class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
     public LocalDateTime read(JsonReader pIn) throws IOException {
         return LocalDateTime.parse(pIn.nextString(), ISO_DATE_TIME_OPTIONAL_OFFSET);
     }
+
+    public static LocalDateTime parse(String date) {
+        return LocalDateTime.from(ISO_DATE_TIME_OPTIONAL_OFFSET.parse(date));
+    }
+
+    public static String format(LocalDateTime date) {
+        return ISO_DATE_TIME_OPTIONAL_OFFSET.format(date);
+    }
+
 }

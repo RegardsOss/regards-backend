@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -31,9 +32,13 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.google.gson.Gson;
+
+import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 
@@ -47,11 +52,14 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(includeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "instanceEntityManagerFactory", transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
+@EnableJpaRepositories(
+        includeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "instanceEntityManagerFactory",
+        transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties(InstanceDaoProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "instance.enabled", matchIfMissing = true)
+@AutoConfigureAfter(value = { GsonAutoConfiguration.class })
 public class InstanceJpaAutoConfiguration {
 
     /**
@@ -146,6 +154,19 @@ public class InstanceJpaAutoConfiguration {
         return pBuilder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
 
+    }
+
+    /**
+     * this bean allow us to set <b>our</b> instance of Gson, customized for the serialization of any data as jsonb into
+     * the database
+     *
+     * @param pGson
+     * @return
+     */
+    @Bean
+    public Void setGsonIntoGsonUtil(Gson pGson) {
+        GsonUtil.setGson(pGson);
+        return null;
     }
 
 }

@@ -41,7 +41,7 @@ import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
  */
 @Configuration
 @EnableConfigurationProperties(GsonProperties.class)
-@AutoConfigureBefore(HttpMessageConvertersAutoConfiguration.class)
+@AutoConfigureBefore({ HttpMessageConvertersAutoConfiguration.class })
 public class GsonAutoConfiguration implements ApplicationContextAware {
 
     /**
@@ -147,6 +147,6 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
 
     @Override
     public void setApplicationContext(ApplicationContext pApplicationContext) {
-        this.applicationContext = pApplicationContext;
+        applicationContext = pApplicationContext;
     }
 }

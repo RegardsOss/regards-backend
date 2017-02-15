@@ -9,7 +9,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  *
- * Spring component used by Hibernante to determine the tenant to use during the datasource connection creation.
+ * Spring component used by Hibernate to determine the tenant to use during the datasource connection creation.
  *
  *
  * @author Sébastien Binda

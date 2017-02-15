@@ -45,7 +45,7 @@ public class GlobalNonFunctionnalExceptionManager {
      * @return response
      */
     @ExceptionHandler(Throwable.class)
-    public ResponseEntity<ServerErrorResponse> nonFunctionnalException(Exception pException) {
+    public ResponseEntity<ServerErrorResponse> nonFunctionnalException(Throwable pException) {
         LOGGER.error("Unexpected server error", pException);
         MaintenanceManager.setMaintenance(resolver.getTenant());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)

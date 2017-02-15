@@ -30,4 +30,18 @@ public class EntityNotFoundException extends EntityException {
     public EntityNotFoundException(final Long pEntityIdentifier, final Class<?> pEntityClass) {
         this(String.valueOf(pEntityIdentifier), pEntityClass);
     }
+
+    /**
+     * @param pEntityId
+     */
+    public EntityNotFoundException(Long pEntityIdentifier) {
+        this(String.valueOf(pEntityIdentifier));
+    }
+
+    /**
+     * @param pEntityIpId
+     */
+    public EntityNotFoundException(String pEntityIdentifier) {
+        super(String.format("Entity with id : %s doesn't exists", pEntityIdentifier));
+    }
 }
