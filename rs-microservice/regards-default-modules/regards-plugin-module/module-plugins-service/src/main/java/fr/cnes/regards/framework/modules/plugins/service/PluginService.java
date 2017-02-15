@@ -124,6 +124,7 @@ public class PluginService implements IPluginService {
     @Override
     public PluginConfiguration savePluginConfiguration(final PluginConfiguration pPluginConfiguration)
             throws ModuleException {
+        // Check plugin configuration validity
         final StringBuilder msg = new StringBuilder("Impossible to save a plugin configuration");
 
         boolean throwError = false;
@@ -132,6 +133,18 @@ public class PluginService implements IPluginService {
             msg.append(". The plugin configuration cannot be null.");
             throwError = true;
         }
+        if (!throwError && (pPluginConfiguration.getPluginId() == null)) {
+            msg.append(". The unique identifier of the plugin (attribute pluginId) is required.");
+            throwError = true;
+        }
+        if (!throwError && (pPluginConfiguration.getPriorityOrder() == null)) {
+            msg.append(String.format(" <%s> without priority order.", pPluginConfiguration.getPluginId()));
+            throwError = true;
+        }
+        if (!throwError && (pPluginConfiguration.getVersion() == null)) {
+            msg.append(String.format(" <%s> without version.", pPluginConfiguration.getPluginId()));
+            throwError = true;
+        }        
 
         if (throwError) {
             throw new ModuleException(msg.toString());
