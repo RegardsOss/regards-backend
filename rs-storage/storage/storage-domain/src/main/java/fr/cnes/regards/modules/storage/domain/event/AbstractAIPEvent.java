@@ -6,18 +6,17 @@ package fr.cnes.regards.modules.storage.domain.event;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
-import fr.cnes.regards.framework.amqp.event.EventProperties;
-import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@EventProperties(target = Target.ALL, mode = WorkerMode.ALL)
-public abstract class AbstractAIPEvent implements ISubscribableEvent {
+@Event(target = Target.ALL)
+public abstract class AbstractAIPEvent implements ISubscribable {
 
     /**
      * IP ID of the AIP
