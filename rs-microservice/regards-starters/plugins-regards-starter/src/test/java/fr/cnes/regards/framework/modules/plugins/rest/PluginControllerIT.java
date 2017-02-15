@@ -293,28 +293,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
-    public void updatePluginConfigurationErrorVersion() {
-        // Add a PluginConfiguration with the PluginService
-        PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
-                pluginParameters, 0);
-        try {
-            aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
-            aPluginConfiguration.setId(AN_ID);
-            aPluginConfiguration.setVersion(null);
-        } catch (final ModuleException e) {
-            Assert.fail();
-        }
-
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
-
-        // Update the added PluginConfiguration
-        performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID, aPluginConfiguration, expectations,
-                          "unable to update a plugin configuration", PLUGIN_ID, aPluginConfiguration.getId());
-    }
-
-    @Test
-    @DirtiesContext
     public void updatePluginConfigurationErrorPluginId() {
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 pluginParameters, 0);
@@ -369,31 +347,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
         performPost(PluginController.PLUGINS_PLUGINID_CONFIGS, token, aPluginConfiguration, expectations,
                     "unable to save a plugin configuration", PLUGIN_ID);
-    }
-
-    @Test
-    public void savePluginConfigurationErrorPriorityOrderNull() {
-        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
-                pluginParameters, 0);
-
-        aPluginConfiguration.setPriorityOrder(null);
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
-        performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, aPluginConfiguration, expectations,
-                           "unable to save a plugin configuration", PLUGIN_ID);
-    }
-
-    @Test
-    @DirtiesContext
-    public void savePluginConfigurationErrorVersionNull() {
-        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
-                pluginParameters, 0);
-
-        aPluginConfiguration.setVersion(null);
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
-        performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, aPluginConfiguration, expectations,
-                           "unable to save a plugin configuration", PLUGIN_ID);
     }
 
     @Test
