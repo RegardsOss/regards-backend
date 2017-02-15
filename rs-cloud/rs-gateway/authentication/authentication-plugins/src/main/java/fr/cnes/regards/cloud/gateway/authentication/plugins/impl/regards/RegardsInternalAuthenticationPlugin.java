@@ -20,7 +20,6 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 
-
 /**
  *
  * Class SimpleAuthentication
@@ -30,8 +29,7 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@Plugin(author = "CSSI", description = "Regards internal authentication plugin",
-        id = "RegardsInternalAuthenticationPlugin", version = "1.0")
+@Plugin(author = "CSSI", description = "Regards internal authentication plugin", id = "RegardsInternalAuthenticationPlugin", version = "1.0")
 public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**
@@ -64,7 +62,7 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
         String errorMessage = null;
 
         try {
-            jwtService.injectToken(pScope, RoleAuthority.getSysRole(microserviceName));
+            jwtService.injectToken(pScope, RoleAuthority.getSysRole(microserviceName), microserviceName);
             final ResponseEntity<AccountStatus> validateResponse = accountsClient.validatePassword(pEmail, pPassword);
             if (validateResponse.getStatusCode().equals(HttpStatus.OK)) {
                 if (validateResponse.getBody().equals(AccountStatus.ACTIVE)) {

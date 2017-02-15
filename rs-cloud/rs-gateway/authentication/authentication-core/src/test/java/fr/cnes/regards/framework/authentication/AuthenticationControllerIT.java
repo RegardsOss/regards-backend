@@ -23,7 +23,7 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.ldap.LdapAuthen
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * 
+ *
  * @since 1.0-SNAPSHOT
  */
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
@@ -57,11 +57,6 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
      * Access route
      */
     private static final String IDP_URL = "/authentication/idps/{idp_id}";
-
-    /**
-     * Generated token for tests
-     */
-    private static String token = "";
 
     /**
      * Default plugin version
@@ -89,6 +84,9 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
      */
     private PluginConfiguration aPluginConfSaved;
 
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     @Override
     protected Logger getLogger() {
         return LOG;
@@ -102,10 +100,7 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
      */
     @Before
     public void init() {
-        JWTService jwtService = new JWTService();
-        jwtService.setSecret("123456789");
-        jwtService.injectMockToken(DEFAULT_TENANT, "PUBLIC");
-        jwtService.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DEFAULT_ROLE);
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
 
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_LDAP);
@@ -121,7 +116,6 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
         manageDefaultSecurity(IDP_URL, RequestMethod.PUT);
         manageDefaultSecurity(IDP_URL, RequestMethod.DELETE);
 
-        token = generateToken(DEFAULT_USER_EMAIL, DEFAULT_ROLE);
     }
 
     /**
@@ -139,7 +133,7 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
-        performGet(IDPS_URL, token, expectations, "Error getting identity providers");
+        performDefaultGet(IDPS_URL, expectations, "Error getting identity providers");
     }
 
     /**
@@ -158,8 +152,8 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isArray());
-        performGet(IDPS_URL + URL_PATH_SEPARATOR + aPluginConfSaved.getId().toString(), token, expectations,
-                   "retrieveIdentityProvider : Error getting identity provider");
+        performDefaultGet(IDPS_URL + URL_PATH_SEPARATOR + aPluginConfSaved.getId().toString(), expectations,
+                          "retrieveIdentityProvider : Error getting identity provider");
     }
 
     /**
@@ -175,8 +169,8 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
     public void retrieveInexistantIdentityProvider() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
-        performGet(IDPS_URL + "/123", token, expectations,
-                   "retrieveInexistantIdentityProvider : Error getting identity provider");
+        performDefaultGet(IDPS_URL + "/123", expectations,
+                          "retrieveInexistantIdentityProvider : Error getting identity provider");
     }
 
     /**
@@ -202,7 +196,7 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isArray());
-        performPost(IDPS_URL, token, conf, expectations, "createIdentityProvider : Error getting identity provider");
+        performDefaultPost(IDPS_URL, conf, expectations, "createIdentityProvider : Error getting identity provider");
     }
 
     /**
@@ -226,8 +220,8 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".version",
                                                         org.hamcrest.Matchers.is(newVersion)));
-        performPut(IDPS_URL + URL_PATH_SEPARATOR + aPluginConfSaved.getId().toString(), token, aPluginConfSaved,
-                   expectations, "updateIdentityProvider : Error getting identity provider");
+        performDefaultPut(IDPS_URL + URL_PATH_SEPARATOR + aPluginConfSaved.getId().toString(), aPluginConfSaved,
+                          expectations, "updateIdentityProvider : Error getting identity provider");
     }
 
     /**
@@ -249,8 +243,8 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
         unSavedPluginConf.setId(12345L);
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
-        performPut(IDPS_URL + URL_PATH_SEPARATOR + unSavedPluginConf.getId().toString(), token, unSavedPluginConf,
-                   expectations, "updateInexistantIdentityProvider : Error getting identity provider");
+        performDefaultPut(IDPS_URL + URL_PATH_SEPARATOR + unSavedPluginConf.getId().toString(), unSavedPluginConf,
+                          expectations, "updateInexistantIdentityProvider : Error getting identity provider");
     }
 
     /**
@@ -272,8 +266,8 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
         conf.setId(123L);
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().is(HttpStatus.BAD_REQUEST_400));
-        performPut(IDPS_URL + "/12", token, conf, expectations,
-                   "updateInvalidIdentityProvider : Error getting identity provider");
+        performDefaultPut(IDPS_URL + "/12", conf, expectations,
+                          "updateInvalidIdentityProvider : Error getting identity provider");
     }
 
     /**
@@ -295,8 +289,8 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
         aPluginConfToDelete = pluginConfRepo.save(aPluginConfToDelete);
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDelete(IDPS_URL + URL_PATH_SEPARATOR + aPluginConfToDelete.getId().toString(), token, expectations,
-                      "deleteIdentityProvider : Error getting identity provider");
+        performDefaultDelete(IDPS_URL + URL_PATH_SEPARATOR + aPluginConfToDelete.getId().toString(), expectations,
+                             "deleteIdentityProvider : Error getting identity provider");
     }
 
     /**
@@ -312,7 +306,7 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
     public void deleteInexistantIndentityProvider() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
-        performDelete(IDPS_URL + "/1000", token, expectations, "Error getting identity provider");
+        performDefaultDelete(IDPS_URL + "/1000", expectations, "Error getting identity provider");
 
     }
 

@@ -54,7 +54,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * 
+ *
  * @since 1.0-SNPASHOT
  */
 public class Oauth2AuthenticationManager implements AuthenticationManager, BeanFactoryAware {
@@ -130,7 +130,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         // There is no token in SecurityContext now. We have to set one for the given scope to allow access to JPA for
         // plugins service
         try {
-            jwtService.injectToken(scope, RoleAuthority.getSysRole(microserviceName));
+            jwtService.injectToken(scope, RoleAuthority.getSysRole(microserviceName), microserviceName);
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);
             throw new BadCredentialsException("Internal server error");
@@ -336,7 +336,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 throw new BadCredentialsException(message);
             }
 
-            jwtService.injectToken(pScope, RoleAuthority.getSysRole(microserviceName));
+            jwtService.injectToken(pScope, RoleAuthority.getSysRole(microserviceName), microserviceName);
 
             final ResponseEntity<Resource<ProjectUser>> response = projectUsersClient.retrieveProjectUser(pEmail);
             if (response.getStatusCode() == HttpStatus.OK) {
