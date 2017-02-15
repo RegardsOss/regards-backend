@@ -135,7 +135,8 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
     public void addTenantConnection(final TenantConnection pTenantConnection) {
 
         try {
-            jwtService.injectToken(pTenantConnection.getName(), RoleAuthority.getSysRole(microserviceName));
+            jwtService.injectToken(pTenantConnection.getName(), RoleAuthority.getSysRole(microserviceName),
+                                   microserviceName);
         } catch (JwtException e1) {
             Throwables.propagate(e1);
         }

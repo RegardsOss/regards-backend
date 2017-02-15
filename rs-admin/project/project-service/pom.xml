@@ -18,6 +18,10 @@
 		<!-- Framework dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>module-regards</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>amqp-regards</artifactId>
 		</dependency>
 		<!-- Microservice internal dependencies -->

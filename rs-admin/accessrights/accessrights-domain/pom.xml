@@ -20,8 +20,13 @@
 			<artifactId>regards-core-jpa-data</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>module-core</artifactId>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards</artifactId>
 		</dependency>
 		<!-- Tests dependencies -->
 		<dependency>

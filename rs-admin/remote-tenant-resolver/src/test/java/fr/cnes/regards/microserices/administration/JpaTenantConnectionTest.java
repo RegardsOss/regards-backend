@@ -10,8 +10,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
@@ -26,7 +26,7 @@ import fr.cnes.regards.microservices.administration.MicroserviceAutoConfiguratio
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@RunWith(RegardsSpringRunner.class)
+@RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration(classes = { JpaTenantConnectionConfiguration.class, MicroserviceAutoConfiguration.class })
 public class JpaTenantConnectionTest {

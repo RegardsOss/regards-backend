@@ -22,7 +22,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -77,16 +78,28 @@ public class RoleServiceTest {
     private IProjectUserRepository projectUserRepository;
 
     /**
+     * Tenant resolver
+     */
+    private ITenantResolver tenantResolver;
+
+    /**
+     * Runtime tenant resolver
+     */
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
      * Do some setup before each test
      */
     @Before
     public void init() {
         roleRepository = Mockito.mock(IRoleRepository.class);
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
+        tenantResolver = Mockito.mock(ITenantResolver.class);
+        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         final JWTService jwService = new JWTService();
         jwService.setSecret("123456789");
-        roleService = new RoleService("rs-test", roleRepository, projectUserRepository, new LocalTenantResolver(),
-                jwService, null);
+        roleService = new RoleService("rs-test", roleRepository, projectUserRepository, tenantResolver,
+                runtimeTenantResolver, jwService, null);
 
         // Clear the repos
         projectUserRepository.deleteAll();

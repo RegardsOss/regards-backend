@@ -1,7 +1,5 @@
 package fr.cnes.regards.modules.emails.domain;
 
-
-
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -13,7 +11,6 @@ import javax.persistence.SequenceGenerator;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.util.ObjectUtils;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -26,7 +23,7 @@ import fr.cnes.regards.framework.jpa.validator.PastOrNow;
  *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
- * 
+ *
  * @see org.springframework.mail.SimpleMailMessage
  */
 @Entity(name = "T_EMAIL")

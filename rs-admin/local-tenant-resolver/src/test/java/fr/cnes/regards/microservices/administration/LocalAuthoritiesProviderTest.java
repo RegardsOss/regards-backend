@@ -15,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.transaction.BeforeTransaction;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -75,7 +73,7 @@ public class LocalAuthoritiesProviderTest {
     @Before
     public void init() throws JwtException {
         jwtService.injectToken(AuthoritiesTestConfiguration.PROJECT_NAME,
-                               AuthoritiesTestConfiguration.CORS_ROLE_NAME_GRANTED);
+                               AuthoritiesTestConfiguration.CORS_ROLE_NAME_GRANTED, "");
         final List<String> addresses = new ArrayList<>();
         addresses.add("127.0.0.1");
         addresses.add("127.0.0.2");

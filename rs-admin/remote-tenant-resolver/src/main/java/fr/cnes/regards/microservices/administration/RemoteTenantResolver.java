@@ -58,14 +58,14 @@ public class RemoteTenantResolver implements ITenantResolver {
 
     @Override
     public Set<String> getAllTenants() {
-        return JwtTokenUtils.asSafeCallableOnRole(this::getAllTenantsSupplier, jwtService)
+        return JwtTokenUtils.asSafeCallableOnRole(this::getAllTenantsSupplier, jwtService, null)
                 .apply(RoleAuthority.getSysRole(microserviceName));
 
     }
 
     /**
      *
-     * Retrieve all tenants from the administration service throught the projects client.
+     * Retrieve all tenants from the administration service through the projects client.
      *
      * @return
      * @since 1.0-SNAPSHOT

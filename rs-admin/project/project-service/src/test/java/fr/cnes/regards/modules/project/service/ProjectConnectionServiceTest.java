@@ -16,7 +16,6 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProper
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -104,11 +103,6 @@ public class ProjectConnectionServiceTest {
     private ProjectConnectionService projectConnectionService;
 
     /**
-     * JWT token management service
-     */
-    private JWTService jwtService;
-
-    /**
      * Stubbed repository
      */
     private IProjectConnectionRepository projectConnectionRepoStub;
@@ -121,11 +115,6 @@ public class ProjectConnectionServiceTest {
      */
     @Before
     public void init() {
-
-        // Init jwtService
-        jwtService = new JWTService();
-        jwtService.setSecret("123456789");
-        jwtService.injectMockToken("instance", "DEFAULT");
 
         // use a stub repository, to be able to only test the service
         final IProjectRepository projectRepoStub = new ProjectRepositoryStub();

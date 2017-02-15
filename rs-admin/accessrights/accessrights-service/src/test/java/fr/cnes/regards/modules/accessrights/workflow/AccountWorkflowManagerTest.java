@@ -20,9 +20,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -114,9 +114,9 @@ public class AccountWorkflowManagerTest {
     private ITenantResolver tenantResolver;
 
     /**
-     * Mocked JWT Service
+     * Mocked runtime tenant resolver
      */
-    private JWTService jwtService;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Mocked account state factory
@@ -139,7 +139,7 @@ public class AccountWorkflowManagerTest {
         accountRepository = Mockito.mock(IAccountRepository.class);
         projectUserService = Mockito.mock(IProjectUserService.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
-        jwtService = Mockito.mock(JWTService.class);
+        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
         accountSettingsService = Mockito.mock(IAccountSettingsService.class);
 
@@ -172,8 +172,8 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(true);
-        Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new ActiveState(projectUserService, accountRepository, jwtService, tenantResolver));
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
+                accountRepository, tenantResolver, runtimeTenantResolver));
 
         // Trigger the exception
         accountWorkflowManager.deleteAccount(account);
@@ -192,8 +192,8 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
-        Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new ActiveState(projectUserService, accountRepository, jwtService, tenantResolver));
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
+                accountRepository, tenantResolver, runtimeTenantResolver));
         // Prepare the case
         account.setId(ID);
         account.setStatus(AccountStatus.ACCEPTED);
@@ -219,8 +219,8 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
-        Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new ActiveState(projectUserService, accountRepository, jwtService, tenantResolver));
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
+                accountRepository, tenantResolver, runtimeTenantResolver));
 
         // Call the method
         accountWorkflowManager.deleteAccount(account);
@@ -340,8 +340,8 @@ public class AccountWorkflowManagerTest {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new ActiveState(projectUserService, accountRepository, jwtService, tenantResolver));
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
+                accountRepository, tenantResolver, runtimeTenantResolver));
 
         // Trigger exception
         accountWorkflowManager.unlockAccount(account, CODE);
@@ -365,8 +365,8 @@ public class AccountWorkflowManagerTest {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new LockedState(projectUserService, accountRepository, jwtService, tenantResolver));
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new LockedState(projectUserService,
+                accountRepository, tenantResolver, runtimeTenantResolver));
 
         // Trigger exception
         accountWorkflowManager.unlockAccount(account, "wrongCode");
@@ -386,8 +386,8 @@ public class AccountWorkflowManagerTest {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new LockedState(projectUserService, accountRepository, jwtService, tenantResolver));
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new LockedState(projectUserService,
+                accountRepository, tenantResolver, runtimeTenantResolver));
 
         // Prepare the case
         account.setStatus(AccountStatus.LOCKED);

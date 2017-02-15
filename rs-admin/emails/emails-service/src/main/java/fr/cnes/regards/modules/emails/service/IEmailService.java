@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.mail.SimpleMailMessage;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.emails.domain.Email;
 
 /**
@@ -39,7 +40,7 @@ public interface IEmailService {
      *            The email id
      * @return The email as {@link Email}
      */
-    Email retrieveEmail(Long pId);
+    Email retrieveEmail(Long pId) throws ModuleException;
 
     /**
      * Re-sends the email of passed id
@@ -48,7 +49,7 @@ public interface IEmailService {
      *            The email id
      * @return
      */
-    void resendEmail(Long pId);
+    void resendEmail(Long pId) throws ModuleException;
 
     /**
      * Deletes the email of passed id

@@ -15,7 +15,16 @@
 	</parent>
 
 	<dependencies>
+		<!-- Mail -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
 		<!-- Microservice internal dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>module-regards</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
 			<artifactId>emails-domain</artifactId>

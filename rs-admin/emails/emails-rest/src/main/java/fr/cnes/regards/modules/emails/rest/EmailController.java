@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.service.IEmailService;
@@ -30,8 +31,7 @@ import fr.cnes.regards.modules.emails.service.IEmailService;
  *
  */
 @RestController
-@ModuleInfo(name = "emails", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
+@ModuleInfo(name = "emails", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping(value = "/emails")
 public class EmailController {
 
@@ -74,10 +74,12 @@ public class EmailController {
      * @param pId
      *            The email id
      * @return The email as a {@link Email} wrapped in an {@link ResponseEntity}
+     * @throws ModuleException
+     *             if email cannot be found
      */
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve an email")
-    public ResponseEntity<Email> retrieveEmail(@PathVariable("mail_id") final Long pId) {
+    public ResponseEntity<Email> retrieveEmail(@PathVariable("mail_id") final Long pId) throws ModuleException {
         final Email email = emailService.retrieveEmail(pId);
         return new ResponseEntity<>(email, HttpStatus.OK);
     }
@@ -88,10 +90,12 @@ public class EmailController {
      * @param pId
      *            The email id
      * @return void
+     * @throws ModuleException
+     *             if email cannot be found
      */
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.PUT)
     @ResourceAccess(description = "Send again an email")
-    public void resendEmail(@PathVariable("mail_id") final Long pId) {
+    public void resendEmail(@PathVariable("mail_id") final Long pId) throws ModuleException {
         emailService.resendEmail(pId);
     }
 

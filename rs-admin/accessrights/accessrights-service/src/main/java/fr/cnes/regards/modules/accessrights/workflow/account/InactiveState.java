@@ -6,8 +6,8 @@ package fr.cnes.regards.modules.accessrights.workflow.account;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -28,14 +28,14 @@ public class InactiveState extends AbstractDeletableState {
      *            the project user service
      * @param pAccountRepository
      *            the account repository
-     * @param pJwtService
-     *            the jwt service
      * @param pTenantResolver
      *            the tenant resolver
+     * @param pRuntimeTenantResolver
+     *            runtime tenant resolver
      */
-    public InactiveState(final IProjectUserService pProjectUserService, final IAccountRepository pAccountRepository,
-            final JWTService pJwtService, final ITenantResolver pTenantResolver) {
-        super(pProjectUserService, pAccountRepository, pJwtService, pTenantResolver);
+    public InactiveState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
+            ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver) {
+        super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver);
     }
 
     @Override

@@ -24,14 +24,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -44,8 +45,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleLineageAssembler;
-import fr.cnes.regards.modules.accessrights.service.role.event.handler.NewProjectConnectionEventHandler;
-import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
+import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
 import fr.cnes.regards.modules.project.domain.event.NewProjectConnectionEvent;
 
 /**
@@ -90,6 +90,11 @@ public class RoleService implements IRoleService {
     private final ITenantResolver tenantResolver;
 
     /**
+     * Runtime tenant resolver
+     */
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
      * Security service
      */
     private final JWTService jwtService;
@@ -107,11 +112,13 @@ public class RoleService implements IRoleService {
 
     public RoleService(@Value("${spring.application.name}") final String pMicroserviceName,
             final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
-            final ITenantResolver pTenantResolver, final JWTService pJwtService, final ISubscriber pSubscriber) {
+            final ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
+            final JWTService pJwtService, final ISubscriber pSubscriber) {
         super();
         roleRepository = pRoleRepository;
         projectUserRepository = pProjectUserRepository;
         tenantResolver = pTenantResolver;
+        this.runtimeTenantResolver = pRuntimeTenantResolver;
         jwtService = pJwtService;
         microserviceName = pMicroserviceName;
         subscriber = pSubscriber;
@@ -124,24 +131,52 @@ public class RoleService implements IRoleService {
      *             initialization error
      */
     @PostConstruct
-    public void init() throws RabbitMQVhostException {
+    public void init() {
 
-        subscriber.subscribeTo(NewProjectConnectionEvent.class, new NewProjectConnectionEventHandler(jwtService, this),
-                               AmqpCommunicationMode.ONE_TO_MANY, AmqpCommunicationTarget.MICROSERVICE);
+        subscriber.subscribeTo(NewProjectConnectionEvent.class,
+                               new NewProjectConnectionEventHandler(runtimeTenantResolver, this));
 
         initDefaultRoles();
+    }
+
+    private class NewProjectConnectionEventHandler implements IHandler<NewProjectConnectionEvent> {
+
+        private final IRoleService roleService;
+
+        private final IRuntimeTenantResolver runtimeTenantResolver;
+
+        public NewProjectConnectionEventHandler(IRuntimeTenantResolver pRuntimeTenantResolver,
+                IRoleService pRoleService) {
+            super();
+            roleService = pRoleService;
+            runtimeTenantResolver = pRuntimeTenantResolver;
+        }
+
+        /**
+         *
+         * Initialize default roles in the new project connection
+         *
+         * @see fr.cnes.regards.framework.amqp.domain.IHandler#handle(fr.cnes.regards.framework.amqp.domain.TenantWrapper)
+         * @since 1.0-SNAPSHOT
+         */
+        @Override
+        public void handle(final TenantWrapper<NewProjectConnectionEvent> pWrapper) {
+            runtimeTenantResolver.forceTenant(pWrapper.getTenant());
+            roleService.initDefaultRoles();
+        }
     }
 
     /**
      * Ensure the existence of default roles. If not, add them from their bean definition in defaultRoles.xml
      */
+    // FIXME method à revoir avec IRuntimeTenantResolver
     @Override
     public void initDefaultRoles() {
 
         // Define a consumer injecting the passed tenant in the context
         final Consumer<? super String> injectTenant = tenant -> {
             try {
-                jwtService.injectToken(tenant, RoleAuthority.getSysRole(microserviceName));
+                jwtService.injectToken(tenant, RoleAuthority.getSysRole(microserviceName), microserviceName);
             } catch (final JwtException e) {
                 LOG.error(e.getMessage(), e);
             }

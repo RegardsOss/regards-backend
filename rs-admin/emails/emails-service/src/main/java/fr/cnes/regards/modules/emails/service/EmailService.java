@@ -9,10 +9,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
 
@@ -25,6 +29,11 @@ import fr.cnes.regards.modules.emails.domain.Email;
  */
 @Service
 public class EmailService implements IEmailService {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
 
     /**
      * CRUD repository managing emails
@@ -80,12 +89,16 @@ public class EmailService implements IEmailService {
     }
 
     @Override
-    public Email retrieveEmail(final Long pId) {
-        return emailRepository.findOne(pId);
+    public Email retrieveEmail(final Long pId) throws ModuleException {
+        Email email = emailRepository.findOne(pId);
+        if (email == null) {
+            throw new EntityNotFoundException(pId, Email.class);
+        }
+        return email;
     }
 
     @Override
-    public void resendEmail(final Long pId) {
+    public void resendEmail(final Long pId) throws ModuleException {
         final Email email = retrieveEmail(pId);
         final SimpleMailMessage message = createSimpleMailMessageFromEmail(email);
         mailSender.send(message);

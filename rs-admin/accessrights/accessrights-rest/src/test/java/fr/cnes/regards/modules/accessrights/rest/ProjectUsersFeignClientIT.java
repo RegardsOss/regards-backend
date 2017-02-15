@@ -43,7 +43,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() throws JwtException {
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
+        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         client = HystrixFeign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
                 .decoder(new ResponseEntityDecoder(new GsonDecoder())).decode404().target(new TokenClientProvider<>(
                         IProjectUsersClient.class, "http://" + serverAddress + ":" + getPort()));

@@ -36,6 +36,7 @@ import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
@@ -170,12 +171,13 @@ public class EmailServiceTest {
      *
      * @throws MessagingException
      *             Exception thrown by getters of {@link MimeMessage}
+     * @throws ModuleException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to retrieve a single email.")
-    public void retrieveEmail() throws MessagingException {
+    public void retrieveEmail() throws MessagingException, ModuleException {
         final Long id = 0L;
 
         // Create dummy email
@@ -197,12 +199,14 @@ public class EmailServiceTest {
 
     /**
      * Check that the system handles the case where an email cannot be found when re-sending.
+     * 
+     * @throws ModuleException
      */
     @Test(expected = Exception.class)
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system handles the case where an email cannot be found when re-sending.")
-    public void resendEmailNotFound() {
+    public void resendEmailNotFound() throws ModuleException {
         final Long id = 999L;
         assumeTrue("EmailDTO passed id is expected to not be found", !emailService.exists(id));
         emailService.resendEmail(id);
@@ -213,12 +217,13 @@ public class EmailServiceTest {
      *
      * @throws MessagingException
      *             Exception thrown by getters of {@link MimeMessage}
+     * @throws ModuleException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to re-send an email.")
-    public void resendEmail() throws MessagingException {
+    public void resendEmail() throws MessagingException, ModuleException {
         final Long id = 0L;
 
         // Create dummy email with random subject and content and add a recipient

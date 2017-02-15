@@ -17,9 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.emails.service.IEmailService;
  *
  */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
-@ImportResource({ "classpath*:mailSender.xml" })
+@ContextConfiguration(classes = EmailConfiguration.class)
 public class EmailControllerIT extends AbstractRegardsIT {
 
     /**

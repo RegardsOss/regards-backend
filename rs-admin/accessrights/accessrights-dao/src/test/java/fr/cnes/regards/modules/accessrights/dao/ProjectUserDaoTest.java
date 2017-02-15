@@ -13,10 +13,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.transaction.BeforeTransaction;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -43,10 +43,10 @@ public class ProjectUserDaoTest {
     private IProjectUserRepository projectUserRepository;
 
     /**
-     * Security service to generate tokens.
+     * Runtime tenant resolver
      */
     @Autowired
-    private JWTService jwtService;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Role projectUserRepository.
@@ -54,13 +54,17 @@ public class ProjectUserDaoTest {
     @Autowired
     private IRoleRepository roleRepository;
 
+    @BeforeTransaction
+    public void beforeTransaction() {
+        runtimeTenantResolver.forceTenant("test1");
+    }
+
     /**
      * @throws JwtException
      *             if the token is wrong
      */
     @Before
-    public void setUp() throws JwtException {
-        jwtService.injectToken("test1", "USER");
+    public void setUp() {
         projectUserRepository.deleteAll();
         roleRepository.deleteAll();
     }

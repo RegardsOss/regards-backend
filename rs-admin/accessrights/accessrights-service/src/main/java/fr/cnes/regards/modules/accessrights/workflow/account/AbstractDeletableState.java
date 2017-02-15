@@ -4,16 +4,15 @@
 package fr.cnes.regards.modules.accessrights.workflow.account;
 
 import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.JwtTokenUtils;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -29,6 +28,11 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
 abstract class AbstractDeletableState implements IAccountTransitions {
 
     /**
+     * Logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDeletableState.class);
+
+    /**
      * Service managing {@link ProjectUser}s. Autowired by Spring.
      */
     private final IProjectUserService projectUserService;
@@ -39,14 +43,14 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     private final IAccountRepository accountRepository;
 
     /**
-     * JWT Service. Autowired by Spring.
-     */
-    private final JWTService jwtService;
-
-    /**
      * Tenant resolver
      */
     private final ITenantResolver tenantResolver;
+
+    /**
+     * Runtime tenant resolver
+     */
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Constructor
@@ -55,19 +59,17 @@ abstract class AbstractDeletableState implements IAccountTransitions {
      *            the project user service
      * @param pAccountRepository
      *            the account repository
-     * @param pJwtService
-     *            the jwt service
      * @param pTenantResolver
      *            the tenant resolver
      */
     public AbstractDeletableState(final IProjectUserService pProjectUserService,
-            final IAccountRepository pAccountRepository, final JWTService pJwtService,
-            final ITenantResolver pTenantResolver) {
+            final IAccountRepository pAccountRepository, final ITenantResolver pTenantResolver,
+            IRuntimeTenantResolver pRuntimeTenantResolver) {
         super();
         projectUserService = pProjectUserService;
         accountRepository = pAccountRepository;
-        jwtService = pJwtService;
         tenantResolver = pTenantResolver;
+        this.runtimeTenantResolver = pRuntimeTenantResolver;
     }
 
     @Override
@@ -85,7 +87,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     }
 
     /**
-     * Delete an accont
+     * Delete an account
      *
      * @param pAccount
      *            the account
@@ -96,20 +98,21 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         // Get all tenants
         final Set<String> tenants = tenantResolver.getAllTenants();
 
-        // Is there a project user associated to the account on the current tenant?
-        final Supplier<Boolean> hasProjectUser = () -> projectUserService.existUser(pAccount.getEmail());
+        for (String tenant : tenants) {
+            runtimeTenantResolver.forceTenant(tenant);
 
-        // Is there a project user associated to the account on the passed tenant?
-        final Function<String, Boolean> hasProjectUserOnTenant = JwtTokenUtils.asSafeCallableOnTenant(hasProjectUser);
-
-        try (Stream<String> stream = tenants.stream()) {
-            if (stream.anyMatch(hasProjectUserOnTenant::apply)) {
-                throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class,
-                        "Cannot remove account because it is linked to at least on project user.");
-            } else {
-                accountRepository.delete(pAccount.getId());
+            // Is there a project user associated to the account on the passed tenant?
+            if (projectUserService.existUser(pAccount.getEmail())) {
+                String errorMessage = String.format(
+                                                    "Cannot remove account %s because it is linked to at least one project.",
+                                                    pAccount.getEmail());
+                LOGGER.error(errorMessage);
+                throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, errorMessage);
             }
         }
+
+        LOGGER.info("Deleting account {} from instance.", pAccount.getEmail());
+        accountRepository.delete(pAccount.getId());
     }
 
     /**
@@ -127,17 +130,10 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     }
 
     /**
-     * @return the jwtService
-     */
-    protected JWTService getJwtService() {
-        return jwtService;
-    }
-
-    /**
      * @return the tenantResolver
      */
     protected ITenantResolver getTenantResolver() {
         return tenantResolver;
-    };
+    }
 
 }

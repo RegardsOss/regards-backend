@@ -67,7 +67,7 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
      */
     @Before
     public void init() throws JwtException {
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
+        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         client = HystrixFeign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
                 .decoder(new ResponseEntityDecoder(new GsonDecoder())).decode404()
                 .target(new TokenClientProvider<>(IResourcesClient.class, "http://" + serverAddress + ":" + getPort()));
@@ -82,7 +82,7 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveResourcesListFromFeignClient() {
         try {
-            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PUBLIC.toString());
+            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PUBLIC.toString(), "");
             final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> response = client
                     .retrieveResourcesAccesses(0, 20);
             Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
@@ -95,7 +95,7 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void registerResourcesFromFeignClient() {
         try {
-            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString());
+            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString(), "");
             final List<ResourceMapping> resources = new ArrayList<>();
             resources.add(new ResourceMapping("/register/test", RequestMethod.GET));
             final ResponseEntity<Void> response = client.registerMicroserviceEndpoints("rs-test", resources);
@@ -109,7 +109,7 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveMicroserviceResourcesFromFeignClient() {
         try {
-            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PUBLIC.toString());
+            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PUBLIC.toString(), "");
             final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> response = client
                     .retrieveResourcesAccesses("rs-test", 0, 20);
             Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));

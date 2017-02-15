@@ -3,6 +3,9 @@
  */
 package fr.cnes.regards.modules.project.domain.event;
 
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
@@ -14,7 +17,8 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public class NewProjectConnectionEvent {
+@Event(target = Target.MICROSERVICE)
+public class NewProjectConnectionEvent implements ISubscribable {
 
     /**
      * The new project to manage

@@ -18,10 +18,6 @@
 		<!-- REGARDS Framework -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-instance-regards</artifactId>
 		</dependency>
 		<dependency>

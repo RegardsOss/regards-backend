@@ -9,13 +9,15 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -31,8 +33,10 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
+@ActiveProfiles("test")
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { ProjectDaoTestConfiguration.class })
-public class ProjectDaoIT extends AbstractDaoTest {
+public class ProjectDaoIT {
 
     /**
      * A microservce name

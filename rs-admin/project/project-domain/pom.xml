@@ -17,7 +17,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-data</artifactId>
+			<artifactId>regards-core-jpa-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>amqp-regards</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>

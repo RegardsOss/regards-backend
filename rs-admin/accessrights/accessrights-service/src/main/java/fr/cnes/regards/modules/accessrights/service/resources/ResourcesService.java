@@ -22,9 +22,6 @@ import org.springframework.stereotype.Service;
 import feign.FeignException;
 import fr.cnes.regards.client.core.TokenClientProvider;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -37,8 +34,8 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
-import fr.cnes.regards.modules.core.utils.RegardsStreamUtils;
 
 /**
  *
@@ -118,7 +115,7 @@ public class ResourcesService implements IResourcesService {
     public void init() {
         try {
             for (final String tenant : tenantResolver.getAllTenants()) {
-                jwtService.injectToken(tenant, RoleAuthority.getSysRole("rs-admin"));
+                jwtService.injectToken(tenant, RoleAuthority.getSysRole("rs-admin"), "");
                 // Collect resources for each tenant configured
                 for (final String service : discoveryClient.getServices()) {
                     registerResources(getRemoteResources(service), service);
@@ -332,13 +329,7 @@ public class ResourcesService implements IResourcesService {
             savedResources.forEach(results::add);
         }
 
-        try {
-            eventPublisher.publish(UpdateAuthoritiesEvent.class, AmqpCommunicationMode.ONE_TO_MANY,
-                                   AmqpCommunicationTarget.ALL);
-        } catch (final RabbitMQVhostException e) {
-            LOG.error("Error publishing resources updates to all running microservices.");
-            LOG.error(e.getMessage(), e);
-        }
+        eventPublisher.publish(new UpdateAuthoritiesEvent());
         return results;
     }
 

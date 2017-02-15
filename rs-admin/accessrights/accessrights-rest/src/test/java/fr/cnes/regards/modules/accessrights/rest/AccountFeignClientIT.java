@@ -51,7 +51,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() throws JwtException {
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString());
+        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString(), "");
         accountsClient = HystrixFeign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
                 .decoder(new ResponseEntityDecoder(new GsonDecoder())).decode404()
                 .target(new TokenClientProvider<>(IAccountsClient.class, "http://" + serverAddress + ":" + getPort()));
@@ -210,7 +210,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void sendAccountCodeFromFeignClient() {
         try {
-            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.REGISTERED_USER.toString());
+            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.REGISTERED_USER.toString(), "");
             final ResponseEntity<Void> response = accountsClient.sendAccountCode("email@unkown.fr", CodeType.UNLOCK);
             Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
         } catch (final Exception e) {

@@ -57,7 +57,7 @@ public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
         try {
             authService.setAuthorities(DEFAULT_TENANT, "/project_connections", RequestMethod.GET,
                                        DefaultRole.INSTANCE_ADMIN.toString());
-            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString());
+            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString(), "");
             final IProjectConnectionClient projectsClient = HystrixFeign.builder().contract(new SpringMvcContract())
                     .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
                     .target(new TokenClientProvider<>(IProjectConnectionClient.class,

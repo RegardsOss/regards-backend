@@ -8,15 +8,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -29,11 +25,8 @@ import fr.cnes.regards.modules.notification.domain.NotificationStatus;
  * @author Christophe Mertz
  *
  */
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { NotificationDaoTestConfig.class })
-@MultitenantTransactional
-public class NotificationDaoIT {
+public class NotificationDaoIT extends AbstractDaoTransactionalTest {
 
     @Autowired
     private INotificationRepository notificationRepository;
@@ -43,10 +36,6 @@ public class NotificationDaoIT {
 
     @Autowired
     private IRoleRepository roleRepository;
-
-    @Before
-    public void init() {
-    }
 
     @Test
     public void createNotification() {
@@ -77,16 +66,16 @@ public class NotificationDaoIT {
         Assert.assertNotNull(notifSaved.getId());
 
         Assert.assertNotNull(notificationRepository.findOne(notifSaved.getId()));
-        
+
         // create a second notification
         final Notification secondNotif = getNotification("Hello Paris!", "jack", NotificationStatus.UNREAD);
-        
+
         // Set recipient
         secondNotif.setProjectUserRecipients(Arrays.asList(getProjectUser("jack-regards@c-s.fr")));
-        
+
         // Set Role
         secondNotif.setRoleRecipients(Arrays.asList(publicRole));
-        
+
         // Save the notification
         notificationRepository.save(secondNotif);
         Assert.assertTrue(notificationRepository.count() == 2);

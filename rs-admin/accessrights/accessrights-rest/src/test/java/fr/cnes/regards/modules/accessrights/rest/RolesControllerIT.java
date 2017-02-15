@@ -181,7 +181,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Check that the system prevents from deleting a native role.
-     * 
+     *
      * @throws JwtException
      */
     @Test
@@ -194,13 +194,13 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isForbidden());
         performDefaultDelete(apiRolesId, expectations, "TODO Error message", publicRole.getId());
 
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
+        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         Assert.assertEquals(nRole, roleRepository.count());
     }
 
     /**
      * Check that the system allows to delete a role.
-     * 
+     *
      * @throws JwtException
      *
      */
@@ -214,7 +214,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isOk());
         performDefaultDelete(apiRolesId, expectations, "TODO Error message", roleTest.getId());
 
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
+        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         Assert.assertEquals(nRole - 1, roleRepository.count());
     }
 

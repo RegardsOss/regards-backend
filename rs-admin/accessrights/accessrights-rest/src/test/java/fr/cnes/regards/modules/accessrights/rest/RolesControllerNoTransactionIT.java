@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -90,7 +89,7 @@ public class RolesControllerNoTransactionIT extends AbstractRegardsTransactional
 
     @Before
     public void init() throws JwtException {
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
+        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         apiRoles = RolesController.REQUEST_MAPPING_ROOT;
         apiRolesId = apiRoles + "/{role_id}";
         apiRolesName = apiRoles + "/{role_name}";
@@ -143,7 +142,7 @@ public class RolesControllerNoTransactionIT extends AbstractRegardsTransactional
 
     @After
     public void rollback() throws JwtException {
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString());
+        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
         Assert.assertEquals(roleRepository.count(), 5);
         publicRole.setPermissions(new ArrayList<>());
