@@ -21,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityCorruptByNetworkException;
+import fr.cnes.regards.framework.module.rest.exception.EntityDescriptionUnacceptableCharsetException;
 import fr.cnes.regards.framework.module.rest.exception.EntityEmbeddedEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -84,6 +85,13 @@ public class GlobalControllerAdvice {
     public ResponseEntity<ServerErrorResponse> entityEmbeddedEntityNotFound(
             final EntityEmbeddedEntityNotFoundException pException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    @ExceptionHandler(EntityDescriptionUnacceptableCharsetException.class)
+    public ResponseEntity<ServerErrorResponse> entitydescriptionUnaccesptableCharset(
+            final EntityDescriptionUnacceptableCharsetException pException) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ServerErrorResponse(pException.getMessage()));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
