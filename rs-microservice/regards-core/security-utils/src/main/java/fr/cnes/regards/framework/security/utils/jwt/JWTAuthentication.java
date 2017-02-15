@@ -104,6 +104,16 @@ public class JWTAuthentication implements Authentication {
     }
 
     /**
+     * Abstraction on how to set the tenant
+     * 
+     * @param pTenant
+     *            the new tenant
+     */
+    public void setTenant(String pTenant) {
+        user.setTenant(pTenant);
+    }
+
+    /**
      * @return the jwt
      */
     public String getJwt() {

@@ -38,7 +38,7 @@ public class RepositoryStub<T extends IIdentifiable<Long>> implements CrudReposi
 
     @Override
     public T findOne(final Long pId) {
-        return entities.stream().filter(r -> r.getId().equals(pId)).findFirst().get();
+        return entities.stream().filter(r -> r.getId().equals(pId)).findFirst().orElse(null);
     }
 
     @Override

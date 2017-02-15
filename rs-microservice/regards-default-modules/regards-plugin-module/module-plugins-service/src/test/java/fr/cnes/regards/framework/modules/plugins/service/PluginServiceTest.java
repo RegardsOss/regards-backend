@@ -137,6 +137,7 @@ public class PluginServiceTest extends PluginServiceUtility {
             aPluginConfiguration.setId(AN_ID);
             Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId()))
                     .thenReturn(aPluginConfiguration);
+            Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
             PluginConfiguration aConf;
             aConf = pluginServiceMocked.getPluginConfiguration(aPluginConfiguration.getId());
@@ -293,6 +294,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
@@ -324,6 +326,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
@@ -357,6 +360,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
@@ -392,6 +396,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
@@ -428,6 +433,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build().addParameter(SamplePlugin.COEFF, "-1")
@@ -467,6 +473,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
@@ -495,6 +502,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
@@ -528,6 +536,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
@@ -561,6 +570,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);

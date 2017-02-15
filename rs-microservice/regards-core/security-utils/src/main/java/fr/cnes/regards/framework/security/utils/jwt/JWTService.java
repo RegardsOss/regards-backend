@@ -109,25 +109,9 @@ public class JWTService {
      *             Error during token parsing
      * @since 1.2-SNAPSHOT
      */
-    public void injectToken(final String pToken) throws JwtException {
+    private void injectToken(final String pToken) throws JwtException {
         final JWTAuthentication auth = parseToken(new JWTAuthentication(pToken));
         SecurityContextHolder.getContext().setAuthentication(auth);
-    }
-
-    /**
-     *
-     * Inject a generated token in the {@link SecurityContextHolder}
-     *
-     * @param pTenant
-     *            Project
-     * @param pRole
-     *            Role name
-     * @throws JwtException
-     *             Error during token generation
-     * @since 1.0-SNAPSHOT
-     */
-    public void injectToken(final String pTenant, final String pRole) throws JwtException {
-        injectToken(pTenant, pRole, "");
     }
 
     /**
@@ -203,10 +187,22 @@ public class JWTService {
         }
     }
 
-    // FIXME : creation must be moved in another place!
-    // JWT should be completed with :
-    // - expiration date
-    // - data access groups
+    /**
+     *
+     * FIXME : JWT should be completed with expiration date and data access groups
+     *
+     * FIXME : JWT generate must manage RSA keys
+     *
+     * Generate a JWT handling the tenant name, the user name and its related role
+     *
+     * @param pProject
+     *            tenant
+     * @param pName
+     *            user name
+     * @param pRole
+     *            user role
+     * @return a Json Web Token
+     */
     public String generateToken(final String pProject, final String pName, final String pRole) {
         return Jwts.builder().setIssuer("regards").setClaims(generateClaims(pProject, pRole, pName)).setSubject(pName)
                 .signWith(ALGO, TextCodec.BASE64.encode(secret)).compact();

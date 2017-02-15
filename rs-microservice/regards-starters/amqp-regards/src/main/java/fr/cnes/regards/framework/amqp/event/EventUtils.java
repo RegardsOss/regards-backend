@@ -6,9 +6,6 @@ package fr.cnes.regards.framework.amqp.event;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
-
 /**
  *
  * Utility class to extract annotation information from events.
@@ -22,15 +19,15 @@ public final class EventUtils {
     }
 
     /**
-     * Retrieve annotation {@link EventProperties} from class. This annotation must exist!
+     * Retrieve annotation {@link Event} from class. This annotation must exist!
      *
      * @param pClass
-     *            {@link EventProperties} annotated class
-     * @return {@link EventProperties}
+     *            {@link Event} annotated class
+     * @return {@link Event}
      */
-    public static EventProperties getEventProperties(Class<?> pClass) {
+    public static Event getEventProperties(Class<?> pClass) {
         Assert.notNull(pClass);
-        EventProperties ppt = AnnotationUtils.findAnnotation(pClass, EventProperties.class);
+        Event ppt = AnnotationUtils.findAnnotation(pClass, Event.class);
         Assert.notNull(ppt);
         return ppt;
     }
@@ -38,42 +35,11 @@ public final class EventUtils {
     /**
      *
      * @param pClass
-     *            {@link EventProperties} annotated class
-     * @return {@link AmqpCommunicationMode}
+     *            {@link Event} annotated class
+     * @return {@link WorkerMode}
      */
-    public static AmqpCommunicationMode getCommunicationMode(Class<?> pClass) {
-        EventProperties ppt = EventUtils.getEventProperties(pClass);
-
-        AmqpCommunicationMode mode;
-        if (WorkerMode.SINGLE.equals(ppt.mode())) {
-            mode = AmqpCommunicationMode.ONE_TO_ONE;
-        } else
-            if (WorkerMode.ALL.equals(ppt.mode())) {
-                mode = AmqpCommunicationMode.ONE_TO_MANY;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        return mode;
-    }
-
-    /**
-     *
-     * @param pClass
-     *            {@link EventProperties} annotated class
-     * @return {@link AmqpCommunicationMode}
-     */
-    public static AmqpCommunicationTarget getCommunicationTarget(Class<?> pClass) {
-        EventProperties ppt = EventUtils.getEventProperties(pClass);
-        AmqpCommunicationTarget target;
-        if (Target.ALL.equals(ppt.target())) {
-            target = AmqpCommunicationTarget.ALL;
-        } else
-            if (Target.MICROSERVICE.equals(ppt.target())) {
-                target = AmqpCommunicationTarget.MICROSERVICE;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        return target;
+    public static Target getCommunicationTarget(Class<?> pClass) {
+        return EventUtils.getEventProperties(pClass).target();
     }
 
 }

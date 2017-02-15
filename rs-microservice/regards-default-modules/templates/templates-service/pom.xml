@@ -16,6 +16,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>module-regards</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.templates</groupId>
 			<artifactId>templates-domain</artifactId>
 		</dependency>

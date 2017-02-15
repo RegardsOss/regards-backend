@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
-import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
  */
 public class MaintenanceFilter extends OncePerRequestFilter {
 
-    private final IThreadTenantResolver resolver;
+    private final IRuntimeTenantResolver resolver;
 
     public MaintenanceFilter(IThreadTenantResolver pResolver) {
         resolver = pResolver;

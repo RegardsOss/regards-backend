@@ -5,10 +5,10 @@ package fr.cnes.regards.framework.amqp.event;
 
 /**
  *
- * Event you can poll and acknowledge
+ * Qualitfy an event you can poll and acknowledge
  *
  * @author Marc Sordi
  *
  */
-public interface IPollableEvent {
+public interface IPollable {
 }

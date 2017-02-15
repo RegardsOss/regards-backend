@@ -11,14 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginDynamicValueRepository;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /***
  * Constants and datas for unit testing of plugin's DAO.
@@ -123,12 +119,6 @@ public class PluginDaoUtility extends AbstractDaoTest {
      */
     @Autowired
     protected IPluginDynamicValueRepository pluginDynamicValueRepository;
-
-    /**
-     * Security service to generate tokens.
-     */
-    @Autowired
-    protected JWTService jwtService;
 
     static PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();

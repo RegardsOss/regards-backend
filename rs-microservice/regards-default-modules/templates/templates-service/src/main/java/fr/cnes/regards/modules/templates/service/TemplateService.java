@@ -9,9 +9,6 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
@@ -25,8 +22,8 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JwtTokenUtils;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
 import fr.cnes.regards.modules.templates.domain.Template;
 import freemarker.cache.StringTemplateLoader;
@@ -91,6 +88,11 @@ public class TemplateService implements ITemplateService {
      */
     private final ITenantResolver tenantResolver;
 
+    /**
+     * Runtime tenant resolver
+     */
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
     @Autowired
     private Template emailValidationTemplate;
 
@@ -110,11 +112,12 @@ public class TemplateService implements ITemplateService {
      * @throws IOException
      *             when an error occurs while configuring the template loader
      */
-    public TemplateService(final ITemplateRepository pTemplateRepository, final ITenantResolver pTenantResolver)
-            throws IOException {
+    public TemplateService(final ITemplateRepository pTemplateRepository, final ITenantResolver pTenantResolver,
+            final IRuntimeTenantResolver pRuntimeTenantResolver) throws IOException {
         super();
         templateRepository = pTemplateRepository;
         tenantResolver = pTenantResolver;
+        runtimeTenantResolver = pRuntimeTenantResolver;
         configureTemplateLoader();
     }
 
@@ -131,7 +134,8 @@ public class TemplateService implements ITemplateService {
      */
     private void initDefaultTemplates() {
 
-        final Supplier<Void> createDefaultTemplates = () -> {
+        for (String tenant : tenantResolver.getAllTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
             if (!templateRepository.findOneByCode(emailValidationTemplate.getCode()).isPresent()) {
                 templateRepository.save(emailValidationTemplate);
             }
@@ -141,15 +145,6 @@ public class TemplateService implements ITemplateService {
             if (!templateRepository.findOneByCode(accountUnlockTemplate.getCode()).isPresent()) {
                 templateRepository.save(accountUnlockTemplate);
             }
-            return null;
-        };
-
-        final Function<String, Void> createDefaultTemplatesOnTenant = JwtTokenUtils
-                .asSafeCallableOnTenant(createDefaultTemplates);
-
-        // For each tenant, create default templates if needed
-        try (Stream<String> tenantsStream = tenantResolver.getAllTenants().stream()) {
-            tenantsStream.forEach(createDefaultTemplatesOnTenant::apply);
         }
     }
 

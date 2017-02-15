@@ -144,7 +144,7 @@ public class PluginService implements IPluginService {
         if (!throwError && (pPluginConfiguration.getVersion() == null)) {
             msg.append(String.format(" <%s> without version.", pPluginConfiguration.getPluginId()));
             throwError = true;
-        }
+        }        
 
         if (throwError) {
             throw new ModuleException(msg.toString());
@@ -155,17 +155,18 @@ public class PluginService implements IPluginService {
 
     @Override
     public PluginConfiguration getPluginConfiguration(final Long pId) throws ModuleException {
-        PluginConfiguration conf = pluginConfRepository.findOne(pId);
-        if (conf == null) {
+        if (!pluginConfRepository.exists(pId)) {
+            LOGGER.error(String.format("Error while getting the plugin configuration <%s>.", pId));
             throw new EntityNotFoundException(pId, PluginConfiguration.class);
         }
+        PluginConfiguration conf = pluginConfRepository.findOne(pId);
         return conf;
     }
 
     @Override
     public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPluginConf) throws ModuleException {
-        // Check if plugin configuration exists
         if (!pluginConfRepository.exists(pPluginConf.getId())) {
+            LOGGER.error(String.format("Error while updating the plugin configuration <%d>.", pPluginConf.getId()));
             throw new EntityNotFoundException(pPluginConf.getId().toString(), PluginConfiguration.class);
         }
         PluginConfiguration newPLuginConfiguration = savePluginConfiguration(pPluginConf);
@@ -181,7 +182,7 @@ public class PluginService implements IPluginService {
     @Override
     public void deletePluginConfiguration(final Long pConfId) throws ModuleException {
         if (!pluginConfRepository.exists(pConfId)) {
-            LOGGER.error(String.format("Error while deleting the plugin configuration <%s>.", pConfId));
+            LOGGER.error(String.format("Error while deleting the plugin configuration <%d>.", pConfId));
             throw new EntityNotFoundException(pConfId.toString(), PluginConfiguration.class);
         }
         pluginConfRepository.delete(pConfId);

@@ -13,36 +13,33 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
-import fr.cnes.regards.framework.amqp.connection.RegardsSimpleRoutingConnectionFactory;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
-import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 
 /**
  * @author svissier
  *
  */
-@ActiveProfiles("rabbit")
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class)
-public class RabbitVirtualHostUtilsIT {
+@ContextConfiguration(classes = { AmqpTestsConfiguration.class })
+public class RabbitVirtualHostAdminIT {
 
     /**
      * Logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(RabbitVirtualHostUtilsIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RabbitVirtualHostAdminIT.class);
 
     /**
      * TEST_VHOST_1
@@ -58,19 +55,13 @@ public class RabbitVirtualHostUtilsIT {
      * bean to be tested
      */
     @Autowired
-    private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
+    private IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     /**
      * used to clean rabbit
      */
     @Autowired
     private RestTemplate restTemplate;
-
-    /**
-     *
-     */
-    @Autowired
-    private RegardsSimpleRoutingConnectionFactory regardsSimpleRoutingConnectionFactory;
 
     /**
      * create and start a message listener to receive the published event
@@ -80,7 +71,7 @@ public class RabbitVirtualHostUtilsIT {
      */
     @Before
     public void init() throws RabbitMQVhostException {
-        Assume.assumeTrue(rabbitVirtualHostUtils.brokerRunning());
+        Assume.assumeTrue(rabbitVirtualHostAdmin.brokerRunning());
     }
 
     /**
@@ -88,20 +79,20 @@ public class RabbitVirtualHostUtilsIT {
      */
     @Test
     public void testVhost() {
-        final List<String> firstRetrieve = rabbitVirtualHostUtils.retrieveVhostList();
+        rabbitVirtualHostAdmin.retrieveVhostList();
         try {
-            rabbitVirtualHostUtils.addVhost(TEST_VHOST);
+            rabbitVirtualHostAdmin.addVhost(TEST_VHOST);
 
-            final List<String> secondRetrieve = rabbitVirtualHostUtils.retrieveVhostList();
+            final List<String> secondRetrieve = rabbitVirtualHostAdmin.retrieveVhostList();
             // Assert.assertEquals(firstRetrieve.size(), secondRetrieve.size() - 1);
             Assert.assertTrue(secondRetrieve.stream()
-                    .filter(v -> v.equals(RabbitVirtualHostUtils.getVhostName(TEST_VHOST))).findAny().isPresent());
+                    .filter(v -> v.equals(RabbitVirtualHostAdmin.getVhostName(TEST_VHOST))).findAny().isPresent());
         } catch (RabbitMQVhostException e) {
             Assert.fail();
             LOGGER.error("Issue during adding the Vhost", e);
         } finally {
             try {
-                cleanRabbit(RabbitVirtualHostUtils.getVhostName(TEST_VHOST));
+                cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TEST_VHOST));
             } catch (CleaningRabbitMQVhostException e) {
                 LOGGER.debug("Issue during cleaning the broker", e);
             }
@@ -117,19 +108,19 @@ public class RabbitVirtualHostUtilsIT {
      *             any issues that could occur
      */
     private void cleanRabbit(String pTenant1) throws CleaningRabbitMQVhostException {
-        final List<String> existingVhost = rabbitVirtualHostUtils.retrieveVhostList();
-        final String vhostName = RabbitVirtualHostUtils.getVhostName(pTenant1);
+        final List<String> existingVhost = rabbitVirtualHostAdmin.retrieveVhostList();
+        final String vhostName = RabbitVirtualHostAdmin.getVhostName(pTenant1);
         if (existingVhost.stream().filter(vhost -> vhost.equals(vhostName)).findAny().isPresent()) {
             final HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.add(HttpHeaders.AUTHORIZATION, rabbitVirtualHostUtils.setBasic());
+            headers.add(HttpHeaders.AUTHORIZATION, rabbitVirtualHostAdmin.setBasic());
             final HttpEntity<Void> request = new HttpEntity<>(headers);
             final ResponseEntity<String> response = restTemplate
-                    .exchange(rabbitVirtualHostUtils.getRabbitApiVhostEndpoint() + SLASH + vhostName, HttpMethod.DELETE,
+                    .exchange(rabbitVirtualHostAdmin.getRabbitApiVhostEndpoint() + SLASH + vhostName, HttpMethod.DELETE,
                               request, String.class);
             final int statusValue = response.getStatusCodeValue();
             // if successful or 404 then the broker is clean
-            if (!(rabbitVirtualHostUtils.isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
+            if (!(rabbitVirtualHostAdmin.isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
                 throw new CleaningRabbitMQVhostException(response.getBody());
             }
         }

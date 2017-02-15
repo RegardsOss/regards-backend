@@ -12,18 +12,18 @@ package fr.cnes.regards.framework.jpa.multitenant.exception;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public class MutlitenantInitializationRunTimeException extends RuntimeException {
+public class MultitenantInitializationRunTimeException extends RuntimeException {
 
     /**
      * serialVersionUID field.
      */
     private static final long serialVersionUID = 3925220713661635450L;
 
-    public MutlitenantInitializationRunTimeException(final String pMessage, final Throwable pCause) {
+    public MultitenantInitializationRunTimeException(final String pMessage, final Throwable pCause) {
         super(pMessage, pCause);
     }
 
-    public MutlitenantInitializationRunTimeException(final String pMessage) {
+    public MultitenantInitializationRunTimeException(final String pMessage) {
         super(pMessage);
     }
 

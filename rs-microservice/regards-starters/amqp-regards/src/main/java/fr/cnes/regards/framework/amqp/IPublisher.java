@@ -3,13 +3,11 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
-import fr.cnes.regards.framework.amqp.event.IPollableEvent;
-import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
+import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 
 /**
- * Interface for publishing events
+ * {@link IPublisher} allows to publish {@link ISubscribable} or {@link IPollable} events.
  *
  * @author Sylvain Vissière-Guérinet
  * @author Marc Sordi
@@ -17,111 +15,46 @@ import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
 public interface IPublisher {
 
     /**
-     * Publish an {@link ISubscribableEvent} event
+     * Publish an {@link ISubscribable} event
      *
      * @param <T>
-     *            {@link ISubscribableEvent} event
+     *            {@link ISubscribable} event
      * @param pEvent
-     *            {@link ISubscribableEvent} event to publish
+     *            {@link ISubscribable} event to publish
      */
-    <T extends ISubscribableEvent> void publish(T pEvent);
+    <T extends ISubscribable> void publish(T pEvent);
 
     /**
-     * Publish an {@link ISubscribableEvent} event
+     * Publish an {@link ISubscribable} event
      *
      * @param <T>
-     *            {@link ISubscribableEvent} event
+     *            {@link ISubscribable} event
      * @param pEvent
-     *            {@link ISubscribableEvent} event to publish
+     *            {@link ISubscribable} event to publish
      * @param pPriority
      *            event priority
      */
-    <T extends ISubscribableEvent> void publish(T pEvent, int pPriority);
+    <T extends ISubscribable> void publish(T pEvent, int pPriority);
 
     /**
-     * Publish an {@link IPollableEvent} event
+     * Publish an {@link IPollable} event
      *
      * @param <T>
-     *            {@link IPollableEvent} event
+     *            {@link IPollable} event
      * @param pEvent
-     *            {@link IPollableEvent} event to publish
+     *            {@link IPollable} event to publish
      */
-    <T extends IPollableEvent> void publish(T pEvent);
+    <T extends IPollable> void publish(T pEvent);
 
     /**
-     * Publish an {@link IPollableEvent} event
+     * Publish an {@link IPollable} event
      *
      * @param <T>
-     *            {@link IPollableEvent} event
+     *            {@link IPollable} event
      * @param pEvent
-     *            {@link IPollableEvent} event to publish
+     *            {@link IPollable} event to publish
      * @param pPriority
      *            event priority
      */
-    <T extends IPollableEvent> void publish(T pEvent, int pPriority);
-
-    /**
-     * @param <T>
-     *            event to be published
-     * @param pEvt
-     *            the event you want to publish
-     * @param pAmqpCommunicationMode
-     *            publishing mode
-     * @param pAmqpCommunicationTarget
-     *            publishing scope
-     */
-    @Deprecated
-    <T> void publish(T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
-            AmqpCommunicationTarget pAmqpCommunicationTarget);
-
-    /**
-     * @param <T>
-     *            event to be published
-     * @param pEvt
-     *            the event you want to publish
-     * @param pPriority
-     *            priority given to the event
-     * @param pAmqpCommunicationMode
-     *            publishing mode
-     * @param pAmqpCommunicationTarget
-     *            publishing scope
-     */
-    @Deprecated
-    <T> void publish(T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
-            AmqpCommunicationTarget pAmqpCommunicationTarget, int pPriority);
-
-    /**
-     * @param <T>
-     *            event to be published
-     * @param pTenant
-     *            the tenant name
-     * @param pEvt
-     *            the event you want to publish
-     * @param pAmqpCommunicationMode
-     *            publishing mode
-     * @param pAmqpCommunicationTarget
-     *            publishing scope
-     */
-    @Deprecated
-    <T> void publish(String pTenant, T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
-            AmqpCommunicationTarget pAmqpCommunicationTarget);
-
-    /**
-     * @param <T>
-     *            event to be published
-     * @param pTenant
-     *            the tenant name
-     * @param pEvt
-     *            the event you want to publish
-     * @param pPriority
-     *            priority given to the event
-     * @param pAmqpCommunicationMode
-     *            publishing mode
-     * @param pAmqpCommunicationTarget
-     *            publishing scope
-     */
-    @Deprecated
-    <T> void publish(String pTenant, T pEvt, AmqpCommunicationMode pAmqpCommunicationMode,
-            AmqpCommunicationTarget pAmqpCommunicationTarget, int pPriority);
-
+    <T extends IPollable> void publish(T pEvent, int pPriority);
 }

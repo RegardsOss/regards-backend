@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
-import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -35,7 +35,7 @@ public class GlobalNonFunctionnalExceptionManager {
      * Tenant resolver
      */
     @Autowired
-    private IThreadTenantResolver resolver;
+    private IRuntimeTenantResolver resolver;
 
     /**
      * Exception handler catching any exception that are not already handled

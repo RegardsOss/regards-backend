@@ -1,37 +1,44 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.amqp.utils;
+package fr.cnes.regards.framework.amqp.configuration;
 
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.amqp.connection.RegardsSimpleRoutingConnectionFactory;
 import fr.cnes.regards.framework.amqp.domain.RabbitMqVhostPermission;
 import fr.cnes.regards.framework.amqp.domain.RabbitVhost;
-import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.exception.RemovingRabbitMQVhostException;
 
 /**
  * implementation compliant with RabbitMQ v3.6.5
  *
  * @author svissier
+ * @author Marc Sordi
  *
  */
-public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
+public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(RabbitVirtualHostAdmin.class);
 
     /**
      * :
@@ -51,7 +58,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
     /**
      * namespace of REGARDS
      */
-    private static final String REGARDS_NAMESPACE = "Regards.amqp.";
+    private static final String REGARDS_NAMESPACE = "regards.";
 
     /**
      * template used to perform REST request
@@ -61,7 +68,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
     /**
      * connection factory
      */
-    private final RegardsSimpleRoutingConnectionFactory simpleRoutingConnectionFactory;
+    private final MultitenantSimpleRoutingConnectionFactory simpleRoutingConnectionFactory;
 
     /**
      * List of vhost already known
@@ -88,7 +95,10 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
      */
     private final Integer amqpManagementPort;
 
-    private final RegardsAmqpAdmin regardsAmqpAdmin;
+    /**
+     * addresses configured to
+     */
+    private final String rabbitAddresses;
 
     /**
      *
@@ -106,10 +116,12 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
      *            client REST
      * @param pSimpleRoutingConnectionFactory
      *            connection factory to handle multi-tenancy
+     * @param pRabbitAddresses
+     *            server addresses
      */
-    public RabbitVirtualHostUtils(String pRabbitmqUserName, String pRabbitmqPassword, String pAmqpManagementHost,
+    public RabbitVirtualHostAdmin(String pRabbitmqUserName, String pRabbitmqPassword, String pAmqpManagementHost,
             Integer pAmqpManagementPort, RestTemplate pRestTemplate,
-            RegardsSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory, RegardsAmqpAdmin pRegardsAmqpAdmin) {
+            MultitenantSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory, String pRabbitAddresses) {
         super();
         restTemplate = pRestTemplate;
         simpleRoutingConnectionFactory = pSimpleRoutingConnectionFactory;
@@ -117,7 +129,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
         rabbitmqPassword = pRabbitmqPassword;
         amqpManagementHost = pAmqpManagementHost;
         amqpManagementPort = pAmqpManagementPort;
-        regardsAmqpAdmin = pRegardsAmqpAdmin;
+        rabbitAddresses = pRabbitAddresses;
     }
 
     @Override
@@ -159,49 +171,119 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
         return "http" + COLON + "//" + amqpManagementHost + COLON + amqpManagementPort + "/api";
     }
 
-    @Override
-    public void addVhost(String pName, CachingConnectionFactory pConnectionFactory) throws RabbitMQVhostException {
-        registerConnectionFactory(pName, pConnectionFactory);
-        addVhost(pName);
-    }
-
     /**
-     * @param pName
+     * Register {@link ConnectionFactory}
+     *
+     * @param pTenant
+     *            tenant
      * @param pConnectionFactory
+     *            related vhost {@link ConnectionFactory}
      */
-    private void registerConnectionFactory(String pName, CachingConnectionFactory pConnectionFactory) {
+    private void registerConnectionFactory(String pTenant, CachingConnectionFactory pConnectionFactory) {
         // if there is no registered connection factory for this vhost then register this one
-        String registrationKey = getVhostName(pName);
+        String registrationKey = getVhostName(pTenant);
         if (simpleRoutingConnectionFactory.getTargetConnectionFactory(registrationKey) == null) {
             simpleRoutingConnectionFactory.addTargetConnectionFactory(registrationKey, pConnectionFactory);
         }
     }
 
-    @Override
-    public void addVhost(String pName) throws RabbitMQVhostException {
-        retrieveVhostList();
-        final String fullyQualifiedVhostName = getVhostName(pName);
-        if (!existVhost(fullyQualifiedVhostName)) {
-            final HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.add(HttpHeaders.AUTHORIZATION, setBasic());
-            final HttpEntity<Void> request = new HttpEntity<>(headers);
-            // vhost on rabbitmq are defined by a PUT request on /vhosts/{name}
-            final ResponseEntity<String> response = restTemplate
-                    .exchange(getRabbitApiVhostEndpoint() + SLASH + fullyQualifiedVhostName, HttpMethod.PUT, request,
-                              String.class);
-            final int statusValue = response.getStatusCodeValue();
-            if (!isSuccess(statusValue)) {
-                throw new AddingRabbitMQVhostException(response.getBody() + NEW_LINE_STATUS + statusValue);
-            }
-            addPermissionToAccessVhost(pName);
-            vhostList.add(fullyQualifiedVhostName);
+    /**
+     * Unregister {@link ConnectionFactory}
+     *
+     * @param pTenant
+     *            tenant
+     */
+    private void unregisterConnectionFactory(String pTenant) {
+        // if there is a connection factory for this vhost then unregister it
+        String registrationKey = getVhostName(pTenant);
+        if (simpleRoutingConnectionFactory.getTargetConnectionFactory(registrationKey) == null) {
+            simpleRoutingConnectionFactory.removeTargetConnectionFactory(registrationKey);
         }
-        registerConnectionFactory(pName, regardsAmqpAdmin.createConnectionFactory(pName));
     }
 
     @Override
-    public void addPermissionToAccessVhost(String pVhost) throws AddingRabbitMQVhostPermissionException {
+    public ConnectionFactory getVhostConnectionFactory(String pTenant) {
+        String registrationKey = getVhostName(pTenant);
+        return simpleRoutingConnectionFactory.getTargetConnectionFactory(registrationKey);
+    }
+
+    @Override
+    public void addVhost(String pTenant) {
+        retrieveVhostList();
+        final String fullyQualifiedVhostName = getVhostName(pTenant);
+
+        LOGGER.info("Adding virtual host {} for tenant", fullyQualifiedVhostName, pTenant);
+
+        if (!existVhost(fullyQualifiedVhostName)) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.add(HttpHeaders.AUTHORIZATION, setBasic());
+            HttpEntity<Void> request = new HttpEntity<>(headers);
+
+            // Add VHOST using a PUT request
+            ResponseEntity<String> response = restTemplate
+                    .exchange(getRabbitApiVhostEndpoint() + SLASH + fullyQualifiedVhostName, HttpMethod.PUT, request,
+                              String.class);
+            int statusValue = response.getStatusCodeValue();
+            if (!isSuccess(statusValue)) {
+                String errorMessage = String.format("Cannot add vhost %s (status %s) : %s", fullyQualifiedVhostName,
+                                                    statusValue, response.getBody());
+                LOGGER.error(errorMessage);
+                throw new RemovingRabbitMQVhostException(errorMessage);
+            }
+            addPermissionToAccessVhost(pTenant);
+            vhostList.add(fullyQualifiedVhostName);
+        }
+
+        LOGGER.info("Creating connection factory for : tenant {}", pTenant);
+
+        String[] rabbitHostAndPort = parseRabbitAddresses(rabbitAddresses);
+        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHostAndPort[0],
+                Integer.parseInt(rabbitHostAndPort[1]));
+        connectionFactory.setVirtualHost(RabbitVirtualHostAdmin.getVhostName(pTenant));
+
+        registerConnectionFactory(pTenant, connectionFactory);
+    }
+
+    @Override
+    public void removeVhost(String pTenant) {
+        retrieveVhostList();
+        String fullyQualifiedVhostName = getVhostName(pTenant);
+
+        LOGGER.info("Removing virtual host {} for tenant", fullyQualifiedVhostName, pTenant);
+
+        if (existVhost(fullyQualifiedVhostName)) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.add(HttpHeaders.AUTHORIZATION, setBasic());
+            HttpEntity<Void> request = new HttpEntity<>(headers);
+            ResponseEntity<String> response = restTemplate
+                    .exchange(getRabbitApiVhostEndpoint() + SLASH + fullyQualifiedVhostName, HttpMethod.DELETE, request,
+                              String.class);
+            int statusValue = response.getStatusCodeValue();
+            // if successful or 404 then the broker is clean
+            if (!(isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
+                String errorMessage = String.format("Cannot remove vhost %s (status %s) : %s", fullyQualifiedVhostName,
+                                                    statusValue, response.getBody());
+                LOGGER.error(errorMessage);
+                throw new RemovingRabbitMQVhostException(errorMessage);
+            }
+        }
+
+        LOGGER.info("Removing connection factory for : tenant {}", pTenant);
+        unregisterConnectionFactory(pTenant);
+    }
+
+    /**
+     * @param pRabbitAddresses
+     *            addresses from configuration file
+     * @return {host, port}
+     */
+    protected String[] parseRabbitAddresses(String pRabbitAddresses) {
+        return pRabbitAddresses.split(COLON);
+    }
+
+    private void addPermissionToAccessVhost(String pVhost) {
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add(HttpHeaders.AUTHORIZATION, setBasic());
@@ -214,8 +296,7 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
         }
     }
 
-    @Override
-    public String getRabbitApiPermissionVhostEndpoint(String pVhost) {
+    private String getRabbitApiPermissionVhostEndpoint(String pVhost) {
         return getRabbitApiEndpoint() + "/permissions/" + getVhostName(pVhost) + SLASH + rabbitmqUserName;
     }
 
@@ -247,6 +328,6 @@ public class RabbitVirtualHostUtils implements IRabbitVirtualHostUtils {
      * @return fully qualified name of vhost accord to namespace
      */
     public static String getVhostName(String pTenant) {
-        return REGARDS_NAMESPACE + pTenant;
+        return REGARDS_NAMESPACE + pTenant.toLowerCase();
     }
 }

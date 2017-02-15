@@ -26,7 +26,7 @@ public class RibbonClientConfiguration {
 
     /**
      *
-     * Ribbon Prpperties configuration
+     * Ribbon Properties configuration
      *
      * @return IClientConfig
      * @since 1.0-SNAPSHOT
@@ -34,8 +34,8 @@ public class RibbonClientConfiguration {
     @Bean
     public IClientConfig config() {
         final IClientConfig config = new DefaultClientConfigImpl();
-        config.set(CommonClientConfigKey.ReadTimeout, new Integer(5000));
-        config.set(CommonClientConfigKey.ConnectTimeout, new Integer(5000));
+        config.set(CommonClientConfigKey.ReadTimeout, 5000);
+        config.set(CommonClientConfigKey.ConnectTimeout, 5000);
         return config;
     }
 

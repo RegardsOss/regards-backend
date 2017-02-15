@@ -91,7 +91,7 @@ public class JobHandlerIT {
         pJobInfo4 = new JobInfo(pJobConfiguration);
         pJobInfo4.setId(4L);
 
-        jwtService.injectToken("project1", "USER");
+        jwtService.injectToken("project1", "USER", "");
     }
 
     @Test

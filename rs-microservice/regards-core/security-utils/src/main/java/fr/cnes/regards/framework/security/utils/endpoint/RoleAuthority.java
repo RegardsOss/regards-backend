@@ -31,7 +31,7 @@ public class RoleAuthority implements GrantedAuthority {
     /**
      * Serial number for serialization
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -8843987659284743509L;
 
     /**
      * Prefix for all systems ROLES. Systems roles are internal roles to allow microservices to communicate witch each

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.amqp.test;
+package fr.cnes.regards.framework.amqp.test.event;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -12,30 +12,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.test.event.PublishAllEvent;
-import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
+import fr.cnes.regards.framework.amqp.test.AmqpTestsConfiguration;
 
 /**
  * @author Marc Sordi
  *
  */
-@ActiveProfiles("rabbit")
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AmqpTestsConfiguration.class })
-@SpringBootTest(classes = Application.class)
-@DirtiesContext
 public class EventManagementIT {
 
     /**
@@ -53,7 +47,7 @@ public class EventManagementIT {
      * Bean allowing us to know if the broker is running
      */
     @Autowired
-    private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
+    private IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     /**
      * Publisher
@@ -73,33 +67,76 @@ public class EventManagementIT {
     @Autowired
     private IPoller poller;
 
+    private boolean eventReceived;
+
     @Before
     public void init() throws RabbitMQVhostException {
-        Assume.assumeTrue(rabbitVirtualHostUtils.brokerRunning());
-        rabbitVirtualHostUtils.addVhost(tenant);
+        Assume.assumeTrue(rabbitVirtualHostAdmin.brokerRunning());
+        rabbitVirtualHostAdmin.addVhost(tenant);
     }
 
     @Test
     public void publishAll() throws InterruptedException {
-        subscriber.subscribeTo(PublishAllEvent.class, new PublishAllHandler());
+        subscriber.subscribeTo(PublishToAllEvent.class, new PublishToAllHandler());
 
-        PublishAllEvent event = new PublishAllEvent();
+        PublishToAllEvent event = new PublishToAllEvent();
         event.setMessage("Publish all! (i.e. broadcast)");
+        eventReceived = false; // Mutated by handler
         publisher.publish(event);
-
-        Thread.sleep(5);
+        Thread.sleep(2000);
+        Assert.assertTrue(eventReceived);
     }
 
-    private class PublishAllHandler implements IHandler<PublishAllEvent> {
+    private class PublishToAllHandler implements IHandler<PublishToAllEvent> {
 
         @Override
-        public void handle(TenantWrapper<PublishAllEvent> pWrapper) {
+        public void handle(TenantWrapper<PublishToAllEvent> pWrapper) {
+            eventReceived = true;
             Assert.assertNotNull(pWrapper);
             LOGGER.info("Tenant : {}", pWrapper.getTenant());
             Assert.assertNotNull(pWrapper.getContent());
             String message = pWrapper.getContent().getMessage();
             Assert.assertNotNull(message);
             LOGGER.info("Handled message : {}", message);
+        }
+    }
+
+    @Test
+    public void pollOneMicroserviceEvent() {
+        // Publish a pollable event
+        PollOneMicroserviceEvent event = new PollOneMicroserviceEvent();
+        String message = "Poll by one instance of a microservice!";
+        event.setMessage(message);
+        publisher.publish(event);
+
+        // Poll event
+        try {
+            poller.bind(tenant);
+            TenantWrapper<PollOneMicroserviceEvent> wrapper = poller.poll(tenant, PollOneMicroserviceEvent.class);
+            PollOneMicroserviceEvent received = wrapper.getContent();
+            Assert.assertEquals(message, received.getMessage());
+        } finally {
+            poller.unbind();
+        }
+
+    }
+
+    @Test
+    public void pollOneAllEvent() {
+        // Publish a pollable event
+        PollOneAllEvent event = new PollOneAllEvent();
+        String message = "Poll by all!";
+        event.setMessage(message);
+        publisher.publish(event);
+
+        // Poll event
+        try {
+            poller.bind(tenant);
+            TenantWrapper<PollOneAllEvent> wrapper = poller.poll(tenant, PollOneAllEvent.class);
+            PollOneAllEvent received = wrapper.getContent();
+            Assert.assertEquals(message, received.getMessage());
+        } finally {
+            poller.unbind();
         }
     }
 }

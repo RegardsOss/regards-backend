@@ -18,6 +18,10 @@
 		<!-- REGARDS -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>multitenant-regards</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>regards-core-jpa-common</artifactId>
 		</dependency>
 		<dependency>
@@ -27,12 +31,7 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>amqp-regards</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
-		</dependency>
-		
+		</dependency>		
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>

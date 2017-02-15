@@ -7,12 +7,15 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
+import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
+
 /**
  * @author svissier
  *
  */
 @Configuration
-@ComponentScan(basePackages = { "fr.cnes.regards.framework.amqp", "fr.cnes.regards.modules.project" })
-@PropertySource("classpath:application.properties")
+@ComponentScan(basePackageClasses = { MultitenantAutoConfiguration.class, AmqpAutoConfiguration.class })
+@PropertySource({ "classpath:application.properties", "classpath:application-rabbit.properties" })
 public class AmqpTestsConfiguration {
 }

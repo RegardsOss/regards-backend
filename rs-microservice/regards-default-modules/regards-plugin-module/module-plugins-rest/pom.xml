@@ -14,10 +14,20 @@
 	</parent>
 
 	<dependencies>
+		<!-- Starters -->
 		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>module-regards-starter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>hateoas-regards-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards-starter</artifactId>
+		</dependency>
+		<!-- Module dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>module-plugins-service</artifactId>

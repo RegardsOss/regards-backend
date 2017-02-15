@@ -3,8 +3,7 @@
  */
 package fr.cnes.regards.framework.amqp.test;
 
-import java.util.List;
-
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -14,33 +13,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
 import fr.cnes.regards.framework.amqp.Subscriber;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
 import fr.cnes.regards.framework.amqp.test.domain.TestReceiver;
-import fr.cnes.regards.framework.amqp.utils.IRabbitVirtualHostUtils;
-import fr.cnes.regards.framework.amqp.utils.RabbitVirtualHostUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -52,22 +39,14 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @author svissier
  *
  */
-@ActiveProfiles("rabbit")
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AmqpTestsConfiguration.class })
-@SpringBootTest(classes = Application.class)
-@DirtiesContext
 public class SubscriberIT {
 
     /**
      * Logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SubscriberIT.class);
-
-    /**
-     * PROJECT1
-     */
-    private static final String TENANT = "PROJECT1";
 
     /**
      * 2000
@@ -93,6 +72,12 @@ public class SubscriberIT {
      * \/
      */
     private static final String SLASH = "/";
+
+    /**
+     * Static default tenant
+     */
+    @Value("${regards.tenant}")
+    private String tenant;
 
     /**
      * bean used to clean the broker after tests
@@ -127,25 +112,23 @@ public class SubscriberIT {
      * bean allowing us to know if the broker is running
      */
     @Autowired
-    private IRabbitVirtualHostUtils rabbitVirtualHostUtils;
+    private IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     /**
      * initialization ran before each test case
      */
     @Before
     public void init() {
-        Assume.assumeTrue(rabbitVirtualHostUtils.brokerRunning());
+        Assume.assumeTrue(rabbitVirtualHostAdmin.brokerRunning());
+        rabbitVirtualHostAdmin.addVhost(tenant);
         receiverOneToMany = new TestReceiver();
+        subscriberOneToManyExternal.subscribeTo(TestEvent.class, receiverOneToMany, WorkerMode.ALL, Target.ALL);
+    }
 
-        try {
-            subscriberOneToManyExternal.subscribeTo(TestEvent.class, receiverOneToMany,
-                                                    AmqpCommunicationMode.ONE_TO_MANY,
-                                                    AmqpCommunicationTarget.ALL);
-
-        } catch (RabbitMQVhostException e) {
-            LOGGER.error(e.getMessage(), e);
-            Assert.fail("Error during init");
-        }
+    @After
+    public void clean() {
+        subscriberOneToManyExternal.unsubscribeFrom(TestEvent.class);
+        rabbitVirtualHostAdmin.removeVhost(tenant);
     }
 
     /**
@@ -156,22 +139,23 @@ public class SubscriberIT {
     @Test
     public void testSubscribeToOneToManyExternal() {
         final TestEvent toSend = new TestEvent("test one to many");
-        final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
+        final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, tenant);
         LOGGER.info(SENDED + sended);
-        SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), RabbitVirtualHostUtils.getVhostName(TENANT));
-        // CHECKSTYLE:OFF
-        rabbitTemplate.convertAndSend(
-                                      amqpConfiguration.getExchangeName(TestEvent.class.getName(),
-                                                                        AmqpCommunicationTarget.ALL),
-                                      amqpConfiguration.getRoutingKey("", AmqpCommunicationMode.ONE_TO_MANY), sended,
-                                      pMessage -> {
-                                          final MessageProperties propertiesWithPriority = pMessage
-                                                  .getMessageProperties();
-                                          propertiesWithPriority.setPriority(0);
-                                          return new Message(pMessage.getBody(), propertiesWithPriority);
-                                      });
-        // CHECKSTYLE:ON
-        SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
+
+        try {
+            amqpConfiguration.bind(tenant);
+            // CHECKSTYLE:OFF
+            rabbitTemplate.convertAndSend(amqpConfiguration.getExchangeName(TestEvent.class.getName(), Target.ALL),
+                                          amqpConfiguration.getRoutingKey("", WorkerMode.ALL), sended, pMessage -> {
+                                              final MessageProperties propertiesWithPriority = pMessage
+                                                      .getMessageProperties();
+                                              propertiesWithPriority.setPriority(0);
+                                              return new Message(pMessage.getBody(), propertiesWithPriority);
+                                          });
+            // CHECKSTYLE:ON
+        } finally {
+            amqpConfiguration.unbind();
+        }
 
         try {
             Thread.sleep(SLEEP_TIME); // NOSONAR : passive test so we have to wait for the message to be sent
@@ -181,37 +165,6 @@ public class SubscriberIT {
         }
         LOGGER.info(RECEIVED + receiverOneToMany.getMessage());
         Assert.assertEquals(toSend, receiverOneToMany.getMessage());
-        try {
-            cleanRabbit(TENANT);
-        } catch (CleaningRabbitMQVhostException e) {
-            LOGGER.debug("Issue during cleaning the broker", e);
-        }
-    }
 
-    /**
-     * delete the virtual host if existing
-     *
-     * @param pTenant1
-     *            tenant to clean
-     * @throws CleaningRabbitMQVhostException
-     *             any issues that could occur
-     */
-    private void cleanRabbit(String pTenant1) throws CleaningRabbitMQVhostException {
-        final List<String> existingVhost = rabbitVirtualHostUtils.retrieveVhostList();
-        if (existingVhost.stream().filter(vhost -> vhost.equals(pTenant1)).findAny().isPresent()) {
-            final HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.add(HttpHeaders.AUTHORIZATION, rabbitVirtualHostUtils.setBasic());
-            final HttpEntity<Void> request = new HttpEntity<>(headers);
-            final ResponseEntity<String> response = restTemplate
-                    .exchange(rabbitVirtualHostUtils.getRabbitApiVhostEndpoint() + SLASH + pTenant1, HttpMethod.DELETE,
-                              request, String.class);
-            final int statusValue = response.getStatusCodeValue();
-            // if successful or 404 then the broker is clean
-            if (!(rabbitVirtualHostUtils.isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
-                throw new CleaningRabbitMQVhostException(response.getBody());
-            }
-        }
     }
-
 }

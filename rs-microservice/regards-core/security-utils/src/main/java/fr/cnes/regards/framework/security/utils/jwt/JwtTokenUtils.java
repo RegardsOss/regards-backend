@@ -32,51 +32,24 @@ public final class JwtTokenUtils {
     }
 
     /**
-     * Decorates a {@link BooleanSupplier} as a {@link Predicate} in order to execute it safeley on a passed tenant.<br>
+     * Decorates a {@link BooleanSupplier} as a {@link Predicate} in order to execute it safely on a passed tenant.<br>
      * The call will be tenant-safe because it<br>
      * - records the initial tenant<br>
      * - injects the new tenant<br>
      * - switches back to initial tenant at the end<br>
      *
+     * @param pSupplier
+     *            The decorated supplier
+     * @param pJwtService
+     *            service used to handle the jwt
      * @param pTenant
-     *            The tenant on which to execute the predicate
-     * @param pBooleanSupplier
-     *            The decorated boolean supplier
-     * @return the decorated predicate
-     */
-    public static <T> Function<String, T> asSafeCallableOnTenant(final Supplier<T> pSupplier) {
-        // Return a predicate taking a tenant as argument and which....
-        return pTenant -> {
-            // ...records the inital tenant
-            final JWTAuthentication auth = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
-            final String intialTenant = auth.getUser().getTenant();
-            // ...switches to the tenant
-            auth.getUser().setTenant(pTenant);
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            // ...evaluates the boolean supplier
-            final T result = pSupplier.get();
-            // ... and switches back to original tenant
-            auth.getUser().setTenant(intialTenant);
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            return result;
-        };
-    }
-
-    /**
-     * Decorates a {@link BooleanSupplier} as a {@link Predicate} in order to execute it safeley on a passed tenant.<br>
-     * The call will be tenant-safe because it<br>
-     * - records the initial tenant<br>
-     * - injects the new tenant<br>
-     * - switches back to initial tenant at the end<br>
-     *
-     * @param pBooleanSupplier
-     *            The decorated boolean supplier
+     *            tenant
      * @return the decorated predicate
      */
     public static <R> Function<String, R> asSafeCallableOnRole(final Supplier<R> pSupplier,
-            final JWTService pJwtService) {
+            final JWTService pJwtService, String pTenant) {
         final Function<Void, R> function = pT -> pSupplier.get();
-        return asSafeCallableOnRole(function, null, pJwtService);
+        return asSafeCallableOnRole(function, null, pJwtService, pTenant);
     }
 
     /**
@@ -93,10 +66,13 @@ public final class JwtTokenUtils {
      *            parameter
      * @param pJwtService
      *            service used to handle the jwt
+     * @param pTenant
+     *            tenant
      * @return a {@link Function} executing the <code>pFunction</code> with other privileges than the current one
      */
+    // FIXME review all Feign client calls
     public static <T, R> Function<String, R> asSafeCallableOnRole(final Function<T, R> pFunction, T pParameters,
-            final JWTService pJwtService) {
+            final JWTService pJwtService, String pTenant) {
         // Return a predicate taking a tenant as argument and which....
         return pRole -> {
             R result = null;
@@ -105,7 +81,19 @@ public final class JwtTokenUtils {
                     .getAuthentication();
             // ... generate new token
             try {
-                pJwtService.injectToken(initialToken.getProject(), pRole);
+                String tenant = pTenant;
+                if ((pTenant == null) && (initialToken != null)) {
+                    // Try to propagate JWT tenant
+                    tenant = initialToken.getProject();
+                }
+
+                // FIXME : tenant is not required for instance client
+                if (tenant == null) {
+                    tenant = "NO_TENANT";
+                }
+                LOG.info("Injecting token with tenant {}", tenant);
+
+                pJwtService.injectToken(tenant, pRole, "");
                 // ...evaluates the boolean supplier
                 result = pFunction.apply(pParameters);
             } catch (final JwtException e) {

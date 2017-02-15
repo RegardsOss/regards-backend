@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * Default configuration test
@@ -31,27 +31,19 @@ public abstract class AbstractDaoTest {
     private static final String DEFAULT_TENANT = "PROJECT";
 
     /**
-     * Default role
-     */
-    private static final String DEFAULT_ROLE = "ROLE_USER";
-
-    /**
      * JPA entity manager : use it to flush context to prevent false positive
      */
     @PersistenceContext
     protected EntityManager entityManager;
 
-    /**
-     * JWT service
-     */
     @Autowired
-    private JWTService jwtService;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     protected void injectDefaultToken() {
-        jwtService.injectMockToken(DEFAULT_TENANT, DEFAULT_ROLE);
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
     }
 
     protected void injectToken(String pTenant) {
-        jwtService.injectMockToken(pTenant, DEFAULT_ROLE);
+        runtimeTenantResolver.forceTenant(pTenant);
     }
 }
