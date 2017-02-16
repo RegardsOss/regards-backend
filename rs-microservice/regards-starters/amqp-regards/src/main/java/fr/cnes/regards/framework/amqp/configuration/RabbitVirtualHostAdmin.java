@@ -5,7 +5,10 @@ package fr.cnes.regards.framework.amqp.configuration;
 
 import java.util.Base64;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +28,7 @@ import fr.cnes.regards.framework.amqp.domain.RabbitMqVhostPermission;
 import fr.cnes.regards.framework.amqp.domain.RabbitVhost;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
 import fr.cnes.regards.framework.amqp.exception.RemovingRabbitMQVhostException;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * implementation compliant with RabbitMQ v3.6.5
@@ -101,9 +105,16 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     private final String rabbitAddresses;
 
     /**
+     * Used to retrieve all tenants
+     */
+    private final ITenantResolver tenantResolver;
+
+    /**
      *
      * Constructor used to initialize properties from AmqpProperties
      *
+     * @param pTenantResolver
+     *            retrieve all tenants
      * @param pRabbitmqUserName
      *            user name
      * @param pRabbitmqPassword
@@ -119,10 +130,11 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
      * @param pRabbitAddresses
      *            server addresses
      */
-    public RabbitVirtualHostAdmin(String pRabbitmqUserName, String pRabbitmqPassword, String pAmqpManagementHost,
-            Integer pAmqpManagementPort, RestTemplate pRestTemplate,
+    public RabbitVirtualHostAdmin(ITenantResolver pTenantResolver, String pRabbitmqUserName, String pRabbitmqPassword,
+            String pAmqpManagementHost, Integer pAmqpManagementPort, RestTemplate pRestTemplate,
             MultitenantSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory, String pRabbitAddresses) {
         super();
+        this.tenantResolver = pTenantResolver;
         restTemplate = pRestTemplate;
         simpleRoutingConnectionFactory = pSimpleRoutingConnectionFactory;
         rabbitmqUserName = pRabbitmqUserName;
@@ -130,6 +142,20 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
         amqpManagementHost = pAmqpManagementHost;
         amqpManagementPort = pAmqpManagementPort;
         rabbitAddresses = pRabbitAddresses;
+    }
+
+    /**
+     * Manage virtual hosts according to tenants
+     */
+    @PostConstruct
+    public void init() {
+        // Retrieve already configured tenant
+        Set<String> tenants = tenantResolver.getAllTenants();
+        if (tenants != null) {
+            for (String tenant : tenants) {
+                addVhost(tenant);
+            }
+        }
     }
 
     @Override

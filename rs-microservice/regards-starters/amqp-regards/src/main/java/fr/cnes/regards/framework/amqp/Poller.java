@@ -3,11 +3,12 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
@@ -26,6 +27,11 @@ import fr.cnes.regards.framework.amqp.event.WorkerMode;
 public class Poller implements IPoller {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(Poller.class);
+
+    /**
      * bean provided by spring to receive message from broker
      */
     private final RabbitTemplate rabbitTemplate;
@@ -35,17 +41,10 @@ public class Poller implements IPoller {
      */
     private final RegardsAmqpAdmin regardsAmqpAdmin;
 
-    /**
-     * bean assisting us to manipulate virtual hosts
-     */
-    private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
-
-    public Poller(RabbitTemplate pRabbitTemplate, RegardsAmqpAdmin pRegardsAmqpAdmin,
-            IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
+    public Poller(RabbitTemplate pRabbitTemplate, RegardsAmqpAdmin pRegardsAmqpAdmin) {
         super();
         rabbitTemplate = pRabbitTemplate;
         regardsAmqpAdmin = pRegardsAmqpAdmin;
-        rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
     }
 
     @Override
@@ -71,7 +70,8 @@ public class Poller implements IPoller {
     @SuppressWarnings("unchecked")
     public <T> TenantWrapper<T> poll(String pTenant, Class<T> pEvt, WorkerMode pWorkerMode, Target pTarget) {
 
-        rabbitVirtualHostAdmin.addVhost(pTenant);
+        LOGGER.info("Polling event {} for tenant {} (Target : {}, WorkerMode : {} )", pEvt.getClass(), pTenant, pTarget,
+                    pWorkerMode);
 
         final Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
         final Queue queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt, pWorkerMode, pTarget);

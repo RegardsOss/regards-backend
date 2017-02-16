@@ -11,7 +11,6 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
@@ -50,21 +49,15 @@ public class Publisher implements IPublisher {
     private final RegardsAmqpAdmin regardsAmqpAdmin;
 
     /**
-     * bean assisting us to manipulate virtual host
-     */
-    private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
-
-    /**
      * Resolve thread tenant
      */
     private final IRuntimeTenantResolver threadTenantResolver;
 
     public Publisher(final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
-            final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
+            IRuntimeTenantResolver pThreadTenantResolver) {
         super();
         rabbitTemplate = pRabbitTemplate;
         regardsAmqpAdmin = pRegardsAmqpAdmin;
-        rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
         this.threadTenantResolver = pThreadTenantResolver;
     }
 
@@ -105,6 +98,8 @@ public class Publisher implements IPublisher {
     public final <T> void publish(final T pEvt, final WorkerMode pWorkerMode, final Target pTarget,
             final int pPriority) {
 
+        LOGGER.info("Publishing event {} (Target : {}, WorkerMode : {} )", pEvt.getClass(), pTarget, pWorkerMode);
+
         String tenant = threadTenantResolver.getTenant();
         if (tenant != null) {
             publish(tenant, pEvt, pWorkerMode, pTarget, pPriority);
@@ -131,9 +126,6 @@ public class Publisher implements IPublisher {
             final Target pTarget, final int pPriority) {
 
         final Class<?> evtClass = pEvt.getClass();
-
-        // add the Vhost corresponding to this tenant
-        rabbitVirtualHostAdmin.addVhost(pTenant);
 
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
