@@ -236,7 +236,9 @@ public class ResourcesService implements IResourcesService {
         }
 
         // Save missing resources
-        saveResources(newResources);
+        if (!newResources.isEmpty()) {
+            saveResources(newResources);
+        }
     }
 
     /**
@@ -271,7 +273,7 @@ public class ResourcesService implements IResourcesService {
 
     /**
      *
-     * Return the resources list of the given microservice.
+     * Return the managed resource list of the given microservice.
      *
      * @param pMicroservice
      *            microservice name

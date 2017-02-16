@@ -5,6 +5,8 @@ package fr.cnes.regards.microservices.administration;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
@@ -33,6 +35,11 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 public class FeignInitialAdminClients {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeignInitialAdminClients.class);
+
+    /**
      * Initial Feign client to administration service to retrieve informations about projects
      */
     private IProjectsClient projectsClient;
@@ -47,17 +54,21 @@ public class FeignInitialAdminClients {
         discoveryClient = pDiscoveryClient;
 
         final List<ServiceInstance> instances = discoveryClient.getInstances("rs-admin");
-        if (!instances.isEmpty()) {
-            // Init hystrix configuration
-            ConfigurationManager.getConfigInstance().setProperty("hystrix.command.default.execution.isolation.strategy",
-                                                                 "SEMAPHORE");
-            ConfigurationManager.getConfigInstance()
-                    .setProperty("hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds", 60000);
-
-            projectsClient = HystrixFeign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
-                    .decoder(new ResponseEntityDecoder(new GsonDecoder()))
-                    .target(new TokenClientProvider<>(IProjectsClient.class, instances.get(0).getUri().toString()));
+        if (instances.isEmpty()) {
+            String errorMessage = "No administration instance found. Microservice cannot start.";
+            LOGGER.error(errorMessage);
+            throw new UnsupportedOperationException(errorMessage);
         }
+
+        // Init hystrix configuration
+        ConfigurationManager.getConfigInstance().setProperty("hystrix.command.default.execution.isolation.strategy",
+                                                             "SEMAPHORE");
+        ConfigurationManager.getConfigInstance()
+                .setProperty("hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds", 60000);
+
+        projectsClient = HystrixFeign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
+                .decoder(new ResponseEntityDecoder(new GsonDecoder()))
+                .target(new TokenClientProvider<>(IProjectsClient.class, instances.get(0).getUri().toString()));
     }
 
     public IProjectsClient getProjectsClient() {

@@ -115,12 +115,11 @@ public class ProjectConnectionServiceTest {
      */
     @Before
     public void init() {
+        final IPublisher mockPublisher = Mockito.mock(IPublisher.class);
 
         // use a stub repository, to be able to only test the service
         final IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub, new MultitenantDaoProperties());
-
-        final IPublisher mockPublisher = Mockito.mock(IPublisher.class);
+        projectService = new ProjectService(projectRepoStub, new MultitenantDaoProperties(), mockPublisher);
 
         projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
         projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub,

@@ -13,7 +13,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
+import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -52,28 +54,26 @@ public class ProjectService implements IProjectService {
     private final MultitenantDaoProperties defaultProperties;
 
     /**
+     * AMQP message publisher
+     */
+    private final IPublisher publisher;
+
+    /**
      * The constructor.
      *
      * @param pProjectRepository
      *            The JPA repository.
      */
     public ProjectService(final IProjectRepository pProjectRepository,
-            final MultitenantDaoProperties pDefaultProperties) {
+            final MultitenantDaoProperties pDefaultProperties, IPublisher pPublisher) {
         super();
         projectRepository = pProjectRepository;
         defaultProperties = pDefaultProperties;
+        this.publisher = pPublisher;
     }
 
-    /**
-     *
-     * Initialize projects.
-     *
-     * @throws RabbitMQVhostException
-     *
-     * @since 1.0-SNAPHOT
-     */
     @PostConstruct
-    public void projectsInitialization() throws RabbitMQVhostException {
+    public void projectsInitialization() {
 
         // Create project from properties files it does not exists yet
         for (final TenantConnection tenant : defaultProperties.getTenants()) {
@@ -99,6 +99,7 @@ public class ProjectService implements IProjectService {
         final Project deleted = retrieveProject(pProjectName);
         deleted.setDeleted(true);
         projectRepository.save(deleted);
+        publisher.publish(new TenantDeletedEvent(pProjectName));
     }
 
     @Override
@@ -138,7 +139,9 @@ public class ProjectService implements IProjectService {
             throw new EntityAlreadyExistsException(pNewProject.getName());
         }
 
-        return projectRepository.save(pNewProject);
+        Project project = projectRepository.save(pNewProject);
+        publisher.publish(new TenantCreatedEvent(project.getName()));
+        return project;
     }
 
 }
