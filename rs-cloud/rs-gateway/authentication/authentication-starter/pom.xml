@@ -36,6 +36,11 @@
 			<artifactId>spring-aspects</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!-- REGARDS starters -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>amqp-regards-starter</artifactId>
+		</dependency>
 		<!-- Regards dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
