@@ -77,9 +77,7 @@ public class PluginParameter implements IIdentifiable<Long> {
      * The list of values for a dynamic parameters
      */
     @ElementCollection
-    @CollectionTable(name = "TA_PLUGIN_PARAM_PLUGIN_DYN_VALUE", joinColumns = @JoinColumn(name = "ID",
-            foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_DYN_ID")))
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @CollectionTable(name = "TA_PLUGIN_PARAM_PLUGIN_DYN_VALUE", joinColumns = @JoinColumn(name = "ID"))
     private List<PluginDynamicValue> dynamicsValues;
 
     /**

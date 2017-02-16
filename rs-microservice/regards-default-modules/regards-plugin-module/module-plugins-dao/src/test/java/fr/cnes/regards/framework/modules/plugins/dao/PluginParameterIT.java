@@ -9,13 +9,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginDynamicValue;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 
 /***
@@ -55,13 +53,6 @@ public class PluginParameterIT extends PluginDaoUtility {
 
         Assert.assertEquals(nPluginParameter + 1 + PARAMETERS2.size(), pluginParameterRepository.count());
 
-        int count = 0;
-        for (PluginParameter plgParam : PARAMETERS2) {
-            if (plgParam.isDynamic()) {
-                count += plgParam.getDynamicsValues().size();
-            }
-        }
-        Assert.assertEquals(count, pluginDynamicValueRepository.count());
     }
 
     /**
@@ -92,31 +83,13 @@ public class PluginParameterIT extends PluginDaoUtility {
         pluginParameterRepository.save(PARAMETERS2);
         Assert.assertEquals(1 + PARAMETERS2.size(), pluginParameterRepository.count());
 
+        // Delete a plugin parameter
         pluginParameterRepository.delete(paramJpa);
         Assert.assertEquals(PARAMETERS2.size(), pluginParameterRepository.count());
 
-        int count = 0;
-        for (PluginParameter plgParam : PARAMETERS2) {
-            if (plgParam.isDynamic()) {
-                count += plgParam.getDynamicsValues().size();
-            }
-        }
-
-        Assert.assertEquals(count, pluginDynamicValueRepository.count());
-
+        // Delete a plugin parameter
         pluginParameterRepository.delete(PARAMETERS2.get(0));
         Assert.assertEquals(PARAMETERS2.size() - 1, pluginParameterRepository.count());
-
-        Assert.assertEquals(count - PARAMETERS2.get(0).getDynamicsValues().size(),
-                            pluginDynamicValueRepository.count());
-    }
-
-    @Test(expected = DataIntegrityViolationException.class)
-    public void deletePluginDynamicVaueError() {
-        pluginParameterRepository.save(PARAMETERS2);
-        pluginDynamicValueRepository.deleteAll();
-
-        Assert.fail();
     }
 
     /**
@@ -147,10 +120,6 @@ public class PluginParameterIT extends PluginDaoUtility {
         Assert.assertEquals(paramJpa.getId(), paramFound.getId());
         Assert.assertEquals(paramJpa.getDynamicsValuesAsString().size(), paramFound.getDynamicsValuesAsString().size());
         paramJpa.getDynamicsValuesAsString().stream().forEach(s -> paramFound.getDynamicsValuesAsString().contains(s));
-
-        final PluginDynamicValue aDynamicValue = pluginDynamicValueRepository
-                .findOne(paramJpa.getDynamicsValues().get(0).getId());
-        Assert.assertEquals(paramJpa.getDynamicsValues().get(0).getValue(), aDynamicValue.getValue());
     }
 
 }
