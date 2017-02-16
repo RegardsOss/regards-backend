@@ -16,7 +16,7 @@ import org.springframework.context.annotation.PropertySource;
  * @since 1.0-SNAPSHOT
  */
 @EnableAutoConfiguration
-@PropertySource("classpath:dao.properties")
+@PropertySource({ "classpath:dao.properties", "classpath:default-amqp.properties" })
 public class MultiTenancyDaoTestConfiguration {
 
 }

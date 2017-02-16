@@ -41,6 +41,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
@@ -67,7 +68,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
         @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory", transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
-@AutoConfigureAfter(value = { GsonAutoConfiguration.class })
+@AutoConfigureAfter(value = { GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
 

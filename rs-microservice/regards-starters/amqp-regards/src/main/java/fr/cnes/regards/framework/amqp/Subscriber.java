@@ -49,11 +49,6 @@ public class Subscriber implements ISubscriber {
     private final RegardsAmqpAdmin regardsAmqpAdmin;
 
     /**
-     * bean assisting us to manipulate virtual hosts
-     */
-    private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
-
-    /**
      * bean handling the conversion using {@link com.fasterxml.jackson} 2
      */
     private final Jackson2JsonMessageConverter jackson2JsonMessageConverter;
@@ -64,16 +59,21 @@ public class Subscriber implements ISubscriber {
     private final ITenantResolver tenantResolver;
 
     /**
+     * Allows to retrieve {@link ConnectionFactory} per tenant
+     */
+    private final IRabbitVirtualHostAdmin virtualHostAdmin;
+
+    /**
      * Reference to running listeners by event and tenant
      */
     private final Map<Class<?>, Map<String, SimpleMessageListenerContainer>> listeners;
 
-    public Subscriber(final RegardsAmqpAdmin pRegardsAmqpAdmin, final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
-            final Jackson2JsonMessageConverter pJackson2JsonMessageConverter, final ITenantResolver pTenantResolver) {
+    public Subscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, RegardsAmqpAdmin pRegardsAmqpAdmin,
+            Jackson2JsonMessageConverter pJackson2JsonMessageConverter, ITenantResolver pTenantResolver) {
         super();
         listeners = new HashMap<>();
+        this.virtualHostAdmin = pVirtualHostAdmin;
         regardsAmqpAdmin = pRegardsAmqpAdmin;
-        rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
         jackson2JsonMessageConverter = pJackson2JsonMessageConverter;
         tenantResolver = pTenantResolver;
     }
@@ -163,7 +163,7 @@ public class Subscriber implements ISubscriber {
             final IHandler<T> pReceiver, final WorkerMode pWorkerMode, final Target pTarget) {
 
         // Retrieve tenant vhost connection factory
-        ConnectionFactory connectionFactory = rabbitVirtualHostAdmin.getVhostConnectionFactory(pTenant);
+        ConnectionFactory connectionFactory = virtualHostAdmin.getVhostConnectionFactory(pTenant);
 
         Queue queue;
         try {

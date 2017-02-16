@@ -40,8 +40,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 
 /**
- * Service MethodAutorizationServiceImpl<br/>
- * Allow to set/get the REST resource method access authorizations.<br/>
+ * This service allows to set/get the REST resource method access authorizations.<br/>
  * An authorization is defined by a endpoint, a HTTP Verb and a list of authorized user ROLES
  *
  * @author Sébastien Binda
