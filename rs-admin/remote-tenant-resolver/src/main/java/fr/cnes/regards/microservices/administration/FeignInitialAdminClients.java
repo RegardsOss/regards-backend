@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
@@ -49,11 +50,14 @@ public class FeignInitialAdminClients {
      */
     private final DiscoveryClient discoveryClient;
 
+    @Value("${regards.microservice.admin.name}")
+    private String adminMicroserviceName;
+
     public FeignInitialAdminClients(final DiscoveryClient pDiscoveryClient) {
         super();
         discoveryClient = pDiscoveryClient;
 
-        final List<ServiceInstance> instances = discoveryClient.getInstances("rs-admin");
+        final List<ServiceInstance> instances = discoveryClient.getInstances(adminMicroserviceName);
         if (instances.isEmpty()) {
             String errorMessage = "No administration instance found. Microservice cannot start.";
             LOGGER.error(errorMessage);
