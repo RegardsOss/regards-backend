@@ -239,7 +239,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             try {
                 pluginConfs = pluginService.getPluginConfigurationsByType(Class.forName(pPluginType));
             } catch (ClassNotFoundException e) {
-                LOGGER.error(e.getMessage());
+                LOGGER.error("Any class found for the plugin type :"+pPluginType, e);
                 throw new EntityNotIdentifiableException(e.getMessage());
             }
         } else {
