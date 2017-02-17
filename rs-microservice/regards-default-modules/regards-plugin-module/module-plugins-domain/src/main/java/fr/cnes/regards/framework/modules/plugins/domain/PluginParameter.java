@@ -12,13 +12,11 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -77,9 +75,7 @@ public class PluginParameter implements IIdentifiable<Long> {
      * The list of values for a dynamic parameters
      */
     @ElementCollection
-    @CollectionTable(name = "TA_PLUGIN_PARAM_PLUGIN_DYN_VALUE", joinColumns = @JoinColumn(name = "ID",
-            foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_DYN_ID")))
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @CollectionTable(name = "TA_PLUGIN_PARAM_PLUGIN_DYN_VALUE", joinColumns = @JoinColumn(name = "ID"))
     private List<PluginDynamicValue> dynamicsValues;
 
     /**

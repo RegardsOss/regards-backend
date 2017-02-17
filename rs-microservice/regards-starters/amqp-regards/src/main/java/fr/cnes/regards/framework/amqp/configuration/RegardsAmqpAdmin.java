@@ -84,8 +84,8 @@ public class RegardsAmqpAdmin {
      */
     public Exchange declareExchange(String pTenant, Class<?> pEventType, WorkerMode pWorkerMode, Target pTarget) {
 
-        LOGGER.info("Declaring exchange for : tenant {} / event {} / target {} / mode {}", pTenant,
-                    pEventType.getName(), pTarget, pWorkerMode);
+        LOGGER.debug("Declaring exchange for : tenant {} / event {} / target {} / mode {}", pTenant,
+                     pEventType.getName(), pTarget, pWorkerMode);
 
         Exchange exchange;
         switch (pWorkerMode) {
@@ -149,8 +149,8 @@ public class RegardsAmqpAdmin {
      */
     public Queue declareQueue(String pTenant, Class<?> pEventType, WorkerMode pWorkerMode, Target pTarget) {
 
-        LOGGER.info("Declaring queue for : tenant {} / event {} / target {} / mode {}", pTenant, pEventType.getName(),
-                    pTarget, pWorkerMode);
+        LOGGER.debug("Declaring queue for : tenant {} / event {} / target {} / mode {}", pTenant, pEventType.getName(),
+                     pTarget, pWorkerMode);
 
         // Create queue
         final Map<String, Object> args = new HashMap<>();
@@ -221,8 +221,8 @@ public class RegardsAmqpAdmin {
      */
     public Binding declareBinding(String pTenant, Queue pQueue, Exchange pExchange, WorkerMode pWorkerMode) {
 
-        LOGGER.info("Declaring binding for : tenant {} / queue {} / exchange {} / mode {}", pTenant, pQueue.getName(),
-                    pExchange.getName(), pWorkerMode);
+        LOGGER.debug("Declaring binding for : tenant {} / queue {} / exchange {} / mode {}", pTenant, pQueue.getName(),
+                     pExchange.getName(), pWorkerMode);
 
         Binding binding;
         switch (pWorkerMode) {

@@ -75,12 +75,13 @@ public class AmqpAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(IRabbitVirtualHostAdmin.class)
-    public IRabbitVirtualHostAdmin rabbitVirtualHostAdmin(
+    public IRabbitVirtualHostAdmin rabbitVirtualHostAdmin(ITenantResolver pTenantResolver,
             final MultitenantSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
             final RestTemplate pRestTemplate) {
-        return new RabbitVirtualHostAdmin(amqpProperties.getRabbitmqUserName(), amqpProperties.getRabbitmqPassword(),
-                amqpProperties.getAmqpManagementHost(), amqpProperties.getAmqpManagementPort(), pRestTemplate,
-                pSimpleRoutingConnectionFactory, amqpProperties.getRabbitmqAddresses());
+        return new RabbitVirtualHostAdmin(pTenantResolver, amqpProperties.getRabbitmqUserName(),
+                amqpProperties.getRabbitmqPassword(), amqpProperties.getAmqpManagementHost(),
+                amqpProperties.getAmqpManagementPort(), pRestTemplate, pSimpleRoutingConnectionFactory,
+                amqpProperties.getRabbitmqAddresses());
     }
 
     @Bean
@@ -116,24 +117,22 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public IPublisher publisher(final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
-            final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
+    public IPublisher publisher(final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
             IRuntimeTenantResolver pThreadTenantResolver) {
-        return new Publisher(pRabbitTemplate, pRegardsAmqpAdmin, pRabbitVirtualHostAdmin, pThreadTenantResolver);
+        return new Publisher(pRabbitTemplate, pRegardsAmqpAdmin, pThreadTenantResolver);
     }
 
     @Bean
-    public ISubscriber subscriber(final RegardsAmqpAdmin pRegardsAmqpAdmin,
-            final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
-            final Jackson2JsonMessageConverter pJackson2JsonMessageConverter, final ITenantResolver pTenantResolver) {
-        return new Subscriber(pRegardsAmqpAdmin, pRabbitVirtualHostAdmin, pJackson2JsonMessageConverter,
+    public ISubscriber subscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
+            final RegardsAmqpAdmin pRegardsAmqpAdmin, final Jackson2JsonMessageConverter pJackson2JsonMessageConverter,
+            final ITenantResolver pTenantResolver) {
+        return new Subscriber(pRabbitVirtualHostAdmin, pRegardsAmqpAdmin, pJackson2JsonMessageConverter,
                 pTenantResolver);
     }
 
     @Bean
-    public IPoller poller(final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
-            final IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
-        return new Poller(pRabbitTemplate, pRegardsAmqpAdmin, pRabbitVirtualHostAdmin);
+    public IPoller poller(final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin) {
+        return new Poller(pRabbitTemplate, pRegardsAmqpAdmin);
     }
 
     @Bean
@@ -144,5 +143,10 @@ public class AmqpAutoConfiguration {
     @Bean
     public RabbitTransactionManager transactionManager() {
         return new RabbitTransactionManager(simpleRoutingConnectionFactory());
+    }
+
+    @Bean
+    public AmqpEventHandler amqpEventHandler(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, ISubscriber pSubscriber) {
+        return new AmqpEventHandler(pRabbitVirtualHostAdmin, pSubscriber);
     }
 }

@@ -67,8 +67,8 @@ public class RabbitVirtualHostAdminTests {
 
     @BeforeClass
     public static void init() {
-        rabbitVirtualHostAdmin = new RabbitVirtualHostAdmin(RABBITMQ_USERNAME, RABBITMQ_PASSWORD, AMQP_MANAGEMENT_HOST,
-                AMQP_MANAGEMENT_PORT, null, null, ADDRESSES);
+        rabbitVirtualHostAdmin = new RabbitVirtualHostAdmin(null, RABBITMQ_USERNAME, RABBITMQ_PASSWORD,
+                AMQP_MANAGEMENT_HOST, AMQP_MANAGEMENT_PORT, null, null, ADDRESSES);
     }
 
     /**
