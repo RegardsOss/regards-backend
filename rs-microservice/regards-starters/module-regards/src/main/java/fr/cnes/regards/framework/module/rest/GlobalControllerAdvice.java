@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityCorruptByNetworkException;
+import fr.cnes.regards.framework.module.rest.exception.EntityDescriptionTooLargeException;
 import fr.cnes.regards.framework.module.rest.exception.EntityDescriptionUnacceptableCharsetException;
+import fr.cnes.regards.framework.module.rest.exception.EntityDescriptionUnacceptableType;
 import fr.cnes.regards.framework.module.rest.exception.EntityEmbeddedEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -67,8 +69,22 @@ public class GlobalControllerAdvice {
     }
 
     @ExceptionHandler(EntityDescriptionUnacceptableCharsetException.class)
-    public ResponseEntity<ServerErrorResponse> entitydescriptionUnaccesptableCharset(
+    public ResponseEntity<ServerErrorResponse> entityDescriptionUnaccesptableCharset(
             final EntityDescriptionUnacceptableCharsetException pException) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    @ExceptionHandler(EntityDescriptionUnacceptableType.class)
+    public ResponseEntity<ServerErrorResponse> entityDescriptionUnaccesptableType(
+            final EntityDescriptionUnacceptableType pException) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    @ExceptionHandler(EntityDescriptionTooLargeException.class)
+    public ResponseEntity<ServerErrorResponse> entityDescriptionTooLargeCharset(
+            final EntityDescriptionTooLargeException pException) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(new ServerErrorResponse(pException.getMessage()));
     }
