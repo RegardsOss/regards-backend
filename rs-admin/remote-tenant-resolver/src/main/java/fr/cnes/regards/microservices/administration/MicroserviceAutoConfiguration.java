@@ -40,6 +40,9 @@ public class MicroserviceAutoConfiguration {
     @Value("${spring.application.name}")
     private String microserviceName;
 
+    @Value("${regards.microservice.admin.name}")
+    private String adminMicroserviceName;
+
     /**
      * JWT Security service
      */
@@ -111,7 +114,7 @@ public class MicroserviceAutoConfiguration {
      */
     @Bean
     FeignInitialAdminClients initClients(final DiscoveryClient pDiscoveryClient) {
-        return new FeignInitialAdminClients(pDiscoveryClient);
+        return new FeignInitialAdminClients(pDiscoveryClient, adminMicroserviceName);
     }
 
 }
