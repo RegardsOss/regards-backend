@@ -4,7 +4,6 @@
 package fr.cnes.regards.framework.multitenant.autoconfigure;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,7 +20,6 @@ import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.StaticThreadTe
  *
  */
 @Configuration
-@ConditionalOnWebApplication
 public class MultitenantAutoConfiguration {
 
     @ConditionalOnMissingBean
