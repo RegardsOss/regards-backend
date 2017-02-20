@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -297,11 +298,6 @@ public class PluginService implements IPluginService {
         return resultPlugin;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see fr.cnes.regards.framework.modules.plugins.service.IPluginService#getPluginConfigurations()
-     */
     @Override
     public List<PluginConfiguration> getAllPluginConfigurations() {
         Iterable<PluginConfiguration> confs = pluginConfRepository.findAll();
@@ -318,6 +314,26 @@ public class PluginService implements IPluginService {
     @Override
     public void addPluginPackage(final String pPluginPackage) {
         getPluginPackage().add(pPluginPackage);
+    }
+
+    @Override
+    public PluginMetaData checkPluginClassName(Class<?> pClass, String pPluginClassName) throws EntityInvalidException {
+        PluginMetaData metaData = null;
+        boolean isFound = false;
+
+        // Search all the plugins of type pClass
+        for (PluginMetaData pMd : this.getPluginsByType(pClass)) {
+            if (!isFound && pMd.getPluginClassName().equals(pPluginClassName)) {
+                isFound = true;
+                metaData = pMd;
+            }
+        }
+
+        if (!isFound) {
+            throw new EntityInvalidException("Any plugin's type match the plugin class name : " + pPluginClassName);
+        }
+
+        return metaData;
     }
 
 }

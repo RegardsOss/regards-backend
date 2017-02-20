@@ -14,6 +14,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -21,6 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
+import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -254,8 +256,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
-        final List<PluginConfiguration> results = pluginServiceMocked
-                .getPluginConfigurations(PLUGIN_PARAMETER_ID);
+        final List<PluginConfiguration> results = pluginServiceMocked.getPluginConfigurations(PLUGIN_PARAMETER_ID);
 
         Assert.assertNotNull(results);
         Assert.assertEquals(pluginConfs.size(), results.size());
@@ -577,6 +578,21 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         Assert.assertNotNull(aSamplePlugin);
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(RED));
+    }
+
+    @Test
+    public void checkPluginName() throws EntityInvalidException {
+        String className = "fr.cnes.regards.framework.plugins.SamplePlugin";
+        PluginMetaData metaData = pluginServiceMocked.checkPluginClassName(ISamplePlugin.class, className);
+        Assert.assertNotNull(metaData);
+        Assert.assertEquals(className, metaData.getPluginClassName());
+    }
+
+    @Test(expected = EntityInvalidException.class)
+    public void checkPluginNameFailed() throws EntityInvalidException {
+        String className = "fr.cnes.regards.framework.plugins.SmplePlugin";
+        pluginServiceMocked.checkPluginClassName(ISamplePlugin.class, className);
+        Assert.fail();
     }
 
 }
