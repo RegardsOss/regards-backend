@@ -34,12 +34,12 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 public class NavigationContext implements IIdentifiable<Long> {
 
     /**
-     * String min size
+     * {@link String} min size
      */
     public static final int STR_MIN_SIZE = 8;
 
     /**
-     * String max size
+     * {@link String} max size
      */
     public static final int STR_MAX_SIZE = 1024;
 
@@ -94,8 +94,8 @@ public class NavigationContext implements IIdentifiable<Long> {
      */
     public NavigationContext() {
         super();
-        tinyUrl = "undefined";
-        route = "undefined";
+        tinyUrl = "";
+        route = "";
         store = 0;
     }
 
@@ -139,6 +139,7 @@ public class NavigationContext implements IIdentifiable<Long> {
         queryParameters = pQueryParameters;
         route = pRoute;
         store = pStore;
+        tinyUrl = "";
     }
 
     @Override

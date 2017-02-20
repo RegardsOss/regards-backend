@@ -65,7 +65,7 @@ public class ConfigParameter implements IIdentifiable<Long> {
      */
     public ConfigParameter() {
         super();
-        name = "undefined";
+        name = "";
     }
 
     /**
