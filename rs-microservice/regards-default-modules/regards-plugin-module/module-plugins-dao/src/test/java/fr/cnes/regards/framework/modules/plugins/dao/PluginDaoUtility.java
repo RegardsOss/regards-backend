@@ -11,14 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginDynamicValueRepository;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /***
  * Constants and datas for unit testing of plugin's DAO.
@@ -118,18 +114,6 @@ public class PluginDaoUtility extends AbstractDaoTest {
     @Autowired
     protected IPluginParameterRepository pluginParameterRepository;
 
-    /**
-     * IPluginDynamicValueRepository
-     */
-    @Autowired
-    protected IPluginDynamicValueRepository pluginDynamicValueRepository;
-
-    /**
-     * Security service to generate tokens.
-     */
-    @Autowired
-    protected JWTService jwtService;
-
     static PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
@@ -150,7 +134,6 @@ public class PluginDaoUtility extends AbstractDaoTest {
     protected void cleanDb() {
         pluginConfigurationRepository.deleteAll();
         pluginParameterRepository.deleteAll();
-        pluginDynamicValueRepository.deleteAll();
         resetId();
     }
 
@@ -161,26 +144,16 @@ public class PluginDaoUtility extends AbstractDaoTest {
         getPluginConfigurationWithParameters().setId(null);
         getPluginConfigurationWithParameters().getParameters().forEach(p -> p.setId(null));
 
-        PARAMETERS2.forEach(p -> {
-            if (p.isDynamic()) {
-                p.getDynamicsValues().forEach(v -> v.setId(null));
-            }
-        });
-        // PARAMETERS2.getDynamicsValues().forEach(p -> p.setId(null));
-
         INTERFACEPARAMETERS.forEach(p -> p.setId(null));
     }
 
     protected void displayParams() {
-        LOGGER.info("=====> dynamic values");
-        pluginDynamicValueRepository.findAll().forEach(p -> LOGGER.info("id=" + p.getId() + "-value=" + p.getValue()));
-
         LOGGER.info("=====> parameter");
         pluginParameterRepository.findAll().forEach(p -> LOGGER.info("name=" + p.getName() + "-value=" + p.getValue()
                 + "-nb dyns=" + p.getDynamicsValuesAsString().size()));
         for (PluginParameter pP : pluginParameterRepository.findAll()) {
             if ((pP.getDynamicsValues() != null) && !pP.getDynamicsValues().isEmpty()) {
-                pP.getDynamicsValues().forEach(p -> LOGGER.info("id=" + p.getId() + "-val=" + p.getValue()));
+                pP.getDynamicsValues().forEach(p -> LOGGER.info("-value=" + p.getValue()));
             }
         }
         LOGGER.info("<=====");

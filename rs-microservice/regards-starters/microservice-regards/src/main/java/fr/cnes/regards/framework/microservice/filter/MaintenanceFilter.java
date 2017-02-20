@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
-import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -23,10 +23,10 @@ import fr.cnes.regards.framework.multitenant.IThreadTenantResolver;
  */
 public class MaintenanceFilter extends OncePerRequestFilter {
 
-    private final IThreadTenantResolver resolver;
+    private final IRuntimeTenantResolver resolver;
 
-    public MaintenanceFilter(IThreadTenantResolver pResolver) {
-        this.resolver = pResolver;
+    public MaintenanceFilter(IRuntimeTenantResolver pResolver) {
+        resolver = pResolver;
     }
 
     @Override
@@ -36,6 +36,8 @@ public class MaintenanceFilter extends OncePerRequestFilter {
         if (pRequest.getMethod().equals(HttpMethod.GET.name())) {
             pFilterChain.doFilter(pRequest, pResponse);
         } else {
+            // TODO: check if the path fo request is /maintenances to authorize them and so allow to desactivate the
+            // maintenance
             if (MaintenanceManager.getMaintenance(resolver.getTenant())) {
                 pResponse.sendError(HttpStatus.SERVICE_UNAVAILABLE.value(), "Tenant in maintenance");
             } else {

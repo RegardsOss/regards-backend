@@ -3,14 +3,12 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationMode;
-import fr.cnes.regards.framework.amqp.domain.AmqpCommunicationTarget;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 
 /**
  *
- * Interface for message subscribing
+ * {@link ISubscriber} allows to subscribe to {@link ISubscribable} events.
  *
  * @author Sylvain Vissière-Guérinet
  * @author Sébastien Binda
@@ -20,34 +18,24 @@ import fr.cnes.regards.framework.amqp.event.ISubscribableEvent;
 public interface ISubscriber {
 
     /**
-     * Subscribe to an {@link ISubscribableEvent} event
+     * Subscribe to this {@link ISubscribable} event
      *
      * @param <T>
-     *            {@link ISubscribableEvent} event
+     *            {@link ISubscribable} event
      * @param pEvent
-     *            {@link ISubscribableEvent} event
+     *            {@link ISubscribable} event
      * @param pReceiver
      *            event {@link IHandler}
      */
-    <T extends ISubscribableEvent> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver);
+    <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver);
 
     /**
-     *
-     * Initialize any necessary container to listen to all tenant provided by the provider for the specified element
-     *
+     * Unsubscribte from this {@link ISubscribable} event.
+     * 
      * @param <T>
-     *            event type to which we subscribe
-     * @param pEvt
-     *            the event class token you want to subscribe to
-     * @param pReceiver
-     *            the POJO defining the method handling the corresponding event connection factory from context
-     * @param pAmqpCommunicationMode
-     *            {@link AmqpCommunicationMode}
-     * @param pAmqpCommunicationTarget
-     *            communication scope
+     *            {@link ISubscribable} event
+     * @param pEvent
+     *            {@link ISubscribable} event
      */
-    @Deprecated
-    <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver,
-            final AmqpCommunicationMode pAmqpCommunicationMode, final AmqpCommunicationTarget pAmqpCommunicationTarget);
-
+    <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent);
 }

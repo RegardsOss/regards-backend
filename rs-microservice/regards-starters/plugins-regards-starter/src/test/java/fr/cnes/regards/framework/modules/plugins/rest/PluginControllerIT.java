@@ -52,7 +52,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     private static final String VERSION = "12345-6789-11";
 
-    private static final String PLUGIN_ID = "a-plugin-id";
+    private static final String PLUGIN_ID = "aSamplePlugin";
 
     private static final String AUTHOR = "CS-SI-DEV";
 
@@ -147,7 +147,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
-    public void getPluginConfigurationsByTypeWithPluginId() {
+    public void getPluginConfigurationsForOnePluginId() {
         // Add a PluginConfiguration with the PluginService
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 pluginParameters, 0);
@@ -216,6 +216,51 @@ public class PluginControllerIT extends AbstractRegardsIT {
                                                         Matchers.hasToString("false")));
 
         performGet(PluginController.PLUGINS_CONFIGS, token, expectations, "unable to load all plugin configuration");
+    }
+
+    @Test
+    @DirtiesContext
+    public void getAllPluginConfigurationForOneSpecificType() {
+        // Add a PluginConfiguration with the PluginService
+        PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
+                pluginParameters, 0);
+        try {
+            aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
+            aPluginConfiguration.setId(AN_ID);
+        } catch (final ModuleException e) {
+            Assert.fail();
+        }
+
+        // Get the added PluginConfiguration
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.[0].content.pluginId", Matchers.hasToString(PLUGIN_ID)));
+
+        performGet(PluginController.PLUGINS_CONFIGS + "?pluginType=" + ISamplePlugin.class.getCanonicalName(), token,
+                   expectations, "unable to load all plugin configuration");
+    }
+
+    @Test
+    @DirtiesContext
+    public void getAllPluginConfigurationByTypeError() {
+        // Add a PluginConfiguration with the PluginService
+        PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
+                pluginParameters, 0);
+        try {
+            aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
+            aPluginConfiguration.setId(AN_ID);
+        } catch (final ModuleException e) {
+            Assert.fail();
+        }
+
+        // Get the added PluginConfiguration
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNotFound());
+        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
+
+        performGet(PluginController.PLUGINS_CONFIGS + "?pluginType=HelloWorld", token, expectations,
+                   "unable to load all plugin configuration", PLUGIN_ID);
     }
 
     @Test
@@ -293,28 +338,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
-    public void updatePluginConfigurationErrorVersion() {
-        // Add a PluginConfiguration with the PluginService
-        PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
-                pluginParameters, 0);
-        try {
-            aPluginConfiguration = pluginService.savePluginConfiguration(aPluginConfiguration);
-            aPluginConfiguration.setId(AN_ID);
-            aPluginConfiguration.setVersion(null);
-        } catch (final ModuleException e) {
-            Assert.fail();
-        }
-
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
-
-        // Update the added PluginConfiguration
-        performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID, aPluginConfiguration, expectations,
-                          "unable to update a plugin configuration", PLUGIN_ID, aPluginConfiguration.getId());
-    }
-
-    @Test
-    @DirtiesContext
     public void updatePluginConfigurationErrorPluginId() {
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 pluginParameters, 0);
@@ -372,31 +395,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void savePluginConfigurationErrorPriorityOrderNull() {
-        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
-                pluginParameters, 0);
-
-        aPluginConfiguration.setPriorityOrder(null);
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
-        performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, aPluginConfiguration, expectations,
-                           "unable to save a plugin configuration", PLUGIN_ID);
-    }
-
-    @Test
-    @DirtiesContext
-    public void savePluginConfigurationErrorVersionNull() {
-        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
-                pluginParameters, 0);
-
-        aPluginConfiguration.setVersion(null);
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
-        performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, aPluginConfiguration, expectations,
-                           "unable to save a plugin configuration", PLUGIN_ID);
-    }
-
-    @Test
     @DirtiesContext
     public void savePluginConfigurationErrorConfNull() {
         final List<ResultMatcher> expectations = new ArrayList<>();
@@ -424,8 +422,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     private PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
-        pluginMetaData.setPluginId(PLUGIN_ID);
+        pluginMetaData.setPluginClassName(ISamplePlugin.class.getCanonicalName());
+        pluginMetaData.setPluginId("aSamplePlugin");
         pluginMetaData.setAuthor(AUTHOR);
         pluginMetaData.setVersion(VERSION);
         return pluginMetaData;

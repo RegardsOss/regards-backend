@@ -9,7 +9,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
  *
  * Class IAuthoritiesProvider
  *
- * Interface to derfine the method to get informations about Authorities resources and roles.
+ * Interface to define the method to get informations about Authorities resources and roles.
  *
  * @author CS
  * @since 1.0-SNAPSHOT

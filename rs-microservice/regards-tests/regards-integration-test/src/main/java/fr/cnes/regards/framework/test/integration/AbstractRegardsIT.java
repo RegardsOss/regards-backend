@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.test.integration;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
@@ -52,8 +53,8 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.MOCK)
-@ContextConfiguration(
-        classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class, DefaultTestFeignConfiguration.class })
+@ContextConfiguration(classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class,
+        DefaultTestFeignConfiguration.class })
 @AutoConfigureMockMvc
 @ActiveProfiles({ "default", "test" })
 public abstract class AbstractRegardsIT {
@@ -87,7 +88,7 @@ public abstract class AbstractRegardsIT {
      * JSON path root in responses
      */
     protected static final String JSON_PATH_ROOT = "$";
-    
+
     /**
      * JSON path $.* in responses
      */
@@ -110,6 +111,9 @@ public abstract class AbstractRegardsIT {
     @Autowired
     protected MethodAuthorizationService authService;
 
+    /**
+     * Global {@link GsonBuilder}
+     */
     @Autowired
     protected GsonBuilder gsonBuilder;
 
@@ -200,6 +204,14 @@ public abstract class AbstractRegardsIT {
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
         final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, pFilePath, pUrlTemplate,
+                                                                                        pUrlVariables);
+        return performRequest(requestBuilder, pMatchers, pErrorMessage);
+    }
+
+    protected ResultActions performDefaultFileUpload(final String pUrlTemplate, final List<MockMultipartFile> pFileList,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
+        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
+        final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, pFileList, pUrlTemplate,
                                                                                         pUrlVariables);
         return performRequest(requestBuilder, pMatchers, pErrorMessage);
     }
@@ -315,15 +327,26 @@ public abstract class AbstractRegardsIT {
 
         try {
             final MockMultipartFile file = new MockMultipartFile("file", Files.newInputStream(pFilePath));
-            final MockMultipartHttpServletRequestBuilder multipartRequestBuilder = MockMvcRequestBuilders
-                    .fileUpload(pUrlTemplate, pUrlVars).file(file);
-            addSecurityHeader(multipartRequestBuilder, pAuthToken);
-            return multipartRequestBuilder;
+            List<MockMultipartFile> fileList = new ArrayList<>(1);
+            fileList.add(file);
+            return getMultipartRequestBuilder(pAuthToken, fileList, pUrlTemplate, pUrlVars);
         } catch (final IOException e) {
             final String message = String.format("Cannot create input stream for file %s", pFilePath.toString());
             getLogger().error(message, e);
             throw new AssertionError(message, e);
         }
+    }
+
+    protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(final String pAuthToken,
+            final List<MockMultipartFile> pFiles, final String pUrlTemplate, final Object... pUrlVars) {
+
+        final MockMultipartHttpServletRequestBuilder multipartRequestBuilder = MockMvcRequestBuilders
+                .fileUpload(pUrlTemplate, pUrlVars);
+        for (MockMultipartFile file : pFiles) {
+            multipartRequestBuilder.file(file);
+        }
+        addSecurityHeader(multipartRequestBuilder, pAuthToken);
+        return multipartRequestBuilder;
     }
 
     protected void addSecurityHeader(final MockHttpServletRequestBuilder pRequestBuilder, final String pAuthToken) {

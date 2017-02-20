@@ -13,6 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 
 /***
  * Unit testing of {@link PluginConfiguration} persistence.
@@ -88,6 +89,8 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         // find it
         final PluginConfiguration jpaConf = pluginConfigurationRepository
                 .findOneWithPluginParameter(aPluginConf.getId());
+        Assert.assertNotNull(jpaConf.getParameters());
+        Assert.assertTrue(!jpaConf.getParameters().isEmpty());
 
         // compare the initial conf with the results of the search
         Assert.assertEquals(aPluginConf.getLabel(), jpaConf.getLabel());
@@ -97,8 +100,11 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         Assert.assertEquals(aPluginConf.getPluginClassName(), jpaConf.getPluginClassName());
         Assert.assertEquals(aPluginConf.getParameters().size(), pluginParameterRepository.count());
         Assert.assertEquals(aPluginConf.getPriorityOrder(), jpaConf.getPriorityOrder());
-        aPluginConf.getParameters().forEach(p -> Assert.assertEquals(aPluginConf.getParameterConfiguration(p.getName()),
-                                                                     jpaConf.getParameterConfiguration(p.getName())));
+
+        for (PluginParameter p : aPluginConf.getParameters()) {
+            Assert.assertEquals(aPluginConf.getParameterConfiguration(p.getName()),
+                                jpaConf.getParameterConfiguration(p.getName()));
+        }
 
     }
 

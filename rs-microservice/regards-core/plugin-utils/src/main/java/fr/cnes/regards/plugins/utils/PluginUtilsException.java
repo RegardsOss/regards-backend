@@ -22,9 +22,8 @@ public class PluginUtilsException extends Exception {
 
     /**
      * serialVersionUID field.
-     *
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 476540009609921511L;
 
     /**
      *

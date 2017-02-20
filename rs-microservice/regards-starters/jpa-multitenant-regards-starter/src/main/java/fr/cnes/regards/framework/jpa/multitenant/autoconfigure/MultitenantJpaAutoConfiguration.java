@@ -40,7 +40,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.google.gson.Gson;
 
-import fr.cnes.regards.framework.amqp.Subscriber;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
@@ -52,6 +53,7 @@ import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectio
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  *
@@ -62,13 +64,11 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(
-        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
-        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
-        transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
+@EnableJpaRepositories(excludeFilters = {
+        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory", transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
-@AutoConfigureAfter(value = { GsonAutoConfiguration.class })
+@AutoConfigureAfter(value = { GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
 
@@ -112,7 +112,7 @@ public class MultitenantJpaAutoConfiguration {
      * AMQP Message subscriber
      */
     @Autowired(required = false)
-    private Subscriber amqpSubscriber;
+    private ISubscriber subscriber;
 
     /**
      * Multitenant connection provider
@@ -146,8 +146,10 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public CurrentTenantIdentifierResolver currentTenantIdentifierResolver() {
-        return new CurrentTenantIdentifierResolverImpl();
+    public CurrentTenantIdentifierResolver currentTenantIdentifierResolver(
+            IRuntimeTenantResolver pThreadTenantResolver) {
+        this.currentTenantIdentifierResolver = new CurrentTenantIdentifierResolverImpl(pThreadTenantResolver);
+        return currentTenantIdentifierResolver;
     }
 
     /**
@@ -159,7 +161,7 @@ public class MultitenantJpaAutoConfiguration {
      */
     @Bean
     public AbstractDataSourceBasedMultiTenantConnectionProviderImpl connectionProvider() {
-        return new DataSourceBasedMultiTenantConnectionProviderImpl(configuration, dataSources, amqpSubscriber,
+        return new DataSourceBasedMultiTenantConnectionProviderImpl(configuration, dataSources, subscriber,
                 microserviceName);
     }
 

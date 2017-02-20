@@ -3,6 +3,9 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.event;
 
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 
 /**
@@ -14,7 +17,8 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public class NewTenantEvent {
+@Event(target = Target.ALL)
+public class NewTenantEvent implements ISubscribable {
 
     /**
      * New tenant

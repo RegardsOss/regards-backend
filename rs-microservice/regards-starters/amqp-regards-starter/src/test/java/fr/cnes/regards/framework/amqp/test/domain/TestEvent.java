@@ -3,11 +3,13 @@
  */
 package fr.cnes.regards.framework.amqp.test.domain;
 
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+
 /**
  * @author svissier
  *
  */
-public class TestEvent {
+public class TestEvent implements ISubscribable {
 
     /**
      * content sent

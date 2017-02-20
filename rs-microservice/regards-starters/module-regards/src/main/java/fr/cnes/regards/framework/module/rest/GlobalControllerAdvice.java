@@ -16,11 +16,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityCorruptByNetworkException;
+import fr.cnes.regards.framework.module.rest.exception.EntityDescriptionTooLargeException;
+import fr.cnes.regards.framework.module.rest.exception.EntityDescriptionUnacceptableCharsetException;
+import fr.cnes.regards.framework.module.rest.exception.EntityDescriptionUnacceptableType;
 import fr.cnes.regards.framework.module.rest.exception.EntityEmbeddedEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -29,14 +30,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidValueException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotEmptyException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleEntityNotIdentifiableException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.exception.OperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 
 /**
@@ -47,8 +41,6 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  * @author Sébastien Binda
  * @since 1.1-SNAPSHOT
  *
- *        TODO : See {@link ResponseEntityExceptionHandler} to manage user responses. See
- *        http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#mvc-ann-rest-spring-mvc-exceptions
  */
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.LOWEST_PRECEDENCE - 1)
@@ -65,19 +57,9 @@ public class GlobalControllerAdvice {
                 .body(new ServerErrorResponse("Internal server error"));
     }
 
-    @ExceptionHandler(ModuleAlreadyExistsException.class)
-    public ResponseEntity<ServerErrorResponse> handleModelException(final ModuleAlreadyExistsException pEx) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pEx.getMessage()));
-    }
-
     @ExceptionHandler(EntityAlreadyExistsException.class)
     public ResponseEntity<ServerErrorResponse> handleModelException(final EntityAlreadyExistsException pEx) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pEx.getMessage()));
-    }
-
-    @ExceptionHandler(ModuleEntityNotFoundException.class)
-    public ResponseEntity<ServerErrorResponse> dataNotFound(final ModuleEntityNotFoundException pException) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
     @ExceptionHandler(EntityEmbeddedEntityNotFoundException.class)
@@ -86,25 +68,35 @@ public class GlobalControllerAdvice {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
+    @ExceptionHandler(EntityDescriptionUnacceptableCharsetException.class)
+    public ResponseEntity<ServerErrorResponse> entityDescriptionUnaccesptableCharset(
+            final EntityDescriptionUnacceptableCharsetException pException) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    @ExceptionHandler(EntityDescriptionUnacceptableType.class)
+    public ResponseEntity<ServerErrorResponse> entityDescriptionUnaccesptableType(
+            final EntityDescriptionUnacceptableType pException) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    @ExceptionHandler(EntityDescriptionTooLargeException.class)
+    public ResponseEntity<ServerErrorResponse> entityDescriptionTooLargeCharset(
+            final EntityDescriptionTooLargeException pException) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ServerErrorResponse(pException.getMessage()));
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ServerErrorResponse> entityNotFound(final EntityNotFoundException pException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
-    @ExceptionHandler(ModuleEntityNotEmptyException.class)
-    public ResponseEntity<ServerErrorResponse> entityNotEmpty(final ModuleEntityNotEmptyException pException) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pException.getMessage()));
-    }
-
     @ExceptionHandler(EntityNotEmptyException.class)
     public ResponseEntity<ServerErrorResponse> entityNotEmpty(final EntityNotEmptyException pException) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pException.getMessage()));
-    }
-
-    @ExceptionHandler(ModuleEntityNotIdentifiableException.class)
-    public ResponseEntity<ServerErrorResponse> entityNotIdentifiable(
-            final ModuleEntityNotIdentifiableException pException) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
     @ExceptionHandler(EntityNotIdentifiableException.class)
@@ -118,31 +110,6 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ServerErrorResponse> noSuchElement(final NoSuchElementException pException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
-    }
-
-    /*
-     * Exception handler returning the code 409 when trying to create an already existing entity.
-     */
-    @ExceptionHandler(AlreadyExistingException.class)
-    public ResponseEntity<ServerErrorResponse> dataAlreadyExisting(final AlreadyExistingException pException) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pException.getMessage()));
-    }
-
-    /*
-     * Exception handler returning the code 400 when the request is somehow malformed or invalid.
-     */
-    @ExceptionHandler(InvalidValueException.class)
-    public ResponseEntity<ServerErrorResponse> invalidValue(final InvalidValueException pException) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(pException.getMessage()));
-    }
-
-    /*
-     * Exception handler returning the code 422 when an entity in request violates its validation constraints.
-     */
-    @ExceptionHandler(InvalidEntityException.class)
-    public ResponseEntity<ServerErrorResponse> manualValidation(final InvalidEntityException pException) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(pException.getMessage()));
     }
 
     /*
@@ -164,16 +131,13 @@ public class GlobalControllerAdvice {
                 .body(new ServerErrorResponse(pException.getMessage()));
     }
 
-    /*
-     * Exception handler returning the code 403 when an operation on an entity is forbidden.<br> Thrown by Hibernate.
-     */
-    @ExceptionHandler(OperationForbiddenException.class)
-    public ResponseEntity<ServerErrorResponse> operationForbidden(final OperationForbiddenException pException) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
-    }
-
     /**
+     *
      * Exception handler returning the code 403 when an operation on an entity is forbidden.<br>
+     *
+     * @param pException
+     *            {@link EntityOperationForbiddenException}
+     * @return {@link ResponseEntity}
      */
     @ExceptionHandler(EntityOperationForbiddenException.class)
     public ResponseEntity<ServerErrorResponse> entityOperationForbidden(
@@ -183,6 +147,11 @@ public class GlobalControllerAdvice {
 
     /**
      * Exception handler returning the code 403 when a transition on a state-managed entity is forbidden.<br>
+     *
+     * @param pException
+     *            {@link EntityTransitionForbiddenException}
+     * @return {@link ResponseEntity}
+     *
      */
     @ExceptionHandler(EntityTransitionForbiddenException.class)
     public ResponseEntity<ServerErrorResponse> entityTransitionForbidden(
@@ -193,6 +162,10 @@ public class GlobalControllerAdvice {
     /**
      * Exception handler returning the code 400 when the identifier in url path doesn't match identifier in request
      * body.<br>
+     *
+     * @param pException
+     *            {@link EntityInconsistentIdentifierException}
+     * @return {@link ResponseEntity}
      */
     @ExceptionHandler(EntityInconsistentIdentifierException.class)
     public ResponseEntity<ServerErrorResponse> entityInconsistentIdentifier(
@@ -202,6 +175,11 @@ public class GlobalControllerAdvice {
 
     /**
      * Spring framework Access denied exception. Throw by security methodAccessVoter
+     *
+     *
+     * @param pException
+     *            {@link AccessDeniedException}
+     * @return {@link ResponseEntity}
      */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ServerErrorResponse> accessDeniedException(final AccessDeniedException pException) {

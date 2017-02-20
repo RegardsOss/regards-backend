@@ -67,4 +67,23 @@ public class AdapterTest {
 
         Assert.assertTrue(animal instanceof Hawk);
     }
+
+    /**
+     * Multitenant factory test
+     */
+    @Test
+    public void testMultitenant() {
+
+        final GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapterFactory(new MultitenantAnimalAdapterFactory2("PROJECT"));
+        final Gson gson = gsonBuilder.create();
+
+        final Hawk hawk = new Hawk();
+
+        final String jsonHawk = gson.toJson(hawk);
+        LOGGER.info(jsonHawk);
+        final Animal animal = gson.fromJson(jsonHawk, Animal.class);
+
+        Assert.assertTrue(animal instanceof Hawk);
+    }
 }
