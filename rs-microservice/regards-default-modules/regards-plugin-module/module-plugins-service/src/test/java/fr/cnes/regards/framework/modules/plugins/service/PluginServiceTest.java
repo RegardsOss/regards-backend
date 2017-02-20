@@ -255,7 +255,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                 .thenReturn(pluginConfs);
         final List<PluginConfiguration> results = pluginServiceMocked
-                .getPluginConfigurationsByType(PLUGIN_PARAMETER_ID);
+                .getPluginConfigurations(PLUGIN_PARAMETER_ID);
 
         Assert.assertNotNull(results);
         Assert.assertEquals(pluginConfs.size(), results.size());

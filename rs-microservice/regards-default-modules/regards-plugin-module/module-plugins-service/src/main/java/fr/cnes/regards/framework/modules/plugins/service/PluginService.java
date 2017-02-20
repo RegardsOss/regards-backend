@@ -144,7 +144,7 @@ public class PluginService implements IPluginService {
         if (!throwError && (pPluginConfiguration.getVersion() == null)) {
             msg.append(String.format(" <%s> without version.", pPluginConfiguration.getPluginId()));
             throwError = true;
-        }        
+        }
 
         if (throwError) {
             throw new ModuleException(msg.toString());
@@ -159,8 +159,7 @@ public class PluginService implements IPluginService {
             LOGGER.error(String.format("Error while getting the plugin configuration <%s>.", pId));
             throw new EntityNotFoundException(pId, PluginConfiguration.class);
         }
-        PluginConfiguration conf = pluginConfRepository.findOne(pId);
-        return conf;
+        return pluginConfRepository.findOne(pId);
     }
 
     @Override
@@ -201,12 +200,11 @@ public class PluginService implements IPluginService {
 
         pluginImpls.forEach(pMetaData -> configurations
                 .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pMetaData.getPluginId())));
-
         return configurations;
     }
 
     @Override
-    public List<PluginConfiguration> getPluginConfigurationsByType(final String pPluginId) {
+    public List<PluginConfiguration> getPluginConfigurations(final String pPluginId) {
         return pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pPluginId);
     }
 

@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -73,9 +74,10 @@ public class PluginController implements IResourceController<PluginConfiguration
     public static final String PLUGINS_PLUGINID_CONFIGS = "/plugins/{pluginId}/config";
 
     /**
-     * REST mapping resource : /plugins/config
+     * REST mapping resource : /plugins/configs
      */
-    public static final String PLUGINS_CONFIGS = "/plugins/config";
+    public static final String PLUGINS_CONFIGS = "/plugins/configs";
+
 
     /**
      * REST mapping resource : /plugins/{pluginId}/config/{configId}
@@ -120,7 +122,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      * @param pPluginType
      *            a type of plugin
      *
-     * @return a list of {@link PluginMetaData}
+     * @return a {@link List} of {@link PluginMetaData}
      *
      * @throws EntityInvalidException
      *             if problem occurs
@@ -158,7 +160,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     /**
      * Get the interface identified with the annotation {@link PluginInterface}.
      *
-     * @return a list of interface annotated with {@link PluginInterface}.
+     * @return a {@link List} of interface annotated with {@link PluginInterface}
      */
     @RequestMapping(value = PluginController.PLUGIN_TYPES, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -178,7 +180,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      * @param pPluginId
      *            a plugin identifier
      *
-     * @return a list of {@link PluginParameter}
+     * @return a {@link List} of {@link PluginParameter}
      */
     @RequestMapping(value = PluginController.PLUGINS_PLUGINID, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -197,7 +199,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      * @param pPluginId
      *            a plugin identifier
      *
-     * @return a list of {@link PluginConfiguration}
+     * @return a {@link List} of {@link PluginConfiguration}
      */
     @RequestMapping(value = PluginController.PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -205,21 +207,48 @@ public class PluginController implements IResourceController<PluginConfiguration
     @ResourceAccess(description = "Get all the plugin configuration for a specific plugin id")
     public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurations(
             @PathVariable("pluginId") final String pPluginId) {
-        final List<PluginConfiguration> pluginConfs = pluginService.getPluginConfigurationsByType(pPluginId);
+        final List<PluginConfiguration> pluginConfs = pluginService.getPluginConfigurations(pPluginId);
         return ResponseEntity.ok(toResources(pluginConfs));
     }
 
     /**
-     * Get all the {@link PluginConfiguration}.
+     * Get all the {@link PluginConfiguration} for a specific plugin type.</br>
+     * If any specific plugin type is defined, get all the {@link PluginConfiguration}.
      *
-     * @return a list of {@link PluginConfiguration}
+     * @param pPluginType
+     *            an interface name, that implements {@link PluginInterface}.<br>
+     *            This parameter is optional.
+     * @return a {@link List} of {@link PluginConfiguration}
+     * @throws EntityNotIdentifiableException
+     *             the specific plugin type name is unknown
      */
     @RequestMapping(value = PluginController.PLUGINS_CONFIGS, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Get all the plugin configuration")
-    public ResponseEntity<List<Resource<PluginConfiguration>>> getAllPluginConfigurations() {
-        final List<PluginConfiguration> pluginConfs = pluginService.getAllPluginConfigurations();
+    @ResourceAccess(description = "Get all the plugin configuration for a specific type")
+    public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurationsByType(
+            @RequestParam(value = "pluginType", required = false) final String pPluginType)
+            throws EntityNotIdentifiableException {
+
+        List<PluginConfiguration> pluginConfs;
+
+        if (pPluginType != null) {
+            /*
+             * Get all the PluginConfiguration for a specific plugin type
+             */
+            try {
+                pluginConfs = pluginService.getPluginConfigurationsByType(Class.forName(pPluginType));
+            } catch (ClassNotFoundException e) {
+                LOGGER.error("Any class found for the plugin type :"+pPluginType, e);
+                throw new EntityNotIdentifiableException(e.getMessage());
+            }
+        } else {
+            /*
+             * Get all the PluginConfiguration
+             */
+            pluginConfs = pluginService.getAllPluginConfigurations();
+        }
+
         return ResponseEntity.ok(toResources(pluginConfs));
     }
 

@@ -168,7 +168,7 @@ public interface IPluginService {
      *            a specific plugin Id
      * @return all the {@link PluginConfiguration} for a specific plugin Id
      */
-    List<PluginConfiguration> getPluginConfigurationsByType(String pPluginId);
+    List<PluginConfiguration> getPluginConfigurations(String pPluginId);
 
     /**
      * Add a package to scan to find the plugins.
