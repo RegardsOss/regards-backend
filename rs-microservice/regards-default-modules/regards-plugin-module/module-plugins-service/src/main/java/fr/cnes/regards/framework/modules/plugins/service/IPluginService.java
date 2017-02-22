@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.List;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -177,5 +178,19 @@ public interface IPluginService {
      *            A package name to scan to find the plugins.
      */
     public void addPluginPackage(String pPluginPackage);
+
+    /**
+     * Get {@link PluginMetaData} for a plugin of a specific plugin type.</br>
+     * If the plugin class name does not match a plugin of the plugin type, a exception is thrown.
+     * 
+     * @param pClass
+     *            the plugin type
+     * @param pPluginClassName
+     *            a plugin class name
+     * @return the {@link PluginMetaData} of the plugin of plugin type
+     * @throws EntityInvalidException
+     *             Any plugin of plugin type is find.
+     */
+    public PluginMetaData checkPluginClassName(Class<?> pClass, String pPluginClassName) throws EntityInvalidException;
 
 }

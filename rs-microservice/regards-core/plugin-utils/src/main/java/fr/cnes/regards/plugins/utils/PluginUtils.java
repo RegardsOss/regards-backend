@@ -142,14 +142,14 @@ public final class PluginUtils {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(pPluginClass.getCanonicalName());
         List<String> types = new ArrayList<>();
-        for (Type  aInterface : pPluginClass.getGenericInterfaces()) {
+        for (Type aInterface : pPluginClass.getGenericInterfaces()) {
             types.add(aInterface.getTypeName());
         }
         pluginMetaData.setInterfaceClassName(types);
 
         // Manage plugin id
         if ("".equals(plugin.id())) {
-            pluginMetaData.setPluginId(pPluginClass.getCanonicalName());
+            pluginMetaData.setPluginId(pPluginClass.getName());
         } else {
             pluginMetaData.setPluginId(plugin.id());
         }
@@ -313,7 +313,7 @@ public final class PluginUtils {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType, pPrefixs);
 
-        final PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", pParameters, 0);
+        final PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", pParameters);
         return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, pPrefixs, pPluginParameters);
     }
 
@@ -369,7 +369,7 @@ public final class PluginUtils {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType, pPrefixs);
 
-        return new PluginConfiguration(pluginMetadata, "", pParameters, 0);
+        return new PluginConfiguration(pluginMetadata, "", pParameters);
     }
 
 }
