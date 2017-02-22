@@ -35,7 +35,7 @@ public class RequirementMatrixReportListener extends RunListener {
     /**
      * Report prefix
      */
-    private static final String REPORT_PREFIX = "RQMT-";
+    public static final String REPORT_PREFIX = "RQMT-";
 
     /**
      * Maven build directory

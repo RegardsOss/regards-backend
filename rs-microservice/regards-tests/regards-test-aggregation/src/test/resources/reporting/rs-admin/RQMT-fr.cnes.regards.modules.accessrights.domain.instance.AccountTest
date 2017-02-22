@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system fails when a wrong mode is set on an AccountSettings.</purpose>
+            <name>modeIsDifferentFromAllowedValues</name>
+            <class>fr.cnes.regards.modules.accessrights.domain.projects.AccessSettingsValidationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system allows mode from a list of allowed values.</purpose>
+            <name>modeIsAllowedValue</name>
+            <class>fr.cnes.regards.modules.accessrights.domain.projects.AccessSettingsValidationTest</class>
+        </test>
+    </requirement>
+</requirements>

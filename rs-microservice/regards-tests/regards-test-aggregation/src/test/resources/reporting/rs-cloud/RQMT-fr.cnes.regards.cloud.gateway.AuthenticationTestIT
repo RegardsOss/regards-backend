@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Test the Oauth2 authentication process. Get a valid token.</purpose>
+            <name>testAuthenticate</name>
+            <class>fr.cnes.regards.cloud.gateway.AuthenticationTestIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Test the Oauth2 authentication process. Test unauthorized for basic authentication fail.</purpose>
+            <name>testAuthenticateBasicError</name>
+            <class>fr.cnes.regards.cloud.gateway.AuthenticationTestIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Test the Oauth2 authentication process. Test unauthorized for user/password invalid.</purpose>
+            <name>testAuthenticateCredantialsError</name>
+            <class>fr.cnes.regards.cloud.gateway.AuthenticationTestIT</class>
+        </test>
+    </requirement>
+</requirements>
