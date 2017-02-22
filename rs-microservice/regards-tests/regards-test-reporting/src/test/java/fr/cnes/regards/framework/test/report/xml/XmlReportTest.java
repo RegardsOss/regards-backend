@@ -13,10 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.test.report.exception.ReportException;
 import fr.cnes.regards.framework.test.report.xls.XlsxHelper;
-import fr.cnes.regards.framework.test.report.xml.XmlHelper;
-import fr.cnes.regards.framework.test.report.xml.XmlRequirement;
-import fr.cnes.regards.framework.test.report.xml.XmlRequirements;
-import fr.cnes.regards.framework.test.report.xml.XmlTest;
 
 /**
  * Test XML report marshalling/unmarshalling
@@ -116,7 +112,7 @@ public class XmlReportTest {
     public void testXlsx() {
         String filename = "requirements.xlsx";
         try {
-            XlsxHelper.write(Paths.get("target"), filename, reqs_, "dam");
+            XlsxHelper.write(Paths.get("target", filename), reqs_, "dam");
         } catch (ReportException e) {
             Assert.fail();
         }

@@ -105,7 +105,6 @@ public class CorsFilter extends OncePerRequestFilter {
      *             Servlet error
      * @throws IOException
      *             Internal error
-     * @return true if the cors requests are accepted
      * @since 1.0-SNAPSHOT
      */
     private void doSecurizedFilter(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
@@ -157,7 +156,7 @@ public class CorsFilter extends OncePerRequestFilter {
             final FilterChain pFilterChain) throws IOException, ServletException {
         pResponse.setHeader(ALLOW_ORIGIN, "*");
         pResponse.setHeader(ALLOW_METHOD, "POST, PUT, GET, OPTIONS, DELETE");
-        pResponse.setHeader(ALLOW_HEADER, "authorization, content-type");
+        pResponse.setHeader(ALLOW_HEADER, "authorization, content-type, scope");
         pResponse.setHeader(CONTROL_MAX_AGE, "3600");
     }
 

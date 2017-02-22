@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_DAM_MOD_060">
+        <test>
+            <purpose>Test ability to persist and retrieve structureless data stored as jsonb into postgres</purpose>
+            <name>testPersist</name>
+            <class>fr.cnes.regards.framework.jpa.json.test.JsonbTest</class>
+        </test>
+    </requirement>
+</requirements>

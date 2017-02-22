@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system sends the right notifications weekly.</purpose>
+            <name>testSendWeekly</name>
+            <class>fr.cnes.regards.modules.notification.service.SendingSchedulerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system allows to use different sending strategies.</purpose>
+            <name>testChangeStrategy</name>
+            <class>fr.cnes.regards.modules.notification.service.SendingSchedulerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system sends the right notifications monthly.</purpose>
+            <name>testSendMonthly</name>
+            <class>fr.cnes.regards.modules.notification.service.SendingSchedulerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system sends the right notifications daily.</purpose>
+            <name>testSendDaily</name>
+            <class>fr.cnes.regards.modules.notification.service.SendingSchedulerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system sends the right notifications with custom frequency.</purpose>
+            <name>testSendCustomDateNotExpired</name>
+            <class>fr.cnes.regards.modules.notification.service.SendingSchedulerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system sends the right notifications with custom frequency.</purpose>
+            <name>testSendCustomDateExpired</name>
+            <class>fr.cnes.regards.modules.notification.service.SendingSchedulerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_ARC_150">
+        <test>
+            <purpose>Check that the system allows to retrieve only notifications which should be sent.</purpose>
+            <name>retrieveNotificationsToSend</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_SET_520">
+        <test>
+            <purpose>Check that the system allorws to create notifications in order to send to users.</purpose>
+            <name>createNotification</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_ARC_150">
+        <test>
+            <purpose>Check that the system allorws to create notifications in order to send to users.</purpose>
+            <name>createNotification</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_STO_CMD_140">
+        <test>
+            <purpose>Check that the system allorws to create notifications in order to send to users.</purpose>
+            <name>createNotification</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_SET_520">
+        <test>
+            <purpose>Check that the system allows to retrieve a notification.</purpose>
+            <name>retrieveNotification</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_SET_530">
+        <test>
+            <purpose>Check that the system allows to retrieve a notification.</purpose>
+            <name>retrieveNotification</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_SET_540">
+        <test>
+            <purpose>Check that the system allows to retrieve a notification.</purpose>
+            <name>retrieveNotification</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_CQA_040">
+        <test>
+            <purpose>Check that the system fails when trying to update a non existing notification.</purpose>
+            <name>updateNotificationStatusNotFound</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_SET_520">
+        <test>
+            <purpose>Check that the system allows to retrieve all notifications.</purpose>
+            <name>retrieveNotifications</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_SET_530">
+        <test>
+            <purpose>Check that the system allows to retrieve all notifications.</purpose>
+            <name>retrieveNotifications</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_SET_540">
+        <test>
+            <purpose>Check that the system allows to retrieve all notifications.</purpose>
+            <name>retrieveNotifications</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_CQA_040">
+        <test>
+            <purpose>Check that the system allows to update the parameter generating or not a notification.</purpose>
+            <name>updateNotificationStatus</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system allows te send notifications as email through the email feign client.</purpose>
+            <name>send</name>
+            <class>fr.cnes.regards.modules.notification.service.EmailSendingStrategyTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_STO_CMD_140">
+        <test>
+            <purpose>Check that the system triggers the daily cron at the right moment when starting before 12h00.</purpose>
+            <name>testDailyCronStartStrictlyBefore12</name>
+            <class>fr.cnes.regards.modules.notification.service.CronTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_STO_CMD_140">
+        <test>
+            <purpose>Check that the system triggers the weekly cron at the right moments.</purpose>
+            <name>testWeeklyCron</name>
+            <class>fr.cnes.regards.modules.notification.service.CronTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_STO_CMD_140">
+        <test>
+            <purpose>Check that the system triggers the daily cron at the right moment when starting after 12h00.</purpose>
+            <name>testDailyCronStartStrictlyAfter12</name>
+            <class>fr.cnes.regards.modules.notification.service.CronTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_STO_CMD_140">
+        <test>
+            <purpose>Check that the system triggers the monthly cron at the right moments.</purpose>
+            <name>testMonthlyCron</name>
+            <class>fr.cnes.regards.modules.notification.service.CronTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_STO_CMD_140">
+        <test>
+            <purpose>Check that the system triggers the daily cron at the right moment when starting at 12h00.</purpose>
+            <name>testDailyCronStartEqual12</name>
+            <class>fr.cnes.regards.modules.notification.service.CronTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_CQA_040">
+        <test>
+            <purpose>Check that the system allows to retrieve the notification settings of currently logged user.</purpose>
+            <name>retrieveNotificationsAlreadyExists</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationSettingsServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_CQA_040">
+        <test>
+            <purpose>Check that the system allows to update notification settings.</purpose>
+            <name>updateNotificationSettingsNullHours</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationSettingsServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_CQA_040">
+        <test>
+            <purpose>Check that the system creates empty settings when trying to retrieve not existing settings.</purpose>
+            <name>retrieveNotificationsNotExists</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationSettingsServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_CQA_040">
+        <test>
+            <purpose>Check that the system allows to update notification settings.</purpose>
+            <name>updateNotificationSettings</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationSettingsServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_CQA_040">
+        <test>
+            <purpose>Check that the system allows to update notification settings.</purpose>
+            <name>updateNotificationSettingsNullFrequency</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationSettingsServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_DAM_CQA_040">
+        <test>
+            <purpose>Check that the system allows to update notification settings.</purpose>
+            <name>updateNotificationSettingsNullDays</name>
+            <class>fr.cnes.regards.modules.notification.service.NotificationSettingsServiceTest</class>
+        </test>
+    </requirement>
+</requirements>

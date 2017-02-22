@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_CMP_PLG_330">
+        <test>
+            <purpose>Change the parameter's status from dynamic to not dynamic.</purpose>
+            <name>updateDynamicParameter</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceUpdateDynamicParameterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_PLG_330">
+        <test>
+            <purpose>Change the parameter's status from not dynamic to dynamic.</purpose>
+            <name>updateParameterToDynamic</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceUpdateDynamicParameterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_100">
+        <test>
+            <purpose>Delete a plugin configuration identified by an identifier</purpose>
+            <name>deleteAPluginConfiguration</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_100">
+        <test>
+            <purpose>Delete a plugin configuration identified by an identifier</purpose>
+            <name>deleteAPluginConfigurationError</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_100">
+        <test>
+            <purpose>Get a plugin configuration identified by an identifier.</purpose>
+            <name>getAPluginConfiguration</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMZ_PLG_200">
+        <test>
+            <purpose>Load a plugin's metada for a specific plugin type identified by a plugin identifier.</purpose>
+            <name>getPluginMetaDataById</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_120">
+        <test>
+            <purpose>Load a plugin from a specific type with a configuration and execute a method.</purpose>
+            <name>getFirstPluginByType</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_120">
+        <test>
+            <purpose>Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and set a parameter value and execute a method.</purpose>
+            <name>getFirstPluginByTypeWithADynamicParameterWithAListOfValueAndSetAValue</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_PLG_310">
+        <test>
+            <purpose>Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and set a parameter value and execute a method.</purpose>
+            <name>getFirstPluginByTypeWithADynamicParameterWithAListOfValueAndSetAValue</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMZ_PLG_200">
+        <test>
+            <purpose>Load all plugin's metada.</purpose>
+            <name>getAllPlugins</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_120">
+        <test>
+            <purpose>Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and execute a method.</purpose>
+            <name>getFirstPluginByTypeWithADynamicParameterWithAListOfValue</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_PLG_310">
+        <test>
+            <purpose>Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and execute a method.</purpose>
+            <name>getFirstPluginByTypeWithADynamicParameterWithAListOfValue</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMZ_PLG_200">
+        <test>
+            <purpose>Load all plugin's metada for a specific plugin type identified by a class name.</purpose>
+            <name>getPluginTypesByString</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMZ_PLG_200">
+        <test>
+            <purpose>Load all plugin's metada for a specific plugin type identified by a Class.</purpose>
+            <name>getPluginOneType</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_100">
+        <test>
+            <purpose>Update a plugin configuration identified by an identifier</purpose>
+            <name>updateAPluginConfiguration</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_PLG_100">
+        <test>
+            <purpose>Update a plugin configuration identified by an identifier</purpose>
+            <name>updateAPluginConfiguration</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_120">
+        <test>
+            <purpose>Load a plugin with a dynamic parameter from a specific type with a configuration and execute a method.</purpose>
+            <name>getFirstPluginByTypeWithADynamicParameter</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_PLG_120">
+        <test>
+            <purpose>Load a plugin with a dynamic parameter from a specific type with a configuration and execute a method.</purpose>
+            <name>getFirstPluginByTypeWithADynamicParameter</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_PLG_310">
+        <test>
+            <purpose>Load a plugin with a dynamic parameter from a specific type with a configuration and execute a method.</purpose>
+            <name>getFirstPluginByTypeWithADynamicParameter</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_100">
+        <test>
+            <purpose>Create a new plugin configuration</purpose>
+            <name>saveAPluginConfiguration</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_PLG_320">
+        <test>
+            <purpose>Create a new plugin configuration</purpose>
+            <name>saveAPluginConfiguration</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_PLG_100">
+        <test>
+            <purpose>Unable to load a plugin with a no active configuration</purpose>
+            <name>getPluginNotActiveConfiguration</name>
+            <class>fr.cnes.regards.framework.modules.plugins.service.PluginServiceFailedTest</class>
+        </test>
+    </requirement>
+</requirements>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_PLG_020">
+        <test>
+            <purpose>Error to load a plugin from with an incompatible interface parameter.</purpose>
+            <name>incompatibleInterfaceError</name>
+            <class>fr.cnes.regards.plugins.utils.plugintypes.PluginInterfaceUtilsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_PLG_020">
+        <test>
+            <purpose>Error to load a plugin from with an incompatible interface parameter.</purpose>
+            <name>incompatibleParameterError</name>
+            <class>fr.cnes.regards.plugins.utils.plugintypes.PluginInterfaceUtilsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_PLG_020">
+        <test>
+            <purpose>Load a plugin with a plugin type interface parameter.</purpose>
+            <name>getComplexPlugin</name>
+            <class>fr.cnes.regards.plugins.utils.plugintypes.PluginInterfaceUtilsTest</class>
+        </test>
+    </requirement>
+</requirements>
