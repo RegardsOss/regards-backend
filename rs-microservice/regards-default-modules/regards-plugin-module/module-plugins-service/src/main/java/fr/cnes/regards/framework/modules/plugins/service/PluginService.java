@@ -151,6 +151,12 @@ public class PluginService implements IPluginService {
             throw new ModuleException(msg.toString());
         }
 
+        getLoadedPlugins().forEach((pKey, pValue) -> {
+            if (pValue.getPluginClassName().equals(pPluginConfiguration.getPluginClassName())) {
+                pPluginConfiguration.setInterfaceName(pValue.getInterfaceName());
+            }
+        });
+
         return pluginConfRepository.save(pPluginConfiguration);
     }
 
@@ -301,7 +307,10 @@ public class PluginService implements IPluginService {
     @Override
     public List<PluginConfiguration> getAllPluginConfigurations() {
         Iterable<PluginConfiguration> confs = pluginConfRepository.findAll();
-        return (confs != null) ? Lists.newArrayList(confs) : Collections.emptyList();
+        if (confs==null) {
+            Collections.emptyList(); 
+        }
+        return Lists.newArrayList(confs);
     }
 
     private List<String> getPluginPackage() {

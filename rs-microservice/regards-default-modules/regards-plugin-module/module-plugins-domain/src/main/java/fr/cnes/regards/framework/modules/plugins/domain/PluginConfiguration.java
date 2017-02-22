@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * Plugin configuration contains a unique Id, plugin meta-data and parameters.
@@ -68,14 +69,14 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * configuration plugin version differs from the loaded plugin.
      */
     @NotNull
-    @Column(nullable=false, updatable=true)
+    @Column(nullable = false, updatable = true)
     private String version;
 
     /**
      * Priority order of the plugin.
      */
     @NotNull
-    @Column(nullable=false, updatable=true)
+    @Column(nullable = false, updatable = true)
     private Integer priorityOrder;
 
     /**
@@ -87,6 +88,11 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * The plugin class name
      */
     private String pluginClassName;
+
+    /**
+     * The interface implemented by the pluginClassName, an interface that implements {@link PluginInterface}
+     */
+    private String interfaceName;
 
     /**
      * Configuration parameters of the plugin
@@ -103,8 +109,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     public PluginConfiguration() {
         super();
         pluginId = "undefined";
-        priorityOrder=0;
-        version="0.0";
+        priorityOrder = 0;
+        version = "0.0";
     }
 
     /**
@@ -123,12 +129,13 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         pluginId = pPluginMetaData.getPluginId();
         version = pPluginMetaData.getVersion();
         pluginClassName = pPluginMetaData.getPluginClassName();
+        interfaceName = pPluginMetaData.getInterfaceName();
         parameters = pParameters;
         priorityOrder = 0;
         label = pLabel;
         active = Boolean.TRUE;
     }
-    
+
     /**
      * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}.
      *
@@ -147,6 +154,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         pluginId = pPluginMetaData.getPluginId();
         version = pPluginMetaData.getVersion();
         pluginClassName = pPluginMetaData.getPluginClassName();
+        interfaceName = pPluginMetaData.getInterfaceName();
         parameters = pParameters;
         priorityOrder = pOrder;
         label = pLabel;
@@ -168,6 +176,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         pluginId = pPluginMetaData.getPluginId();
         version = pPluginMetaData.getVersion();
         pluginClassName = pPluginMetaData.getPluginClassName();
+        interfaceName = pPluginMetaData.getInterfaceName();
         priorityOrder = pOrder;
         label = pLabel;
         active = Boolean.TRUE;
@@ -295,6 +304,14 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     public String getPluginClassName() {
         return pluginClassName;
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String pInterfaceName) {
+        this.interfaceName = pInterfaceName;
     }
 
     @Override

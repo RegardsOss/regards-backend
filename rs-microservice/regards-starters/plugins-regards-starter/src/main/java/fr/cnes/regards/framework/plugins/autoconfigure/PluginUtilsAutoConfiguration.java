@@ -32,8 +32,11 @@ import fr.cnes.regards.plugins.utils.bean.PluginUtilsBean;
 @AutoConfigureAfter({ MultitenantJpaAutoConfiguration.class })
 public class PluginUtilsAutoConfiguration {
 
+    /**
+     * The attribute represents the plugin's properties
+     */
     @Autowired
-    PluginUtilsProperties pluginUtilsProperties;
+    private PluginUtilsProperties pluginUtilsProperties;
 
     @ConditionalOnMissingBean
     @Bean
@@ -42,8 +45,8 @@ public class PluginUtilsAutoConfiguration {
     }
 
     @Bean
-    public IPluginService pluginService(IPluginConfigurationRepository pluginConfRepo) {
-        return new PluginService(pluginConfRepo, pluginUtilsProperties.getPackagesToScan());
+    public IPluginService pluginService(IPluginConfigurationRepository pPluginConfRepo) {
+        return new PluginService(pPluginConfRepo, pluginUtilsProperties.getPackagesToScan());
     }
 
 }
