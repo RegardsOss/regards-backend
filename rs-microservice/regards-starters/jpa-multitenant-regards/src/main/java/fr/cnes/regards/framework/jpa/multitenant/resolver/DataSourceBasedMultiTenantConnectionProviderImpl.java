@@ -105,10 +105,23 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
             updateDataSourceSchema(selectDataSource(tenant));
         }
 
-        // Add a listener to all tenant creation event. If a new tenant is created, we have to dynamically add the
-        // dataSource to the connection pool
-        IHandler<NewTenantEvent> tenantHandler = new NewTenantHandler(this, microserviceName);
-        amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler);
+        listenForNewTenant();
+    }
+
+    /**
+     *
+     * Add a listener to all tenant creation event. If a new tenant is created, we have to dynamically add the
+     * dataSource to the connection pool
+     *
+     * @throws RabbitMQVhostException
+     *             Unrecoverable error during AMQP initialization
+     * @since 1.0-SNAPSHOT
+     */
+    private void listenForNewTenant() {
+        if (amqpSubscriber != null) {
+            final IHandler<NewTenantEvent> tenantHandler = new NewTenantHandler(this, microserviceName);
+            amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler);
+        }
     }
 
     /**
