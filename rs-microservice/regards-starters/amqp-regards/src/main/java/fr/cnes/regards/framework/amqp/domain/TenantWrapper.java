@@ -26,6 +26,7 @@ public class TenantWrapper<T> {
     private String tenant;
 
     public TenantWrapper() {
+        // constructor for serialization
     }
 
     public TenantWrapper(T pContent, String pTenant) {

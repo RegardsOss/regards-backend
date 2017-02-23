@@ -32,12 +32,6 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
 
     private Class<?> jsonObjectClass;
 
-    @Override
-    public void setParameterValues(Properties parameters) {
-        jsonObjectClass = ((ParameterType) parameters.get(PARAMETER_TYPE)).getReturnedClass();
-
-    }
-
     public JsonTypeDescriptor() {
         super(Object.class, new MutableMutabilityPlan<Object>() {
 
@@ -46,6 +40,12 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
                 return GsonUtil.clone(value);
             }
         });
+    }
+
+    @Override
+    public void setParameterValues(Properties parameters) {
+        jsonObjectClass = ((ParameterType) parameters.get(PARAMETER_TYPE)).getReturnedClass();
+
     }
 
     @Override
