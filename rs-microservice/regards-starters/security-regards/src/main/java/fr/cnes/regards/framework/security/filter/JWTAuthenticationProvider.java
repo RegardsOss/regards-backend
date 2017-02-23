@@ -36,7 +36,7 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
             // Fill authentication parsing JWT token
             return jwtService.parseToken((JWTAuthentication) pAuthentication);
         } catch (JwtException e) {
-            throw new InsufficientAuthenticationException(e.getMessage());
+            throw new InsufficientAuthenticationException(e.getMessage(), e);
         }
 
     }
