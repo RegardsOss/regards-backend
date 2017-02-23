@@ -139,7 +139,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.SUFFIXE, "a suffix").getParameters();
         try {
             // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, null);
+            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE));
         } catch (final PluginUtilsException e) {
             Assert.fail();
         }
