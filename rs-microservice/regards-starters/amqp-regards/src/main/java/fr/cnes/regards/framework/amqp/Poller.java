@@ -86,8 +86,8 @@ public class Poller implements IPoller {
     @SuppressWarnings("unchecked")
     public <T> TenantWrapper<T> poll(String pTenant, Class<T> pEvt, WorkerMode pWorkerMode, Target pTarget) {
 
-        LOGGER.info("Polling event {} for tenant {} (Target : {}, WorkerMode : {} )", pEvt.getClass(), pTenant, pTarget,
-                    pWorkerMode);
+        LOGGER.debug("Polling event {} for tenant {} (Target : {}, WorkerMode : {} )", pEvt.getName(), pTenant, pTarget,
+                     pWorkerMode);
 
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)

@@ -148,15 +148,14 @@ public class Publisher implements IPublisher {
                 regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
                 publishMessageByTenant(pTenant, exchange.getName(),
                                        regardsAmqpAdmin.getRoutingKey(queue.getName(), pWorkerMode), pEvt, pPriority);
-            } else
-                if (WorkerMode.ALL.equals(pWorkerMode)) {
-                    // Routing key useless ... always skipped with a fanout exchange
-                    publishMessageByTenant(pTenant, exchange.getName(), DEFAULT_ROUTING_KEY, pEvt, pPriority);
-                } else {
-                    String errorMessage = String.format("Unexpected communication mode : %s.", pWorkerMode);
-                    LOGGER.error(errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
-                }
+            } else if (WorkerMode.ALL.equals(pWorkerMode)) {
+                // Routing key useless ... always skipped with a fanout exchange
+                publishMessageByTenant(pTenant, exchange.getName(), DEFAULT_ROUTING_KEY, pEvt, pPriority);
+            } else {
+                String errorMessage = String.format("Unexpected communication mode : %s.", pWorkerMode);
+                LOGGER.error(errorMessage);
+                throw new IllegalArgumentException(errorMessage);
+            }
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
