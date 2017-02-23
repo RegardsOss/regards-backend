@@ -118,11 +118,11 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      * @since 1.0-SNAPSHOT
      */
     private void listenForNewTenant() {
-        // FIXME delete comment if ok
-        // if (amqpSubscriber != null) {
-        final IHandler<NewTenantEvent> tenantHandler = new NewTenantHandler(this, microserviceName);
-        amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler);
-        // }
+        // FIXME this subscriber must not be null
+        if (amqpSubscriber != null) {
+            final IHandler<NewTenantEvent> tenantHandler = new NewTenantHandler(this, microserviceName);
+            amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler);
+        }
     }
 
     /**
