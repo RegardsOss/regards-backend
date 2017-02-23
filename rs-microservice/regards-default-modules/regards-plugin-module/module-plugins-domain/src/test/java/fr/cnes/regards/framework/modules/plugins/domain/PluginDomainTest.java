@@ -180,7 +180,6 @@ public class PluginDomainTest extends PluginDomainUtility {
         dynValues.add(new PluginDynamicValue(GREEN));
         final PluginDynamicValue plgDynValue = new PluginDynamicValue();
         plgDynValue.setValue(BLUE);
-//        plgDynValue.setId(AN_ID);
         dynValues.add(plgDynValue);
 
         plgParam.setDynamicsValues(dynValues);

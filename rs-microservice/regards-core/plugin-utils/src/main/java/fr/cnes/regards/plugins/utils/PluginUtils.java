@@ -141,15 +141,23 @@ public final class PluginUtils {
         // Init plugin metadata
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(pPluginClass.getCanonicalName());
+
+        // Search the plugin type of the plugin class : ie the interface has the @PluginInterface annotation
+        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(pPrefixs);
         List<String> types = new ArrayList<>();
-        for (Type  aInterface : pPluginClass.getGenericInterfaces()) {
+
+        for (Type aInterface : pPluginClass.getGenericInterfaces()) {
             types.add(aInterface.getTypeName());
+            pluginInterfaces.forEach(s -> {
+                if (s.equals(aInterface.getTypeName())) {
+                    pluginMetaData.setInterfaceName(s);
+                }
+            });
         }
-        pluginMetaData.setInterfaceClassName(types);
 
         // Manage plugin id
         if ("".equals(plugin.id())) {
-            pluginMetaData.setPluginId(pPluginClass.getCanonicalName());
+            pluginMetaData.setPluginId(pPluginClass.getSimpleName());
         } else {
             pluginMetaData.setPluginId(plugin.id());
         }
@@ -183,6 +191,7 @@ public final class PluginUtils {
      * @throws PluginUtilsException
      *             if a problem occurs
      */
+    @SuppressWarnings("unchecked")
     public static <T> T getPlugin(final PluginConfiguration pPluginConf, final PluginMetaData pPluginMetadata,
             final List<String> pPrefixs, final PluginParameter... pPluginParameters) throws PluginUtilsException {
         T returnPlugin = null;
@@ -236,6 +245,7 @@ public final class PluginUtils {
      * @throws PluginUtilsException
      *             if a problem occurs
      */
+    @SuppressWarnings("unchecked")
     public static <T> T getPlugin(final PluginConfiguration pPluginConf, final String pPluginClassName,
             final List<String> pPrefixs, final PluginParameter... pPluginParameters) throws PluginUtilsException {
         T returnPlugin = null;
@@ -313,7 +323,7 @@ public final class PluginUtils {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType, pPrefixs);
 
-        final PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", pParameters, 0);
+        final PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", pParameters);
         return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, pPrefixs, pPluginParameters);
     }
 
@@ -369,7 +379,7 @@ public final class PluginUtils {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType, pPrefixs);
 
-        return new PluginConfiguration(pluginMetadata, "", pParameters, 0);
+        return new PluginConfiguration(pluginMetadata, "", pParameters);
     }
 
 }

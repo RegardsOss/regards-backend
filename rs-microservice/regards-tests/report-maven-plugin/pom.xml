@@ -31,9 +31,6 @@
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test-reporting</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>org.apache.poi</groupId> <artifactId>poi-ooxml</artifactId> 
-			</dependency> <dependency> <groupId>fr.cnes.regards.microservices</groupId> 
-			<artifactId>microservice-core-test</artifactId> </dependency> -->
 	</dependencies>
 
 	<build>

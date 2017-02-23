@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check access to gateway is denied for all SYS roles users </purpose>
+            <name>testFilterAcessDenied</name>
+            <class>fr.cnes.regards.framework.authentication.RoleSysFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check access to gateway is not denied by the ROLE Filter for all non SYS roles users</purpose>
+            <name>testFilter</name>
+            <class>fr.cnes.regards.framework.authentication.RoleSysFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check error during oauth2 authentication process using default authentication plugin</purpose>
+            <name>testIncompleteAuthentication</name>
+            <class>fr.cnes.regards.framework.authentication.Oauth2AuthenticationManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check error during oauth2 authentication process using default authentication plugin</purpose>
+            <name>testIncompleteAuthentication2</name>
+            <class>fr.cnes.regards.framework.authentication.Oauth2AuthenticationManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check error during oauth2 authentication process using default authentication plugin</purpose>
+            <name>testIncompleteAuthentication3</name>
+            <class>fr.cnes.regards.framework.authentication.Oauth2AuthenticationManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check oauth2 authentication process using default authentication plugin</purpose>
+            <name>testOauth2AuthenticationDefaultProcess</name>
+            <class>fr.cnes.regards.framework.authentication.Oauth2AuthenticationManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check access to gateway is not denied by the ROLE Filter for all non SYS roles users</purpose>
+            <name>testAddCustomClaimsToJWTToken</name>
+            <class>fr.cnes.regards.framework.authentication.TokenEnhancerTest</class>
+        </test>
+    </requirement>
+</requirements>

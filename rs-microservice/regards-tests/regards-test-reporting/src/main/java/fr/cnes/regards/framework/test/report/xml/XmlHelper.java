@@ -4,7 +4,14 @@
 package fr.cnes.regards.framework.test.report.xml;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -14,6 +21,7 @@ import javax.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.test.report.RequirementMatrixReportListener;
 import fr.cnes.regards.framework.test.report.exception.ReportException;
 
 /**
@@ -142,6 +150,83 @@ public final class XmlHelper {
         assertNotNull(pFilePath, "Missing full file path");
         assertNotNull(pClass, "Missing JAXB annotated class");
         return read(pFilePath.getParent(), pFilePath.getFileName().toString(), pClass);
+    }
+
+    /**
+     * Aggregate all reports found in base path in a single one
+     *
+     * @param pBasePath
+     *            base directory
+     * @return {@link XmlRequirements}
+     * @throws ReportException
+     *             if method cannot aggregate reports
+     */
+    public static XmlRequirements aggregateReports(Path pBasePath) throws ReportException {
+
+        // Scan all file tree from base directory
+        try (Stream<Path> paths = Files.walk(pBasePath)) {
+            List<Path> targetPaths = paths
+                    .filter(path -> path.toFile().getName().startsWith(RequirementMatrixReportListener.REPORT_PREFIX))
+                    .collect(Collectors.toList());
+            for (Path p : targetPaths) {
+                LOG.info(p.toString());
+            }
+
+            return aggregateReports(targetPaths);
+        } catch (IOException e) {
+            final String message = "Error scanning file tree";
+            LOG.error(message, e);
+            throw new ReportException(message);
+        }
+    }
+
+    /**
+     * Aggregate all reports in a single one
+     *
+     * @param pReports
+     *            list of reports
+     * @return aggregated report
+     * @throws ReportException
+     *             if method cannot aggregate reports
+     */
+    public static XmlRequirements aggregateReports(List<Path> pReports) throws ReportException {
+        // Init aggregation map
+        final Map<String, XmlRequirement> rqmtMap = new HashMap<>();
+
+        if (pReports != null) {
+            for (Path reportPath : pReports) {
+                final XmlRequirements tmp = XmlHelper.read(reportPath, XmlRequirements.class);
+                if ((tmp != null) && (tmp.getRequirements() != null)) {
+                    for (XmlRequirement rqmt : tmp.getRequirements()) {
+                        aggregateTests(rqmtMap, rqmt);
+                    }
+                }
+            }
+        }
+
+        // Compute result
+        final XmlRequirements rqmts = new XmlRequirements();
+        for (XmlRequirement rqmt : rqmtMap.values()) {
+            rqmts.addRequirement(rqmt);
+        }
+        return rqmts;
+    }
+
+    /**
+     * Aggregate identical requirement tests in a single wrapper
+     *
+     * @param pRqmtMap
+     *            working map
+     * @param pXmlRequirement
+     *            requirement to aggregate
+     */
+    private static void aggregateTests(Map<String, XmlRequirement> pRqmtMap, XmlRequirement pXmlRequirement) {
+        final XmlRequirement rqmt = pRqmtMap.get(pXmlRequirement.getRequirement());
+        if (rqmt == null) {
+            pRqmtMap.put(pXmlRequirement.getRequirement(), pXmlRequirement);
+        } else {
+            rqmt.addAllTests(pXmlRequirement.getTests());
+        }
     }
 
     /**

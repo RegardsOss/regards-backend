@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_ADM_ADM_440">
+        <test>
+            <purpose>Check that the system allows to re-send an email.</purpose>
+            <name>resendEmail</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_450">
+        <test>
+            <purpose>Check that the system allows to re-send an email.</purpose>
+            <name>resendEmail</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_440">
+        <test>
+            <purpose>Check that the system allows to delete an email.</purpose>
+            <name>deleteEmail</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_450">
+        <test>
+            <purpose>Check that the system allows to delete an email.</purpose>
+            <name>deleteEmail</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_440">
+        <test>
+            <purpose>Check that the system allows to send an email to a list of recipients.</purpose>
+            <name>sendEmail</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_450">
+        <test>
+            <purpose>Check that the system allows to send an email to a list of recipients.</purpose>
+            <name>sendEmail</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_440">
+        <test>
+            <purpose>Check that the system handles the case where an email cannot be found when re-sending.</purpose>
+            <name>resendEmailNotFound</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_450">
+        <test>
+            <purpose>Check that the system handles the case where an email cannot be found when re-sending.</purpose>
+            <name>resendEmailNotFound</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_440">
+        <test>
+            <purpose>Check that the system allows to retrieve a single email.</purpose>
+            <name>retrieveEmail</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_450">
+        <test>
+            <purpose>Check that the system allows to retrieve a single email.</purpose>
+            <name>retrieveEmail</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_440">
+        <test>
+            <purpose>Check that the system allows to retrieve the list of sent emails.</purpose>
+            <name>retrieveEmails</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_450">
+        <test>
+            <purpose>Check that the system allows to retrieve the list of sent emails.</purpose>
+            <name>retrieveEmails</name>
+            <class>fr.cnes.regards.modules.emails.service.EmailServiceTest</class>
+        </test>
+    </requirement>
+</requirements>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check for classpath validity when there is instance database entities and multitenant database entities in the same classpath with a Repository class</purpose>
+            <name>test</name>
+            <class>fr.cnes.regards.modules.jpa.JpaUtilsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check for embedded HSQLDB database creation</purpose>
+            <name>embeddedDataSourceTest</name>
+            <class>fr.cnes.regards.modules.jpa.JpaUtilsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check for classapth validity when there is instance database entities and multitenant database entities in the same classpath</purpose>
+            <name>test</name>
+            <class>fr.cnes.regards.framework.jpa.JpaUtilsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check for embedded HSQLDB database creation</purpose>
+            <name>embeddedDataSourceTest</name>
+            <class>fr.cnes.regards.framework.jpa.JpaUtilsTest</class>
+        </test>
+    </requirement>
+</requirements>

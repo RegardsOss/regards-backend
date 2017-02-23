@@ -26,7 +26,7 @@ public class PluginMetaData {
     /**
      * The interface used by the plugin 
      */
-    private List<String> interfaceClassName;
+    private String interfaceName;
 
     /**
      * The author of the plugin
@@ -64,12 +64,12 @@ public class PluginMetaData {
         this.pluginClassName = pPluginClassName;
     }
 
-    public List<String> getInterfaceClassName() {
-        return interfaceClassName;
+    public String getInterfaceName() {
+        return interfaceName;
     }
 
-    public void setInterfaceClassName(List<String> pInterfaceClassName) {
-        this.interfaceClassName = pInterfaceClassName;
+    public void setInterfaceName(String pInterfaceClassName) {
+        this.interfaceName = pInterfaceClassName;
     }
 
     public String getAuthor() {

@@ -85,6 +85,11 @@ public abstract class AbstractRegardsIT {
     protected static final String JSON_PATH_CONTENT = "$.content";
 
     /**
+     * JSON path for content id in responses
+     */
+    protected static final String JSON_ID = "$.content.id";
+
+    /**
      * JSON path root in responses
      */
     protected static final String JSON_PATH_ROOT = "$";

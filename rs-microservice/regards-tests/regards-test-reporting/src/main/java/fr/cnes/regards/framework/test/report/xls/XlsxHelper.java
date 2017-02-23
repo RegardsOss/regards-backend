@@ -3,8 +3,10 @@
  */
 package fr.cnes.regards.framework.test.report.xls;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -56,10 +58,8 @@ public final class XlsxHelper {
     /**
      * Write data to file with XLSX format
      *
-     * @param pDirectory
-     *            file directory
-     * @param pFilename
-     *            filename
+     * @param pFilePath
+     *            file path
      * @param pRequirements
      *            list of requirements
      * @param pSheetName
@@ -67,18 +67,28 @@ public final class XlsxHelper {
      * @throws ReportException
      *             If report cannot be created
      */
-    public static void write(Path pDirectory, String pFilename, XmlRequirements pRequirements, String pSheetName)
-            throws ReportException {
+    public static void write(Path pFilePath, XmlRequirements pRequirements, String pSheetName) throws ReportException {
         // Validate
-        assertNotNull(pDirectory, "Missing directory path");
-        assertNotNull(pFilename, "Missing filename");
+        assertNotNull(pFilePath, "Missing file path");
         assertNotNull(pRequirements, NO_REQUIREMENT_FOUND);
         assertNotNull(pSheetName, MISSING_SHEET_NAME);
 
         if (pRequirements.getRequirements() != null) {
 
-            try (Workbook wb = new HSSFWorkbook();
-                    FileOutputStream fileOut = new FileOutputStream(pDirectory.resolve(pFilename).toFile())) {
+            Workbook wb;
+            try {
+                if (Files.exists(pFilePath)) {
+                    wb = readFile(pFilePath);
+                } else {
+                    wb = new HSSFWorkbook();
+                }
+            } catch (IOException e) {
+                final String message = "Error while reading XLSX file";
+                LOG.error(message, e);
+                throw new ReportException(message);
+            }
+
+            try (OutputStream out = Files.newOutputStream(pFilePath)) {
 
                 final CreationHelper createHelper = wb.getCreationHelper();
 
@@ -116,7 +126,7 @@ public final class XlsxHelper {
                 }
 
                 // Write file
-                wb.write(fileOut);
+                wb.write(out);
 
             } catch (IOException e) {
                 final String message = "Error while writing XLSX file";
@@ -127,23 +137,18 @@ public final class XlsxHelper {
     }
 
     /**
-     * Write data to file with XLSX format
+     * Read an existing file
      *
-     * @param pFilePath
-     *            file path
-     * @param pRequirements
-     *            list of requirements
-     * @param pSheetName
-     *            sheet name
-     * @throws ReportException
-     *             if report cannot be write
+     * @param pFilename
+     *            the file to read
+     * @return an {@link HSSFWorkbook} representing the file
+     * @throws IOException
+     *             if problem occurs
      */
-    public static void write(Path pFilePath, XmlRequirements pRequirements, String pSheetName) throws ReportException {
-        // Validate
-        assertNotNull(pFilePath, "Missing full file path");
-        assertNotNull(pRequirements, NO_REQUIREMENT_FOUND);
-        assertNotNull(pSheetName, MISSING_SHEET_NAME);
-        write(pFilePath.getParent(), pFilePath.getFileName().toString(), pRequirements, pSheetName);
+    private static HSSFWorkbook readFile(Path pFilePath) throws IOException {
+        try (InputStream in = Files.newInputStream(pFilePath)) {
+            return new HSSFWorkbook(in);
+        }
     }
 
     /**

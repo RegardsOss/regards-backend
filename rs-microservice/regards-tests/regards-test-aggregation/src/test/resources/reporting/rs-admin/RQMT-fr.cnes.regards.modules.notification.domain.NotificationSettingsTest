@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="?">
+        <test>
+            <purpose>Check the POJO getters/setters.</purpose>
+            <name>testGettersSetters</name>
+            <class>fr.cnes.regards.modules.notification.domain.NotificationSettingsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system fails when days frequency is lower than 1.</purpose>
+            <name>daysIsLowerThan1</name>
+            <class>fr.cnes.regards.modules.notification.domain.NotificationSettingsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system fails when hours frequency is higher than 24.</purpose>
+            <name>hoursIsLowerThan1</name>
+            <class>fr.cnes.regards.modules.notification.domain.NotificationSettingsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system fails when user is null.</purpose>
+            <name>userIsNull</name>
+            <class>fr.cnes.regards.modules.notification.domain.NotificationSettingsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check the POJO getters/setters.</purpose>
+            <name>testGettersSetters</name>
+            <class>fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTOTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check the POJO getters/setters.</purpose>
+            <name>testGettersSetters</name>
+            <class>fr.cnes.regards.modules.notification.domain.dto.NotificationDTOTest</class>
+        </test>
+    </requirement>
+</requirements>
