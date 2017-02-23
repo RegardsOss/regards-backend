@@ -66,28 +66,27 @@ public class PluginController implements IResourceController<PluginConfiguration
     /**
      * REST mapping resource : /plugins/{pluginId}
      */
-    public static final String PLUGINS_PLUGINID = "/plugins/{pluginId}";
+    public static final String PLUGINS_PLUGINID = PLUGINS + "/{pluginId}";
 
     /**
      * REST mapping resource : /plugins/{pluginId}/config
      */
-    public static final String PLUGINS_PLUGINID_CONFIGS = "/plugins/{pluginId}/config";
+    public static final String PLUGINS_PLUGINID_CONFIGS = PLUGINS_PLUGINID + "/config";
 
     /**
      * REST mapping resource : /plugins/configs
      */
-    public static final String PLUGINS_CONFIGS = "/plugins/configs";
-
+    public static final String PLUGINS_CONFIGS = PLUGINS + "/configs";
 
     /**
      * REST mapping resource : /plugins/{pluginId}/config/{configId}
      */
-    public static final String PLUGINS_PLUGINID_CONFIGID = "/plugins/{pluginId}/config/{configId}";
+    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS + "/{configId}";
 
     /**
-     * REST mapping resource : /plugins/config/{configId}
+     * REST mapping resource : /plugins/configs/{configId}
      */
-    public static final String PLUGINS_CONFIGID = "/plugins/config/{configId}";
+    public static final String PLUGINS_CONFIGID = PLUGINS_CONFIGS + "/{configId}";
 
     /**
      * Class logger
@@ -239,7 +238,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             try {
                 pluginConfs = pluginService.getPluginConfigurationsByType(Class.forName(pPluginType));
             } catch (ClassNotFoundException e) {
-                LOGGER.error("Any class found for the plugin type :"+pPluginType, e);
+                LOGGER.error("Any class found for the plugin type :" + pPluginType, e);
                 throw new EntityNotIdentifiableException(e.getMessage());
             }
         } else {

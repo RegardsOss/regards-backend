@@ -44,4 +44,5 @@ public class MicroserviceAutoConfiguration {
     public MicroserviceWebConfiguration webConfig() {
         return new MicroserviceWebConfiguration();
     }
+
 }

@@ -17,6 +17,7 @@
 	</parent>
 
 	<modules>
+		<module>module-plugins-client</module>
 		<module>module-plugins-dao</module>
 		<module>module-plugins-domain</module>
 		<module>module-plugins-rest</module>
@@ -27,6 +28,11 @@
 	<dependencyManagement>
 		<dependencies>
 			<!-- Module layers -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+				<artifactId>module-plugins-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 				<artifactId>module-plugins-dao</artifactId>
