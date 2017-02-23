@@ -14,8 +14,6 @@ import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -262,25 +260,6 @@ public class RegardsAmqpAdmin {
                 throw new EnumConstantNotPresentException(WorkerMode.class, pWorkerMode.name());
         }
         return routingKey;
-    }
-
-    /**
-     * Bind {@link ConnectionFactory} to tenant (and vhost) before declaring an AMQP element
-     *
-     * @param pTenant
-     *            tenant to bind
-     */
-    public void bind(String pTenant) {
-        SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(),
-                                  RabbitVirtualHostAdmin.getVhostName(pTenant));
-    }
-
-    /**
-     * Unbind {@link ConnectionFactory} from tenant (and vhost
-     *
-     */
-    public void unbind() {
-        SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
     }
 
     public String getMicroserviceTypeId() {

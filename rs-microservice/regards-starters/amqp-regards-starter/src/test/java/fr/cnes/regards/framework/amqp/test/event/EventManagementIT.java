@@ -110,14 +110,9 @@ public class EventManagementIT {
         publisher.publish(event);
 
         // Poll event
-        try {
-            poller.bind(tenant);
-            TenantWrapper<PollOneMicroserviceEvent> wrapper = poller.poll(tenant, PollOneMicroserviceEvent.class);
-            PollOneMicroserviceEvent received = wrapper.getContent();
-            Assert.assertEquals(message, received.getMessage());
-        } finally {
-            poller.unbind();
-        }
+        TenantWrapper<PollOneMicroserviceEvent> wrapper = poller.poll(PollOneMicroserviceEvent.class);
+        PollOneMicroserviceEvent received = wrapper.getContent();
+        Assert.assertEquals(message, received.getMessage());
 
     }
 
@@ -130,13 +125,8 @@ public class EventManagementIT {
         publisher.publish(event);
 
         // Poll event
-        try {
-            poller.bind(tenant);
-            TenantWrapper<PollOneAllEvent> wrapper = poller.poll(tenant, PollOneAllEvent.class);
-            PollOneAllEvent received = wrapper.getContent();
-            Assert.assertEquals(message, received.getMessage());
-        } finally {
-            poller.unbind();
-        }
+        TenantWrapper<PollOneAllEvent> wrapper = poller.poll(PollOneAllEvent.class);
+        PollOneAllEvent received = wrapper.getContent();
+        Assert.assertEquals(message, received.getMessage());
     }
 }

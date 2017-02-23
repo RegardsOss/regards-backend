@@ -43,7 +43,7 @@ public class NewJobPuller implements INewJobPuller {
     public Long getJob(final String pProjectName) {
         Long jobInfoId = null;
         try {
-            final TenantWrapper<NewJobEvent> tenantWrapper = poller.poll(pProjectName, NewJobEvent.class);
+            final TenantWrapper<NewJobEvent> tenantWrapper = poller.poll(NewJobEvent.class);
             final NewJobEvent newJobEvent = tenantWrapper.getContent();
             jobInfoId = newJobEvent.getJobInfoId();
         } catch (final RabbitMQVhostException e) {

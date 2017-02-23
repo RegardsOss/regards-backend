@@ -41,7 +41,7 @@ public interface IRabbitVirtualHostAdmin {
 
     /**
      * DELETE Request to /api/vhost/{vhostName}
-     * 
+     *
      * @param pTenant
      *            name of the tenant related to the Vhost you want to remove
      */
@@ -91,4 +91,32 @@ public interface IRabbitVirtualHostAdmin {
      * @return the encoded credential to give to the broker
      */
     String encode(String pRabbitmqUserName, String pRabbitmqPassword);
+
+    /**
+     * Bind {@link ConnectionFactory} to tenant (and vhost) before declaring an AMQP element
+     *
+     * @param pTenant
+     *            tenant to bind
+     */
+    public void bind(String pTenant);
+
+    /**
+     * Unbind {@link ConnectionFactory} from tenant (and vhost)
+     *
+     */
+    public void unbind();
+
+    /**
+     *
+     * @return true if a {@link ConnectionFactory} is bound independently of the tenant
+     */
+    public boolean isBound();
+
+    /**
+     *
+     * @param pTenant
+     *            tenant
+     * @return true if the tenant {@link ConnectionFactory} is already bound
+     */
+    public boolean isBound(String pTenant);
 }

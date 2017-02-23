@@ -143,7 +143,7 @@ public class SubscriberIT {
         LOGGER.info(SENDED + sended);
 
         try {
-            amqpConfiguration.bind(tenant);
+            rabbitVirtualHostAdmin.bind(tenant);
             // CHECKSTYLE:OFF
             rabbitTemplate.convertAndSend(amqpConfiguration.getExchangeName(TestEvent.class.getName(), Target.ALL),
                                           amqpConfiguration.getRoutingKey("", WorkerMode.ALL), sended, pMessage -> {
@@ -154,7 +154,7 @@ public class SubscriberIT {
                                           });
             // CHECKSTYLE:ON
         } finally {
-            amqpConfiguration.unbind();
+            rabbitVirtualHostAdmin.unbind();
         }
 
         try {

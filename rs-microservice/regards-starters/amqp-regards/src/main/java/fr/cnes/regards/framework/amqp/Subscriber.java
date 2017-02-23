@@ -167,12 +167,12 @@ public class Subscriber implements ISubscriber {
 
         Queue queue;
         try {
-            regardsAmqpAdmin.bind(pTenant);
+            virtualHostAdmin.bind(pTenant);
             Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
             queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt, pWorkerMode, pTarget);
             regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
         } finally {
-            regardsAmqpAdmin.unbind();
+            virtualHostAdmin.unbind();
         }
 
         // Init container

@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -112,16 +111,23 @@ public class PollerIT {
     @Test
     public void testPollOneToManyExternal() {
 
-        regardsAmqpAdmin.bind(TENANT);
+        TestEvent toSend;
 
-        final Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT, TestEvent.class, WorkerMode.ALL, Target.ALL);
-        final Queue queue = regardsAmqpAdmin.declareQueue(TENANT, TestEvent.class, WorkerMode.ALL, Target.ALL);
-        regardsAmqpAdmin.declareBinding(TENANT, queue, exchange, WorkerMode.ALL);
+        try {
+            rabbitVirtualHostAdmin.bind(TENANT);
 
-        final TestEvent toSend = new TestEvent("test3");
-        final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
-        LOGGER.info("SENDED " + sended);
-        rabbitTemplate.convertAndSend(TestEvent.class.getName(), "", sended);
+            final Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT, TestEvent.class, WorkerMode.ALL,
+                                                                       Target.ALL);
+            final Queue queue = regardsAmqpAdmin.declareQueue(TENANT, TestEvent.class, WorkerMode.ALL, Target.ALL);
+            regardsAmqpAdmin.declareBinding(TENANT, queue, exchange, WorkerMode.ALL);
+
+            toSend = new TestEvent("test3");
+            final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
+            LOGGER.info("SENDED " + sended);
+            rabbitTemplate.convertAndSend(TestEvent.class.getName(), "", sended);
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
 
         final TenantWrapper<TestEvent> wrapperReceived;
         try {
@@ -133,8 +139,6 @@ public class PollerIT {
             final String msg = "Polling one to many Test Failed";
             LOGGER.error(msg, e);
             Assert.fail(msg);
-        } finally {
-            regardsAmqpAdmin.unbind();
         }
         try {
             cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT));
@@ -151,19 +155,24 @@ public class PollerIT {
     @Test
     public void testPollOneToOneExternal() {
 
-        regardsAmqpAdmin.bind(TENANT);
+        TestEvent toSend;
+        try {
+            rabbitVirtualHostAdmin.bind(TENANT);
 
-        final Exchange exchangeOneToOne = regardsAmqpAdmin.declareExchange(TENANT, TestEvent.class, WorkerMode.SINGLE,
-                                                                           Target.ALL);
-        final Queue queueOneToOne = regardsAmqpAdmin.declareQueue(TENANT, TestEvent.class, WorkerMode.SINGLE,
-                                                                  Target.ALL);
-        regardsAmqpAdmin.declareBinding(TENANT, queueOneToOne, exchangeOneToOne, WorkerMode.SINGLE);
+            final Exchange exchangeOneToOne = regardsAmqpAdmin.declareExchange(TENANT, TestEvent.class,
+                                                                               WorkerMode.SINGLE, Target.ALL);
+            final Queue queueOneToOne = regardsAmqpAdmin.declareQueue(TENANT, TestEvent.class, WorkerMode.SINGLE,
+                                                                      Target.ALL);
+            regardsAmqpAdmin.declareBinding(TENANT, queueOneToOne, exchangeOneToOne, WorkerMode.SINGLE);
 
-        final TestEvent toSend = new TestEvent("test4");
-        final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
-        LOGGER.info("SENDED :" + sended);
-        // for one to one communication, exchange is named after the application and not what we are exchanging
-        rabbitTemplate.convertAndSend(RegardsAmqpAdmin.DEFAULT_EXCHANGE_NAME, TestEvent.class.getName(), sended);
+            toSend = new TestEvent("test4");
+            final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
+            LOGGER.info("SENDED :" + sended);
+            // for one to one communication, exchange is named after the application and not what we are exchanging
+            rabbitTemplate.convertAndSend(RegardsAmqpAdmin.DEFAULT_EXCHANGE_NAME, TestEvent.class.getName(), sended);
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
 
         final TenantWrapper<TestEvent> wrapperReceived;
         try {
@@ -175,9 +184,8 @@ public class PollerIT {
             final String msg = "Polling one to one Test Failed";
             LOGGER.error(msg, e);
             Assert.fail(msg);
-        } finally {
-            regardsAmqpAdmin.unbind();
         }
+
         try {
             cleanRabbit(RabbitVirtualHostAdmin.getVhostName(TENANT));
         } catch (CleaningRabbitMQVhostException e) {

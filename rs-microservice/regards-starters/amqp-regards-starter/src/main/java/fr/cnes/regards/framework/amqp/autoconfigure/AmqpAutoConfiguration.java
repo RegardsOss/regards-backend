@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.amqp.Subscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.MultitenantRabbitTransactionManager;
 import fr.cnes.regards.framework.amqp.configuration.MultitenantSimpleRoutingConnectionFactory;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
@@ -101,13 +102,12 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(final SimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
-            final Jackson2JsonMessageConverter pJackson2JsonMessageConverter) {
-        final RabbitTemplate rabbitTemplate = new RabbitTemplate(pSimpleRoutingConnectionFactory);
+    public RabbitTemplate transactionalRabbitTemplate() {
+        final RabbitTemplate rabbitTemplate = new RabbitTemplate(simpleRoutingConnectionFactory());
         // Enable transaction management : if action is executed in a transaction and transaction fails,
         // message is return to the broker.
         rabbitTemplate.setChannelTransacted(true);
-        rabbitTemplate.setMessageConverter(pJackson2JsonMessageConverter);
+        rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter());
         return rabbitTemplate;
     }
 
@@ -117,9 +117,10 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public IPublisher publisher(final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
+    public IPublisher publisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, RegardsAmqpAdmin pRegardsAmqpAdmin,
             IRuntimeTenantResolver pThreadTenantResolver) {
-        return new Publisher(pRabbitTemplate, pRegardsAmqpAdmin, pThreadTenantResolver);
+        return new Publisher(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), pRegardsAmqpAdmin,
+                pThreadTenantResolver);
     }
 
     @Bean
@@ -131,8 +132,10 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public IPoller poller(final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin) {
-        return new Poller(pRabbitTemplate, pRegardsAmqpAdmin);
+    public IPoller poller(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, RegardsAmqpAdmin pRegardsAmqpAdmin,
+            IRuntimeTenantResolver pThreadTenantResolver) {
+        return new Poller(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), pRegardsAmqpAdmin,
+                pThreadTenantResolver);
     }
 
     @Bean
@@ -141,8 +144,10 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public RabbitTransactionManager transactionManager() {
-        return new RabbitTransactionManager(simpleRoutingConnectionFactory());
+    public RabbitTransactionManager transactionManager(IRuntimeTenantResolver pThreadTenantResolver,
+            IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
+        return new MultitenantRabbitTransactionManager(simpleRoutingConnectionFactory(), pThreadTenantResolver,
+                pRabbitVirtualHostAdmin);
     }
 
     @Bean

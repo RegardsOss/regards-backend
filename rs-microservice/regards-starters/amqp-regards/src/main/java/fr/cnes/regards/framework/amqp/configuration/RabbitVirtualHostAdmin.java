@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -355,5 +356,27 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
      */
     public static String getVhostName(String pTenant) {
         return REGARDS_NAMESPACE + pTenant.toLowerCase();
+    }
+
+    @Override
+    public void bind(String pTenant) {
+        SimpleResourceHolder.bind(simpleRoutingConnectionFactory, getVhostName(pTenant));
+    }
+
+    @Override
+    public void unbind() {
+        SimpleResourceHolder.unbind(simpleRoutingConnectionFactory);
+    }
+
+    @Override
+    public boolean isBound() {
+        return SimpleResourceHolder.get(simpleRoutingConnectionFactory) != null;
+    }
+
+    @Override
+    public boolean isBound(String pTenant) {
+        String vhost = getVhostName(pTenant);
+        String boundVhost = (String) SimpleResourceHolder.get(simpleRoutingConnectionFactory);
+        return (vhost != null) && vhost.equals(boundVhost);
     }
 }
