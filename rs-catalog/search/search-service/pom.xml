@@ -21,8 +21,8 @@
 			<artifactId>search-dao</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>plugins-regards-starter</artifactId>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+			<artifactId>module-plugins-service</artifactId>
 		</dependency>
 		<dependency>
 			<!-- FIXME: is it the right import or should be entities-service? domain is taken for now as we just need the domain -->
