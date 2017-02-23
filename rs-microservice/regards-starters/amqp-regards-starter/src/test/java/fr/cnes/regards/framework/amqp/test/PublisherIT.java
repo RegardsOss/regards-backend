@@ -109,14 +109,14 @@ public class PublisherIT {
         Exchange exchange;
         Binding binding;
         try {
-            amqpConfiguration.bind(tenant);
+            rabbitVirtualHostAdmin.bind(tenant);
 
             exchange = amqpConfiguration.declareExchange(tenant, TestEvent.class, WorkerMode.ALL, Target.ALL);
             queue = amqpConfiguration.declareQueue(tenant, TestEvent.class, WorkerMode.ALL, Target.ALL);
             binding = amqpConfiguration.declareBinding(tenant, queue, exchange, WorkerMode.ALL);
 
         } finally {
-            amqpConfiguration.unbind();
+            rabbitVirtualHostAdmin.unbind();
         }
 
         final TestEvent sended = new TestEvent("test1");
@@ -124,7 +124,7 @@ public class PublisherIT {
         LOGGER.info("SENDED " + sended);
 
         try {
-            amqpConfiguration.bind(tenant);
+            rabbitVirtualHostAdmin.bind(tenant);
             // CHECKSTYLE:OFF
             @SuppressWarnings("unchecked")
             final TenantWrapper<TestEvent> wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
@@ -134,17 +134,17 @@ public class PublisherIT {
             final TestEvent received = wrappedMessage.getContent();
             Assert.assertEquals(sended, received);
         } finally {
-            amqpConfiguration.unbind();
+            rabbitVirtualHostAdmin.unbind();
         }
 
         // Clean
         try {
-            amqpConfiguration.bind(tenant);
+            rabbitVirtualHostAdmin.bind(tenant);
             rabbitAdmin.removeBinding(binding);
             rabbitAdmin.deleteQueue(queue.getName());
             rabbitAdmin.deleteExchange(exchange.getName());
         } finally {
-            amqpConfiguration.unbind();
+            rabbitVirtualHostAdmin.unbind();
         }
     }
 
@@ -159,13 +159,13 @@ public class PublisherIT {
         Exchange exchange;
         Binding binding;
         try {
-            amqpConfiguration.bind(tenant);
+            rabbitVirtualHostAdmin.bind(tenant);
 
             exchange = amqpConfiguration.declareExchange(tenant, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
             queue = amqpConfiguration.declareQueue(tenant, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
             binding = amqpConfiguration.declareBinding(tenant, queue, exchange, WorkerMode.SINGLE);
         } finally {
-            amqpConfiguration.unbind();
+            rabbitVirtualHostAdmin.unbind();
         }
         final TestEvent priority0 = new TestEvent("priority 0");
         final TestEvent priority1 = new TestEvent("priority 1");
@@ -176,7 +176,7 @@ public class PublisherIT {
         publisher.publish(priority02, WorkerMode.SINGLE, Target.ALL, 0);
 
         try {
-            amqpConfiguration.bind(tenant);
+            rabbitVirtualHostAdmin.bind(tenant);
 
             TenantWrapper<TestEvent> wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
                     .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class, WorkerMode.SINGLE, Target.ALL));
@@ -191,17 +191,17 @@ public class PublisherIT {
             Assert.assertEquals(priority02, wrappedMessage.getContent());
 
         } finally {
-            amqpConfiguration.unbind();
+            rabbitVirtualHostAdmin.unbind();
         }
 
         // Clean
         try {
-            amqpConfiguration.bind(tenant);
+            rabbitVirtualHostAdmin.bind(tenant);
             rabbitAdmin.removeBinding(binding);
             rabbitAdmin.deleteQueue(queue.getName());
             rabbitAdmin.deleteExchange(exchange.getName());
         } finally {
-            amqpConfiguration.unbind();
+            rabbitVirtualHostAdmin.unbind();
         }
     }
 }

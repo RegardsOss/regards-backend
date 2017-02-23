@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 
@@ -43,16 +42,16 @@ public class TransactionalTestIT {
     private IPublisher publisher;
 
     /**
-     * Poller
-     */
-    @Autowired
-    private IPoller poller;
-
-    /**
      * Transactional poll service
      */
     @Autowired
     private PollableServiceBean pollService;
+
+    /**
+     * Transactional publish service
+     */
+    @Autowired
+    private PublishService publishService;
 
     @Test
     public void pollOneAllEventWithError() {
@@ -64,19 +63,19 @@ public class TransactionalTestIT {
 
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
-            poller.bind(tenant);
-            pollService.pollAndSave(tenant, PollOneAllEvent.class, true);
+            // poller.bind(tenant);
+            pollService.pollAndSave(PollOneAllEvent.class, true);
         } catch (PollableException e) {
-            LOGGER.debug(e.getMessage());
+            LOGGER.debug(e.getMessage(), e);
         } finally {
-            poller.unbind();
+            // poller.unbind();
         }
 
         // Re-Poll event
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
-            poller.bind(tenant);
-            TenantWrapper<PollOneAllEvent> wrapper = pollService.pollAndSave(tenant, PollOneAllEvent.class, false);
+            // poller.bind(tenant);
+            TenantWrapper<PollOneAllEvent> wrapper = pollService.pollAndSave(PollOneAllEvent.class, false);
             PollOneAllEvent received = wrapper.getContent();
             Assert.assertNotNull(wrapper);
             Assert.assertEquals(message, received.getMessage());
@@ -84,7 +83,25 @@ public class TransactionalTestIT {
             LOGGER.debug(e.getMessage());
             Assert.fail();
         } finally {
-            poller.unbind();
+            // poller.unbind();
+        }
+    }
+
+    @Test
+    public void publishInTransaction() {
+
+        // Publish in transaction
+        publishService.doSomethingInTransaction();
+
+        // Poll in transaction
+        try {
+            // Bind the connection to the right vHost (i.e. tenant to publish the message)
+            // poller.bind(tenant);
+            pollService.pollAndSave(PollOneAllEvent.class, false);
+        } catch (PollableException e) {
+            LOGGER.debug(e.getMessage());
+        } finally {
+            // poller.unbind();
         }
     }
 }

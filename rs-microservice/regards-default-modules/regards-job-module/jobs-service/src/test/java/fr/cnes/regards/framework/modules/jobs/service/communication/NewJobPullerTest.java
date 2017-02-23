@@ -11,9 +11,6 @@ import org.mockito.Mockito;
 import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.modules.jobs.service.communication.INewJobPuller;
-import fr.cnes.regards.framework.modules.jobs.service.communication.NewJobEvent;
-import fr.cnes.regards.framework.modules.jobs.service.communication.NewJobPuller;
 
 /**
  *
@@ -43,15 +40,14 @@ public class NewJobPullerTest {
         // Also test the setter
         newJobEvent.setJobInfoId(jobInfoIdExpected);
         final TenantWrapper<NewJobEvent> value = new TenantWrapper<>(newJobEvent, projectName);
-        Mockito.when(pollerMock.poll(projectName, NewJobEvent.class)).thenReturn(value);
+        Mockito.when(pollerMock.poll(NewJobEvent.class)).thenReturn(value);
         final Long jobInfoId = newJobPullerMessageBroker.getJob(projectName);
         Assertions.assertThat(jobInfoId).isEqualTo(jobInfoIdExpected);
     }
 
     @Test
     public void testGetJobWhenRabbitException() throws RabbitMQVhostException {
-        Mockito.doThrow(new RabbitMQVhostException("some exception")).when(pollerMock).poll(projectName,
-                                                                                            newJobEvent.getClass());
+        Mockito.doThrow(new RabbitMQVhostException("some exception")).when(pollerMock).poll(newJobEvent.getClass());
 
         final Long jobInfoId = newJobPullerMessageBroker.getJob(projectName);
         Assertions.assertThat(jobInfoId).isNull();

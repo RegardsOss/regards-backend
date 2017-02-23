@@ -11,6 +11,7 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
@@ -53,32 +54,38 @@ public class Publisher implements IPublisher {
      */
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public Publisher(final RabbitTemplate pRabbitTemplate, final RegardsAmqpAdmin pRegardsAmqpAdmin,
-            IRuntimeTenantResolver pThreadTenantResolver) {
+    /**
+     * Virtual host admin
+     */
+    private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
+
+    public Publisher(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate pRabbitTemplate,
+            final RegardsAmqpAdmin pRegardsAmqpAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
         super();
+        this.rabbitVirtualHostAdmin = pVirtualHostAdmin;
         rabbitTemplate = pRabbitTemplate;
         regardsAmqpAdmin = pRegardsAmqpAdmin;
         this.threadTenantResolver = pThreadTenantResolver;
     }
 
     @Override
-    public <T extends ISubscribable> void publish(T pEvent) {
+    public void publish(ISubscribable pEvent) {
         publish(pEvent, 0);
     }
 
     @Override
-    public <T extends ISubscribable> void publish(T pEvent, int pPriority) {
+    public void publish(ISubscribable pEvent, int pPriority) {
         Class<?> eventClass = pEvent.getClass();
         publish(pEvent, WorkerMode.ALL, EventUtils.getCommunicationTarget(eventClass), pPriority);
     }
 
     @Override
-    public <T extends IPollable> void publish(T pEvent) {
+    public void publish(IPollable pEvent) {
         publish(pEvent, 0);
     }
 
     @Override
-    public <T extends IPollable> void publish(T pEvent, int pPriority) {
+    public void publish(IPollable pEvent, int pPriority) {
         Class<?> eventClass = pEvent.getClass();
         publish(pEvent, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(eventClass), pPriority);
     }
@@ -129,7 +136,7 @@ public class Publisher implements IPublisher {
 
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
-            regardsAmqpAdmin.bind(pTenant);
+            rabbitVirtualHostAdmin.bind(pTenant);
 
             // Declare exchange
             Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, evtClass, pWorkerMode, pTarget);
@@ -151,7 +158,7 @@ public class Publisher implements IPublisher {
                     throw new IllegalArgumentException(errorMessage);
                 }
         } finally {
-            regardsAmqpAdmin.unbind();
+            rabbitVirtualHostAdmin.unbind();
         }
     }
 

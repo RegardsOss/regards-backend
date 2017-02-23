@@ -9,12 +9,14 @@ import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * {@link Poller} allows to poll an event from a queue. Using transaction on caller will cause event to be poll in a
@@ -41,15 +43,29 @@ public class Poller implements IPoller {
      */
     private final RegardsAmqpAdmin regardsAmqpAdmin;
 
-    public Poller(RabbitTemplate pRabbitTemplate, RegardsAmqpAdmin pRegardsAmqpAdmin) {
+    /**
+     * Resolve thread tenant
+     */
+    private final IRuntimeTenantResolver threadTenantResolver;
+
+    /**
+     * Virtual host admin
+     */
+    private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
+
+    public Poller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate pRabbitTemplate,
+            RegardsAmqpAdmin pRegardsAmqpAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
         super();
+        this.rabbitVirtualHostAdmin = pVirtualHostAdmin;
         rabbitTemplate = pRabbitTemplate;
         regardsAmqpAdmin = pRegardsAmqpAdmin;
+        this.threadTenantResolver = pThreadTenantResolver;
     }
 
     @Override
-    public <T extends IPollable> TenantWrapper<T> poll(String pTenant, Class<T> pEvent) {
-        return poll(pTenant, pEvent, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(pEvent));
+    public <T extends IPollable> TenantWrapper<T> poll(Class<T> pEvent) {
+        return poll(threadTenantResolver.getTenant(), pEvent, WorkerMode.SINGLE,
+                    EventUtils.getCommunicationTarget(pEvent));
     }
 
     /**
@@ -73,24 +89,19 @@ public class Poller implements IPoller {
         LOGGER.info("Polling event {} for tenant {} (Target : {}, WorkerMode : {} )", pEvt.getClass(), pTenant, pTarget,
                     pWorkerMode);
 
-        final Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
-        final Queue queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt, pWorkerMode, pTarget);
-        regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
+        try {
+            // Bind the connection to the right vHost (i.e. tenant to publish the message)
+            rabbitVirtualHostAdmin.bind(pTenant);
 
-        return (TenantWrapper<T>) rabbitTemplate
-                .receiveAndConvert(regardsAmqpAdmin.getQueueName(pEvt, pWorkerMode, pTarget), 0);
+            final Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
+            final Queue queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt, pWorkerMode, pTarget);
+            regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
 
-    }
+            return (TenantWrapper<T>) rabbitTemplate
+                    .receiveAndConvert(regardsAmqpAdmin.getQueueName(pEvt, pWorkerMode, pTarget), 0);
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
 
-    @Override
-    public void bind(String pTenant) {
-        // Bind the connection to the right vHost (i.e. tenant to publish the message)
-        regardsAmqpAdmin.bind(pTenant);
-    }
-
-    @Override
-    public void unbind() {
-        // Unbind resource
-        regardsAmqpAdmin.unbind();
     }
 }
