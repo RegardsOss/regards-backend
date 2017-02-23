@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.modules.plugins.rest;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.Matchers;
@@ -30,6 +31,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.plugins.ISamplePlugin;
+import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 
 /**
@@ -59,6 +61,10 @@ public class PluginControllerIT extends AbstractRegardsIT {
     private static final Long AN_ID = 050L;
 
     private static final String LABEL = "a plugin configuration for the test";
+    
+    private static final String TRUE = "true";
+    
+    private static final String FALSE = "false";
 
     /**
      * Generated token for tests
@@ -187,7 +193,6 @@ public class PluginControllerIT extends AbstractRegardsIT {
         }
 
         // Get the added PluginConfiguration
-        final Long configId = AN_ID;
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
@@ -198,7 +203,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
                                                         Matchers.hasToString("[false]")));
 
         performGet(PluginController.PLUGINS_CONFIGID, token, expectations, "unable to load a plugin configuration",
-                   configId);
+                   AN_ID);
     }
 
     @Test
@@ -208,12 +213,12 @@ public class PluginControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.[0].content.active", Matchers.hasToString("true")));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.[1].content.active", Matchers.hasToString("true")));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.[0].content.active", Matchers.hasToString(TRUE)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.[1].content.active", Matchers.hasToString(TRUE)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.[0].content.parameters[0].dynamic",
-                                                        Matchers.hasToString("true")));
+                                                        Matchers.hasToString(TRUE)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.[1].content.parameters[0].dynamic",
-                                                        Matchers.hasToString("false")));
+                                                        Matchers.hasToString(FALSE)));
 
         performGet(PluginController.PLUGINS_CONFIGS, token, expectations, "unable to load all plugin configuration");
     }
@@ -267,23 +272,20 @@ public class PluginControllerIT extends AbstractRegardsIT {
     @DirtiesContext
     public void getPluginConfigurationError() {
         // Get an unknown PluginConfiguration
-        final Long configId = AN_ID;
-        final String pluginId = PLUGIN_ID;
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isNotFound());
         performGet(PluginController.PLUGINS_PLUGINID_CONFIGID, token, expectations,
-                   "unable to load a plugin configuration", pluginId, configId);
+                   "unable to load a plugin configuration", PLUGIN_ID, AN_ID);
     }
 
     @Test
     @DirtiesContext
     public void getPluginConfigurationErrorWithoutPluginId() {
         // Get an unknown PluginConfiguration
-        final Long configId = AN_ID;
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isNotFound());
         performGet(PluginController.PLUGINS_CONFIGID, token, expectations, "unable to load a plugin configuration",
-                   configId);
+                   AN_ID);
     }
 
     @Test
@@ -304,11 +306,11 @@ public class PluginControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.pluginId", Matchers.hasToString(PLUGIN_ID)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.version", Matchers.hasToString(VERSION)));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.active", Matchers.hasToString("true")));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.active", Matchers.hasToString(TRUE)));
         expectations
-                .add(MockMvcResultMatchers.jsonPath("$.content.parameters[0].dynamic", Matchers.hasToString("true")));
+                .add(MockMvcResultMatchers.jsonPath("$.content.parameters[0].dynamic", Matchers.hasToString(TRUE)));
         expectations
-                .add(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic", Matchers.hasToString("false")));
+                .add(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic", Matchers.hasToString(FALSE)));
 
         // Update the added PluginConfiguration
         performPut(PluginController.PLUGINS_PLUGINID_CONFIGID, token, aPluginConfiguration, expectations,
@@ -384,11 +386,11 @@ public class PluginControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.pluginId", Matchers.hasToString(PLUGIN_ID)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.version", Matchers.hasToString(VERSION)));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content.active", Matchers.hasToString("true")));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.active", Matchers.hasToString(TRUE)));
         expectations
-                .add(MockMvcResultMatchers.jsonPath("$.content.parameters[0].dynamic", Matchers.hasToString("true")));
+                .add(MockMvcResultMatchers.jsonPath("$.content.parameters[0].dynamic", Matchers.hasToString(TRUE)));
         expectations
-                .add(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic", Matchers.hasToString("false")));
+                .add(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic", Matchers.hasToString(FALSE)));
 
         performPost(PluginController.PLUGINS_PLUGINID_CONFIGS, token, aPluginConfiguration, expectations,
                     "unable to save a plugin configuration", PLUGIN_ID);
@@ -422,7 +424,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     private PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setPluginClassName(ISamplePlugin.class.getCanonicalName());
+        pluginMetaData.setPluginClassName(SamplePlugin.class.getCanonicalName());
+//        pluginMetaData.setInterfaceName(ISamplePlugin.class.getCanonicalName());
         pluginMetaData.setPluginId("aSamplePlugin");
         pluginMetaData.setAuthor(AUTHOR);
         pluginMetaData.setVersion(VERSION);

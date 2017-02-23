@@ -101,7 +101,7 @@ public class CorsFilterTest {
                     .equals("POST, PUT, GET, OPTIONS, DELETE"));
 
             Assert.assertTrue(errorMessage,
-                              mockedResponse.getHeader(CorsFilter.ALLOW_HEADER).equals("authorization, content-type"));
+                              mockedResponse.getHeader(CorsFilter.ALLOW_HEADER).equals("authorization, content-type, scope"));
 
             Assert.assertTrue(errorMessage, mockedResponse.getHeader(CorsFilter.CONTROL_MAX_AGE).equals("3600"));
         } catch (ServletException | IOException e) {
