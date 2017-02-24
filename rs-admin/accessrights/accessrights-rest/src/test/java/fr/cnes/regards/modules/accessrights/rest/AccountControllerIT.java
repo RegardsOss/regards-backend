@@ -211,7 +211,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         expectations.clear();
         expectations.add(status().isOk());
-        toUpdate.setMode("auto-accept");
+        toUpdate.setMode(AccountSettings.AUTO_ACCEPT_MODE);
         performDefaultPut(apiAccountSetting, toUpdate, expectations, errorMessage);
 
         expectations.clear();

@@ -12,7 +12,6 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
-import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -45,8 +44,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParent
 @Table(name = "T_ROLE", indexes = { @Index(name = "IDX_ROLE_NAME", columnList = "name") })
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
 @HasParentOrPublic
-@NamedEntityGraph(name = "graph.role.permissions",
-        attributeNodes = @NamedAttributeNode(value = "permissions", subgraph = "permissions"))
+@NamedEntityGraph(name = "graph.role.permissions", attributeNodes = @NamedAttributeNode(value = "permissions", subgraph = "permissions"))
 public class Role implements IIdentifiable<Long> {
 
     /**
@@ -69,7 +67,7 @@ public class Role implements IIdentifiable<Long> {
      * <p/>
      * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasParentOrPublic} annotation.
      */
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "parent_role_id", foreignKey = @ForeignKey(name = "FK_ROLE_PARENT_ROLE"))
     private Role parentRole;
 
@@ -78,8 +76,7 @@ public class Role implements IIdentifiable<Long> {
      */
     @Valid
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
-            inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
+    @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"), inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
     private List<ResourcesAccess> permissions;
 
     /**

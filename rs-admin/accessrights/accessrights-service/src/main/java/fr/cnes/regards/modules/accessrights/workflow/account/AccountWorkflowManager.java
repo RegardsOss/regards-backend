@@ -87,7 +87,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
 
         // Auto-accept if configured so
         final AccountSettings settings = accountSettingsService.retrieve();
-        if ("auto-accept".equals(settings.getMode())) {
+        if (AccountSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
             acceptAccount(account, pValidationUrl);
         }
 

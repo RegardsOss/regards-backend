@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -57,6 +57,7 @@ import fr.cnes.regards.modules.project.domain.event.NewProjectConnectionEvent;
  */
 @Service
 @ImportResource({ "classpath*:defaultRoles.xml" })
+@MultitenantTransactional
 public class RoleService implements IRoleService {
 
     /**
@@ -124,18 +125,10 @@ public class RoleService implements IRoleService {
         subscriber = pSubscriber;
     }
 
-    /**
-     * Init medthod
-     *
-     * @throws RabbitMQVhostException
-     *             initialization error
-     */
     @PostConstruct
     public void init() {
-
         subscriber.subscribeTo(NewProjectConnectionEvent.class,
                                new NewProjectConnectionEventHandler(runtimeTenantResolver, this));
-
         initDefaultRoles();
     }
 

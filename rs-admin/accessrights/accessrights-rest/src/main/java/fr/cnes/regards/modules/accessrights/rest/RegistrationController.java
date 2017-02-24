@@ -41,8 +41,7 @@ import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWork
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "registration", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
+@ModuleInfo(name = "registration", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping(RegistrationController.REQUEST_MAPPING_ROOT)
 public class RegistrationController {
 
@@ -83,6 +82,8 @@ public class RegistrationController {
      * @param pRequest
      *            the request
      * @return the passed Dto
+     * @throws EntityException
+     *             if error occurs.
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)

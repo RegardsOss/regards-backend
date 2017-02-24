@@ -27,6 +27,16 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 public class AccountSettings implements IIdentifiable<Long> {
 
     /**
+     * Account acceptation mode
+     */
+    public static final String MANUAL_MODE = "manual";
+
+    /**
+     * Account acceptation mode
+     */
+    public static final String AUTO_ACCEPT_MODE = "auto-accept";
+
+    /**
      * The settings unique id
      */
     @NotNull
@@ -38,9 +48,9 @@ public class AccountSettings implements IIdentifiable<Long> {
     /**
      * The acceptance mode
      */
-    @Pattern(regexp = "manual|auto-accept", flags = Pattern.Flag.CASE_INSENSITIVE)
+    @Pattern(regexp = MANUAL_MODE + "|" + AUTO_ACCEPT_MODE, flags = Pattern.Flag.CASE_INSENSITIVE)
     @Column(name = "mode")
-    private String mode = "manual";
+    private String mode = MANUAL_MODE;
 
     @Override
     public Long getId() {
