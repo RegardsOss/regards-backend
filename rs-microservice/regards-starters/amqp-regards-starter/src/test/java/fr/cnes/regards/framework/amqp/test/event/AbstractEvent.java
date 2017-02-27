@@ -7,7 +7,7 @@ package fr.cnes.regards.framework.amqp.test.event;
  * @author Marc Sordi
  *
  */
-public abstract class AbstractEntityEvent {
+public abstract class AbstractEvent {
 
     private String message;
 

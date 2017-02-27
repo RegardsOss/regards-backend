@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.amqp.test.event;
+package fr.cnes.regards.framework.amqp.test.event.transactional;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +16,8 @@ import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfig
  */
 @Configuration
 @ComponentScan(basePackageClasses = { MultitenantAutoConfiguration.class, AmqpAutoConfiguration.class,
-        PollableServiceBean.class, PublishService.class })
-@PropertySource({ "classpath:application.properties", "classpath:application-rabbit.properties" })
-public class EventTestConfiguration {
+        PollableService.class, PublishService.class })
+@PropertySource({ "classpath:application.properties", "classpath:default-amqp.properties" })
+public class TransactionalTestConfiguration {
 
 }

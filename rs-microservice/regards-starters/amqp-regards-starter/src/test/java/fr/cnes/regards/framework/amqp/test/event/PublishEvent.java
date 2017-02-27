@@ -4,7 +4,7 @@
 package fr.cnes.regards.framework.amqp.test.event;
 
 import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
@@ -12,6 +12,6 @@ import fr.cnes.regards.framework.amqp.event.Target;
  *
  */
 @Event(target = Target.ALL)
-public class PollOneAllEvent extends AbstractEntityEvent implements IPollable {
+public class PublishEvent extends AbstractEvent implements ISubscribable {
 
 }

@@ -1,12 +1,13 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.amqp.test.event;
+package fr.cnes.regards.framework.amqp.test.event.transactional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.IPollable;
 
 /**
  * A service that publish an event in a transaction to test tenant binding.
@@ -27,15 +28,12 @@ public class PublishService {
     }
 
     @Transactional
-    public void doSomethingInTransaction() {
-        // ... do something
-
-        // Init event
-        PollOneAllEvent event = new PollOneAllEvent();
-        String message = "Published in transaction!";
-        event.setMessage(message);
-        publisher.publish(event);
-
-        // ... do something
+    public <T extends IPollable> void transactionalPublish(T pEvent, boolean pCrash) {
+        publisher.publish(pEvent);
+        // Do something : for instance, store in database
+        if (pCrash) {
+            // An error occurs : transaction manager will rollback database and restore AMQP event on server
+            throw new UnsupportedOperationException("Publish fails!");
+        }
     }
 }

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.amqp.test.event;
+package fr.cnes.regards.framework.amqp.test.event.basic;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -22,20 +22,22 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.test.AmqpTestsConfiguration;
+import fr.cnes.regards.framework.amqp.test.event.PollEvent;
+import fr.cnes.regards.framework.amqp.test.event.PollMicroserviceEvent;
+import fr.cnes.regards.framework.amqp.test.event.PublishEvent;
 
 /**
  * @author Marc Sordi
  *
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { AmqpTestsConfiguration.class })
-public class EventManagementIT {
+@ContextConfiguration(classes = { BasicTestConfiguration.class })
+public class BasicTestIT {
 
     /**
      * LOGGER used to populate logs when needed
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventManagementIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicTestIT.class);
 
     /**
      * Static default tenant
@@ -76,10 +78,10 @@ public class EventManagementIT {
     }
 
     @Test
-    public void publishAll() throws InterruptedException {
-        subscriber.subscribeTo(PublishToAllEvent.class, new PublishToAllHandler());
+    public void publishEvent() throws InterruptedException {
+        subscriber.subscribeTo(PublishEvent.class, new PublishEventHandler());
 
-        PublishToAllEvent event = new PublishToAllEvent();
+        PublishEvent event = new PublishEvent();
         event.setMessage("Publish all! (i.e. broadcast)");
         eventReceived = false; // Mutated by handler
         publisher.publish(event);
@@ -87,10 +89,10 @@ public class EventManagementIT {
         Assert.assertTrue(eventReceived);
     }
 
-    private class PublishToAllHandler implements IHandler<PublishToAllEvent> {
+    private class PublishEventHandler implements IHandler<PublishEvent> {
 
         @Override
-        public void handle(TenantWrapper<PublishToAllEvent> pWrapper) {
+        public void handle(TenantWrapper<PublishEvent> pWrapper) {
             eventReceived = true;
             Assert.assertNotNull(pWrapper);
             LOGGER.info("Tenant : {}", pWrapper.getTenant());
@@ -102,31 +104,31 @@ public class EventManagementIT {
     }
 
     @Test
-    public void pollOneMicroserviceEvent() {
+    public void pollMicroserviceEvent() {
         // Publish a pollable event
-        PollOneMicroserviceEvent event = new PollOneMicroserviceEvent();
+        PollMicroserviceEvent event = new PollMicroserviceEvent();
         String message = "Poll by one instance of a microservice!";
         event.setMessage(message);
         publisher.publish(event);
 
         // Poll event
-        TenantWrapper<PollOneMicroserviceEvent> wrapper = poller.poll(PollOneMicroserviceEvent.class);
-        PollOneMicroserviceEvent received = wrapper.getContent();
+        TenantWrapper<PollMicroserviceEvent> wrapper = poller.poll(PollMicroserviceEvent.class);
+        PollMicroserviceEvent received = wrapper.getContent();
         Assert.assertEquals(message, received.getMessage());
 
     }
 
     @Test
-    public void pollOneAllEvent() {
+    public void pollEvent() {
         // Publish a pollable event
-        PollOneAllEvent event = new PollOneAllEvent();
+        PollEvent event = new PollEvent();
         String message = "Poll by all!";
         event.setMessage(message);
         publisher.publish(event);
 
         // Poll event
-        TenantWrapper<PollOneAllEvent> wrapper = poller.poll(PollOneAllEvent.class);
-        PollOneAllEvent received = wrapper.getContent();
+        TenantWrapper<PollEvent> wrapper = poller.poll(PollEvent.class);
+        PollEvent received = wrapper.getContent();
         Assert.assertEquals(message, received.getMessage());
     }
 }
