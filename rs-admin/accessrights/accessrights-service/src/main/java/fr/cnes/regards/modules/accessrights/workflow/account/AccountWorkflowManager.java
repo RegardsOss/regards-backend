@@ -137,13 +137,25 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * (non-Javadoc)
      *
      * @see
-     * fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions#unlockAccount(fr.cnes.regards.modules.
-     * accessrights.domain.instance.Account)
+     * fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#requestUnlockAccount(fr.cnes.regards.
+     * modules.accessrights.accountunlock.OnAccountUnlockEvent)
      */
     @Override
-    public void unlockAccount(final Account pAccount, final String pUnlockCode)
+    public void requestUnlockAccount(final Account pAccount, final String pOriginUrl, final String pRequestLink)
             throws EntityOperationForbiddenException {
-        accountStateProvider.getState(pAccount).unlockAccount(pAccount, pUnlockCode);
+        accountStateProvider.getState(pAccount).requestUnlockAccount(pAccount, pOriginUrl, pRequestLink);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#performUnlockAccount(fr.cnes.regards.
+     * modules.accessrights.domain.instance.Account, java.lang.String)
+     */
+    @Override
+    public void performUnlockAccount(final Account pAccount, final String pToken) throws EntityException {
+        accountStateProvider.getState(pAccount).performUnlockAccount(pAccount, pToken);
     }
 
     /*

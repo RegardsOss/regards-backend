@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -38,7 +37,6 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserServi
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountStateProvider;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
 import fr.cnes.regards.modules.accessrights.workflow.account.ActiveState;
-import fr.cnes.regards.modules.accessrights.workflow.account.LockedState;
 import fr.cnes.regards.modules.accessrights.workflow.account.PendingState;
 
 /**
@@ -321,111 +319,5 @@ public class AccountWorkflowManagerTest {
         Mockito.verify(accountRepository, Mockito.times(2)).save(Mockito.refEq(account, "id", CODE));
         // Mockito.verify(emailService).sendEmail(validationEmail);
     }
-
-    /**
-     * Check that the system does unlock not locked accounts and feedbacks the caller.
-     *
-     * @throws EntityOperationForbiddenException
-     *             Thrown when passed id is different from the id of passed account<br>
-     *             {@link EntityTransitionForbiddenException} Thrown when the account is not of status LOCKED<br>
-     */
-    @Test(expected = EntityTransitionForbiddenException.class)
-    @Requirement("REGARDS_DSL_ADM_ADM_450")
-    @Purpose("Check that the system does unlock not locked accounts and feedbacks the caller.")
-    public void unlockAccountNotLocked() throws EntityOperationForbiddenException {
-        // Prepare the error case
-        account.setId(ID);
-        account.setStatus(AccountStatus.ACTIVE);
-
-        // Mock
-        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver));
-
-        // Trigger exception
-        accountWorkflowManager.unlockAccount(account, CODE);
-    }
-
-    /**
-     * Check that the system does not unlock a locked account if the wrong code is passed.
-     *
-     * @throws EntityOperationForbiddenException
-     *             Thrown when passed id is different from the id of passed account<br>
-     *             {@link EntityTransitionForbiddenException} Thrown when the account is not of status LOCKED<br>
-     */
-    @Test(expected = EntityOperationForbiddenException.class)
-    @Requirement("REGARDS_DSL_ADM_ADM_450")
-    @Purpose("Check that the system does not unlock a locked account if the wrong code is passed.")
-    public void unlockAccountWrongCode() throws EntityOperationForbiddenException {
-        // Prepare the case
-        account.setId(ID);
-        account.setStatus(AccountStatus.LOCKED);
-
-        // Mock
-        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new LockedState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver));
-
-        // Trigger exception
-        accountWorkflowManager.unlockAccount(account, "wrongCode");
-    }
-
-    /**
-     * Check that the system allows a user to unlock its account with a code.
-     *
-     * @throws EntityOperationForbiddenException
-     *             Thrown when passed id is different from the id of passed account<br>
-     *             {@link EntityTransitionForbiddenException} Thrown when the account is not of status LOCKED<br>
-     */
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_450")
-    @Purpose("Check that the system allows a user to unlock its account with a code.")
-    public void unlockAccount() throws EntityOperationForbiddenException {
-        // Mock
-        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new LockedState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver));
-
-        // Prepare the case
-        account.setStatus(AccountStatus.LOCKED);
-        account.setCode(CODE);
-
-        // Call tested method
-        accountWorkflowManager.unlockAccount(account, CODE);
-
-        // Check
-        account.setStatus(AccountStatus.ACTIVE);
-        Mockito.verify(accountRepository).save(Mockito.refEq(account));
-    }
-
-    // /**
-    // * Check that the system requires the user to validate via email its recently created account.
-    // *
-    // * @throws EntityOperationForbiddenException
-    // * Thrown when passed id is different from the id of passed account<br>
-    // * {@link EntityTransitionForbiddenException} Thrown when the account is not of status ACCEPTED<br>
-    // */
-    // @Test
-    // @Purpose("Check that the system requires the user to validate via email its recently created account.")
-    // public void emailValidation() throws EntityOperationForbiddenException {
-    // // Mock
-    // Mockito.when(accountRepository.exists(ID)).thenReturn(true);
-    // Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-    // Mockito.when(accountStateProvider.getState(account)).thenReturn(new AcceptedState(accountRepository));
-    //
-    // // Prepare the case
-    // account.setStatus(AccountStatus.ACCEPTED);
-    // account.setCode(CODE);
-    //
-    // // Call tested method
-    // accountWorkflowManager.emailValidation(account, CODE);
-    //
-    // // Check
-    // account.setStatus(AccountStatus.ACTIVE);
-    // Mockito.verify(accountRepository).save(Mockito.refEq(account));
-    // }
 
 }

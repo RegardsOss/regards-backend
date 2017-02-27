@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.workflow.account;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -89,19 +91,42 @@ public interface IAccountTransitions {
     };
 
     /**
-     * Unlocks a LOCKED account.
+     * Send to the user an email containing a link with limited validity to unlock its account.
      *
      * @param pAccount
      *            The {@link Account}
-     * @param pUnlockCode
-     *            The unlock code. Must match to account's <code>code</code> field
+     * @param pOriginUrl
+     *            The origin url
+     * @param pRequestLink
+     *            The request link
+     *
      * @throws EntityOperationForbiddenException
      *             Thrown when the code does not match the account's <code>code</code> field<br>
      *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status LOCKED<br>
      *
      */
-    default void unlockAccount(final Account pAccount, final String pUnlockCode)
+    default void requestUnlockAccount(final Account pAccount, final String pOriginUrl, final String pRequestLink)
             throws EntityOperationForbiddenException {
+        throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
+                pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
+    };
+
+    /**
+     * Unlocks a LOCKED account.
+     *
+     * @param pAccount
+     *            The {@link Account}
+     * @param pToken
+     *            The unlock token. Must match to account's <code>code</code> field
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} when the account or the token does not exist<br>
+     *             {@link EntityOperationForbiddenException} when the token is invalid<br>
+     *             {@link EntityTransitionForbiddenException} when the account is not in status LOCKED<br>
+     *
+     */
+    @Autowired
+    default void performUnlockAccount(final Account pAccount, final String pToken) throws EntityException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };
