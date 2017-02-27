@@ -39,18 +39,18 @@ public class AdapterTest {
         GsonAnnotationProcessor.processGsonable(gsonBuilder, this.getClass().getPackage().getName());
         final Gson gson = gsonBuilder.create();
 
-        AbstractEntity entity = new Collection();
+        AbstractEntitySample entity = new CollectionSample();
         final String jsonCollection = gson.toJson(entity);
         LOGGER.info(jsonCollection);
-        final Collection collection = gson.fromJson(jsonCollection, Collection.class);
+        final CollectionSample collection = gson.fromJson(jsonCollection, CollectionSample.class);
 
-        Assert.assertTrue(Collection.NAME.equals(collection.getName()));
+        Assert.assertTrue(CollectionSample.NAME.equals(collection.getName()));
 
-        entity = new Dataset();
+        entity = new DatasetSample();
         final String jsonDataset = gson.toJson(entity);
         LOGGER.info(jsonDataset);
-        final Dataset dataset = gson.fromJson(jsonDataset, Dataset.class);
+        final DatasetSample dataset = gson.fromJson(jsonDataset, DatasetSample.class);
 
-        Assert.assertTrue(Dataset.NAME.equals(dataset.getName()));
+        Assert.assertTrue(DatasetSample.NAME.equals(dataset.getName()));
     }
 }

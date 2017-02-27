@@ -7,14 +7,14 @@ package fr.cnes.regards.framework.gson.adapters.sample8;
  * @author Marc Sordi
  *
  */
-public class Dataset extends Collection {
+public class CollectionSample extends AbstractEntitySample {
 
     /**
-     * Dataset name
+     * Collection name
      */
-    public static final String NAME = "dataset";
+    public static final String NAME = "collection";
 
-    public Dataset() {
+    public CollectionSample() {
         setName(NAME);
     }
 }

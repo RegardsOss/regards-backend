@@ -10,7 +10,7 @@ import fr.cnes.regards.framework.gson.annotation.Gsonable;
  *
  */
 @Gsonable
-public abstract class AbstractEntity {
+public abstract class AbstractEntitySample {
 
     /**
      * Collection name
