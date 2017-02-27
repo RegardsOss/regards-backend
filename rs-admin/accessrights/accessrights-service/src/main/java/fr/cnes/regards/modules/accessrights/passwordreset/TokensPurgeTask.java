@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessrights.registration;
+package fr.cnes.regards.modules.accessrights.passwordreset;
 
 import java.time.LocalDateTime;
 
@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenRepository;
+import fr.cnes.regards.modules.accessrights.dao.instance.IPasswordResetTokenRepository;
 
 /**
  * Cron task purging the expired token repository.
@@ -23,14 +23,14 @@ import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenR
 public class TokensPurgeTask {
 
     /**
-     * The verification token repository
+     * The password reset token repository
      */
     @Autowired
-    private IVerificationTokenRepository tokenRepository;
+    private IPasswordResetTokenRepository passwordTokenRepository;
 
     @Scheduled(cron = "${purge.cron.expression}")
     public void purgeExpired() {
         final LocalDateTime now = LocalDateTime.now();
-        tokenRepository.deleteAllExpiredSince(now);
+        passwordTokenRepository.deleteAllExpiredSince(now);
     }
 }
