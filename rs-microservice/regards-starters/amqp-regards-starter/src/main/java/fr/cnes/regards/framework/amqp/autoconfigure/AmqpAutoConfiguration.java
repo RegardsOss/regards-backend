@@ -11,11 +11,13 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestTemplate;
 
@@ -40,7 +42,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  */
 @Configuration
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
-@EnableConfigurationProperties({ SpringRabbitMQProperties.class, AmqpManagementProperties.class,
+@EnableConfigurationProperties({ RabbitProperties.class, AmqpManagementProperties.class,
         AmqpMicroserviceProperties.class })
 @EnableTransactionManagement
 public class AmqpAutoConfiguration {
@@ -49,7 +51,7 @@ public class AmqpAutoConfiguration {
      * bean providing properties from the configuration file
      */
     @Autowired
-    private SpringRabbitMQProperties springRabbitMQProperties;
+    private RabbitProperties rabbitProperties;
 
     /**
      * bean providing properties from the configuration file
@@ -70,8 +72,7 @@ public class AmqpAutoConfiguration {
 
     @PostConstruct
     public void init() {
-        amqpProperties = new AmqpProperties(springRabbitMQProperties, amqpManagmentProperties,
-                amqpMicroserviceProperties);
+        amqpProperties = new AmqpProperties(rabbitProperties, amqpManagmentProperties, amqpMicroserviceProperties);
     }
 
     @Bean
@@ -143,8 +144,18 @@ public class AmqpAutoConfiguration {
         return new MultitenantSimpleRoutingConnectionFactory();
     }
 
+    /**
+     * This bean is only useful if no {@link PlatformTransactionManager} was provided by a database or else.
+     *
+     * @param pThreadTenantResolver
+     *            runtime tenant resolver
+     * @param pRabbitVirtualHostAdmin
+     *            virtual host admin
+     * @return a {@link RabbitTransactionManager}
+     */
     @Bean
-    public RabbitTransactionManager transactionManager(IRuntimeTenantResolver pThreadTenantResolver,
+    @ConditionalOnProperty(prefix = "regards.amqp", name = "internal.transaction", matchIfMissing = false)
+    public PlatformTransactionManager rabbitTransactionManager(IRuntimeTenantResolver pThreadTenantResolver,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
         return new MultitenantRabbitTransactionManager(simpleRoutingConnectionFactory(), pThreadTenantResolver,
                 pRabbitVirtualHostAdmin);

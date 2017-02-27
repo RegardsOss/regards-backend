@@ -11,7 +11,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
  * @author Marc Sordi
  *
  */
-@Event(target = Target.MICROSERVICE)
-public class PollOneMicroserviceEvent extends AbstractEntityEvent implements IPollable {
+@Event(target = Target.ALL)
+public class PollEvent extends AbstractEvent implements IPollable {
 
 }

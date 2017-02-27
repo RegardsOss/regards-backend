@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
+import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
+
 /**
  * class regrouping all sources of properties used for our amqp client
  *
@@ -14,7 +16,7 @@ public class AmqpProperties {
     /**
      * properties taken directly from spring
      */
-    private final SpringRabbitMQProperties springRabbitMQProperties;
+    private final RabbitProperties rabbitProperties;
 
     /**
      * properties related to the microservice
@@ -27,30 +29,30 @@ public class AmqpProperties {
     private final AmqpManagementProperties amqpManagementProperties;
 
     /**
-     * @param pSpringRabbitMQProperties
+     * @param pRabbitProperties
      *            spring properties
      * @param pAmqpManagmentProperties
      *            management properties
      * @param pAmqpMicroserviceProperties
      *            microservice properties
      */
-    public AmqpProperties(SpringRabbitMQProperties pSpringRabbitMQProperties,
-            AmqpManagementProperties pAmqpManagmentProperties, AmqpMicroserviceProperties pAmqpMicroserviceProperties) {
-        springRabbitMQProperties = pSpringRabbitMQProperties;
+    public AmqpProperties(RabbitProperties pRabbitProperties, AmqpManagementProperties pAmqpManagmentProperties,
+            AmqpMicroserviceProperties pAmqpMicroserviceProperties) {
+        rabbitProperties = pRabbitProperties;
         amqpManagementProperties = pAmqpManagmentProperties;
         amqpMicroserviceProperties = pAmqpMicroserviceProperties;
     }
 
     public String getRabbitmqPassword() {
-        return springRabbitMQProperties.getPassword();
+        return rabbitProperties.getPassword();
     }
 
     public String getRabbitmqUserName() {
-        return springRabbitMQProperties.getUsername();
+        return rabbitProperties.getUsername();
     }
 
     public String getRabbitmqAddresses() {
-        return springRabbitMQProperties.getAddresses();
+        return rabbitProperties.determineAddresses();
     }
 
     public String getTypeIdentifier() {

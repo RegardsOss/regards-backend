@@ -19,7 +19,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.exception.DaoTestException;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.service.DaoUserService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -47,11 +46,6 @@ public class DaoTransactionTest {
      */
     @Autowired
     private DaoUserService service;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    private static final String INVALID_JWT = "Invalid JWT";
 
     /**
      *
