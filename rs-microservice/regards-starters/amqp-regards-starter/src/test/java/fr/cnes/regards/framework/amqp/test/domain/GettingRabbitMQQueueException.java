@@ -7,6 +7,7 @@ package fr.cnes.regards.framework.amqp.test.domain;
  * @author svissier
  *
  */
+@SuppressWarnings("serial")
 public class GettingRabbitMQQueueException extends Exception {
 
     /**

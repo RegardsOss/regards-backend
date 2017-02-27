@@ -20,7 +20,7 @@ public final class GsonUtil {
     /**
      * Json Mapper
      */
-    private static Gson GSON;
+    private static Gson gson;
 
     private GsonUtil() {
         // Overriding public constructor
@@ -28,7 +28,7 @@ public final class GsonUtil {
 
     public static <T> T fromString(final String pString, final Class<T> pClazz) {
         try {
-            return GSON.fromJson(pString, pClazz);
+            return gson.fromJson(pString, pClazz);
         } catch (JsonSyntaxException e) {
             throw new IllegalArgumentException(
                     "The given string value: " + pString + " cannot be transformed to Json object", e);
@@ -36,11 +36,11 @@ public final class GsonUtil {
     }
 
     public static String toString(final Object pValue) {
-        return GSON.toJson(pValue);
+        return gson.toJson(pValue);
     }
 
     public static JsonElement toJsonNode(final Object pValue) {
-        return GSON.toJsonTree(pValue);
+        return gson.toJsonTree(pValue);
     }
 
     @SuppressWarnings("unchecked")
@@ -52,6 +52,6 @@ public final class GsonUtil {
      * @param pGson
      */
     public static void setGson(Gson pGson) {
-        GSON = pGson;
+        gson = pGson;
     }
 }
