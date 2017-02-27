@@ -17,7 +17,7 @@ import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfig
 @Configuration
 @ComponentScan(basePackageClasses = { MultitenantAutoConfiguration.class, AmqpAutoConfiguration.class,
         PollableService.class, PublishService.class })
-@PropertySource({ "classpath:application.properties", "classpath:default-amqp.properties" })
+@PropertySource({ "classpath:application.properties", "classpath:application-rabbit.properties" })
 public class TransactionalTestConfiguration {
 
 }

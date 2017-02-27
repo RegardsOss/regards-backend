@@ -15,7 +15,7 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @ComponentScan(basePackages = { "fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional" })
 @EnableAutoConfiguration
-@PropertySource({ "classpath:multi-transaction.properties", "classpath:default-amqp.properties" })
+@PropertySource({ "classpath:multi-transaction.properties" })
 public class MultiTransactionTestConfiguration {
 
 }
