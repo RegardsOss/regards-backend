@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
+package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +17,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.exception.DaoTestException;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.service.DaoUserService;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.pojo.User;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -35,6 +33,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { DaoTransactionTestConfiguration.class })
 @DirtiesContext
+@Ignore
 public class DaoTransactionTest {
 
     /**
@@ -60,7 +59,6 @@ public class DaoTransactionTest {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test multitenant transactions operations in database")
     @Test
-    @Ignore
     public void transactionTest() {
 
         final String testTenant = "test1";

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
+package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.multitransactional;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.IPollable;

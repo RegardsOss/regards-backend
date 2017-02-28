@@ -2,7 +2,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
+package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.multitransactional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

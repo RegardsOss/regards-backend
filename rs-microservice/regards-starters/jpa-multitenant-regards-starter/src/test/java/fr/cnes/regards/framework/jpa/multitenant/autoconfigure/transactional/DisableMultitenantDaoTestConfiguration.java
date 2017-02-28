@@ -1,11 +1,10 @@
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
+package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.controller.DaoTestController;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.service.DaoUserService;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.controller.DaoTestController;
 
 /**
  *

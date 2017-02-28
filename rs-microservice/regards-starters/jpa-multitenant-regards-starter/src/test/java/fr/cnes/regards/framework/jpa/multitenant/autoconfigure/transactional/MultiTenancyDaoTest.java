@@ -1,12 +1,13 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
+package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -17,10 +18,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.CannotCreateTransactionException;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.Company;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.ICompanyRepository;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.IUserRepository;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.pojo.Company;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.pojo.User;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.repository.ICompanyRepository;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.repository.IUserRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -37,6 +38,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { MultiTenancyDaoTestConfiguration.class })
 @DirtiesContext
+@Ignore
 public class MultiTenancyDaoTest {
 
     /**

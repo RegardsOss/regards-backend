@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.exception;
+package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
 
 /**
  *

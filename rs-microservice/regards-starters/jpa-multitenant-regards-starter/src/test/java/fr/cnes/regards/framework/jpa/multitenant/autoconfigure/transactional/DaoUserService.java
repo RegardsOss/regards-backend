@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.service;
+package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.exception.DaoTestException;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.pojo.User;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.repository.IUserRepository;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.pojo.User;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.repository.IUserRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
