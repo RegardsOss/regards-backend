@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  *
- * Utility class to manage a list of plugin parameters.
+ * Utility class to manage a {@link List} of {@link PluginParameter}.
  *
  * @author Christophe Mertz
  */
@@ -29,7 +29,16 @@ public class PluginParametersFactory {
     }
 
     /**
-     *
+     * Constructor with the {@link List} of {@link PluginParameter}
+     * 
+     * @param pPluginParameters
+     *            the {@link List} of {@link PluginParameter}
+     */
+    public PluginParametersFactory(List<PluginParameter> pPluginParameters) {
+        parameters = pPluginParameters;
+    }
+
+    /**
      * Build a new class
      *
      * @return a factory
@@ -39,15 +48,23 @@ public class PluginParametersFactory {
     }
 
     /**
-     *
-     * Chained set method
+     * Build a new class and set the {@link List} of {@link PluginParameter}
+     * 
+     * @param pPluginParameters
+     *            the {@link List} of {@link PluginParameter}
+     * @return a factory
+     */
+    public static PluginParametersFactory build(List<PluginParameter> pPluginParameters) {
+        return new PluginParametersFactory(pPluginParameters);
+    }
+
+    /**
+     * Chained addParameter method
      *
      * @param pParameterName
      *            the name parameter
-     * 
      * @param pParameterValue
      *            the value parameter
-     * 
      * @return the factory
      */
     public PluginParametersFactory addParameter(String pParameterName, String pParameterValue) {
@@ -56,15 +73,12 @@ public class PluginParametersFactory {
     }
 
     /**
-     *
-     * Chained set method
+     * Chained addParameterDynamic method
      *
      * @param pParameterName
      *            the name parameter
-     * 
      * @param pParameterValue
      *            the value parameter
-     * 
      * @return the factory
      */
     public PluginParametersFactory addParameterDynamic(String pParameterName, String pParameterValue) {
@@ -75,8 +89,7 @@ public class PluginParametersFactory {
     }
 
     /**
-     *
-     * Chained set method
+     * Chained addParameterDynamic method
      *
      * @param pParameterName
      *            the name parameter
@@ -84,7 +97,6 @@ public class PluginParametersFactory {
      *            the value parameter
      * @param pDynamicValues
      *            the set of possible values for the dynamic parameter
-     * 
      * @return the factory
      */
     public PluginParametersFactory addParameterDynamic(String pParameterName, String pParameterValue,
@@ -103,20 +115,29 @@ public class PluginParametersFactory {
     }
 
     /**
-     *
      * Chained set method
      *
      * @param pParameterName
      *            the name parameter
-     * 
      * @param pPluginConfiguration
      *            the plugin configuration
-     * 
      * @return the factory
      */
     public PluginParametersFactory addParameterPluginConfiguration(String pParameterName,
             PluginConfiguration pPluginConfiguration) {
         parameters.add(new PluginParameter(pParameterName, pPluginConfiguration));
+        return this;
+    }
+
+    /**
+     * Remove a {@link PluginParameter} from the {@link List}
+     * 
+     * @param pPluginParameter
+     *            the {@link PluginParameter} to remove
+     * @return the factory
+     */
+    public PluginParametersFactory removeParameter(PluginParameter pPluginParameter) {
+        parameters.remove(pPluginParameter);
         return this;
     }
 

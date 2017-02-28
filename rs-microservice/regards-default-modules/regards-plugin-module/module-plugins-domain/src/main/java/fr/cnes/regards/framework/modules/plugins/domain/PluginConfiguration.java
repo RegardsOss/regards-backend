@@ -202,6 +202,25 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     /**
+     * Return the {@link PluginParameter} of a specific parameter
+     *
+     * @param pParameterName
+     *            the parameter to get the value
+     * @return the {@link PluginParameter}
+     */
+    public final PluginParameter getParameter(String pParameterName) {
+        PluginParameter searchPluginParam = null;
+        if (parameters != null) {
+            final Optional<PluginParameter> pluginParameter = parameters.stream()
+                    .filter(s -> s.getName().equals(pParameterName)).findFirst();
+            if (pluginParameter.isPresent()) {
+                searchPluginParam = pluginParameter.get();
+            }
+        }
+        return searchPluginParam;
+    }
+
+    /**
      * Return the value of a specific parameter {@link PluginConfiguration}
      *
      * @param pParameterName

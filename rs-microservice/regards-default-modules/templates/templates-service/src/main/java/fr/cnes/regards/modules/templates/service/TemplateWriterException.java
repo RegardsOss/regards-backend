@@ -20,7 +20,7 @@ public class TemplateWriterException extends ModuleException {
      * Constructs a new template writer exception.
      */
     public TemplateWriterException() {
-        super("An error occured during template writing");
+        super("An error occurred during template writing");
     }
 
 }

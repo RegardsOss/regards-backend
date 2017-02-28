@@ -142,6 +142,10 @@ public class PluginParameter implements IIdentifiable<Long> {
     public final PluginConfiguration getPluginConfiguration() {
         return pluginConfiguration;
     }
+    
+    public final void setPluginConfiguration(PluginConfiguration pPluginConfiguration) {
+        pluginConfiguration = pPluginConfiguration;
+    }
 
     public List<PluginDynamicValue> getDynamicsValues() {
         return dynamicsValues;
