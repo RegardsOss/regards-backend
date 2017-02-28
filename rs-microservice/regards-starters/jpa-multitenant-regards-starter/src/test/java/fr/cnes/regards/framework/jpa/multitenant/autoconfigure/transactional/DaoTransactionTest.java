@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -33,7 +32,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { DaoTransactionTestConfiguration.class })
 @DirtiesContext
-@Ignore
 public class DaoTransactionTest {
 
     /**

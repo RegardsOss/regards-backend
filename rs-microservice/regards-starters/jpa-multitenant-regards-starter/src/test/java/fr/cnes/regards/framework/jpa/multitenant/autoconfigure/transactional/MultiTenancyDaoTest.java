@@ -7,13 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.CannotCreateTransactionException;
@@ -37,8 +35,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { MultiTenancyDaoTestConfiguration.class })
-@DirtiesContext
-@Ignore
 public class MultiTenancyDaoTest {
 
     /**

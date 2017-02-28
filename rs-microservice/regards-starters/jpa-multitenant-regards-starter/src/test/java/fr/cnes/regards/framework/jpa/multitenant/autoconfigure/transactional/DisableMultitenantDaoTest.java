@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.annotation.DirtiesContext;
@@ -25,7 +24,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { DisableMultitenantDaoTestConfiguration.class })
 @DirtiesContext
-@Ignore
 public class DisableMultitenantDaoTest {
 
     /**
