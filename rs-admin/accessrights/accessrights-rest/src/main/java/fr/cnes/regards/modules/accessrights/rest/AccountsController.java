@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,10 +38,8 @@ import fr.cnes.regards.modules.accessrights.domain.accountunlock.RequestAccountU
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPasswordDto;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.passwordreset.OnPasswordResetEvent;
-import fr.cnes.regards.modules.accessrights.registration.AppUrlBuilder;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions;
 
@@ -119,14 +116,9 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "create an new account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount,
-            final HttpServletRequest pRequest) throws EntityException {
-        // Manually create the expected DTO in order to use the same common interface of account creation
-        final AccessRequestDto dto = new AccessRequestDto(pNewAccount);
-
-        // Build the email validation link
-        final String validationUrl = AppUrlBuilder.buildFrom(pRequest);
-        final Account created = accountWorkflowManager.requestAccount(dto, validationUrl);
+    public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount)
+            throws EntityException {
+        final Account created = accountService.createAccount(pNewAccount);
         final Resource<Account> resource = new Resource<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
@@ -252,7 +244,7 @@ public class AccountsController implements IResourceController<Account> {
     @ResourceAccess(description = "change the passsword of account account_email if provided token is valid",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> performUnlockAccount(@PathVariable("account_email") final String pAccountEmail,
-            final String pToken) throws EntityException {
+            @Valid @RequestBody final String pToken) throws EntityException {
         // Retrieve the account
         final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
 

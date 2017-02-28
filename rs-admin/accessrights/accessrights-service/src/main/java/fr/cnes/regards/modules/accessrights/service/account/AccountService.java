@@ -89,6 +89,18 @@ public class AccountService implements IAccountService {
     /*
      * (non-Javadoc)
      *
+     * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#createAccount(fr.cnes.regards.modules.
+     * accessrights.domain.instance.Account)
+     */
+    @Override
+    public Account createAccount(final Account pAccount) {
+        pAccount.setId(null);
+        return accountRepository.save(pAccount);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#retrieveAccount(java.lang.Long)
      */
     @Override

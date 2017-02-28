@@ -149,8 +149,7 @@ public class AccountWorkflowManagerTest {
         SecurityContextHolder.getContext().setAuthentication(jwtAuth);
 
         // Construct the tested service with mock deps
-        accountWorkflowManager = new AccountWorkflowManager(accountStateProvider, accountRepository,
-                accountSettingsService);
+        accountWorkflowManager = new AccountWorkflowManager(accountStateProvider);
     }
 
     /**
@@ -225,99 +224,6 @@ public class AccountWorkflowManagerTest {
 
         // Verify the repository was correctly called
         Mockito.verify(accountRepository).delete(ID);
-    }
-
-    /**
-     * Check that the system fails when trying to create an account of already existing email.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityTransitionForbiddenException} If the account is not in valid status <br>
-     *             {@link EntityAlreadyExistsException} If an account with same email already exists<br>
-     */
-    @Test(expected = EntityAlreadyExistsException.class)
-    @Purpose("Check that the system fails when trying to create an account of already existing email.")
-    public void requestAccountEmailAlreadyUsed() throws EntityException {
-        // Mock
-        Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(account));
-
-        // Trigger the exception
-        final AccessRequestDto dto = new AccessRequestDto();
-        dto.setEmail(EMAIL);
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
-        accountWorkflowManager.requestAccount(dto, "");
-    }
-
-    /**
-     * Check that the system allows to create a new account.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} Thrown when no template could be found to send the validation
-     *             email<br>
-     *             {@link EntityAlreadyExistsException} Thrown when an account with same email already exists<br>
-     */
-    @Test
-    @Purpose("Check that the system allows to create a new account.")
-    public void requestAccountManual() throws EntityException {
-        // Mock
-        Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-        Mockito.when(accountSettingsService.retrieve()).thenReturn(accountSettings);
-        accountSettings.setMode("manual");
-
-        // Call tested method
-        final AccessRequestDto dto = new AccessRequestDto();
-        dto.setEmail(EMAIL);
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
-        dto.setPassword(PASSWORD);
-        accountWorkflowManager.requestAccount(dto, "");
-
-        // Verify the repository was correctly called
-        Mockito.verify(accountRepository).save(Mockito.refEq(account, "id", CODE));
-    }
-
-    /**
-     * Check that the system allows to create a new account and auto-accept it if configured so.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} Thrown when no template could be found to send the validation
-     *             email<br>
-     *             {@link EntityAlreadyExistsException} Thrown when an account with same email already exists<br>
-     */
-    @Ignore
-    @Test
-    @Purpose("Check that the system allows to create a new account and auto-accept it if configured so.")
-    public void requestAccountAutoAccept() throws EntityException {
-        // Mock
-        Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-        Mockito.when(accountSettingsService.retrieve()).thenReturn(accountSettings);
-        accountSettings.setMode("auto-accept");
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new PendingState(accountRepository));
-
-        // final SimpleMailMessage validationEmail = new SimpleMailMessage();
-        // validationEmail.setFrom("system@regards.fr");
-        // validationEmail.setTo(EMAIL);
-        // validationEmail.setText(TemplateTestConstants.CONTENT_TEMPLATED);
-        // validationEmail.setSubject(TemplateTestConstants.SUBJECT);
-        // Mockito.when(templateService.writeToEmail(Mockito.any(), Mockito.any(), Mockito.any()))
-        // .thenReturn(validationEmail);
-
-        // Call tested method
-        final AccessRequestDto dto = new AccessRequestDto();
-        dto.setEmail(EMAIL);
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
-        dto.setPassword(PASSWORD);
-        accountWorkflowManager.requestAccount(dto, "");
-
-        // In auto-accept mode, we expect the account to be directly saved as accepted
-        account.setStatus(AccountStatus.ACCEPTED);
-        // Verify the repository was correctly called
-        Mockito.verify(accountRepository, Mockito.times(2)).save(Mockito.refEq(account, "id", CODE));
-        // Mockito.verify(emailService).sendEmail(validationEmail);
     }
 
 }

@@ -3,16 +3,12 @@
  */
 package fr.cnes.regards.modules.accessrights.workflow.account;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
 
 /**
@@ -26,38 +22,16 @@ import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToke
 public interface IAccountTransitions {
 
     /**
-     * Passes the account from status PENDING to ACCEPTED or REFUSED according to the account's acceptance policy.
-     *
-     * @param pAccessRequestDto
-     *            The DTO containing all information to create the new {@link Account}
-     * @param pValidationUrl
-     *            The validation url for the account confirmation email
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityAlreadyExistsException} Thrown when an account with same <code>email</code> already
-     *             exists<br>
-     *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
-     * @return the created account
-     */
-    default Account requestAccount(final AccessRequestDto pAccessRequestDto, final String pValidationUrl)
-            throws EntityException {
-        throw new EntityTransitionForbiddenException(pAccessRequestDto.getEmail(), Account.class, null,
-                Thread.currentThread().getStackTrace()[1].getMethodName());
-    };
-
-    /**
      * Passes the account from status PENDING to ACCEPTED.
      *
      * @param pAccount
      *            The {@link Account}
-     * @param pValidationUrl
-     *            The validation url for the account confirmation email
      * @throws EntityException
      *             <br>
      *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
      *             {@link EntityNotFoundException} Thrown when the email validation template could not be found
      */
-    default void acceptAccount(final Account pAccount, final String pValidationUrl) throws EntityException {
+    default void acceptAccount(final Account pAccount) throws EntityException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     };
@@ -125,7 +99,6 @@ public interface IAccountTransitions {
      *             {@link EntityTransitionForbiddenException} when the account is not in status LOCKED<br>
      *
      */
-    @Autowired
     default void performUnlockAccount(final Account pAccount, final String pToken) throws EntityException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());

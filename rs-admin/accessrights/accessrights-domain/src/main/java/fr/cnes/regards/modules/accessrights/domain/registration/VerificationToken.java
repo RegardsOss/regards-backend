@@ -4,7 +4,9 @@
 package fr.cnes.regards.modules.accessrights.domain.registration;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
@@ -12,6 +14,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+
+import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -21,7 +25,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
- * 
+ *
  * @see <a>http://www.baeldung.com/registration-verify-user-by-email</a>
  */
 @InstanceEntity
@@ -53,6 +57,20 @@ public class VerificationToken {
     private Account account;
 
     /**
+     * The origin url
+     */
+    @NotBlank
+    @Column(name = "originUrl")
+    private String originUrl;
+
+    /**
+     * The request link
+     */
+    @NotBlank
+    @Column(name = "requestLink")
+    private String requestLink;
+
+    /**
      * The computed expiration date based on EXPIRATION delay in minutes
      */
     private LocalDateTime expiryDate;
@@ -62,16 +80,23 @@ public class VerificationToken {
      */
     private boolean verified;
 
-    public VerificationToken() {
+    /**
+     *
+     * @param pAccount
+     *            The link back to the {@link Account}
+     * @param pOriginUrl
+     *            The origin url
+     * @param pRequestLink
+     *            The request link
+     */
+    public VerificationToken(final Account pAccount, final String pOriginUrl, final String pRequestLink) {
         super();
-    }
-
-    public VerificationToken(final String pToken, final Account pAccount) {
-        super();
-        this.token = pToken;
-        this.account = pAccount;
-        this.expiryDate = calculateExpiryDate(EXPIRATION);
-        this.verified = false;
+        token = UUID.randomUUID().toString();
+        account = pAccount;
+        originUrl = pOriginUrl;
+        requestLink = pRequestLink;
+        expiryDate = calculateExpiryDate(EXPIRATION);
+        verified = false;
     }
 
     /**
@@ -158,5 +183,35 @@ public class VerificationToken {
      */
     public void setVerified(final boolean pVerified) {
         verified = pVerified;
+    }
+
+    /**
+     * @return the originUrl
+     */
+    public String getOriginUrl() {
+        return originUrl;
+    }
+
+    /**
+     * @param pOriginUrl
+     *            the originUrl to set
+     */
+    public void setOriginUrl(final String pOriginUrl) {
+        originUrl = pOriginUrl;
+    }
+
+    /**
+     * @return the requestLink
+     */
+    public String getRequestLink() {
+        return requestLink;
+    }
+
+    /**
+     * @param pRequestLink
+     *            the requestLink to set
+     */
+    public void setRequestLink(final String pRequestLink) {
+        requestLink = pRequestLink;
     }
 }

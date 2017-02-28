@@ -23,9 +23,12 @@ import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsExcept
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.dao.accountunlock.IAccountUnlockTokenRepository;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.dao.instance.IPasswordResetTokenRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.domain.accountunlock.AccountUnlockToken;
+import fr.cnes.regards.modules.accessrights.domain.accountunlock.RequestAccountUnlockDto;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PasswordResetToken;
@@ -56,6 +59,11 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     private static final String EMAIL = "email@test.com";
 
     /**
+     * Other dummy email
+     */
+    private static final String EMAIL_LOCKED = "email.locked@test.com";
+
+    /**
      * Dummy first name
      */
     private static final String FIRST_NAME = "Firstname";
@@ -78,7 +86,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
     private String apiAccountSetting;
 
-    private String apiUnlockAccount;
+    private final String apiUnlockAccount = "/accounts/{account_email}/unlockAccount";
 
     private final String apiChangePassword = "/accounts/{account_email}/resetPassword";
 
@@ -112,6 +120,12 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IPasswordResetTokenRepository passwordResetTokenRepository;
 
+    /**
+     * AccountUnlockToken repository
+     */
+    @Autowired
+    private IAccountUnlockTokenRepository accountUnlockTokenRepository;
+
     @Value("${root.admin.login:admin}")
     private String rootAdminLogin;
 
@@ -121,6 +135,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Value("${regards.accounts.root.user.login}")
     private String rootAdminInstanceLogin;
 
+    private Account accountLocked;
+
     @Before
     public void setUp() {
         errorMessage = "Cannot reach model attributes";
@@ -128,11 +144,13 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         apiAccountId = apiAccounts + "/{account_id}";
         apiAccountEmail = apiAccounts + "/account/{account_email}";
         apiAccountSetting = apiAccounts + "/settings";
-        apiUnlockAccount = apiAccountId + "/unlock/{unlock_code}";
 
         // And start with a single account for convenience
         account = accountRepository.save(new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD));
         accountInstance = accountRepository.save(new Account(rootAdminInstanceLogin, FIRST_NAME, LAST_NAME, PASSWORD));
+        accountLocked = new Account(EMAIL_LOCKED, FIRST_NAME, LAST_NAME, PASSWORD);
+        accountLocked.setStatus(AccountStatus.LOCKED);
+        accountLocked = accountRepository.save(accountLocked);
     }
 
     @Test
@@ -149,29 +167,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultGet(apiAccountSetting, expectations, errorMessage);
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_300")
-    @Purpose("Check that the system allows to create a user for an instance and handle fail cases.")
-    public void createAccount() {
-        accountRepository.deleteAll();
-
-        // Regular success case
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isCreated());
-        performDefaultPost(apiAccounts, account, expectations, errorMessage);
-
-        // Conflict case
-        expectations.clear();
-        expectations.add(status().isConflict());
-        performDefaultPost(apiAccounts, account, expectations, errorMessage);
-
-        // Malformed case
-        final Account containNulls = new Account("notanemail", "", null, null);
-        expectations.clear();
-        expectations.add(status().isBadRequest());
-        performDefaultPost(apiAccounts, containNulls, expectations, errorMessage);
     }
 
     @Test
@@ -239,16 +234,30 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_450")
-    @Purpose("Check that the system allows to unlock an instance user's account.")
-    public void unlockAccount() throws EntityAlreadyExistsException {
-        // Prepare the account
-        account.setStatus(AccountStatus.LOCKED);
-        accountRepository.save(account);
+    @Requirement("REGARDS_DSL_ADM_ADM_470")
+    @Purpose("Check that the system allows the user to request to receive a mail in order to reset its password.")
+    public void requestUnlockAccount() throws EntityAlreadyExistsException {
+        // Prepare the test
+        final RequestAccountUnlockDto dto = new RequestAccountUnlockDto("/origin/url", "request/link");
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isNoContent());
-        performDefaultGet(apiUnlockAccount, expectations, errorMessage, account.getId(), account.getCode());
+        performDefaultPost(apiUnlockAccount, dto, expectations, errorMessage, EMAIL_LOCKED);
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_470")
+    @Purpose("Check that the system allows to reset an instance user's password.")
+    public void performUnlockAccount() throws EntityAlreadyExistsException {
+        // Prepare the test
+        final String token = "token";
+
+        // Create the token in db
+        accountUnlockTokenRepository.save(new AccountUnlockToken(token, accountLocked));
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isNoContent());
+        performDefaultPut(apiUnlockAccount, token, expectations, errorMessage, EMAIL_LOCKED);
     }
 
     @Test

@@ -3,12 +3,10 @@
  */
 package fr.cnes.regards.modules.accessrights.workflow.projectuser;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
  * State pattern implementation defining the actions managing the state of a project user.<br>
@@ -19,22 +17,6 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  * @since 1.1-SNAPSHOT
  */
 public interface IProjectUserTransitions {
-
-    /**
-     * Make a new request access by creating a project user in status WAITING_ACCESS
-     *
-     * @param pAccessRequestDto
-     *            The DTO containing all information to create the new {@link ProjectUser}
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityTransitionForbiddenException} If the account has a not null status<br>
-     *             {@link EntityNotFoundException} If no role with passed name could be found<br>
-     *             {@link EntityAlreadyExistsException} If a project user with passed email already exists<br>
-     */
-    default void requestProjectAccess(final AccessRequestDto pAccessRequestDto) throws EntityException {
-        throw new EntityTransitionForbiddenException(pAccessRequestDto.getEmail(), ProjectUser.class, null,
-                Thread.currentThread().getStackTrace()[1].getMethodName());
-    }
 
     /**
      * Passes the project user from status WAITING_ACCESS to ACCESS_GRANTED or ACCESS_DENIED according to the project

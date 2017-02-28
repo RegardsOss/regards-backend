@@ -162,8 +162,7 @@ public class LockedStateTest {
         SecurityContextHolder.getContext().setAuthentication(jwtAuth);
 
         // Construct the tested service with mock deps
-        accountWorkflowManager = new AccountWorkflowManager(accountStateProvider, accountRepository,
-                accountSettingsService);
+        accountWorkflowManager = new AccountWorkflowManager(accountStateProvider);
     }
 
     /**
