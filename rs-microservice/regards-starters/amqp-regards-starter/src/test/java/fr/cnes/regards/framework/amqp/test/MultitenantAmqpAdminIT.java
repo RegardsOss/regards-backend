@@ -234,7 +234,7 @@ public class MultitenantAmqpAdminIT {
             rabbitVirtualHostAdmin.addVhost(TENANT1);
 
             rabbitVirtualHostAdmin.bind(TENANT1);
-            Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, pWorkerMode, pTarget);
+            regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, pWorkerMode, pTarget);
             List<RestExchange> declaredExchanges = retrieveExchange(TENANT1);
             // TODO: get newly declared exchange not one of the default
             RestExchange restExchange = declaredExchanges.get(0);
@@ -248,7 +248,7 @@ public class MultitenantAmqpAdminIT {
             rabbitVirtualHostAdmin.addVhost(TENANT2);
 
             rabbitVirtualHostAdmin.bind(TENANT2);
-            exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, pWorkerMode, pTarget);
+            regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, pWorkerMode, pTarget);
             declaredExchanges = retrieveExchange(TENANT2);
             // TODO: get newly declared exchange not one of the default
             restExchange = declaredExchanges.get(0);
@@ -305,7 +305,7 @@ public class MultitenantAmqpAdminIT {
             rabbitVirtualHostAdmin.addVhost(TENANT1);
 
             rabbitVirtualHostAdmin.bind(TENANT1);
-            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, pWorkerMode, pTarget);
+            regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, pWorkerMode, pTarget);
             List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
             RestQueue restQueue = declaredQueues.get(0);
             // Assert.assertEquals(1, declaredQueues.size());
@@ -317,7 +317,7 @@ public class MultitenantAmqpAdminIT {
             rabbitVirtualHostAdmin.addVhost(TENANT2);
 
             rabbitVirtualHostAdmin.bind(TENANT2);
-            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, pWorkerMode, pTarget);
+            regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, pWorkerMode, pTarget);
             declaredQueues = retrieveQueues(TENANT2);
             restQueue = declaredQueues.get(0);
             // Assert.assertEquals(1, declaredQueues.size());

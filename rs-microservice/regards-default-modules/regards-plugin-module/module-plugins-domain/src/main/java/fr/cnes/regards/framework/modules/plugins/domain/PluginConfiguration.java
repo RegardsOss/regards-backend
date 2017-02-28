@@ -34,9 +34,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  *
  */
 @Entity
-@Table(name = "T_PLUGIN_CONFIGURATION",
-        indexes = { @Index(name = "IDX_PLUGIN_CONFIGURATION", columnList = "pluginId") })
-@SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_CONF")
+@Table(name = "t_plugin_configuration",
+        indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId") })
+@SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "seq_plugin_conf")
 public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
@@ -98,8 +98,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Configuration parameters of the plugin
      */
     @ElementCollection
-    @CollectionTable(name = "TA_PLUGIN_CONF_PLUGIN_PARAM",
-            joinColumns = @JoinColumn(name = "ID", foreignKey = @javax.persistence.ForeignKey(name = "FK_PARAM_ID")))
+    @CollectionTable(name = "ta_plugin_conf_plugin_param",
+            joinColumns = @JoinColumn(name = "id", foreignKey = @javax.persistence.ForeignKey(name = "fk_param_id")))
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PluginParameter> parameters;
 
@@ -163,7 +163,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * A constructor with {@link PluginMetaData}.
-     * 
+     *
      * @param pPluginMetaData
      *            the plugin's metadata
      * @param pLabel
@@ -260,7 +260,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Log a {@link PluginParameter}.
-     * 
+     *
      * @param pParam
      *            the {@link PluginParameter} to log
      * @param pPrefix
