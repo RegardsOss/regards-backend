@@ -18,7 +18,7 @@ import org.springframework.context.annotation.PropertySource;
  */
 @ComponentScan(basePackages = { "fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional" })
 @EnableAutoConfiguration
-@PropertySource({ "classpath:dao-transaction.properties", "classpath:default-amqp.properties" })
+@PropertySource({ "classpath:dao-transaction.properties" })
 public class DaoTransactionTestConfiguration {
 
 }
