@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- LICENSE_PLACEHOLDER -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<name>client-core</name>
-	<groupId>fr.cnes.regards.client</groupId>
-	<artifactId>client-core</artifactId>
-	<description>Client core</description>
-	<version>1.0-SNAPSHOT</version>
+	<artifactId>feign-regards-starter</artifactId>
+	<version>0.0.0-SNAPSHOT</version>
+	<description>REGARDS Feign starter</description>
 
 	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>0.0.7-SNAPSHOT</version>
-		<relativePath></relativePath>
+		<groupId>fr.cnes.regards.framework</groupId>
+		<artifactId>regards-starters</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
+		<!-- REGARDS dependency -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
 		</dependency>
-		<!-- SPRING HATEOAS -->
+		<!-- Business layer -->
 		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>feign-regards</artifactId>
+			</dependency>
+		<!-- Starter feign -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-feign</artifactId>
 		</dependency>
 		<!-- Spring Web Mvc -->
 		<dependency>
@@ -35,7 +39,34 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 		</dependency>
-		<!-- Netflix Feign REST Client -->
+		<!-- Tests -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+<!-- <dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-utils</artifactId>
+		</dependency>
+		SPRING HATEOAS
+		<dependency>
+			<groupId>org.springframework.hateoas</groupId>
+			<artifactId>spring-hateoas</artifactId>
+		</dependency>
+		Spring Web Mvc
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
+		Netflix Feign REST Client
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
 			<artifactId>feign-hystrix</artifactId>
@@ -56,6 +87,6 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-feign</artifactId>
 		</dependency>
-	</dependencies>
+	</dependencies> -->
 </project>
 

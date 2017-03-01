@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
 import feign.hystrix.HystrixFeign;
-import fr.cnes.regards.client.core.TokenClientProvider;
+import fr.cnes.regards.framework.feign.annotation.TokenClientProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 

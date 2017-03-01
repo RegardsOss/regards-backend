@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.client.core;
+package fr.cnes.regards.framework.feign.autoconfigure;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -16,7 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public class CustomRequestMappingHandler extends RequestMappingHandlerMapping { // NOSONAR
+public class ExcludeFeignRequestMappingHandler extends RequestMappingHandlerMapping { // NOSONAR
 
     @Override
     protected boolean isHandler(final Class<?> beanType) {

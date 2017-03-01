@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.client.core.annotation;
+package fr.cnes.regards.framework.feign.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,7 +12,8 @@ import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.core.annotation.AliasFor;
 
 import feign.Headers;
-import fr.cnes.regards.client.core.FeignClientConfiguration;
+import fr.cnes.regards.framework.feign.FeignClientConfiguration;
+import fr.cnes.regards.framework.feign.SysSecurityConfiguration;
 
 /**
  *
@@ -23,11 +24,11 @@ import fr.cnes.regards.client.core.FeignClientConfiguration;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@FeignClient(configuration = FeignClientConfiguration.class)
+@FeignClient(configuration = { FeignClientConfiguration.class, SysSecurityConfiguration.class })
 @Headers({ "Accept: application/json", "Content-Type: application/json" })
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface RestClient {
+public @interface SysFeignClient {
 
     /**
      *

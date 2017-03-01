@@ -1,14 +1,11 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.client.core;
-
-import org.springframework.security.core.context.SecurityContextHolder;
+package fr.cnes.regards.framework.feign;
 
 import feign.Request;
 import feign.RequestTemplate;
 import feign.Target;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
  *
@@ -32,6 +29,11 @@ public class TokenClientProvider<T> implements Target<T> {
     private final Class<T> clazz;
 
     /**
+     * Security interceptor
+     */
+    private final FeignSecurityManager securityManager;
+
+    /**
      *
      * Constructor
      *
@@ -41,9 +43,10 @@ public class TokenClientProvider<T> implements Target<T> {
      *            url
      * @since 1.0-SNAPSHOT
      */
-    public TokenClientProvider(final Class<T> pClass, final String pUrl) {
+    public TokenClientProvider(final Class<T> pClass, final String pUrl, FeignSecurityManager pSecurityManager) {
         url = pUrl;
         clazz = pClass;
+        this.securityManager = pSecurityManager;
     }
 
     @Override
@@ -51,11 +54,8 @@ public class TokenClientProvider<T> implements Target<T> {
         if (input.url().indexOf("http") != 0) {
             input.insert(0, url);
         }
-        final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
-                .getAuthentication();
-
-        input.header("Authorization", "Bearer " + authentication.getJwt());
-
+        // Apply security
+        securityInterceptor.apply(input);
         return input.request();
     }
 

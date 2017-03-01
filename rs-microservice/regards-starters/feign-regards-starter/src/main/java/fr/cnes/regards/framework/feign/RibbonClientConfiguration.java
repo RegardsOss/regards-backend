@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.client.core;
+package fr.cnes.regards.framework.feign;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

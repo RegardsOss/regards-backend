@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.client.core;
+package fr.cnes.regards.framework.feign.autoconfigure;
 
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -33,6 +33,6 @@ public class WebMvcConfiguration extends EnableWebMvcConfiguration {
 
     @Override
     protected RequestMappingHandlerMapping createRequestMappingHandlerMapping() {
-        return new CustomRequestMappingHandler();
+        return new ExcludeFeignRequestMappingHandler();
     }
 }

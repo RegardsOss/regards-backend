@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.client.core;
+package fr.cnes.regards.framework.feign;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ public class ClientErrorDecoder implements ErrorDecoder {
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ClientErrorDecoder.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientErrorDecoder.class);
 
     /**
      *
@@ -35,7 +35,7 @@ public class ClientErrorDecoder implements ErrorDecoder {
     @Override
     public Exception decode(final String pMethodKey, final Response pResponse) {
 
-        LOG.error(String.format("Remote call to %s. Response is : %d - %s", pMethodKey, pResponse.status(),
+        LOGGER.error(String.format("Remote call to %s. Response is : %d - %s", pMethodKey, pResponse.status(),
                                 pResponse.reason()));
         return new Exception(String.format("%s:%s", pResponse.status(), pResponse.reason()));
     }
