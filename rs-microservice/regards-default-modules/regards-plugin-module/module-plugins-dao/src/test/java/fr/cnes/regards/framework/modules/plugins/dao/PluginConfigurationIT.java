@@ -4,6 +4,8 @@
 package fr.cnes.regards.framework.modules.plugins.dao;
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,23 +30,23 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 @DirtiesContext
 public class PluginConfigurationIT extends PluginDaoUtility {
 
+    @Before
+    public void before() {
+        injectToken(PROJECT);
+        cleanDb();
+    }
+
     /**
      * Unit test of creation {@link PluginConfiguration}
      */
     @Test
     public void createPluginConfiguration() {
-
-        injectToken(PROJECT);
-        cleanDb();
-
         // persist a PluginConfiguration
         final PluginConfiguration jpaConf = pluginConfigurationRepository.save(getPluginConfigurationWithParameters());
 
         Assert.assertEquals(1, pluginConfigurationRepository.count());
         Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
                             pluginParameterRepository.count());
-
-        // Assert.assertEquals(0, pluginDynamicValueRepository.count());
 
         Assert.assertEquals(getPluginConfigurationWithParameters().getLabel(), jpaConf.getLabel());
         Assert.assertEquals(getPluginConfigurationWithParameters().getVersion(), jpaConf.getVersion());
@@ -67,8 +69,8 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size()
                 + getPluginConfigurationWithDynamicParameter().getParameters().size(),
                             pluginParameterRepository.count());
-        // Assert.assertEquals(3, pluginDynamicValueRepository.count());
 
+        pluginConfigurationRepository.deleteAll();
     }
 
     /**
@@ -76,9 +78,6 @@ public class PluginConfigurationIT extends PluginDaoUtility {
      */
     @Test
     public void createAndFindPluginConfigurationWithParameters() {
-        injectToken(PROJECT);
-        cleanDb();
-
         // save a plugin configuration
         final PluginConfiguration aPluginConf = pluginConfigurationRepository
                 .save(getPluginConfigurationWithParameters());
@@ -105,7 +104,7 @@ public class PluginConfigurationIT extends PluginDaoUtility {
             Assert.assertEquals(aPluginConf.getParameterConfiguration(p.getName()),
                                 jpaConf.getParameterConfiguration(p.getName()));
         }
-
+        pluginConfigurationRepository.deleteAll();
     }
 
     /**
@@ -113,9 +112,6 @@ public class PluginConfigurationIT extends PluginDaoUtility {
      */
     @Test
     public void updatePluginConfigurationWithParameters() {
-        injectToken(PROJECT);
-        cleanDb();
-
         // save a plugin configuration
         final PluginConfiguration aPluginConf = pluginConfigurationRepository
                 .save(getPluginConfigurationWithParameters());
@@ -140,13 +136,12 @@ public class PluginConfigurationIT extends PluginDaoUtility {
 
         INTERFACEPARAMETERS.forEach(p -> pluginParameterRepository.delete(p));
         Assert.assertEquals(aPluginConf.getParameters().size(), pluginParameterRepository.count());
+
+        pluginConfigurationRepository.deleteAll();
     }
 
     @Test
     public void deletePluginConfigurationWithParameters() {
-        injectToken(PROJECT);
-        cleanDb();
-
         // save a plugin configuration
         final PluginConfiguration aPluginConf = pluginConfigurationRepository
                 .save(getPluginConfigurationWithParameters());
@@ -166,9 +161,6 @@ public class PluginConfigurationIT extends PluginDaoUtility {
 
     @Test(expected = DataIntegrityViolationException.class)
     public void deletePluginConfigurationWithParametersError() {
-        injectToken(PROJECT);
-        cleanDb();
-
         // save a plugin configuration
         pluginConfigurationRepository.save(getPluginConfigurationWithParameters());
         Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
@@ -179,7 +171,12 @@ public class PluginConfigurationIT extends PluginDaoUtility {
                             pluginParameterRepository.count());
 
         // delete it
-        pluginParameterRepository.delete(getPluginConfigurationWithParameters().getParameters().get(0));
+        try {
+            pluginParameterRepository.delete(getPluginConfigurationWithParameters().getParameters().get(0));
+        } catch (DataIntegrityViolationException e) {
+            pluginConfigurationRepository.deleteAll();
+            throw e;
+        }
 
         Assert.fail();
     }

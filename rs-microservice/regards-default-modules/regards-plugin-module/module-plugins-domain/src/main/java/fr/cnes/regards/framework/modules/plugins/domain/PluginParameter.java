@@ -61,7 +61,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     /**
      * {@link PluginConfiguration} parameter is optional
      */
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "PLUGIN_CONF_ID", referencedColumnName = "id", unique = true, nullable = true, insertable = true,
             updatable = true, foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_CONF"))
     private PluginConfiguration pluginConfiguration;
