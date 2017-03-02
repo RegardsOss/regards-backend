@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.accessrights.service.role;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,15 +22,16 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * Define the base interface for any implementation of a Role Service.
  *
  * @author CS SI
+ * @author Sylvain Vissiere-Guerinet
  */
 public interface IRoleService {
 
     /**
-     * Retrieve the {@link List} of all {@link Role}s.
+     * Retrieve the set of all {@link Role}s.
      *
-     * @return The {@link List} of all {@link Role}s.
+     * @return all {@link Role}s.
      */
-    List<Role> retrieveRoleList();
+    Set<Role> retrieveRoles();
 
     /**
      *
@@ -96,21 +98,23 @@ public interface IRoleService {
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      */
-    List<ResourcesAccess> retrieveRoleResourcesAccessList(Long pRoleId) throws EntityNotFoundException;
+    Set<ResourcesAccess> retrieveRoleResourcesAccesses(Long pRoleId) throws EntityNotFoundException;
 
     /**
-     * Set the passed {@link ResourcesAccess} onto the {@link role} of passed <code>id</code>.
+     * Replace old ResourcesAccesses of the given role by the given ones.
      *
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
-     * @param pResourcesAccessList
+     * @param pResourcesAccesses
      *            The {@link List} of {@link ResourcesAccess} to set
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      * @return The updated {@link Role}
+     * @throws EntityOperationForbiddenException
+     *             if pRoleId is the id of PROJECT_ADMIN
      */
-    Role updateRoleResourcesAccess(Long pRoleId, List<ResourcesAccess> pResourcesAccessList)
-            throws EntityNotFoundException;
+    Role updateRoleResourcesAccess(Long pRoleId, Set<ResourcesAccess> pResourcesAccesses)
+            throws EntityNotFoundException, EntityOperationForbiddenException;
 
     /**
      * Clear the {@link List} of {@link ResourcesAccess} of the {@link Role} with passed <code>id</code>.
@@ -177,18 +181,46 @@ public interface IRoleService {
     /**
      *
      * Retrieve the inherited roles of the given role. For exemple this method return PUBLIC, REGISTERED_USER and ADMIN
-     * for role INSTANCE_ADMIN.
+     * for role PROJECT_ADMIN.
      *
      * @param pRole
      *            role to retrieve inherited roles
      * @return list of {@link Role}
      * @since 1.0-SNAPSHOT
      */
-    List<Role> retrieveInheritedRoles(Role pRole);
+    Set<Role> retrieveInheritedRoles(Role pRole);
 
     /**
      *
      */
     void initDefaultRoles();
 
+    /**
+     *
+     * retrieve a role by its Id
+     *
+     * @param pRoleId
+     * @return required role
+     * @throws EntityNotFoundException
+     */
+    Role retrieveRole(Long pRoleId) throws EntityNotFoundException;
+
+    /**
+     * remove given resources accesses from the given role and its descendancy
+     *
+     * @param pRole
+     * @param pResourcesAccess
+     * @throws EntityOperationForbiddenException
+     *             thrown if pRole is PROJECT_ADMIN
+     */
+    void removeResourcesAccesses(Role pRole, ResourcesAccess... pResourcesAccess)
+            throws EntityOperationForbiddenException;
+
+    /**
+     *
+     * @param pRoleId
+     * @param pNewOnes
+     * @throws EntityNotFoundException
+     */
+    void addResourceAccesses(Long pRoleId, ResourcesAccess... pNewOnes) throws EntityNotFoundException;
 }

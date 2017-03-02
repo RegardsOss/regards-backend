@@ -3,12 +3,15 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -102,7 +105,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         // Init roles
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
-        final List<ResourcesAccess> resourcesAccessPublic = new ArrayList<>();
+        final Set<ResourcesAccess> resourcesAccessPublic = new HashSet<>();
         final ResourcesAccess aResourcesAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource",
                 HttpVerb.GET);
         aResourcesAccessPublic.setRoles(Arrays.asList(publicRole));
@@ -111,10 +114,10 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         roleRepository.save(publicRole);
 
         // Create a new Role
-        roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
+        // roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
         final Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
-        final List<ResourcesAccess> resourcesAccess = new ArrayList<>();
+        final Set<ResourcesAccess> resourcesAccess = new HashSet<>();
         final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", HttpVerb.GET);
         final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource",
                 HttpVerb.DELETE);
@@ -198,6 +201,21 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertEquals(nRole, roleRepository.count());
     }
 
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the allows to retrieve roles.")
+    public void retrieveRoleList() throws JwtException {
+        Assert.assertEquals(roleRepository.count(), 6);
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(6)));
+        // 6 = 5 roles and the added role TEST_ROLE has two permissions
+        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
+        // 5 = 5 roles has a parent (public has no parent)
+        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(5)));
+        performDefaultGet(apiRoles, expectations, "TODO Error message");
+    }
+
     /**
      * Check that the system allows to delete a role.
      *
@@ -232,7 +250,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to update resources accesses of a role.")
     public void updateRoleResourcesAccess() throws EntityNotFoundException {
 
-        final List<ResourcesAccess> newPermissionList = roleService.retrieveRoleResourcesAccessList(roleTest.getId());
+        final Set<ResourcesAccess> newPermissionList = roleService.retrieveRoleResourcesAccesses(roleTest.getId());
 
         newPermissionList
                 .add(resourcesAccessRepository.save(new ResourcesAccess(0L, "new", "new", "new", HttpVerb.PUT)));
@@ -272,7 +290,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check hierachy of roles")
     public void retrieveInheritedRoles() {
-        final List<Role> roles = roleService.retrieveInheritedRoles(publicRole);
+        final Set<Role> roles = roleService.retrieveInheritedRoles(publicRole);
         // Number of roles should be all Default roles except PUBLIC plus the default ROLE Create for those tests.
         Assert.assertTrue(roles.size() == ((DefaultRole.values().length - 1) + 1));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));

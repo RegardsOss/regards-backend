@@ -3,8 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Models a user's role.
@@ -16,7 +16,7 @@ public class RoleDTO extends Role {
     /**
      *
      * Constructor
-     * 
+     *
      * @param pRole
      *            The {@link Role} to extends
      *
@@ -29,7 +29,7 @@ public class RoleDTO extends Role {
         super.setNative(pRole.isNative());
         super.setCorsRequestsAuthorized(pRole.isCorsRequestsAuthorized());
         if (pRole.getPermissions() != null) {
-            final List<ResourcesAccess> permissions = new ArrayList<>();
+            final Set<ResourcesAccess> permissions = new HashSet<>();
             for (final ResourcesAccess permission : pRole.getPermissions()) {
                 permissions.add(new ResourcesAccess(permission.getId(), permission.getDescription(),
                         permission.getMicroservice(), permission.getResource(), permission.getVerb()));

@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.resources;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
@@ -24,6 +25,7 @@ import fr.cnes.regards.client.core.TokenClientProvider;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -138,7 +140,7 @@ public class ResourcesService implements IResourcesService {
             final Role currentRole;
             try {
                 currentRole = roleService.retrieveRole(roleName);
-                final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
+                final Set<Role> roles = roleService.retrieveInheritedRoles(currentRole);
                 final List<String> rolesName = new ArrayList<>();
                 roles.forEach(r -> rolesName.add(r.getName()));
                 results = resourceAccessRepo.findDistinctByRolesNameIn(rolesName, pPageable);
@@ -162,7 +164,7 @@ public class ResourcesService implements IResourcesService {
             final Role currentRole;
             try {
                 currentRole = roleService.retrieveRole(roleName);
-                final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
+                final Set<Role> roles = roleService.retrieveInheritedRoles(currentRole);
                 final List<String> rolesName = new ArrayList<>();
                 roles.forEach(r -> rolesName.add(r.getName()));
                 results = resourceAccessRepo.findDistinctByRolesNameIn(rolesName);
@@ -204,7 +206,7 @@ public class ResourcesService implements IResourcesService {
             final Role currentRole;
             try {
                 currentRole = roleService.retrieveRole(roleName);
-                final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
+                final Set<Role> roles = roleService.retrieveInheritedRoles(currentRole);
                 final List<String> rolesName = new ArrayList<>();
                 roles.forEach(r -> rolesName.add(r.getName()));
                 results = resourceAccessRepo.findDistinctByMicroserviceAndRolesNameIn(pMicroserviceName, rolesName,
@@ -357,6 +359,14 @@ public class ResourcesService implements IResourcesService {
 
         return inheritedRoles;
 
+    }
+
+    @Override
+    public void removeRoleResourcesAccess(Long pRoleId, Long pResourcesAccessId)
+            throws EntityNotFoundException, EntityOperationForbiddenException {
+        Role role = roleService.retrieveRole(pRoleId);
+        ResourcesAccess resourcesAccess = retrieveRessource(pResourcesAccessId);
+        roleService.removeResourcesAccesses(role, resourcesAccess);
     }
 
 }

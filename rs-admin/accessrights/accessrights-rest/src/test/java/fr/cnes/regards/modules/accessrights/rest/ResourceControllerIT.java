@@ -33,7 +33,6 @@ import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  *
@@ -108,9 +107,9 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
                                               DefaultRole.INSTANCE_ADMIN.toString());
         publicToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DefaultRole.PUBLIC.toString());
 
-        final ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE,
-                CONFIGURED_ENDPOINT_URL, HttpVerb.GET);
-
+        ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE, CONFIGURED_ENDPOINT_URL,
+                HttpVerb.GET);
+        resource = resourcesAccessRepository.save(resource);
         final Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         resource.addRole(adminRole);
         adminRole.addPermission(resource);

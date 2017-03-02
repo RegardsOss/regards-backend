@@ -5,7 +5,9 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -31,7 +33,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
-import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublic;
+import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublicOrInstanceAdmin;
 
 /**
  * Models a user's role.
@@ -43,8 +45,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParent
 @EntityListeners(UpdateAuthoritiesListener.class)
 @Table(name = "T_ROLE", indexes = { @Index(name = "IDX_ROLE_NAME", columnList = "name") })
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
-@HasParentOrPublic
-@NamedEntityGraph(name = "graph.role.permissions", attributeNodes = @NamedAttributeNode(value = "permissions", subgraph = "permissions"))
+@HasParentOrPublicOrInstanceAdmin
+@NamedEntityGraph(name = "graph.role.permissions",
+        attributeNodes = @NamedAttributeNode(value = "permissions", subgraph = "permissions"))
 public class Role implements IIdentifiable<Long> {
 
     /**
@@ -65,7 +68,8 @@ public class Role implements IIdentifiable<Long> {
     /**
      * The parent role.
      * <p/>
-     * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasParentOrPublic} annotation.
+     * Must not be null except if current role is PUBLIC. Validated via type-level
+     * {@link HasParentOrPublicOrInstanceAdmin} annotation.
      */
     @ManyToOne
     @JoinColumn(name = "parent_role_id", foreignKey = @ForeignKey(name = "FK_ROLE_PARENT_ROLE"))
@@ -76,8 +80,9 @@ public class Role implements IIdentifiable<Long> {
      */
     @Valid
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"), inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
-    private List<ResourcesAccess> permissions;
+    @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
+            inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
+    private Set<ResourcesAccess> permissions;
 
     /**
      * Role associated authorized IP addresses
@@ -121,7 +126,7 @@ public class Role implements IIdentifiable<Long> {
         isDefault = false;
         isNative = false;
         isCorsRequestsAuthorized = true;
-        permissions = new ArrayList<>();
+        permissions = new HashSet<>();
         authorizedAddresses = new ArrayList<>();
     }
 
@@ -173,7 +178,7 @@ public class Role implements IIdentifiable<Long> {
     /**
      * @return the permissions
      */
-    public List<ResourcesAccess> getPermissions() {
+    public Set<ResourcesAccess> getPermissions() {
         return permissions;
     }
 
@@ -181,7 +186,7 @@ public class Role implements IIdentifiable<Long> {
      * @param pPermissions
      *            the permissions to set
      */
-    public void setPermissions(final List<ResourcesAccess> pPermissions) {
+    public void setPermissions(final Set<ResourcesAccess> pPermissions) {
         permissions = pPermissions;
     }
 
@@ -269,31 +274,48 @@ public class Role implements IIdentifiable<Long> {
      */
     public void addPermission(final ResourcesAccess pResourcesAccess) {
         if (permissions == null) {
-            permissions = new ArrayList<>();
+            permissions = new HashSet<>();
         }
-        if (!permissions.contains(pResourcesAccess)) {
-            permissions.add(pResourcesAccess);
-        }
+        permissions.add(pResourcesAccess);
     }
 
     @Override
     public int hashCode() {
-        if (this.id != null) {
-            return this.id.hashCode();
-        } else
-            if (this.name != null) {
-                return this.name.hashCode();
-            } else {
-                return 0;
-            }
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((name == null) ? 0 : name.hashCode());
+        return result;
     }
 
     @Override
-    public boolean equals(final Object pObj) {
-        if (pObj instanceof Role) {
-            return this.hashCode() == pObj.hashCode();
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-        return false;
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Role other = (Role) obj;
+        if (name == null) {
+            if (other.name != null) {
+                return false;
+            }
+        } else
+            if (!name.equals(other.name)) {
+                return false;
+            }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Role [id=" + id + ", name=" + name + ", parentRole=" + parentRole + ", authorizedAddresses="
+                + authorizedAddresses + ", isCorsRequestsAuthorized=" + isCorsRequestsAuthorized
+                + ", corsRequestsAuthorizationEndDate=" + corsRequestsAuthorizationEndDate + ", isDefault=" + isDefault
+                + ", isNative=" + isNative + "]";
     }
 
 }

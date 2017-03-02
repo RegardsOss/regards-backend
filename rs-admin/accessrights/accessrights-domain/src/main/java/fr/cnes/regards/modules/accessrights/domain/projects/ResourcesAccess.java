@@ -3,32 +3,23 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 
 /**
@@ -84,13 +75,6 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     @Enumerated(EnumType.STRING)
     private HttpVerb verb;
 
-    /**
-     * List of authorized roles to access the resource
-     */
-    @ManyToMany(mappedBy="permissions", fetch=FetchType.EAGER)
-    @GsonIgnore
-    private List<Role> roles = new ArrayList<>();
-
     public ResourcesAccess() {
         super();
         verb = HttpVerb.GET;
@@ -130,22 +114,6 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         verb = HttpVerb.valueOf(pMapping.getMethod().toString());
     }
 
-    /**
-     *
-     * Convert a {@link ResourcesAccess} object to a {@link ResourceMapping} Object
-     *
-     * @return {@link ResourceMapping}
-     * @since 1.0-SNAPSHOT
-     */
-    public ResourceMapping toResourceMapping() {
-        final ResourceMapping mapping = new ResourceMapping(
-                ResourceAccessAdapter.createResourceAccess(this.getDescription(), null), this.getResource(),
-                RequestMethod.valueOf(this.getVerb().toString()));
-
-        this.getRoles().forEach(role -> mapping.addAuthorizedRole(new RoleAuthority(role.getName())));
-        return mapping;
-    }
-
     @Override
     public Long getId() {
         return id;
@@ -153,27 +121,46 @@ public class ResourcesAccess implements IIdentifiable<Long> {
 
     @Override
     public int hashCode() {
-        return this.getId().hashCode();
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((microservice == null) ? 0 : microservice.hashCode());
+        result = (prime * result) + ((resource == null) ? 0 : resource.hashCode());
+        result = (prime * result) + ((verb == null) ? 0 : verb.hashCode());
+        return result;
     }
 
     @Override
-    public boolean equals(final Object pObj) {
-        if (pObj instanceof ResourcesAccess) {
-            final ResourcesAccess toCompare = (ResourcesAccess) pObj;
-            if ((this.getId() != null) && this.getId().equals(toCompare.getId())) {
-                return true;
-            } else {
-                if ((this.getMicroservice() == null) || (this.getResource() == null) || (this.getVerb() == null)) {
-                    return false;
-                }
-                if (this.getMicroservice().equals(toCompare.getMicroservice())
-                        && this.getResource().equals(toCompare.getResource())
-                        && this.getVerb().equals(toCompare.getVerb())) {
-                    return true;
-                }
-            }
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-        return false;
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ResourcesAccess other = (ResourcesAccess) obj;
+        if (microservice == null) {
+            if (other.microservice != null) {
+                return false;
+            }
+        } else
+            if (!microservice.equals(other.microservice)) {
+                return false;
+            }
+        if (resource == null) {
+            if (other.resource != null) {
+                return false;
+            }
+        } else
+            if (!resource.equals(other.resource)) {
+                return false;
+            }
+        if (verb != other.verb) {
+            return false;
+        }
+        return true;
     }
 
     public void setId(final Long pId) {
@@ -210,47 +197,6 @@ public class ResourcesAccess implements IIdentifiable<Long> {
 
     public void setVerb(final HttpVerb pVerb) {
         verb = pVerb;
-    }
-
-    public List<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(final List<Role> pRoles) {
-        roles = pRoles;
-    }
-
-    /**
-     *
-     * Add the given role to the authorized roles to access the current resource
-     *
-     * @param pRole
-     *            A {@link Role}
-     * @since 1.0-SNAPSHOT
-     */
-    public void addRole(final Role pRole) {
-        if (roles == null) {
-            roles = new ArrayList<>();
-        }
-        if (!roles.contains(pRole)) {
-            roles.add(pRole);
-        }
-    }
-
-    /**
-     *
-     * Add the given roles to the authorized roles to access the current resource
-     *
-     * @param pInheritedRoles
-     *            a {@link List} of {@link Role}
-     * @since 1.0-SNAPSHOT
-     */
-    public void addRoles(final List<Role> pInheritedRoles) {
-        if (pInheritedRoles != null) {
-            for (final Role role : pInheritedRoles) {
-                this.addRole(role);
-            }
-        }
     }
 
 }

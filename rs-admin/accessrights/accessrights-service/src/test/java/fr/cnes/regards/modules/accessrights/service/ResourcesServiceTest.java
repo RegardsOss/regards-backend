@@ -4,7 +4,6 @@
 package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +20,8 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -48,7 +49,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * 
+ *
  * @since 1.0-SNAPSHOT
  */
 public class ResourcesServiceTest {
@@ -96,7 +97,7 @@ public class ResourcesServiceTest {
         final Role roleAdmin = new Role("ADMIN", null);
         roleAdmin.setId(33L);
         Mockito.stub(roleServiceMock.retrieveInheritedRoles(Mockito.any(Role.class)))
-                .toReturn(Arrays.asList(roleAdmin));
+                .toReturn(Sets.newHashSet(roleAdmin));
         Mockito.stub(roleServiceMock.retrieveRole("ADMIN")).toReturn(roleAdmin);
 
         tenantResolverMock = Mockito.mock(ITenantResolver.class);

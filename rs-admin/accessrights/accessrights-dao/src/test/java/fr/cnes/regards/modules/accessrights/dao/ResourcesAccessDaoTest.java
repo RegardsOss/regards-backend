@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.dao;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -104,13 +107,13 @@ public class ResourcesAccessDaoTest {
         /*
          * Set Permission to Role and persist the Role
          */
-        publicRole.setPermissions(Arrays.asList(publicResource));
+        publicRole.setPermissions(Sets.newHashSet(publicResource));
         roleRepository.save(publicRole);
 
-        userRole.setPermissions(Arrays.asList(publicResource, userResource));
+        userRole.setPermissions(Sets.newHashSet(publicResource, userResource));
         roleRepository.save(userRole);
 
-        adminRole.setPermissions(Arrays.asList(publicResource, userResource, adminResource));
+        adminRole.setPermissions(Sets.newHashSet(publicResource, userResource, adminResource));
         roleRepository.save(adminRole);
     }
 
@@ -172,11 +175,11 @@ public class ResourcesAccessDaoTest {
 
     @Test
     public void findByParentRoleName() {
-        List<Role> roles = roleRepository.findByParentRoleName(DefaultRole.PUBLIC.toString());
+        Set<Role> roles = roleRepository.findByParentRoleName(DefaultRole.PUBLIC.toString());
         Assert.assertNotNull(roles);
         Assert.assertEquals(1, roles.size());
-        Assert.assertNotNull(roles.get(0).getPermissions());
-        Assert.assertTrue(roles.get(0).getPermissions().size() > 0);
+        Assert.assertNotNull(((Role) roles.toArray()[0]).getPermissions());
+        Assert.assertTrue(((Role) roles.toArray()[0]).getPermissions().size() > 0);
     }
 
 }

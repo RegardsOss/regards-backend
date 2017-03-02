@@ -8,7 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -100,7 +102,7 @@ public class RolesControllerNoTransactionIT extends AbstractRegardsTransactional
 
         // Init roles
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
-        final List<ResourcesAccess> resourcesAccessPublic = new ArrayList<>();
+        final Set<ResourcesAccess> resourcesAccessPublic = new HashSet<>();
         final ResourcesAccess aResourcesAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource",
                 HttpVerb.GET);
         aResourcesAccessPublic.setRoles(Arrays.asList(publicRole));
@@ -112,7 +114,7 @@ public class RolesControllerNoTransactionIT extends AbstractRegardsTransactional
         roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
         final Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
-        final List<ResourcesAccess> resourcesAccess = new ArrayList<>();
+        final Set<ResourcesAccess> resourcesAccess = new HashSet<>();
         final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", HttpVerb.GET);
         final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource",
                 HttpVerb.DELETE);
@@ -145,7 +147,7 @@ public class RolesControllerNoTransactionIT extends AbstractRegardsTransactional
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
         Assert.assertEquals(roleRepository.count(), 5);
-        publicRole.setPermissions(new ArrayList<>());
+        publicRole.setPermissions(new HashSet<>());
         roleRepository.save(publicRole);
         resourcesAccessRepository.findAll();
         resourcesAccessRepository.deleteAll();
