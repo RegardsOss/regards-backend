@@ -5,15 +5,21 @@ package fr.cnes.regards.microservices.administration;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationContextException;
-import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -21,7 +27,6 @@ import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
 
 /**
  *
@@ -69,35 +74,36 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
 
     @Override
     public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
-        final List<ResourceMapping> results = new ArrayList<>();
         // Register endpoints to administration service and retrieve configured ones
         final ResponseEntity<Void> response = resourcesClient.registerMicroserviceEndpoints(microserviceName,
                                                                                             pLocalEndpoints);
         if (response.getStatusCode().equals(HttpStatus.OK)) {
-            // Then get configured endpoints
 
-            final List<ResourcesAccess> resources = HateoasUtils.retrieveAllPages(100, (final Pageable pPageable) -> {
-                return resourcesClient.retrieveResourcesAccesses(microserviceName, pPageable.getPageNumber(),
-                                                                 pPageable.getPageSize());
-            });
-            resources.forEach(r -> results.add(r.toResourceMapping()));
+            // get a map that for each ResourcesAccess ra links the roles containing ra
+            List<Role> roles = HateoasUtils.unwrapList(roleClient.retrieveRoleList().getBody());
+            SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();
+
+            roles.forEach(role -> role.getPermissions().forEach(ra -> multimap.put(ra, role)));
+
+            // create ResourceMappings
+            return multimap.asMap().entrySet().stream()
+                    .map(entry -> buildResourceMapping(entry.getKey(), entry.getValue())).collect(Collectors.toList());
         } else {
             throw new ApplicationContextException("Error registring endpoints to administration service");
         }
-        return results;
     }
 
     @Override
     public List<RoleAuthority> getRoleAuthorities() {
         final List<RoleAuthority> roleAuths = new ArrayList<>();
 
-        final ResponseEntity<List<Resource<RoleDTO>>> result = roleClient.retrieveRoleList();
+        final ResponseEntity<List<Resource<Role>>> result = roleClient.retrieveRoleList();
 
         if (result.getStatusCode().equals(HttpStatus.OK)) {
-            final List<Resource<RoleDTO>> body = result.getBody();
+            final List<Resource<Role>> body = result.getBody();
             if (body != null) {
-                final List<RoleDTO> roles = HateoasUtils.unwrapList(body);
-                for (final RoleDTO role : roles) {
+                final List<Role> roles = HateoasUtils.unwrapList(body);
+                for (final Role role : roles) {
                     roleAuths.add(createRoleAuthority(role));
                 }
             }
@@ -114,7 +120,7 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
      * @return {@link RoleAuthority}
      * @since 1.0-SNAPSHOT
      */
-    private RoleAuthority createRoleAuthority(final RoleDTO pRole) {
+    private RoleAuthority createRoleAuthority(final Role pRole) {
         final RoleAuthority roleAuth = new RoleAuthority(pRole.getName());
         roleAuth.setAuthorizedIpAdresses(pRole.getAuthorizedAddresses());
         boolean access = pRole.isCorsRequestsAuthorized();
@@ -123,6 +129,15 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
         }
         roleAuth.setCorsAccess(access);
         return roleAuth;
+    }
+
+    private ResourceMapping buildResourceMapping(ResourcesAccess pRa, Collection<Role> pRoles) {
+        ResourceMapping mapping = new ResourceMapping(
+                ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
+                RequestMethod.valueOf(pRa.getVerb().toString()));
+        mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
+                .collect(Collectors.toList()));
+        return mapping;
     }
 
 }

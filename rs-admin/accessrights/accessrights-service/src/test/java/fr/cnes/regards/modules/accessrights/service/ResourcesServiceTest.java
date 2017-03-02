@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -112,7 +110,7 @@ public class ResourcesServiceTest {
         Mockito.stub(jwtService.getActualRole()).toReturn("ADMIN");
 
         resourcesService = Mockito.spy(new ResourcesService("rs-test", discoveryClientMock, resourcesRepo,
-                roleServiceMock, jwtService, tenantResolverMock, Mockito.mock(IPublisher.class)));
+                roleServiceMock, jwtService, tenantResolverMock));
 
     }
 
@@ -172,29 +170,21 @@ public class ResourcesServiceTest {
         resourcesService.init();
         Assert.assertTrue(resourcesRepo.count() == 3);
 
-        for (final ResourcesAccess resource : resourcesService.retrieveRessources(new PageRequest(0, 20))) {
-            Assert.assertTrue(!resource.getRoles().isEmpty());
-            final Optional<Role> found = resource.getRoles().stream()
-                    .filter(r -> r.getName().equals(DefaultRole.ADMIN.toString())).findFirst();
-            Assert.assertTrue(found.isPresent());
-        }
-
     }
 
     @Test
     public void retrieveResourcesByMicroservice() {
 
         final String ms = "rs-test";
-        final Role roleAdmin = new Role("ADMIN", null);
 
         ResourcesAccess ra = new ResourcesAccess("description", ms, "/resource/test/1", HttpVerb.GET);
-        ra.addRole(roleAdmin);
+
         resourcesRepo.save(ra);
         ra = new ResourcesAccess("description", ms, "/resource/test/2", HttpVerb.GET);
-        ra.addRole(roleAdmin);
+
         resourcesRepo.save(ra);
         ra = new ResourcesAccess("description", ms, "/resource/test/3", HttpVerb.GET);
-        ra.addRole(roleAdmin);
+
         resourcesRepo.save(ra);
         ra = new ResourcesAccess("description", ms, "/resource/test/4", HttpVerb.GET);
         resourcesRepo.save(ra);

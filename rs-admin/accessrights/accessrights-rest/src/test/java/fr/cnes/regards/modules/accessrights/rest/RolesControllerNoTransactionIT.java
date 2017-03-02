@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -105,7 +104,6 @@ public class RolesControllerNoTransactionIT extends AbstractRegardsTransactional
         final Set<ResourcesAccess> resourcesAccessPublic = new HashSet<>();
         final ResourcesAccess aResourcesAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource",
                 HttpVerb.GET);
-        aResourcesAccessPublic.setRoles(Arrays.asList(publicRole));
         resourcesAccessPublic.add(aResourcesAccessPublic);
         publicRole.setPermissions(resourcesAccessPublic);
         roleRepository.save(publicRole);
@@ -118,8 +116,6 @@ public class RolesControllerNoTransactionIT extends AbstractRegardsTransactional
         final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", HttpVerb.GET);
         final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource",
                 HttpVerb.DELETE);
-        aResourcesAccess.setRoles(Arrays.asList(roleRepository.findAll().get(0), aNewRole));
-        bResourcesAccess.setRoles(Arrays.asList(aNewRole, roleRepository.findAll().get(1)));
 
         resourcesAccess.add(aResourcesAccess);
         resourcesAccess.add(bResourcesAccess);

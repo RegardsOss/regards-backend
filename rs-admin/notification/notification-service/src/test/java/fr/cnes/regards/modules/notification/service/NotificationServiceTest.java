@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.notification.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -150,14 +151,14 @@ public class NotificationServiceTest {
         role0.setName(ROLE_NAME_0);
         role0.setNative(false);
         role0.setParentRole(null);
-        role0.setPermissions(new ArrayList<>());
+        role0.setPermissions(new HashSet<>());
 
         role1 = new Role();
         role1.setId(1L);
         role1.setName(ROLE_NAME_1);
         role1.setNative(false);
         role1.setParentRole(null);
-        role1.setPermissions(new ArrayList<>());
+        role1.setPermissions(new HashSet<>());
 
         // Init some users
         projectUser0.setId(0L);

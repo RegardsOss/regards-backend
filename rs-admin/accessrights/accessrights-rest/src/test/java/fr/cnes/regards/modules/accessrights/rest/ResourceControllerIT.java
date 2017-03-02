@@ -5,9 +5,7 @@ package fr.cnes.regards.modules.accessrights.rest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -111,7 +109,6 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
                 HttpVerb.GET);
         resource = resourcesAccessRepository.save(resource);
         final Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
-        resource.addRole(adminRole);
         adminRole.addPermission(resource);
 
         testUser = projectUserRepository
@@ -143,54 +140,6 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         performPost(ResourcesController.REQUEST_MAPPING_ROOT + "/register/microservices/{microservice}", instanceToken,
                     mapping, expectations, "Error during registring endpoints", DEFAULT_MICROSERVICE);
-
-        final List<ResourcesAccess> resources = resourcesAccessRepository.findByMicroservice(DEFAULT_MICROSERVICE);
-
-        // Check that the first endpoint is accessible by all default roles
-        Optional<ResourcesAccess> resource = resources.stream().filter(r -> r.getResource().equals("/endpoint/test"))
-                .findFirst();
-        final List<Role> iop = resource.get().getRoles();
-        for (final Role plop : iop) {
-            Assert.assertNotNull(plop);
-        }
-        Assert.assertTrue(resource.get().getRoles().size() == (DefaultRole.values().length));
-        Assert.assertTrue(resource.get().getRoles().stream()
-                .anyMatch(r -> r.getName().equals(DefaultRole.PUBLIC.toString())));
-        Assert.assertTrue(resource.get().getRoles().stream()
-                .anyMatch(r -> r.getName().equals(DefaultRole.REGISTERED_USER.toString())));
-        Assert.assertTrue(resource.get().getRoles().stream()
-                .anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));
-        Assert.assertTrue(resource.get().getRoles().stream()
-                .anyMatch(r -> r.getName().equals(DefaultRole.PROJECT_ADMIN.toString())));
-        Assert.assertTrue(resource.get().getRoles().stream()
-                .anyMatch(r -> r.getName().equals(DefaultRole.INSTANCE_ADMIN.toString())));
-
-        // Check that the second endpoint is accessible by all default roles except public
-        resource = resources.stream().filter(r -> r.getResource().equals("/endpoint/test2")).findFirst();
-        Assert.assertTrue(resource.get().getRoles().size() == ((DefaultRole.values().length - 1)));
-        Assert.assertTrue(resource.get().getRoles().stream()
-                .anyMatch(r -> r.getName().equals(DefaultRole.REGISTERED_USER.toString())));
-        Assert.assertTrue(resource.get().getRoles().stream()
-                .anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));
-        Assert.assertTrue(resource.get().getRoles().stream()
-                .anyMatch(r -> r.getName().equals(DefaultRole.PROJECT_ADMIN.toString())));
-        Assert.assertTrue(resource.get().getRoles().stream()
-                .anyMatch(r -> r.getName().equals(DefaultRole.INSTANCE_ADMIN.toString())));
-
-        // Check that the first endpoint is only accessible by the INSTANCE_ADMIN Role
-        resource = resources.stream().filter(r -> r.getResource().equals("/endpoint/test3")).findFirst();
-        Assert.assertTrue(resource.get().getRoles().size() == 1);
-        Assert.assertTrue(resource.get().getRoles().stream()
-                .anyMatch(r -> r.getName().equals(DefaultRole.INSTANCE_ADMIN.toString())));
-
-        // Check that the already configured endpoint do not overide configuration with default endpoint role and keep
-        // already configured authorized roles (see initResources method). So only ADMIN is
-        // authorized
-        resource = resources.stream().filter(r -> r.getResource().equals(CONFIGURED_ENDPOINT_URL.toString()))
-                .findFirst();
-        Assert.assertTrue(resource.get().getRoles().size() == 1);
-        Assert.assertTrue(resource.get().getRoles().stream()
-                .anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));
 
     }
 

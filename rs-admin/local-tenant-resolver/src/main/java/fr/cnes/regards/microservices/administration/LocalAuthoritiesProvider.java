@@ -72,8 +72,6 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     @Override
     public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
         resourcesService.registerResources(pLocalEndpoints, microserviceName);
-        // final List<ResourcesAccess> configuredResources = resourcesService.retrieveRessources();
-        // configuredResources.forEach(r -> results.add(r.toResourceMapping()));
         // get a map that for each ResourcesAccess ra links the roles containing ra
         Set<Role> roles = roleService.retrieveRoles();
         SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();
