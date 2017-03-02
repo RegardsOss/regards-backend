@@ -24,7 +24,6 @@
 		<module>accessrights-rest</module>
 		<module>accessrights-service</module>
 		<module>accessrights-client</module>
-		<module>accessrights-test</module>
 	</modules>
 
 	<dependencyManagement>

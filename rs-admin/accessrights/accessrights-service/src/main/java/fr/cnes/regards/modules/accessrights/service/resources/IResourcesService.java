@@ -80,7 +80,8 @@ public interface IResourcesService {
      * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
-    Page<ResourcesAccess> retrieveMicroserviceRessources(String pMicroserviceName, final Pageable pPageable);
+    Page<ResourcesAccess> retrieveMicroserviceRessources(String pMicroserviceName, final Pageable pPageable)
+            throws EntityNotFoundException;
 
     /**
      *

@@ -129,6 +129,7 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      *            pagination informations
      *
      * @return {@link Page} of {@link ResourceAccess}
+     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(value = "/microservices/{microservice}", method = RequestMethod.GET)
@@ -136,7 +137,7 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
     @ResponseBody
     public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> retrieveResourcesAccesses(
             @PathVariable("microservice") final String pMicroserviceName, final Pageable pPageable,
-            final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) {
+            final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) throws EntityNotFoundException {
         return new ResponseEntity<>(
                 toPagedResources(service.retrieveMicroserviceRessources(pMicroserviceName, pPageable),
                                  pPagedResourcesAssembler),

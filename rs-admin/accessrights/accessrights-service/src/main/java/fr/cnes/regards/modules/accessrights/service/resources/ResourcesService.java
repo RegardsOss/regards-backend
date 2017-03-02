@@ -183,7 +183,7 @@ public class ResourcesService implements IResourcesService {
 
     @Override
     public Page<ResourcesAccess> retrieveMicroserviceRessources(final String pMicroserviceName,
-            final Pageable pPageable) {
+            final Pageable pPageable) throws EntityNotFoundException {
         Page<ResourcesAccess> results;
         final String roleName = jwtService.getActualRole();
         // If role is System role or InstanceAdminRole retrieve all resources
@@ -192,19 +192,15 @@ public class ResourcesService implements IResourcesService {
         } else {
             // Else retrieve only accessible resources
             final Role currentRole;
-            try {
-                currentRole = roleService.retrieveRole(roleName);
-                final Set<Role> roles = roleService.retrieveInheritedRoles(currentRole);
-                Set<ResourcesAccess> accessibleResourcesAccesses = getResourcesAccesses(roles);
-                // filter to get those for the given microservice and convert as a list for the page
-                List<ResourcesAccess> accessibleResourcesAccessesForMicroservice = accessibleResourcesAccesses.stream()
-                        .filter(ra -> ra.getMicroservice().equals(pMicroserviceName)).collect(Collectors.toList());
-                results = new PageImpl<>(accessibleResourcesAccessesForMicroservice, pPageable,
-                        accessibleResourcesAccessesForMicroservice.size());
-            } catch (final EntityNotFoundException e) {
-                LOG.error(e.getMessage(), e);
-                results = new PageImpl<>(new ArrayList<>(), pPageable, 0);
-            }
+
+            currentRole = roleService.retrieveRole(roleName);
+            final Set<Role> roles = roleService.retrieveInheritedRoles(currentRole);
+            Set<ResourcesAccess> accessibleResourcesAccesses = getResourcesAccesses(roles);
+            // filter to get those for the given microservice and convert as a list for the page
+            List<ResourcesAccess> accessibleResourcesAccessesForMicroservice = accessibleResourcesAccesses.stream()
+                    .filter(ra -> ra.getMicroservice().equals(pMicroserviceName)).collect(Collectors.toList());
+            results = new PageImpl<>(accessibleResourcesAccessesForMicroservice, pPageable,
+                    accessibleResourcesAccessesForMicroservice.size());
 
         }
         return results;
