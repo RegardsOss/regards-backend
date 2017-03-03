@@ -104,7 +104,7 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
 
     /**
      *
-     * Retrieve the ResourceAccess list of all microservices
+     * Retrieve the resource accesses available to the user
      *
      * @param pPageable
      *            pagination informations
@@ -113,7 +113,8 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the system",
+            role = DefaultRole.PUBLIC)
     @ResponseBody
     public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> retrieveResourcesAccesses(final Pageable pPageable,
             final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) {
@@ -123,7 +124,7 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
 
     /**
      *
-     * Retrieve the ResourceAccess list of the given microservice
+     * Retrieve the resource accesses available to the user of the given microservice
      *
      * @param pPageable
      *            pagination informations
@@ -133,7 +134,8 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(value = "/microservices/{microservice}", method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the given microservice",
+            role = DefaultRole.PUBLIC)
     @ResponseBody
     public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> retrieveResourcesAccesses(
             @PathVariable("microservice") final String pMicroserviceName, final Pageable pPageable,

@@ -208,7 +208,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // 6 = 5 roles and the added role TEST_ROLE has two permissions
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
         // 5 = 5 roles has a parent (public has no parent)
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(5)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(4)));
         performDefaultGet(apiRoles, expectations, "TODO Error message");
     }
 
@@ -254,7 +254,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
                 .add(resourcesAccessRepository.save(new ResourcesAccess(1L, "neww", "neww", "neww", HttpVerb.DELETE)));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
+        expectations.add(status().isNoContent());
         performDefaultPut(apiRolesPermissions, newPermissionList, expectations, "TODO Error message", roleTest.getId());
     }
 
@@ -263,7 +263,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to remove all resources accesses of a role.")
     public void clearRoleResourcesAccess() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
+        expectations.add(status().isNoContent());
         performDefaultDelete(apiRolesPermissions, expectations, "TODO Error message", roleTest.getId());
     }
 
@@ -288,10 +288,9 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     public void retrieveInheritedRoles() {
         final Set<Role> roles = roleService.retrieveInheritedRoles(publicRole);
         // Number of roles should be all Default roles except PUBLIC plus the default ROLE Create for those tests.
-        Assert.assertTrue(roles.size() == ((DefaultRole.values().length - 1) + 1));
+        Assert.assertTrue(roles.size() == ((DefaultRole.values().length - 2) + 1));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.PROJECT_ADMIN.toString())));
-        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.INSTANCE_ADMIN.toString())));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.REGISTERED_USER.toString())));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(ROLE_TEST.toString())));
     }
