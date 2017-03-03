@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +44,7 @@ public interface IResourceController<T> {
      *            Extra URL path parameters for links
      * @return a list of {@link Resource}
      */
-    default List<Resource<T>> toResources(final List<T> pElements, final Object... pExtras) {
+    default List<Resource<T>> toResources(final Collection<T> pElements, final Object... pExtras) {
         Assert.notNull(pElements);
         return pElements.stream().map(resource -> toResource(resource, pExtras)).collect(Collectors.toList());
     }

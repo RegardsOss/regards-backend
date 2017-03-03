@@ -61,8 +61,8 @@ public class JWTAuthenticationFilterTest {
     @Test
     public void jwtFilterAccessDeniedWithoutToken() {
 
-        final JWTAuthentication token = new JWTAuthentication("token");
-        token.setRole("USER");
+        final JWTAuthentication token = new JWTAuthentication(
+                jwtService.generateToken("PROJECT", "test@test.test", "USER"));
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
@@ -164,8 +164,8 @@ public class JWTAuthenticationFilterTest {
     @Test
     public void jwtFilterAccessDeniedTest() {
 
-        final JWTAuthentication token = new JWTAuthentication("token");
-        token.setRole("USER");
+        final JWTAuthentication token = new JWTAuthentication(
+                jwtService.generateToken("PROJECT", "test@test.test", "USER"));
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
@@ -202,8 +202,8 @@ public class JWTAuthenticationFilterTest {
     @Test
     public void jwtFilterAccessGrantedTest() {
 
-        final JWTAuthentication token = new JWTAuthentication("token");
-        token.setRole("USER");
+        final JWTAuthentication token = new JWTAuthentication(
+                jwtService.generateToken("PROJECT", "test@test.test", "USER"));
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
