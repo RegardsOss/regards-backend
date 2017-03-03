@@ -3,9 +3,10 @@
  */
 package fr.cnes.regards.framework.modules.plugins.dao;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,6 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 
 /***
  * Unit testing of {@link PluginConfiguration} persistence.
@@ -179,6 +181,71 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         }
 
         Assert.fail();
+    }
+
+    @Test
+    public void createPluginParameterConfiguration() {
+        int nbPlgConfs = 0;
+
+        // Create 2 PluginConfiguration
+        PluginConfiguration pluginConf1 = pluginConfigurationRepository.save(getPluginConfigurationWithParameters());
+        PluginConfiguration pluginConf2 = pluginConfigurationRepository
+                .save(getPluginConfigurationWithDynamicParameter());
+        nbPlgConfs = 2;
+
+        Assert.assertEquals(2, pluginConfigurationRepository.count());
+        Assert.assertEquals(pluginConf1.getParameters().size() + pluginConf2.getParameters().size(),
+                            pluginParameterRepository.count());
+
+        // Create PluginParameter
+        List<PluginParameter> params1 = PluginParametersFactory.build()
+                .addParameterPluginConfiguration(RED, pluginConf1).getParameters();
+
+        List<PluginParameter> params2 = PluginParametersFactory.build()
+                .addParameterPluginConfiguration(BLUE, pluginConf2).getParameters();
+
+        // Create 2 PluginConfiguration with the 2 PluginParameter above
+        pluginConfigurationRepository
+                .save(new PluginConfiguration(getPluginMetaData(), "third configuration", params1, 0));
+        pluginConfigurationRepository
+                .save(new PluginConfiguration(getPluginMetaData(), "forth configuration", params2, 0));
+        nbPlgConfs += 2;
+
+        Assert.assertEquals(pluginConf1.getParameters().size() + pluginConf2.getParameters().size() + 2,
+                            pluginParameterRepository.count());
+        Assert.assertEquals(nbPlgConfs, pluginConfigurationRepository.count());
+    }
+
+    @Test
+    @DirtiesContext
+    public void createPluginParameterConfigurationWithIdenticalParams() {
+        int nbPlgConfs = 0;
+
+        // Create 2 PluginConfiguration
+        PluginConfiguration pluginConf1 = pluginConfigurationRepository.save(getPluginConfigurationWithParameters());
+        PluginConfiguration pluginConf2 = pluginConfigurationRepository
+                .save(getPluginConfigurationWithDynamicParameter());
+        nbPlgConfs = 2;
+        Assert.assertEquals(pluginConf1.getParameters().size() + pluginConf2.getParameters().size(),
+                            pluginParameterRepository.count());
+        Assert.assertEquals(nbPlgConfs, pluginConfigurationRepository.count());
+
+        // Create PluginParameter
+        List<PluginParameter> params1 = PluginParametersFactory.build()
+                .addParameterPluginConfiguration(RED, pluginConf1).getParameters();
+
+        // Create 2 PluginConfiguration with the same PluginParameter
+        pluginConfigurationRepository
+                .save(new PluginConfiguration(getPluginMetaData(), "third configuration", params1, 0));
+        PluginConfiguration plgConf = new PluginConfiguration(getPluginMetaData(), "forth configuration", null, 0);
+        pluginConfigurationRepository.save(plgConf);
+        plgConf.setParameters(params1);
+        pluginConfigurationRepository.save(plgConf);
+
+        nbPlgConfs += 2;
+        Assert.assertEquals(pluginConf1.getParameters().size() + pluginConf2.getParameters().size() + 1,
+                            pluginParameterRepository.count());
+        Assert.assertEquals(nbPlgConfs, pluginConfigurationRepository.count());
     }
 
 }
