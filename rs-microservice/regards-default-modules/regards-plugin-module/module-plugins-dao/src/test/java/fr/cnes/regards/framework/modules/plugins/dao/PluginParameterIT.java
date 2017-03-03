@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.framework.modules.plugins.dao;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +16,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.google.common.collect.Lists;
+
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 
 /***
  * Unit testing of {@link PluginParameter} persistence.
@@ -53,6 +59,38 @@ public class PluginParameterIT extends PluginDaoUtility {
 
         Assert.assertEquals(nPluginParameter + 1 + PARAMETERS2.size(), pluginParameterRepository.count());
 
+        pluginConfigurationRepository.deleteAll();
+    }
+
+    @Test
+    @DirtiesContext
+    public void createPluginParameterConfiguration() {
+        // Create 2 PluginConfiguration
+        PluginConfiguration pluginConf1 = pluginConfigurationRepository.save(getPluginConfigurationWithParameters());
+        PluginConfiguration pluginConf2 = pluginConfigurationRepository
+                .save(getPluginConfigurationWithDynamicParameter());
+        Assert.assertEquals(2, pluginConfigurationRepository.count());
+
+        // Create PluginParameter
+        List<PluginParameter> params1 = PluginParametersFactory.build()
+                .addParameterPluginConfiguration(RED, pluginConf1).getParameters();
+
+        List<PluginParameter> params2 = PluginParametersFactory.build()
+                .addParameterPluginConfiguration(BLUE, pluginConf2).getParameters();
+
+        // Create 2 PluginConfiguration with the 2 PluginParameter above
+        PluginConfiguration pluginConf3 = pluginConfigurationRepository
+                .save(new PluginConfiguration(getPluginMetaData(), "third configuration", params1, 0));
+        PluginConfiguration pluginConf4 = pluginConfigurationRepository
+                .save(new PluginConfiguration(getPluginMetaData(), "forth configuration", params2, 0));
+
+        List<PluginParameter> params = Lists.newArrayList(pluginParameterRepository.findAll().iterator());
+
+        Assert.assertEquals(pluginConf1.getParameters().size() + pluginConf2.getParameters().size() + 2,
+                            pluginParameterRepository.count());
+
+        pluginConfigurationRepository.deleteAll();
+        pluginParameterRepository.deleteAll();
     }
 
     /**
@@ -71,6 +109,9 @@ public class PluginParameterIT extends PluginDaoUtility {
 
         final PluginParameter paramFound = pluginParameterRepository.findOne(paramJpa.getId());
         Assert.assertEquals(paramFound.getName(), paramJpa.getName());
+
+        pluginParameterRepository.deleteAll();
+        pluginConfigurationRepository.deleteAll();
     }
 
     /**
