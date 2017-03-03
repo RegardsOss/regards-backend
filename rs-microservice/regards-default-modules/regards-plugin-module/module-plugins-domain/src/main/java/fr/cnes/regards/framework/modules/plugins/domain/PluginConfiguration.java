@@ -108,6 +108,24 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     /**
+     * A constructor with {@link PluginMetaData}.
+     *
+     * @param pPluginMetaData
+     *            the plugin's metadata
+     * @param pLabel
+     *            the label
+     */
+    public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel) {
+        super();
+        pluginId = pPluginMetaData.getPluginId();
+        version = pPluginMetaData.getVersion();
+        pluginClassName = pPluginMetaData.getPluginClassName();
+        interfaceName = pPluginMetaData.getInterfaceName();
+        priorityOrder = 0;
+        label = pLabel;
+        active = Boolean.TRUE;
+    }
+    /**
      * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}.
      *
      * @param pPluginMetaData
